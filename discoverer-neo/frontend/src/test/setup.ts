@@ -45,3 +45,16 @@ if (!window.ResizeObserver) {
     disconnect() {}
   }
 }
+
+// jsdom doesn't implement scrollIntoView or pointer capture, both of which
+// Radix's Select popper uses on open — without these, opening a Select in a
+// test throws (`candidate?.scrollIntoView is not a function`).
+if (!Element.prototype.scrollIntoView) {
+  Element.prototype.scrollIntoView = () => {}
+}
+if (!Element.prototype.hasPointerCapture) {
+  Element.prototype.hasPointerCapture = () => false
+}
+if (!Element.prototype.releasePointerCapture) {
+  Element.prototype.releasePointerCapture = () => {}
+}

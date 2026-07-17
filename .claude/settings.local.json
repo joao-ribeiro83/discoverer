@@ -189,7 +189,23 @@
       "Bash(node -e \"import\\('node-sql-parser'\\).then\\(m => { const P = m.default.Parser ?? m.Parser; const p = new P\\(\\); console.log\\('parse ok:', JSON.stringify\\(p.astify\\(\\\\\"SELECT 1 FROM DUAL WHERE \\(A = 'x'\\)\\\\\", {database:'db2'}\\).type ?? 'ok'\\)\\); }\\)\")",
       "Bash(curl -s -X POST http://localhost:3001/api/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"admin@discoverer.local\",\"password\":\"admin123\"}')",
       "Bash(DATABASE_URL='postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo' npm run db:seed)",
-      "PowerShell(cd E:\\\\claude\\\\discoverer\\\\discoverer-neo\\\\backend; $env:DATABASE_URL = 'postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo'; $env:REDIS_URL = 'redis://localhost:6379'; npx jest security sql-generator --no-coverage 2>&1 | Select-Object -Last 6)"
+      "PowerShell(cd E:\\\\claude\\\\discoverer\\\\discoverer-neo\\\\backend; $env:DATABASE_URL = 'postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo'; $env:REDIS_URL = 'redis://localhost:6379'; npx jest security sql-generator --no-coverage 2>&1 | Select-Object -Last 6)",
+      "Bash(DATABASE_URL=\"postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo\" REDIS_URL=\"redis://localhost:6379\" npx jest users maps --testPathIgnorePatterns=integration)",
+      "Bash(git stash *)",
+      "Bash(DATABASE_URL=\"postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo\" REDIS_URL=\"redis://localhost:6379\" JWT_SECRET=\"change_me_generate_a_strong_random_secret\" BACKEND_PORT=3001 ORACLE_THICK_MODE=false nohup npx tsx watch src/server.ts)",
+      "Bash(echo \"started pid $!\")",
+      "Bash(curl -s -X POST http://localhost:3001/api/users -H 'Authorization: Bearer __CMDSUB_OUTPUT__' -H 'Content-Type: application/json' -d '{\"email\":\"sharee-verify@example.com\",\"password\":\"SecurePass123!\",\"name\":\"Sharee Verify\",\"role\":\"USER\"}')",
+      "Bash(curl -s -X POST http://localhost:3001/api/business-areas -H 'Authorization: Bearer __CMDSUB_OUTPUT__' -H 'Content-Type: application/json' -d '{\"name\":\"Share Verify BA\",\"description\":\"temp\"}')",
+      "Bash(curl -s http://localhost:3001/api/data-sources -H 'Authorization: Bearer __CMDSUB_OUTPUT__')",
+      "Bash(curl -s http://localhost:3001/api/users/search?q=sharee -H 'Authorization: Bearer __CMDSUB_OUTPUT__')",
+      "Bash(curl -s http://localhost:3000/api/health)",
+      "Bash(curl -s http://localhost:3000/api/users/search?q=sharee -H 'Authorization: Bearer __TRACKED_VAR__')",
+      "PowerShell(Get-CimInstance Win32_Process -Filter \"ProcessId=28980 or ProcessId=36640 or ProcessId=35768\")",
+      "PowerShell(Stop-Process -Id 28980,36640 -Force -ErrorAction SilentlyContinue)",
+      "PowerShell(Get-Process -Id 28980,36640 -ErrorAction SilentlyContinue)",
+      "Bash(DATABASE_URL=\"postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo\" REDIS_URL=\"redis://localhost:6379\" JWT_SECRET=\"change_me_generate_a_strong_random_secret\" PORT=3099 ORACLE_THICK_MODE=false nohup npx tsx watch src/server.ts)",
+      "Bash(curl -s http://localhost:3099/api/health)",
+      "Bash(curl -s http://localhost:3099/api/users/search?q=sharee -H 'Authorization: Bearer __TRACKED_VAR__')"
     ]
   }
 }

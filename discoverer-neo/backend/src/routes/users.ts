@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { create, update, getById, getByEmail, list, remove } from '../services/user.service.js';
+import { create, update, getById, getByEmail, list, remove, search } from '../services/user.service.js';
 
 // ---------------------------------------------------------------------------
 // Validation schemas
@@ -57,6 +57,48 @@ const errorResponse = {
 export default async function userRoutes(fastify: FastifyInstance) {
   // All user-management endpoints are admin-only.
   const adminPreHandler = [fastify.authenticate, fastify.authorizeAdmin];
+
+  // GET /api/users/search?q= — any authenticated user may search for a
+  // teammate to share a map with. Deliberately NOT admin-gated (unlike every
+  // other route below) and returns only {id, name, email}.
+  fastify.get(
+    '/api/users/search',
+    {
+      preHandler: [fastify.authenticate],
+      schema: {
+        tags: ['Users'],
+        security: [{ bearerAuth: [] }],
+        querystring: {
+          type: 'object',
+          properties: { q: { type: 'string' } },
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              data: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string' },
+                    name: { type: 'string' },
+                    email: { type: 'string' },
+                  },
+                },
+              },
+            },
+          },
+          401: errorResponse,
+        },
+      },
+    },
+    async (request, reply) => {
+      const { q } = request.query as { q?: string };
+      const results = await search(q ?? '', request.user!.sub);
+      return reply.code(200).send({ data: results });
+    },
+  );
 
   // GET /api/users — list all
   fastify.get(

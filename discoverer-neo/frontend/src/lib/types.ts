@@ -249,6 +249,24 @@ export interface MapWithDetails extends MapSummary {
   calculatedFields: MapCalculatedField[]
 }
 
+export type SharePermissionLevel = 'VIEW' | 'EDIT' | 'EXPORT'
+
+export interface MapShare {
+  id: string
+  mapId: string
+  sharedWithUserId: string
+  sharedWithEmail: string | null
+  sharedWithName: string | null
+  permissionLevel: SharePermissionLevel
+  sharedBy: string
+  sharedAt: string
+}
+
+export interface CreateMapShareInput {
+  userId: string
+  permissionLevel: SharePermissionLevel
+}
+
 // --- create/update payloads (mirror the backend zod schemas) ---------------
 
 export interface MapItemInput {

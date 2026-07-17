@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { and, eq, ilike, ne, or } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { users, type User } from '../db/schema.js';
 import { hashPassword } from '../lib/password.js';
@@ -23,6 +23,42 @@ export async function getById(id: string): Promise<SafeUser | null> {
 export async function getByEmail(email: string): Promise<User | null> {
   const [row] = await db.select().from(users).where(eq(users.email, email)).limit(1);
   return row ?? null;
+}
+
+export interface UserSearchResult {
+  id: string;
+  name: string;
+  email: string;
+}
+
+/**
+ * Search users by name/email substring for use in non-admin flows (e.g. the
+ * map-sharing picker). Deliberately returns a minimal field set — no role,
+ * no timestamps — since any authenticated user can call this, unlike
+ * `list()`/`getById()` which are admin-only.
+ */
+export async function search(
+  query: string,
+  excludeUserId: string,
+  limit = 20,
+): Promise<UserSearchResult[]> {
+  const term = query.trim();
+  if (!term) return [];
+
+  const pattern = `%${term}%`;
+  const rows = await db
+    .select({ id: users.id, name: users.name, email: users.email })
+    .from(users)
+    .where(
+      and(
+        ne(users.id, excludeUserId),
+        or(ilike(users.name, pattern), ilike(users.email, pattern)),
+      ),
+    )
+    .orderBy(users.name)
+    .limit(limit);
+
+  return rows;
 }
 
 export interface CreateUserInput {

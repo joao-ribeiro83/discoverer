@@ -199,6 +199,24 @@ export default async function mapRoutes(fastify: FastifyInstance) {
     },
   );
 
+  // GET /api/maps/shared-with-me — maps explicitly shared with the current
+  // user (a filtered view of the `shared` half of GET /api/maps).
+  fastify.get(
+    '/api/maps/shared-with-me',
+    {
+      preHandler: [fastify.authenticate],
+      schema: {
+        tags: ['Maps'],
+        security: [{ bearerAuth: [] }],
+      },
+    },
+    async (request) => {
+      const user = request.user as { sub: string };
+      const data = await listSharedWithUser(user.sub);
+      return { data };
+    },
+  );
+
   // GET /api/maps/:id — full map definition
   fastify.get(
     '/api/maps/:id',

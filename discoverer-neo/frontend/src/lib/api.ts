@@ -29,6 +29,10 @@ import type {
   CreateScheduleInput,
   UpdateScheduleInput,
   ScheduledResult,
+  MapShare,
+  CreateMapShareInput,
+  SharePermissionLevel,
+  UserOption,
   SecurityPolicy,
   SecurityPolicyAssignment,
   SecurityPolicyTestResult,
@@ -206,6 +210,9 @@ export const apiClient = {
     create: (data: unknown) => api.post<Envelope<AppUser>>('/users', data),
     update: (id: string, data: unknown) => api.put<Envelope<AppUser>>(`/users/${id}`, data),
     delete: (id: string) => api.delete<Envelope<{ message: string }>>(`/users/${id}`),
+    // Unlike the CRUD methods above (admin-only), search is available to any
+    // authenticated user — it backs the map-sharing user picker.
+    search: (q: string) => api.get<Envelope<UserOption[]>>('/users/search', { params: { q } }),
   },
   // Maps
   // Note: maps are created under a business area
@@ -244,6 +251,16 @@ export const apiClient = {
         `/maps/${id}/export`,
         body
       ),
+    // Sharing — managed by the map owner or an admin. Reads live under the
+    // map (matching map-shares.ts's route nesting).
+    listShares: (id: string) => api.get<Envelope<MapShare[]>>(`/maps/${id}/shares`),
+    share: (id: string, data: CreateMapShareInput) =>
+      api.post<Envelope<MapShare>>(`/maps/${id}/shares`, data),
+    updateShare: (id: string, userId: string, permissionLevel: SharePermissionLevel) =>
+      api.put<Envelope<MapShare>>(`/maps/${id}/shares/${userId}`, { permissionLevel }),
+    revokeShare: (id: string, userId: string) =>
+      api.delete<Envelope<{ revoked: boolean }>>(`/maps/${id}/shares/${userId}`),
+    sharedWithMe: () => api.get<Envelope<MapSummary[]>>('/maps/shared-with-me'),
   },
   // Export jobs. Addressed by their globally-unique job id rather than nested
   // under a map, which is what allows listing a user's exports across maps.

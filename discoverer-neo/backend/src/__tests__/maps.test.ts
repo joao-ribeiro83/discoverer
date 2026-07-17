@@ -475,6 +475,28 @@ describe('Map management', () => {
       ).toBe(true);
     });
 
+    it('lists the map under GET /api/maps/shared-with-me for the recipient', async () => {
+      const res = await app.inject({
+        method: 'GET',
+        url: '/api/maps/shared-with-me',
+        headers: { authorization: `Bearer ${viewerToken}` },
+      });
+      expect(res.statusCode).toBe(200);
+      const { data } = res.json();
+      expect(data.some((m: { id: string }) => m.id === mapId)).toBe(true);
+    });
+
+    it('does not list the map under shared-with-me for its owner', async () => {
+      const res = await app.inject({
+        method: 'GET',
+        url: '/api/maps/shared-with-me',
+        headers: { authorization: `Bearer ${ownerToken}` },
+      });
+      expect(res.statusCode).toBe(200);
+      const { data } = res.json();
+      expect(data.some((m: { id: string }) => m.id === mapId)).toBe(false);
+    });
+
     it('an EDIT share allows the recipient to update the map', async () => {
       const res = await app.inject({
         method: 'PUT',
