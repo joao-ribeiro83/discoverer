@@ -1,0 +1,99 @@
+# =============================================
+# Discoverer Neo — Production Docker Compose
+# =============================================
+# Usage: docker compose up -d --build
+# =============================================
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: discoverer-neo-postgres
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-discoverer_neo}
+      POSTGRES_USER: ${POSTGRES_USER:-discoverer}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me_in_production}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-discoverer}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: discoverer-neo-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      # The repo root, not backend/ — the backend is an npm workspace and its
+      # install needs the root lockfile and every workspace manifest.
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: discoverer-neo-backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      # The backend reads connection URLs, not host/port pairs (see
+      # backend/src/config.ts). Built here rather than taken from .env so they
+      # point at the compose service names instead of localhost.
+      DATABASE_URL: postgres://${POSTGRES_USER:-discoverer}:${POSTGRES_PASSWORD:-change_me_in_production}@postgres:5432/${POSTGRES_DB:-discoverer_neo}
+      REDIS_URL: redis://redis:6379
+      EXPORT_DIR: /app/exports
+      SCHEDULE_RESULT_DIR: /app/scheduled-results
+      # Thin mode by default — no Instant Client needed, supports Oracle 12.1+.
+      # For an EUL on 11.2–12.0, rebuild with
+      #   docker compose build --build-arg INSTALL_ORACLE_CLIENT=true backend
+      # and set ORACLE_THICK_MODE=true in .env. The backend refuses to start if
+      # thick mode is on without a usable client, so this cannot silently regress.
+      ORACLE_THICK_MODE: ${ORACLE_THICK_MODE:-false}
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+    volumes:
+      # Generated export files. A named volume rather than container-local
+      # storage so an in-flight export survives a restart, and so the retention
+      # sweep is reclaiming real disk rather than a throwaway layer.
+      - export_files:/app/exports
+      # Same rationale, for scheduled-run output files.
+      - scheduled_results_files:/app/scheduled-results
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      # The repo root, not frontend/ — the frontend is an npm workspace and its
+      # install needs the root lockfile and every workspace manifest.
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: discoverer-neo-frontend
+    restart: unless-stopped
+    # Nginx serves the built SPA on 80 inside the container. Published so the
+    # app is reachable from the host; nothing else fronts this service.
+    ports:
+      - "${FRONTEND_PORT:-5173}:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  redis_data:
+  export_files:
+  scheduled_results_files:

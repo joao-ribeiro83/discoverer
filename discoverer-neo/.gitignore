@@ -1,0 +1,54 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+.nyc_output/
+playwright-report/
+frontend/test-results/
+frontend/bundle-report.html
+frontend/e2e/screenshots/
+
+# Bundle analysis (npm run analyze)
+stats.html
+
+# Temporary files
+tmp/
+temp/
+.cache/
+
+# Docker volumes
+docker-data/
+
+# Generated export files (backend/src/services/export.service.ts)
+backend/storage/exports/

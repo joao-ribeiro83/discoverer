@@ -1,0 +1,2 @@
+DROP INDEX "user_ba_grants_user_ba_idx";--> statement-breakpoint
+CREATE UNIQUE INDEX "user_ba_grants_user_ba_perm_idx" ON "user_business_area_grants" USING btree ("user_id","business_area_id","permission_level");

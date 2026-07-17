@@ -1,0 +1,84 @@
+# =============================================
+# Discoverer Neo — Development Docker Compose
+# =============================================
+# Overlay for docker-compose.yml
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+# =============================================
+
+services:
+  postgres:
+    ports:
+      - "5432:5432"
+    # Log all SQL statements in development for debugging
+    command:
+      - postgres
+      - "-c"
+      - "log_statement=all"
+      - "-c"
+      - "log_destination=stderr"
+
+  redis:
+    ports:
+      - "6379:6379"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    environment:
+      NODE_ENV: development
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-discoverer_neo}
+      POSTGRES_USER: ${POSTGRES_USER:-discoverer}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me_in_production}
+      DATABASE_URL: postgres://${POSTGRES_USER:-discoverer}:${POSTGRES_PASSWORD:-change_me_in_production}@postgres:5432/${POSTGRES_DB:-discoverer_neo}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_URL: redis://redis:6379
+      BACKEND_PORT: 3000
+      # Thin mode by default. See docker-compose.yml for enabling thick mode.
+      ORACLE_THICK_MODE: ${ORACLE_THICK_MODE:-false}
+    ports:
+      - "3000:3000"
+      # Node.js debugger port
+      - "9229:9229"
+    volumes:
+      - ./backend/src:/app/src:delegated
+      - /app/node_modules
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    environment:
+      FRONTEND_PORT: 5173
+      VITE_BACKEND_URL: http://backend:3000
+    ports:
+      - "5173:5173"
+      # Vite HMR WebSocket port
+      - "443:443"
+    volumes:
+      - ./frontend/src:/app/src:delegated
+      - ./frontend/public:/app/public:delegated
+      - /app/node_modules
+    depends_on:
+      - backend
+
+  migrate:
+    build:
+      context: ./migrate
+      dockerfile: Dockerfile.dev
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-discoverer_neo}
+      POSTGRES_USER: ${POSTGRES_USER:-discoverer}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me_in_production}
+      ORACLE_THICK_MODE: ${ORACLE_THICK_MODE:-false}
+    volumes:
+      - ./migrate/src:/app/src:delegated
+      - /app/node_modules
+    # Migrations run on-demand, not at startup
+    profiles:
+      - migrate

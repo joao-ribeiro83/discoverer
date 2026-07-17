@@ -1,0 +1,47 @@
+# =============================================
+# Discoverer Neo — Backend Dev Dockerfile
+# For development with hot reload
+# =============================================
+
+FROM node:22-bookworm-slim
+
+# Install Oracle Instant Client runtime dependencies
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends libaio1 curl unzip ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
+# Oracle Instant Client — opt-in, mirroring the production Dockerfile. Thin mode
+# is the default and needs none of this; the client only matters for EUL sources
+# older than 12.1. Enable with --build-arg INSTALL_ORACLE_CLIENT=true.
+ARG INSTALL_ORACLE_CLIENT=false
+ARG ORACLE_CLIENT_URL="https://download.oracle.com/otn_software/linux/instantclient/1931000/instantclient-basic-linux.x64-19.31.0.0.0dbru.zip"
+RUN set -eu; \
+  mkdir -p /opt/oracle/instantclient; \
+  if [ "$INSTALL_ORACLE_CLIENT" != "true" ]; then \
+    echo "INSTALL_ORACLE_CLIENT is not true — skipping (thin mode)."; \
+  else \
+    curl -fsSL -o /tmp/ic.zip "$ORACLE_CLIENT_URL"; \
+    unzip -q /tmp/ic.zip -d /tmp/ic; \
+    mv /tmp/ic/instantclient_*/* /opt/oracle/instantclient/; \
+    test -e /opt/oracle/instantclient/libclntsh.so; \
+    rm -rf /tmp/ic /tmp/ic.zip; \
+  fi
+
+ENV LD_LIBRARY_PATH=/opt/oracle/instantclient
+ENV PATH=/opt/oracle/instantclient:$PATH
+
+WORKDIR /app
+
+# Install dependencies first for better layer caching
+COPY package.json package-lock.json* ./
+RUN npm install
+
+# Copy source code
+COPY tsconfig*.json ./
+COPY drizzle.config.ts ./
+COPY src ./src
+
+ENV NODE_ENV=development
+EXPOSE 3000 9229
+
+CMD ["npx", "tsx", "watch", "src/server.ts"]

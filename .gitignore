@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Secrets / local backups (never commit)
+*.jsonold
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

@@ -1,0 +1,46 @@
+# Applies to the backend and frontend images, both of which build from the repo
+# root (see backend/Dockerfile, frontend/Dockerfile). Keep the workspace
+# manifests and the root lockfile — the install reads them.
+#
+# Note: `**/nginx/*` below targets the top-level nginx/ directory. It does not
+# match frontend/nginx.conf, which the frontend image needs.
+
+# Dependencies
+node_modules
+**/node_modules
+
+# Build output
+**/dist
+**/.dist
+**/coverage
+**/exports
+
+# Git
+.git
+.gitignore
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Documentation
+**/*.md
+!README.md
+
+# IDE
+.vscode
+.idea
+
+# Claude Code
+.claude
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker files (avoid recursive copies)
+**/Dockerfile*
+**/docker-compose*.yml
+**/nginx/*
+**/.dockerignore
