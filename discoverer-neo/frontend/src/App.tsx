@@ -25,6 +25,9 @@ const DataSourcesPage = lazy(() =>
   import('@/pages/DataSourcesPage').then((m) => ({ default: m.DataSourcesPage })),
 )
 const UsersPage = lazy(() => import('@/pages/UsersPage').then((m) => ({ default: m.UsersPage })))
+const SecurityPage = lazy(() =>
+  import('@/pages/SecurityPage').then((m) => ({ default: m.SecurityPage })),
+)
 const MapsListPage = lazy(() => import('@/pages/MapsListPage').then((m) => ({ default: m.MapsListPage })))
 const MapBuilderPage = lazy(() =>
   import('@/pages/MapBuilderPage').then((m) => ({ default: m.MapBuilderPage })),
@@ -67,6 +70,7 @@ export function App() {
           <Route path="custom-functions" element={<CustomFunctionsPage />} />
           <Route path="data-sources" element={<DataSourcesPage />} />
           <Route path="users" element={<UsersPage />} />
+          <Route path="security" element={<SecurityPage />} />
           <Route path="migration" element={<MigrationPage />} />
         </Route>
         <Route path="maps">

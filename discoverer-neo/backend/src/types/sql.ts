@@ -37,11 +37,34 @@ export interface MapDefinition {
   formulaItems: Array<{ item: Item; folder: Folder }>;
 }
 
+/**
+ * One row-level security predicate to AND into the WHERE clause.
+ *
+ * When `folderId` is set (a FOLDER-targeted policy rule), any `{alias}`
+ * token in the SQL is replaced with that folder's assigned query alias at
+ * generation time — admins cannot know the alias (f1, f2, …) up front.
+ * Predicates without a folder target must be self-contained.
+ */
+export interface SecurityPredicate {
+  sql: string;
+  folderId?: string;
+}
+
 export interface SqlGenerationOptions {
   /** Runtime parameter values; LIST values expand IN clauses. */
   parameterValues?: Record<string, unknown>;
-  /** Extra WHERE predicates (row-level security), ANDed in. */
-  securityPredicates?: string[];
+  /**
+   * Extra WHERE predicates (row-level security), ANDed in. Plain strings are
+   * accepted as shorthand for `{ sql }` (no alias substitution).
+   */
+  securityPredicates?: Array<string | SecurityPredicate>;
+  /**
+   * Values for the context binds security predicates may reference
+   * (e.g. `:current_user_id`). Only binds actually referenced by an applied
+   * predicate are added to the statement's bind set — Oracle rejects unused
+   * binds — and a referenced bind missing from this map is a hard error.
+   */
+  securityBindParams?: Record<string, unknown>;
   /** Max rows (FETCH FIRST). */
   rowLimit?: number;
   /** OFFSET for pagination. */

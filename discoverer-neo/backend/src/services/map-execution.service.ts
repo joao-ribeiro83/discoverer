@@ -2,13 +2,19 @@ import { randomUUID } from 'node:crypto';
 import { desc, eq } from 'drizzle-orm';
 import type { BindParameters, Connection } from 'oracledb';
 import { db } from '../db/index.js';
-import { queryExecutionLog } from '../db/schema.js';
+import { queryExecutionLog, users } from '../db/schema.js';
 import {
   generateSql,
   loadMapDefinition,
   validateSql,
 } from './sql-generator.js';
-import type { ColumnFormat, GeneratedColumn, MapDefinition } from '../types/sql.js';
+import type {
+  ColumnFormat,
+  GeneratedColumn,
+  MapDefinition,
+  SecurityPredicate,
+} from '../types/sql.js';
+import { getUserPolicies } from './security.service.js';
 import * as pool from './oracle-connection-pool.js';
 import {
   resolveParametersForDefinitions,
@@ -202,19 +208,76 @@ export function resolveDataSourceId(def: MapDefinition): string {
   return [...ids][0]!;
 }
 
+export interface ResolvedRowSecurity {
+  predicates: SecurityPredicate[];
+  /** Context binds predicates may reference; the WHERE builder includes only
+   *  the ones an applied predicate actually uses. */
+  bindParams: Record<string, unknown>;
+}
+
 /**
- * Row-level security predicates for the current user.
+ * Row-level security predicates for the executing user.
  *
- * Placeholder: policy evaluation (the security_policies tables) is delivered in
- * a later session. It is already wired through the generator's
- * `securityPredicates` option so enforcement switches on the moment a resolver
- * is supplied here — no change to the execution path is needed.
+ * The user's ACTIVE assigned policies (direct or via role) are matched against
+ * the map: BUSINESS_AREA rules apply when they target the map's business area,
+ * FOLDER rules when they target a folder the query reads from (selected items
+ * or conditions). Applicable predicates are ANDed into the WHERE clause by the
+ * SQL generator; folder rules may use `{alias}` to reference their folder's
+ * query alias, and any rule may use the `:current_user_*` context binds.
+ *
+ * Fails closed: an unknown executing user is refused rather than run without
+ * policies. Exported for the security test-suite; production callers go
+ * through `defaultPrepareQuery`.
  */
-function resolveSecurityPredicates(
-  _def: MapDefinition,
-  _userId: string,
-): Promise<string[]> {
-  return Promise.resolve([]);
+export async function resolveSecurityPredicates(
+  def: MapDefinition,
+  userId: string,
+): Promise<ResolvedRowSecurity> {
+  const [user] = await db
+    .select({ id: users.id, email: users.email, role: users.role })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  if (!user) {
+    throw new MapExecutionError(
+      'CONFIG',
+      'Executing user not found — cannot resolve row-level security',
+    );
+  }
+
+  const policies = await getUserPolicies(user.id, user.role);
+  if (policies.length === 0) return { predicates: [], bindParams: {} };
+
+  const usedFolderIds = new Set<string>();
+  for (const entry of def.items) usedFolderIds.add(entry.folder.id);
+  for (const entry of def.conditions) usedFolderIds.add(entry.folder.id);
+  const businessAreaId = def.map.businessAreaId;
+
+  const predicates: SecurityPredicate[] = [];
+  for (const policy of policies) {
+    for (const rule of policy.rules) {
+      if (
+        rule.targetType === 'BUSINESS_AREA' &&
+        rule.targetId === businessAreaId
+      ) {
+        predicates.push({ sql: rule.sqlPredicate });
+      } else if (
+        rule.targetType === 'FOLDER' &&
+        usedFolderIds.has(rule.targetId)
+      ) {
+        predicates.push({ sql: rule.sqlPredicate, folderId: rule.targetId });
+      }
+    }
+  }
+
+  return {
+    predicates,
+    bindParams: {
+      current_user_id: user.id,
+      current_user_email: user.email,
+      current_user_role: user.role,
+    },
+  };
 }
 
 /**
@@ -300,12 +363,13 @@ async function defaultPrepareQuery(
 ): Promise<PreparedQuery> {
   const def = await loadMapDefinition(mapId);
   const dataSourceId = resolveDataSourceId(def);
-  const securityPredicates = await resolveSecurityPredicates(def, userId);
+  const security = await resolveSecurityPredicates(def, userId);
   const resolvedParams = resolveParametersForQuery(def, parameterValues);
 
   const generated = generateSql(def, {
     parameterValues: resolvedParams,
-    securityPredicates,
+    securityPredicates: security.predicates,
+    securityBindParams: security.bindParams,
     rowLimit,
     offset,
   });

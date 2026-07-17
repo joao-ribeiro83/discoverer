@@ -1,10 +1,12 @@
 import {
   SqlGenerationError,
   type MapDefinition,
+  type SecurityPredicate,
   type SqlGenerationOptions,
 } from '../../types/sql.js';
 import type { GenerationContext } from './context.js';
 import { validateBindName } from './identifiers.js';
+import { ALIAS_TOKEN_RE, referencedBindNames } from './security-predicates.js';
 
 export interface WhereClauseResult {
   /** "WHERE ..." or empty string when there are no conditions. */
@@ -198,14 +200,56 @@ export function buildWhereClause(
   }
 
   // Row-level security predicates are ANDed in, each in its own parens.
-  for (const predicate of options.securityPredicates ?? []) {
-    const trimmed = predicate.trim();
+  const securityBinds = options.securityBindParams ?? {};
+  for (const entry of options.securityPredicates ?? []) {
+    const predicate: SecurityPredicate =
+      typeof entry === 'string' ? { sql: entry } : entry;
+    let trimmed = predicate.sql.trim();
     if (!trimmed) continue;
     if (trimmed.includes(';')) {
       throw new SqlGenerationError(
         'Security predicates must not contain statement separators',
       );
     }
+
+    // FOLDER-targeted rules refer to their folder via {alias}; resolve it to
+    // the folder's assigned query alias. A folder already used by the query
+    // keeps its alias; aliasFor also marks the folder used, which is safe
+    // because the FROM clause is built after the WHERE clause.
+    if (ALIAS_TOKEN_RE.test(trimmed)) {
+      ALIAS_TOKEN_RE.lastIndex = 0;
+      if (!predicate.folderId) {
+        throw new SqlGenerationError(
+          'Security predicate uses {alias} but has no folder target',
+        );
+      }
+      trimmed = trimmed.replace(ALIAS_TOKEN_RE, ctx.aliasFor(predicate.folderId));
+    }
+    ALIAS_TOKEN_RE.lastIndex = 0;
+
+    // Only binds a predicate actually references may enter the bind set —
+    // Oracle rejects statements with unused binds. A referenced bind that is
+    // neither supplied nor already bound fails closed; a clash with an
+    // existing bind of a different value is a configuration error, not
+    // something to silently overwrite.
+    for (const bind of referencedBindNames(trimmed)) {
+      if (bind in bindParams) {
+        if (bind in securityBinds && bindParams[bind] !== securityBinds[bind]) {
+          throw new SqlGenerationError(
+            `Security predicate bind :${bind} clashes with an existing query bind`,
+          );
+        }
+        continue;
+      }
+      if (!(bind in securityBinds)) {
+        throw new SqlGenerationError(
+          `Security predicate references bind :${bind} but no value was supplied`,
+        );
+      }
+      validateBindName(bind);
+      bindParams[bind] = securityBinds[bind];
+    }
+
     clauses.push(first ? `(${trimmed})` : `AND (${trimmed})`);
     first = false;
   }

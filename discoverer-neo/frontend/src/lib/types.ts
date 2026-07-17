@@ -435,3 +435,62 @@ export interface ScheduledResult {
   status: ScheduleRunStatus
   errorMessage: string | null
 }
+
+// ---------------------------------------------------------------------------
+// Row-level security policies
+// ---------------------------------------------------------------------------
+
+export type PolicyTargetType = 'BUSINESS_AREA' | 'FOLDER'
+
+export interface SecurityPolicyRule {
+  id: string
+  policyId: string
+  targetId: string
+  targetType: PolicyTargetType
+  sqlPredicate: string
+  createdAt: string
+}
+
+export interface SecurityPolicy {
+  id: string
+  name: string
+  description: string | null
+  policyType: 'ROW_LEVEL'
+  isActive: boolean
+  createdAt: string
+  /** Present on list responses. */
+  ruleCount?: number
+  assignmentCount?: number
+  /** Present on detail responses. */
+  rules?: SecurityPolicyRule[]
+}
+
+export interface SecurityPolicyRuleInput {
+  targetId: string
+  targetType: PolicyTargetType
+  sqlPredicate: string
+}
+
+export interface CreateSecurityPolicyInput {
+  name: string
+  description?: string | null
+  isActive?: boolean
+  rules: SecurityPolicyRuleInput[]
+}
+
+export type UpdateSecurityPolicyInput = Partial<CreateSecurityPolicyInput>
+
+export interface SecurityPolicyAssignment {
+  id: string
+  policyId: string
+  userId: string | null
+  roleName: string | null
+  userEmail: string | null
+  userName: string | null
+}
+
+export interface SecurityPolicyTestResult {
+  originalSql: string
+  securedSql: string
+  predicates: string[]
+}

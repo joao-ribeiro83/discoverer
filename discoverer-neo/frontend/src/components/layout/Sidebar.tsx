@@ -13,6 +13,7 @@ import {
   GitMerge,
   Layers,
   FunctionSquare,
+  ShieldCheck,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Separator } from '@/components/ui/separator'
@@ -30,6 +31,7 @@ const adminNavItems = [
   { to: '/admin/custom-functions', label: 'Custom Functions', icon: FunctionSquare },
   { to: '/admin/data-sources', label: 'Data Sources', icon: Database },
   { to: '/admin/users', label: 'Users', icon: Users },
+  { to: '/admin/security', label: 'Security', icon: ShieldCheck },
 ]
 
 const mapsNavItems = [

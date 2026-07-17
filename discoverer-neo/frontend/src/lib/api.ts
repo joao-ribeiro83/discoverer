@@ -29,6 +29,11 @@ import type {
   CreateScheduleInput,
   UpdateScheduleInput,
   ScheduledResult,
+  SecurityPolicy,
+  SecurityPolicyAssignment,
+  SecurityPolicyTestResult,
+  CreateSecurityPolicyInput,
+  UpdateSecurityPolicyInput,
 } from '@/lib/types'
 
 type Envelope<T> = { data: T }
@@ -270,6 +275,27 @@ export const apiClient = {
       api.get<Envelope<ScheduledResult[]>>(`/schedules/${id}/history`, { params: { limit } }),
     downloadResult: (id: string, resultId: string) =>
       api.get<Blob>(`/schedules/${id}/results/${resultId}/download`, { responseType: 'blob' }),
+  },
+  // Row-level security policies (admin-only routes)
+  security: {
+    listPolicies: () => api.get<Envelope<SecurityPolicy[]>>('/security/policies'),
+    getPolicy: (id: string) => api.get<Envelope<SecurityPolicy>>(`/security/policies/${id}`),
+    createPolicy: (data: CreateSecurityPolicyInput) =>
+      api.post<Envelope<SecurityPolicy>>('/security/policies', data),
+    updatePolicy: (id: string, data: UpdateSecurityPolicyInput) =>
+      api.put<Envelope<SecurityPolicy>>(`/security/policies/${id}`, data),
+    deletePolicy: (id: string) =>
+      api.delete<Envelope<{ deleted: boolean }>>(`/security/policies/${id}`),
+    listAssignments: (policyId: string) =>
+      api.get<Envelope<SecurityPolicyAssignment[]>>(`/security/policies/${policyId}/assignments`),
+    assign: (policyId: string, data: { userId?: string; roleName?: string }) =>
+      api.post<Envelope<SecurityPolicyAssignment>>(`/security/policies/${policyId}/assignments`, data),
+    unassign: (policyId: string, assignmentId: string) =>
+      api.delete<Envelope<{ deleted: boolean }>>(
+        `/security/policies/${policyId}/assignments/${assignmentId}`,
+      ),
+    test: (data: { sql: string; policyId?: string; predicates?: string[] }) =>
+      api.post<Envelope<SecurityPolicyTestResult>>('/security/policies/test', data),
   },
   // Migration
   migration: {

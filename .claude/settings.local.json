@@ -171,7 +171,25 @@
       "Bash(DATABASE_URL='postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo' REDIS_URL='redis://localhost:6379' NODE_ENV=test JWT_SECRET='dev-only-insecure-secret-change-me' npm run test:integration -- --forceExit)",
       "Bash(grep -rEli \"sk-[a-zA-Z0-9]{10,}|api[_-]?key|apiKey|Bearer [A-Za-z0-9._-]{20,}\" .claude/)",
       "Bash(git add *)",
-      "Bash(grep -iE \"\\\\.env$|jsonold|node_modules\")"
+      "Bash(grep -iE \"\\\\.env$|jsonold|node_modules\")",
+      "Bash(grep -iE \"\\\\.env$|jsonold|node_modules|\\\\.env\\\\.\")",
+      "Bash(echo \"exit:$?\")",
+      "Bash(git check-ignore *)",
+      "Bash(git commit -m ' *)",
+      "Bash(echo \"clean:$?\")",
+      "PowerShell(docker info --format '{{.ServerVersion}}' 2>&1)",
+      "PowerShell(cd E:\\\\claude\\\\discoverer\\\\discoverer-neo && docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d postgres redis 2>&1 | Select-Object -Last 3; Select-String -Path .env -Pattern 'POSTGRES_PASSWORD' | ForEach-Object { $_.Line })",
+      "PowerShell(cd E:\\\\claude\\\\discoverer\\\\discoverer-neo\\\\backend; $env:DATABASE_URL = 'postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo'; $env:REDIS_URL = 'redis://localhost:6379'; npx jest security --no-coverage 2>&1 | Select-Object -Last 60)",
+      "PowerShell(cd E:\\\\claude\\\\discoverer\\\\discoverer-neo\\\\backend; $env:DATABASE_URL = 'postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo'; $env:REDIS_URL = 'redis://localhost:6379'; npx jest security --no-coverage 2>&1 | Select-Object -Last 8)",
+      "PowerShell(cd E:\\\\claude\\\\discoverer\\\\discoverer-neo\\\\backend; $env:DATABASE_URL = 'postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo'; $env:REDIS_URL = 'redis://localhost:6379'; npx jest maps --no-coverage 2>&1 | Select-Object -Last 6)",
+      "PowerShell(cd E:\\\\claude\\\\discoverer\\\\discoverer-neo\\\\frontend; \\(Get-Content src\\\\lib\\\\types.ts | Measure-Object -Line\\).Lines; \\(Get-Content src\\\\lib\\\\api.ts | Measure-Object -Line\\).Lines)",
+      "PowerShell(cd E:\\\\claude\\\\discoverer\\\\discoverer-neo\\\\backend; $env:DATABASE_URL = 'postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo'; $env:REDIS_URL = 'redis://localhost:6379'; npx jest --testPathIgnorePatterns=integration --no-coverage 2>&1 | Select-Object -Last 12)",
+      "PowerShell(cd E:\\\\claude\\\\discoverer\\\\discoverer-neo\\\\backend; $env:DATABASE_URL = 'postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo'; $env:REDIS_URL = 'redis://localhost:6379'; npx jest query-engine --no-coverage 2>&1 | Select-Object -Last 8)",
+      "Bash(DATABASE_URL='postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo' REDIS_URL='redis://localhost:6379' PORT=3001 JWT_SECRET='local-verify-secret-0123456789abcdef' npx tsx src/server.ts)",
+      "Bash(node -e \"import\\('node-sql-parser'\\).then\\(m => { const P = m.default.Parser ?? m.Parser; const p = new P\\(\\); console.log\\('parse ok:', JSON.stringify\\(p.astify\\(\\\\\"SELECT 1 FROM DUAL WHERE \\(A = 'x'\\)\\\\\", {database:'db2'}\\).type ?? 'ok'\\)\\); }\\)\")",
+      "Bash(curl -s -X POST http://localhost:3001/api/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"admin@discoverer.local\",\"password\":\"admin123\"}')",
+      "Bash(DATABASE_URL='postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo' npm run db:seed)",
+      "PowerShell(cd E:\\\\claude\\\\discoverer\\\\discoverer-neo\\\\backend; $env:DATABASE_URL = 'postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo'; $env:REDIS_URL = 'redis://localhost:6379'; npx jest security sql-generator --no-coverage 2>&1 | Select-Object -Last 6)"
     ]
   }
 }
