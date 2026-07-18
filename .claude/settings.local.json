@@ -205,7 +205,8 @@
       "PowerShell(Get-Process -Id 28980,36640 -ErrorAction SilentlyContinue)",
       "Bash(DATABASE_URL=\"postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo\" REDIS_URL=\"redis://localhost:6379\" JWT_SECRET=\"change_me_generate_a_strong_random_secret\" PORT=3099 ORACLE_THICK_MODE=false nohup npx tsx watch src/server.ts)",
       "Bash(curl -s http://localhost:3099/api/health)",
-      "Bash(curl -s http://localhost:3099/api/users/search?q=sharee -H 'Authorization: Bearer __TRACKED_VAR__')"
+      "Bash(curl -s http://localhost:3099/api/users/search?q=sharee -H 'Authorization: Bearer __TRACKED_VAR__')",
+      "PowerShell(cd E:\\\\claude\\\\discoverer\\\\discoverer-neo\\\\migrate && Remove-Item verify-interop.tmp.ts -Confirm:$false && npm run build 2>&1 | Select-Object -Last 5 && \\(Test-Path dist/index.js\\) && git check-ignore dist && Remove-Item -Recurse -Force dist -Confirm:$false)"
     ]
   }
 }
