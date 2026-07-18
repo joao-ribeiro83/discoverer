@@ -512,3 +512,139 @@ export interface SecurityPolicyTestResult {
   securedSql: string
   predicates: string[]
 }
+
+// ---------------------------------------------------------------------------
+// Migration (EUL → Discoverer Neo)
+// ---------------------------------------------------------------------------
+
+export type EulVersion = 'EUL3' | 'EUL4' | 'EUL5'
+
+export interface EulVersionInfo {
+  version: EulVersion
+  prefix: string
+  discovererVersion: string
+  schemaVersion: string
+  tableNames: string[]
+  owner?: string
+  supported: boolean
+  warnings: string[]
+}
+
+export interface MigrationAssessmentCounts {
+  businessAreas: number
+  folders: number
+  items: number
+  calculatedItems: number
+  conditions: number
+  securityConditions: number
+  joins: number
+  hierarchies: number
+  customFunctions: number
+  workbooks: number
+  users: number
+  grants: number
+}
+
+export interface AssessmentWarning {
+  severity: 'info' | 'warning' | 'error'
+  code: string
+  message: string
+}
+
+export interface AssessmentReport {
+  version: EulVersionInfo
+  counts: MigrationAssessmentCounts
+  folderTypeBreakdown: Record<string, number>
+  orphans: { total: number }
+  complexity: { score: 'simple' | 'medium' | 'complex'; points: number }
+  warnings: AssessmentWarning[]
+  estimate: { totalObjects: number; estimatedMinutes: number; humanReadable: string }
+  readiness: {
+    score: number
+    rating: 'ready' | 'ready-with-warnings' | 'needs-attention' | 'not-supported'
+    blockers: string[]
+    notes: string[]
+  }
+}
+
+/** Target tables the migrator writes, in dependency order. */
+export type MigrationTable =
+  | 'users'
+  | 'business_areas'
+  | 'folders'
+  | 'items'
+  | 'joins'
+  | 'hierarchies'
+  | 'hierarchy_levels'
+  | 'custom_functions'
+  | 'maps'
+  | 'map_items'
+  | 'user_business_area_grants'
+
+export type MigrationTableCounts = Record<MigrationTable, number>
+
+export interface MigrationSkip {
+  table: string
+  sourceId: number
+  reason: string
+}
+
+export interface MigrationReconciliation {
+  table: MigrationTable
+  baseline: number
+  inserted: number
+  expected: number
+  actual: number
+  ok: boolean
+}
+
+export interface MigrationResult {
+  runId: string | null
+  dryRun: boolean
+  version: EulVersionInfo
+  planned: MigrationTableCounts
+  inserted: MigrationTableCounts
+  skipped: MigrationSkip[]
+  warnings: { code: string; message: string; sourceId?: number }[]
+  sourceValidation: { valid: boolean; errorCount: number; warningCount: number }
+  validation?: {
+    valid: boolean
+    reconciliations: MigrationReconciliation[]
+    issues: string[]
+  }
+  syntheticBusinessAreas: number
+  migrationUserEmail: string
+  durationMs: number
+}
+
+export interface MigrationLogLine {
+  level: 'INFO' | 'WARN' | 'ERROR'
+  phase: string
+  message: string
+  at: string
+}
+
+export interface MigrationJob {
+  id: string
+  status: 'RUNNING' | 'COMPLETED' | 'FAILED'
+  dataSourceId: string
+  dryRun: boolean
+  requestedVersion: 'auto' | 'EUL4' | 'EUL5'
+  detectedVersion: string | null
+  startedBy: string
+  startedAt: string
+  finishedAt: string | null
+  progress: number
+  currentPhase: string | null
+  logs: MigrationLogLine[]
+  droppedLogs: number
+  result: MigrationResult | null
+  error: string | null
+}
+
+export interface StartMigrationInput {
+  dataSourceId: string
+  schemaOwner?: string
+  dryRun?: boolean
+  version?: 'auto' | 'EUL4' | 'EUL5'
+}

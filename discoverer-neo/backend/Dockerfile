@@ -53,12 +53,15 @@ COPY frontend/package.json frontend/
 COPY migrate/package.json migrate/
 
 # ---- Dependencies (with dev deps — needed to compile) ----
+# The migrate workspace is installed alongside the backend: the backend depends
+# on @discoverer-neo/migrate (the EUL migration pipeline), which npm links as a
+# workspace symlink, so migrate's own runtime deps must be present too.
 FROM manifests AS deps
-RUN npm ci --workspace @discoverer-neo/backend --include-workspace-root
+RUN npm ci --workspace @discoverer-neo/backend --workspace @discoverer-neo/migrate --include-workspace-root
 
 # ---- Dependencies (runtime only) ----
 FROM manifests AS prod-deps
-RUN npm ci --workspace @discoverer-neo/backend --omit=dev
+RUN npm ci --workspace @discoverer-neo/backend --workspace @discoverer-neo/migrate --omit=dev
 
 # ---- Build ----
 FROM base AS build
@@ -67,9 +70,14 @@ FROM base AS build
 # resolves through both.
 COPY --from=deps /app ./
 COPY tsconfig.json ./
+COPY migrate/tsconfig.json migrate/
+COPY migrate/src migrate/src
 COPY backend/tsconfig.json backend/
 COPY backend/src backend/src
-RUN npm run build --workspace @discoverer-neo/backend
+# migrate first: the backend imports it as a built package (dist/index.js +
+# dist/index.d.ts), so the backend's own tsc would fail without it.
+RUN npm run build --workspace @discoverer-neo/migrate \
+  && npm run build --workspace @discoverer-neo/backend
 
 # ---- Production ----
 FROM base AS production
@@ -93,6 +101,9 @@ COPY --from=oracle-builder /opt/oracle/instantclient /opt/oracle/instantclient
 # outside the container.
 COPY --from=prod-deps /app ./
 COPY --from=build /app/backend/dist ./backend/dist
+# The backend imports @discoverer-neo/migrate, which npm resolves through the
+# workspace symlink at node_modules/@discoverer-neo/migrate -> /app/migrate.
+COPY --from=build /app/migrate/dist ./migrate/dist
 
 # Generated export files land here; docker-compose mounts a named volume over
 # it. Created (and owned) up front so the unprivileged appuser can write even

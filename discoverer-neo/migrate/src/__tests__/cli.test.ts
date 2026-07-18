@@ -6,14 +6,16 @@ import {
   EXIT_INVALID,
   EXIT_OK,
   loadConnectionConfig,
+  loadTargetConfig,
   runCli,
 } from '../cli.js';
+import { createFakeWriter } from './helpers/fake-writer.js';
 import type { CliIO } from '../cli.js';
 import type { AssessmentReport } from '../services/assessment.js';
 import type { EulReadResult } from '../services/eul-reader.js';
 import type { OracleExecutor } from '../services/oracle-client.js';
 import type { MockDb } from './helpers/mock-eul.js';
-import { eul4Db, eul5Db, mockExecutor } from './helpers/mock-eul.js';
+import { eul4Db, eul5Db, mixedDb, mockExecutor } from './helpers/mock-eul.js';
 
 function makeIO() {
   const out: string[] = [];
@@ -241,5 +243,242 @@ describe('loadConnectionConfig', () => {
     await expect(
       loadConnectionConfig({ connection: '{not json' }, noRead),
     ).rejects.toBeInstanceOf(CliUsageError);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// run / validate --target (Session 5.5)
+// ---------------------------------------------------------------------------
+
+function migrationDeps() {
+  let n = 0;
+  return {
+    genId: () => {
+      n += 1;
+      return `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
+    },
+    now: () => new Date('2026-07-18T00:00:00.000Z'),
+  };
+}
+
+describe('runCli — run', () => {
+  it('performs a dry run without writing anything', async () => {
+    const cap = makeIO();
+    const fake = createFakeWriter();
+    const code = await runCli(['run', '--dry-run'], {
+      io: cap.io,
+      source: mockExecutor(eul5Db()),
+      writer: fake.writer,
+      migrationDeps: migrationDeps(),
+    });
+
+    expect(code).toBe(EXIT_OK);
+    expect(cap.outText()).toContain('DRY RUN');
+    expect(cap.outText()).toContain('Rows that would be inserted');
+    expect(fake.state.tables.business_areas).toHaveLength(0);
+    expect(fake.state.ensureSchemaCalls).toBe(0);
+  });
+
+  it('migrates for real and reports rows inserted', async () => {
+    const cap = makeIO();
+    const fake = createFakeWriter();
+    const code = await runCli(['run'], {
+      io: cap.io,
+      source: mockExecutor(eul5Db()),
+      writer: fake.writer,
+      migrationDeps: migrationDeps(),
+    });
+
+    expect(code).toBe(EXIT_OK);
+    const text = cap.outText();
+    expect(text).toContain('EUL Migration — RUN');
+    expect(text).toContain('Rows inserted');
+    expect(text).toContain('Post-migration reconciliation: OK');
+    expect(fake.state.tables.business_areas.length).toBeGreaterThan(0);
+    expect(fake.state.ensureSchemaCalls).toBe(1);
+    expect(fake.state.logs.length).toBeGreaterThan(0);
+  });
+
+  it('shows the detected version and per-table progress on stderr', async () => {
+    const cap = makeIO();
+    const code = await runCli(['run'], {
+      io: cap.io,
+      source: mockExecutor(eul4Db()),
+      writer: createFakeWriter().writer,
+      migrationDeps: migrationDeps(),
+    });
+
+    expect(code).toBe(EXIT_OK);
+    // Progress/log lines go to stderr so stdout stays a clean report.
+    const err = cap.errText();
+    expect(err).toContain('Source is EUL4');
+    expect(err).toContain('→ business_areas:');
+    expect(err).toContain('row(s)');
+    // The final report on stdout names the version too.
+    expect(cap.outText()).toContain('EUL4');
+  });
+
+  it('emits JSON with --json', async () => {
+    const cap = makeIO();
+    const code = await runCli(['run', '--json'], {
+      io: cap.io,
+      source: mockExecutor(eul5Db()),
+      writer: createFakeWriter().writer,
+      migrationDeps: migrationDeps(),
+    });
+
+    expect(code).toBe(EXIT_OK);
+    const result = JSON.parse(cap.outText()) as {
+      version: { version: string };
+      inserted: Record<string, number>;
+    };
+    expect(result.version.version).toBe('EUL5');
+    expect(result.inserted.business_areas).toBe(2);
+  });
+
+  it('--version eul4 overrides auto-detection on a mixed schema', async () => {
+    const cap = makeIO();
+    const code = await runCli(['run', '--version', 'eul4'], {
+      io: cap.io,
+      source: mockExecutor(mixedDb()),
+      writer: createFakeWriter().writer,
+      migrationDeps: migrationDeps(),
+    });
+
+    expect(code).toBe(EXIT_OK);
+    expect(cap.outText()).toContain('EUL4');
+  });
+
+  it('rejects an unsupported --version value', async () => {
+    const cap = makeIO();
+    const code = await runCli(['run', '--version', 'eul9'], {
+      io: cap.io,
+      source: mockExecutor(eul5Db()),
+      writer: createFakeWriter().writer,
+    });
+    expect(code).toBe(EXIT_ERROR);
+  });
+
+  it('requires --target when no writer is injected', async () => {
+    const cap = makeIO();
+    const code = await runCli(['run'], { io: cap.io, source: mockExecutor(eul5Db()) });
+
+    expect(code).toBe(EXIT_ERROR);
+    expect(cap.errText()).toContain('--target');
+  });
+
+  it('builds the target writer from --target and closes it afterwards', async () => {
+    const cap = makeIO();
+    const fake = createFakeWriter();
+    let closed = false;
+    const code = await runCli(['run', '--target', 'postgres://u:p@localhost:5432/neo'], {
+      io: cap.io,
+      source: mockExecutor(eul5Db()),
+      makeWriter: (config) => {
+        expect(config.connectionString).toBe('postgres://u:p@localhost:5432/neo');
+        return {
+          writer: fake.writer,
+          close: () => {
+            closed = true;
+            return Promise.resolve();
+          },
+        };
+      },
+      migrationDeps: migrationDeps(),
+    });
+
+    expect(code).toBe(EXIT_OK);
+    expect(closed).toBe(true);
+  });
+});
+
+describe('runCli — validate --target', () => {
+  it('reconciles a completed migration and exits 0', async () => {
+    const fake = createFakeWriter();
+    // Migrate first…
+    await runCli(['run'], {
+      io: makeIO().io,
+      source: mockExecutor(eul5Db()),
+      writer: fake.writer,
+      migrationDeps: migrationDeps(),
+    });
+
+    // …then validate the same target against the same source.
+    const cap = makeIO();
+    const code = await runCli(['validate', '--target', 'postgres://x/y'], {
+      io: cap.io,
+      source: mockExecutor(eul5Db()),
+      writer: fake.writer,
+      migrationDeps: migrationDeps(),
+    });
+
+    expect(code).toBe(EXIT_OK);
+    expect(cap.outText()).toContain('Migration Validation');
+    expect(cap.outText()).toContain('OK');
+  });
+
+  it('reports a mismatch when the target is missing rows', async () => {
+    const cap = makeIO();
+    const code = await runCli(['validate', '--target', 'postgres://x/y'], {
+      io: cap.io,
+      source: mockExecutor(eul5Db()),
+      writer: createFakeWriter().writer, // never migrated
+      migrationDeps: migrationDeps(),
+    });
+
+    expect(code).toBe(EXIT_INVALID);
+    expect(cap.outText()).toContain('MISMATCH');
+    expect(cap.outText()).toContain('mismatch');
+  });
+
+  it('without --target it still runs the source-only integrity check', async () => {
+    const cap = makeIO();
+    const code = await runCli(['validate'], { io: cap.io, source: mockExecutor(eul5Db()) });
+
+    expect(code).toBe(EXIT_OK);
+    expect(cap.outText()).toContain('EUL Integrity Validation');
+  });
+});
+
+describe('loadTargetConfig', () => {
+  const noRead = (): Promise<string> => Promise.reject(new Error('no fs'));
+
+  it('accepts a postgres connection URL', async () => {
+    await expect(loadTargetConfig('postgres://u:p@h:5432/db', noRead)).resolves.toEqual({
+      connectionString: 'postgres://u:p@h:5432/db',
+    });
+    await expect(loadTargetConfig('postgresql://u:p@h:5432/db', noRead)).resolves.toEqual({
+      connectionString: 'postgresql://u:p@h:5432/db',
+    });
+  });
+
+  it('accepts inline JSON', async () => {
+    await expect(
+      loadTargetConfig('{"host":"localhost","database":"neo","user":"u"}', noRead),
+    ).resolves.toMatchObject({ host: 'localhost', database: 'neo' });
+  });
+
+  it('reads a JSON config file', async () => {
+    const read = (path: string): Promise<string> => {
+      expect(path).toBe('target.json');
+      return Promise.resolve('{"connectionString":"postgres://from-file/db"}');
+    };
+    await expect(loadTargetConfig('target.json', read)).resolves.toEqual({
+      connectionString: 'postgres://from-file/db',
+    });
+  });
+
+  it('throws CliUsageError when --target is missing', async () => {
+    await expect(loadTargetConfig(undefined, noRead)).rejects.toBeInstanceOf(CliUsageError);
+  });
+
+  it('throws CliUsageError when the file cannot be read', async () => {
+    await expect(loadTargetConfig('missing.json', noRead)).rejects.toBeInstanceOf(CliUsageError);
+  });
+
+  it('throws CliUsageError when the config has no host or connection string', async () => {
+    await expect(loadTargetConfig('{"database":"neo"}', noRead)).rejects.toBeInstanceOf(
+      CliUsageError,
+    );
   });
 });

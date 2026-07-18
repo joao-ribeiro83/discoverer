@@ -38,6 +38,10 @@ import type {
   SecurityPolicyTestResult,
   CreateSecurityPolicyInput,
   UpdateSecurityPolicyInput,
+  AssessmentReport,
+  EulVersionInfo,
+  MigrationJob,
+  StartMigrationInput,
 } from '@/lib/types'
 
 type Envelope<T> = { data: T }
@@ -314,11 +318,16 @@ export const apiClient = {
     test: (data: { sql: string; policyId?: string; predicates?: string[] }) =>
       api.post<Envelope<SecurityPolicyTestResult>>('/security/policies/test', data),
   },
-  // Migration
+  // Migration (admin-only; source credentials come from the registered data
+  // source, never from the browser)
   migration: {
-    status: () => api.get('/migration/status'),
-    start: (data: unknown) => api.post('/migration/start', data),
-    validate: () => api.post('/migration/validate'),
+    detectVersion: (dataSourceId: string, schemaOwner?: string) =>
+      api.post<Envelope<EulVersionInfo>>('/migration/detect', { dataSourceId, schemaOwner }),
+    analyze: (dataSourceId: string, schemaOwner?: string) =>
+      api.post<Envelope<AssessmentReport>>('/migration/analyze', { dataSourceId, schemaOwner }),
+    run: (data: StartMigrationInput) => api.post<Envelope<MigrationJob>>('/migration/run', data),
+    listJobs: () => api.get<Envelope<MigrationJob[]>>('/migration/jobs'),
+    getJob: (jobId: string) => api.get<Envelope<MigrationJob>>(`/migration/jobs/${jobId}`),
   },
 }
 

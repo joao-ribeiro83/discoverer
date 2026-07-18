@@ -22,6 +22,7 @@ import mapExecutionRoutes from './routes/map-execution.js';
 import exportRoutes from './routes/export.js';
 import scheduleRoutes from './routes/schedules.js';
 import securityRoutes from './routes/security.js';
+import migrationRoutes from './routes/migration.js';
 import { closeAll as closeOraclePools } from './services/oracle-connection-pool.js';
 import { config } from './config.js';
 import { closeExportQueue } from './queues/export.queue.js';
@@ -88,6 +89,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(exportRoutes);
   await app.register(scheduleRoutes);
   await app.register(securityRoutes);
+  await app.register(migrationRoutes);
 
   // The export worker runs in this process by default. It is started here
   // rather than in `server.ts` so tests and any other `buildApp` caller get the

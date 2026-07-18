@@ -219,7 +219,25 @@
       "Bash(timeout 60 npx tsx src/bin.ts --help)",
       "Bash(echo \"HELP EXIT: $?\")",
       "Bash(git commit *)",
-      "Bash(echo \"=== commit result: $? ===\")"
+      "Bash(echo \"=== commit result: $? ===\")",
+      "Bash(echo \"=== TSC EXIT: $? ===\")",
+      "Bash(echo \"tsc exit: $?\")",
+      "Bash(echo \"eslint exit: $?\")",
+      "Bash(python -c ' *)",
+      "Bash(sed -n '/exports/,/},/p' package.json)",
+      "PowerShell($p = Get-CimInstance Win32_Process -Filter \"ProcessId=7752\" -ErrorAction SilentlyContinue; if \\($p\\) { \"PID 7752: $\\($p.Name\\) :: $\\($p.CommandLine\\)\" } else { \"PID 7752 not found\" }; \"\";  \"--- ports in use \\(3000-3110, 5170-5200\\) ---\"; \\(netstat -ano | Select-String \"LISTENING\" | ForEach-Object { if \\($_ -match ':\\(\\\\d+\\)\\\\s'\\) { [int]$matches[1] } }\\) | Where-Object { \\($_ -ge 3000 -and $_ -le 3110\\) -or \\($_ -ge 5170 -and $_ -le 5200\\) } | Sort-Object -Unique)",
+      "Bash(curl -s -o /dev/null -w \"\" http://localhost:3123/api/health)",
+      "Bash(curl -s http://localhost:3123/api/health)",
+      "Bash(curl -s -o /dev/null -w \"GET /api/migration/jobs -> %{http_code}\\\\n\" http://localhost:3123/api/migration/jobs)",
+      "Bash(curl -s -X PUT http://localhost:3123/api/data-sources/ce58e8c8-c8d9-4f89-8312-8e01b5d3ca38 -H 'Authorization: Bearer __CMDSUB_OUTPUT__' -H 'Content-Type: application/json' -d '{\"passwordEnc\":\"verify-only\"}')",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\)['data']; print\\('hasPassword:', d['hasPassword'], '| name:', d['name']\\)\")",
+      "Bash(curl -s -X DELETE http://localhost:3123/api/data-sources/ce58e8c8-c8d9-4f89-8312-8e01b5d3ca38 -H 'Authorization: Bearer __CMDSUB_OUTPUT__')",
+      "Bash(rm -f /tmp/tok.txt)",
+      "Bash(xargs -I{} echo \"eslint errors: {}\")",
+      "Bash(timeout 590 docker compose build backend)",
+      "Bash(docker run --rm --entrypoint node discoverer-neo-backend:latest -e ' *)",
+      "Bash(git checkout *)",
+      "Bash(xargs -I{} echo \"{} paths changed\")"
     ]
   }
 }

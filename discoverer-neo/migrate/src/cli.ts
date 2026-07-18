@@ -24,7 +24,18 @@ import { readEulSchema } from './services/eul-reader.js';
 import type { EulConnectionConfig, EulSource } from './services/oracle-client.js';
 import { closeAllPools, createExecutor } from './services/oracle-client.js';
 import { EulDetectionError } from './services/eul-version-detector.js';
+import type { EulVersion } from './types/eul-versions.js';
 import { isEulVersion } from './types/eul-versions.js';
+import type { TargetConnectionConfig } from './db/client.js';
+import { createTargetDb } from './db/client.js';
+import type { MigrationWriter } from './services/migration-writer.js';
+import { createMigrationWriter } from './services/migration-writer.js';
+import type {
+  MigrationEvent,
+  MigrationResult,
+  MigrationValidationResult,
+} from './services/migration-runner.js';
+import { runMigration, TARGET_TABLE_ORDER, validateMigration } from './services/migration-runner.js';
 
 // ---------------------------------------------------------------------------
 // Injectable dependencies
@@ -41,8 +52,17 @@ export interface CliDeps {
   source?: EulSource;
   /** Build a source from a resolved config. Defaults to a pooled executor. */
   makeSource?: (config: EulConnectionConfig) => EulSource;
+  /** Inject a target writer (e.g. an in-memory fake) to bypass Postgres. */
+  writer?: MigrationWriter;
+  /** Build a writer from a resolved target config. Defaults to Drizzle/pg. */
+  makeWriter?: (config: TargetConnectionConfig) => {
+    writer: MigrationWriter;
+    close: () => Promise<void>;
+  };
   writeFile?: (path: string, content: string) => Promise<void>;
   readFile?: (path: string) => Promise<string>;
+  /** Injectable runner hooks (UUID minting / clock) for deterministic tests. */
+  migrationDeps?: { genId?: () => string; now?: () => Date };
 }
 
 const consoleIO: CliIO = {
@@ -141,6 +161,47 @@ export async function loadConnectionConfig(
   }
 
   return config as EulConnectionConfig;
+}
+
+/**
+ * Resolve `--target` into a Postgres connection config. Accepts a connection
+ * URL (`postgres://…`), an inline JSON object, or a path to a JSON file.
+ */
+export async function loadTargetConfig(
+  target: string | undefined,
+  readFile: (path: string) => Promise<string>,
+): Promise<TargetConnectionConfig> {
+  if (!target) {
+    throw new CliUsageError('This command requires --target <postgres connection URL, JSON file, or inline JSON>.');
+  }
+  if (target.startsWith('postgres://') || target.startsWith('postgresql://')) {
+    return { connectionString: target };
+  }
+
+  let raw: string;
+  if (looksLikeJson(target)) {
+    raw = target;
+  } else {
+    try {
+      raw = await readFile(target);
+    } catch (err) {
+      throw new CliUsageError(
+        `Could not read target config file "${target}": ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+  }
+  let parsed: TargetConnectionConfig;
+  try {
+    parsed = JSON.parse(raw) as TargetConnectionConfig;
+  } catch (err) {
+    throw new CliUsageError(
+      `Target config is not valid JSON: ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
+  if (!parsed.connectionString && !parsed.host) {
+    throw new CliUsageError('Target config requires either "connectionString" or "host".');
+  }
+  return parsed;
 }
 
 // ---------------------------------------------------------------------------
@@ -268,6 +329,93 @@ export function formatValidationResult(result: ValidationResult): string {
   return lines.join('\n');
 }
 
+export function formatMigrationResult(result: MigrationResult): string {
+  const lines: string[] = [];
+  lines.push(result.dryRun ? 'EUL Migration — DRY RUN' : 'EUL Migration — RUN');
+  lines.push('='.repeat(result.dryRun ? 22 : 18));
+  lines.push(
+    `${pad('Source version')}${result.version.version} (Discoverer ${result.version.discovererVersion})`,
+  );
+  lines.push(`${pad('Schema owner')}${result.version.owner ?? '(unknown)'}`);
+  if (result.runId) lines.push(`${pad('Run id')}${result.runId}`);
+  lines.push(`${pad('Duration')}${(result.durationMs / 1000).toFixed(2)}s`);
+  lines.push('');
+
+  const counts = result.dryRun ? result.planned : result.inserted;
+  lines.push(result.dryRun ? 'Rows that would be inserted' : 'Rows inserted');
+  lines.push('---------------------------');
+  let total = 0;
+  for (const table of TARGET_TABLE_ORDER) {
+    const n = counts[table];
+    total += n;
+    lines.push(`  ${pad(table, 28)}${n}`);
+  }
+  lines.push(`  ${pad('TOTAL', 28)}${total}`);
+  if (result.syntheticBusinessAreas > 0) {
+    lines.push(
+      `  (includes ${result.syntheticBusinessAreas} auto-created business area hosting workbook maps)`,
+    );
+  }
+  lines.push('');
+
+  lines.push(`Skipped objects: ${result.skipped.length}`);
+  for (const skip of result.skipped.slice(0, 25)) {
+    lines.push(`  ${skip.table} ${skip.sourceId}: ${skip.reason}`);
+  }
+  if (result.skipped.length > 25) lines.push(`  … and ${result.skipped.length - 25} more`);
+  lines.push('');
+
+  // Warnings repeat per object; group by code so the summary stays readable.
+  const byCode = new Map<string, number>();
+  for (const w of result.warnings) byCode.set(w.code, (byCode.get(w.code) ?? 0) + 1);
+  lines.push(`Warnings: ${result.warnings.length}`);
+  for (const [code, n] of [...byCode.entries()].sort((a, b) => b[1] - a[1])) {
+    const sample = result.warnings.find((w) => w.code === code);
+    lines.push(`  [${code}] ×${n} — ${sample?.message ?? ''}`);
+  }
+  lines.push('');
+
+  lines.push(
+    `Source integrity: ${result.sourceValidation.valid ? 'VALID' : 'INVALID'} ` +
+      `(${result.sourceValidation.errorCount} error(s), ${result.sourceValidation.warningCount} warning(s))`,
+  );
+
+  if (result.validation) {
+    lines.push(
+      `Post-migration reconciliation: ${result.validation.valid ? 'OK' : 'FAILED'}`,
+    );
+    for (const issue of result.validation.issues) lines.push(`  ! ${issue}`);
+  }
+
+  lines.push('');
+  lines.push(`Migrated users sign in with: ${result.migrationUserEmail} (password reset required for all migrated accounts).`);
+  return lines.join('\n');
+}
+
+export function formatMigrationValidation(
+  version: string,
+  validation: MigrationValidationResult,
+): string {
+  const lines: string[] = [];
+  lines.push('Migration Validation (source vs target)');
+  lines.push('======================================');
+  lines.push(`${pad('Source version')}${version}`);
+  lines.push(
+    validation.valid
+      ? 'Result: OK — target row counts match the source metadata.'
+      : 'Result: MISMATCH — target row counts differ from the source metadata.',
+  );
+  lines.push('');
+  lines.push(`  ${'table'.padEnd(28)}${'expected'.padStart(9)}${'actual'.padStart(9)}`);
+  for (const r of validation.reconciliations) {
+    lines.push(
+      `  ${r.table.padEnd(28)}${String(r.expected).padStart(9)}${String(r.actual).padStart(9)}` +
+        (r.ok ? '' : '   <-- mismatch'),
+    );
+  }
+  return lines.join('\n');
+}
+
 /** JSON.stringify replacer preserving Dates as ISO strings (default behavior). */
 function toJson(value: unknown): string {
   return JSON.stringify(value, null, 2);
@@ -317,6 +465,80 @@ export async function commandValidate(
   return result.valid ? EXIT_OK : EXIT_INVALID;
 }
 
+export interface RunCommandOptions {
+  readOptions: ReadEulOptions;
+  /** 'auto' detects; EUL4/EUL5 override auto-detection. */
+  version?: 'auto' | EulVersion;
+  dryRun?: boolean;
+  json?: boolean;
+  migrationDeps?: { genId?: () => string; now?: () => Date };
+}
+
+export async function commandRun(
+  source: EulSource,
+  writer: MigrationWriter,
+  options: RunCommandOptions,
+  io: CliIO,
+): Promise<number> {
+  // Live progress goes to stderr so stdout carries only the final report
+  // (which may be JSON).
+  const onEvent = (event: MigrationEvent): void => {
+    if (event.type === 'progress') {
+      io.err(`  → ${event.phase}: ${event.current ?? 0}/${event.total ?? 0} row(s)`);
+    } else {
+      io.err(`[${event.level}] ${event.phase}: ${event.message}`);
+    }
+  };
+
+  const result = await runMigration({
+    source,
+    writer,
+    readOptions: options.readOptions,
+    version: options.version,
+    dryRun: options.dryRun,
+    deps: options.migrationDeps,
+    onEvent,
+  });
+
+  io.out(options.json ? toJson(result) : formatMigrationResult(result));
+
+  if (result.dryRun) return result.sourceValidation.valid ? EXIT_OK : EXIT_INVALID;
+  return result.validation && !result.validation.valid ? EXIT_INVALID : EXIT_OK;
+}
+
+/**
+ * Post-migration validation: re-read the source, compute what a migration
+ * *would* produce (a dry run), and reconcile those counts against the rows
+ * actually present in the target database.
+ */
+export async function commandValidateMigration(
+  source: EulSource,
+  writer: MigrationWriter,
+  options: RunCommandOptions,
+  io: CliIO,
+): Promise<number> {
+  const result = await runMigration({
+    source,
+    writer,
+    readOptions: options.readOptions,
+    version: options.version,
+    dryRun: true,
+    deps: options.migrationDeps,
+  });
+
+  const validation = await validateMigration(
+    writer,
+    TARGET_TABLE_ORDER.map((table) => ({ table, baseline: 0, inserted: result.planned[table] })),
+  );
+
+  io.out(
+    options.json
+      ? toJson({ version: result.version, validation })
+      : formatMigrationValidation(result.version.version, validation),
+  );
+  return validation.valid ? EXIT_OK : EXIT_INVALID;
+}
+
 // ---------------------------------------------------------------------------
 // Argument parsing + dispatch
 // ---------------------------------------------------------------------------
@@ -325,6 +547,9 @@ function parseArgs(argv: string[]) {
   return yargs(argv)
     .scriptName('dn-migrate')
     .usage('$0 <command> [options]')
+    // Must precede the `--version` option below: yargs treats "version" as a
+    // reserved word and rejects it as an option key unless disabled first.
+    .version(false)
     .option('connection', {
       type: 'string',
       describe: 'Path to a JSON connection-config file, or an inline JSON config object',
@@ -344,17 +569,35 @@ function parseArgs(argv: string[]) {
     })
     .option('output', { type: 'string', alias: 'o', describe: 'Output file (export command)' })
     .option('json', { type: 'boolean', default: false, describe: 'Emit JSON (analyze command)' })
+    .option('target', {
+      type: 'string',
+      describe:
+        'Target Discoverer Neo Postgres: connection URL, JSON config file, or inline JSON (run/validate)',
+    })
+    .option('dry-run', {
+      type: 'boolean',
+      default: false,
+      describe: 'Run the full pipeline and report, without writing to the target (run command)',
+    })
+    .option('version', {
+      type: 'string',
+      // Accept either case; normalized before the choices check.
+      coerce: (value: unknown) => (typeof value === 'string' ? value.toLowerCase() : value),
+      choices: ['auto', 'eul4', 'eul5'],
+      default: 'auto',
+      describe: 'Override EUL auto-detection (run/validate)',
+    })
     .command('analyze', 'Detect the EUL version, read it, and print an assessment report')
     .command('export', 'Export the EUL metadata as normalized JSON')
-    .command('validate', 'Validate EUL referential integrity')
-    .demandCommand(1, 'Specify a command: analyze, export, or validate')
+    .command('validate', 'Validate EUL referential integrity (add --target to reconcile a migration)')
+    .command('run', 'Migrate the EUL into a Discoverer Neo Postgres database')
+    .demandCommand(1, 'Specify a command: analyze, export, validate, or run')
     .strict()
     .exitProcess(false)
     // Throw parse/validation failures instead of printing to the real console,
     // so runCli owns all output through the injected IO.
     .fail(false)
-    .help()
-    .version(false);
+    .help();
 }
 
 function readOptions(parsed: Record<string, unknown>): ReadEulOptions {
@@ -443,6 +686,36 @@ export async function runCli(argv: string[], deps: CliDeps = {}): Promise<number
 
   const options = readOptions(parsed);
 
+  // `--version eul4|eul5|auto` overrides EUL auto-detection.
+  const versionArg = typeof parsed.version === 'string' ? parsed.version : 'auto';
+  const versionOverride: 'auto' | EulVersion =
+    versionArg === 'eul4' ? 'EUL4' : versionArg === 'eul5' ? 'EUL5' : 'auto';
+  const targetArg = typeof parsed.target === 'string' && parsed.target !== '' ? parsed.target : undefined;
+
+  // The target connection is only opened by the commands that need it.
+  // (A cleanup array rather than a nullable local: a `let` assigned only
+  // inside the closure below narrows to `never` at the finally block.)
+  const writerCleanup: Array<() => Promise<void>> = [];
+  const resolveWriter = async (): Promise<MigrationWriter> => {
+    if (deps.writer !== undefined) return deps.writer;
+    const targetConfig = await loadTargetConfig(targetArg, readFile);
+    if (deps.makeWriter) {
+      const handle = deps.makeWriter(targetConfig);
+      writerCleanup.push(handle.close);
+      return handle.writer;
+    }
+    const target = createTargetDb(targetConfig);
+    writerCleanup.push(target.close);
+    return createMigrationWriter(target.db);
+  };
+
+  const runOptions: RunCommandOptions = {
+    readOptions: options,
+    version: versionOverride,
+    json: parsed.json === true,
+    migrationDeps: deps.migrationDeps,
+  };
+
   try {
     switch (command) {
       case 'analyze':
@@ -456,7 +729,19 @@ export async function runCli(argv: string[], deps: CliDeps = {}): Promise<number
         return await commandExport(source, { ...options, output }, io, writeFile);
       }
       case 'validate':
+        // With --target this reconciles a completed migration; without it, the
+        // original source-only referential-integrity check.
+        if (targetArg !== undefined || deps.writer !== undefined) {
+          return await commandValidateMigration(source, await resolveWriter(), runOptions, io);
+        }
         return await commandValidate(source, options, io);
+      case 'run':
+        return await commandRun(
+          source,
+          await resolveWriter(),
+          { ...runOptions, dryRun: parsed.dryRun === true },
+          io,
+        );
       default:
         io.err(`Unknown command: ${command}`);
         return EXIT_ERROR;
@@ -468,6 +753,7 @@ export async function runCli(argv: string[], deps: CliDeps = {}): Promise<number
     // Only the pools this invocation created need draining; an injected source
     // (a mock executor, or a caller-managed one) is the caller's to close.
     if (builtFromConfig) await closeAllPools();
+    for (const close of writerCleanup) await close();
   }
 }
 
