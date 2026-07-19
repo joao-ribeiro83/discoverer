@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { db } from '../db/index.js';
 import { sql } from 'drizzle-orm';
+import { getOracleClientStatus } from '../services/oracle-connection-pool.js';
 
 /** Version — kept in sync with package.json. */
 const version = '0.1.0';
@@ -23,6 +24,10 @@ export default async function healthRoutes(fastify: FastifyInstance) {
               uptime: { type: 'number' },
               database: { type: 'string', enum: ['connected', 'disconnected'] },
               redis: { type: 'string', enum: ['connected', 'disconnected'] },
+              oracleClient: {
+                type: 'string',
+                enum: ['thin', 'thick_ready', 'thick_unavailable'],
+              },
               timestamp: { type: 'string', format: 'date-time' },
             },
           },
@@ -54,6 +59,7 @@ export default async function healthRoutes(fastify: FastifyInstance) {
         uptime: process.uptime(),
         database,
         redis,
+        oracleClient: getOracleClientStatus(),
         timestamp: new Date().toISOString(),
       };
     },

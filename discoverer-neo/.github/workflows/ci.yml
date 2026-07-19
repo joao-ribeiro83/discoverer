@@ -1,0 +1,123 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  backend:
+    name: Backend (lint, typecheck, test)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: discoverer
+          POSTGRES_PASSWORD: ci_password
+          POSTGRES_DB: discoverer_neo
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U discoverer"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgres://discoverer:ci_password@localhost:5432/discoverer_neo
+      REDIS_URL: redis://localhost:6379
+      NODE_ENV: test
+      JWT_SECRET: ci-test-secret-not-for-production-use-only
+      ENCRYPTION_KEY: ci-test-encryption-key-32chars-minimum
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The backend imports @discoverer-neo/migrate; jest resolves it straight
+      # to TS source (see backend/jest.config.js), but `tsc`/`build` need the
+      # compiled .d.ts/dist — same ordering as backend/Dockerfile's build stage.
+      - name: Build migrate workspace
+        run: npm run build --workspace @discoverer-neo/migrate
+
+      - name: Lint
+        run: npm run lint --workspace @discoverer-neo/backend
+
+      - name: Typecheck
+        run: npm run typecheck --workspace @discoverer-neo/backend
+
+      - name: Apply database migrations
+        run: npm run db:migrate --workspace @discoverer-neo/backend
+
+      - name: Test
+        run: npm test --workspace @discoverer-neo/backend
+
+  frontend:
+    name: Frontend (lint, typecheck, test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint --workspace @discoverer-neo/frontend
+
+      - name: Typecheck
+        run: npm run typecheck --workspace @discoverer-neo/frontend
+
+      - name: Test
+        run: npm test --workspace @discoverer-neo/frontend -- --run
+
+      - name: Build
+        run: npm run build --workspace @discoverer-neo/frontend
+
+  migrate:
+    name: Migrate CLI (lint, typecheck, test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint --workspace @discoverer-neo/migrate
+
+      - name: Typecheck
+        run: npm run typecheck --workspace @discoverer-neo/migrate
+
+      - name: Test
+        run: npm test --workspace @discoverer-neo/migrate

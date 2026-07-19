@@ -48,4 +48,9 @@ COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
 # Copy static build output
 COPY --from=build /app/frontend/dist /usr/share/nginx/html
 EXPOSE 80
+# busybox wget ships with the alpine base — no extra package needed. Hits
+# nginx.conf's own /health location (a static 200, no backend dependency), so
+# this only ever fails if Nginx itself is down.
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost/health || exit 1
 CMD ["nginx", "-g", "daemon off;"]

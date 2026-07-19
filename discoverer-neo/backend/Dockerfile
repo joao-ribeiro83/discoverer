@@ -123,6 +123,12 @@ USER appuser
 WORKDIR /app/backend
 EXPOSE 3000
 
+# start-period covers cold start (Oracle client verification + plugin
+# registration); the endpoint itself checks DB/Redis/Oracle so a healthy
+# response really means the app can serve traffic, not just that Node is up.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD node -e "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+
 # The entrypoint is server.ts -> dist/server.js. This previously pointed at
 # dist/index.js, which the build has never produced.
 CMD ["node", "dist/server.js"]

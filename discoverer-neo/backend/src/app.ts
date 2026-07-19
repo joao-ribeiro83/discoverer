@@ -113,12 +113,25 @@ export async function buildApp(): Promise<FastifyInstance> {
   }
 
   app.addHook('onClose', async () => {
-    // Let in-flight exports/scheduled runs finish before tearing down what
-    // they depend on.
+    // Order matters: let in-flight exports/scheduled runs finish (or at
+    // least stop pulling new jobs) before tearing down what they depend on.
+    // Redis itself is closed by plugins/redis.ts's own onClose hook, which
+    // Fastify runs as part of the same close() call.
+    //
+    // The Postgres pool (backend/src/db/index.ts) is deliberately NOT closed
+    // here: it is a module-level singleton shared by every `buildApp()`
+    // instance in a process, and several test files build more than one app
+    // per process (see auth.test.ts) and close them independently mid-test —
+    // ending the pool from a per-app hook would permanently break every
+    // instance after the first close(). It is closed once, for the real
+    // process only, in server.ts's shutdown handler.
+    app.log.info('Stopping export/scheduler workers...');
     await exportWorker?.close();
     await schedulerWorker?.close();
     await closeExportQueue();
     await closeSchedulerQueue();
+
+    app.log.info('Closing Oracle connection pools...');
     await closeOraclePools();
   });
 

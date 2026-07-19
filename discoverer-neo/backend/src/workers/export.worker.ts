@@ -73,7 +73,13 @@ export function startExportWorker(logger: WorkerLogger): ExportWorkerHandle {
   );
 
   worker.on('completed', (job, result: { rowCount?: number } | undefined) => {
-    recordExportOutcome('completed');
+    // `processedOn` is when BullMQ actually started the job (excludes queue
+    // wait); undefined only if the event fires before BullMQ sets it, which
+    // does not happen for a job that reached 'completed'.
+    const durationSeconds = job.processedOn
+      ? (Date.now() - job.processedOn) / 1000
+      : undefined;
+    recordExportOutcome('completed', durationSeconds);
     logger.info(
       { jobId: job.id, rowCount: result?.rowCount },
       'Export job completed',
@@ -94,7 +100,10 @@ export function startExportWorker(logger: WorkerLogger): ExportWorkerHandle {
     );
 
     if (!job || !exhausted) return;
-    recordExportOutcome('failed');
+    const durationSeconds = job.processedOn
+      ? (Date.now() - job.processedOn) / 1000
+      : undefined;
+    recordExportOutcome('failed', durationSeconds);
     void failExportJob(job.data.exportJobId, err.message).catch((markErr: unknown) => {
       logger.error({ jobId: job.id, err: markErr }, 'Could not mark export FAILED');
     });

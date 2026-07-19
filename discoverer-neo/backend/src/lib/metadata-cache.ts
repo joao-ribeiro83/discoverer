@@ -1,5 +1,6 @@
 import type { Redis } from 'ioredis';
 import { config } from '../config.js';
+import { recordCacheHit, recordCacheMiss } from '../plugins/metrics.js';
 
 /**
  * Read-through Redis cache for EUL metadata (business areas, folders, items).
@@ -71,11 +72,15 @@ export async function cached<T>(
 
   try {
     const raw = await redis.get(key);
-    if (raw !== null) return JSON.parse(raw) as T;
+    if (raw !== null) {
+      recordCacheHit();
+      return JSON.parse(raw) as T;
+    }
   } catch {
     // Unreachable Redis or malformed payload — fall through to the database.
   }
 
+  recordCacheMiss();
   const value = await load();
 
   try {

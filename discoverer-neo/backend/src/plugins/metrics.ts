@@ -45,15 +45,75 @@ const exportJobsTotal = new Counter({
   registers: [registry],
 });
 
+const exportJobDuration = new Histogram({
+  name: 'export_job_duration_seconds',
+  help: 'Export job wall-clock duration in seconds, by outcome',
+  labelNames: ['outcome'],
+  // Exports run from sub-second (tiny result) to several minutes (streamed
+  // multi-million-row files) — see PERFORMANCE.md's measured 6-10s/1M rows.
+  buckets: [1, 5, 15, 30, 60, 120, 300, 600],
+  registers: [registry],
+});
+
 export function setExportQueueDepth(counts: Record<string, number>): void {
   for (const [state, value] of Object.entries(counts)) {
     exportQueueDepth.set({ state }, value);
   }
 }
 
-export function recordExportOutcome(outcome: 'completed' | 'failed'): void {
+export function recordExportOutcome(
+  outcome: 'completed' | 'failed',
+  durationSeconds?: number,
+): void {
   exportJobsTotal.inc({ outcome });
+  if (durationSeconds !== undefined) {
+    exportJobDuration.observe({ outcome }, durationSeconds);
+  }
 }
+
+const scheduleRunsTotal = new Counter({
+  name: 'schedule_runs_total',
+  help: 'Scheduled map runs finished, by outcome',
+  labelNames: ['outcome'],
+  registers: [registry],
+});
+
+export function recordScheduleOutcome(outcome: 'completed' | 'skipped' | 'failed'): void {
+  scheduleRunsTotal.inc({ outcome });
+}
+
+const dbQueryDuration = new Histogram({
+  name: 'db_query_duration_seconds',
+  help: 'Postgres query duration in seconds, issued through the pool',
+  buckets: [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5],
+  registers: [registry],
+});
+
+export function recordDbQuery(durationSeconds: number): void {
+  dbQueryDuration.observe(durationSeconds);
+}
+
+const cacheOperationsTotal = new Counter({
+  name: 'cache_operations_total',
+  help: 'Metadata cache reads, by result',
+  labelNames: ['result'],
+  registers: [registry],
+});
+
+export function recordCacheHit(): void {
+  cacheOperationsTotal.inc({ result: 'hit' });
+}
+
+export function recordCacheMiss(): void {
+  cacheOperationsTotal.inc({ result: 'miss' });
+}
+
+const httpErrorsTotal = new Counter({
+  name: 'http_requests_errors_total',
+  help: 'HTTP responses with status >= 500, by route',
+  labelNames: ['method', 'route'],
+  registers: [registry],
+});
 
 export default fp(
   async (fastify) => {
@@ -70,6 +130,9 @@ export default fp(
         },
         reply.elapsedTime / 1000,
       );
+      if (reply.statusCode >= 500) {
+        httpErrorsTotal.inc({ method: request.method, route });
+      }
       done();
     });
 

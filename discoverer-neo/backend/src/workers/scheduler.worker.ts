@@ -6,6 +6,7 @@ import {
   recordScheduleFailure,
   ScheduleRunError,
 } from '../services/scheduler.service.js';
+import { recordScheduleOutcome } from '../plugins/metrics.js';
 
 // ---------------------------------------------------------------------------
 // The scheduler worker.
@@ -53,6 +54,7 @@ export function startSchedulerWorker(logger: WorkerLogger): SchedulerWorkerHandl
   );
 
   worker.on('completed', (job, result: { skipped: boolean; rowCount?: number } | undefined) => {
+    recordScheduleOutcome(result?.skipped ? 'skipped' : 'completed');
     logger.info(
       { scheduleId: job.data.scheduleId, skipped: result?.skipped, rowCount: result?.rowCount },
       'Schedule run finished',
@@ -73,6 +75,7 @@ export function startSchedulerWorker(logger: WorkerLogger): SchedulerWorkerHandl
     );
 
     if (!job || !exhausted) return;
+    recordScheduleOutcome('failed');
 
     const { elapsedMs, kind } = err instanceof ScheduleRunError
       ? { elapsedMs: err.elapsedMs, kind: err.kind }

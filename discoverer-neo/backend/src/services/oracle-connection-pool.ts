@@ -111,6 +111,20 @@ export async function verifyOracleClient(): Promise<void> {
   await loadOracleDb();
 }
 
+/**
+ * Point-in-time Oracle client status for `/health`.
+ *
+ * Cheap and synchronous by design — a health check runs on every liveness
+ * probe and must not itself open a connection. `server.ts` calls
+ * `verifyOracleClient()` once at startup and exits the process if thick mode
+ * is misconfigured, so by the time this is reachable over HTTP the outcome is
+ * already settled; this just reports the sticky state recorded then.
+ */
+export function getOracleClientStatus(): 'thin' | 'thick_ready' | 'thick_unavailable' {
+  if (!config.ORACLE_THICK_MODE) return 'thin';
+  return clientInitError ? 'thick_unavailable' : 'thick_ready';
+}
+
 async function loadOracleDb(): Promise<typeof import('oracledb')> {
   if (oracledbModule) return oracledbModule;
   let mod: typeof import('oracledb');
