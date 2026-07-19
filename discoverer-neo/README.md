@@ -69,11 +69,26 @@ npm run dev --workspace=frontend
 
 - Backend API:  <http://localhost:3000>
 - Frontend SPA: <http://localhost:5173>
+- Swagger UI: <http://localhost:3000/api/docs>
+
+## Documentation
+
+Comprehensive documentation is available in the `docs/` directory:
+
+- **[User Guide](docs/user-guide/)** — How to use Discoverer Neo (logging in, building maps, executing queries, exporting data)
+- **[Administrator Guide](docs/admin-guide/)** — System administration (metadata management, user management, security, data sources)
+- **[Developer Guide](docs/developer-guide/)** — Development setup, architecture, backend/frontend code, testing, contributing
+- **[API Reference](docs/api/)** — REST API endpoints, authentication, request/response examples
+- **[Deployment Guide](docs/deployment/)** — Docker deployment, configuration, SSL/TLS, backup, monitoring
+- **[Migration Guide](docs/migration/)** — Migrating from Oracle Discoverer 4–11
+
+Start with [docs/index.md](docs/index.md) for the complete documentation index.
 
 ## Project Structure
 
 ```
 discoverer-neo/
+├── docs/             # Complete documentation (see below)
 ├── backend/          # Node.js + TypeScript + Fastify API
 │   └── src/
 ├── frontend/         # React 19 + TypeScript + Vite SPA
@@ -105,7 +120,7 @@ Workspace-scoped: `npm run <script> --workspace=<name>`
 
 ## EUL Migration
 
-The `migrate` workspace handles importing End User Layer (EUL) metadata from existing
+Discoverer Neo includes a migration tool (`dn-migrate` CLI) for importing End User Layer (EUL) metadata from existing
 Oracle Discoverer installations (versions 4.1 through 11g). This includes:
 
 - Business Areas, Folders, Items, Joins, Hierarchies
@@ -113,7 +128,9 @@ Oracle Discoverer installations (versions 4.1 through 11g). This includes:
 - Conditions, Calculations, and Analytic Functions
 - Users, Privileges, and Security Settings
 
-Requires Oracle Instant Client configured via `ORACLE_CLIENT_PATH` in your `.env`.
+See the [Migration Guide](docs/migration/) for detailed instructions.
+
+Optional: Requires Oracle Instant Client configured via `ORACLE_CLIENT_PATH` in your `.env` for legacy Discoverer versions (11.2 and earlier).
 
 ## License
 

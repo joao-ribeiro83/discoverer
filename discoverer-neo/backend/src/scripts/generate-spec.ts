@@ -1,4 +1,5 @@
 import { writeFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { buildApp } from '../app.js';
 
 /**
@@ -14,9 +15,9 @@ async function main() {
   await app.ready();
 
   const spec = app.swagger();
-  const outputPath = new URL('../../openapi-spec.json', import.meta.url).pathname;
+  const outputPath = fileURLToPath(new URL('../../openapi-spec.json', import.meta.url));
 
-  writeFileSync(outputPath!, JSON.stringify(spec, null, 2));
+  writeFileSync(outputPath, JSON.stringify(spec, null, 2));
   console.log(`OpenAPI spec written to ${outputPath}`);
   console.log(`  Paths: ${Object.keys(spec.paths ?? {}).length}`);
   console.log(`  Tags: ${(spec.tags ?? []).map((t: { name: string }) => t.name).join(', ')}`);

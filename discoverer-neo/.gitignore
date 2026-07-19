@@ -52,3 +52,6 @@ docker-data/
 
 # Generated export files (backend/src/services/export.service.ts)
 backend/storage/exports/
+
+# Generated OpenAPI spec (npm run generate-spec — canonical copy lives at docs/api/openapi.yaml)
+backend/openapi-spec.json
