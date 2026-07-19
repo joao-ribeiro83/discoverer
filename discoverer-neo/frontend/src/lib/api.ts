@@ -42,6 +42,10 @@ import type {
   EulVersionInfo,
   MigrationJob,
   StartMigrationInput,
+  AuditLogEntry,
+  AuditQueryFilters,
+  AuditQueryResponse,
+  AuditStats,
 } from '@/lib/types'
 
 type Envelope<T> = { data: T }
@@ -328,6 +332,17 @@ export const apiClient = {
     run: (data: StartMigrationInput) => api.post<Envelope<MigrationJob>>('/migration/run', data),
     listJobs: () => api.get<Envelope<MigrationJob[]>>('/migration/jobs'),
     getJob: (jobId: string) => api.get<Envelope<MigrationJob>>(`/migration/jobs/${jobId}`),
+  },
+  // Audit log (admin-only)
+  audit: {
+    query: (filters: AuditQueryFilters) =>
+      api.get<AuditQueryResponse>('/audit', { params: filters }),
+    stats: (dateFrom?: string, dateTo?: string) =>
+      api.get<Envelope<AuditStats>>('/audit/stats', { params: { dateFrom, dateTo } }),
+    entityHistory: (entityType: string, entityId: string) =>
+      api.get<Envelope<AuditLogEntry[]>>(`/audit/entity/${entityType}/${entityId}`),
+    userActivity: (userId: string, limit?: number) =>
+      api.get<Envelope<AuditLogEntry[]>>(`/audit/user/${userId}`, { params: { limit } }),
   },
 }
 

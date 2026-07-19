@@ -237,7 +237,25 @@
       "Bash(timeout 590 docker compose build backend)",
       "Bash(docker run --rm --entrypoint node discoverer-neo-backend:latest -e ' *)",
       "Bash(git checkout *)",
-      "Bash(xargs -I{} echo \"{} paths changed\")"
+      "Bash(xargs -I{} echo \"{} paths changed\")",
+      "Bash(DATABASE_URL=postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo REDIS_URL=redis://localhost:6379 npx jest users maps security --testPathIgnorePatterns=integration)",
+      "Bash(DATABASE_URL=postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo REDIS_URL=redis://localhost:6379 npx jest audit --testPathIgnorePatterns=integration)",
+      "Skill(dataviz)",
+      "Skill(dataviz:*)",
+      "Bash(DATABASE_URL=postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo REDIS_URL=redis://localhost:6379 npx jest --testPathIgnorePatterns=integration)",
+      "Bash(DATABASE_URL=postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo REDIS_URL=redis://localhost:6379 npx jest --testPathIgnorePatterns=integration > /tmp/full-jest-out.log 2>&1)",
+      "Bash(exit 0)",
+      "Bash(DATABASE_URL=postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo REDIS_URL=redis://localhost:6379 node -e ' *)",
+      "Bash(DATABASE_URL=postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo REDIS_URL=redis://localhost:6379 npx jest migration data-sources --testPathIgnorePatterns=integration)",
+      "Bash(DATABASE_URL=postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo REDIS_URL=redis://localhost:6379 npx jest migration.test.ts)",
+      "Bash(break)",
+      "Bash(DATABASE_URL=postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo REDIS_URL=redis://localhost:6379 npx jest src/__tests__/integration/rls-enforcement.test.ts --forceExit)",
+      "Bash(DATABASE_URL=postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo REDIS_URL=redis://localhost:6379 npx jest src/__tests__/integration/map-sharing.test.ts --forceExit)",
+      "Bash(DATABASE_URL=postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo REDIS_URL=redis://localhost:6379 npx jest src/__tests__/integration/migration-audit.test.ts --forceExit)",
+      "Bash(DATABASE_URL=postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo REDIS_URL=redis://localhost:6379 npx jest src/__tests__/integration/rls-enforcement.test.ts src/__tests__/integration/map-sharing.test.ts src/__tests__/integration/migration-audit.test.ts --forceExit)",
+      "Bash(DATABASE_URL=postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo REDIS_URL=redis://localhost:6379 npx jest --testPathIgnorePatterns=integration --forceExit)",
+      "Bash(grep -E \"✕|●|Cannot find module|TS2307|Expected|Received|toBe\" /tmp/full.out | grep -iE \"data.source|migration|migrate/testing|row|count|●\" | head -30)",
+      "Bash(cat /tmp/all3.out 2>/dev/null)"
     ]
   }
 }

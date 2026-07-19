@@ -6,6 +6,7 @@ import swagger from './plugins/swagger.js';
 import auth from './plugins/auth.js';
 import redis from './plugins/redis.js';
 import metrics from './plugins/metrics.js';
+import audit from './plugins/audit.js';
 import healthRoutes from './routes/health.js';
 import authRoutes from './routes/auth.js';
 import dataSourcesRoutes from './routes/data-sources.js';
@@ -23,6 +24,7 @@ import exportRoutes from './routes/export.js';
 import scheduleRoutes from './routes/schedules.js';
 import securityRoutes from './routes/security.js';
 import migrationRoutes from './routes/migration.js';
+import auditRoutes from './routes/audit.js';
 import { closeAll as closeOraclePools } from './services/oracle-connection-pool.js';
 import { config } from './config.js';
 import { closeExportQueue } from './queues/export.queue.js';
@@ -71,6 +73,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(auth);
   await app.register(swagger);
   await app.register(metrics);
+  await app.register(audit);
 
   // Routes
   await app.register(healthRoutes);
@@ -90,6 +93,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(scheduleRoutes);
   await app.register(securityRoutes);
   await app.register(migrationRoutes);
+  await app.register(auditRoutes);
 
   // The export worker runs in this process by default. It is started here
   // rather than in `server.ts` so tests and any other `buildApp` caller get the

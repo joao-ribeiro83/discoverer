@@ -39,6 +39,9 @@ const SchedulesPage = lazy(() => import('@/pages/SchedulesPage').then((m) => ({ 
 const MigrationPage = lazy(() =>
   import('@/pages/MigrationPage').then((m) => ({ default: m.MigrationPage })),
 )
+const AuditLogPage = lazy(() =>
+  import('@/pages/AuditLogPage').then((m) => ({ default: m.AuditLogPage })),
+)
 
 export function App() {
   return (
@@ -72,6 +75,7 @@ export function App() {
           <Route path="users" element={<UsersPage />} />
           <Route path="security" element={<SecurityPage />} />
           <Route path="migration" element={<MigrationPage />} />
+          <Route path="audit" element={<AuditLogPage />} />
         </Route>
         <Route path="maps">
           <Route index element={<MapsListPage />} />

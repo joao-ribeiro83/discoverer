@@ -648,3 +648,44 @@ export interface StartMigrationInput {
   dryRun?: boolean
   version?: 'auto' | 'EUL4' | 'EUL5'
 }
+
+// ---------------------------------------------------------------------------
+// Audit log
+// ---------------------------------------------------------------------------
+
+export interface AuditLogEntry {
+  id: string
+  userId: string | null
+  userName: string | null
+  userEmail: string | null
+  action: string
+  entityType: string
+  entityId: string | null
+  details: unknown
+  ipAddress: string | null
+  createdAt: string
+}
+
+export interface AuditQueryFilters {
+  userId?: string
+  action?: string
+  entityType?: string
+  dateFrom?: string
+  dateTo?: string
+  limit?: number
+  offset?: number
+}
+
+export interface AuditQueryResponse {
+  data: AuditLogEntry[]
+  total: number
+  limit: number
+  offset: number
+}
+
+export interface AuditStats {
+  totalActions: number
+  byDay: { date: string; count: number }[]
+  byUser: { userId: string | null; userName: string | null; count: number }[]
+  byActionType: { action: string; count: number }[]
+}
