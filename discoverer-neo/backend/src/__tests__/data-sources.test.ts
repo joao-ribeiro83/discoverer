@@ -224,10 +224,15 @@ describe('GET /api/data-sources', () => {
     expect(response.statusCode).toBe(200);
     const body = response.json();
     expect(Array.isArray(body.data)).toBe(true);
-    expect(body.data.length).toBe(2);
+    // Scope the count to rows this test created — the shared dev DB may hold
+    // other seed data sources (e.g. 'Sample Oracle DB').
+    const created = (
+      body.data as Array<{ name: string; hasPassword: boolean }>
+    ).filter((ds) => ['Test Oracle DS', 'Test Postgres DS'].includes(ds.name));
+    expect(created.length).toBe(2);
 
     // Verify no password fields are present in any returned item.
-    for (const ds of body.data) {
+    for (const ds of created) {
       expect((ds as Record<string, unknown>)['passwordEnc']).toBeUndefined();
       expect((ds as Record<string, unknown>)['connectionString']).toBeUndefined();
       expect(ds.hasPassword).toBe(true);
@@ -255,7 +260,10 @@ describe('GET /api/data-sources', () => {
     });
 
     expect(response.statusCode).toBe(200);
-    expect(response.json().data.length).toBe(1);
+    const managerCreated = (
+      response.json().data as Array<{ name: string }>
+    ).filter((ds) => ds.name === 'Test Oracle DS');
+    expect(managerCreated.length).toBe(1);
   });
 
   it('returns 403 for viewer role', async () => {
@@ -504,6 +512,39 @@ describe('POST /api/data-sources/:id/test', () => {
     // The message should describe the connection attempt.
     expect(typeof body.data.message).toBe('string');
   });
+
+  it('reports failure for an unreachable Oracle data source', async () => {
+    await createTestUser('ds-admin@example.com', TEST_PASSWORD, 'ADMIN');
+    const token = await loginAndReturnToken('ds-admin@example.com', TEST_PASSWORD);
+
+    const createRes = await app.inject({
+      method: 'POST',
+      url: '/api/data-sources',
+      headers: { authorization: `Bearer ${token}` },
+      payload: {
+        name: 'Test Oracle DS',
+        connectionType: 'oracle',
+        host: '127.0.0.1',
+        port: 1,
+        serviceName: 'NOPE',
+        username: 'scott',
+        passwordEnc: 'tiger',
+      },
+    });
+
+    const id = createRes.json().data.id as string;
+
+    const response = await app.inject({
+      method: 'POST',
+      url: `/api/data-sources/${id}/test`,
+      headers: { authorization: `Bearer ${token}` },
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = response.json();
+    expect(body.data.success).toBe(false);
+    expect(body.data.message).toMatch(/Oracle connection failed/);
+  }, 30_000);
 
   it('is accessible by manager role', async () => {
     await createTestUser('ds-admin@example.com', TEST_PASSWORD, 'ADMIN');

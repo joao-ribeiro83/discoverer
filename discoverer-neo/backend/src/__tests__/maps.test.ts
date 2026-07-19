@@ -507,6 +507,78 @@ describe('Map management', () => {
       expect(res.statusCode).toBe(200);
     });
 
+    it('lists the shares of a map for the owner', async () => {
+      const res = await app.inject({
+        method: 'GET',
+        url: `/api/maps/${mapId}/shares`,
+        headers: { authorization: `Bearer ${ownerToken}` },
+      });
+      expect(res.statusCode).toBe(200);
+      expect(Array.isArray(res.json().data)).toBe(true);
+    });
+
+    it('rejects a share with an invalid permission level (400)', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: `/api/maps/${mapId}/shares`,
+        headers: { authorization: `Bearer ${ownerToken}` },
+        payload: { userId: viewerId, permissionLevel: 'OWNER' },
+      });
+      expect(res.statusCode).toBe(400);
+    });
+
+    it('rejects sharing with a non-existent user (400)', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: `/api/maps/${mapId}/shares`,
+        headers: { authorization: `Bearer ${ownerToken}` },
+        payload: {
+          userId: '00000000-0000-4000-8000-000000000000',
+          permissionLevel: 'VIEW',
+        },
+      });
+      expect(res.statusCode).toBe(400);
+      expect(res.json().error).toMatch(/does not exist/i);
+    });
+
+    it('prevents a non-owner from updating a share (403)', async () => {
+      const res = await app.inject({
+        method: 'PUT',
+        url: `/api/maps/${mapId}/shares/${viewerId}`,
+        headers: { authorization: `Bearer ${viewerToken}` },
+        payload: { permissionLevel: 'VIEW' },
+      });
+      expect(res.statusCode).toBe(403);
+    });
+
+    it('rejects a share update with an invalid body (400)', async () => {
+      const res = await app.inject({
+        method: 'PUT',
+        url: `/api/maps/${mapId}/shares/${viewerId}`,
+        headers: { authorization: `Bearer ${ownerToken}` },
+        payload: { permissionLevel: 'SUPER' },
+      });
+      expect(res.statusCode).toBe(400);
+    });
+
+    it('prevents a non-owner from revoking a share (403)', async () => {
+      const res = await app.inject({
+        method: 'DELETE',
+        url: `/api/maps/${mapId}/shares/${viewerId}`,
+        headers: { authorization: `Bearer ${viewerToken}` },
+      });
+      expect(res.statusCode).toBe(403);
+    });
+
+    it('404s revoking a share that does not exist', async () => {
+      const res = await app.inject({
+        method: 'DELETE',
+        url: `/api/maps/${mapId}/shares/00000000-0000-4000-8000-000000000000`,
+        headers: { authorization: `Bearer ${ownerToken}` },
+      });
+      expect(res.statusCode).toBe(404);
+    });
+
     it('revokes a share', async () => {
       const res = await app.inject({
         method: 'DELETE',

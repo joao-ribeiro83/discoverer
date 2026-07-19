@@ -922,3 +922,67 @@ describe('GET /api/business-areas/:id/users', () => {
     expect(response.statusCode).toBe(403);
   });
 });
+
+// ---------------------------------------------------------------------------
+// 404 branches across the entity-scoped endpoints
+// ---------------------------------------------------------------------------
+
+describe('business-area 404 branches', () => {
+  const MISSING = '00000000-0000-4000-8000-000000000000';
+
+  async function adminToken(): Promise<string> {
+    await createTestUser('ba-admin@example.com', TEST_PASSWORD, 'ADMIN');
+    return loginAndReturnToken('ba-admin@example.com', TEST_PASSWORD);
+  }
+
+  it('404s getting a missing business area', async () => {
+    const token = await adminToken();
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/business-areas/${MISSING}`,
+      headers: { authorization: `Bearer ${token}` },
+    });
+    expect(res.statusCode).toBe(404);
+  });
+
+  it('404s updating a missing business area', async () => {
+    const token = await adminToken();
+    const res = await app.inject({
+      method: 'PUT',
+      url: `/api/business-areas/${MISSING}`,
+      headers: { authorization: `Bearer ${token}` },
+      payload: { name: 'Renamed' },
+    });
+    expect(res.statusCode).toBe(404);
+  });
+
+  it('404s deleting a missing business area', async () => {
+    const token = await adminToken();
+    const res = await app.inject({
+      method: 'DELETE',
+      url: `/api/business-areas/${MISSING}`,
+      headers: { authorization: `Bearer ${token}` },
+    });
+    expect(res.statusCode).toBe(404);
+  });
+
+  it('404s listing grants for a missing business area', async () => {
+    const token = await adminToken();
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/business-areas/${MISSING}/grants`,
+      headers: { authorization: `Bearer ${token}` },
+    });
+    expect(res.statusCode).toBe(404);
+  });
+
+  it('404s listing users for a missing business area', async () => {
+    const token = await adminToken();
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/business-areas/${MISSING}/users`,
+      headers: { authorization: `Bearer ${token}` },
+    });
+    expect(res.statusCode).toBe(404);
+  });
+});

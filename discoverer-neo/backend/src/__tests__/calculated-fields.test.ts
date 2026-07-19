@@ -318,3 +318,183 @@ describe('validateFormula', () => {
     expect(validateFormula('ANYTHING + 1').valid).toBe(true);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Scalar string functions
+// ---------------------------------------------------------------------------
+
+describe('scalar string functions', () => {
+  it('INITCAP capitalises each word', () => {
+    expect(evalOne("INITCAP('hello world')")).toBe('Hello World');
+  });
+
+  it('TRIM/LTRIM/RTRIM strip whitespace', () => {
+    expect(evalOne("TRIM('  hi  ')")).toBe('hi');
+    expect(evalOne("LTRIM('  hi')")).toBe('hi');
+    expect(evalOne("RTRIM('hi  ')")).toBe('hi');
+  });
+
+  it('LTRIM/RTRIM strip a custom character set', () => {
+    expect(evalOne("LTRIM('xxabc', 'x')")).toBe('abc');
+    expect(evalOne("RTRIM('abcxx', 'x')")).toBe('abc');
+  });
+
+  it('INSTR returns a 1-based index (0 when absent)', () => {
+    expect(evalOne("INSTR('abcabc', 'c')")).toBe(3);
+    expect(evalOne("INSTR('abc', 'z')")).toBe(0);
+  });
+
+  it('REPLACE substitutes occurrences, defaulting to removal', () => {
+    expect(evalOne("REPLACE('a-b-c', '-', '+')")).toBe('a+b+c');
+    expect(evalOne("REPLACE('a-b-c', '-')")).toBe('abc');
+    expect(evalOne("REPLACE('abc', '', 'x')")).toBe('abc');
+  });
+
+  it('CONCAT joins two values, treating NULL as empty', () => {
+    expect(evalOne("CONCAT('foo', 'bar')")).toBe('foobar');
+    expect(evalOne('CONCAT(A, B)', { A: 'foo', B: null })).toBe('foo');
+  });
+
+  it('LPAD/RPAD pad and truncate', () => {
+    expect(evalOne("LPAD('7', 3, '0')")).toBe('007');
+    expect(evalOne("RPAD('7', 3, '.')")).toBe('7..');
+    expect(evalOne("LPAD('abcd', 2)")).toBe('ab');
+    expect(evalOne("LPAD('x', 3)")).toBe('  x');
+  });
+
+  it('SUBSTR handles negative start and length', () => {
+    expect(evalOne("SUBSTR('abcdef', 2, 3)")).toBe('bcd');
+    expect(evalOne("SUBSTR('abcdef', -2)")).toBe('ef');
+    expect(evalOne("SUBSTR('abcdef', 0)")).toBe('abcdef');
+    expect(evalOne("SUBSTR('abcdef', 2, 0)")).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Scalar numeric functions
+// ---------------------------------------------------------------------------
+
+describe('scalar numeric functions', () => {
+  it('ROUND/TRUNC with and without digits', () => {
+    expect(evalOne('ROUND(3.14159, 2)')).toBeCloseTo(3.14);
+    expect(evalOne('ROUND(3.7)')).toBe(4);
+    expect(evalOne('TRUNC(3.789, 1)')).toBeCloseTo(3.7);
+    expect(evalOne('TRUNC(3.9)')).toBe(3);
+  });
+
+  it('FLOOR/CEIL/ABS/SIGN', () => {
+    expect(evalOne('FLOOR(3.9)')).toBe(3);
+    expect(evalOne('CEIL(3.1)')).toBe(4);
+    expect(evalOne('ABS(-5)')).toBe(5);
+    expect(evalOne('SIGN(-3)')).toBe(-1);
+    expect(evalOne('SIGN(3)')).toBe(1);
+  });
+
+  it('MOD including Oracle MOD(x,0) = x', () => {
+    expect(evalOne('MOD(10, 3)')).toBe(1);
+    expect(evalOne('MOD(10, 0)')).toBe(10);
+  });
+
+  it('POWER/SQRT', () => {
+    expect(evalOne('POWER(2, 10)')).toBe(1024);
+    expect(evalOne('SQRT(144)')).toBe(12);
+  });
+
+  it('GREATEST/LEAST over numbers and strings, NULL if any arg is NULL', () => {
+    expect(evalOne('GREATEST(3, 7, 5)')).toBe(7);
+    expect(evalOne('LEAST(3, 7, 5)')).toBe(3);
+    expect(evalOne("GREATEST('apple', 'pear', 'kiwi')")).toBe('pear');
+    expect(evalOne('GREATEST(A, B)', { A: 1, B: null })).toBeNull();
+  });
+
+  it('TO_NUMBER coerces text', () => {
+    expect(evalOne("TO_NUMBER('42')")).toBe(42);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Null-handling functions
+// ---------------------------------------------------------------------------
+
+describe('null-handling functions', () => {
+  it('NVL returns the fallback only when null', () => {
+    expect(evalOne('NVL(A, 0)', { A: null })).toBe(0);
+    expect(evalOne('NVL(A, 0)', { A: 5 })).toBe(5);
+  });
+
+  it('NVL2 picks by nullness of the first arg', () => {
+    expect(evalOne("NVL2(A, 'has', 'none')", { A: 1 })).toBe('has');
+    expect(evalOne("NVL2(A, 'has', 'none')", { A: null })).toBe('none');
+  });
+
+  it('COALESCE returns the first non-null', () => {
+    expect(evalOne('COALESCE(A, B, 9)', { A: null, B: null })).toBe(9);
+    expect(evalOne('COALESCE(A, B, 9)', { A: null, B: 3 })).toBe(3);
+  });
+
+  it('DECODE matches, treats two NULLs as equal, and falls through to a default', () => {
+    expect(evalOne("DECODE(G, 'A', 1, 'B', 2, 0)", { G: 'B' })).toBe(2);
+    expect(evalOne("DECODE(G, 'A', 1, 0)", { G: 'Z' })).toBe(0);
+    expect(evalOne("DECODE(G, 'A', 1)", { G: 'Z' })).toBeNull();
+    expect(evalOne('DECODE(G, NULLC, 1, 0)', { G: null, NULLC: null })).toBe(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Date functions and formatting
+// ---------------------------------------------------------------------------
+
+describe('date functions', () => {
+  it('ADD_MONTHS clamps to month-end', () => {
+    const r = evalOne('ADD_MONTHS(D, 1)', { D: utc(2020, 1, 31) }) as Date;
+    expect(r.getUTCMonth()).toBe(1); // February
+    expect(r.getUTCDate()).toBe(29); // 2020 leap year
+  });
+
+  it('MONTHS_BETWEEN', () => {
+    const v = evalOne('MONTHS_BETWEEN(A, B)', {
+      A: utc(2020, 3, 15),
+      B: utc(2020, 1, 15),
+    }) as number;
+    expect(v).toBeCloseTo(2);
+  });
+
+  it('LAST_DAY returns the final day of the month', () => {
+    const r = evalOne('LAST_DAY(D)', { D: utc(2021, 2, 10) }) as Date;
+    expect(r.getUTCDate()).toBe(28);
+  });
+
+  it('TRUNC on a date strips time / rounds to unit', () => {
+    const day = evalOne('TRUNC(D)', { D: utc(2021, 5, 6, 13, 30) }) as Date;
+    expect(day.getUTCHours()).toBe(0);
+    const month = evalOne("TRUNC(D, 'MM')", { D: utc(2021, 5, 6) }) as Date;
+    expect(month.getUTCDate()).toBe(1);
+    const year = evalOne("TRUNC(D, 'YYYY')", { D: utc(2021, 5, 6) }) as Date;
+    expect(year.getUTCMonth()).toBe(0);
+  });
+
+  it('TO_CHAR of a date honours a mask', () => {
+    expect(evalOne("TO_CHAR(D, 'YYYY-MM-DD')", { D: utc(2021, 7, 4) })).toBe(
+      '2021-07-04',
+    );
+    expect(evalOne("TO_CHAR(D, 'MON')", { D: utc(2021, 1, 1) })).toMatch(/jan/i);
+  });
+
+  it('TO_CHAR of a number honours grouping and decimals', () => {
+    expect(evalOne("TO_CHAR(N, '999,999.00')", { N: 1234567.5 })).toBe(
+      '1,234,567.50',
+    );
+    expect(evalOne('TO_CHAR(N)', { N: 42 })).toBe('42');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Function arity errors
+// ---------------------------------------------------------------------------
+
+describe('function arity validation', () => {
+  it('rejects the wrong number of arguments', () => {
+    expect(() => evalOne('ABS(1, 2)')).toThrow(CalculatedFieldError);
+    expect(() => evalOne('MOD(1)')).toThrow(CalculatedFieldError);
+  });
+});

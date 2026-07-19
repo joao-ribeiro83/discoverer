@@ -494,6 +494,19 @@ describe('Join update', () => {
 
     expect(response.statusCode).toBe(404);
   });
+
+  it('returns 400 updating with an item that does not belong to its folder', async () => {
+    // testRightItemId lives in the right folder, so assigning it as the LEFT
+    // item (whose folder stays the left folder) fails join validation.
+    const response = await app.inject({
+      method: 'PUT',
+      url: `/api/joins/${joinId}`,
+      headers: { authorization: `Bearer ${adminToken}` },
+      payload: { leftItemId: testRightItemId },
+    });
+
+    expect(response.statusCode).toBe(400);
+  });
 });
 
 describe('Join soft delete', () => {

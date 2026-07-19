@@ -5,6 +5,74 @@ import { buildApp } from '../app.js';
 import { db } from '../db/index.js';
 import { users, customFunctions } from '../db/schema.js';
 import { hashPassword } from '../lib/password.js';
+import {
+  validateParameters,
+  validateFunctionType,
+} from '../services/custom-function.service.js';
+
+// ---------------------------------------------------------------------------
+// Pure validation helpers (unit-level; no app/DB)
+// ---------------------------------------------------------------------------
+
+describe('validateParameters', () => {
+  it('accepts null/undefined (no parameters)', () => {
+    expect(validateParameters(null).valid).toBe(true);
+    expect(validateParameters(undefined).valid).toBe(true);
+  });
+
+  it('accepts a well-formed parameter list', () => {
+    expect(
+      validateParameters([
+        { name: 'p1', type: 'VARCHAR2', required: true },
+        { name: 'p2', type: 'NUMBER' },
+      ]).valid,
+    ).toBe(true);
+  });
+
+  it('rejects a non-array', () => {
+    const r = validateParameters({ name: 'x' });
+    expect(r.valid).toBe(false);
+    expect(r.error).toMatch(/must be an array/);
+  });
+
+  it('rejects a non-object element', () => {
+    expect(validateParameters(['nope']).error).toMatch(/must be an object/);
+    expect(validateParameters([null]).error).toMatch(/must be an object/);
+  });
+
+  it('rejects a parameter missing a name', () => {
+    expect(validateParameters([{ type: 'NUMBER' }]).error).toMatch(/"name"/);
+    expect(validateParameters([{ name: '  ', type: 'NUMBER' }]).error).toMatch(/"name"/);
+  });
+
+  it('rejects a parameter missing a type', () => {
+    expect(validateParameters([{ name: 'p' }]).error).toMatch(/"type"/);
+  });
+
+  it('rejects a non-boolean required flag', () => {
+    expect(
+      validateParameters([{ name: 'p', type: 'NUMBER', required: 'yes' }]).error,
+    ).toMatch(/required must be a boolean/);
+  });
+
+  it('rejects duplicate parameter names', () => {
+    expect(
+      validateParameters([
+        { name: 'dup', type: 'NUMBER' },
+        { name: 'dup', type: 'VARCHAR2' },
+      ]).error,
+    ).toMatch(/Duplicate parameter/);
+  });
+});
+
+describe('validateFunctionType', () => {
+  it('accepts allowlisted types and rejects others', () => {
+    expect(validateFunctionType('SQL')).toBe(true);
+    expect(validateFunctionType('PLSQL')).toBe(true);
+    expect(validateFunctionType('PACKAGE')).toBe(true);
+    expect(validateFunctionType('SHELL')).toBe(false);
+  });
+});
 
 // ---------------------------------------------------------------------------
 // Helpers

@@ -598,6 +598,36 @@ describe('Oracle introspection', () => {
     expect(response.statusCode).toBe(404);
   });
 
+  it('serves cached tables from GET /tables for an Oracle data source', async () => {
+    // GET /tables reads the cache (POST /introspect deliberately invalidates it
+    // to force a fresh pull), so seeding Redis lets us cover the 200 path.
+    await app.redis.setex(
+      `oracle:introspection:${testDataSourceId}`,
+      300,
+      JSON.stringify(mockTables),
+    );
+
+    const response = await app.inject({
+      method: 'GET',
+      url: `/api/data-sources/${testDataSourceId}/tables`,
+      headers: { authorization: `Bearer ${adminToken}` },
+    });
+
+    expect(response.statusCode).toBe(200);
+    const data = response.json().data;
+    expect(data.count).toBe(2);
+    expect(data.tables).toHaveLength(2);
+  });
+
+  it('404s GET /tables for an unknown data source', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/data-sources/00000000-0000-4000-8000-000000000000/tables',
+      headers: { authorization: `Bearer ${adminToken}` },
+    });
+    expect(response.statusCode).toBe(404);
+  });
+
   it('returns 400 for non-Oracle data source on introspect', async () => {
     // Create a postgres data source
     const [pgDs] = await db
@@ -667,6 +697,53 @@ describe('Oracle import', () => {
     });
 
     expect(response.statusCode).toBe(400);
+  });
+
+  it('imports tables as folders, skipping unknown and pre-existing ones', async () => {
+    // Seed the introspection cache so importFromOracle resolves table columns
+    // without a live Oracle (introspectSchema checks Redis first).
+    await app.redis.setex(
+      `oracle:introspection:${testDataSourceId}`,
+      300,
+      JSON.stringify(mockTables),
+    );
+
+    const first = await app.inject({
+      method: 'POST',
+      url: `/api/data-sources/${testDataSourceId}/import`,
+      headers: { authorization: `Bearer ${adminToken}` },
+      payload: {
+        tableNames: ['EMPLOYEES', 'DEPARTMENTS', 'DOES_NOT_EXIST'],
+        tableOwner: 'HR',
+        businessAreaId: testBusinessAreaId,
+      },
+    });
+
+    expect(first.statusCode).toBe(200);
+    const body = first.json().data;
+    expect(body.created).toHaveLength(2);
+    expect(body.skipped).toHaveLength(1);
+    expect(body.skipped[0].tableName).toBe('DOES_NOT_EXIST');
+
+    // A folder + its items were actually created.
+    expect(body.created.map((c: { tableName: string }) => c.tableName).sort()).toEqual(
+      ['DEPARTMENTS', 'EMPLOYEES'],
+    );
+
+    // Re-importing EMPLOYEES now reports it as already existing.
+    const second = await app.inject({
+      method: 'POST',
+      url: `/api/data-sources/${testDataSourceId}/import`,
+      headers: { authorization: `Bearer ${adminToken}` },
+      payload: {
+        tableNames: ['EMPLOYEES'],
+        tableOwner: 'HR',
+        businessAreaId: testBusinessAreaId,
+      },
+    });
+    expect(second.statusCode).toBe(200);
+    expect(second.json().data.created).toHaveLength(0);
+    expect(second.json().data.skipped[0].reason).toMatch(/already exists/i);
   });
 
   it('returns 400 for missing required fields', async () => {

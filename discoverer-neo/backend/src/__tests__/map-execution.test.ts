@@ -343,6 +343,83 @@ describe('executeMapAsync (background job)', () => {
     const outcome = await cancelExecution(jobId);
     expect(outcome).toEqual({ cancelled: false, status: 'COMPLETED' });
   });
+
+  it('settles as TIMEOUT when the async query times out', async () => {
+    const timeoutErr = Object.assign(
+      new Error('DPI-1067: call timeout of 30000 ms exceeded'),
+      { code: 'DPI-1067' },
+    );
+    const { conn } = makeFailingConn(timeoutErr);
+    const { deps, recordExecution, releaseConnection } = makeDeps(conn);
+
+    const { jobId } = await executeMapAsync(MAP_ID, {}, USER_ID, {}, deps);
+    await waitFor(() => getExecutionStatus(jobId)?.status === 'TIMEOUT');
+
+    expect(recordExecution.mock.calls[0]![0]).toMatchObject({ status: 'TIMEOUT' });
+    expect(releaseConnection).toHaveBeenCalledTimes(1);
+  });
+
+  it('settles as FAILED on a generic async query error', async () => {
+    const { conn } = makeFailingConn(
+      new Error('ORA-00942: table or view does not exist'),
+    );
+    const { deps, recordExecution } = makeDeps(conn);
+
+    const { jobId } = await executeMapAsync(MAP_ID, {}, USER_ID, {}, deps);
+    await waitFor(() => getExecutionStatus(jobId)?.status === 'FAILED');
+
+    const job = getExecutionStatus(jobId)!;
+    expect(job.error).toMatch(/ORA-00942/);
+    expect(recordExecution.mock.calls[0]![0]).toMatchObject({ status: 'FAILED' });
+  });
+
+  it('settles as FAILED when the connection cannot be acquired', async () => {
+    const { conn } = makeResultSetConn([{ C1: 1 }]);
+    const getConnection = jest.fn(async () => {
+      throw new Error('ORA-12541: no listener');
+    }) as unknown as MapExecutionDeps['getConnection'];
+    const { deps } = makeDeps(conn, { getConnection });
+
+    const { jobId } = await executeMapAsync(MAP_ID, {}, USER_ID, {}, deps);
+    await waitFor(() => getExecutionStatus(jobId)?.status === 'FAILED');
+
+    expect(getExecutionStatus(jobId)!.error).toMatch(/ORA-12541/);
+  });
+
+  it('settles as FAILED when prepareQuery fails', async () => {
+    const { conn } = makeResultSetConn([{ C1: 1 }]);
+    const prepareQuery = jest.fn(async () => {
+      throw new Error('bad map definition');
+    }) as unknown as MapExecutionDeps['prepareQuery'];
+    const { deps } = makeDeps(conn, { prepareQuery });
+
+    const { jobId } = await executeMapAsync(MAP_ID, {}, USER_ID, {}, deps);
+    await waitFor(() => getExecutionStatus(jobId)?.status === 'FAILED');
+
+    expect(getExecutionStatus(jobId)!.error).toMatch(/bad map definition/);
+  });
+
+  it('completes via the no-result-set fallback (execute returns plain rows)', async () => {
+    // A driver that returns rows directly with no result set exercises
+    // openRowStream's fallback branch.
+    const raw: Record<string, unknown> = {
+      callTimeout: undefined,
+      execute: jest.fn(async () => ({
+        rows: [{ C1: 5 }, { C1: 6 }],
+        metaData: [{ name: 'C1' }],
+      })),
+      break: jest.fn(async () => {}),
+      close: jest.fn(async () => {}),
+    };
+    const { deps } = makeDeps(raw as unknown as Connection);
+
+    const { jobId } = await executeMapAsync(MAP_ID, {}, USER_ID, {}, deps);
+    await waitFor(() => getExecutionStatus(jobId)?.status === 'COMPLETED');
+
+    const job = getExecutionStatus(jobId)!;
+    expect(job.rowCount).toBe(2);
+    expect(job.result?.rows).toEqual([{ C1: 5 }, { C1: 6 }]);
+  });
 });
 
 // ---------------------------------------------------------------------------

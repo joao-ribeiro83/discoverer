@@ -1201,4 +1201,273 @@ describe('SQL generator', () => {
       expectParsable(generateSql(def).sql);
     });
   });
+
+  // -------------------------------------------------------------------------
+  // Condition edge cases (WHERE-clause error/parameter branches)
+  // -------------------------------------------------------------------------
+  describe('condition edge cases', () => {
+    function withCondition(overrides: Partial<MapCondition>, extra: Partial<MapDefinition> = {}) {
+      const f = salesFixture();
+      const item = overrides.itemId ? f.amount : f.region;
+      return mkDef({
+        items: [{ mapItem: mkMapItem(f.region), item: f.region, folder: f.sales }],
+        conditions: [
+          {
+            condition: mkCondition(item, overrides),
+            item,
+            folder: f.sales,
+          },
+        ],
+        formulaItems: f.formulaItems,
+        ...extra,
+      });
+    }
+
+    it('throws when a STATIC condition has no value', () => {
+      const def = withCondition({ operator: '=', value: null });
+      expect(() => generateSql(def)).toThrow(/has no value/);
+    });
+
+    it('throws when STATIC BETWEEN does not supply two values', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [{ mapItem: mkMapItem(f.amount), item: f.amount, folder: f.sales }],
+        conditions: [
+          {
+            condition: mkCondition(f.amount, { operator: 'BETWEEN', value: '10' }),
+            item: f.amount,
+            folder: f.sales,
+          },
+        ],
+        formulaItems: f.formulaItems,
+      });
+      expect(() => generateSql(def)).toThrow(/two comma-separated values/);
+    });
+
+    it('throws when a numeric column gets a non-numeric static value', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [{ mapItem: mkMapItem(f.amount), item: f.amount, folder: f.sales }],
+        conditions: [
+          {
+            condition: mkCondition(f.amount, { operator: '=', value: 'not-a-number' }),
+            item: f.amount,
+            folder: f.sales,
+          },
+        ],
+        formulaItems: f.formulaItems,
+      });
+      expect(() => generateSql(def)).toThrow(/not a valid number/);
+    });
+
+    it('throws when a PARAMETER condition has no paramName', () => {
+      const def = withCondition({
+        operator: '=',
+        conditionType: 'PARAMETER',
+        paramName: null,
+      });
+      expect(() => generateSql(def)).toThrow(/has no paramName/);
+    });
+
+    it('renders a PARAMETER BETWEEN with lo/hi binds', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [{ mapItem: mkMapItem(f.amount), item: f.amount, folder: f.sales }],
+        conditions: [
+          {
+            condition: mkCondition(f.amount, {
+              operator: 'BETWEEN',
+              conditionType: 'PARAMETER',
+              paramName: 'p_range',
+            }),
+            item: f.amount,
+            folder: f.sales,
+          },
+        ],
+        parameters: [mkParameter({ name: 'p_range' })],
+        formulaItems: f.formulaItems,
+      });
+      const result = generateSql(def, { parameterValues: { p_range: '10,20' } });
+      expect(norm(result.sql)).toContain('BETWEEN :p_range_lo AND :p_range_hi');
+      expect(result.bindParams.p_range_lo).toBe('10');
+      expect(result.bindParams.p_range_hi).toBe('20');
+    });
+
+    it('throws when a PARAMETER BETWEEN supplies the wrong number of values', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [{ mapItem: mkMapItem(f.amount), item: f.amount, folder: f.sales }],
+        conditions: [
+          {
+            condition: mkCondition(f.amount, {
+              operator: 'BETWEEN',
+              conditionType: 'PARAMETER',
+              paramName: 'p_range',
+            }),
+            item: f.amount,
+            folder: f.sales,
+          },
+        ],
+        parameters: [mkParameter({ name: 'p_range' })],
+        formulaItems: f.formulaItems,
+      });
+      expect(() =>
+        generateSql(def, { parameterValues: { p_range: '10,20,30' } }),
+      ).toThrow(/two values for BETWEEN/);
+    });
+
+    it('emits a single IN placeholder for a non-LIST parameter', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [{ mapItem: mkMapItem(f.region), item: f.region, folder: f.sales }],
+        conditions: [
+          {
+            condition: mkCondition(f.region, {
+              operator: 'IN',
+              conditionType: 'PARAMETER',
+              paramName: 'p_region',
+            }),
+            item: f.region,
+            folder: f.sales,
+          },
+        ],
+        parameters: [mkParameter({ name: 'p_region' })],
+        formulaItems: f.formulaItems,
+      });
+      const result = generateSql(def, { parameterValues: { p_region: 'EMEA' } });
+      expect(norm(result.sql)).toContain('IN (:p_region)');
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Row-level security predicates (WHERE-clause security branches)
+  // -------------------------------------------------------------------------
+  describe('security predicates', () => {
+    function baseDef() {
+      const f = salesFixture();
+      return {
+        f,
+        def: mkDef({
+          items: [{ mapItem: mkMapItem(f.region), item: f.region, folder: f.sales }],
+          formulaItems: f.formulaItems,
+        }),
+      };
+    }
+
+    it('appends a bare predicate string', () => {
+      const { def } = baseDef();
+      const result = generateSql(def, {
+        securityPredicates: ['1 = 1'],
+      });
+      expect(norm(result.sql)).toContain('WHERE (1 = 1)');
+    });
+
+    it('ANDs a security predicate after an existing condition', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [{ mapItem: mkMapItem(f.region), item: f.region, folder: f.sales }],
+        conditions: [
+          {
+            condition: mkCondition(f.region, { operator: '=', value: 'EMEA' }),
+            item: f.region,
+            folder: f.sales,
+          },
+        ],
+        formulaItems: f.formulaItems,
+      });
+      const result = generateSql(def, { securityPredicates: ['1 = 1'] });
+      expect(norm(result.sql)).toContain('AND (1 = 1)');
+    });
+
+    it('binds a referenced security bind that is supplied', () => {
+      const { def } = baseDef();
+      const result = generateSql(def, {
+        securityPredicates: ['f1."REGION" = :ctx_region'],
+        securityBindParams: { ctx_region: 'EMEA' },
+      });
+      expect(result.bindParams.ctx_region).toBe('EMEA');
+    });
+
+    it('throws when a predicate references an unsupplied bind', () => {
+      const { def } = baseDef();
+      expect(() =>
+        generateSql(def, { securityPredicates: ['f1."REGION" = :ctx_missing'] }),
+      ).toThrow(/no value was supplied/);
+    });
+
+    it('rejects a predicate containing a statement separator', () => {
+      const { def } = baseDef();
+      expect(() =>
+        generateSql(def, { securityPredicates: ['1 = 1; DROP TABLE X'] }),
+      ).toThrow(/statement separators/);
+    });
+
+    it('rejects an {alias} predicate with no folder target', () => {
+      const { def } = baseDef();
+      expect(() =>
+        generateSql(def, {
+          securityPredicates: [{ sql: '{alias}."REGION" = 1' }],
+        }),
+      ).toThrow(/no folder target/);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Formula-parser operator/predicate coverage (compiled calc fields)
+  // -------------------------------------------------------------------------
+  describe('formula operators in calculated fields', () => {
+    function compile(formula: string): string {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+          { mapItem: mkMapItem(f.amount), item: f.amount, folder: f.sales },
+        ],
+        calculatedFields: [mkCalcField({ name: 'X', formula })],
+        formulaItems: f.formulaItems,
+      });
+      return norm(generateSql(def).sql);
+    }
+
+    it('compiles comparison operators', () => {
+      expect(compile('AMOUNT >= 100')).toContain('>= 100');
+      expect(compile('AMOUNT <> 0')).toContain('<> 0');
+      expect(compile('AMOUNT < 5')).toContain('< 5');
+    });
+
+    it('compiles LIKE', () => {
+      expect(compile("REGION LIKE 'E%'")).toContain("LIKE 'E%'");
+    });
+
+    it('compiles IS NULL and IS NOT NULL', () => {
+      expect(compile('REGION IS NULL')).toContain('IS NULL');
+      expect(compile('REGION IS NOT NULL')).toContain('IS NOT NULL');
+    });
+
+    it('compiles AND / OR / NOT', () => {
+      expect(compile('AMOUNT > 0 AND REGION IS NOT NULL')).toContain('AND');
+      expect(compile('AMOUNT > 0 OR AMOUNT < 5')).toContain('OR');
+      expect(compile('NOT (AMOUNT > 0)')).toContain('NOT');
+    });
+
+    it('compiles string concatenation', () => {
+      expect(compile("REGION || '-' || REGION")).toContain('||');
+    });
+
+    it('compiles allowlisted functions', () => {
+      expect(compile('NVL(REGION, 0)')).toContain('NVL(');
+      expect(compile('ROUND(AMOUNT, 2)')).toContain('ROUND(');
+      expect(compile('LENGTH(REGION)')).toContain('LENGTH(');
+      expect(compile('GREATEST(AMOUNT, 1)')).toContain('GREATEST(');
+    });
+
+    it('compiles unary minus and parenthesised arithmetic', () => {
+      expect(compile('-AMOUNT + 1')).toContain('-f1."AMOUNT"');
+      expect(compile('(AMOUNT + 1) * 2')).toContain('* 2');
+    });
+
+    it('rejects a trailing garbage token', () => {
+      expect(() => compile('AMOUNT +')).toThrow(SqlGenerationError);
+    });
+  });
 });

@@ -355,6 +355,54 @@ describe('Hierarchy CRUD with levels', () => {
     });
     expect(getRes.statusCode).toBe(404);
   });
+
+  it('returns 404 updating a non-existent hierarchy', async () => {
+    const response = await app.inject({
+      method: 'PUT',
+      url: '/api/hierarchies/00000000-0000-4000-8000-000000000000',
+      headers: { authorization: `Bearer ${adminToken}` },
+      payload: { name: 'Ghost' },
+    });
+    expect(response.statusCode).toBe(404);
+  });
+
+  it('returns 400 updating with an invalid item reference', async () => {
+    const createRes = await app.inject({
+      method: 'POST',
+      url: `/api/business-areas/${testBusinessAreaId}/hierarchies`,
+      headers: { authorization: `Bearer ${adminToken}` },
+      payload: {
+        name: 'Valid Base',
+        levels: [{ levelName: 'L1', itemId: testItemId1, levelNumber: 1 }],
+      },
+    });
+    const id = createRes.json().data.id;
+
+    const response = await app.inject({
+      method: 'PUT',
+      url: `/api/hierarchies/${id}`,
+      headers: { authorization: `Bearer ${adminToken}` },
+      payload: {
+        levels: [
+          {
+            levelName: 'Bad',
+            itemId: '00000000-0000-4000-8000-000000000000',
+            levelNumber: 1,
+          },
+        ],
+      },
+    });
+    expect(response.statusCode).toBe(400);
+  });
+
+  it('returns 404 deleting a non-existent hierarchy', async () => {
+    const response = await app.inject({
+      method: 'DELETE',
+      url: '/api/hierarchies/00000000-0000-4000-8000-000000000000',
+      headers: { authorization: `Bearer ${adminToken}` },
+    });
+    expect(response.statusCode).toBe(404);
+  });
 });
 
 describe('Hierarchy validation endpoint', () => {
