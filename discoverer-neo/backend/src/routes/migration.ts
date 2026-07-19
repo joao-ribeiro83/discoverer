@@ -18,6 +18,7 @@ import {
   listJobs,
   startMigration,
 } from '../services/migration.service.js';
+import { invalidateAll } from '../lib/metadata-cache.js';
 
 // ---------------------------------------------------------------------------
 // Validation schemas
@@ -181,6 +182,8 @@ export default async function migrationRoutes(fastify: FastifyInstance) {
           dryRun: parsed.data.dryRun === true,
           version: normalizeVersion(parsed.data.version),
           startedBy: userId,
+          // The job writes metadata directly, well after this request returns.
+          onSettled: () => invalidateAll(fastify.redis),
         });
         return reply.code(202).send({ data: job });
       } catch (err) {

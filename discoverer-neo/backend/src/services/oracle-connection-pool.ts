@@ -21,13 +21,17 @@ import { importOracleDb } from './oracle-driver.js';
 // Tunables
 // ---------------------------------------------------------------------------
 
-const POOL_MIN = 2;
-const POOL_MAX = 10;
-const POOL_INCREMENT = 1;
+// Pool sizing is environment-tunable (see config.ts) because the right values
+// depend on the deployment: how many Oracle sources exist, how many concurrent
+// map executions are expected against each, and what the database's own
+// session limit allows.
+const POOL_MIN = config.ORACLE_POOL_MIN;
+const POOL_MAX = config.ORACLE_POOL_MAX;
+const POOL_INCREMENT = config.ORACLE_POOL_INCREMENT;
 /** Seconds an idle connection may sit in the pool before it is closed. */
-const POOL_IDLE_TIMEOUT_SECONDS = 300; // 5 minutes
+const POOL_IDLE_TIMEOUT_SECONDS = config.ORACLE_POOL_IDLE_TIMEOUT_SECONDS;
 /** Max ms to wait to acquire a connection (queue + establish). */
-const CONNECT_TIMEOUT_MS = 10_000;
+const CONNECT_TIMEOUT_MS = config.ORACLE_CONNECT_TIMEOUT_MS;
 /** Seconds to let in-flight work drain when closing a pool on shutdown. */
 const POOL_DRAIN_SECONDS = 5;
 

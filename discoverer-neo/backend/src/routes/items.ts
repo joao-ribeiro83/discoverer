@@ -12,6 +12,7 @@ import {
   getDescendants,
 } from '../services/item.service.js';
 import { requireFolderAccess, requireItemAccess } from '../middleware/business-area-auth.js';
+import { cached, invalidate, metadataKeys } from '../lib/metadata-cache.js';
 
 // ---------------------------------------------------------------------------
 // Validation schemas
@@ -159,7 +160,13 @@ export default async function itemRoutes(fastify: FastifyInstance) {
         return reply.code(400).send({ error: 'Invalid folder ID format' });
       }
 
-      const itemList = await listByFolder(parsed.data.folderId);
+      // Cached per folder, not per user: the folder's item list is identical
+      // for every caller, and requireFolderAccess has already run.
+      const itemList = await cached(
+        fastify.redis,
+        metadataKeys.itemsByFolder(parsed.data.folderId),
+        () => listByFolder(parsed.data.folderId),
+      );
       return reply.code(200).send({ data: itemList });
     },
   );
@@ -283,6 +290,10 @@ export default async function itemRoutes(fastify: FastifyInstance) {
           createdBy: user.sub,
         });
 
+        await invalidate(
+          fastify.redis,
+          metadataKeys.itemsByFolder(paramParsed.data.folderId),
+        );
         return reply.code(201).send({ data: item });
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
@@ -365,6 +376,9 @@ export default async function itemRoutes(fastify: FastifyInstance) {
           return reply.code(404).send({ error: 'Item not found' });
         }
 
+        // folderId comes off the updated row — update() deliberately refuses to
+        // move an item between folders, so this is also the old folder.
+        await invalidate(fastify.redis, metadataKeys.itemsByFolder(item.folderId));
         return reply.code(200).send({ data: item });
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
@@ -409,9 +423,17 @@ export default async function itemRoutes(fastify: FastifyInstance) {
         return reply.code(400).send({ error: 'Invalid item ID format' });
       }
 
+      // Read the item first: softDelete only reports whether a row matched, and
+      // the owning folder is needed to invalidate its cached item list.
+      const existing = await getById(parsed.data.id);
+
       const deleted = await softDelete(parsed.data.id);
       if (!deleted) {
         return reply.code(404).send({ error: 'Item not found' });
+      }
+
+      if (existing) {
+        await invalidate(fastify.redis, metadataKeys.itemsByFolder(existing.folderId));
       }
 
       return reply.code(200).send({
@@ -490,6 +512,10 @@ export default async function itemRoutes(fastify: FastifyInstance) {
           bodyParsed.data.columns,
         );
 
+        await invalidate(
+          fastify.redis,
+          metadataKeys.itemsByFolder(paramParsed.data.folderId),
+        );
         return reply.code(200).send({ data: result });
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);

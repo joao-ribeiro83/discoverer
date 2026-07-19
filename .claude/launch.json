@@ -16,6 +16,25 @@
         "FRONTEND_PORT": "5174",
         "VITE_BACKEND_URL": "http://localhost:3001"
       }
+    },
+    {
+      "//": "Serves the production build from dist/. Bundle-size and load work must be measured here — `npm run dev` serves unbundled ES modules and unminified source, so its network waterfall says nothing about what ships.",
+      "name": "discoverer-neo-frontend-preview",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "preview",
+        "--prefix",
+        "discoverer-neo/frontend",
+        "--",
+        "--port",
+        "4173"
+      ],
+      "port": 4173,
+      "env": {
+        "PREVIEW_PORT": "4173",
+        "VITE_BACKEND_URL": "http://localhost:3001"
+      }
     }
   ]
 }

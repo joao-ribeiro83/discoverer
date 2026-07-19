@@ -14,6 +14,7 @@ import {
   requireBusinessAreaAccess,
   requireFolderAccess,
 } from '../middleware/business-area-auth.js';
+import { cached, invalidate, metadataKeys } from '../lib/metadata-cache.js';
 
 // ---------------------------------------------------------------------------
 // Validation schemas
@@ -173,7 +174,13 @@ export default async function folderRoutes(fastify: FastifyInstance) {
         return reply.code(400).send({ error: 'Invalid business area ID format' });
       }
 
-      const folderList = await listByBusinessArea(parsed.data.baId);
+      // Cached per business area, not per user — requireBusinessAreaAccess has
+      // already gated this, and the folder list is the same for every caller.
+      const folderList = await cached(
+        fastify.redis,
+        metadataKeys.foldersByBusinessArea(parsed.data.baId),
+        () => listByBusinessArea(parsed.data.baId),
+      );
       return reply.code(200).send({ data: folderList });
     },
   );
@@ -294,6 +301,10 @@ export default async function folderRoutes(fastify: FastifyInstance) {
           fastify.redis,
         );
 
+        await invalidate(
+          fastify.redis,
+          metadataKeys.foldersByBusinessArea(paramParsed.data.baId),
+        );
         return reply.code(201).send({ data: folder });
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
@@ -371,6 +382,10 @@ export default async function folderRoutes(fastify: FastifyInstance) {
         return reply.code(404).send({ error: 'Folder not found' });
       }
 
+      await invalidate(
+        fastify.redis,
+        metadataKeys.foldersByBusinessArea(folder.businessAreaId),
+      );
       return reply.code(200).send({ data: folder });
     },
   );
@@ -411,9 +426,23 @@ export default async function folderRoutes(fastify: FastifyInstance) {
         return reply.code(400).send({ error: 'Invalid folder ID format' });
       }
 
+      // Read first: softDelete only reports whether a row matched, and the
+      // owning business area is needed to invalidate its cached folder list.
+      const existing = await getById(parsed.data.id);
+
       const deleted = await softDelete(parsed.data.id);
       if (!deleted) {
         return reply.code(404).send({ error: 'Folder not found' });
+      }
+
+      if (existing) {
+        await invalidate(
+          fastify.redis,
+          metadataKeys.foldersByBusinessArea(existing.businessAreaId),
+          // The folder's items are unreachable now; drop their list too rather
+          // than leaving it to expire.
+          metadataKeys.itemsByFolder(existing.id),
+        );
       }
 
       return reply.code(200).send({
@@ -641,6 +670,10 @@ export default async function folderRoutes(fastify: FastifyInstance) {
           fastify.redis,
         );
 
+        await invalidate(
+          fastify.redis,
+          metadataKeys.foldersByBusinessArea(bodyParsed.data.businessAreaId),
+        );
         return reply.code(200).send({ data: result });
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);

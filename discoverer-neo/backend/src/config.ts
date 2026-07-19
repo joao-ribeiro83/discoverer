@@ -10,7 +10,44 @@ const EnvSchema = z.object({
   DATABASE_URL: z
     .string()
     .default('postgres://postgres:postgres@localhost:5432/discoverer_neo'),
+
+  /**
+   * Postgres connection-pool ceiling. Defaults to node-postgres' own 10.
+   *
+   * Exposed because it is the first thing to reach for under load, but note
+   * that benchmarking did *not* find it to be the constraint: at 25 concurrent
+   * users, raising it to 25 moved p95 by ~11% with metadata caching off, and by
+   * nothing measurable with caching on (the cache removes the reads that were
+   * competing for connections in the first place). Raise it only for workloads
+   * that miss the cache heavily — many distinct business areas, or frequent
+   * metadata writes — and measure rather than assuming.
+   *
+   * Connections are a shared, limited resource: this ceiling, every worker
+   * process, and any psql session all draw on Postgres' max_connections (100 by
+   * default). Raise the two together, not this alone.
+   */
+  DATABASE_POOL_MAX: z.coerce.number().int().positive().max(100).default(10),
+  /** Ms an idle pooled connection is kept before being closed. */
+  DATABASE_POOL_IDLE_TIMEOUT_MS: z.coerce.number().int().nonnegative().default(30_000),
+  /** Ms to wait for a free connection before failing the request. */
+  DATABASE_POOL_CONNECTION_TIMEOUT_MS: z.coerce
+    .number()
+    .int()
+    .nonnegative()
+    .default(10_000),
+
   REDIS_URL: z.string().default('redis://localhost:6379'),
+
+  /**
+   * Read-through Redis caching of EUL metadata (see lib/metadata-cache.ts).
+   *
+   * On by default. Turn it off to rule the cache out when diagnosing metadata
+   * that looks stale — every read then goes straight to Postgres, at the cost
+   * of roughly a third of peak throughput under concurrency.
+   */
+  METADATA_CACHE_ENABLED: z.enum(['true', 'false']).default('true'),
+  /** Seconds a cached metadata entry survives without explicit invalidation. */
+  METADATA_CACHE_TTL_SECONDS: z.coerce.number().int().positive().default(300),
 
   JWT_SECRET: z.string().min(16).default('dev-only-insecure-secret-change-me'),
   JWT_EXPIRES_IN: z.string().default('7d'),
@@ -30,6 +67,25 @@ const EnvSchema = z.object({
   ORACLE_THICK_MODE: z.enum(['true', 'false']).default('false'),
   /** Instant Client directory. Only read when ORACLE_THICK_MODE is enabled. */
   ORACLE_CLIENT_PATH: z.string().default('/opt/oracle/instantclient'),
+
+  /**
+   * Oracle connection-pool sizing, applied per data source.
+   *
+   * These are per-pool, not global: a deployment with four Oracle sources can
+   * hold 4 x ORACLE_POOL_MAX sessions open, which has to fit inside the
+   * database's own `sessions`/`processes` limits. Size against the number of
+   * *concurrent map executions* expected per source, not total users — a map
+   * execution holds one connection for the life of the query, and exports hold
+   * one for minutes (see EXPORT_WORKER_CONCURRENCY, which claims against the
+   * same pool).
+   */
+  ORACLE_POOL_MIN: z.coerce.number().int().nonnegative().max(100).default(2),
+  ORACLE_POOL_MAX: z.coerce.number().int().positive().max(100).default(10),
+  ORACLE_POOL_INCREMENT: z.coerce.number().int().positive().max(50).default(1),
+  /** Seconds an idle Oracle connection may sit in the pool before closing. */
+  ORACLE_POOL_IDLE_TIMEOUT_SECONDS: z.coerce.number().int().nonnegative().default(300),
+  /** Max ms to wait to acquire an Oracle connection (queue + establish). */
+  ORACLE_CONNECT_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
 
   /**
    * Export jobs processed concurrently by one worker process.
@@ -78,7 +134,13 @@ const EnvSchema = z.object({
 
   // 32+ char key used for AES-256-GCM encryption of stored credentials.
   ENCRYPTION_KEY: z.string().min(32).default('dev-only-insecure-encryption-key-change-me'),
-});
+})
+  // oracledb rejects a pool whose min exceeds its max, but only when the first
+  // pool is built — which may be hours after boot. Catch it at startup instead.
+  .refine((c) => c.ORACLE_POOL_MIN <= c.ORACLE_POOL_MAX, {
+    message: 'ORACLE_POOL_MIN must not exceed ORACLE_POOL_MAX',
+    path: ['ORACLE_POOL_MIN'],
+  });
 
 const parsed = EnvSchema.safeParse(process.env);
 
@@ -105,5 +167,6 @@ export const config = {
     parsed.data.SCHEDULER_WORKER_ENABLED === undefined
       ? parsed.data.NODE_ENV !== 'test'
       : parsed.data.SCHEDULER_WORKER_ENABLED === 'true',
+  METADATA_CACHE_ENABLED: parsed.data.METADATA_CACHE_ENABLED === 'true',
 };
 export type Config = typeof config;

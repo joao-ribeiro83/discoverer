@@ -228,6 +228,18 @@ export interface StartMigrationOptions extends SourceOptions {
   dryRun?: boolean;
   version?: 'auto' | 'EUL4' | 'EUL5';
   startedBy: string;
+  /**
+   * Called once the job settles, successfully or not.
+   *
+   * A migration writes business areas, folders and items directly, bypassing
+   * the routes that would otherwise invalidate their cache entries — and it
+   * does so long after the HTTP request returned, so the caller cannot simply
+   * invalidate inline. The route supplies a hook that drops the metadata cache.
+   * Kept as a callback rather than a Redis dependency so the service (and its
+   * injected-deps tests) stay free of a cache import. Errors thrown here are
+   * swallowed: a failed cache flush must not mark a completed migration failed.
+   */
+  onSettled?: () => void | Promise<void>;
 }
 
 /**
@@ -333,6 +345,13 @@ export function startMigration(
         } catch {
           // The pool is being discarded anyway.
         }
+      }
+      // Runs on the failure path too: a migration that died partway through
+      // may still have committed rows, so the cache is suspect either way.
+      try {
+        await options.onSettled?.();
+      } catch {
+        // Best-effort — see StartMigrationOptions.onSettled.
       }
     }
   })();

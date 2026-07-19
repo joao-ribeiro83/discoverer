@@ -13,6 +13,7 @@ import {
   getUserPermissionLevels,
   type PermissionLevel,
 } from '../services/business-area.service.js';
+import { cached, invalidate, metadataKeys } from '../lib/metadata-cache.js';
 
 // ---------------------------------------------------------------------------
 // Validation schemas
@@ -152,7 +153,14 @@ export default async function businessAreasRoutes(fastify: FastifyInstance) {
       const user = request.user!;
 
       if (user.role === 'ADMIN') {
-        const areas = await list();
+        // Only the admin branch is cached. It is the full active set, identical
+        // for every admin. The non-admin branch below is filtered by the
+        // caller's own grants and must never share a cache entry with it.
+        const areas = await cached(
+          fastify.redis,
+          metadataKeys.businessAreaList(),
+          () => list(),
+        );
         return reply.code(200).send({ data: areas });
       }
 
@@ -277,6 +285,7 @@ export default async function businessAreasRoutes(fastify: FastifyInstance) {
 
       const user = request.user!;
       const area = await create(parsed.data, user.sub);
+      await invalidate(fastify.redis, metadataKeys.businessAreaList());
       return reply.code(201).send({ data: area });
     },
   );
@@ -331,6 +340,7 @@ export default async function businessAreasRoutes(fastify: FastifyInstance) {
         return reply.code(404).send({ error: 'Business area not found' });
       }
 
+      await invalidate(fastify.redis, metadataKeys.businessAreaList());
       return reply.code(200).send({ data: area });
     },
   );
@@ -373,6 +383,14 @@ export default async function businessAreasRoutes(fastify: FastifyInstance) {
       if (!deleted) {
         return reply.code(404).send({ error: 'Business area not found' });
       }
+
+      await invalidate(
+        fastify.redis,
+        metadataKeys.businessAreaList(),
+        // Its folders are unreachable now; drop that list rather than waiting
+        // for the TTL.
+        metadataKeys.foldersByBusinessArea(parsed.data.id),
+      );
 
       return reply.code(200).send({
         data: { message: 'Business area deactivated' },
