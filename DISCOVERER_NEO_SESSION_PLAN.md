@@ -1,10 +1,10 @@
 # Discoverer Neo — Session-by-Session Development Plan
 
-> **Version:** 1.1
-> **Date:** 2026-06-23 (updated 2026-07-14 — added per-session model & effort recommendations)
-> **Based on:** `DISCOVERER_NEO_EXECUTION_PLAN.md` (v1.0) + `DISCOVERER_NEO_ARCHITECTURE.md` (v1.0)
-> **Total Sessions:** 38 across 7 phases (Phase 0–6)
-> **Estimated Duration:** 16–20 weeks (full-time, 2–3 developers)
+> **Version:** 1.2
+> **Date:** 2026-06-23 (updated 2026-07-14 — added per-session model & effort recommendations; updated 2026-07-20 — added Phase 7: Internationalization, Theming & User Preferences)
+> **Based on:** `DISCOVERER_NEO_EXECUTION_PLAN.md` (v1.1) + `DISCOVERER_NEO_ARCHITECTURE.md` (v1.0)
+> **Total Sessions:** 47 across 8 phases (Phase 0–7)
+> **Estimated Duration:** 16–20 weeks (full-time, 2–3 developers) for Phases 0–6, +3–4 weeks for Phase 7
 
 ---
 
@@ -3325,6 +3325,477 @@ Run the full verification checklist. Fix any issues found.
 
 ---
 
+# PHASE 7: Internationalization, Theming & User Preferences
+
+> **Goal:** Users can select a UI language (English, European Portuguese, France French, European Spanish) and a visual theme (Light, Dark, High Contrast) per-account, from a new Settings page. All UI strings and user-facing documentation are translated into the three added languages, with BI terminology consistent with Power BI/Tableau's localized editions.
+> **Duration:** 3–4 weeks
+> **Prerequisites:** Session 1.1 (Authentication), Phase 3 (Frontend UI complete), Session 6.3 (Documentation)
+
+---
+
+## Session 7.1 — User Preferences Backend (Locale & Theme)
+
+| Field | Value |
+|---|---|
+| **Goal** | Per-user language and theme preference, stored in the database and exposed via a preferences API |
+| **Scope** | `backend/src/db/schema.ts`, new Drizzle migration, `backend/src/services/user-preferences.service.ts`, `backend/src/routes/user-preferences.ts` |
+| **Skills** | `backend-api-patterns`, `drizzle-orm-patterns` |
+| **Agents** | `backend-specialist` (primary), `db-expert` (migration) |
+| **Model / Effort** | Sonnet 5 — medium. Standard CRUD plus enum validation |
+| **Dependencies** | Session 1.1 (Authentication Module) |
+
+**Prompt:**
+```
+You are adding per-user language and theme preferences to Discoverer Neo's backend.
+
+The project root is discoverer-neo/ (current working directory). The backend is Node.js + Fastify + TypeScript + Drizzle ORM + PostgreSQL. The `users` table is defined in `backend/src/db/schema.ts`.
+
+Implement the following:
+
+### 1. Schema changes (`backend/src/db/schema.ts`)
+- Add a `localeEnum` Drizzle pgEnum: `['en', 'pt-PT', 'fr-FR', 'es-ES']`
+- Add a `themeEnum` Drizzle pgEnum: `['light', 'dark', 'high-contrast']`
+- Add `locale` column to `users`: `localeEnum('locale').notNull().default('en')`
+- Add `theme` column to `users`: `themeEnum('theme').notNull().default('light')`
+- Generate the Drizzle migration (`drizzle-kit generate`)
+
+### 2. Preferences service (`backend/src/services/user-preferences.service.ts`)
+- `getPreferences(userId)` — returns `{ locale, theme }`
+- `updatePreferences(userId, { locale?, theme? })` — partial update, validates against the enums, updates `updated_at`
+
+### 3. Preferences routes (`backend/src/routes/user-preferences.ts`)
+- `GET /api/users/me/preferences` — returns the current user's `{ locale, theme }` (auth required)
+- `PATCH /api/users/me/preferences` — Zod-validated body `{ locale?: 'en'|'pt-PT'|'fr-FR'|'es-ES', theme?: 'light'|'dark'|'high-contrast' }`, at least one field required
+- Register the route in `backend/src/app.ts`
+- Include `locale` and `theme` in the `/api/auth/login` and `/api/auth/me` response payloads so the frontend can apply them immediately on load, without a second round trip
+
+### 4. Tests (`backend/src/__tests__/user-preferences.test.ts`)
+- Default values for a newly created user (`en` / `light`)
+- Update locale only, update theme only, update both
+- Reject invalid locale/theme values (400)
+- Reject empty body (400)
+- Unauthenticated request rejected (401)
+- Preferences persist across requests
+
+Follow the existing service/route/test structure used by `backend/src/services/business-area.service.ts` and `backend/src/routes/business-areas.ts` for consistency.
+```
+
+**Deliverables:**
+- ✅ `locale` and `theme` columns on `users`, migrated
+- ✅ `GET`/`PATCH /api/users/me/preferences`
+- ✅ Preferences included in login/`me` responses
+- ✅ Tests passing
+
+---
+
+## Session 7.2 — i18n Frontend Infrastructure & String Extraction
+
+| Field | Value |
+|---|---|
+| **Goal** | react-i18next wired end-to-end; every hardcoded UI string extracted into an `en` baseline resource set |
+| **Scope** | `frontend/src/i18n/`, `frontend/src/locales/en/*.json`, every existing page/component (string extraction) |
+| **Skills** | `i18n`, `i18n-localization`, `react` |
+| **Agents** | `application-performance-frontend-developer` (primary), `frontend-mobile-development-frontend-developer` (parallel string extraction across page groups) |
+| **Model / Effort** | Opus 4.8 — high. Touches nearly every file in the frontend; a missed string silently breaks every non-English locale |
+| **Dependencies** | Session 7.1; all of Phase 3 (frontend UI complete) |
+
+**Prompt:**
+```
+You are wiring internationalization (i18n) infrastructure into Discoverer Neo's React frontend and extracting every hardcoded UI string into translation resources.
+
+The project root is discoverer-neo/ (current working directory). The frontend is React 19 + Vite + TypeScript + Tailwind CSS 4 + shadcn/ui + Zustand + TanStack Query. It currently has:
+- Login page, dashboard
+- Admin pages: business areas, data sources, folders, items, joins, hierarchies, users, custom functions
+- Map builder: business area tree, map canvas, conditions/sort/parameters/calculated-fields panels, toolbar
+- Map viewer, results table, export
+- Schedules page, security page, migration page, audit log page
+
+None of this UI is currently internationalized — all strings are hardcoded English JSX text.
+
+### 1. Install & configure
+- `react-i18next`, `i18next`, `i18next-browser-languagedetector`
+- `frontend/src/i18n/index.ts` — i18next init: supported locales `['en', 'pt-PT', 'fr-FR', 'es-ES']`, fallback `'en'`, namespaced resources, interpolation escaping off (React already escapes)
+
+### 2. Resource namespace structure (`frontend/src/locales/en/*.json`)
+Create one JSON file per namespace, all under `frontend/src/locales/en/`:
+- `common.json` — generic actions/labels (Save, Cancel, Delete, Edit, Search, Loading, Yes, No, Confirm, Back, Next, etc.)
+- `auth.json` — login page
+- `nav.json` — sidebar/navigation labels
+- `admin.json` — all 8 admin CRUD pages
+- `mapBuilder.json` — tree, canvas, toolbar, all four right-panel tabs
+- `mapViewer.json` — viewer page, results table, export dialog
+- `schedules.json`
+- `security.json`
+- `migration.json`
+- `audit.json`
+- `settings.json` — placeholder for Session 7.4's Settings page
+- `errors.json` — API/validation error messages, keyed by backend error code where one exists
+
+### 3. Extraction rules
+- Every user-visible string becomes a `t('namespace:key')` call — no hardcoded English text left in JSX
+- Interpolated values use i18next placeholder syntax: `t('key', { count })` → `"key": "{{count}} rows selected"`
+- Pluralization uses i18next's `_one`/`_other` key suffixes where applicable (e.g., row counts, error counts)
+- Keys are namespaced and hierarchical (e.g., `admin:businessAreas.createButton`, not a flat dump)
+- Do not translate log messages, internal error codes, or developer-facing console output — only user-visible UI text
+
+### 4. Locale resolution & switching
+- Resolution order: authenticated user's saved `locale` preference (from `/api/auth/me`) → browser `navigator.language` via `i18next-browser-languagedetector` → `en` fallback
+- `frontend/src/hooks/useLocale.ts` — reads/sets the active locale, syncs to `PATCH /api/users/me/preferences` when the user changes it (Session 7.4 will call this)
+- Switching locale updates the UI immediately without a full page reload
+
+### 5. Locale-aware formatting (`frontend/src/lib/format.ts`)
+- `formatDate(date, locale)` / `formatNumber(n, locale)` / `formatCurrency` using `Intl.DateTimeFormat` / `Intl.NumberFormat`, replacing any ad-hoc date/number formatting currently in the codebase
+- Wire into the results table and export preview
+
+### 6. Tests
+- `frontend/src/__tests__/i18n.test.tsx` — fallback to `en` when a key is missing in another locale, interpolation renders correctly, locale switch re-renders translated text
+
+Do NOT write pt-PT/fr-FR/es-ES translations in this session — only the `en` baseline and the infrastructure. Sessions 7.5–7.7 handle translation content. Empty locale JSON files (`frontend/src/locales/pt-PT/`, `fr-FR/`, `es-ES/`) with the same keys as `en` but placeholder/untranslated values are acceptable scaffolding for this session so the app doesn't crash if a locale is selected early.
+```
+
+**Deliverables:**
+- ✅ react-i18next configured with 4 supported locales
+- ✅ Every existing hardcoded string extracted into namespaced `en` JSON resources
+- ✅ Locale resolution order implemented and tested
+- ✅ Locale-aware date/number formatting
+- ✅ Scaffolded (untranslated) locale files for pt-PT/fr-FR/es-ES
+
+---
+
+## Session 7.3 — Theming Infrastructure
+
+| Field | Value |
+|---|---|
+| **Goal** | Multiple selectable themes (Light, Dark, High Contrast) via CSS custom-property tokens, applied instantly and persisted per-user |
+| **Scope** | `frontend/src/styles/themes/`, `frontend/src/providers/ThemeProvider.tsx`, Tailwind theme config, shadcn component tokens |
+| **Skills** | `tailwindcss-advanced-design-systems`, `tailwindcss-responsive-darkmode`, `dark-mode-design-expert` |
+| **Agents** | `application-performance-frontend-developer` (primary), `ui-designer` (token/palette design) |
+| **Model / Effort** | Sonnet 5 — medium. Well-specified token system; the shadcn theming pattern is a known recipe |
+| **Dependencies** | Session 7.1 |
+
+**Prompt:**
+```
+You are implementing a multi-theme system for Discoverer Neo's React frontend.
+
+The project root is discoverer-neo/ (current working directory). The frontend uses Tailwind CSS 4 + shadcn/ui, which already themes via CSS custom properties on `:root` (e.g. `--background`, `--foreground`, `--primary`, `--border`, etc., consumed by `tailwind.config`/`@theme`).
+
+Implement three built-in themes:
+
+### 1. Theme token files (`frontend/src/styles/themes/`)
+- `light.css` — current default palette, extracted into a `[data-theme="light"]` block if not already token-based
+- `dark.css` — `[data-theme="dark"]` block, WCAG AA contrast against `light`
+- `high-contrast.css` — `[data-theme="high-contrast"]` block, maximized contrast (near-black/near-white, no low-contrast grays), for accessibility
+- Each file defines the same full set of CSS custom properties so no theme is missing a token the components rely on
+
+### 2. ThemeProvider (`frontend/src/providers/ThemeProvider.tsx`)
+- React context exposing `{ theme, setTheme }`
+- Applies the active theme by setting `data-theme` on `<html>`
+- On first load with no saved preference, defaults to the OS `prefers-color-scheme` (light/dark), falling back to `light`
+- Once a user has an explicit saved preference (from `/api/auth/me`), it always wins over `prefers-color-scheme`
+- Persists changes via `PATCH /api/users/me/preferences` (same endpoint pattern as locale in Session 7.2) and to `localStorage` for instant paint on next load before the API responds
+
+### 3. Component audit
+- Verify every existing page and component (admin pages, map builder, map viewer, dialogs, tables, toasts) renders correctly in all three themes — no hardcoded Tailwind colors (e.g. `bg-white`, `text-gray-900`) that bypass the token system. Replace any with the appropriate token-based utility class.
+
+### 4. Tests
+- `frontend/src/__tests__/theme.test.tsx` — theme switch updates `data-theme`, defaults to `prefers-color-scheme` when unset, saved preference overrides OS setting
+
+Do not build the theme picker UI in this session — that is Session 7.4. This session is the token system and provider only.
+```
+
+**Deliverables:**
+- ✅ Light, Dark, High Contrast theme token sets
+- ✅ `ThemeProvider` with `prefers-color-scheme` default and saved-preference override
+- ✅ Every existing component verified theme-safe (no hardcoded colors)
+- ✅ Theme choice persisted to backend + localStorage
+
+---
+
+## Session 7.4 — Settings Page (Language & Theme)
+
+| Field | Value |
+|---|---|
+| **Goal** | A user-facing Settings page where language and theme preferences are viewed, previewed, and saved |
+| **Scope** | `frontend/src/pages/SettingsPage.tsx`, navigation, routing |
+| **Skills** | `react-forms`, `i18n`, `tailwindcss-responsive-darkmode` |
+| **Agents** | `application-performance-frontend-developer` (primary), `component-create` (form components) |
+| **Model / Effort** | Sonnet 5 — medium. Standard form page following the existing admin-page pattern |
+| **Dependencies** | Session 7.1, Session 7.2, Session 7.3 |
+
+**Prompt:**
+```
+You are building a Settings page for Discoverer Neo. The frontend currently has no user-facing settings/profile page at all.
+
+The project root is discoverer-neo/ (current working directory). Session 7.1 added `GET`/`PATCH /api/users/me/preferences` (`{ locale, theme }`). Session 7.2 added react-i18next with 4 supported locales. Session 7.3 added the `ThemeProvider` with 3 themes.
+
+Implement:
+
+### 1. Settings page (`frontend/src/pages/SettingsPage.tsx`)
+- Route: `/settings`, accessible to any authenticated user (not admin-only)
+- "Language" section: a dropdown/select listing English, Português (Portugal), Français (France), Español (España) — each option labeled in its own language (autonym), not translated into the current UI language
+- "Theme" section: a visual picker (three swatch cards — Light, Dark, High Contrast) with a live preview that applies the theme immediately on click, before saving
+- "Save" persists via `PATCH /api/users/me/preferences`; changing the dropdown/picker updates the live UI immediately (via the hooks from 7.2/7.3) regardless of whether the user has clicked Save — Save just persists it as the account default
+- Loading and error states (e.g. save failure) using the existing toast component
+
+### 2. Navigation
+- Add a "Settings" entry to the sidebar/nav (`frontend/src/components/layout/`), visible to all authenticated users
+- Add a link from the user profile menu/avatar dropdown if one exists
+
+### 3. Use the extracted `settings.json` namespace from Session 7.2 for all strings on this page (fill in the real English text — Session 7.2 only scaffolded the namespace).
+
+### 4. Tests (`frontend/src/__tests__/settings.test.tsx`)
+- Renders current preferences on load
+- Changing language updates displayed text immediately
+- Changing theme updates `data-theme` immediately
+- Save calls the preferences API and shows a success toast
+- Save failure shows an error toast and does not lose the unsaved selection
+```
+
+**Deliverables:**
+- ✅ `/settings` page with language and theme controls
+- ✅ Live preview before save
+- ✅ Persists to backend preferences API
+- ✅ Reachable from navigation
+
+---
+
+## Session 7.5 — Portuguese (pt-PT) Translation Content
+
+| Field | Value |
+|---|---|
+| **Goal** | Complete, enterprise-quality European Portuguese (pt-PT) translation of every UI string namespace |
+| **Scope** | `frontend/src/locales/pt-PT/*.json`, `docs/i18n/glossary-pt-PT.md` |
+| **Skills** | `i18n-localization`, `microcopy` |
+| **Agents** | `general-purpose` (primary — translation), `docs-master` (glossary consistency review) |
+| **Model / Effort** | Sonnet 5 — high. Terminology fidelity and tone consistency across ~11 namespaces |
+| **Dependencies** | Session 7.2 (namespace structure + `en` baseline exist) |
+
+**Prompt:**
+```
+You are producing the European Portuguese (pt-PT) translation for Discoverer Neo, an enterprise business-intelligence tool.
+
+The project root is discoverer-neo/ (current working directory). Session 7.2 extracted every UI string into `frontend/src/locales/en/*.json` (namespaces: common, auth, nav, admin, mapBuilder, mapViewer, schedules, security, migration, audit, settings, errors) and scaffolded empty `frontend/src/locales/pt-PT/*.json` files with the same keys.
+
+### Rules (apply to every string, no exceptions)
+1. **Terminology** — Use the same terms European Portuguese localized editions of Power BI and Tableau use for BI concepts (report, dashboard, filter, measure, dimension, drill down/up, pivot table, data source, query, workbook/worksheet, etc.). Do not invent new Portuguese terminology for concepts these tools already localize. Where Discoverer Neo has a concept with no direct Power BI/Tableau equivalent (e.g. "Business Area", "Folder" as EUL concepts, "Map" as the Discoverer term for a saved query), translate it plainly and consistently rather than force-fitting a BI-tool term that means something different.
+2. **Placeholders** — Preserve every placeholder exactly as written: `{{count}}`, `{{name}}`, `%s`, `{0}`, etc. Never translate, reorder, or drop a placeholder token. Word order may need to change around the placeholder to read naturally in Portuguese — the token itself must not.
+3. **Conciseness** — Button and label strings must stay button/label length. Do not expand a 2-word English label into a Portuguese sentence. If the literal translation is much longer than the English source, prefer the shorter idiomatic BI term over a literal one.
+4. **Tone** — Professional, neutral, enterprise register throughout (formal "você"/3rd-person address as used in enterprise software, not casual "tu"). No exclamation marks, no consumer-app friendliness, no humor.
+
+### 1. Build the glossary first (`docs/i18n/glossary-pt-PT.md`)
+Before translating, establish and document the pt-PT rendering of Discoverer Neo's core domain terms, cross-checked against how Power BI Desktop/Service and Tableau Desktop render the equivalent concept in their pt-PT UI: Business Area, Folder, Item, Join, Hierarchy, Map (workbook), Worksheet, Parameter, Condition, Calculated Field, Aggregation, Schedule, Export, Data Source, Role, Permission, Report, Dashboard, Filter, Sort, Drill Down, Drill Up, Crosstab/Pivot Table, Measure, Dimension, Column, Row, Query, Audit Log, Security Policy, Business Area Grant. Record the chosen Portuguese term, and if Power BI and Tableau disagree on a term, note both and state which one you followed and why (prefer Power BI's rendering as the primary reference, since Microsoft's pt-PT localization is the more widely deployed enterprise standard; fall back to Tableau's where Power BI has no equivalent concept).
+
+### 2. Translate every namespace
+Fill in `frontend/src/locales/pt-PT/common.json`, `auth.json`, `nav.json`, `admin.json`, `mapBuilder.json`, `mapViewer.json`, `schedules.json`, `security.json`, `migration.json`, `audit.json`, `settings.json`, `errors.json` — every key present in the corresponding `en/*.json` file must be present here with the same key, same placeholder tokens, and a pt-PT value that follows the glossary and the four rules above.
+
+### 3. Language autonym
+In `settings.json`, ensure the language's own display name (used in the Settings page language picker from Session 7.4) is the autonym `"Português (Portugal)"`, not translated into pt-PT itself (it already is pt-PT) nor into English.
+
+### 4. Validation script (`scripts/i18n-check.mjs`)
+Write (or extend if it already exists) a Node script that, for a given locale, verifies against `en`:
+- Every key in `en/<namespace>.json` exists in `<locale>/<namespace>.json` and vice versa (no extra/missing keys)
+- Every placeholder token (`{{...}}`, `%s`, `{N}`) present in the `en` value appears, unchanged, in the translated value
+- No value is empty
+Run it for `pt-PT` and fix every reported issue before finishing.
+
+### 5. Spot-check readability
+Read through `mapBuilder.json` and `admin.json` end-to-end as a native pt-PT speaker would encounter them in the UI (in context — these are button labels, panel headings, and short helper text, not prose) and fix anything that reads as machine-translated or overly literal.
+```
+
+**Deliverables:**
+- ✅ `docs/i18n/glossary-pt-PT.md`
+- ✅ Every namespace fully translated in `frontend/src/locales/pt-PT/`
+- ✅ `scripts/i18n-check.mjs` passes for `pt-PT` with zero missing keys/placeholders
+- ✅ No untranslated or English-leftover strings
+
+---
+
+## Session 7.6 — French (fr-FR) Translation Content
+
+| Field | Value |
+|---|---|
+| **Goal** | Complete, enterprise-quality France French (fr-FR) translation of every UI string namespace |
+| **Scope** | `frontend/src/locales/fr-FR/*.json`, `docs/i18n/glossary-fr-FR.md` |
+| **Skills** | `i18n-localization`, `microcopy` |
+| **Agents** | `general-purpose` (primary — translation), `docs-master` (glossary consistency review) |
+| **Model / Effort** | Sonnet 5 — high. Terminology fidelity and tone consistency across ~11 namespaces |
+| **Dependencies** | Session 7.2 (namespace structure + `en` baseline exist) |
+
+**Prompt:**
+```
+You are producing the France French (fr-FR) translation for Discoverer Neo, an enterprise business-intelligence tool.
+
+The project root is discoverer-neo/ (current working directory). Session 7.2 extracted every UI string into `frontend/src/locales/en/*.json` (namespaces: common, auth, nav, admin, mapBuilder, mapViewer, schedules, security, migration, audit, settings, errors) and scaffolded empty `frontend/src/locales/fr-FR/*.json` files with the same keys.
+
+### Rules (apply to every string, no exceptions)
+1. **Terminology** — Use the same terms France French localized editions of Power BI and Tableau use for BI concepts (rapport, tableau de bord, filtre, mesure, dimension, exploration ascendante/descendante, tableau croisé dynamique, source de données, requête, classeur/feuille, etc.). Do not invent new French terminology for concepts these tools already localize. Where Discoverer Neo has a concept with no direct Power BI/Tableau equivalent (e.g. "Business Area", "Folder" as EUL concepts, "Map" as the Discoverer term for a saved query), translate it plainly and consistently rather than force-fitting a BI-tool term that means something different.
+2. **Placeholders** — Preserve every placeholder exactly as written: `{{count}}`, `{{name}}`, `%s`, `{0}`, etc. Never translate, reorder, or drop a placeholder token. Word order may need to change around the placeholder to read naturally in French — the token itself must not.
+3. **Conciseness** — Button and label strings must stay button/label length. Do not expand a 2-word English label into a French sentence. If the literal translation is much longer than the English source, prefer the shorter idiomatic BI term over a literal one.
+4. **Tone** — Professional, neutral, enterprise register throughout (formal "vous" address, as is standard in French enterprise software). No exclamation marks, no consumer-app friendliness, no humor.
+
+### 1. Build the glossary first (`docs/i18n/glossary-fr-FR.md`)
+Before translating, establish and document the fr-FR rendering of Discoverer Neo's core domain terms, cross-checked against how Power BI Desktop/Service and Tableau Desktop render the equivalent concept in their fr-FR UI: Business Area, Folder, Item, Join, Hierarchy, Map (workbook), Worksheet, Parameter, Condition, Calculated Field, Aggregation, Schedule, Export, Data Source, Role, Permission, Report, Dashboard, Filter, Sort, Drill Down, Drill Up, Crosstab/Pivot Table, Measure, Dimension, Column, Row, Query, Audit Log, Security Policy, Business Area Grant. Record the chosen French term, and if Power BI and Tableau disagree on a term, note both and state which one you followed and why (prefer Power BI's rendering as the primary reference, since Microsoft's fr-FR localization is the more widely deployed enterprise standard; fall back to Tableau's where Power BI has no equivalent concept).
+
+### 2. Translate every namespace
+Fill in `frontend/src/locales/fr-FR/common.json`, `auth.json`, `nav.json`, `admin.json`, `mapBuilder.json`, `mapViewer.json`, `schedules.json`, `security.json`, `migration.json`, `audit.json`, `settings.json`, `errors.json` — every key present in the corresponding `en/*.json` file must be present here with the same key, same placeholder tokens, and a fr-FR value that follows the glossary and the four rules above.
+
+### 3. Language autonym
+In `settings.json`, ensure the language's own display name (used in the Settings page language picker from Session 7.4) is the autonym `"Français (France)"`, not translated into fr-FR itself (it already is fr-FR) nor into English.
+
+### 4. Validation script (`scripts/i18n-check.mjs`)
+Reuse the script from Session 7.5 (it is locale-parameterized). Run it for `fr-FR` and fix every reported issue before finishing.
+
+### 5. Spot-check readability
+Read through `mapBuilder.json` and `admin.json` end-to-end as a native fr-FR speaker would encounter them in the UI (in context — these are button labels, panel headings, and short helper text, not prose) and fix anything that reads as machine-translated or overly literal.
+```
+
+**Deliverables:**
+- ✅ `docs/i18n/glossary-fr-FR.md`
+- ✅ Every namespace fully translated in `frontend/src/locales/fr-FR/`
+- ✅ `scripts/i18n-check.mjs` passes for `fr-FR` with zero missing keys/placeholders
+- ✅ No untranslated or English-leftover strings
+
+---
+
+## Session 7.7 — Spanish (es-ES) Translation Content
+
+| Field | Value |
+|---|---|
+| **Goal** | Complete, enterprise-quality European Spanish (es-ES) translation of every UI string namespace |
+| **Scope** | `frontend/src/locales/es-ES/*.json`, `docs/i18n/glossary-es-ES.md` |
+| **Skills** | `i18n-localization`, `microcopy` |
+| **Agents** | `general-purpose` (primary — translation), `docs-master` (glossary consistency review) |
+| **Model / Effort** | Sonnet 5 — high. Terminology fidelity and tone consistency across ~11 namespaces |
+| **Dependencies** | Session 7.2 (namespace structure + `en` baseline exist) |
+
+**Prompt:**
+```
+You are producing the European Spanish (es-ES) translation for Discoverer Neo, an enterprise business-intelligence tool.
+
+The project root is discoverer-neo/ (current working directory). Session 7.2 extracted every UI string into `frontend/src/locales/en/*.json` (namespaces: common, auth, nav, admin, mapBuilder, mapViewer, schedules, security, migration, audit, settings, errors) and scaffolded empty `frontend/src/locales/es-ES/*.json` files with the same keys.
+
+### Rules (apply to every string, no exceptions)
+1. **Terminology** — Use the same terms European Spanish localized editions of Power BI and Tableau use for BI concepts (informe, panel, filtro, medida, dimensión, profundizar/reducir detalle, tabla dinámica, origen de datos, consulta, libro/hoja de trabajo, etc.). Do not invent new Spanish terminology for concepts these tools already localize. Where Discoverer Neo has a concept with no direct Power BI/Tableau equivalent (e.g. "Business Area", "Folder" as EUL concepts, "Map" as the Discoverer term for a saved query), translate it plainly and consistently rather than force-fitting a BI-tool term that means something different.
+2. **Placeholders** — Preserve every placeholder exactly as written: `{{count}}`, `{{name}}`, `%s`, `{0}`, etc. Never translate, reorder, or drop a placeholder token. Word order may need to change around the placeholder to read naturally in Spanish — the token itself must not.
+3. **Conciseness** — Button and label strings must stay button/label length. Do not expand a 2-word English label into a Spanish sentence. If the literal translation is much longer than the English source, prefer the shorter idiomatic BI term over a literal one.
+4. **Tone** — Professional, neutral, enterprise register throughout (formal "usted" address, as is standard in Spanish enterprise software). No exclamation marks, no consumer-app friendliness, no humor.
+
+### 1. Build the glossary first (`docs/i18n/glossary-es-ES.md`)
+Before translating, establish and document the es-ES rendering of Discoverer Neo's core domain terms, cross-checked against how Power BI Desktop/Service and Tableau Desktop render the equivalent concept in their es-ES UI: Business Area, Folder, Item, Join, Hierarchy, Map (workbook), Worksheet, Parameter, Condition, Calculated Field, Aggregation, Schedule, Export, Data Source, Role, Permission, Report, Dashboard, Filter, Sort, Drill Down, Drill Up, Crosstab/Pivot Table, Measure, Dimension, Column, Row, Query, Audit Log, Security Policy, Business Area Grant. Record the chosen Spanish term, and if Power BI and Tableau disagree on a term, note both and state which one you followed and why (prefer Power BI's rendering as the primary reference, since Microsoft's es-ES localization is the more widely deployed enterprise standard; fall back to Tableau's where Power BI has no equivalent concept).
+
+### 2. Translate every namespace
+Fill in `frontend/src/locales/es-ES/common.json`, `auth.json`, `nav.json`, `admin.json`, `mapBuilder.json`, `mapViewer.json`, `schedules.json`, `security.json`, `migration.json`, `audit.json`, `settings.json`, `errors.json` — every key present in the corresponding `en/*.json` file must be present here with the same key, same placeholder tokens, and an es-ES value that follows the glossary and the four rules above.
+
+### 3. Language autonym
+In `settings.json`, ensure the language's own display name (used in the Settings page language picker from Session 7.4) is the autonym `"Español (España)"`, not translated into es-ES itself (it already is es-ES) nor into English.
+
+### 4. Validation script (`scripts/i18n-check.mjs`)
+Reuse the script from Session 7.5 (it is locale-parameterized). Run it for `es-ES` and fix every reported issue before finishing.
+
+### 5. Spot-check readability
+Read through `mapBuilder.json` and `admin.json` end-to-end as a native es-ES speaker would encounter them in the UI (in context — these are button labels, panel headings, and short helper text, not prose) and fix anything that reads as machine-translated or overly literal.
+```
+
+**Deliverables:**
+- ✅ `docs/i18n/glossary-es-ES.md`
+- ✅ Every namespace fully translated in `frontend/src/locales/es-ES/`
+- ✅ `scripts/i18n-check.mjs` passes for `es-ES` with zero missing keys/placeholders
+- ✅ No untranslated or English-leftover strings
+
+---
+
+## Session 7.8 — i18n & Theming Integration Testing
+
+| Field | Value |
+|---|---|
+| **Goal** | End-to-end verification that language and theme switching work correctly across the whole app, in every locale/theme combination |
+| **Scope** | `frontend/e2e/i18n-theming.spec.ts`, CI wiring for the placeholder-integrity check |
+| **Skills** | `accessibility`, `i18n-localization` |
+| **Agents** | `playwright` (E2E), `accessibility-expert` (contrast audit), `ui-visual-validator` (visual regression) |
+| **Model / Effort** | Sonnet 5 — medium. Verification over already-implemented features |
+| **Dependencies** | Sessions 7.1–7.7 |
+
+**Prompt:**
+```
+You are writing end-to-end tests that verify Discoverer Neo's language and theme features work correctly together, across the whole application.
+
+The project root is discoverer-neo/ (current working directory). By this point:
+- Users can set locale (en, pt-PT, fr-FR, es-ES) and theme (light, dark, high-contrast) in Settings (Session 7.4)
+- All four locales have complete translations (Sessions 7.2, 7.5–7.7)
+- Three themes exist as CSS token sets (Session 7.3)
+
+### 1. Playwright E2E tests (`frontend/e2e/i18n-theming.spec.ts`)
+- Log in, change language in Settings to each of pt-PT/fr-FR/es-ES in turn → verify key UI text (nav labels, a map builder panel heading, a button) changes to the expected translated string
+- Log out and back in → verify the saved language persists (loaded from `/api/auth/me`, not reset to browser default)
+- Change theme to each of dark/high-contrast → verify the `data-theme` attribute and a representative computed CSS color change; reload the page → theme persists
+- New user with no saved preference and `prefers-color-scheme: dark` → verify the app opens in the dark theme
+- Simulate a missing translation key (temporarily stub one) → verify the UI falls back to the English string rather than rendering the raw key or crashing
+
+### 2. Placeholder & completeness check in CI
+- Wire `scripts/i18n-check.mjs` (from Session 7.5) into the CI workflow (`.github/workflows/ci.yml` from Session 6.4) as a required step, run for pt-PT, fr-FR, and es-ES — the build fails if any locale is missing keys or placeholder tokens relative to `en`
+
+### 3. Accessibility contrast audit
+- For each of the three themes, run an automated contrast check (e.g. axe-core via Playwright) across the login page, dashboard, and map builder — every theme must meet WCAG AA (4.5:1 for normal text, 3:1 for large text/UI components)
+- Fix any component whose hardcoded styling (not theme tokens) causes a failure
+
+### 4. Visual regression
+- Capture baseline screenshots for a representative set of pages (dashboard, map builder, a data table with results, Settings page) × (light, dark, high-contrast) × (en, pt-PT) — 4 pages × 3 themes × 2 locales = 24 baseline screenshots, enough to catch a broken theme/locale combination without an unbounded matrix (skip fr-FR/es-ES for visual regression; their layout risk is already covered by the placeholder-length check in 7.5–7.7, not by pixel screenshots)
+
+Report and fix any failures found before finishing this session.
+```
+
+**Deliverables:**
+- ✅ E2E tests covering language switch, theme switch, persistence, and fallback behavior
+- ✅ CI blocks merges with incomplete translations
+- ✅ WCAG AA contrast verified for all three themes
+- ✅ Visual regression baseline established
+
+---
+
+## Session 7.9 — Documentation Update & Translation (pt-PT, fr-FR, es-ES)
+
+| Field | Value |
+|---|---|
+| **Goal** | English documentation updated to cover the new Settings/language/theme features; user-guide and admin-guide translated into all three languages |
+| **Scope** | `docs/user-guide/`, `docs/admin-guide/`, new `docs/pt-PT/`, `docs/fr-FR/`, `docs/es-ES/` |
+| **Skills** | `technical-writer`, `microcopy`, `i18n-localization` |
+| **Agents** | `docs-master` (primary — English updates + structure), `general-purpose` (parallel — one instance per target language) |
+| **Model / Effort** | Sonnet 5 — medium. Documentation writing and translation of already-established English source |
+| **Dependencies** | Session 6.3 (existing docs); Sessions 7.4–7.7 (feature complete, glossaries available) |
+
+**Prompt:**
+```
+You are updating and translating Discoverer Neo's documentation, which was originally written (in English only) in Session 6.3.
+
+The project root is discoverer-neo/ (current working directory). `docs/` currently has `user-guide/`, `admin-guide/`, `developer-guide/`, `deployment/`, `migration/`, and `api/`, all English-only.
+
+### 1. Update the English source first
+- `docs/user-guide/` — add a new `settings.md` covering how to change language and theme, and update `getting-started.md` to mention the Settings page
+- `docs/admin-guide/` — note that language/theme are self-service, per-user settings with no admin configuration required (no changes needed unless you find otherwise)
+- Do not touch `docs/developer-guide/`, `docs/deployment/`, `docs/migration/`, or `docs/api/` beyond fixing anything that's now inaccurate because of this feature — this session is scoped to user-facing docs, not a rewrite
+
+### 2. Translate `docs/user-guide/` and `docs/admin-guide/` into pt-PT, fr-FR, and es-ES
+- Mirror the exact directory/file structure under `docs/pt-PT/user-guide/`, `docs/pt-PT/admin-guide/`, and the equivalent `docs/fr-FR/` and `docs/es-ES/` trees
+- Use the glossaries built in Sessions 7.5 (`docs/i18n/glossary-pt-PT.md`), 7.6 (`glossary-fr-FR.md`), and 7.7 (`glossary-es-ES.md`) so documentation terminology matches the translated UI exactly — a user reading the pt-PT admin guide should see the same term for "Business Area" that appears in the pt-PT app
+- Keep code blocks, file paths, CLI commands, and environment variable names untranslated (only prose and headings are translated)
+- Same tone rules as the UI translations: professional, neutral, enterprise register — these are technical guides, not marketing copy, so this should already be the natural register
+
+### 3. Docs index / language switcher
+- Add a top-level `docs/README.md` (or update it if Session 6.3 created one) with links to the English, pt-PT, fr-FR, and es-ES versions of the user guide and admin guide
+
+### 4. Consistency check
+- Grep each translated tree for any leftover English sentences accidentally left untranslated, and fix them
+- Verify every internal link within a translated doc points to the translated version of the target page, not back to the English one
+```
+
+**Deliverables:**
+- ✅ `docs/user-guide/settings.md` (English)
+- ✅ `docs/pt-PT/`, `docs/fr-FR/`, `docs/es-ES/` — full user-guide + admin-guide translations
+- ✅ `docs/README.md` with language links
+- ✅ No leftover English text or cross-locale broken links in translated docs
+
+---
+
 # Summary
 
 | Phase | Sessions | Key Deliverables |
@@ -3334,10 +3805,11 @@ Run the full verification checklist. Fix any issues found.
 | **Phase 2** | 2.1–2.5 | Maps, SQL generator, map execution, parameters, calculated fields |
 | **Phase 3** | 3.1–3.6 | Login UI, admin pages, map builder, conditions/sort/params, data preview, E2E tests |
 | **Phase 4** | 4.1–4.3 | Excel/CSV export, scheduling, integration tests |
-| **Phase 5** | 5.1–5.6 | Row-level security, map sharing, EUL version detection, EUL reader, migration tool (EUL3/4/5), audit logging |
+| **Phase 5** | 5.1–5.7 | Row-level security, map sharing, EUL version detection, EUL reader, migration tool (EUL3/4/5), audit logging, security/migration integration testing |
 | **Phase 6** | 6.1–6.4 | Comprehensive testing, performance optimization, documentation, production readiness |
+| **Phase 7** | 7.1–7.9 | Per-user locale & theme preferences, i18n infrastructure, 3 built-in themes, Settings page, pt-PT/fr-FR/es-ES UI translation, translated documentation |
 
-**Total: 30 sessions across 6 phases**
+**Total: 47 sessions across 8 phases**
 
 ---
 
@@ -3383,6 +3855,15 @@ Run the full verification checklist. Fix any issues found.
 | 6.2 | `application-performance-frontend-developer` | `backend-specialist` | — |
 | 6.3 | `docs-master` | `api-testing-observability-api-documenter` | — |
 | 6.4 | `docker-expert` | `cicd-automation-deployment-engineer` | — |
+| 7.1 | `backend-specialist` | `db-expert` | — |
+| 7.2 | `application-performance-frontend-developer` | `frontend-mobile-development-frontend-developer` | — |
+| 7.3 | `application-performance-frontend-developer` | `ui-designer` | — |
+| 7.4 | `application-performance-frontend-developer` | `component-create` | — |
+| 7.5 | `general-purpose` | — | `docs-master` |
+| 7.6 | `general-purpose` | — | `docs-master` |
+| 7.7 | `general-purpose` | — | `docs-master` |
+| 7.8 | `playwright` | `accessibility-expert`, `ui-visual-validator` | — |
+| 7.9 | `docs-master` | `general-purpose` | — |
 
 ---
 
@@ -3428,6 +3909,15 @@ Run the full verification checklist. Fix any issues found.
 | 6.2 | `application-performance-performance-optimization`, `react-performance`, `react-performance-optimizer` |
 | 6.3 | `api-testing-observability-api-documenter`, `technical-writer` |
 | 6.4 | `docker-deployment`, `cloud-monitoring-alert` |
+| 7.1 | `backend-api-patterns`, `drizzle-orm-patterns` |
+| 7.2 | `i18n`, `i18n-localization`, `react` |
+| 7.3 | `tailwindcss-advanced-design-systems`, `tailwindcss-responsive-darkmode`, `dark-mode-design-expert` |
+| 7.4 | `react-forms`, `i18n`, `tailwindcss-responsive-darkmode` |
+| 7.5 | `i18n-localization`, `microcopy` |
+| 7.6 | `i18n-localization`, `microcopy` |
+| 7.7 | `i18n-localization`, `microcopy` |
+| 7.8 | `accessibility`, `i18n-localization` |
+| 7.9 | `technical-writer`, `microcopy`, `i18n-localization` |
 
 ---
 

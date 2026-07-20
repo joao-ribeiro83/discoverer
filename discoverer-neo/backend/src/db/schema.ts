@@ -128,6 +128,10 @@ export const targetTypeEnum = pgEnum('target_type', [
   'FOLDER',
 ]);
 
+export const localeEnum = pgEnum('locale', ['en', 'pt-PT', 'fr-FR', 'es-ES']);
+
+export const themeEnum = pgEnum('theme', ['light', 'dark', 'high-contrast']);
+
 // ---------------------------------------------------------------------------
 // 1. users
 // ---------------------------------------------------------------------------
@@ -140,6 +144,8 @@ export const users = pgTable(
     passwordHash: varchar('password_hash', { length: 255 }).notNull(),
     name: varchar('name', { length: 255 }).notNull(),
     role: userRoleEnum('role').notNull().default('USER'),
+    locale: localeEnum('locale').notNull().default('en'),
+    theme: themeEnum('theme').notNull().default('light'),
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),

@@ -53,6 +53,8 @@ export default async function authRoutes(fastify: FastifyInstance) {
                       email: { type: 'string' },
                       name: { type: 'string' },
                       role: { type: 'string' },
+                      locale: { type: 'string' },
+                      theme: { type: 'string' },
                     },
                   },
                 },
@@ -114,6 +116,8 @@ export default async function authRoutes(fastify: FastifyInstance) {
             email: user.email,
             name: user.name,
             role: user.role,
+            locale: user.locale,
+            theme: user.theme,
           },
         },
       });
@@ -238,6 +242,8 @@ export default async function authRoutes(fastify: FastifyInstance) {
                   email: { type: 'string' },
                   name: { type: 'string' },
                   role: { type: 'string' },
+                  locale: { type: 'string' },
+                  theme: { type: 'string' },
                 },
               },
             },
@@ -254,12 +260,22 @@ export default async function authRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const user = request.user;
 
+      // locale/theme can change after the JWT was issued, so read them fresh
+      // rather than trusting the token payload.
+      const [row] = await db
+        .select({ locale: users.locale, theme: users.theme })
+        .from(users)
+        .where(eq(users.id, user.sub))
+        .limit(1);
+
       return reply.code(200).send({
         data: {
           id: user.sub,
           email: user.email,
           name: user.name,
           role: user.role,
+          locale: row?.locale ?? 'en',
+          theme: row?.theme ?? 'light',
         },
       });
     },

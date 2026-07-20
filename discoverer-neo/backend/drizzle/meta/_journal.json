@@ -29,6 +29,13 @@
       "when": 1784282209587,
       "tag": "0003_spotty_firelord",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1784555715637,
+      "tag": "0004_left_puppet_master",
+      "breakpoints": true
     }
   ]
 }

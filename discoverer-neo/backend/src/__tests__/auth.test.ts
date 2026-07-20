@@ -78,6 +78,8 @@ describe('POST /api/auth/login', () => {
       email: TEST_EMAIL,
       name: TEST_NAME,
       role: 'USER',
+      locale: 'en',
+      theme: 'light',
     });
   });
 
@@ -144,6 +146,8 @@ describe('GET /api/auth/me', () => {
       email: TEST_EMAIL,
       name: TEST_NAME,
       role: 'USER',
+      locale: 'en',
+      theme: 'light',
     });
   });
 

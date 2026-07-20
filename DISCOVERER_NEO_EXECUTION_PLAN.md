@@ -1,15 +1,15 @@
 # Discoverer Neo — Execution Plan
 
-> **Version:** 1.0  
+> **Version:** 1.1 (updated 2026-07-20 — added Phase 7: Internationalization, Theming & User Preferences)
 > **Date:** 2026-06-22  
-> **Estimated Duration:** 16-20 weeks (full-time development)  
+> **Estimated Duration:** 16-20 weeks (full-time development) for Phases 0–6, +3-4 weeks extension for Phase 7  
 > **Team Size Recommended:** 2-3 developers  
 
 ---
 
 ## Overview
 
-This plan is divided into **6 phases**, each building on the previous. Each phase delivers working software that can be demonstrated and tested independently.
+This plan is divided into **7 phases**, each building on the previous. Each phase delivers working software that can be demonstrated and tested independently. Phase 7 is a post-launch extension covering internationalization, theming, and per-user preferences.
 
 ---
 
@@ -491,6 +491,71 @@ This plan is divided into **6 phases**, each building on the previous. Each phas
 
 ---
 
+## Phase 7: Internationalization, Theming & User Preferences (Week 21-24, extension)
+
+### Goals
+- Users can select their preferred UI language — English, European Portuguese (pt-PT), France French (fr-FR), or European Spanish (es-ES) — persisted per-account
+- Users can select a visual theme — Light, Dark, or High Contrast — persisted per-account
+- Every user-facing UI string is translated with enterprise BI terminology consistent with Power BI and Tableau's localized editions
+- All project documentation (user guide, admin guide) is translated into the same three languages
+
+### Tasks
+
+#### 7.1 User Preferences Backend
+- [ ] Add `locale` (`en`, `pt-PT`, `fr-FR`, `es-ES`) and `theme` (`light`, `dark`, `high-contrast`) enum columns to the `users` table, both `NOT NULL DEFAULT`
+- [ ] Migration + Drizzle schema update
+- [ ] `GET`/`PATCH /api/users/me/preferences` endpoints, Zod-validated
+- [ ] Include `locale`/`theme` in login and `/api/auth/me` responses
+- [ ] Tests
+
+#### 7.2 i18n Frontend Infrastructure
+- [ ] Install and configure `react-i18next` + `i18next-browser-languagedetector`
+- [ ] Define namespaced locale resource structure (`common`, `auth`, `nav`, `admin`, `mapBuilder`, `mapViewer`, `schedules`, `security`, `migration`, `audit`, `settings`, `errors`)
+- [ ] Extract every hardcoded UI string across all existing pages/components into an `en` baseline
+- [ ] Locale resolution: saved user preference → browser language → `en` fallback
+- [ ] Locale-aware date/number formatting via `Intl`
+
+#### 7.3 Theming Infrastructure
+- [ ] CSS custom-property theme tokens for Light, Dark, and High Contrast, wired into Tailwind/shadcn theme variables
+- [ ] `ThemeProvider` React context with `data-theme` attribute strategy
+- [ ] Default to OS `prefers-color-scheme` for users with no saved preference; saved preference always overrides
+- [ ] Audit all existing components for hardcoded colors that bypass the token system
+
+#### 7.4 Settings / Profile Page
+- [ ] New `SettingsPage` (the frontend currently has no settings/profile page) with a language dropdown and a theme picker
+- [ ] Live preview before save; persists via the 7.1 preferences API
+- [ ] Route + navigation entry
+
+#### 7.5–7.7 Translation Content (one session per language: pt-PT, fr-FR, es-ES)
+- [ ] Build a terminology glossary per language, cross-referenced against Power BI and Tableau's localized editions
+- [ ] Translate every namespace from 7.2 for that language
+- [ ] Preserve all placeholders (`{{count}}`, `%s`, `{0}`) exactly
+- [ ] Keep button/label translations concise — no expansion into full sentences
+- [ ] Professional, neutral, enterprise tone throughout
+- [ ] Automated placeholder/completeness check against the `en` baseline
+
+#### 7.8 i18n & Theming Integration Testing
+- [ ] Playwright E2E: language switch reflects across the app, theme switch persists across reload/re-login
+- [ ] Missing-translation-key fallback verified (falls back to `en`, never renders a raw key)
+- [ ] WCAG AA contrast check for every theme
+- [ ] Visual regression across a representative page/theme/locale matrix
+- [ ] Wire the placeholder/completeness check into CI as a required, blocking step
+
+#### 7.9 Documentation Update & Translation
+- [ ] Update the English `docs/user-guide/` to document the new Settings/language/theme features
+- [ ] Translate `docs/user-guide/` and `docs/admin-guide/` into pt-PT, fr-FR, and es-ES, mirroring the existing directory structure
+- [ ] Reuse the glossaries from 7.5–7.7 so documentation terminology matches the translated UI exactly
+- [ ] Add a docs index with links to each language's guides
+
+### Deliverables
+- ✅ Per-user language and theme preference, persisted and applied on every login
+- ✅ Fully translated UI in Portuguese (pt-PT), French (fr-FR), and Spanish (es-ES)
+- ✅ Three selectable themes, all meeting WCAG AA contrast
+- ✅ New Settings page
+- ✅ Translated documentation in all three languages, CI-enforced translation completeness
+
+---
+
 ## Risk Register
 
 | Risk | Impact | Probability | Mitigation |
@@ -501,6 +566,9 @@ This plan is divided into **6 phases**, each building on the previous. Each phas
 | SQL injection via user-defined formulas | High | Low | Parameterized queries only; validate formulas before execution |
 | Performance degradation with many concurrent users | Medium | Medium | Connection pooling; query timeouts; result caching |
 | Discoverer 4 EUL schema variations | Medium | High | Make migration tool configurable; handle missing/extra columns |
+| Untranslated or incomplete UI strings ship to production | Medium | Medium | CI check (Session 7.8) that fails the build if any locale is missing keys or placeholders present in the `en` baseline |
+| Inconsistent BI terminology across languages confuses users | Medium | Medium | Per-language glossary cross-referenced against Power BI/Tableau localized editions, built before translation and reused for documentation (Sessions 7.5–7.9) |
+| Theme fails WCAG AA contrast in Dark/High Contrast modes | Medium | Low | Automated contrast audit in Session 7.8; component color audit against theme tokens in Session 7.3 |
 
 ---
 
@@ -537,6 +605,8 @@ This plan is divided into **6 phases**, each building on the previous. Each phas
 | **Testing (frontend)** | Vitest + Playwright | Latest |
 | **Reverse Proxy** | Nginx | Latest |
 | **Containers** | Docker + Compose | Latest |
+| **i18n (frontend)** | react-i18next + i18next-browser-languagedetector | Latest |
+| **Theming** | CSS custom properties (Tailwind `@theme` + shadcn tokens) | Tailwind CSS 4.x |
 
 ---
 

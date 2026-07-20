@@ -17,6 +17,7 @@ import joinRoutes from './routes/joins.js';
 import hierarchyRoutes from './routes/hierarchies.js';
 import customFunctionRoutes from './routes/custom-functions.js';
 import userRoutes from './routes/users.js';
+import userPreferencesRoutes from './routes/user-preferences.js';
 import mapRoutes from './routes/maps.js';
 import mapShareRoutes from './routes/map-shares.js';
 import mapExecutionRoutes from './routes/map-execution.js';
@@ -86,6 +87,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(hierarchyRoutes);
   await app.register(customFunctionRoutes);
   await app.register(userRoutes);
+  await app.register(userPreferencesRoutes);
   await app.register(mapRoutes);
   await app.register(mapShareRoutes);
   await app.register(mapExecutionRoutes);
