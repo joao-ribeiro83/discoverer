@@ -1,4 +1,5 @@
 import { memo, useDeferredValue, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useQueries, useQuery } from '@tanstack/react-query'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useDraggable } from '@dnd-kit/core'
@@ -69,6 +70,7 @@ type Row =
   | { kind: 'empty'; key: string; depth: number; text: string }
 
 export function BusinessAreaTree() {
+  const { t } = useTranslation(['mapBuilder'])
   const [search, setSearch] = useState('')
   // Filtering re-renders every expanded folder's item list on each keystroke;
   // deferring the value lets React finish an in-flight render before
@@ -132,7 +134,12 @@ export function BusinessAreaTree() {
       // Still loading — render nothing rather than a flash of "No folders".
       if (!folders) continue
       if (folders.length === 0) {
-        out.push({ kind: 'empty', key: `ba:${ba.id}:empty`, depth: 1, text: 'No folders' })
+        out.push({
+          kind: 'empty',
+          key: `ba:${ba.id}:empty`,
+          depth: 1,
+          text: t('mapBuilder:tree.emptyFolders'),
+        })
         continue
       }
 
@@ -162,7 +169,9 @@ export function BusinessAreaTree() {
             kind: 'empty',
             key: `folder:${folder.id}:empty`,
             depth: 2,
-            text: normalizedSearch ? 'No matching items' : 'No items',
+            text: normalizedSearch
+              ? t('mapBuilder:tree.emptyMatchingItems')
+              : t('mapBuilder:tree.emptyItems'),
           })
           continue
         }
@@ -186,6 +195,7 @@ export function BusinessAreaTree() {
     foldersByBusinessArea,
     itemsByFolder,
     normalizedSearch,
+    t,
   ])
 
   const virtualizer = useVirtualizer({
@@ -212,15 +222,15 @@ export function BusinessAreaTree() {
   return (
     <div className="flex h-full flex-col">
       <div className="border-b p-3">
-        <h3 className="mb-2 text-sm font-semibold">Business Areas</h3>
+        <h3 className="mb-2 text-sm font-semibold">{t('mapBuilder:tree.title')}</h3>
         <div className="relative">
           <Search className="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Filter items…"
+            placeholder={t('mapBuilder:tree.filterPlaceholder')}
             className="h-8 pl-8"
-            aria-label="Filter items"
+            aria-label={t('mapBuilder:tree.filterAria')}
           />
         </div>
       </div>
@@ -230,10 +240,10 @@ export function BusinessAreaTree() {
       <div ref={scrollRef} className="flex-1 overflow-auto p-2">
         {isLoading ? (
           <div className="flex items-center gap-2 p-2 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" /> Loading…
+            <Loader2 className="h-4 w-4 animate-spin" /> {t('mapBuilder:tree.loading')}
           </div>
         ) : rows.length === 0 ? (
-          <p className="p-2 text-sm text-muted-foreground">No business areas.</p>
+          <p className="p-2 text-sm text-muted-foreground">{t('mapBuilder:tree.emptyBusinessAreas')}</p>
         ) : (
           <div style={{ height: virtualizer.getTotalSize(), position: 'relative', width: '100%' }}>
             {virtualizer.getVirtualItems().map((virtualRow) => {
@@ -306,6 +316,7 @@ const ItemNode = memo(function ItemNode({
   folderName: string
   businessAreaId: string
 }) {
+  const { t } = useTranslation(['mapBuilder'])
   const selected = useMapBuilderStore((s) =>
     s.selectedItems.some((c) => c.itemId === item.id),
   )
@@ -349,12 +360,12 @@ const ItemNode = memo(function ItemNode({
         isDragging && 'opacity-40',
         selected && 'text-muted-foreground',
       )}
-      title={role === 'measure' ? 'Measure' : 'Dimension'}
+      title={role === 'measure' ? t('mapBuilder:tree.roleMeasure') : t('mapBuilder:tree.roleDimension')}
     >
       {role === 'measure' ? (
-        <Sigma className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+        <Sigma className="h-4 w-4 shrink-0 text-chart-1" />
       ) : (
-        <Tag className="h-4 w-4 shrink-0 text-sky-600 dark:text-sky-400" />
+        <Tag className="h-4 w-4 shrink-0 text-chart-2" />
       )}
       <span className="truncate">{item.name}</span>
       {selected && <Check className="ml-auto h-3.5 w-3.5 shrink-0 text-muted-foreground" />}

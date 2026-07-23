@@ -1,0 +1,233 @@
+{
+  "toolbar": {
+    "run": "Run",
+    "save": "Save",
+    "export": "Export",
+    "schedule": "Schedule",
+    "share": "Share",
+    "mapNameAria": "Map name",
+    "mapTypeAria": "Map type",
+    "unsavedTitle": "Unsaved changes",
+    "unsavedLabel": "● Unsaved",
+    "mapTypes": {
+      "table": "Table",
+      "crosstab": "Crosstab",
+      "pageDetail": "Page-Detail",
+      "chart": "Chart"
+    },
+    "exportDataHeader": "Data (re-runs the query on the server)",
+    "exportExcel": "Excel (.xlsx)",
+    "exportCsv": "CSV (.csv)",
+    "exportXml": "Map definition (.xml)",
+    "shareDisabledTitle": "Save the map before sharing it",
+    "comingSoonTitle": "{{feature}} coming soon",
+    "comingSoonDescription": "{{feature}} will be available in a later session.",
+    "featureScheduling": "Scheduling"
+  },
+  "page": {
+    "loading": "Loading map…",
+    "loadFailedTitle": "Could not load map",
+    "saveErrorNoColumns": "Add at least one column before saving.",
+    "saveErrorNoBusinessArea": "No business area selected.",
+    "savedTitle": "Map saved",
+    "saveFailedTitle": "Save failed",
+    "runErrorNoColumns": "Add at least one column before running.",
+    "executedTitle": "Map executed",
+    "executedDescription": "{{count}} row(s) returned.",
+    "runFailedTitle": "Run failed",
+    "saveMapFirstTitle": "Save the map first",
+    "saveMapFirstDescription": "Export needs a saved map.",
+    "exportFailedTitle": "Export failed",
+    "duplicateTitle": "Already added",
+    "duplicateDescription": "\"{{name}}\" is already on the canvas.",
+    "crossBusinessAreaTitle": "Different business area",
+    "crossBusinessAreaDescription": "All columns in a map must come from the same business area.",
+    "collapsePanel": "Collapse panel",
+    "expandPanel": "Expand panel"
+  },
+  "tree": {
+    "title": "Business Areas",
+    "filterPlaceholder": "Filter items…",
+    "filterAria": "Filter items",
+    "loading": "Loading…",
+    "emptyBusinessAreas": "No business areas.",
+    "emptyFolders": "No folders",
+    "emptyMatchingItems": "No matching items",
+    "emptyItems": "No items",
+    "roleMeasure": "Measure",
+    "roleDimension": "Dimension"
+  },
+  "canvas": {
+    "title": "Columns",
+    "emptyDropHint": "Drop to add this column",
+    "emptyDragHint": "Drag items here to build your map",
+    "emptyPickHint": "Pick dimensions and measures from the tree on the left.",
+    "reorderAria": "Reorder column",
+    "configureTitle": "Configure column",
+    "removeAria": "Remove {{label}}"
+  },
+  "columnConfig": {
+    "title": "Configure column",
+    "descriptionFallback": "Column settings",
+    "displayName": "Display name",
+    "aggregation": "Aggregation",
+    "sortDirection": "Sort direction",
+    "formatMask": "Format mask",
+    "formatMaskPlaceholder": "e.g. 999,999.00",
+    "formatPresetsAria": "Format presets",
+    "formatPresetsPlaceholder": "Presets",
+    "sortOrder": "Sort order",
+    "sortOrderPlaceholder": "e.g. 1",
+    "columnWidth": "Column width (px)",
+    "columnWidthPlaceholder": "e.g. 120",
+    "presets": {
+      "number": "Number (1,234)",
+      "decimal": "Decimal (1,234.00)",
+      "currency": "Currency ($1,234.00)",
+      "percent": "Percent (12.3%)",
+      "dateDmy": "Date (DD-MON-YYYY)",
+      "dateYmd": "Date (YYYY-MM-DD)"
+    }
+  },
+  "sortDirections": {
+    "asc": "Ascending",
+    "desc": "Descending"
+  },
+  "share": {
+    "title": "Share map",
+    "description": "Give other users access to view, export, or edit this map.",
+    "searchPlaceholder": "Search by name or email…",
+    "searchAria": "Search users to share with",
+    "searching": "Searching…",
+    "noMatchingUsers": "No matching users",
+    "permissionAria": "Permission level",
+    "shareButton": "Share",
+    "peopleWithAccess": "People with access",
+    "notSharedYet": "Not shared with anyone yet.",
+    "permissionForAria": "Permission for {{name}}",
+    "revokeAria": "Revoke access for {{name}}",
+    "publicNotice": "This map is public — anyone with the link can view it.",
+    "copyLink": "Copy link",
+    "permissions": {
+      "VIEW": "Can view",
+      "EXPORT": "Can export",
+      "EDIT": "Can edit"
+    },
+    "toastShared": "Map shared",
+    "toastShareFailedTitle": "Could not share map",
+    "toastPermissionUpdated": "Permission updated",
+    "toastPermissionUpdateFailedTitle": "Could not update permission",
+    "toastRevoked": "Access revoked",
+    "toastRevokeFailedTitle": "Could not revoke access",
+    "toastLinkCopied": "Link copied to clipboard",
+    "toastCopyFailedTitle": "Could not copy link"
+  },
+  "panels": {
+    "tabs": {
+      "properties": "Properties",
+      "conditions": "Conditions",
+      "sort": "Sort",
+      "parameters": "Parameters",
+      "calculatedFields": "Calculated Fields"
+    },
+    "properties": {
+      "descriptionPlaceholder": "Describe what this map reports on…",
+      "publicLabel": "Public (visible to everyone in the business area)",
+      "summary": {
+        "columns": "Columns",
+        "conditions": "Conditions",
+        "parameters": "Parameters",
+        "calculatedFields": "Calculated fields"
+      }
+    },
+    "conditions": {
+      "title": "Conditions",
+      "addButton": "Add Condition",
+      "addColumnsHint": "Add columns to the canvas before adding conditions.",
+      "groupSelected": "Group {{count}} selected conditions",
+      "noConditionsYet": "No conditions yet.",
+      "groupHeader": "Group ({{count}})",
+      "ungroup": "Ungroup",
+      "logicOperatorAria": "Logic operator",
+      "itemFallbackLabel": "item",
+      "selectConditionAria": "Select condition on {{label}}",
+      "conditionItemAria": "Condition item",
+      "itemPlaceholder": "Item",
+      "operatorAria": "Operator",
+      "staticValue": "Static value",
+      "promptAtRuntime": "Prompt at runtime",
+      "conditionValueAria": "Condition value",
+      "valuePlaceholderIn": "value1, value2, …",
+      "valuePlaceholderBetween": "low, high",
+      "valuePlaceholderDefault": "Value",
+      "parameterNameAria": "Parameter name",
+      "parameterNamePlaceholder": "Parameter name",
+      "deleteAria": "Delete condition"
+    },
+    "sort": {
+      "emptyNoColumns": "Add columns to configure sorting.",
+      "title": "Sort order",
+      "noneSorted": "No columns are sorted yet.",
+      "addSortLabel": "Add sort",
+      "pickColumnAria": "Pick column to sort",
+      "pickColumnPlaceholder": "Choose a column",
+      "addSortButton": "Add Sort",
+      "reorderAria": "Reorder {{label}}",
+      "sortDirectionAria": "Sort direction for {{label}}",
+      "removeAria": "Remove sort on {{label}}"
+    },
+    "parameters": {
+      "title": "Parameters",
+      "addButton": "Add Parameter",
+      "empty": "No parameters. Add one to prompt users at run time.",
+      "previewLabel": "Run-time prompt preview",
+      "unnamed": "Unnamed parameter",
+      "nameAria": "Parameter name",
+      "namePlaceholder": "Parameter name",
+      "typeAria": "Parameter type",
+      "deleteAria": "Delete parameter {{name}}",
+      "defaultValueAria": "Default value",
+      "defaultValuePlaceholder": "Default value",
+      "defaultValueListPlaceholder": "comma, separated, values",
+      "previewValuePlaceholder": "Enter a value"
+    },
+    "calculatedFields": {
+      "title": "Calculated fields",
+      "addButton": "Add Calculated Field",
+      "empty": "No calculated fields. Add one to derive a new column from a formula.",
+      "reorderAria": "Reorder {{name}}",
+      "fallbackName": "calculated field",
+      "nameAria": "Calculated field name",
+      "namePlaceholder": "Field name",
+      "displayOrderAria": "Display order",
+      "displayOrderTitle": "Display order",
+      "deleteAria": "Delete {{name}}",
+      "clickToWriteFormula": "Click to write a formula…"
+    },
+    "formula": {
+      "title": "Formula editor",
+      "fallbackFieldName": "Calculated field",
+      "testFormula": "Test formula",
+      "saveHint": "Save the map to test formulas against live data.",
+      "noRows": "No rows.",
+      "previewHeader_one": "{{columnName}} (first {{count}} row)",
+      "previewHeader_other": "{{columnName}} (first {{count}} rows)",
+      "columnsHeader": "Columns",
+      "noColumnsYet": "No columns yet.",
+      "categories": {
+        "arithmetic": "Arithmetic",
+        "string": "String",
+        "date": "Date",
+        "conditional": "Conditional / null handling"
+      },
+      "errors": {
+        "empty": "Formula is empty.",
+        "unbalancedQuotes": "Unbalanced quotes.",
+        "unbalancedParens": "Unbalanced parentheses.",
+        "unbalancedBrackets": "Unbalanced [ ] column references.",
+        "unknownFunction": "Unknown function \"{{name}}\".",
+        "unknownColumnReference": "Unknown column reference \"[{{name}}]\"."
+      }
+    }
+  }
+}

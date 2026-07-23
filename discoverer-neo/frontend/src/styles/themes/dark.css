@@ -1,0 +1,59 @@
+/*
+ * Dark theme. Values are the original shadcn/ui `.dark` block, verbatim,
+ * retargeted from `.dark` to `[data-theme="dark"]`. `--radius` was not
+ * previously overridden here (it inherited from `:root` since `.dark` was
+ * always applied alongside the root element) — it's added explicitly below
+ * so every theme file defines the same full token set, per the "no theme
+ * may omit one" rule now that themes are selected by attribute rather than
+ * layered classes.
+ */
+[data-theme='dark'] {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.985 0 0);
+  /* Same hues as light.css (150/85/230), relit for a dark background using
+     the same light-to-dark relationship --destructive uses: L raised from
+     the ~0.53-0.55 light-theme value to ~0.66-0.68 so each still reads at
+     ~6.8:1 against --background (matching --destructive's 6.84:1), while
+     --*-foreground stays the same near-white used everywhere else in this
+     file — which, exactly as with --destructive/--destructive-foreground
+     here, only clears ~2.8:1 against it. That's the existing shadcn/ui
+     tradeoff already accepted for --destructive in this file, not a
+     regression introduced by these tokens. */
+  --success: oklch(0.66 0.17 150);
+  --success-foreground: oklch(0.985 0 0);
+  --warning: oklch(0.68 0.18 85);
+  --warning-foreground: oklch(0.985 0 0);
+  --info: oklch(0.666 0.15 230);
+  --info-foreground: oklch(0.985 0 0);
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.646 0.222 41.116);
+  --chart-5: oklch(0.6 0.118 184.704);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.556 0 0);
+}

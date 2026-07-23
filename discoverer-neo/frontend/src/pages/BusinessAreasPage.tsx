@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { z } from 'zod'
+import { useTranslation } from 'react-i18next'
 import type { ColumnDef } from '@tanstack/react-table'
 import { Plus, Pencil, Trash2, Users as UsersIcon, X } from 'lucide-react'
 import { apiClient, getErrorMessage } from '@/lib/api'
@@ -26,15 +27,18 @@ import {
 } from '@/components/ui/select'
 import { formatDate } from '@/lib/utils'
 
-const formSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(255),
-  description: z.string().optional(),
-})
-type FormValues = z.infer<typeof formSchema>
+function buildFormSchema(t: (key: string) => string) {
+  return z.object({
+    name: z.string().min(1, t('admin:shared.validation.nameRequired')).max(255),
+    description: z.string().optional(),
+  })
+}
+type FormValues = z.infer<ReturnType<typeof buildFormSchema>>
 
 const PERMISSION_LEVELS = ['VIEW', 'EXPORT', 'SCHEDULE', 'CREATE', 'EDIT', 'DELETE'] as const
 
 export function BusinessAreasPage() {
+  const { t } = useTranslation(['admin', 'common'])
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
@@ -49,7 +53,7 @@ export function BusinessAreasPage() {
   })
 
   const form = useForm<FormValues>({
-    resolver: standardSchemaResolver(formSchema),
+    resolver: standardSchemaResolver(buildFormSchema(t)),
     defaultValues: { name: '', description: '' },
   })
 
@@ -74,12 +78,12 @@ export function BusinessAreasPage() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['business-areas'] })
-      toast({ title: editing ? 'Business area updated' : 'Business area created' })
+      toast({ title: editing ? t('admin:businessAreas.toast.updated') : t('admin:businessAreas.toast.created') })
       setDialogOpen(false)
     },
     onError: (err) => {
       toast({
-        title: 'Save failed',
+        title: t('admin:shared.saveFailed'),
         description: getErrorMessage(err),
         variant: 'destructive',
       })
@@ -90,12 +94,12 @@ export function BusinessAreasPage() {
     mutationFn: async (id: string) => apiClient.businessAreas.delete(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['business-areas'] })
-      toast({ title: 'Business area deactivated' })
+      toast({ title: t('admin:businessAreas.toast.deactivated') })
       setDeleting(null)
     },
     onError: (err) => {
       toast({
-        title: 'Delete failed',
+        title: t('admin:shared.deleteFailed'),
         description: getErrorMessage(err),
         variant: 'destructive',
       })
@@ -103,24 +107,24 @@ export function BusinessAreasPage() {
   })
 
   const columns: ColumnDef<BusinessArea>[] = [
-    { accessorKey: 'name', header: 'Name' },
+    { accessorKey: 'name', header: t('common:labels.name') },
     {
       accessorKey: 'description',
-      header: 'Description',
+      header: t('common:labels.description'),
       cell: ({ row }) => row.original.description || <span className="text-muted-foreground">—</span>,
     },
     {
       accessorKey: 'isActive',
-      header: 'Status',
+      header: t('common:labels.status'),
       cell: ({ row }) => (
         <Badge variant={row.original.isActive ? 'default' : 'secondary'}>
-          {row.original.isActive ? 'Active' : 'Inactive'}
+          {row.original.isActive ? t('common:labels.active') : t('common:labels.inactive')}
         </Badge>
       ),
     },
     {
       accessorKey: 'createdAt',
-      header: 'Created',
+      header: t('common:labels.createdAt'),
       cell: ({ row }) => formatDate(row.original.createdAt),
     },
     {
@@ -128,13 +132,13 @@ export function BusinessAreasPage() {
       header: '',
       cell: ({ row }) => (
         <div className="flex justify-end gap-1">
-          <Button variant="ghost" size="icon" onClick={() => setGrantsFor(row.original)} title="Manage grants">
+          <Button variant="ghost" size="icon" onClick={() => setGrantsFor(row.original)} title={t('admin:businessAreas.manageGrantsTitle')}>
             <UsersIcon className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => openEdit(row.original)} title="Edit">
+          <Button variant="ghost" size="icon" onClick={() => openEdit(row.original)} title={t('common:actions.edit')}>
             <Pencil className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => setDeleting(row.original)} title="Delete">
+          <Button variant="ghost" size="icon" onClick={() => setDeleting(row.original)} title={t('common:actions.delete')}>
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
@@ -144,42 +148,42 @@ export function BusinessAreasPage() {
 
   return (
     <AdminPageWrapper
-      title="Business Areas"
-      description="Manage business areas for your data models."
+      title={t('admin:businessAreas.title')}
+      description={t('admin:businessAreas.description')}
       action={
         <Button onClick={openCreate}>
-          <Plus className="h-4 w-4" /> New Business Area
+          <Plus className="h-4 w-4" /> {t('admin:businessAreas.createButton')}
         </Button>
       }
     >
-      <DataTable columns={columns} data={areas ?? []} isLoading={isLoading} emptyMessage="No business areas yet." />
+      <DataTable columns={columns} data={areas ?? []} isLoading={isLoading} emptyMessage={t('admin:businessAreas.emptyMessage')} />
 
       <CreateEditDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        title={editing ? 'Edit Business Area' : 'New Business Area'}
+        title={editing ? t('admin:businessAreas.dialog.editTitle') : t('admin:businessAreas.dialog.createTitle')}
       >
         <form
           className="space-y-4"
           onSubmit={(e) => void form.handleSubmit((values) => saveMutation.mutate(values))(e)}
         >
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">{t('common:labels.name')}</Label>
             <Input id="name" {...form.register('name')} />
             {form.formState.errors.name && (
               <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{t('common:labels.description')}</Label>
             <Textarea id="description" {...form.register('description')} />
           </div>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-              Cancel
+              {t('common:actions.cancel')}
             </Button>
             <Button type="submit" disabled={saveMutation.isPending}>
-              {saveMutation.isPending ? 'Saving...' : 'Save'}
+              {saveMutation.isPending ? t('admin:shared.saving') : t('common:actions.save')}
             </Button>
           </div>
         </form>
@@ -190,7 +194,7 @@ export function BusinessAreasPage() {
           open={!!deleting}
           onOpenChange={(open) => !open && setDeleting(null)}
           itemName={deleting.name}
-          itemLabel="business area"
+          itemLabel={t('admin:businessAreas.entityLabel')}
           onConfirm={() => deleteMutation.mutate(deleting.id)}
           isPending={deleteMutation.isPending}
         />
@@ -204,6 +208,7 @@ export function BusinessAreasPage() {
 }
 
 function GrantsDialog({ businessArea, onClose }: { businessArea: BusinessArea; onClose: () => void }) {
+  const { t } = useTranslation(['admin', 'common'])
   const queryClient = useQueryClient()
   const { toast } = useToast()
   const [userId, setUserId] = useState('')
@@ -226,11 +231,11 @@ function GrantsDialog({ businessArea, onClose }: { businessArea: BusinessArea; o
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['business-areas', businessArea.id, 'grants'] })
       setUserId('')
-      toast({ title: 'Access granted' })
+      toast({ title: t('admin:businessAreas.grants.toast.accessGranted') })
     },
     onError: (err) => {
       toast({
-        title: 'Grant failed',
+        title: t('admin:businessAreas.grants.toast.grantFailed'),
         description: getErrorMessage(err),
         variant: 'destructive',
       })
@@ -241,7 +246,7 @@ function GrantsDialog({ businessArea, onClose }: { businessArea: BusinessArea; o
     mutationFn: async (targetUserId: string) => apiClient.businessAreas.revoke(businessArea.id, targetUserId),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['business-areas', businessArea.id, 'grants'] })
-      toast({ title: 'Access revoked' })
+      toast({ title: t('admin:businessAreas.grants.toast.accessRevoked') })
     },
   })
 
@@ -249,16 +254,16 @@ function GrantsDialog({ businessArea, onClose }: { businessArea: BusinessArea; o
     <CreateEditDialog
       open
       onOpenChange={(open) => !open && onClose()}
-      title={`Grants — ${businessArea.name}`}
-      description="Control which users can access this business area and what they can do."
+      title={t('admin:businessAreas.grants.dialogTitle', { name: businessArea.name })}
+      description={t('admin:businessAreas.grants.dialogDescription')}
     >
       <div className="space-y-4">
         <div className="flex items-end gap-2">
           <div className="flex-1 space-y-2">
-            <Label>User</Label>
+            <Label>{t('admin:businessAreas.grants.userLabel')}</Label>
             <Select value={userId} onValueChange={setUserId}>
               <SelectTrigger>
-                <SelectValue placeholder="Select a user" />
+                <SelectValue placeholder={t('admin:businessAreas.grants.selectUserPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
                 {(users ?? []).map((u) => (
@@ -270,7 +275,7 @@ function GrantsDialog({ businessArea, onClose }: { businessArea: BusinessArea; o
             </Select>
           </div>
           <div className="w-40 space-y-2">
-            <Label>Permission</Label>
+            <Label>{t('admin:businessAreas.grants.permissionLabel')}</Label>
             <Select value={permissionLevel} onValueChange={setPermissionLevel}>
               <SelectTrigger>
                 <SelectValue />
@@ -288,14 +293,14 @@ function GrantsDialog({ businessArea, onClose }: { businessArea: BusinessArea; o
             disabled={!userId || grantMutation.isPending}
             onClick={() => grantMutation.mutate()}
           >
-            Add
+            {t('admin:businessAreas.grants.addButton')}
           </Button>
         </div>
 
         <div className="max-h-64 space-y-2 overflow-y-auto rounded-md border p-2">
-          {isLoading && <p className="text-sm text-muted-foreground">Loading grants...</p>}
+          {isLoading && <p className="text-sm text-muted-foreground">{t('admin:businessAreas.grants.loadingGrants')}</p>}
           {!isLoading && (grants ?? []).length === 0 && (
-            <p className="text-sm text-muted-foreground">No grants yet.</p>
+            <p className="text-sm text-muted-foreground">{t('admin:businessAreas.grants.noGrantsYet')}</p>
           )}
           {(grants ?? []).map((grant) => (
             <div key={grant.id} className="flex items-center justify-between rounded-md px-2 py-1 hover:bg-muted/50">
@@ -309,7 +314,7 @@ function GrantsDialog({ businessArea, onClose }: { businessArea: BusinessArea; o
                   variant="ghost"
                   size="icon"
                   onClick={() => revokeMutation.mutate(grant.userId)}
-                  title="Revoke"
+                  title={t('admin:businessAreas.grants.revokeTitle')}
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -320,7 +325,7 @@ function GrantsDialog({ businessArea, onClose }: { businessArea: BusinessArea; o
 
         <div className="flex justify-end">
           <Button variant="outline" onClick={onClose}>
-            Close
+            {t('admin:businessAreas.grants.closeButton')}
           </Button>
         </div>
       </div>

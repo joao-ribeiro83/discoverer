@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import {
   type ColumnDef,
   flexRender,
@@ -20,9 +21,11 @@ export function DataTable<TData, TValue>({
   columns,
   data,
   isLoading,
-  emptyMessage = 'No results.',
+  emptyMessage,
   pageSize = 10,
 }: DataTableProps<TData, TValue>) {
+  const { t } = useTranslation(['admin', 'common'])
+  const resolvedEmptyMessage = emptyMessage ?? t('admin:shared.defaultEmptyMessage')
   const table = useReactTable({
     data,
     columns,
@@ -52,7 +55,7 @@ export function DataTable<TData, TValue>({
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
-                  Loading...
+                  {t('admin:shared.loading')}
                 </TableCell>
               </TableRow>
             ) : table.getRowModel().rows.length ? (
@@ -68,7 +71,7 @@ export function DataTable<TData, TValue>({
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
-                  {emptyMessage}
+                  {resolvedEmptyMessage}
                 </TableCell>
               </TableRow>
             )}
@@ -78,7 +81,7 @@ export function DataTable<TData, TValue>({
       {table.getPageCount() > 1 && (
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">
-            Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+            {t('common:pagination.pageOf', { page: table.getState().pagination.pageIndex + 1, total: table.getPageCount() })}
           </span>
           <div className="flex gap-2">
             <Button
@@ -87,7 +90,7 @@ export function DataTable<TData, TValue>({
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
             >
-              Previous
+              {t('common:actions.previous')}
             </Button>
             <Button
               variant="outline"
@@ -95,7 +98,7 @@ export function DataTable<TData, TValue>({
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
             >
-              Next
+              {t('common:actions.next')}
             </Button>
           </div>
         </div>

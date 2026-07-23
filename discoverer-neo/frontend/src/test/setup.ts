@@ -1,4 +1,7 @@
 import '@testing-library/jest-dom'
+// Initialize i18next once for the whole test suite so components that call
+// useTranslation() render real English strings instead of raw keys.
+import '@/i18n'
 
 // jsdom (as wired by this vitest version) doesn't populate window.localStorage /
 // window.sessionStorage, so provide a minimal in-memory Storage polyfill for tests.

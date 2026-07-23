@@ -1,0 +1,20 @@
+{
+  "title": "Settings",
+  "subtitle": "Manage your account preferences",
+  "language": {
+    "title": "Language",
+    "description": "Choose the language used across the interface.",
+    "label": "Display language"
+  },
+  "theme": {
+    "title": "Theme",
+    "description": "Choose how the interface looks.",
+    "label": "Appearance",
+    "options": {
+      "light": "Light",
+      "dark": "Dark",
+      "high-contrast": "High contrast"
+    }
+  },
+  "saved": "Preferences saved"
+}

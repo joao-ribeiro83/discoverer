@@ -1,0 +1,84 @@
+{
+  "page": {
+    "title": "Security Policies",
+    "description": "Row-level security policies restrict which rows users can see. Predicates are ANDed into every query a policy's users run.",
+    "nonAdminDescription": "Row-level security policies restrict which rows users can see.",
+    "nonAdminMessage": "Only administrators can manage security policies.",
+    "newPolicy": "New Policy",
+    "emptyMessage": "No security policies yet. Without policies, users see every row their map permissions allow."
+  },
+  "table": {
+    "rules": "Rules",
+    "assignments": "Assignments"
+  },
+  "dialog": {
+    "editTitle": "Edit Policy",
+    "newTitle": "New Policy",
+    "description": "Rules target a business area or folder; their SQL predicates are ANDed into the WHERE clause of matching queries.",
+    "rulesLabel": "Rules",
+    "addRule": "Add rule",
+    "minRuleNotice": "A policy needs at least one rule."
+  },
+  "rule": {
+    "appliesTo": "Applies to",
+    "targetTypeAriaLabel": "Rule target type",
+    "businessArea": "Business Area",
+    "folder": "Folder",
+    "businessAreaLabel": "Business Area",
+    "businessAreaAriaLabel": "Rule business area",
+    "selectBusinessArea": "Select business area",
+    "folderLabel": "Folder",
+    "folderAriaLabel": "Rule folder",
+    "selectFolder": "Select folder",
+    "removeRule": "Remove rule",
+    "predicateLabel": "SQL predicate (WHERE-clause fragment)",
+    "validating": "Validating…",
+    "validPredicate": "Valid predicate",
+    "bindsLabel": "Binds:",
+    "aliasResolves": "resolves to the folder's query alias"
+  },
+  "assignments": {
+    "title": "Assignments — {{name}}",
+    "description": "The policy applies to every assigned user, and to every user holding an assigned role.",
+    "assignTo": "Assign to",
+    "kindAriaLabel": "Assignment kind",
+    "user": "User",
+    "role": "Role",
+    "userAriaLabel": "User to assign",
+    "selectUser": "Select user",
+    "roleAriaLabel": "Role to assign",
+    "selectRole": "Select role",
+    "assign": "Assign",
+    "notAssigned": "Not assigned — this policy currently restricts nobody.",
+    "unknownUser": "Unknown user",
+    "roleLabel": "Role",
+    "removeAssignment": "Remove assignment"
+  },
+  "test": {
+    "buttonLabel": "Test",
+    "dialogTitle": "Test a policy",
+    "description": "Preview where a policy's predicates land in a sample query. Real enforcement happens inside the SQL generator when maps execute.",
+    "policyLabel": "Policy",
+    "policyAriaLabel": "Policy to test",
+    "selectPolicy": "Select policy",
+    "sampleQueryLabel": "Sample query",
+    "testing": "Testing…",
+    "runTest": "Run test",
+    "resultLabel": "Query with security predicates"
+  },
+  "deleteConfirm": {
+    "itemLabel": "policy"
+  },
+  "toasts": {
+    "loadPolicyFailed": "Failed to load policy",
+    "policyUpdated": "Policy updated",
+    "policyCreated": "Policy created",
+    "saveFailed": "Save failed",
+    "policyDeleted": "Policy deleted",
+    "deleteFailed": "Delete failed",
+    "policyAssigned": "Policy assigned",
+    "assignFailed": "Assign failed",
+    "assignmentRemoved": "Assignment removed",
+    "removeFailed": "Remove failed"
+  }
+}

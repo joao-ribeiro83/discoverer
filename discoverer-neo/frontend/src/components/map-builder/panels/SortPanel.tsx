@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   DndContext,
   closestCenter,
@@ -55,6 +56,7 @@ export function reorderAndRenumber(
 }
 
 export function SortPanel() {
+  const { t } = useTranslation(['mapBuilder'])
   const selectedItems = useMapBuilderStore((s) => s.selectedItems)
   const updateItem = useMapBuilderStore((s) => s.updateItem)
 
@@ -93,7 +95,7 @@ export function SortPanel() {
   if (selectedItems.length === 0) {
     return (
       <div className="p-4">
-        <p className="text-sm text-muted-foreground">Add columns to configure sorting.</p>
+        <p className="text-sm text-muted-foreground">{t('mapBuilder:panels.sort.emptyNoColumns')}</p>
       </div>
     )
   }
@@ -101,9 +103,9 @@ export function SortPanel() {
   return (
     <div className="space-y-4 p-4">
       <div className="space-y-2">
-        <h4 className="text-sm font-semibold">Sort order</h4>
+        <h4 className="text-sm font-semibold">{t('mapBuilder:panels.sort.title')}</h4>
         {sorted.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No columns are sorted yet.</p>
+          <p className="text-sm text-muted-foreground">{t('mapBuilder:panels.sort.noneSorted')}</p>
         ) : (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={sorted.map((i) => i.key)} strategy={verticalListSortingStrategy}>
@@ -125,11 +127,14 @@ export function SortPanel() {
 
       {unsorted.length > 0 && (
         <div className="space-y-2 border-t pt-3">
-          <Label className="text-xs">Add sort</Label>
+          <Label className="text-xs">{t('mapBuilder:panels.sort.addSortLabel')}</Label>
           <div className="flex gap-2">
             <Select value={pickKey} onValueChange={setPickKey}>
-              <SelectTrigger className="h-8 flex-1" aria-label="Pick column to sort">
-                <SelectValue placeholder="Choose a column" />
+              <SelectTrigger
+                className="h-8 flex-1"
+                aria-label={t('mapBuilder:panels.sort.pickColumnAria')}
+              >
+                <SelectValue placeholder={t('mapBuilder:panels.sort.pickColumnPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
                 {unsorted.map((item) => (
@@ -140,7 +145,7 @@ export function SortPanel() {
               </SelectContent>
             </Select>
             <Button size="sm" onClick={handleAddSort} disabled={pickKey === UNSORTED_PLACEHOLDER}>
-              Add Sort
+              {t('mapBuilder:panels.sort.addSortButton')}
             </Button>
           </div>
         </div>
@@ -160,9 +165,11 @@ function SortRow({
   onDirectionChange: (dir: SortDirection) => void
   onRemove: () => void
 }) {
+  const { t } = useTranslation(['mapBuilder'])
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.key,
   })
+  const label = columnLabel(item)
 
   return (
     <div
@@ -176,7 +183,7 @@ function SortRow({
       <button
         type="button"
         className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
-        aria-label={`Reorder ${columnLabel(item)}`}
+        aria-label={t('mapBuilder:panels.sort.reorderAria', { label })}
         {...attributes}
         {...listeners}
       >
@@ -185,17 +192,20 @@ function SortRow({
       <span className="w-5 shrink-0 text-center text-xs font-medium text-muted-foreground">
         {priority}
       </span>
-      <span className="flex-1 truncate text-sm">{columnLabel(item)}</span>
+      <span className="flex-1 truncate text-sm">{label}</span>
       <Select
         value={item.sortDirection ?? 'ASC'}
         onValueChange={(v) => onDirectionChange(v as SortDirection)}
       >
-        <SelectTrigger className="h-8 w-28" aria-label={`Sort direction for ${columnLabel(item)}`}>
+        <SelectTrigger
+          className="h-8 w-28"
+          aria-label={t('mapBuilder:panels.sort.sortDirectionAria', { label })}
+        >
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="ASC">Ascending</SelectItem>
-          <SelectItem value="DESC">Descending</SelectItem>
+          <SelectItem value="ASC">{t('mapBuilder:sortDirections.asc')}</SelectItem>
+          <SelectItem value="DESC">{t('mapBuilder:sortDirections.desc')}</SelectItem>
         </SelectContent>
       </Select>
       <Button
@@ -204,7 +214,7 @@ function SortRow({
         size="icon"
         className="h-7 w-7 shrink-0"
         onClick={onRemove}
-        aria-label={`Remove sort on ${columnLabel(item)}`}
+        aria-label={t('mapBuilder:panels.sort.removeAria', { label })}
       >
         <X className="h-4 w-4" />
       </Button>

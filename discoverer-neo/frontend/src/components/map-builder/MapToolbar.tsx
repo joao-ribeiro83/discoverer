@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Play, Save, Download, CalendarClock, Share2, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -22,11 +23,11 @@ import { useMapBuilderStore } from '@/store/mapBuilder'
 import { ShareDialog } from '@/components/map-builder/ShareDialog'
 import type { MapType } from '@/lib/types'
 
-const MAP_TYPES: { value: MapType; label: string }[] = [
-  { value: 'TABLE', label: 'Table' },
-  { value: 'CROSSTAB', label: 'Crosstab' },
-  { value: 'PAGE_DETAIL', label: 'Page-Detail' },
-  { value: 'CHART', label: 'Chart' },
+const MAP_TYPES: { value: MapType; labelKey: string }[] = [
+  { value: 'TABLE', labelKey: 'mapBuilder:toolbar.mapTypes.table' },
+  { value: 'CROSSTAB', labelKey: 'mapBuilder:toolbar.mapTypes.crosstab' },
+  { value: 'PAGE_DETAIL', labelKey: 'mapBuilder:toolbar.mapTypes.pageDetail' },
+  { value: 'CHART', labelKey: 'mapBuilder:toolbar.mapTypes.chart' },
 ]
 
 export type ExportFormat = 'csv' | 'excel' | 'xml'
@@ -48,6 +49,7 @@ export function MapToolbar({
   isSaving,
   isExporting,
 }: MapToolbarProps) {
+  const { t } = useTranslation(['mapBuilder', 'common'])
   const { toast } = useToast()
   const name = useMapBuilderStore((s) => s.name)
   const mapType = useMapBuilderStore((s) => s.mapType)
@@ -60,8 +62,8 @@ export function MapToolbar({
 
   function comingSoon(feature: string) {
     toast({
-      title: `${feature} coming soon`,
-      description: `${feature} will be available in a later session.`,
+      title: t('mapBuilder:toolbar.comingSoonTitle', { feature }),
+      description: t('mapBuilder:toolbar.comingSoonDescription', { feature }),
     })
   }
 
@@ -70,38 +72,38 @@ export function MapToolbar({
       <Input
         value={name}
         onChange={(e) => setName(e.target.value)}
-        aria-label="Map name"
+        aria-label={t('mapBuilder:toolbar.mapNameAria')}
         className="h-9 w-56 border-transparent text-base font-semibold hover:border-input focus-visible:border-input"
       />
 
       <Select value={mapType} onValueChange={(v) => setMapType(v as MapType)}>
-        <SelectTrigger className="h-9 w-[150px]" aria-label="Map type">
+        <SelectTrigger className="h-9 w-[150px]" aria-label={t('mapBuilder:toolbar.mapTypeAria')}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          {MAP_TYPES.map((t) => (
-            <SelectItem key={t.value} value={t.value}>
-              {t.label}
+          {MAP_TYPES.map((mt) => (
+            <SelectItem key={mt.value} value={mt.value}>
+              {t(mt.labelKey)}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
 
       {isDirty && (
-        <span className="text-xs text-muted-foreground" title="Unsaved changes">
-          ● Unsaved
+        <span className="text-xs text-muted-foreground" title={t('mapBuilder:toolbar.unsavedTitle')}>
+          {t('mapBuilder:toolbar.unsavedLabel')}
         </span>
       )}
 
       <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
         <Button variant="secondary" onClick={onRun} disabled={isRunning}>
           {isRunning ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-          Run
+          {t('common:actions.run')}
         </Button>
 
         <Button onClick={onSave} disabled={isSaving}>
           {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          Save
+          {t('common:actions.save')}
         </Button>
 
         <DropdownMenu>
@@ -112,35 +114,38 @@ export function MapToolbar({
               ) : (
                 <Download className="h-4 w-4" />
               )}
-              Export
+              {t('common:actions.export')}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Data (re-runs the query on the server)</DropdownMenuLabel>
+            <DropdownMenuLabel>{t('mapBuilder:toolbar.exportDataHeader')}</DropdownMenuLabel>
             <DropdownMenuItem disabled={!mapId || isExporting} onSelect={() => onExport('excel')}>
-              Excel (.xlsx)
+              {t('mapBuilder:toolbar.exportExcel')}
             </DropdownMenuItem>
             <DropdownMenuItem disabled={!mapId || isExporting} onSelect={() => onExport('csv')}>
-              CSV (.csv)
+              {t('mapBuilder:toolbar.exportCsv')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem disabled={!mapId} onSelect={() => onExport('xml')}>
-              Map definition (.xml)
+              {t('mapBuilder:toolbar.exportXml')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <Button variant="outline" onClick={() => comingSoon('Scheduling')}>
-          <CalendarClock className="h-4 w-4" /> Schedule
+        <Button
+          variant="outline"
+          onClick={() => comingSoon(t('mapBuilder:toolbar.featureScheduling'))}
+        >
+          <CalendarClock className="h-4 w-4" /> {t('mapBuilder:toolbar.schedule')}
         </Button>
 
         <Button
           variant="outline"
           disabled={!mapId}
-          title={mapId ? undefined : 'Save the map before sharing it'}
+          title={mapId ? undefined : t('mapBuilder:toolbar.shareDisabledTitle')}
           onClick={() => setShareOpen(true)}
         >
-          <Share2 className="h-4 w-4" /> Share
+          <Share2 className="h-4 w-4" /> {t('mapBuilder:toolbar.share')}
         </Button>
       </div>
 

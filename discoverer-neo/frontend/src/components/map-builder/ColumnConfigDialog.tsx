@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Dialog,
   DialogContent,
@@ -25,13 +26,13 @@ const AGG_FUNCTIONS: AggFunction[] = ['NONE', 'SUM', 'COUNT', 'AVG', 'MIN', 'MAX
 // Radix SelectItem forbids empty-string values, so presets only *set* a mask;
 // clear the field via the free-text input instead.
 const FORMAT_PRESETS = [
-  { label: 'Number (1,234)', value: '999,999,999' },
-  { label: 'Decimal (1,234.00)', value: '999,999,999.00' },
-  { label: 'Currency ($1,234.00)', value: '$999,999,999.00' },
-  { label: 'Percent (12.3%)', value: '990.0%' },
-  { label: 'Date (DD-MON-YYYY)', value: 'DD-MON-YYYY' },
-  { label: 'Date (YYYY-MM-DD)', value: 'YYYY-MM-DD' },
-]
+  { id: 'number', value: '999,999,999' },
+  { id: 'decimal', value: '999,999,999.00' },
+  { id: 'currency', value: '$999,999,999.00' },
+  { id: 'percent', value: '990.0%' },
+  { id: 'dateDmy', value: 'DD-MON-YYYY' },
+  { id: 'dateYmd', value: 'YYYY-MM-DD' },
+] as const
 
 const SORT_NONE = 'NONE'
 
@@ -53,6 +54,7 @@ export function ColumnConfigDialog({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
+  const { t } = useTranslation(['mapBuilder', 'common'])
   const item = useMapBuilderStore((s) =>
     columnKey ? s.selectedItems.find((c) => c.key === columnKey) : undefined,
   )
@@ -106,15 +108,15 @@ export function ColumnConfigDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Configure column</DialogTitle>
+          <DialogTitle>{t('mapBuilder:columnConfig.title')}</DialogTitle>
           <DialogDescription>
-            {item ? columnLabel(item) : 'Column settings'}
+            {item ? columnLabel(item) : t('mapBuilder:columnConfig.descriptionFallback')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="col-display-name">Display name</Label>
+            <Label htmlFor="col-display-name">{t('mapBuilder:columnConfig.displayName')}</Label>
             <Input
               id="col-display-name"
               value={form.displayName}
@@ -125,9 +127,9 @@ export function ColumnConfigDialog({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Aggregation</Label>
+              <Label>{t('mapBuilder:columnConfig.aggregation')}</Label>
               <Select value={form.aggFunction} onValueChange={(v) => set('aggFunction', v)}>
-                <SelectTrigger aria-label="Aggregation">
+                <SelectTrigger aria-label={t('mapBuilder:columnConfig.aggregation')}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -140,41 +142,44 @@ export function ColumnConfigDialog({
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Sort direction</Label>
+              <Label>{t('mapBuilder:columnConfig.sortDirection')}</Label>
               <Select
                 value={form.sortDirection}
                 onValueChange={(v) => set('sortDirection', v as FormState['sortDirection'])}
               >
-                <SelectTrigger aria-label="Sort direction">
+                <SelectTrigger aria-label={t('mapBuilder:columnConfig.sortDirection')}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={SORT_NONE}>None</SelectItem>
-                  <SelectItem value="ASC">Ascending</SelectItem>
-                  <SelectItem value="DESC">Descending</SelectItem>
+                  <SelectItem value={SORT_NONE}>{t('common:labels.none')}</SelectItem>
+                  <SelectItem value="ASC">{t('mapBuilder:sortDirections.asc')}</SelectItem>
+                  <SelectItem value="DESC">{t('mapBuilder:sortDirections.desc')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="col-format-mask">Format mask</Label>
+            <Label htmlFor="col-format-mask">{t('mapBuilder:columnConfig.formatMask')}</Label>
             <div className="flex gap-2">
               <Input
                 id="col-format-mask"
                 value={form.formatMask}
                 onChange={(e) => set('formatMask', e.target.value)}
-                placeholder="e.g. 999,999.00"
+                placeholder={t('mapBuilder:columnConfig.formatMaskPlaceholder')}
                 className="flex-1"
               />
               <Select value="" onValueChange={(v) => set('formatMask', v)}>
-                <SelectTrigger className="w-[130px]" aria-label="Format presets">
-                  <SelectValue placeholder="Presets" />
+                <SelectTrigger
+                  className="w-[130px]"
+                  aria-label={t('mapBuilder:columnConfig.formatPresetsAria')}
+                >
+                  <SelectValue placeholder={t('mapBuilder:columnConfig.formatPresetsPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {FORMAT_PRESETS.map((p) => (
-                    <SelectItem key={p.label} value={p.value}>
-                      {p.label}
+                    <SelectItem key={p.id} value={p.value}>
+                      {t(`mapBuilder:columnConfig.presets.${p.id}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -184,24 +189,24 @@ export function ColumnConfigDialog({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="col-sort-order">Sort order</Label>
+              <Label htmlFor="col-sort-order">{t('mapBuilder:columnConfig.sortOrder')}</Label>
               <Input
                 id="col-sort-order"
                 type="number"
                 value={form.sortOrder}
                 onChange={(e) => set('sortOrder', e.target.value)}
-                placeholder="e.g. 1"
+                placeholder={t('mapBuilder:columnConfig.sortOrderPlaceholder')}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="col-width">Column width (px)</Label>
+              <Label htmlFor="col-width">{t('mapBuilder:columnConfig.columnWidth')}</Label>
               <Input
                 id="col-width"
                 type="number"
                 min={1}
                 value={form.columnWidth}
                 onChange={(e) => set('columnWidth', e.target.value)}
-                placeholder="e.g. 120"
+                placeholder={t('mapBuilder:columnConfig.columnWidthPlaceholder')}
               />
             </div>
           </div>
@@ -209,10 +214,10 @@ export function ColumnConfigDialog({
 
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t('common:actions.cancel')}
           </Button>
           <Button type="button" onClick={handleSave} disabled={!item}>
-            Save
+            {t('common:actions.save')}
           </Button>
         </DialogFooter>
       </DialogContent>

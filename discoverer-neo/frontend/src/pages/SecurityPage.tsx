@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { ColumnDef } from '@tanstack/react-table'
+import { useTranslation } from 'react-i18next'
 import {
   CheckCircle2,
   FlaskConical,
@@ -77,6 +78,8 @@ function RuleEditor({
   onChange: (patch: Partial<RuleDraft>) => void
   onRemove: () => void
 }) {
+  const { t } = useTranslation(['security', 'common'])
+
   const { data: folders } = useQuery({
     queryKey: ['folders', rule.businessAreaId],
     queryFn: async () =>
@@ -101,7 +104,7 @@ function RuleEditor({
     <div className="space-y-3 rounded-lg border p-3">
       <div className="flex flex-wrap items-end gap-3">
         <div className="space-y-1">
-          <Label className="text-xs">Applies to</Label>
+          <Label className="text-xs">{t('security:rule.appliesTo')}</Label>
           <Select
             value={rule.targetType}
             onValueChange={(v) =>
@@ -111,17 +114,17 @@ function RuleEditor({
               })
             }
           >
-            <SelectTrigger className="w-40" aria-label="Rule target type">
+            <SelectTrigger className="w-40" aria-label={t('security:rule.targetTypeAriaLabel')}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="BUSINESS_AREA">Business Area</SelectItem>
-              <SelectItem value="FOLDER">Folder</SelectItem>
+              <SelectItem value="BUSINESS_AREA">{t('security:rule.businessArea')}</SelectItem>
+              <SelectItem value="FOLDER">{t('security:rule.folder')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-1">
-          <Label className="text-xs">Business Area</Label>
+          <Label className="text-xs">{t('security:rule.businessAreaLabel')}</Label>
           <Select
             value={rule.businessAreaId}
             onValueChange={(v) =>
@@ -131,8 +134,8 @@ function RuleEditor({
               })
             }
           >
-            <SelectTrigger className="w-52" aria-label="Rule business area">
-              <SelectValue placeholder="Select business area" />
+            <SelectTrigger className="w-52" aria-label={t('security:rule.businessAreaAriaLabel')}>
+              <SelectValue placeholder={t('security:rule.selectBusinessArea')} />
             </SelectTrigger>
             <SelectContent>
               {businessAreas.map((ba) => (
@@ -145,14 +148,14 @@ function RuleEditor({
         </div>
         {rule.targetType === 'FOLDER' && (
           <div className="space-y-1">
-            <Label className="text-xs">Folder</Label>
+            <Label className="text-xs">{t('security:rule.folderLabel')}</Label>
             <Select
               value={rule.targetId}
               onValueChange={(v) => onChange({ targetId: v })}
               disabled={!rule.businessAreaId}
             >
-              <SelectTrigger className="w-52" aria-label="Rule folder">
-                <SelectValue placeholder="Select folder" />
+              <SelectTrigger className="w-52" aria-label={t('security:rule.folderAriaLabel')}>
+                <SelectValue placeholder={t('security:rule.selectFolder')} />
               </SelectTrigger>
               <SelectContent>
                 {(folders ?? []).map((f: Folder) => (
@@ -170,13 +173,13 @@ function RuleEditor({
           size="icon"
           className="ml-auto"
           onClick={onRemove}
-          title="Remove rule"
+          title={t('security:rule.removeRule')}
         >
           <Trash2 className="h-4 w-4" />
         </Button>
       </div>
       <div className="space-y-1">
-        <Label className="text-xs">SQL predicate (WHERE-clause fragment)</Label>
+        <Label className="text-xs">{t('security:rule.predicateLabel')}</Label>
         <Textarea
           value={rule.sqlPredicate}
           onChange={(e) =>
@@ -198,11 +201,11 @@ function RuleEditor({
             disabled={!rule.sqlPredicate.trim() || validateMutation.isPending}
             onClick={() => validateMutation.mutate(rule.sqlPredicate)}
           >
-            {validateMutation.isPending ? 'Validating…' : 'Validate'}
+            {validateMutation.isPending ? t('security:rule.validating') : t('common:actions.validate')}
           </Button>
           {rule.validation?.valid && (
-            <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-500">
-              <CheckCircle2 className="h-3.5 w-3.5" /> Valid predicate
+            <span className="flex items-center gap-1 text-xs text-success">
+              <CheckCircle2 className="h-3.5 w-3.5" /> {t('security:rule.validPredicate')}
             </span>
           )}
           {rule.validation && !rule.validation.valid && (
@@ -212,12 +215,12 @@ function RuleEditor({
           )}
         </div>
         <p className="text-xs text-muted-foreground">
-          Binds: <code>:current_user_id</code>, <code>:current_user_email</code>,{' '}
+          {t('security:rule.bindsLabel')} <code>:current_user_id</code>, <code>:current_user_email</code>,{' '}
           <code>:current_user_role</code>
           {rule.targetType === 'FOLDER' && (
             <>
               {' '}
-              — <code>{'{alias}'}</code> resolves to the folder&apos;s query alias
+              — <code>{'{alias}'}</code> {t('security:rule.aliasResolves')}
             </>
           )}
         </p>
@@ -227,6 +230,7 @@ function RuleEditor({
 }
 
 export function SecurityPage() {
+  const { t } = useTranslation(['security', 'common'])
   const queryClient = useQueryClient()
   const { toast } = useToast()
   const currentUser = useAuthStore((s) => s.user)
@@ -287,7 +291,7 @@ export function SecurityPage() {
       setDialogOpen(true)
     },
     onError: (err) => {
-      toast({ title: 'Failed to load policy', description: getErrorMessage(err), variant: 'destructive' })
+      toast({ title: t('security:toasts.loadPolicyFailed'), description: getErrorMessage(err), variant: 'destructive' })
     },
   })
 
@@ -311,11 +315,11 @@ export function SecurityPage() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['security-policies'] })
-      toast({ title: editing ? 'Policy updated' : 'Policy created' })
+      toast({ title: editing ? t('security:toasts.policyUpdated') : t('security:toasts.policyCreated') })
       setDialogOpen(false)
     },
     onError: (err) => {
-      toast({ title: 'Save failed', description: getErrorMessage(err), variant: 'destructive' })
+      toast({ title: t('security:toasts.saveFailed'), description: getErrorMessage(err), variant: 'destructive' })
     },
   })
 
@@ -323,11 +327,11 @@ export function SecurityPage() {
     mutationFn: async (id: string) => apiClient.security.deletePolicy(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['security-policies'] })
-      toast({ title: 'Policy deleted' })
+      toast({ title: t('security:toasts.policyDeleted') })
       setDeleting(null)
     },
     onError: (err) => {
-      toast({ title: 'Delete failed', description: getErrorMessage(err), variant: 'destructive' })
+      toast({ title: t('security:toasts.deleteFailed'), description: getErrorMessage(err), variant: 'destructive' })
     },
   })
 
@@ -337,32 +341,32 @@ export function SecurityPage() {
     rules.every((r) => r.targetId && r.sqlPredicate.trim())
 
   const columns: ColumnDef<SecurityPolicy>[] = [
-      { accessorKey: 'name', header: 'Name' },
+      { accessorKey: 'name', header: t('common:labels.name') },
       {
         accessorKey: 'description',
-        header: 'Description',
+        header: t('common:labels.description'),
         cell: ({ row }) => (
           <span className="text-muted-foreground">{row.original.description ?? '—'}</span>
         ),
       },
       {
         accessorKey: 'isActive',
-        header: 'Status',
+        header: t('common:labels.status'),
         cell: ({ row }) =>
           row.original.isActive ? (
-            <Badge>Active</Badge>
+            <Badge>{t('common:labels.active')}</Badge>
           ) : (
-            <Badge variant="outline">Inactive</Badge>
+            <Badge variant="outline">{t('common:labels.inactive')}</Badge>
           ),
       },
       {
         accessorKey: 'ruleCount',
-        header: 'Rules',
+        header: t('security:table.rules'),
         cell: ({ row }) => row.original.ruleCount ?? 0,
       },
       {
         accessorKey: 'assignmentCount',
-        header: 'Assignments',
+        header: t('security:table.assignments'),
         cell: ({ row }) => row.original.assignmentCount ?? 0,
       },
       {
@@ -374,7 +378,7 @@ export function SecurityPage() {
               variant="ghost"
               size="icon"
               onClick={() => setAssigningPolicy(row.original)}
-              title="Assignments"
+              title={t('security:table.assignments')}
             >
               <UserPlus className="h-4 w-4" />
             </Button>
@@ -382,7 +386,7 @@ export function SecurityPage() {
               variant="ghost"
               size="icon"
               onClick={() => openEditMutation.mutate(row.original)}
-              title="Edit"
+              title={t('common:actions.edit')}
             >
               <Pencil className="h-4 w-4" />
             </Button>
@@ -390,7 +394,7 @@ export function SecurityPage() {
               variant="ghost"
               size="icon"
               onClick={() => setDeleting(row.original)}
-              title="Delete"
+              title={t('common:actions.delete')}
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -402,11 +406,11 @@ export function SecurityPage() {
   if (!isAdmin) {
     return (
       <AdminPageWrapper
-        title="Security Policies"
-        description="Row-level security policies restrict which rows users can see."
+        title={t('security:page.title')}
+        description={t('security:page.nonAdminDescription')}
       >
         <p className="text-sm text-muted-foreground">
-          Only administrators can manage security policies.
+          {t('security:page.nonAdminMessage')}
         </p>
       </AdminPageWrapper>
     )
@@ -414,15 +418,15 @@ export function SecurityPage() {
 
   return (
     <AdminPageWrapper
-      title="Security Policies"
-      description="Row-level security policies restrict which rows users can see. Predicates are ANDed into every query a policy's users run."
+      title={t('security:page.title')}
+      description={t('security:page.description')}
       action={
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setTestOpen(true)}>
-            <FlaskConical className="h-4 w-4" /> Test
+            <FlaskConical className="h-4 w-4" /> {t('common:actions.test')}
           </Button>
           <Button onClick={openCreate}>
-            <Plus className="h-4 w-4" /> New Policy
+            <Plus className="h-4 w-4" /> {t('security:page.newPolicy')}
           </Button>
         </div>
       }
@@ -431,15 +435,15 @@ export function SecurityPage() {
         columns={columns}
         data={policies ?? []}
         isLoading={isLoading}
-        emptyMessage="No security policies yet. Without policies, users see every row their map permissions allow."
+        emptyMessage={t('security:page.emptyMessage')}
       />
 
       {/* Create / edit */}
       <CreateEditDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        title={editing ? 'Edit Policy' : 'New Policy'}
-        description="Rules target a business area or folder; their SQL predicates are ANDed into the WHERE clause of matching queries."
+        title={editing ? t('security:dialog.editTitle') : t('security:dialog.newTitle')}
+        description={t('security:dialog.description')}
       >
         <form
           className="space-y-4"
@@ -449,11 +453,11 @@ export function SecurityPage() {
           }}
         >
           <div className="space-y-2">
-            <Label htmlFor="policy-name">Name</Label>
+            <Label htmlFor="policy-name">{t('common:labels.name')}</Label>
             <Input id="policy-name" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="policy-description">Description</Label>
+            <Label htmlFor="policy-description">{t('common:labels.description')}</Label>
             <Textarea
               id="policy-description"
               value={description}
@@ -467,19 +471,19 @@ export function SecurityPage() {
               checked={isActive}
               onCheckedChange={(v) => setIsActive(v === true)}
             />
-            <Label htmlFor="policy-active">Active</Label>
+            <Label htmlFor="policy-active">{t('common:labels.active')}</Label>
           </div>
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label>Rules</Label>
+              <Label>{t('security:dialog.rulesLabel')}</Label>
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => setRules((prev) => [...prev, emptyRule()])}
               >
-                <Plus className="h-3.5 w-3.5" /> Add rule
+                <Plus className="h-3.5 w-3.5" /> {t('security:dialog.addRule')}
               </Button>
             </div>
             <div className="space-y-3">
@@ -500,7 +504,7 @@ export function SecurityPage() {
               ))}
               {rules.length === 0 && (
                 <p className="text-sm text-muted-foreground">
-                  A policy needs at least one rule.
+                  {t('security:dialog.minRuleNotice')}
                 </p>
               )}
             </div>
@@ -508,10 +512,10 @@ export function SecurityPage() {
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-              Cancel
+              {t('common:actions.cancel')}
             </Button>
             <Button type="submit" disabled={!canSave || saveMutation.isPending}>
-              {saveMutation.isPending ? 'Saving…' : 'Save'}
+              {saveMutation.isPending ? t('common:actions.saving') : t('common:actions.save')}
             </Button>
           </div>
         </form>
@@ -536,7 +540,7 @@ export function SecurityPage() {
           open={!!deleting}
           onOpenChange={(open) => !open && setDeleting(null)}
           itemName={deleting.name}
-          itemLabel="policy"
+          itemLabel={t('security:deleteConfirm.itemLabel')}
           onConfirm={() => deleteMutation.mutate(deleting.id)}
           isPending={deleteMutation.isPending}
         />
@@ -556,6 +560,7 @@ function AssignmentsDialog({
   policy: SecurityPolicy
   onClose: () => void
 }) {
+  const { t } = useTranslation(['security', 'common'])
   const queryClient = useQueryClient()
   const { toast } = useToast()
   const [mode, setMode] = useState<'user' | 'role'>('user')
@@ -584,10 +589,10 @@ function AssignmentsDialog({
       })
       setSelectedUserId('')
       setSelectedRole('')
-      toast({ title: 'Policy assigned' })
+      toast({ title: t('security:toasts.policyAssigned') })
     },
     onError: (err) => {
-      toast({ title: 'Assign failed', description: getErrorMessage(err), variant: 'destructive' })
+      toast({ title: t('security:toasts.assignFailed'), description: getErrorMessage(err), variant: 'destructive' })
     },
   })
 
@@ -598,10 +603,10 @@ function AssignmentsDialog({
       void queryClient.invalidateQueries({
         queryKey: ['security-policy-assignments', policy.id],
       })
-      toast({ title: 'Assignment removed' })
+      toast({ title: t('security:toasts.assignmentRemoved') })
     },
     onError: (err) => {
-      toast({ title: 'Remove failed', description: getErrorMessage(err), variant: 'destructive' })
+      toast({ title: t('security:toasts.removeFailed'), description: getErrorMessage(err), variant: 'destructive' })
     },
   })
 
@@ -611,29 +616,29 @@ function AssignmentsDialog({
     <CreateEditDialog
       open
       onOpenChange={(open) => !open && onClose()}
-      title={`Assignments — ${policy.name}`}
-      description="The policy applies to every assigned user, and to every user holding an assigned role."
+      title={t('security:assignments.title', { name: policy.name })}
+      description={t('security:assignments.description')}
     >
       <div className="space-y-4">
         <div className="flex flex-wrap items-end gap-2">
           <div className="space-y-1">
-            <Label className="text-xs">Assign to</Label>
+            <Label className="text-xs">{t('security:assignments.assignTo')}</Label>
             <Select value={mode} onValueChange={(v) => setMode(v as 'user' | 'role')}>
-              <SelectTrigger className="w-28" aria-label="Assignment kind">
+              <SelectTrigger className="w-28" aria-label={t('security:assignments.kindAriaLabel')}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="user">User</SelectItem>
-                <SelectItem value="role">Role</SelectItem>
+                <SelectItem value="user">{t('security:assignments.user')}</SelectItem>
+                <SelectItem value="role">{t('security:assignments.role')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           {mode === 'user' ? (
             <div className="space-y-1">
-              <Label className="text-xs">User</Label>
+              <Label className="text-xs">{t('security:assignments.user')}</Label>
               <Select value={selectedUserId} onValueChange={setSelectedUserId}>
-                <SelectTrigger className="w-64" aria-label="User to assign">
-                  <SelectValue placeholder="Select user" />
+                <SelectTrigger className="w-64" aria-label={t('security:assignments.userAriaLabel')}>
+                  <SelectValue placeholder={t('security:assignments.selectUser')} />
                 </SelectTrigger>
                 <SelectContent>
                   {(users ?? []).map((u) => (
@@ -646,10 +651,10 @@ function AssignmentsDialog({
             </div>
           ) : (
             <div className="space-y-1">
-              <Label className="text-xs">Role</Label>
+              <Label className="text-xs">{t('security:assignments.role')}</Label>
               <Select value={selectedRole} onValueChange={setSelectedRole}>
-                <SelectTrigger className="w-40" aria-label="Role to assign">
-                  <SelectValue placeholder="Select role" />
+                <SelectTrigger className="w-40" aria-label={t('security:assignments.roleAriaLabel')}>
+                  <SelectValue placeholder={t('security:assignments.selectRole')} />
                 </SelectTrigger>
                 <SelectContent>
                   {ROLES.map((r) => (
@@ -666,16 +671,16 @@ function AssignmentsDialog({
             disabled={!canAssign || assignMutation.isPending}
             onClick={() => assignMutation.mutate()}
           >
-            <UserPlus className="h-4 w-4" /> Assign
+            <UserPlus className="h-4 w-4" /> {t('security:assignments.assign')}
           </Button>
         </div>
 
         <div className="space-y-2">
-          {isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
+          {isLoading && <p className="text-sm text-muted-foreground">{t('common:states.loading')}</p>}
           {!isLoading && (assignments ?? []).length === 0 && (
             <p className="flex items-center gap-2 text-sm text-muted-foreground">
               <ShieldAlert className="h-4 w-4" />
-              Not assigned — this policy currently restricts nobody.
+              {t('security:assignments.notAssigned')}
             </p>
           )}
           {(assignments ?? []).map((a) => (
@@ -685,18 +690,18 @@ function AssignmentsDialog({
             >
               {a.userId ? (
                 <span>
-                  {a.userName ?? 'Unknown user'}{' '}
+                  {a.userName ?? t('security:assignments.unknownUser')}{' '}
                   <span className="text-muted-foreground">({a.userEmail})</span>
                 </span>
               ) : (
                 <span>
-                  Role <Badge variant="outline">{a.roleName}</Badge>
+                  {t('security:assignments.roleLabel')} <Badge variant="outline">{a.roleName}</Badge>
                 </span>
               )}
               <Button
                 variant="ghost"
                 size="icon"
-                title="Remove assignment"
+                title={t('security:assignments.removeAssignment')}
                 disabled={unassignMutation.isPending}
                 onClick={() => unassignMutation.mutate(a)}
               >
@@ -708,7 +713,7 @@ function AssignmentsDialog({
 
         <div className="flex justify-end">
           <Button type="button" variant="outline" onClick={onClose}>
-            Close
+            {t('common:actions.close')}
           </Button>
         </div>
       </div>
@@ -727,6 +732,7 @@ function TestPolicyDialog({
   policies: SecurityPolicy[]
   onClose: () => void
 }) {
+  const { t } = useTranslation(['security', 'common'])
   const [policyId, setPolicyId] = useState('')
   const [sql, setSql] = useState('SELECT * FROM SALES')
   const [error, setError] = useState<string | null>(null)
@@ -742,15 +748,15 @@ function TestPolicyDialog({
     <CreateEditDialog
       open
       onOpenChange={(open) => !open && onClose()}
-      title="Test a policy"
-      description="Preview where a policy's predicates land in a sample query. Real enforcement happens inside the SQL generator when maps execute."
+      title={t('security:test.dialogTitle')}
+      description={t('security:test.description')}
     >
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label>Policy</Label>
+          <Label>{t('security:test.policyLabel')}</Label>
           <Select value={policyId} onValueChange={setPolicyId}>
-            <SelectTrigger aria-label="Policy to test">
-              <SelectValue placeholder="Select policy" />
+            <SelectTrigger aria-label={t('security:test.policyAriaLabel')}>
+              <SelectValue placeholder={t('security:test.selectPolicy')} />
             </SelectTrigger>
             <SelectContent>
               {policies.map((p) => (
@@ -762,7 +768,7 @@ function TestPolicyDialog({
           </Select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="test-sql">Sample query</Label>
+          <Label htmlFor="test-sql">{t('security:test.sampleQueryLabel')}</Label>
           <Textarea
             id="test-sql"
             value={sql}
@@ -778,16 +784,16 @@ function TestPolicyDialog({
             onClick={() => testMutation.mutate()}
           >
             <FlaskConical className="h-4 w-4" />
-            {testMutation.isPending ? 'Testing…' : 'Run test'}
+            {testMutation.isPending ? t('security:test.testing') : t('security:test.runTest')}
           </Button>
           <Button type="button" variant="outline" onClick={onClose}>
-            Close
+            {t('common:actions.close')}
           </Button>
         </div>
         {error && <p className="text-sm text-destructive">{error}</p>}
         {testMutation.data && !error && (
           <div className="space-y-2">
-            <Label>Query with security predicates</Label>
+            <Label>{t('security:test.resultLabel')}</Label>
             <pre className="max-h-64 overflow-auto rounded-md border bg-muted p-3 text-xs">
               {testMutation.data.securedSql}
             </pre>

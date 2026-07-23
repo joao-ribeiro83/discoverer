@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useMutation, useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { CalendarClock, Loader2, Play } from 'lucide-react'
 import { apiClient, getErrorMessage } from '@/lib/api'
 import type { ExecuteResult } from '@/lib/types'
@@ -16,6 +17,7 @@ import {
 export function MapViewerPage() {
   const { id } = useParams()
   const { toast } = useToast()
+  const { t } = useTranslation(['mapViewer', 'common'])
 
   const [result, setResult] = useState<ExecuteResult | null>(null)
   const [lastParameters, setLastParameters] = useState<Record<string, unknown>>({})
@@ -33,10 +35,17 @@ export function MapViewerPage() {
     onSuccess: (res, parameters) => {
       setResult(res)
       setLastParameters(parameters)
-      toast({ title: 'Map executed', description: `${res.rowCount} row(s) returned.` })
+      toast({
+        title: t('mapViewer:viewer.executedTitle'),
+        description: t('mapViewer:viewer.rowsReturned', { count: res.rowCount }),
+      })
     },
     onError: (err) =>
-      toast({ title: 'Run failed', description: getErrorMessage(err), variant: 'destructive' }),
+      toast({
+        title: t('mapViewer:viewer.runFailedTitle'),
+        description: getErrorMessage(err),
+        variant: 'destructive',
+      }),
   })
 
   function handleRun() {
@@ -60,7 +69,7 @@ export function MapViewerPage() {
   if (mapQuery.isLoading) {
     return (
       <div className="flex h-64 items-center justify-center text-muted-foreground">
-        <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Loading map…
+        <Loader2 className="mr-2 h-5 w-5 animate-spin" /> {t('mapViewer:viewer.loading')}
       </div>
     )
   }
@@ -69,11 +78,11 @@ export function MapViewerPage() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Map not found</CardTitle>
+          <CardTitle>{t('mapViewer:viewer.notFound')}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            {getErrorMessage(mapQuery.error, 'This map could not be loaded.')}
+            {getErrorMessage(mapQuery.error, t('mapViewer:viewer.notFoundDescription'))}
           </p>
         </CardContent>
       </Card>
@@ -96,11 +105,11 @@ export function MapViewerPage() {
             ) : (
               <Play className="h-4 w-4" />
             )}
-            Run
+            {t('common:actions.run')}
           </Button>
           <Button variant="outline" asChild>
             <Link to="/schedules">
-              <CalendarClock className="h-4 w-4" /> Schedule management
+              <CalendarClock className="h-4 w-4" /> {t('mapViewer:viewer.scheduleManagement')}
             </Link>
           </Button>
         </div>

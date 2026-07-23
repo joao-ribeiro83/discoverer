@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { z } from 'zod'
+import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate, type Location } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -12,13 +13,19 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { useAuth } from '@/hooks/useAuth'
 import { setRememberMe } from '@/store/auth'
 
-const loginSchema = z.object({
-  email: z.string().min(1, 'Email is required').email('Enter a valid email address'),
-  password: z.string().min(1, 'Password is required'),
-  rememberMe: z.boolean(),
-})
+type LoginFormValues = z.infer<ReturnType<typeof buildLoginSchema>>
 
-type LoginFormValues = z.infer<typeof loginSchema>
+// Built with a translator so validation messages localize with the UI.
+function buildLoginSchema(t: (key: string) => string) {
+  return z.object({
+    email: z
+      .string()
+      .min(1, t('auth:validation.emailRequired'))
+      .email(t('auth:validation.emailInvalid')),
+    password: z.string().min(1, t('auth:validation.passwordRequired')),
+    rememberMe: z.boolean(),
+  })
+}
 
 interface LocationState {
   from?: Location
@@ -26,6 +33,7 @@ interface LocationState {
 }
 
 export function LoginPage() {
+  const { t } = useTranslation(['auth'])
   const { login } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -40,7 +48,7 @@ export function LoginPage() {
     watch,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({
-    resolver: standardSchemaResolver(loginSchema),
+    resolver: standardSchemaResolver(buildLoginSchema(t)),
     defaultValues: { email: '', password: '', rememberMe: true },
   })
 
@@ -54,7 +62,7 @@ export function LoginPage() {
     } catch (error) {
       const message =
         (error as { response?: { data?: { error?: string } } })?.response?.data?.error ??
-        'Unable to sign in. Please try again.'
+        t('auth:login.genericError')
       setServerError(message)
     }
   }
@@ -62,8 +70,8 @@ export function LoginPage() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl">Discoverer Neo</CardTitle>
-        <CardDescription>Sign in to your account</CardDescription>
+        <CardTitle className="text-2xl">{t('auth:login.appName')}</CardTitle>
+        <CardDescription>{t('auth:login.subtitle')}</CardDescription>
       </CardHeader>
       <CardContent>
         {state?.message && (
@@ -85,7 +93,7 @@ export function LoginPage() {
           noValidate
         >
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t('auth:login.emailLabel')}</Label>
             <Input
               id="email"
               type="email"
@@ -99,7 +107,7 @@ export function LoginPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{t('auth:login.passwordLabel')}</Label>
             <Input
               id="password"
               type="password"
@@ -119,13 +127,13 @@ export function LoginPage() {
               onCheckedChange={(checked) => setValue('rememberMe', checked === true)}
             />
             <Label htmlFor="rememberMe" className="font-normal">
-              Remember me
+              {t('auth:login.rememberMe')}
             </Label>
           </div>
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
-            Sign in
+            {isSubmitting ? t('auth:login.submitting') : t('auth:login.submit')}
           </Button>
         </form>
       </CardContent>

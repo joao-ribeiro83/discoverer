@@ -1,0 +1,95 @@
+{
+  "viewer": {
+    "loading": "Loading map…",
+    "notFound": "Map not found",
+    "notFoundDescription": "This map could not be loaded.",
+    "executedTitle": "Map executed",
+    "rowsReturned": "{{count}} row(s) returned.",
+    "runFailedTitle": "Run failed",
+    "scheduleManagement": "Schedule management"
+  },
+  "mapsList": {
+    "title": "Maps",
+    "description": "Browse and manage your visual maps.",
+    "placeholderTitle": "Placeholder",
+    "comingSoon": "This page is coming soon."
+  },
+  "dashboard": {
+    "welcome": "Welcome",
+    "welcomeWithName": "Welcome, {{name}}",
+    "subtitle": "Overview of your Discoverer Neo workspace.",
+    "totalMaps": "Total Maps",
+    "totalMapsBreakdown": "{{mine}} yours, {{shared}} shared with you",
+    "totalExecutions": "Total Executions",
+    "totalExecutionsTooltip": "No workspace-wide execution count endpoint exists yet — see each map's history for its own runs.",
+    "perMapHistory": "Per-map history is on each map's viewer.",
+    "scheduledMaps": "Scheduled Maps",
+    "scheduledMapsTooltip": "Scheduling has not been built yet.",
+    "comingWithSchedules": "Coming with the Schedules feature.",
+    "dataSources": "Data Sources",
+    "dataSourcesTooltip": "See Admin -> Data Sources for the full list.",
+    "manageConnections": "Manage connections under Admin.",
+    "recentMaps": "Recent Maps",
+    "recentMapsDescription": "Your last 5 updated maps.",
+    "noMapsYet": "No maps yet. Create one from the Maps page.",
+    "scheduledResults": "Scheduled Results",
+    "scheduledResultsDescription": "Last 5 scheduled runs.",
+    "schedulingNotAvailable": "Scheduling isn't available yet — this section will populate once schedules ship."
+  },
+  "resultsTable": {
+    "nullValue": "NULL",
+    "noRows": "No rows.",
+    "filterPlaceholder": "Filter…",
+    "filterAriaLabel": "Filter {{column}}",
+    "rowCount_one": "{{formattedCount}} row",
+    "rowCount_other": "{{formattedCount}} rows",
+    "filteredFrom": "(filtered from {{total}})"
+  },
+  "execution": {
+    "nothingToLoadMore": "Nothing to load more of yet.",
+    "loadMoreFailedTitle": "Load more failed",
+    "saveBeforeBackgroundRun": "Save the map before running in the background.",
+    "runFailedTitle": "Run failed",
+    "backgroundRunCompleteTitle": "Background run complete",
+    "rowsReturned": "{{count}} row(s) returned.",
+    "backgroundRunFailedTitle": "Background run failed",
+    "executionFailedFallback": "The execution failed.",
+    "results": "Results",
+    "rowCount_one": "{{count}} row",
+    "rowCount_other": "{{count}} rows",
+    "executionTime": "{{ms}} ms",
+    "moreRowsAvailable": "More rows available",
+    "sql": "SQL",
+    "excel": "Excel",
+    "csv": "CSV",
+    "closeResults": "Close results",
+    "executionError": "Execution error",
+    "errorKind": {
+      "CONFIG": "Configuration error",
+      "CONNECT": "Connection error",
+      "TIMEOUT": "Query timed out",
+      "QUERY": "Query error",
+      "CANCELLED": "Cancelled"
+    },
+    "noRows": "Query returned no rows.",
+    "runToSeeResults": "Run the map to see results.",
+    "notAllRowsLoaded": "Not all rows are loaded.",
+    "runFullResultTooltip": "Run the full query in the background (up to 100,000 rows)",
+    "runningStatus": "Running… ({{status}})",
+    "runFullResult": "Run full result"
+  },
+  "parameters": {
+    "title": "Run parameters",
+    "description": "Enter values for this map's parameters, then run.",
+    "listPlaceholder": "comma, separated, values",
+    "required": "This parameter is required."
+  },
+  "export": {
+    "saveBeforeExport": "Save the map before exporting.",
+    "exportFailedTitle": "Export failed",
+    "exportQueuedTitle": "Export queued",
+    "exportQueuedDescription": "This may take a moment for large result sets.",
+    "downloadFailedTitle": "Download failed",
+    "exportJobFailedFallback": "The export job failed."
+  }
+}

@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   LayoutDashboard,
   FolderTree,
@@ -20,29 +21,29 @@ import { cn } from '@/lib/utils'
 import { Separator } from '@/components/ui/separator'
 
 const mainNavItems = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/dashboard', labelKey: 'items.dashboard', icon: LayoutDashboard },
 ]
 
 const adminNavItems = [
-  { to: '/admin/business-areas', label: 'Business Areas', icon: FolderTree },
-  { to: '/admin/folders', label: 'Folders', icon: FolderOpen },
-  { to: '/admin/items', label: 'Items', icon: Table2 },
-  { to: '/admin/joins', label: 'Joins', icon: GitMerge },
-  { to: '/admin/hierarchies', label: 'Hierarchies', icon: Layers },
-  { to: '/admin/custom-functions', label: 'Custom Functions', icon: FunctionSquare },
-  { to: '/admin/data-sources', label: 'Data Sources', icon: Database },
-  { to: '/admin/users', label: 'Users', icon: Users },
-  { to: '/admin/security', label: 'Security', icon: ShieldCheck },
-  { to: '/admin/audit', label: 'Audit Log', icon: ScrollText },
+  { to: '/admin/business-areas', labelKey: 'items.businessAreas', icon: FolderTree },
+  { to: '/admin/folders', labelKey: 'items.folders', icon: FolderOpen },
+  { to: '/admin/items', labelKey: 'items.items', icon: Table2 },
+  { to: '/admin/joins', labelKey: 'items.joins', icon: GitMerge },
+  { to: '/admin/hierarchies', labelKey: 'items.hierarchies', icon: Layers },
+  { to: '/admin/custom-functions', labelKey: 'items.customFunctions', icon: FunctionSquare },
+  { to: '/admin/data-sources', labelKey: 'items.dataSources', icon: Database },
+  { to: '/admin/users', labelKey: 'items.users', icon: Users },
+  { to: '/admin/security', labelKey: 'items.security', icon: ShieldCheck },
+  { to: '/admin/audit', labelKey: 'items.auditLog', icon: ScrollText },
 ]
 
 const mapsNavItems = [
-  { to: '/maps', label: 'Maps', icon: Map },
+  { to: '/maps', labelKey: 'items.maps', icon: Map },
 ]
 
 const otherNavItems = [
-  { to: '/schedules', label: 'Schedules', icon: CalendarClock },
-  { to: '/admin/migration', label: 'Migration', icon: ArrowRightLeft },
+  { to: '/schedules', labelKey: 'items.schedules', icon: CalendarClock },
+  { to: '/admin/migration', labelKey: 'items.migration', icon: ArrowRightLeft },
 ]
 
 function NavSection({
@@ -54,6 +55,7 @@ function NavSection({
   items: typeof mainNavItems
   onNavigate?: () => void
 }) {
+  const { t } = useTranslation('nav')
   return (
     <div className="px-3 py-2">
       <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">{title}</h2>
@@ -71,7 +73,7 @@ function NavSection({
             }
           >
             <item.icon className="h-4 w-4" />
-            {item.label}
+            {t(item.labelKey)}
           </NavLink>
         ))}
       </div>
@@ -80,20 +82,25 @@ function NavSection({
 }
 
 export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
+  const { t } = useTranslation('nav')
   return (
     <>
       <div className="flex h-14 items-center gap-2 border-b px-4">
         <Database className="h-6 w-6 text-primary" />
-        <span className="text-lg font-bold">Discoverer Neo</span>
+        <span className="text-lg font-bold">{t('appName')}</span>
       </div>
       <nav className="flex-1 overflow-y-auto py-2">
-        <NavSection title="Overview" items={mainNavItems} onNavigate={onNavigate} />
+        <NavSection title={t('sections.overview')} items={mainNavItems} onNavigate={onNavigate} />
         <Separator className="my-2" />
-        <NavSection title="Data Modeling" items={adminNavItems} onNavigate={onNavigate} />
+        <NavSection
+          title={t('sections.dataModeling')}
+          items={adminNavItems}
+          onNavigate={onNavigate}
+        />
         <Separator className="my-2" />
-        <NavSection title="Maps" items={mapsNavItems} onNavigate={onNavigate} />
+        <NavSection title={t('sections.maps')} items={mapsNavItems} onNavigate={onNavigate} />
         <Separator className="my-2" />
-        <NavSection title="Other" items={otherNavItems} onNavigate={onNavigate} />
+        <NavSection title={t('sections.other')} items={otherNavItems} onNavigate={onNavigate} />
       </nav>
       <div className="border-t p-3">
         <NavLink
@@ -107,7 +114,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
           }
         >
           <Settings className="h-4 w-4" />
-          Settings
+          {t('items.settings')}
         </NavLink>
       </div>
     </>

@@ -1,4 +1,5 @@
 import { useDeferredValue, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link2, Loader2, X } from 'lucide-react'
 import {
@@ -22,11 +23,7 @@ import { useToast } from '@/hooks/use-toast'
 import { apiClient, getErrorMessage } from '@/lib/api'
 import type { MapShare, SharePermissionLevel } from '@/lib/types'
 
-const PERMISSION_LABELS: Record<SharePermissionLevel, string> = {
-  VIEW: 'Can view',
-  EXPORT: 'Can export',
-  EDIT: 'Can edit',
-}
+const PERMISSION_LEVELS: SharePermissionLevel[] = ['VIEW', 'EXPORT', 'EDIT']
 
 interface ShareDialogProps {
   open: boolean
@@ -36,6 +33,7 @@ interface ShareDialogProps {
 }
 
 export function ShareDialog({ open, onOpenChange, mapId, isPublic }: ShareDialogProps) {
+  const { t } = useTranslation(['mapBuilder', 'common'])
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
@@ -71,10 +69,14 @@ export function ShareDialog({ open, onOpenChange, mapId, isPublic }: ShareDialog
       invalidateShares()
       setPendingUserId(null)
       setSearch('')
-      toast({ title: 'Map shared' })
+      toast({ title: t('mapBuilder:share.toastShared') })
     },
     onError: (err) => {
-      toast({ title: 'Could not share map', description: getErrorMessage(err), variant: 'destructive' })
+      toast({
+        title: t('mapBuilder:share.toastShareFailedTitle'),
+        description: getErrorMessage(err),
+        variant: 'destructive',
+      })
     },
   })
 
@@ -83,10 +85,14 @@ export function ShareDialog({ open, onOpenChange, mapId, isPublic }: ShareDialog
       apiClient.maps.updateShare(mapId, vars.userId, vars.permissionLevel),
     onSuccess: () => {
       invalidateShares()
-      toast({ title: 'Permission updated' })
+      toast({ title: t('mapBuilder:share.toastPermissionUpdated') })
     },
     onError: (err) => {
-      toast({ title: 'Could not update permission', description: getErrorMessage(err), variant: 'destructive' })
+      toast({
+        title: t('mapBuilder:share.toastPermissionUpdateFailedTitle'),
+        description: getErrorMessage(err),
+        variant: 'destructive',
+      })
     },
   })
 
@@ -94,10 +100,14 @@ export function ShareDialog({ open, onOpenChange, mapId, isPublic }: ShareDialog
     mutationFn: (userId: string) => apiClient.maps.revokeShare(mapId, userId),
     onSuccess: () => {
       invalidateShares()
-      toast({ title: 'Access revoked' })
+      toast({ title: t('mapBuilder:share.toastRevoked') })
     },
     onError: (err) => {
-      toast({ title: 'Could not revoke access', description: getErrorMessage(err), variant: 'destructive' })
+      toast({
+        title: t('mapBuilder:share.toastRevokeFailedTitle'),
+        description: getErrorMessage(err),
+        variant: 'destructive',
+      })
     },
   })
 
@@ -105,9 +115,13 @@ export function ShareDialog({ open, onOpenChange, mapId, isPublic }: ShareDialog
     const url = `${window.location.origin}/maps/${mapId}/view`
     try {
       await navigator.clipboard.writeText(url)
-      toast({ title: 'Link copied to clipboard' })
+      toast({ title: t('mapBuilder:share.toastLinkCopied') })
     } catch {
-      toast({ title: 'Could not copy link', description: url, variant: 'destructive' })
+      toast({
+        title: t('mapBuilder:share.toastCopyFailedTitle'),
+        description: url,
+        variant: 'destructive',
+      })
     }
   }
 
@@ -119,10 +133,8 @@ export function ShareDialog({ open, onOpenChange, mapId, isPublic }: ShareDialog
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Share map</DialogTitle>
-          <DialogDescription>
-            Give other users access to view, export, or edit this map.
-          </DialogDescription>
+          <DialogTitle>{t('mapBuilder:share.title')}</DialogTitle>
+          <DialogDescription>{t('mapBuilder:share.description')}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
@@ -133,18 +145,20 @@ export function ShareDialog({ open, onOpenChange, mapId, isPublic }: ShareDialog
                 setSearch(e.target.value)
                 setPendingUserId(null)
               }}
-              placeholder="Search by name or email…"
-              aria-label="Search users to share with"
+              placeholder={t('mapBuilder:share.searchPlaceholder')}
+              aria-label={t('mapBuilder:share.searchAria')}
             />
             {search.trim().length >= 2 && (
               <div className="absolute z-10 mt-1 max-h-48 w-full overflow-auto rounded-md border bg-popover shadow-md">
                 {searchQuery.isFetching && (
                   <div className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" /> Searching…
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" /> {t('mapBuilder:share.searching')}
                   </div>
                 )}
                 {!searchQuery.isFetching && searchResults.length === 0 && (
-                  <div className="px-3 py-2 text-sm text-muted-foreground">No matching users</div>
+                  <div className="px-3 py-2 text-sm text-muted-foreground">
+                    {t('mapBuilder:share.noMatchingUsers')}
+                  </div>
                 )}
                 {searchResults.map((u) => (
                   <button
@@ -170,13 +184,13 @@ export function ShareDialog({ open, onOpenChange, mapId, isPublic }: ShareDialog
                 value={pendingPermission}
                 onValueChange={(v) => setPendingPermission(v as SharePermissionLevel)}
               >
-                <SelectTrigger className="h-9 flex-1" aria-label="Permission level">
+                <SelectTrigger className="h-9 flex-1" aria-label={t('mapBuilder:share.permissionAria')}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {(Object.keys(PERMISSION_LABELS) as SharePermissionLevel[]).map((level) => (
+                  {PERMISSION_LEVELS.map((level) => (
                     <SelectItem key={level} value={level}>
-                      {PERMISSION_LABELS[level]}
+                      {t(`mapBuilder:share.permissions.${level}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -188,7 +202,11 @@ export function ShareDialog({ open, onOpenChange, mapId, isPublic }: ShareDialog
                   shareMutation.mutate({ userId: pendingUserId, permissionLevel: pendingPermission })
                 }
               >
-                {shareMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Share'}
+                {shareMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  t('mapBuilder:share.shareButton')
+                )}
               </Button>
             </div>
           )}
@@ -197,14 +215,14 @@ export function ShareDialog({ open, onOpenChange, mapId, isPublic }: ShareDialog
         <Separator />
 
         <div className="space-y-2">
-          <p className="text-sm font-medium">People with access</p>
+          <p className="text-sm font-medium">{t('mapBuilder:share.peopleWithAccess')}</p>
           {sharesQuery.isLoading && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading…
+              <Loader2 className="h-3.5 w-3.5 animate-spin" /> {t('common:states.loading')}
             </div>
           )}
           {!sharesQuery.isLoading && shares.length === 0 && (
-            <p className="text-sm text-muted-foreground">Not shared with anyone yet.</p>
+            <p className="text-sm text-muted-foreground">{t('mapBuilder:share.notSharedYet')}</p>
           )}
           <ul className="space-y-1">
             {shares.map((share) => (
@@ -226,14 +244,14 @@ export function ShareDialog({ open, onOpenChange, mapId, isPublic }: ShareDialog
                 >
                   <SelectTrigger
                     className="h-8 w-[130px]"
-                    aria-label={`Permission for ${shareLabel(share)}`}
+                    aria-label={t('mapBuilder:share.permissionForAria', { name: shareLabel(share) })}
                   >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {(Object.keys(PERMISSION_LABELS) as SharePermissionLevel[]).map((level) => (
+                    {PERMISSION_LEVELS.map((level) => (
                       <SelectItem key={level} value={level}>
-                        {PERMISSION_LABELS[level]}
+                        {t(`mapBuilder:share.permissions.${level}`)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -242,7 +260,7 @@ export function ShareDialog({ open, onOpenChange, mapId, isPublic }: ShareDialog
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 shrink-0"
-                  aria-label={`Revoke access for ${shareLabel(share)}`}
+                  aria-label={t('mapBuilder:share.revokeAria', { name: shareLabel(share) })}
                   disabled={revokeMutation.isPending}
                   onClick={() => revokeMutation.mutate(share.sharedWithUserId)}
                 >
@@ -257,11 +275,9 @@ export function ShareDialog({ open, onOpenChange, mapId, isPublic }: ShareDialog
           <>
             <Separator />
             <div className="flex items-center justify-between gap-2">
-              <p className="text-sm text-muted-foreground">
-                This map is public — anyone with the link can view it.
-              </p>
+              <p className="text-sm text-muted-foreground">{t('mapBuilder:share.publicNotice')}</p>
               <Button variant="outline" size="sm" onClick={() => void copyLink()}>
-                <Link2 className="h-3.5 w-3.5" /> Copy link
+                <Link2 className="h-3.5 w-3.5" /> {t('mapBuilder:share.copyLink')}
               </Button>
             </div>
           </>

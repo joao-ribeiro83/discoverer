@@ -1,12 +1,16 @@
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { Map as MapIcon } from 'lucide-react'
 import { apiClient } from '@/lib/api'
 import { useAuthStore } from '@/store/auth'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { formatDate } from '@/lib/utils'
+import { formatDate } from '@/lib/format'
+import { useLocale } from '@/hooks/useLocale'
 
 export function DashboardPage() {
+  const { t } = useTranslation(['mapViewer', 'common'])
+  const { locale } = useLocale()
   const user = useAuthStore((s) => s.user)
 
   const mapsQuery = useQuery({
@@ -26,60 +30,65 @@ export function DashboardPage() {
     <div className="space-y-6">
       <div>
         <h2 className="text-3xl font-bold tracking-tight">
-          Welcome{user?.name ? `, ${user.name}` : ''}
+          {user?.name
+            ? t('mapViewer:dashboard.welcomeWithName', { name: user.name })
+            : t('mapViewer:dashboard.welcome')}
         </h2>
-        <p className="text-muted-foreground">Overview of your Discoverer Neo workspace.</p>
+        <p className="text-muted-foreground">{t('mapViewer:dashboard.subtitle')}</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Total Maps</CardDescription>
+            <CardDescription>{t('mapViewer:dashboard.totalMaps')}</CardDescription>
             <CardTitle className="text-3xl">{mapsQuery.isLoading ? '—' : totalMaps}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">
-              {mine.length} yours, {shared.length} shared with you
+              {t('mapViewer:dashboard.totalMapsBreakdown', {
+                mine: mine.length,
+                shared: shared.length,
+              })}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Total Executions</CardDescription>
+            <CardDescription>{t('mapViewer:dashboard.totalExecutions')}</CardDescription>
             <CardTitle
               className="text-3xl"
-              title="No workspace-wide execution count endpoint exists yet — see each map's history for its own runs."
+              title={t('mapViewer:dashboard.totalExecutionsTooltip')}
             >
               —
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-xs text-muted-foreground">Per-map history is on each map&apos;s viewer.</p>
+            <p className="text-xs text-muted-foreground">{t('mapViewer:dashboard.perMapHistory')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Scheduled Maps</CardDescription>
-            <CardTitle className="text-3xl" title="Scheduling has not been built yet.">
+            <CardDescription>{t('mapViewer:dashboard.scheduledMaps')}</CardDescription>
+            <CardTitle className="text-3xl" title={t('mapViewer:dashboard.scheduledMapsTooltip')}>
               —
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-xs text-muted-foreground">Coming with the Schedules feature.</p>
+            <p className="text-xs text-muted-foreground">{t('mapViewer:dashboard.comingWithSchedules')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Data Sources</CardDescription>
-            <CardTitle className="text-3xl" title="See Admin -> Data Sources for the full list.">
+            <CardDescription>{t('mapViewer:dashboard.dataSources')}</CardDescription>
+            <CardTitle className="text-3xl" title={t('mapViewer:dashboard.dataSourcesTooltip')}>
               —
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-xs text-muted-foreground">Manage connections under Admin.</p>
+            <p className="text-xs text-muted-foreground">{t('mapViewer:dashboard.manageConnections')}</p>
           </CardContent>
         </Card>
       </div>
@@ -87,16 +96,14 @@ export function DashboardPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Recent Maps</CardTitle>
-            <CardDescription>Your last 5 updated maps.</CardDescription>
+            <CardTitle className="text-base">{t('mapViewer:dashboard.recentMaps')}</CardTitle>
+            <CardDescription>{t('mapViewer:dashboard.recentMapsDescription')}</CardDescription>
           </CardHeader>
           <CardContent>
             {mapsQuery.isLoading ? (
-              <p className="text-sm text-muted-foreground">Loading…</p>
+              <p className="text-sm text-muted-foreground">{t('common:states.loading')}</p>
             ) : recentMaps.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                No maps yet. Create one from the Maps page.
-              </p>
+              <p className="text-sm text-muted-foreground">{t('mapViewer:dashboard.noMapsYet')}</p>
             ) : (
               <ul className="divide-y">
                 {recentMaps.map((m) => (
@@ -110,7 +117,7 @@ export function DashboardPage() {
                         {m.name}
                       </span>
                       <span className="shrink-0 text-xs text-muted-foreground">
-                        {formatDate(m.updatedAt)}
+                        {formatDate(m.updatedAt, locale)}
                       </span>
                     </Link>
                   </li>
@@ -122,12 +129,12 @@ export function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Scheduled Results</CardTitle>
-            <CardDescription>Last 5 scheduled runs.</CardDescription>
+            <CardTitle className="text-base">{t('mapViewer:dashboard.scheduledResults')}</CardTitle>
+            <CardDescription>{t('mapViewer:dashboard.scheduledResultsDescription')}</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Scheduling isn&apos;t available yet — this section will populate once schedules ship.
+              {t('mapViewer:dashboard.schedulingNotAvailable')}
             </p>
           </CardContent>
         </Card>

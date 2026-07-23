@@ -1,0 +1,317 @@
+{
+  "shared": {
+    "businessAreaLabel": "Business Area",
+    "selectBusinessAreaPlaceholder": "Select a business area",
+    "folderLabel": "Folder",
+    "discoverTablesButton": "Discover Tables",
+    "saving": "Saving...",
+    "deleting": "Deleting...",
+    "loading": "Loading...",
+    "defaultEmptyMessage": "No results.",
+    "saveFailed": "Save failed",
+    "deleteFailed": "Delete failed",
+    "deleteConfirmTitle": "Delete {{itemLabel}}?",
+    "defaultItemLabel": "item",
+    "deleteConfirmDescriptionPrefix": "This will deactivate",
+    "deleteConfirmDescriptionSuffix": "This action can only be reversed by an administrator.",
+    "validation": {
+      "nameRequired": "Name is required"
+    }
+  },
+  "businessAreas": {
+    "title": "Business Areas",
+    "description": "Manage business areas for your data models.",
+    "createButton": "New Business Area",
+    "emptyMessage": "No business areas yet.",
+    "manageGrantsTitle": "Manage grants",
+    "entityLabel": "business area",
+    "dialog": {
+      "editTitle": "Edit Business Area",
+      "createTitle": "New Business Area"
+    },
+    "toast": {
+      "updated": "Business area updated",
+      "created": "Business area created",
+      "deactivated": "Business area deactivated"
+    },
+    "grants": {
+      "dialogTitle": "Grants — {{name}}",
+      "dialogDescription": "Control which users can access this business area and what they can do.",
+      "userLabel": "User",
+      "selectUserPlaceholder": "Select a user",
+      "permissionLabel": "Permission",
+      "addButton": "Add",
+      "revokeTitle": "Revoke",
+      "loadingGrants": "Loading grants...",
+      "noGrantsYet": "No grants yet.",
+      "closeButton": "Close",
+      "toast": {
+        "accessGranted": "Access granted",
+        "grantFailed": "Grant failed",
+        "accessRevoked": "Access revoked"
+      }
+    }
+  },
+  "folders": {
+    "title": "Folders",
+    "description": "Manage folders (tables, views, and derived data) within a business area.",
+    "createButton": "New Folder",
+    "emptyMessage": "No folders in this business area yet.",
+    "selectBusinessAreaPrompt": "Select a business area to view its folders.",
+    "entityLabel": "folder",
+    "columns": {
+      "tableName": "Table Name",
+      "dataSource": "Data Source"
+    },
+    "dialog": {
+      "editTitle": "Edit Folder",
+      "createTitle": "New Folder"
+    },
+    "form": {
+      "folderTypeLabel": "Folder Type",
+      "customSqlLabel": "Custom SQL",
+      "dataSourceLabel": "Data Source",
+      "selectDataSourcePlaceholder": "Select a data source",
+      "tableNameLabel": "Table Name",
+      "tableOwnerLabel": "Table Owner"
+    },
+    "toast": {
+      "discoveryFailed": "Discovery failed",
+      "updated": "Folder updated",
+      "created": "Folder created",
+      "deactivated": "Folder deactivated"
+    }
+  },
+  "items": {
+    "title": "Items",
+    "description": "Manage items exposed from folders — columns, calculations, and aggregations.",
+    "createButton": "New Item",
+    "emptyMessage": "No items in this folder yet.",
+    "selectBusinessAreaPrompt": "Select a business area and folder to view its items.",
+    "entityLabel": "item",
+    "selectFolderPlaceholder": "Select a folder",
+    "itemTypes": {
+      "ci": "Column Item (CI)",
+      "cu": "Calculated Item (CU)",
+      "co": "Condition (CO)",
+      "ji": "Join Item (JI)",
+      "hi": "Hierarchy Item (HI)",
+      "ag": "Aggregation (AG)",
+      "fu": "Function (FU)"
+    },
+    "columns": {
+      "column": "Column",
+      "dataType": "Data Type",
+      "aggregation": "Aggregation"
+    },
+    "dialog": {
+      "editTitle": "Edit Item",
+      "createTitle": "New Item"
+    },
+    "form": {
+      "itemTypeLabel": "Item Type",
+      "columnNameLabel": "Column Name",
+      "columnNamePlaceholder": "e.g. CUSTOMER_ID",
+      "formulaLabel": "Formula",
+      "formulaPlaceholder": "e.g. QUANTITY * UNIT_PRICE",
+      "dataTypeLabel": "Data Type",
+      "dataTypePlaceholder": "e.g. NUMBER",
+      "formatMaskLabel": "Format Mask",
+      "formatMaskPlaceholder": "e.g. 999,999.00",
+      "aggregationLabel": "Aggregation"
+    },
+    "toast": {
+      "updated": "Item updated",
+      "created": "Item created",
+      "deactivated": "Item deactivated"
+    }
+  },
+  "joins": {
+    "title": "Joins",
+    "description": "Define relationships between folders within a business area.",
+    "createButton": "New Join",
+    "emptyMessage": "No joins in this business area yet.",
+    "selectBusinessAreaPrompt": "Select a business area to view its joins.",
+    "entityLabel": "join",
+    "columns": {
+      "leftFolder": "Left Folder",
+      "rightFolder": "Right Folder"
+    },
+    "dialog": {
+      "editTitle": "Edit Join",
+      "createTitle": "New Join"
+    },
+    "form": {
+      "leftFolderLabel": "Left Folder",
+      "rightFolderLabel": "Right Folder",
+      "selectFolderPlaceholder": "Select folder",
+      "suggestJoinsButton": "Suggest Joins",
+      "leftItemLabel": "Left Item",
+      "rightItemLabel": "Right Item",
+      "selectItemPlaceholder": "Select item",
+      "joinTypeLabel": "Join Type"
+    },
+    "validation": {
+      "leftFolderRequired": "Left folder is required",
+      "rightFolderRequired": "Right folder is required"
+    },
+    "toast": {
+      "noSuggestions": "No join suggestions found for this folder",
+      "suggestionFailed": "Suggestion failed",
+      "updated": "Join updated",
+      "created": "Join created",
+      "deactivated": "Join deactivated"
+    }
+  },
+  "hierarchies": {
+    "title": "Hierarchies",
+    "description": "Define drill-down hierarchies by ordering items into levels.",
+    "createButton": "New Hierarchy",
+    "emptyMessage": "No hierarchies in this business area yet.",
+    "selectBusinessAreaPrompt": "Select a business area to view its hierarchies.",
+    "entityLabel": "hierarchy",
+    "columns": {
+      "levels": "Levels",
+      "levelsCount": "{{count}} level(s)"
+    },
+    "dialog": {
+      "editTitle": "Edit Hierarchy",
+      "createTitle": "New Hierarchy"
+    },
+    "form": {
+      "levelsLabel": "Levels (top to bottom)",
+      "addLevelButton": "Add Level",
+      "noLevelsYet": "No levels yet — add at least one.",
+      "levelNamePlaceholder": "Level name",
+      "itemPlaceholder": "Item"
+    },
+    "toast": {
+      "updated": "Hierarchy updated",
+      "created": "Hierarchy created",
+      "deactivated": "Hierarchy deactivated"
+    }
+  },
+  "customFunctions": {
+    "title": "Custom Functions",
+    "description": "Register custom SQL, PL/SQL, and package functions available to calculated items.",
+    "createButton": "New Function",
+    "emptyMessage": "No custom functions yet.",
+    "entityLabel": "custom function",
+    "columns": {
+      "parameters": "Parameters",
+      "parametersCount": "{{count}} param(s)",
+      "returnType": "Return Type"
+    },
+    "dialog": {
+      "editTitle": "Edit Custom Function",
+      "createTitle": "New Custom Function"
+    },
+    "form": {
+      "functionTypeLabel": "Function Type",
+      "returnTypeLabel": "Return Type",
+      "returnTypePlaceholder": "e.g. NUMBER",
+      "parametersLabel": "Parameters (JSON)",
+      "parametersPlaceholder": "[\n  { \"name\": \"p_id\", \"type\": \"NUMBER\", \"required\": true }\n]"
+    },
+    "validation": {
+      "parametersMustBeArray": "Parameters must be a JSON array",
+      "parameterNeedsNameAndType": "Each parameter needs a \"name\" and \"type\"",
+      "invalidJson": "Invalid JSON"
+    },
+    "toast": {
+      "updated": "Function updated",
+      "created": "Function created",
+      "deactivated": "Function deactivated"
+    }
+  },
+  "dataSources": {
+    "title": "Data Sources",
+    "description": "Manage database connections used to introspect and import schema.",
+    "createButton": "New Data Source",
+    "emptyMessage": "No data sources yet.",
+    "entityLabel": "data source",
+    "columns": {
+      "host": "Host"
+    },
+    "actions": {
+      "testConnection": "Test connection",
+      "introspectSchema": "Introspect schema",
+      "importTables": "Import tables"
+    },
+    "dialog": {
+      "editTitle": "Edit Data Source",
+      "createTitle": "New Data Source"
+    },
+    "form": {
+      "connectionTypeLabel": "Connection Type",
+      "connectionTypeOracle": "Oracle",
+      "connectionTypePostgres": "PostgreSQL",
+      "hostLabel": "Host",
+      "portLabel": "Port",
+      "serviceNameLabel": "Service Name",
+      "sidLabel": "SID",
+      "usernameLabel": "Username",
+      "passwordLabel": "Password",
+      "passwordKeepHint": "(leave blank to keep)"
+    },
+    "toast": {
+      "updated": "Data source updated",
+      "created": "Data source created",
+      "deactivated": "Data source deactivated",
+      "connectionSucceeded": "Connection succeeded",
+      "connectionFailed": "Connection failed",
+      "testFailed": "Test failed",
+      "introspectionComplete": "Introspection complete",
+      "introspectionCompleteDescription": "Discovered {{count}} table(s).",
+      "introspectionFailed": "Introspection failed"
+    },
+    "import": {
+      "dialogTitle": "Import Tables — {{name}}",
+      "dialogDescription": "Discover tables and import selected tables as folders.",
+      "tableOwnerLabel": "Table Owner / Schema",
+      "tableOwnerPlaceholder": "e.g. SCOTT",
+      "selectDestinationPlaceholder": "Select destination business area",
+      "discoveringTables": "Discovering tables...",
+      "noTablesDiscovered": "No tables discovered yet.",
+      "columnsCount": "({{count}} columns)",
+      "importing": "Importing...",
+      "importButton": "Import {{count}} table(s)",
+      "toast": {
+        "importComplete": "Import complete",
+        "importCompleteDescription": "Created {{created}} folder(s), skipped {{skipped}}.",
+        "importFailed": "Import failed"
+      }
+    }
+  },
+  "users": {
+    "title": "Users",
+    "description": "Manage user accounts and permissions.",
+    "createButton": "New User",
+    "emptyMessage": "No users yet.",
+    "entityLabel": "user",
+    "adminOnlyMessage": "Only administrators can manage users.",
+    "columns": {
+      "email": "Email",
+      "role": "Role"
+    },
+    "dialog": {
+      "editTitle": "Edit User",
+      "createTitle": "New User"
+    },
+    "form": {
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "passwordKeepHint": "(leave blank to keep current)",
+      "roleLabel": "Role"
+    },
+    "validation": {
+      "emailInvalid": "Enter a valid email",
+      "passwordMinLength": "Password must be at least 8 characters"
+    },
+    "toast": {
+      "updated": "User updated",
+      "created": "User created",
+      "deleted": "User deleted"
+    }
+  }
+}

@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { z } from 'zod'
+import { useTranslation } from 'react-i18next'
 import type { ColumnDef } from '@tanstack/react-table'
 import { Plus, Pencil, Trash2, Wand2 } from 'lucide-react'
 import { apiClient, getErrorMessage } from '@/lib/api'
@@ -27,18 +28,21 @@ import {
 
 const FOLDER_TYPES = ['TABLE', 'VIEW', 'DERIVED', 'COMPLEX', 'JOIN', 'SUMMARY'] as const
 
-const formSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(255),
-  description: z.string().optional(),
-  folderType: z.enum(FOLDER_TYPES),
-  dataSourceId: z.string().optional(),
-  tableName: z.string().optional(),
-  tableOwner: z.string().optional(),
-  customSql: z.string().optional(),
-})
-type FormValues = z.infer<typeof formSchema>
+function buildFormSchema(t: (key: string) => string) {
+  return z.object({
+    name: z.string().min(1, t('admin:shared.validation.nameRequired')).max(255),
+    description: z.string().optional(),
+    folderType: z.enum(FOLDER_TYPES),
+    dataSourceId: z.string().optional(),
+    tableName: z.string().optional(),
+    tableOwner: z.string().optional(),
+    customSql: z.string().optional(),
+  })
+}
+type FormValues = z.infer<ReturnType<typeof buildFormSchema>>
 
 export function FoldersPage() {
+  const { t } = useTranslation(['admin', 'common'])
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
@@ -66,7 +70,7 @@ export function FoldersPage() {
   })
 
   const form = useForm<FormValues>({
-    resolver: standardSchemaResolver(formSchema),
+    resolver: standardSchemaResolver(buildFormSchema(t)),
     defaultValues: { name: '', description: '', folderType: 'TABLE', dataSourceId: '', tableName: '', tableOwner: '', customSql: '' },
   })
 
@@ -97,7 +101,7 @@ export function FoldersPage() {
     onSuccess: (tables) => setDiscovered(tables),
     onError: (err) => {
       toast({
-        title: 'Discovery failed',
+        title: t('admin:folders.toast.discoveryFailed'),
         description: getErrorMessage(err),
         variant: 'destructive',
       })
@@ -129,12 +133,12 @@ export function FoldersPage() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['folders', businessAreaId] })
-      toast({ title: editing ? 'Folder updated' : 'Folder created' })
+      toast({ title: editing ? t('admin:folders.toast.updated') : t('admin:folders.toast.created') })
       setDialogOpen(false)
     },
     onError: (err) => {
       toast({
-        title: 'Save failed',
+        title: t('admin:shared.saveFailed'),
         description: getErrorMessage(err),
         variant: 'destructive',
       })
@@ -145,25 +149,25 @@ export function FoldersPage() {
     mutationFn: async (id: string) => apiClient.folders.delete(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['folders', businessAreaId] })
-      toast({ title: 'Folder deactivated' })
+      toast({ title: t('admin:folders.toast.deactivated') })
       setDeleting(null)
     },
   })
 
   const columns: ColumnDef<Folder>[] = [
-    { accessorKey: 'name', header: 'Name' },
-    { accessorKey: 'folderType', header: 'Type', cell: ({ row }) => <Badge variant="outline">{row.original.folderType}</Badge> },
-    { accessorKey: 'tableName', header: 'Table Name', cell: ({ row }) => row.original.tableName || '—' },
-    { accessorKey: 'dataSourceName', header: 'Data Source', cell: ({ row }) => row.original.dataSourceName || '—' },
+    { accessorKey: 'name', header: t('common:labels.name') },
+    { accessorKey: 'folderType', header: t('common:labels.type'), cell: ({ row }) => <Badge variant="outline">{row.original.folderType}</Badge> },
+    { accessorKey: 'tableName', header: t('admin:folders.columns.tableName'), cell: ({ row }) => row.original.tableName || '—' },
+    { accessorKey: 'dataSourceName', header: t('admin:folders.columns.dataSource'), cell: ({ row }) => row.original.dataSourceName || '—' },
     {
       id: 'actions',
       header: '',
       cell: ({ row }) => (
         <div className="flex justify-end gap-1">
-          <Button variant="ghost" size="icon" onClick={() => openEdit(row.original)} title="Edit">
+          <Button variant="ghost" size="icon" onClick={() => openEdit(row.original)} title={t('common:actions.edit')}>
             <Pencil className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => setDeleting(row.original)} title="Delete">
+          <Button variant="ghost" size="icon" onClick={() => setDeleting(row.original)} title={t('common:actions.delete')}>
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
@@ -175,19 +179,19 @@ export function FoldersPage() {
 
   return (
     <AdminPageWrapper
-      title="Folders"
-      description="Manage folders (tables, views, and derived data) within a business area."
+      title={t('admin:folders.title')}
+      description={t('admin:folders.description')}
       action={
         <Button onClick={openCreate} disabled={!businessAreaId}>
-          <Plus className="h-4 w-4" /> New Folder
+          <Plus className="h-4 w-4" /> {t('admin:folders.createButton')}
         </Button>
       }
     >
       <div className="w-72 space-y-2">
-        <Label>Business Area</Label>
+        <Label>{t('admin:shared.businessAreaLabel')}</Label>
         <Select value={businessAreaId} onValueChange={setBusinessAreaId}>
-          <SelectTrigger aria-label="Business Area">
-            <SelectValue placeholder="Select a business area" />
+          <SelectTrigger aria-label={t('admin:shared.businessAreaLabel')}>
+            <SelectValue placeholder={t('admin:shared.selectBusinessAreaPlaceholder')} />
           </SelectTrigger>
           <SelectContent>
             {(businessAreas ?? []).map((ba) => (
@@ -200,34 +204,34 @@ export function FoldersPage() {
       </div>
 
       {businessAreaId ? (
-        <DataTable columns={columns} data={folders ?? []} isLoading={isLoading} emptyMessage="No folders in this business area yet." />
+        <DataTable columns={columns} data={folders ?? []} isLoading={isLoading} emptyMessage={t('admin:folders.emptyMessage')} />
       ) : (
-        <p className="text-sm text-muted-foreground">Select a business area to view its folders.</p>
+        <p className="text-sm text-muted-foreground">{t('admin:folders.selectBusinessAreaPrompt')}</p>
       )}
 
-      <CreateEditDialog open={dialogOpen} onOpenChange={setDialogOpen} title={editing ? 'Edit Folder' : 'New Folder'}>
+      <CreateEditDialog open={dialogOpen} onOpenChange={setDialogOpen} title={editing ? t('admin:folders.dialog.editTitle') : t('admin:folders.dialog.createTitle')}>
         <form className="space-y-4" onSubmit={(e) => void form.handleSubmit((values) => saveMutation.mutate(values))(e)}>
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">{t('common:labels.name')}</Label>
             <Input id="name" {...form.register('name')} />
             {form.formState.errors.name && (
               <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{t('common:labels.description')}</Label>
             <Textarea id="description" {...form.register('description')} />
           </div>
           <div className="space-y-2">
-            <Label>Folder Type</Label>
+            <Label>{t('admin:folders.form.folderTypeLabel')}</Label>
             <Select value={form.watch('folderType')} onValueChange={(v) => form.setValue('folderType', v as FormValues['folderType'])}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {FOLDER_TYPES.map((t) => (
-                  <SelectItem key={t} value={t}>
-                    {t}
+                {FOLDER_TYPES.map((ft) => (
+                  <SelectItem key={ft} value={ft}>
+                    {ft}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -236,17 +240,17 @@ export function FoldersPage() {
 
           {form.watch('folderType') === 'DERIVED' || form.watch('folderType') === 'COMPLEX' ? (
             <div className="space-y-2">
-              <Label htmlFor="customSql">Custom SQL</Label>
+              <Label htmlFor="customSql">{t('admin:folders.form.customSqlLabel')}</Label>
               <Textarea id="customSql" rows={4} {...form.register('customSql')} />
             </div>
           ) : (
             <>
               <div className="space-y-2">
-                <Label>Data Source</Label>
+                <Label>{t('admin:folders.form.dataSourceLabel')}</Label>
                 <div className="flex gap-2">
                   <Select value={selectedDataSourceId} onValueChange={(v) => form.setValue('dataSourceId', v)}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a data source" />
+                      <SelectValue placeholder={t('admin:folders.form.selectDataSourcePlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
                       {(dataSources ?? []).map((ds) => (
@@ -262,21 +266,21 @@ export function FoldersPage() {
                     disabled={!selectedDataSourceId || discoverMutation.isPending}
                     onClick={() => selectedDataSourceId && discoverMutation.mutate(selectedDataSourceId)}
                   >
-                    <Wand2 className="h-4 w-4" /> Discover Tables
+                    <Wand2 className="h-4 w-4" /> {t('admin:shared.discoverTablesButton')}
                   </Button>
                 </div>
               </div>
 
               {discovered.length > 0 && (
                 <div className="max-h-32 space-y-1 overflow-y-auto rounded-md border p-2">
-                  {discovered.map((t) => (
+                  {discovered.map((dt) => (
                     <button
                       type="button"
-                      key={t.tableName}
-                      onClick={() => applyDiscoveredTable(t)}
+                      key={dt.tableName}
+                      onClick={() => applyDiscoveredTable(dt)}
                       className="block w-full rounded px-2 py-1 text-left text-sm hover:bg-muted"
                     >
-                      {t.tableName}
+                      {dt.tableName}
                     </button>
                   ))}
                 </div>
@@ -284,11 +288,11 @@ export function FoldersPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="tableName">Table Name</Label>
+                  <Label htmlFor="tableName">{t('admin:folders.form.tableNameLabel')}</Label>
                   <Input id="tableName" {...form.register('tableName')} />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="tableOwner">Table Owner</Label>
+                  <Label htmlFor="tableOwner">{t('admin:folders.form.tableOwnerLabel')}</Label>
                   <Input id="tableOwner" {...form.register('tableOwner')} />
                 </div>
               </div>
@@ -297,10 +301,10 @@ export function FoldersPage() {
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-              Cancel
+              {t('common:actions.cancel')}
             </Button>
             <Button type="submit" disabled={saveMutation.isPending}>
-              {saveMutation.isPending ? 'Saving...' : 'Save'}
+              {saveMutation.isPending ? t('admin:shared.saving') : t('common:actions.save')}
             </Button>
           </div>
         </form>
@@ -311,7 +315,7 @@ export function FoldersPage() {
           open={!!deleting}
           onOpenChange={(open) => !open && setDeleting(null)}
           itemName={deleting.name}
-          itemLabel="folder"
+          itemLabel={t('admin:folders.entityLabel')}
           onConfirm={() => deleteMutation.mutate(deleting.id)}
           isPending={deleteMutation.isPending}
         />

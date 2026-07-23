@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/auth'
 import { apiClient } from '@/lib/api'
 import { getTokenExpiryMs } from '@/lib/jwt'
+import i18n, { isSupportedLocale } from '@/i18n'
 
 const REFRESH_CHECK_INTERVAL_MS = 60 * 1000
 const REFRESH_THRESHOLD_MS = 5 * 60 * 1000
@@ -21,6 +22,11 @@ export function useAuth() {
       const response = await apiClient.auth.login(email, password)
       const { token, user } = response.data.data
       useAuthStore.getState().login(user, token)
+      // Apply the user's saved locale so the UI switches to their language
+      // immediately after sign-in (spec §4 resolution order).
+      if (isSupportedLocale(user.locale)) {
+        void i18n.changeLanguage(user.locale)
+      }
       return user
     } finally {
       setIsLoading(false)
@@ -70,7 +76,7 @@ export function useAuth() {
         useAuthStore.getState().logout()
         void navigate('/login', {
           replace: true,
-          state: { message: 'Your session has expired. Please sign in again.' },
+          state: { message: i18n.t('auth:login.sessionExpired') },
         })
       }
     }

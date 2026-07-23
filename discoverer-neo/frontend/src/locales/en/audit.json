@@ -1,0 +1,59 @@
+{
+  "page": {
+    "title": "Audit Log",
+    "description": "Every mutating request — data changes, exports, migrations, and authentication events — captured automatically."
+  },
+  "actions": {
+    "exportCsv": "Export CSV (this page)"
+  },
+  "actorUnknown": "System / unauthenticated",
+  "csv": {
+    "timestamp": "Timestamp",
+    "user": "User",
+    "action": "Action",
+    "entityType": "Entity Type",
+    "entityId": "Entity ID",
+    "ipAddress": "IP Address"
+  },
+  "table": {
+    "timestamp": "Timestamp",
+    "user": "User",
+    "action": "Action",
+    "entity": "Entity",
+    "ipAddress": "IP Address",
+    "viewDetails": "View details",
+    "emptyMessage": "No audit entries match these filters."
+  },
+  "stats": {
+    "totalActions": "Total Actions",
+    "selectedDateRange": "In the selected date range",
+    "allTime": "All time",
+    "topActions": "Top Actions",
+    "topActionsDescription": "Most frequent action types",
+    "noActivity": "No activity recorded yet.",
+    "actionsPerDay": "Actions per Day",
+    "actionsPerDayDescription": "Daily activity volume for the selected date range"
+  },
+  "chart": {
+    "actions": "Actions"
+  },
+  "filters": {
+    "title": "Filters",
+    "userLabel": "User",
+    "userAriaLabel": "Filter by user",
+    "allUsers": "All users",
+    "entityTypeLabel": "Entity type",
+    "entityTypePlaceholder": "e.g. maps",
+    "actionLabel": "Action",
+    "actionPlaceholder": "e.g. POST /api/maps",
+    "fromLabel": "From",
+    "toLabel": "To"
+  },
+  "pagination": {
+    "noResults": "No results"
+  },
+  "detail": {
+    "title": "Audit entry details",
+    "descriptionTemplate": "{{action}} — {{date}}"
+  }
+}

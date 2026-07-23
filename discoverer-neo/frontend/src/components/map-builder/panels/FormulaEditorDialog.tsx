@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import Editor, { type OnMount } from '@monaco-editor/react'
 import type { editor as MonacoEditorNS } from 'monaco-editor'
 import { Loader2 } from 'lucide-react'
+import i18n from '@/i18n'
 import {
   Dialog,
   DialogContent,
@@ -21,13 +23,13 @@ import { useMapBuilderStore, columnLabel } from '@/store/mapBuilder'
 // reference sidebar — arithmetic/string/date/conditional per the session
 // spec). Keep in sync if that allowlist changes; this list is developer
 // guidance only, not enforced server-side by this file.
-const FUNCTION_CATEGORIES: { label: string; functions: string[] }[] = [
+const FUNCTION_CATEGORIES: { labelKey: string; functions: string[] }[] = [
   {
-    label: 'Arithmetic',
+    labelKey: 'mapBuilder:panels.formula.categories.arithmetic',
     functions: ['ROUND', 'TRUNC', 'FLOOR', 'CEIL', 'ABS', 'MOD', 'POWER', 'SQRT', 'SIGN', 'GREATEST', 'LEAST'],
   },
   {
-    label: 'String',
+    labelKey: 'mapBuilder:panels.formula.categories.string',
     functions: [
       'UPPER',
       'LOWER',
@@ -45,11 +47,11 @@ const FUNCTION_CATEGORIES: { label: string; functions: string[] }[] = [
     ],
   },
   {
-    label: 'Date',
+    labelKey: 'mapBuilder:panels.formula.categories.date',
     functions: ['TO_CHAR', 'TO_DATE', 'ADD_MONTHS', 'MONTHS_BETWEEN', 'LAST_DAY'],
   },
   {
-    label: 'Conditional / null handling',
+    labelKey: 'mapBuilder:panels.formula.categories.conditional',
     functions: ['NVL', 'NVL2', 'COALESCE', 'DECODE', 'TO_NUMBER', 'CASE'],
   },
 ]
@@ -73,7 +75,7 @@ export function validateFormulaHeuristic(formula: string, knownReferences: strin
   const errors: string[] = []
   const trimmed = formula.trim()
   if (!trimmed) {
-    errors.push('Formula is empty.')
+    errors.push(i18n.t('mapBuilder:panels.formula.errors.empty'))
     return errors
   }
 
@@ -82,7 +84,7 @@ export function validateFormulaHeuristic(formula: string, knownReferences: strin
   const withoutStrings = trimmed.replace(/'(?:[^']|'')*'/g, "''")
 
   const singleQuotes = (withoutStrings.match(/'/g) ?? []).length
-  if (singleQuotes % 2 !== 0) errors.push('Unbalanced quotes.')
+  if (singleQuotes % 2 !== 0) errors.push(i18n.t('mapBuilder:panels.formula.errors.unbalancedQuotes'))
 
   let depth = 0
   let unbalancedParens = false
@@ -94,11 +96,15 @@ export function validateFormulaHeuristic(formula: string, knownReferences: strin
       break
     }
   }
-  if (unbalancedParens || depth !== 0) errors.push('Unbalanced parentheses.')
+  if (unbalancedParens || depth !== 0) {
+    errors.push(i18n.t('mapBuilder:panels.formula.errors.unbalancedParens'))
+  }
 
   const openBrackets = (withoutStrings.match(/\[/g) ?? []).length
   const closeBrackets = (withoutStrings.match(/\]/g) ?? []).length
-  if (openBrackets !== closeBrackets) errors.push('Unbalanced [ ] column references.')
+  if (openBrackets !== closeBrackets) {
+    errors.push(i18n.t('mapBuilder:panels.formula.errors.unbalancedBrackets'))
+  }
 
   const known = new Set(knownReferences.map((r) => r.toUpperCase()))
 
@@ -109,7 +115,7 @@ export function validateFormulaHeuristic(formula: string, knownReferences: strin
     const name = match[1].toUpperCase()
     if (KEYWORDS.has(name) || ALL_FUNCTION_NAMES.has(name) || seenFunctions.has(name)) continue
     seenFunctions.add(name)
-    errors.push(`Unknown function "${match[1]}".`)
+    errors.push(i18n.t('mapBuilder:panels.formula.errors.unknownFunction', { name: match[1] }))
   }
 
   const seenRefs = new Set<string>()
@@ -119,7 +125,7 @@ export function validateFormulaHeuristic(formula: string, knownReferences: strin
     const upper = name.toUpperCase()
     if (known.size === 0 || known.has(upper) || seenRefs.has(upper)) continue
     seenRefs.add(upper)
-    errors.push(`Unknown column reference "[${name}]".`)
+    errors.push(i18n.t('mapBuilder:panels.formula.errors.unknownColumnReference', { name }))
   }
 
   return errors
@@ -150,6 +156,7 @@ export function FormulaEditorDialog({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
+  const { t } = useTranslation(['mapBuilder', 'common'])
   const field = useMapBuilderStore((s) =>
     fieldKey ? s.calculatedFields.find((f) => f.key === fieldKey) : undefined,
   )
@@ -233,8 +240,10 @@ export function FormulaEditorDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Formula editor</DialogTitle>
-          <DialogDescription>{field ? field.name : 'Calculated field'}</DialogDescription>
+          <DialogTitle>{t('mapBuilder:panels.formula.title')}</DialogTitle>
+          <DialogDescription>
+            {field ? field.name : t('mapBuilder:panels.formula.fallbackFieldName')}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="grid grid-cols-[1fr_220px] gap-4">
@@ -256,7 +265,7 @@ export function FormulaEditorDialog({
             </div>
 
             {validationErrors.length > 0 && (
-              <ul className="space-y-0.5 rounded-md border border-amber-400/40 bg-amber-50 p-2 text-xs text-amber-800 dark:bg-amber-950/30 dark:text-amber-300">
+              <ul className="space-y-0.5 rounded-md border border-warning/40 bg-warning/10 p-2 text-xs text-warning">
                 {validationErrors.map((e) => (
                   <li key={e}>{e}</li>
                 ))}
@@ -272,11 +281,11 @@ export function FormulaEditorDialog({
                 disabled={!mapId || !field || testState.status === 'loading'}
               >
                 {testState.status === 'loading' && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                Test formula
+                {t('mapBuilder:panels.formula.testFormula')}
               </Button>
               {!mapId && (
                 <span className="text-xs text-muted-foreground">
-                  Save the map to test formulas against live data.
+                  {t('mapBuilder:panels.formula.saveHint')}
                 </span>
               )}
             </div>
@@ -284,13 +293,15 @@ export function FormulaEditorDialog({
             {testState.status === 'success' && (
               <div className="rounded-md border bg-muted/30 p-2 text-xs">
                 <p className="mb-1 font-medium">
-                  {testState.columnName} (first {testState.values.length} row
-                  {testState.values.length === 1 ? '' : 's'})
+                  {t('mapBuilder:panels.formula.previewHeader', {
+                    columnName: testState.columnName,
+                    count: testState.values.length,
+                  })}
                 </p>
                 <p className="font-mono">
                   {testState.values.length > 0
                     ? testState.values.map(formatValue).join(', ')
-                    : 'No rows.'}
+                    : t('mapBuilder:panels.formula.noRows')}
                 </p>
               </div>
             )}
@@ -304,7 +315,9 @@ export function FormulaEditorDialog({
           <ScrollArea className="h-[280px] rounded-md border p-2">
             <div className="space-y-3">
               <div>
-                <p className="mb-1 text-xs font-semibold text-muted-foreground">Columns</p>
+                <p className="mb-1 text-xs font-semibold text-muted-foreground">
+                  {t('mapBuilder:panels.formula.columnsHeader')}
+                </p>
                 <div className="flex flex-wrap gap-1">
                   {selectedItems.map((item) => (
                     <Badge
@@ -317,14 +330,16 @@ export function FormulaEditorDialog({
                     </Badge>
                   ))}
                   {selectedItems.length === 0 && (
-                    <p className="text-xs text-muted-foreground">No columns yet.</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t('mapBuilder:panels.formula.noColumnsYet')}
+                    </p>
                   )}
                 </div>
               </div>
 
               {FUNCTION_CATEGORIES.map((cat) => (
-                <div key={cat.label}>
-                  <p className="mb-1 text-xs font-semibold text-muted-foreground">{cat.label}</p>
+                <div key={cat.labelKey}>
+                  <p className="mb-1 text-xs font-semibold text-muted-foreground">{t(cat.labelKey)}</p>
                   <div className="flex flex-wrap gap-1">
                     {cat.functions.map((fn) => (
                       <Badge
@@ -347,10 +362,10 @@ export function FormulaEditorDialog({
 
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t('common:actions.cancel')}
           </Button>
           <Button type="button" onClick={handleSave} disabled={!field}>
-            Save
+            {t('common:actions.save')}
           </Button>
         </DialogFooter>
       </DialogContent>

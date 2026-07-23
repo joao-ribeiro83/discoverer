@@ -1,0 +1,87 @@
+{
+  "page": {
+    "title": "Schedules",
+    "description": "Run maps automatically on a cron schedule and store their results.",
+    "newSchedule": "New Schedule",
+    "emptyMessage": "No schedules yet."
+  },
+  "table": {
+    "name": "Name",
+    "map": "Map",
+    "schedule": "Schedule",
+    "nextRun": "Next Run",
+    "format": "Format",
+    "status": "Status",
+    "active": "Active",
+    "paused": "Paused",
+    "runNow": "Run now",
+    "pause": "Pause",
+    "enable": "Enable",
+    "history": "History",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "cronPresets": {
+    "daily": "Daily (midnight)",
+    "weekly": "Weekly (Sunday, midnight)",
+    "monthly": "Monthly (1st, midnight)",
+    "custom": "Custom"
+  },
+  "dialog": {
+    "editTitle": "Edit Schedule",
+    "createTitle": "New Schedule",
+    "mapLabel": "Map",
+    "mapPlaceholder": "Select a map to schedule",
+    "sharedSuffix": "(shared)",
+    "nameLabel": "Name",
+    "frequencyLabel": "Frequency",
+    "timezoneLabel": "Timezone",
+    "cronExpressionLabel": "Cron expression",
+    "cronExpressionHelp": "Standard 5-field cron syntax (minute hour day-of-month month day-of-week).",
+    "validFromLabel": "Valid from (optional)",
+    "validUntilLabel": "Valid until (optional)",
+    "outputFormatLabel": "Output Format",
+    "formatExcel": "Excel (.xlsx)",
+    "formatCsv": "CSV",
+    "parameterPresetsLabel": "Parameter presets",
+    "parameterValuePlaceholder": "Value used for every scheduled run",
+    "enabledLabel": "Enabled",
+    "saving": "Saving..."
+  },
+  "deleteDialog": {
+    "title": "Delete schedule?",
+    "descriptionBefore": "This permanently deletes",
+    "descriptionAfter": "and its execution history. This cannot be undone.",
+    "deleting": "Deleting..."
+  },
+  "history": {
+    "title": "Execution History — {{name}}",
+    "executed": "Executed",
+    "status": "Status",
+    "rows": "Rows",
+    "duration": "Duration",
+    "loading": "Loading...",
+    "noRuns": "No runs yet.",
+    "download": "Download",
+    "durationSeconds": "{{seconds}}s"
+  },
+  "toasts": {
+    "scheduleUpdated": "Schedule updated",
+    "scheduleCreated": "Schedule created",
+    "saveFailedTitle": "Save failed",
+    "scheduleDeleted": "Schedule deleted",
+    "deleteFailedTitle": "Delete failed",
+    "schedulePaused": "Schedule paused",
+    "scheduleEnabled": "Schedule enabled",
+    "updateFailedTitle": "Update failed",
+    "runQueuedTitle": "Run queued",
+    "runQueuedDescription": "Check history shortly for the result.",
+    "triggerFailedTitle": "Trigger failed",
+    "downloadFailedTitle": "Download failed"
+  },
+  "validation": {
+    "selectMap": "Select a map",
+    "nameRequired": "Name is required",
+    "cronExpressionRequired": "Cron expression is required"
+  }
+}

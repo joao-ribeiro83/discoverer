@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { z } from 'zod'
+import { useTranslation } from 'react-i18next'
 import type { ColumnDef } from '@tanstack/react-table'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { apiClient, getErrorMessage } from '@/lib/api'
@@ -27,40 +28,41 @@ import {
 
 const FUNCTION_TYPES = ['SQL', 'PLSQL', 'PACKAGE'] as const
 
-const parametersJsonSchema = z.string().superRefine((val, ctx) => {
-  if (!val.trim()) return
-  try {
-    const parsed: unknown = JSON.parse(val)
-    if (!Array.isArray(parsed)) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Parameters must be a JSON array' })
-      return
-    }
-    for (const p of parsed as unknown[]) {
-      const record = p as Record<string, unknown> | null
-      if (typeof record !== 'object' || record === null || !record.name || !record.type) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Each parameter needs a "name" and "type"' })
+function buildParametersJsonSchema(t: (key: string) => string) {
+  return z.string().superRefine((val, ctx) => {
+    if (!val.trim()) return
+    try {
+      const parsed: unknown = JSON.parse(val)
+      if (!Array.isArray(parsed)) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: t('admin:customFunctions.validation.parametersMustBeArray') })
         return
       }
+      for (const p of parsed as unknown[]) {
+        const record = p as Record<string, unknown> | null
+        if (typeof record !== 'object' || record === null || !record.name || !record.type) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, message: t('admin:customFunctions.validation.parameterNeedsNameAndType') })
+          return
+        }
+      }
+    } catch {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: t('admin:customFunctions.validation.invalidJson') })
     }
-  } catch {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Invalid JSON' })
-  }
-})
+  })
+}
 
-const formSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(255),
-  description: z.string().optional(),
-  functionType: z.enum(FUNCTION_TYPES),
-  parametersJson: parametersJsonSchema,
-  returnType: z.string().optional(),
-})
-type FormValues = z.infer<typeof formSchema>
-
-const PARAM_PLACEHOLDER = `[
-  { "name": "p_id", "type": "NUMBER", "required": true }
-]`
+function buildFormSchema(t: (key: string) => string) {
+  return z.object({
+    name: z.string().min(1, t('admin:shared.validation.nameRequired')).max(255),
+    description: z.string().optional(),
+    functionType: z.enum(FUNCTION_TYPES),
+    parametersJson: buildParametersJsonSchema(t),
+    returnType: z.string().optional(),
+  })
+}
+type FormValues = z.infer<ReturnType<typeof buildFormSchema>>
 
 export function CustomFunctionsPage() {
+  const { t } = useTranslation(['admin', 'common'])
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
@@ -74,7 +76,7 @@ export function CustomFunctionsPage() {
   })
 
   const form = useForm<FormValues>({
-    resolver: standardSchemaResolver(formSchema),
+    resolver: standardSchemaResolver(buildFormSchema(t)),
     defaultValues: { name: '', description: '', functionType: 'SQL', parametersJson: '', returnType: '' },
   })
 
@@ -113,12 +115,12 @@ export function CustomFunctionsPage() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['custom-functions'] })
-      toast({ title: editing ? 'Function updated' : 'Function created' })
+      toast({ title: editing ? t('admin:customFunctions.toast.updated') : t('admin:customFunctions.toast.created') })
       setDialogOpen(false)
     },
     onError: (err) => {
       toast({
-        title: 'Save failed',
+        title: t('admin:shared.saveFailed'),
         description: getErrorMessage(err),
         variant: 'destructive',
       })
@@ -129,29 +131,29 @@ export function CustomFunctionsPage() {
     mutationFn: async (id: string) => apiClient.customFunctions.delete(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['custom-functions'] })
-      toast({ title: 'Function deactivated' })
+      toast({ title: t('admin:customFunctions.toast.deactivated') })
       setDeleting(null)
     },
   })
 
   const columns: ColumnDef<CustomFunction>[] = [
-    { accessorKey: 'name', header: 'Name' },
-    { accessorKey: 'functionType', header: 'Type', cell: ({ row }) => <Badge variant="outline">{row.original.functionType}</Badge> },
+    { accessorKey: 'name', header: t('common:labels.name') },
+    { accessorKey: 'functionType', header: t('common:labels.type'), cell: ({ row }) => <Badge variant="outline">{row.original.functionType}</Badge> },
     {
       accessorKey: 'parameters',
-      header: 'Parameters',
-      cell: ({ row }) => row.original.parameters?.length ? `${row.original.parameters.length} param(s)` : '—',
+      header: t('admin:customFunctions.columns.parameters'),
+      cell: ({ row }) => row.original.parameters?.length ? t('admin:customFunctions.columns.parametersCount', { count: row.original.parameters.length }) : '—',
     },
-    { accessorKey: 'returnType', header: 'Return Type', cell: ({ row }) => row.original.returnType || '—' },
+    { accessorKey: 'returnType', header: t('admin:customFunctions.columns.returnType'), cell: ({ row }) => row.original.returnType || '—' },
     {
       id: 'actions',
       header: '',
       cell: ({ row }) => (
         <div className="flex justify-end gap-1">
-          <Button variant="ghost" size="icon" onClick={() => openEdit(row.original)} title="Edit">
+          <Button variant="ghost" size="icon" onClick={() => openEdit(row.original)} title={t('common:actions.edit')}>
             <Pencil className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => setDeleting(row.original)} title="Delete">
+          <Button variant="ghost" size="icon" onClick={() => setDeleting(row.original)} title={t('common:actions.delete')}>
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
@@ -161,63 +163,63 @@ export function CustomFunctionsPage() {
 
   return (
     <AdminPageWrapper
-      title="Custom Functions"
-      description="Register custom SQL, PL/SQL, and package functions available to calculated items."
+      title={t('admin:customFunctions.title')}
+      description={t('admin:customFunctions.description')}
       action={
         <Button onClick={openCreate}>
-          <Plus className="h-4 w-4" /> New Function
+          <Plus className="h-4 w-4" /> {t('admin:customFunctions.createButton')}
         </Button>
       }
     >
-      <DataTable columns={columns} data={functions ?? []} isLoading={isLoading} emptyMessage="No custom functions yet." />
+      <DataTable columns={columns} data={functions ?? []} isLoading={isLoading} emptyMessage={t('admin:customFunctions.emptyMessage')} />
 
-      <CreateEditDialog open={dialogOpen} onOpenChange={setDialogOpen} title={editing ? 'Edit Custom Function' : 'New Custom Function'}>
+      <CreateEditDialog open={dialogOpen} onOpenChange={setDialogOpen} title={editing ? t('admin:customFunctions.dialog.editTitle') : t('admin:customFunctions.dialog.createTitle')}>
         <form className="space-y-4" onSubmit={(e) => void form.handleSubmit((values) => saveMutation.mutate(values))(e)}>
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">{t('common:labels.name')}</Label>
             <Input id="name" {...form.register('name')} />
             {form.formState.errors.name && (
               <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{t('common:labels.description')}</Label>
             <Textarea id="description" {...form.register('description')} />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Function Type</Label>
+              <Label>{t('admin:customFunctions.form.functionTypeLabel')}</Label>
               <Select value={form.watch('functionType')} onValueChange={(v) => form.setValue('functionType', v as FormValues['functionType'])}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {FUNCTION_TYPES.map((t) => (
-                    <SelectItem key={t} value={t}>
-                      {t}
+                  {FUNCTION_TYPES.map((ft) => (
+                    <SelectItem key={ft} value={ft}>
+                      {ft}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="returnType">Return Type</Label>
-              <Input id="returnType" {...form.register('returnType')} placeholder="e.g. NUMBER" />
+              <Label htmlFor="returnType">{t('admin:customFunctions.form.returnTypeLabel')}</Label>
+              <Input id="returnType" {...form.register('returnType')} placeholder={t('admin:customFunctions.form.returnTypePlaceholder')} />
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="parametersJson">Parameters (JSON)</Label>
-            <Textarea id="parametersJson" rows={6} placeholder={PARAM_PLACEHOLDER} {...form.register('parametersJson')} />
+            <Label htmlFor="parametersJson">{t('admin:customFunctions.form.parametersLabel')}</Label>
+            <Textarea id="parametersJson" rows={6} placeholder={t('admin:customFunctions.form.parametersPlaceholder')} {...form.register('parametersJson')} />
             {form.formState.errors.parametersJson && (
               <p className="text-sm text-destructive">{form.formState.errors.parametersJson.message}</p>
             )}
           </div>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-              Cancel
+              {t('common:actions.cancel')}
             </Button>
             <Button type="submit" disabled={saveMutation.isPending}>
-              {saveMutation.isPending ? 'Saving...' : 'Save'}
+              {saveMutation.isPending ? t('admin:shared.saving') : t('common:actions.save')}
             </Button>
           </div>
         </form>
@@ -228,7 +230,7 @@ export function CustomFunctionsPage() {
           open={!!deleting}
           onOpenChange={(open) => !open && setDeleting(null)}
           itemName={deleting.name}
-          itemLabel="custom function"
+          itemLabel={t('admin:customFunctions.entityLabel')}
           onConfirm={() => deleteMutation.mutate(deleting.id)}
           isPending={deleteMutation.isPending}
         />

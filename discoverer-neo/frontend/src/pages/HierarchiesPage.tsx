@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import type { ColumnDef } from '@tanstack/react-table'
 import { Plus, Pencil, Trash2, GripVertical, X } from 'lucide-react'
 import {
@@ -48,6 +49,7 @@ function newDraftKey() {
 }
 
 export function HierarchiesPage() {
+  const { t } = useTranslation(['admin', 'common'])
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
@@ -149,12 +151,12 @@ export function HierarchiesPage() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['hierarchies', businessAreaId] })
-      toast({ title: editing ? 'Hierarchy updated' : 'Hierarchy created' })
+      toast({ title: editing ? t('admin:hierarchies.toast.updated') : t('admin:hierarchies.toast.created') })
       setDialogOpen(false)
     },
     onError: (err) => {
       toast({
-        title: 'Save failed',
+        title: t('admin:shared.saveFailed'),
         description: getErrorMessage(err),
         variant: 'destructive',
       })
@@ -165,27 +167,27 @@ export function HierarchiesPage() {
     mutationFn: async (id: string) => apiClient.hierarchies.delete(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['hierarchies', businessAreaId] })
-      toast({ title: 'Hierarchy deactivated' })
+      toast({ title: t('admin:hierarchies.toast.deactivated') })
       setDeleting(null)
     },
   })
 
   const columns: ColumnDef<Hierarchy>[] = [
-    { accessorKey: 'name', header: 'Name' },
+    { accessorKey: 'name', header: t('common:labels.name') },
     {
       accessorKey: 'levels',
-      header: 'Levels',
-      cell: ({ row }) => `${row.original.levels?.length ?? 0} level(s)`,
+      header: t('admin:hierarchies.columns.levels'),
+      cell: ({ row }) => t('admin:hierarchies.columns.levelsCount', { count: row.original.levels?.length ?? 0 }),
     },
     {
       id: 'actions',
       header: '',
       cell: ({ row }) => (
         <div className="flex justify-end gap-1">
-          <Button variant="ghost" size="icon" onClick={() => void openEdit(row.original)} title="Edit">
+          <Button variant="ghost" size="icon" onClick={() => void openEdit(row.original)} title={t('common:actions.edit')}>
             <Pencil className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => setDeleting(row.original)} title="Delete">
+          <Button variant="ghost" size="icon" onClick={() => setDeleting(row.original)} title={t('common:actions.delete')}>
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
@@ -197,19 +199,19 @@ export function HierarchiesPage() {
 
   return (
     <AdminPageWrapper
-      title="Hierarchies"
-      description="Define drill-down hierarchies by ordering items into levels."
+      title={t('admin:hierarchies.title')}
+      description={t('admin:hierarchies.description')}
       action={
         <Button onClick={openCreate} disabled={!businessAreaId}>
-          <Plus className="h-4 w-4" /> New Hierarchy
+          <Plus className="h-4 w-4" /> {t('admin:hierarchies.createButton')}
         </Button>
       }
     >
       <div className="w-72 space-y-2">
-        <Label>Business Area</Label>
+        <Label>{t('admin:shared.businessAreaLabel')}</Label>
         <Select value={businessAreaId} onValueChange={setBusinessAreaId}>
-          <SelectTrigger aria-label="Business Area">
-            <SelectValue placeholder="Select a business area" />
+          <SelectTrigger aria-label={t('admin:shared.businessAreaLabel')}>
+            <SelectValue placeholder={t('admin:shared.selectBusinessAreaPlaceholder')} />
           </SelectTrigger>
           <SelectContent>
             {(businessAreas ?? []).map((ba) => (
@@ -222,36 +224,36 @@ export function HierarchiesPage() {
       </div>
 
       {businessAreaId ? (
-        <DataTable columns={columns} data={hierarchies ?? []} isLoading={isLoading} emptyMessage="No hierarchies in this business area yet." />
+        <DataTable columns={columns} data={hierarchies ?? []} isLoading={isLoading} emptyMessage={t('admin:hierarchies.emptyMessage')} />
       ) : (
-        <p className="text-sm text-muted-foreground">Select a business area to view its hierarchies.</p>
+        <p className="text-sm text-muted-foreground">{t('admin:hierarchies.selectBusinessAreaPrompt')}</p>
       )}
 
       <CreateEditDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        title={editing ? 'Edit Hierarchy' : 'New Hierarchy'}
+        title={editing ? t('admin:hierarchies.dialog.editTitle') : t('admin:hierarchies.dialog.createTitle')}
         className="max-h-[90vh] overflow-y-auto sm:max-w-2xl"
       >
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="hname">Name</Label>
+            <Label htmlFor="hname">{t('common:labels.name')}</Label>
             <Input id="hname" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="hdesc">Description</Label>
+            <Label htmlFor="hdesc">{t('common:labels.description')}</Label>
             <Textarea id="hdesc" value={description} onChange={(e) => setDescription(e.target.value)} />
           </div>
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label>Levels (top to bottom)</Label>
+              <Label>{t('admin:hierarchies.form.levelsLabel')}</Label>
               <Button type="button" variant="outline" size="sm" onClick={addLevel}>
-                <Plus className="h-4 w-4" /> Add Level
+                <Plus className="h-4 w-4" /> {t('admin:hierarchies.form.addLevelButton')}
               </Button>
             </div>
 
-            {levels.length === 0 && <p className="text-sm text-muted-foreground">No levels yet — add at least one.</p>}
+            {levels.length === 0 && <p className="text-sm text-muted-foreground">{t('admin:hierarchies.form.noLevelsYet')}</p>}
 
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
               <SortableContext items={levels.map((l) => l.key)} strategy={verticalListSortingStrategy}>
@@ -273,10 +275,10 @@ export function HierarchiesPage() {
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-              Cancel
+              {t('common:actions.cancel')}
             </Button>
             <Button type="button" disabled={!canSave || saveMutation.isPending} onClick={() => saveMutation.mutate()}>
-              {saveMutation.isPending ? 'Saving...' : 'Save'}
+              {saveMutation.isPending ? t('admin:shared.saving') : t('common:actions.save')}
             </Button>
           </div>
         </div>
@@ -287,7 +289,7 @@ export function HierarchiesPage() {
           open={!!deleting}
           onOpenChange={(open) => !open && setDeleting(null)}
           itemName={deleting.name}
-          itemLabel="hierarchy"
+          itemLabel={t('admin:hierarchies.entityLabel')}
           onConfirm={() => deleteMutation.mutate(deleting.id)}
           isPending={deleteMutation.isPending}
         />
@@ -309,6 +311,7 @@ function LevelRow({
   onChange: (patch: Partial<LevelDraft>) => void
   onRemove: () => void
 }) {
+  const { t } = useTranslation(['admin'])
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: level.key })
   const style = { transform: CSS.Transform.toString(transform), transition }
 
@@ -326,13 +329,13 @@ function LevelRow({
       <span className="w-6 text-xs text-muted-foreground">{index + 1}</span>
       <Input
         className="w-40"
-        placeholder="Level name"
+        placeholder={t('admin:hierarchies.form.levelNamePlaceholder')}
         value={level.levelName}
         onChange={(e) => onChange({ levelName: e.target.value })}
       />
       <Select value={level.folderId} onValueChange={(v) => onChange({ folderId: v, itemId: '' })}>
         <SelectTrigger className="w-40">
-          <SelectValue placeholder="Folder" />
+          <SelectValue placeholder={t('admin:shared.folderLabel')} />
         </SelectTrigger>
         <SelectContent>
           {folders.map((f) => (
@@ -344,7 +347,7 @@ function LevelRow({
       </Select>
       <Select value={level.itemId} onValueChange={(v) => onChange({ itemId: v })} disabled={!level.folderId}>
         <SelectTrigger className="flex-1">
-          <SelectValue placeholder="Item" />
+          <SelectValue placeholder={t('admin:hierarchies.form.itemPlaceholder')} />
         </SelectTrigger>
         <SelectContent>
           {(folderItems ?? []).map((it) => (

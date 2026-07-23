@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   DndContext,
   closestCenter,
@@ -23,6 +24,7 @@ import { useMapBuilderStore, type MapBuilderCalculatedField } from '@/store/mapB
 import { FormulaEditorDialog } from './FormulaEditorDialog'
 
 export function CalculatedFieldsPanel() {
+  const { t } = useTranslation(['mapBuilder'])
   const calculatedFields = useMapBuilderStore((s) => s.calculatedFields)
   const addCalculatedField = useMapBuilderStore((s) => s.addCalculatedField)
   const removeCalculatedField = useMapBuilderStore((s) => s.removeCalculatedField)
@@ -50,15 +52,15 @@ export function CalculatedFieldsPanel() {
   return (
     <div className="space-y-4 p-4">
       <div className="flex items-center justify-between gap-2">
-        <h4 className="text-sm font-semibold">Calculated fields</h4>
+        <h4 className="text-sm font-semibold">{t('mapBuilder:panels.calculatedFields.title')}</h4>
         <Button size="sm" onClick={addCalculatedField}>
-          <Sigma className="h-3.5 w-3.5" /> Add Calculated Field
+          <Sigma className="h-3.5 w-3.5" /> {t('mapBuilder:panels.calculatedFields.addButton')}
         </Button>
       </div>
 
       {sorted.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          No calculated fields. Add one to derive a new column from a formula.
+          {t('mapBuilder:panels.calculatedFields.empty')}
         </p>
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -98,9 +100,11 @@ function CalculatedFieldRow({
   onRemove: () => void
   onEditFormula: () => void
 }) {
+  const { t } = useTranslation(['mapBuilder'])
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: field.key,
   })
+  const fallbackName = t('mapBuilder:panels.calculatedFields.fallbackName')
 
   return (
     <div
@@ -112,7 +116,9 @@ function CalculatedFieldRow({
         <button
           type="button"
           className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
-          aria-label={`Reorder ${field.name || 'calculated field'}`}
+          aria-label={t('mapBuilder:panels.calculatedFields.reorderAria', {
+            name: field.name || fallbackName,
+          })}
           {...attributes}
           {...listeners}
         >
@@ -122,8 +128,8 @@ function CalculatedFieldRow({
           className="h-8 flex-1"
           value={field.name}
           onChange={(e) => onUpdate({ name: e.target.value })}
-          placeholder="Field name"
-          aria-label="Calculated field name"
+          placeholder={t('mapBuilder:panels.calculatedFields.namePlaceholder')}
+          aria-label={t('mapBuilder:panels.calculatedFields.nameAria')}
         />
         <Input
           type="number"
@@ -133,8 +139,8 @@ function CalculatedFieldRow({
             const n = Number(e.target.value)
             if (Number.isFinite(n)) onUpdate({ displayOrder: n })
           }}
-          aria-label="Display order"
-          title="Display order"
+          aria-label={t('mapBuilder:panels.calculatedFields.displayOrderAria')}
+          title={t('mapBuilder:panels.calculatedFields.displayOrderTitle')}
         />
         <Button
           type="button"
@@ -142,7 +148,9 @@ function CalculatedFieldRow({
           size="icon"
           className="h-8 w-8 shrink-0"
           onClick={onRemove}
-          aria-label={`Delete ${field.name || 'calculated field'}`}
+          aria-label={t('mapBuilder:panels.calculatedFields.deleteAria', {
+            name: field.name || fallbackName,
+          })}
         >
           <X className="h-4 w-4" />
         </Button>
@@ -154,7 +162,9 @@ function CalculatedFieldRow({
         className="w-full justify-start truncate font-mono text-xs font-normal"
         onClick={onEditFormula}
       >
-        {field.formula.trim() ? field.formula : 'Click to write a formula…'}
+        {field.formula.trim()
+          ? field.formula
+          : t('mapBuilder:panels.calculatedFields.clickToWriteFormula')}
       </Button>
     </div>
   )

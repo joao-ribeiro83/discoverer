@@ -3,11 +3,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { z } from 'zod'
+import { useTranslation } from 'react-i18next'
 import type { ColumnDef } from '@tanstack/react-table'
 import { Plus, Pencil, Trash2, Play, History, Download, Pause } from 'lucide-react'
 import { apiClient, getErrorMessage } from '@/lib/api'
 import type { Schedule, ScheduleParameterValue, MapParameter } from '@/lib/types'
 import { useToast } from '@/hooks/use-toast'
+import { useLocale } from '@/hooks/useLocale'
+import { formatDateTime, formatNumber } from '@/lib/format'
 import { AdminPageWrapper } from '@/components/admin/AdminPageWrapper'
 import { DataTable } from '@/components/admin/DataTable'
 import { CreateEditDialog } from '@/components/admin/CreateEditDialog'
@@ -35,13 +38,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 
 // ---------------------------------------------------------------------------
 // Cron presets — a raw expression input covers everything else ("Custom").
+// Labels are translated at render time (see `useCronPresets` below); this
+// module-level list only carries the value/expression pairing.
 // ---------------------------------------------------------------------------
 
 const CRON_PRESETS = [
-  { value: 'daily', label: 'Daily (midnight)', expr: '0 0 * * *' },
-  { value: 'weekly', label: 'Weekly (Sunday, midnight)', expr: '0 0 * * 0' },
-  { value: 'monthly', label: 'Monthly (1st, midnight)', expr: '0 0 1 * *' },
-  { value: 'custom', label: 'Custom', expr: null as string | null },
+  { value: 'daily', expr: '0 0 * * *' },
+  { value: 'weekly', expr: '0 0 * * 0' },
+  { value: 'monthly', expr: '0 0 1 * *' },
+  { value: 'custom', expr: null as string | null },
 ] as const
 
 function presetForExpression(expr: string): (typeof CRON_PRESETS)[number]['value'] {
@@ -87,31 +92,38 @@ function fromDatetimeLocal(value: string): string | undefined {
   return new Date(value).toISOString()
 }
 
-function formatDateTime(iso: string | null): string {
-  if (!iso) return '—'
-  return new Date(iso).toLocaleString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  })
+const DATE_TIME_OPTIONS: Intl.DateTimeFormatOptions = {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+  hour: 'numeric',
+  minute: '2-digit',
 }
 
-const formSchema = z.object({
-  mapId: z.string().uuid('Select a map'),
-  name: z.string().min(1, 'Name is required').max(255),
-  cronPreset: z.enum(['daily', 'weekly', 'monthly', 'custom']),
-  cronExpression: z.string().min(1, 'Cron expression is required'),
-  timezone: z.string().min(1),
-  validFrom: z.string().optional(),
-  validUntil: z.string().optional(),
-  outputFormat: z.enum(['XLSX', 'CSV']),
-  isActive: z.boolean(),
-})
-type FormValues = z.infer<typeof formSchema>
+function formatScheduleDateTime(iso: string | null, locale: string): string {
+  if (!iso) return '—'
+  return formatDateTime(iso, locale, DATE_TIME_OPTIONS)
+}
+
+// Built with a translator so validation messages localize with the UI.
+function buildFormSchema(t: (key: string) => string) {
+  return z.object({
+    mapId: z.string().uuid(t('schedules:validation.selectMap')),
+    name: z.string().min(1, t('schedules:validation.nameRequired')).max(255),
+    cronPreset: z.enum(['daily', 'weekly', 'monthly', 'custom']),
+    cronExpression: z.string().min(1, t('schedules:validation.cronExpressionRequired')),
+    timezone: z.string().min(1),
+    validFrom: z.string().optional(),
+    validUntil: z.string().optional(),
+    outputFormat: z.enum(['XLSX', 'CSV']),
+    isActive: z.boolean(),
+  })
+}
+type FormValues = z.infer<ReturnType<typeof buildFormSchema>>
 
 export function SchedulesPage() {
+  const { t } = useTranslation(['schedules', 'common'])
+  const { locale } = useLocale()
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
@@ -120,6 +132,12 @@ export function SchedulesPage() {
   const [deleting, setDeleting] = useState<Schedule | null>(null)
   const [historyFor, setHistoryFor] = useState<Schedule | null>(null)
   const [parameters, setParameters] = useState<ScheduleParameterValue[]>([])
+
+  const cronPresets = useMemo(
+    () =>
+      CRON_PRESETS.map((p) => ({ ...p, label: t(`schedules:cronPresets.${p.value}`) })),
+    [t],
+  )
 
   const { data: schedules, isLoading } = useQuery({
     queryKey: ['schedules'],
@@ -140,7 +158,7 @@ export function SchedulesPage() {
   }, [mapOptions])
 
   const form = useForm<FormValues>({
-    resolver: standardSchemaResolver(formSchema),
+    resolver: standardSchemaResolver(buildFormSchema(t)),
     defaultValues: {
       mapId: '',
       name: '',
@@ -215,11 +233,17 @@ export function SchedulesPage() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['schedules'] })
-      toast({ title: editing ? 'Schedule updated' : 'Schedule created' })
+      toast({
+        title: editing ? t('schedules:toasts.scheduleUpdated') : t('schedules:toasts.scheduleCreated'),
+      })
       setDialogOpen(false)
     },
     onError: (err) => {
-      toast({ title: 'Save failed', description: getErrorMessage(err), variant: 'destructive' })
+      toast({
+        title: t('schedules:toasts.saveFailedTitle'),
+        description: getErrorMessage(err),
+        variant: 'destructive',
+      })
     },
   })
 
@@ -227,11 +251,15 @@ export function SchedulesPage() {
     mutationFn: async (id: string) => apiClient.schedules.delete(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['schedules'] })
-      toast({ title: 'Schedule deleted' })
+      toast({ title: t('schedules:toasts.scheduleDeleted') })
       setDeleting(null)
     },
     onError: (err) => {
-      toast({ title: 'Delete failed', description: getErrorMessage(err), variant: 'destructive' })
+      toast({
+        title: t('schedules:toasts.deleteFailedTitle'),
+        description: getErrorMessage(err),
+        variant: 'destructive',
+      })
     },
   })
 
@@ -240,20 +268,35 @@ export function SchedulesPage() {
       apiClient.schedules.toggle(schedule.id, !schedule.isActive),
     onSuccess: (_res, schedule) => {
       void queryClient.invalidateQueries({ queryKey: ['schedules'] })
-      toast({ title: schedule.isActive ? 'Schedule paused' : 'Schedule enabled' })
+      toast({
+        title: schedule.isActive
+          ? t('schedules:toasts.schedulePaused')
+          : t('schedules:toasts.scheduleEnabled'),
+      })
     },
     onError: (err) => {
-      toast({ title: 'Update failed', description: getErrorMessage(err), variant: 'destructive' })
+      toast({
+        title: t('schedules:toasts.updateFailedTitle'),
+        description: getErrorMessage(err),
+        variant: 'destructive',
+      })
     },
   })
 
   const triggerMutation = useMutation({
     mutationFn: async (id: string) => apiClient.schedules.trigger(id),
     onSuccess: () => {
-      toast({ title: 'Run queued', description: 'Check history shortly for the result.' })
+      toast({
+        title: t('schedules:toasts.runQueuedTitle'),
+        description: t('schedules:toasts.runQueuedDescription'),
+      })
     },
     onError: (err) => {
-      toast({ title: 'Trigger failed', description: getErrorMessage(err), variant: 'destructive' })
+      toast({
+        title: t('schedules:toasts.triggerFailedTitle'),
+        description: getErrorMessage(err),
+        variant: 'destructive',
+      })
     },
   })
 
@@ -270,29 +313,29 @@ export function SchedulesPage() {
   }
 
   const columns: ColumnDef<Schedule>[] = [
-    { accessorKey: 'name', header: 'Name' },
+    { accessorKey: 'name', header: t('schedules:table.name') },
     {
       id: 'map',
-      header: 'Map',
+      header: t('schedules:table.map'),
       cell: ({ row }) => mapNameById.get(row.original.mapId) ?? row.original.mapId.slice(0, 8),
     },
-    { accessorKey: 'cronExpression', header: 'Schedule' },
+    { accessorKey: 'cronExpression', header: t('schedules:table.schedule') },
     {
       id: 'nextRun',
-      header: 'Next Run',
-      cell: ({ row }) => formatDateTime(row.original.nextRunAt),
+      header: t('schedules:table.nextRun'),
+      cell: ({ row }) => formatScheduleDateTime(row.original.nextRunAt, locale),
     },
     {
       accessorKey: 'outputFormat',
-      header: 'Format',
+      header: t('schedules:table.format'),
       cell: ({ row }) => <Badge variant="outline">{row.original.outputFormat}</Badge>,
     },
     {
       accessorKey: 'isActive',
-      header: 'Status',
+      header: t('schedules:table.status'),
       cell: ({ row }) => (
         <Badge variant={row.original.isActive ? 'default' : 'secondary'}>
-          {row.original.isActive ? 'Active' : 'Paused'}
+          {row.original.isActive ? t('schedules:table.active') : t('schedules:table.paused')}
         </Badge>
       ),
     },
@@ -304,7 +347,7 @@ export function SchedulesPage() {
           <Button
             variant="ghost"
             size="icon"
-            title="Run now"
+            title={t('schedules:table.runNow')}
             onClick={() => triggerMutation.mutate(row.original.id)}
             disabled={!row.original.isActive || triggerMutation.isPending}
           >
@@ -313,19 +356,34 @@ export function SchedulesPage() {
           <Button
             variant="ghost"
             size="icon"
-            title={row.original.isActive ? 'Pause' : 'Enable'}
+            title={row.original.isActive ? t('schedules:table.pause') : t('schedules:table.enable')}
             onClick={() => toggleMutation.mutate(row.original)}
             disabled={toggleMutation.isPending}
           >
             <Pause className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" title="History" onClick={() => setHistoryFor(row.original)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            title={t('schedules:table.history')}
+            onClick={() => setHistoryFor(row.original)}
+          >
             <History className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" title="Edit" onClick={() => openEdit(row.original)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            title={t('schedules:table.edit')}
+            onClick={() => openEdit(row.original)}
+          >
             <Pencil className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" title="Delete" onClick={() => setDeleting(row.original)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            title={t('schedules:table.delete')}
+            onClick={() => setDeleting(row.original)}
+          >
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
@@ -340,20 +398,25 @@ export function SchedulesPage() {
 
   return (
     <AdminPageWrapper
-      title="Schedules"
-      description="Run maps automatically on a cron schedule and store their results."
+      title={t('schedules:page.title')}
+      description={t('schedules:page.description')}
       action={
         <Button onClick={openCreate}>
-          <Plus className="h-4 w-4" /> New Schedule
+          <Plus className="h-4 w-4" /> {t('schedules:page.newSchedule')}
         </Button>
       }
     >
-      <DataTable columns={columns} data={schedules ?? []} isLoading={isLoading} emptyMessage="No schedules yet." />
+      <DataTable
+        columns={columns}
+        data={schedules ?? []}
+        isLoading={isLoading}
+        emptyMessage={t('schedules:page.emptyMessage')}
+      />
 
       <CreateEditDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        title={editing ? 'Edit Schedule' : 'New Schedule'}
+        title={editing ? t('schedules:dialog.editTitle') : t('schedules:dialog.createTitle')}
         className="max-h-[90vh] overflow-y-auto sm:max-w-xl"
       >
         <form
@@ -362,15 +425,20 @@ export function SchedulesPage() {
         >
           {!editing && (
             <div className="space-y-2">
-              <Label>Map</Label>
+              <Label>{t('schedules:dialog.mapLabel')}</Label>
               <Select value={form.watch('mapId')} onValueChange={(v) => form.setValue('mapId', v)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a map to schedule" />
+                  <SelectValue placeholder={t('schedules:dialog.mapPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {allMapOptions.map((m) => (
                     <SelectItem key={m.id} value={m.id}>
-                      {m.name} {!m.owned && <span className="text-muted-foreground">(shared)</span>}
+                      {m.name}{' '}
+                      {!m.owned && (
+                        <span className="text-muted-foreground">
+                          {t('schedules:dialog.sharedSuffix')}
+                        </span>
+                      )}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -382,7 +450,7 @@ export function SchedulesPage() {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">{t('schedules:dialog.nameLabel')}</Label>
             <Input id="name" {...form.register('name')} />
             {form.formState.errors.name && (
               <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
@@ -391,7 +459,7 @@ export function SchedulesPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Frequency</Label>
+              <Label>{t('schedules:dialog.frequencyLabel')}</Label>
               <Select
                 value={form.watch('cronPreset')}
                 onValueChange={(v) => {
@@ -404,7 +472,7 @@ export function SchedulesPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {CRON_PRESETS.map((p) => (
+                  {cronPresets.map((p) => (
                     <SelectItem key={p.value} value={p.value}>
                       {p.label}
                     </SelectItem>
@@ -413,7 +481,7 @@ export function SchedulesPage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Timezone</Label>
+              <Label>{t('schedules:dialog.timezoneLabel')}</Label>
               <Select value={form.watch('timezone')} onValueChange={(v) => form.setValue('timezone', v)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -431,14 +499,14 @@ export function SchedulesPage() {
 
           {form.watch('cronPreset') === 'custom' && (
             <div className="space-y-2">
-              <Label htmlFor="cronExpression">Cron expression</Label>
+              <Label htmlFor="cronExpression">{t('schedules:dialog.cronExpressionLabel')}</Label>
               <Input
                 id="cronExpression"
                 placeholder="0 9 * * 1-5"
                 {...form.register('cronExpression')}
               />
               <p className="text-xs text-muted-foreground">
-                Standard 5-field cron syntax (minute hour day-of-month month day-of-week).
+                {t('schedules:dialog.cronExpressionHelp')}
               </p>
               {form.formState.errors.cronExpression && (
                 <p className="text-sm text-destructive">{form.formState.errors.cronExpression.message}</p>
@@ -448,17 +516,17 @@ export function SchedulesPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="validFrom">Valid from (optional)</Label>
+              <Label htmlFor="validFrom">{t('schedules:dialog.validFromLabel')}</Label>
               <Input id="validFrom" type="datetime-local" {...form.register('validFrom')} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="validUntil">Valid until (optional)</Label>
+              <Label htmlFor="validUntil">{t('schedules:dialog.validUntilLabel')}</Label>
               <Input id="validUntil" type="datetime-local" {...form.register('validUntil')} />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label>Output Format</Label>
+            <Label>{t('schedules:dialog.outputFormatLabel')}</Label>
             <Select
               value={form.watch('outputFormat')}
               onValueChange={(v) => form.setValue('outputFormat', v as 'XLSX' | 'CSV')}
@@ -467,15 +535,17 @@ export function SchedulesPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="XLSX">Excel (.xlsx)</SelectItem>
-                <SelectItem value="CSV">CSV</SelectItem>
+                <SelectItem value="XLSX">{t('schedules:dialog.formatExcel')}</SelectItem>
+                <SelectItem value="CSV">{t('schedules:dialog.formatCsv')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {selectedMap && selectedMap.parameters.length > 0 && (
             <div className="space-y-2 border-t pt-3">
-              <Label className="text-xs text-muted-foreground">Parameter presets</Label>
+              <Label className="text-xs text-muted-foreground">
+                {t('schedules:dialog.parameterPresetsLabel')}
+              </Label>
               <div className="space-y-2 rounded-md border bg-muted/30 p-3">
                 {selectedMap.parameters.map((p) => (
                   <div key={p.id} className="space-y-1">
@@ -487,7 +557,7 @@ export function SchedulesPage() {
                       className="h-8"
                       type={paramInputType(p.paramType)}
                       value={parameterValue(p.name)}
-                      placeholder={p.defaultValue ?? 'Value used for every scheduled run'}
+                      placeholder={p.defaultValue ?? t('schedules:dialog.parameterValuePlaceholder')}
                       onChange={(e) => updateParameter(p.name, e.target.value)}
                     />
                   </div>
@@ -503,16 +573,16 @@ export function SchedulesPage() {
               onCheckedChange={(v) => form.setValue('isActive', v === true)}
             />
             <Label htmlFor="isActive" className="cursor-pointer">
-              Enabled
+              {t('schedules:dialog.enabledLabel')}
             </Label>
           </div>
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-              Cancel
+              {t('common:actions.cancel')}
             </Button>
             <Button type="submit" disabled={saveMutation.isPending}>
-              {saveMutation.isPending ? 'Saving...' : 'Save'}
+              {saveMutation.isPending ? t('schedules:dialog.saving') : t('common:actions.save')}
             </Button>
           </div>
         </form>
@@ -522,23 +592,23 @@ export function SchedulesPage() {
         <Dialog open onOpenChange={(open) => !open && setDeleting(null)}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Delete schedule?</DialogTitle>
+              <DialogTitle>{t('schedules:deleteDialog.title')}</DialogTitle>
               <DialogDescription>
-                This permanently deletes{' '}
-                <span className="font-medium text-foreground">{deleting.name}</span> and its
-                execution history. This cannot be undone.
+                {t('schedules:deleteDialog.descriptionBefore')}{' '}
+                <span className="font-medium text-foreground">{deleting.name}</span>{' '}
+                {t('schedules:deleteDialog.descriptionAfter')}
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
               <Button variant="outline" onClick={() => setDeleting(null)} disabled={deleteMutation.isPending}>
-                Cancel
+                {t('common:actions.cancel')}
               </Button>
               <Button
                 variant="destructive"
                 onClick={() => deleteMutation.mutate(deleting.id)}
                 disabled={deleteMutation.isPending}
               >
-                {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+                {deleteMutation.isPending ? t('schedules:deleteDialog.deleting') : t('common:actions.delete')}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -551,6 +621,8 @@ export function SchedulesPage() {
 }
 
 function ScheduleHistoryDialog({ schedule, onClose }: { schedule: Schedule; onClose: () => void }) {
+  const { t } = useTranslation(['schedules'])
+  const { locale } = useLocale()
   const { toast } = useToast()
 
   const { data: history, isLoading } = useQuery({
@@ -568,7 +640,11 @@ function ScheduleHistoryDialog({ schedule, onClose }: { schedule: Schedule; onCl
       a.click()
       URL.revokeObjectURL(url)
     } catch (err) {
-      toast({ title: 'Download failed', description: getErrorMessage(err), variant: 'destructive' })
+      toast({
+        title: t('schedules:toasts.downloadFailedTitle'),
+        description: getErrorMessage(err),
+        variant: 'destructive',
+      })
     }
   }
 
@@ -576,17 +652,17 @@ function ScheduleHistoryDialog({ schedule, onClose }: { schedule: Schedule; onCl
     <CreateEditDialog
       open
       onOpenChange={(open) => !open && onClose()}
-      title={`Execution History — ${schedule.name}`}
+      title={t('schedules:history.title', { name: schedule.name })}
       className="max-h-[90vh] overflow-y-auto sm:max-w-2xl"
     >
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Executed</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Rows</TableHead>
-              <TableHead>Duration</TableHead>
+              <TableHead>{t('schedules:history.executed')}</TableHead>
+              <TableHead>{t('schedules:history.status')}</TableHead>
+              <TableHead>{t('schedules:history.rows')}</TableHead>
+              <TableHead>{t('schedules:history.duration')}</TableHead>
               <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
@@ -594,19 +670,19 @@ function ScheduleHistoryDialog({ schedule, onClose }: { schedule: Schedule; onCl
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                  Loading...
+                  {t('schedules:history.loading')}
                 </TableCell>
               </TableRow>
             ) : (history ?? []).length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                  No runs yet.
+                  {t('schedules:history.noRuns')}
                 </TableCell>
               </TableRow>
             ) : (
               (history ?? []).map((r) => (
                 <TableRow key={r.id}>
-                  <TableCell>{formatDateTime(r.executedAt)}</TableCell>
+                  <TableCell>{formatScheduleDateTime(r.executedAt, locale)}</TableCell>
                   <TableCell>
                     <Badge
                       variant={
@@ -618,10 +694,24 @@ function ScheduleHistoryDialog({ schedule, onClose }: { schedule: Schedule; onCl
                     </Badge>
                   </TableCell>
                   <TableCell>{r.rowCount ?? '—'}</TableCell>
-                  <TableCell>{r.executionTimeMs != null ? `${(r.executionTimeMs / 1000).toFixed(1)}s` : '—'}</TableCell>
+                  <TableCell>
+                    {r.executionTimeMs != null
+                      ? t('schedules:history.durationSeconds', {
+                          seconds: formatNumber(r.executionTimeMs / 1000, locale, {
+                            minimumFractionDigits: 1,
+                            maximumFractionDigits: 1,
+                          }),
+                        })
+                      : '—'}
+                  </TableCell>
                   <TableCell>
                     {r.status === 'SUCCESS' && r.filePath && (
-                      <Button variant="ghost" size="icon" title="Download" onClick={() => void download(r.id)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        title={t('schedules:history.download')}
+                        onClick={() => void download(r.id)}
+                      >
                         <Download className="h-4 w-4" />
                       </Button>
                     )}

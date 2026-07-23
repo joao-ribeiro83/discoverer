@@ -10,8 +10,11 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { useVirtualizer } from '@tanstack/react-virtual'
+import { useTranslation } from 'react-i18next'
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react'
-import { cn, formatDate, formatNumber } from '@/lib/utils'
+import { cn } from '@/lib/utils'
+import { formatDate, formatInteger, formatNumber } from '@/lib/format'
+import { useLocale } from '@/hooks/useLocale'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { ResultColumn } from '@/lib/types'
@@ -51,24 +54,27 @@ function inferColumnKind(rows: RowRecord[], name: string): ColumnKind {
 }
 
 function CellValue({ value, kind }: { value: unknown; kind: ColumnKind }) {
+  const { t } = useTranslation(['mapViewer'])
+  const { locale } = useLocale()
+
   if (value === null || value === undefined) {
     return (
-      <span className="text-muted-foreground" title="NULL">
+      <span className="text-muted-foreground" title={t('mapViewer:resultsTable.nullValue')}>
         ∅
       </span>
     )
   }
   if (value === '') return null
-  if (value instanceof Date) return <>{formatDate(value)}</>
+  if (value instanceof Date) return <>{formatDate(value, locale)}</>
   if (typeof value === 'string') {
     if (kind === 'date') {
       const d = new Date(value)
-      if (!Number.isNaN(d.getTime())) return <>{formatDate(d)}</>
+      if (!Number.isNaN(d.getTime())) return <>{formatDate(d, locale)}</>
     }
     return <>{value}</>
   }
   if (typeof value === 'number') {
-    return <>{kind === 'number' ? formatNumber(value) : value}</>
+    return <>{kind === 'number' ? formatNumber(value, locale) : value}</>
   }
   if (typeof value === 'boolean' || typeof value === 'bigint') {
     return <>{String(value)}</>
@@ -95,9 +101,12 @@ export function ResultsTable({
   columns,
   rows,
   isLoading,
-  emptyMessage = 'No rows.',
+  emptyMessage,
   className,
 }: ResultsTableProps) {
+  const { t } = useTranslation(['mapViewer'])
+  const { locale } = useLocale()
+  const resolvedEmptyMessage = emptyMessage ?? t('mapViewer:resultsTable.noRows')
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -162,7 +171,7 @@ export function ResultsTable({
   }
 
   if (columns.length === 0) {
-    return <p className={cn('p-4 text-sm text-muted-foreground', className)}>{emptyMessage}</p>
+    return <p className={cn('p-4 text-sm text-muted-foreground', className)}>{resolvedEmptyMessage}</p>
   }
 
   const virtualItems = rowVirtualizer.getVirtualItems()
@@ -204,8 +213,10 @@ export function ResultsTable({
                       <Input
                         value={(header.column.getFilterValue() as string) ?? ''}
                         onChange={(e) => header.column.setFilterValue(e.target.value || undefined)}
-                        placeholder="Filter…"
-                        aria-label={`Filter ${labelByName[header.column.id] ?? header.column.id}`}
+                        placeholder={t('mapViewer:resultsTable.filterPlaceholder')}
+                        aria-label={t('mapViewer:resultsTable.filterAriaLabel', {
+                          column: labelByName[header.column.id] ?? header.column.id,
+                        })}
                         className="h-7 rounded-none border-0 border-t px-2 text-xs focus-visible:ring-0 focus-visible:ring-offset-0"
                       />
                       <div
@@ -222,7 +233,7 @@ export function ResultsTable({
           <tbody style={{ display: 'grid', height: `${rowVirtualizer.getTotalSize()}px`, position: 'relative' }}>
             {tableRows.length === 0 ? (
               <tr style={{ display: 'flex', width: '100%' }}>
-                <td className="flex-1 p-4 text-center text-muted-foreground">{emptyMessage}</td>
+                <td className="flex-1 p-4 text-center text-muted-foreground">{resolvedEmptyMessage}</td>
               </tr>
             ) : (
               virtualItems.map((virtualRow) => {
@@ -263,8 +274,14 @@ export function ResultsTable({
       </div>
       <div className="flex items-center justify-between border-t px-3 py-1.5 text-xs text-muted-foreground">
         <span>
-          {formatNumber(tableRows.length)} row{tableRows.length === 1 ? '' : 's'}
-          {tableRows.length !== rows.length && ` (filtered from ${formatNumber(rows.length)})`}
+          {t('mapViewer:resultsTable.rowCount', {
+            count: tableRows.length,
+            formattedCount: formatInteger(tableRows.length, locale),
+          })}
+          {tableRows.length !== rows.length &&
+            ` ${t('mapViewer:resultsTable.filteredFrom', {
+              total: formatInteger(rows.length, locale),
+            })}`}
         </span>
       </div>
     </div>

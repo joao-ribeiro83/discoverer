@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Plus, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -32,10 +33,10 @@ const OPERATORS: { value: ConditionOperator; label: string }[] = [
   { value: 'IS_NULL', label: 'IS NULL' },
 ]
 
-function valuePlaceholder(operator: ConditionOperator): string {
-  if (operator === 'IN') return 'value1, value2, …'
-  if (operator === 'BETWEEN') return 'low, high'
-  return 'Value'
+function valuePlaceholder(operator: ConditionOperator, t: (key: string) => string): string {
+  if (operator === 'IN') return t('mapBuilder:panels.conditions.valuePlaceholderIn')
+  if (operator === 'BETWEEN') return t('mapBuilder:panels.conditions.valuePlaceholderBetween')
+  return t('mapBuilder:panels.conditions.valuePlaceholderDefault')
 }
 
 /**
@@ -58,6 +59,7 @@ function chunkByGroup(conditions: MapBuilderCondition[]): MapBuilderCondition[][
 }
 
 export function ConditionsPanel() {
+  const { t } = useTranslation(['mapBuilder'])
   const conditions = useMapBuilderStore((s) => s.conditions)
   const selectedItems = useMapBuilderStore((s) => s.selectedItems)
   const parameters = useMapBuilderStore((s) => s.parameters)
@@ -90,27 +92,29 @@ export function ConditionsPanel() {
   return (
     <div className="space-y-3 p-4">
       <div className="flex items-center justify-between gap-2">
-        <h4 className="text-sm font-semibold">Conditions</h4>
+        <h4 className="text-sm font-semibold">{t('mapBuilder:panels.conditions.title')}</h4>
         <Button size="sm" onClick={addCondition} disabled={selectedItems.length === 0}>
-          <Plus className="h-3.5 w-3.5" /> Add Condition
+          <Plus className="h-3.5 w-3.5" /> {t('mapBuilder:panels.conditions.addButton')}
         </Button>
       </div>
 
       {selectedItems.length === 0 && (
         <p className="text-sm text-muted-foreground">
-          Add columns to the canvas before adding conditions.
+          {t('mapBuilder:panels.conditions.addColumnsHint')}
         </p>
       )}
 
       {selectedKeys.size >= 2 && (
         <Button size="sm" variant="secondary" onClick={handleGroup} className="w-full">
-          Group {selectedKeys.size} selected conditions
+          {t('mapBuilder:panels.conditions.groupSelected', { count: selectedKeys.size })}
         </Button>
       )}
 
       {conditions.length === 0 ? (
         selectedItems.length > 0 && (
-          <p className="text-sm text-muted-foreground">No conditions yet.</p>
+          <p className="text-sm text-muted-foreground">
+            {t('mapBuilder:panels.conditions.noConditionsYet')}
+          </p>
         )
       ) : (
         <div className="space-y-3">
@@ -130,7 +134,7 @@ export function ConditionsPanel() {
                 {isGroup && (
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium text-muted-foreground">
-                      Group ({chunk.length})
+                      {t('mapBuilder:panels.conditions.groupHeader', { count: chunk.length })}
                     </span>
                     <Button
                       type="button"
@@ -139,7 +143,7 @@ export function ConditionsPanel() {
                       className="h-6 px-2 text-xs"
                       onClick={() => ungroupConditions(chunk[0].groupId!)}
                     >
-                      Ungroup
+                      {t('mapBuilder:panels.conditions.ungroup')}
                     </Button>
                   </div>
                 )}
@@ -184,9 +188,10 @@ function ConditionRow({
   onUpdate: (patch: Partial<Omit<MapBuilderCondition, 'key'>>) => void
   onRemove: () => void
 }) {
+  const { t } = useTranslation(['mapBuilder'])
   const item = selectedItems.find((i) => i.itemId === condition.itemId)
   const showValue = condition.operator !== 'IS_NULL'
-  const label = item ? columnLabel(item) : 'item'
+  const label = item ? columnLabel(item) : t('mapBuilder:panels.conditions.itemFallbackLabel')
 
   return (
     <div className="space-y-2 rounded-md border bg-card p-2">
@@ -195,7 +200,10 @@ function ConditionRow({
           value={condition.logicOperator}
           onValueChange={(v) => onUpdate({ logicOperator: v as 'AND' | 'OR' })}
         >
-          <SelectTrigger className="h-7 w-20 text-xs" aria-label="Logic operator">
+          <SelectTrigger
+            className="h-7 w-20 text-xs"
+            aria-label={t('mapBuilder:panels.conditions.logicOperatorAria')}
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -209,15 +217,18 @@ function ConditionRow({
         <Checkbox
           checked={selected}
           onCheckedChange={onToggleSelected}
-          aria-label={`Select condition on ${label}`}
+          aria-label={t('mapBuilder:panels.conditions.selectConditionAria', { label })}
           className="mt-2"
         />
 
         <div className="flex-1 space-y-2">
           <div className="flex gap-2">
             <Select value={condition.itemId} onValueChange={(v) => onUpdate({ itemId: v })}>
-              <SelectTrigger className="h-8 flex-1" aria-label="Condition item">
-                <SelectValue placeholder="Item" />
+              <SelectTrigger
+                className="h-8 flex-1"
+                aria-label={t('mapBuilder:panels.conditions.conditionItemAria')}
+              >
+                <SelectValue placeholder={t('mapBuilder:panels.conditions.itemPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
                 {selectedItems.map((i) => (
@@ -232,7 +243,10 @@ function ConditionRow({
               value={condition.operator}
               onValueChange={(v) => onUpdate({ operator: v as ConditionOperator })}
             >
-              <SelectTrigger className="h-8 w-28" aria-label="Operator">
+              <SelectTrigger
+                className="h-8 w-28"
+                aria-label={t('mapBuilder:panels.conditions.operatorAria')}
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -254,7 +268,7 @@ function ConditionRow({
                 className="h-7 flex-1 text-xs"
                 onClick={() => onUpdate({ conditionType: 'STATIC', paramName: null })}
               >
-                Static value
+                {t('mapBuilder:panels.conditions.staticValue')}
               </Button>
               <Button
                 type="button"
@@ -269,7 +283,7 @@ function ConditionRow({
                   })
                 }
               >
-                Prompt at runtime
+                {t('mapBuilder:panels.conditions.promptAtRuntime')}
               </Button>
             </div>
           )}
@@ -278,9 +292,9 @@ function ConditionRow({
             <Input
               className="h-8"
               value={condition.value ?? ''}
-              placeholder={valuePlaceholder(condition.operator)}
+              placeholder={valuePlaceholder(condition.operator, t)}
               onChange={(e) => onUpdate({ value: e.target.value })}
-              aria-label="Condition value"
+              aria-label={t('mapBuilder:panels.conditions.conditionValueAria')}
             />
           )}
 
@@ -290,9 +304,9 @@ function ConditionRow({
                 className="h-8"
                 list={`param-names-${condition.key}`}
                 value={condition.paramName ?? ''}
-                placeholder="Parameter name"
+                placeholder={t('mapBuilder:panels.conditions.parameterNamePlaceholder')}
                 onChange={(e) => onUpdate({ paramName: e.target.value })}
-                aria-label="Parameter name"
+                aria-label={t('mapBuilder:panels.conditions.parameterNameAria')}
               />
               <datalist id={`param-names-${condition.key}`}>
                 {parameters.map((p) => (
@@ -309,7 +323,7 @@ function ConditionRow({
           size="icon"
           className="h-8 w-8 shrink-0"
           onClick={onRemove}
-          aria-label="Delete condition"
+          aria-label={t('mapBuilder:panels.conditions.deleteAria')}
         >
           <X className="h-4 w-4" />
         </Button>

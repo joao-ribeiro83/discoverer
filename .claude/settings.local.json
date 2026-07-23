@@ -345,7 +345,24 @@
       "Bash(grep -rln \"data\\\\.user\\\\\\)\\\\.toEqual\\\\|/api/auth/me\" src/__tests__/ ../frontend/src/__tests__ ../frontend/e2e 2>/dev/null)",
       "Bash(xargs grep -l \"role: 'USER'\\\\|role: \\\\\"USER\\\\\"\")",
       "Bash(DATABASE_URL=\"postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo\" REDIS_URL=\"redis://localhost:6379\" npx jest auth.test.ts migration.test.ts --testPathIgnorePatterns=integration --forceExit)",
-      "Bash(DATABASE_URL=\"postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo\" REDIS_URL=\"redis://localhost:6379\" npx jest migration.test.ts --testPathIgnorePatterns=integration --forceExit)"
+      "Bash(DATABASE_URL=\"postgres://discoverer:change_me_in_production@localhost:5432/discoverer_neo\" REDIS_URL=\"redis://localhost:6379\" npx jest migration.test.ts --testPathIgnorePatterns=integration --forceExit)",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('src/locales/en/admin.json','utf8'\\)\\); console.log\\('admin.json OK'\\)\")",
+      "Bash(node \"C:\\\\Users\\\\BUGSBU~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\E--claude-discoverer\\\\877cfd24-11ac-4f4c-b778-014d39b70536\\\\scratchpad\\\\check_migration_keys.js\")",
+      "Bash(node \"C:\\\\Users\\\\BUGSBU~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\E--claude-discoverer\\\\877cfd24-11ac-4f4c-b778-014d39b70536\\\\scratchpad\\\\check_audit_keys.js\")",
+      "Bash(node \"C:/Users/BUGSBU~1/AppData/Local/Temp/claude/E--claude-discoverer/877cfd24-11ac-4f4c-b778-014d39b70536/scratchpad/keycheck.mjs\")",
+      "Bash(node -e \"console.log\\(require.resolve\\('culori'\\)\\)\")",
+      "Bash(node contrast.js 'oklch\\(0.51 0 0\\)' 'oklch\\(0.97 0 0\\)' 'oklch\\(0.51 0 0\\)' 'oklch\\(1 0 0\\)' 'oklch\\(0.708 0 0\\)' 'oklch\\(0.269 0 0\\)' 'oklch\\(0.145 0 0\\)' 'oklch\\(1 0 0\\)' 'oklch\\(0.985 0 0\\)' 'oklch\\(0.145 0 0\\)')",
+      "Bash(node contrast.js 'oklch\\(0.08 0 0\\)' 'oklch\\(0.99 0 0\\)' 'oklch\\(0.12 0 0\\)' 'oklch\\(0.99 0 0\\)' 'oklch\\(0.08 0 0\\)' 'oklch\\(0.12 0 0\\)')",
+      "Bash(powershell -Command \"New-Item -ItemType Directory -Force -Path 'E:\\\\claude\\\\discoverer\\\\discoverer-neo\\\\frontend\\\\src\\\\styles\\\\themes' | Out-Null; Get-ChildItem 'E:\\\\claude\\\\discoverer\\\\discoverer-neo\\\\frontend\\\\src\\\\styles' -Recurse\")",
+      "Bash(node -e \"console.log\\(process.version\\)\")",
+      "Bash(node oklch.js)",
+      "Bash(node search.js)",
+      "Bash(node tune.js)",
+      "Bash(node tune_hc.js)",
+      "Bash(rm -f src/__smoke_test_tokens.tsx)",
+      "Bash(rm -rf dist)",
+      "Bash(curl -s -m 5 http://localhost:3000/api/health)",
+      "Bash(curl -s -m 5 http://localhost:8080/api/health)"
     ]
   }
 }

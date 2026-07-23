@@ -1,0 +1,92 @@
+/*
+ * High-contrast theme (WCAG AAA-ish). Never auto-selected — only applied
+ * when a user explicitly picks it (see ThemeProvider). Near-black
+ * background / near-white foreground, with every foreground/background
+ * pairing verified at >= 7:1 (not just the AA 4.5:1 floor the light/dark
+ * themes target), including decorative tokens like --border/--input/--ring
+ * against --background, which the light/dark themes don't hold to that bar.
+ *
+ * Contrast ratios below were computed from the actual OKLCH -> linear sRGB
+ * -> WCAG relative luminance conversion (not eyeballed from L alone, since
+ * OKLCH lightness isn't a direct proxy for WCAG luminance once chroma is
+ * non-zero — see --destructive).
+ *
+ *   background/foreground           20.20:1
+ *   card/card-foreground            19.34:1
+ *   popover/popover-foreground      19.34:1
+ *   primary/primary-foreground      20.20:1
+ *   secondary/secondary-foreground  15.99:1
+ *   muted/muted-foreground           8.22:1
+ *   accent/accent-foreground        15.99:1
+ *   destructive/destructive-fg       7.20:1
+ *   background/destructive           7.14:1  (red still reads as red, not washed out)
+ *   success/success-fg               7.20:1
+ *   background/success               7.14:1  (green still reads as green, not washed out)
+ *   warning/warning-fg               7.20:1
+ *   background/warning               7.14:1  (amber still reads as amber, not washed out)
+ *   info/info-fg                     7.20:1
+ *   background/info                  7.14:1  (blue still reads as blue, not washed out)
+ *   background/border                7.21:1
+ *   background/input                 7.21:1
+ *   background/ring                 11.13:1
+ *   sidebar/sidebar-foreground      19.72:1
+ *   sidebar/sidebar-border           7.05:1
+ *
+ * --success/--warning/--info follow the exact same shape as --destructive:
+ * a light, saturated color (L ~0.66-0.68) paired with the same near-black
+ * --*-foreground (oklch(0.05 0 0)) destructive uses, tuned per-hue so each
+ * pair independently lands at 7.20:1 against its own foreground and 7.14:1
+ * against --background — the same two numbers --destructive hits, found via
+ * the same OKLCH -> linear sRGB -> relative luminance conversion (not
+ * eyeballed). Hues (150 green / 85 amber / 230 blue) are kept off the
+ * --chart-* hues used nearby (145 / 84 / 260 respectively) so a status color
+ * next to a chart series doesn't read as "the same swatch" at a glance.
+ *
+ * --chart-* keep a monotonic lightness spread (0.65 -> 0.72 -> 0.85 -> 0.62
+ * -> 0.92, staggered rather than clustered) plus distinct hues, so the five
+ * series stay distinguishable even desaturated (grayscale) rather than
+ * relying on hue alone, per the color-blind-ambiguity note. --destructive's
+ * hue is kept clear of --chart-1 (orange, 45) to avoid the two reading as
+ * the same "red = danger" signal.
+ */
+[data-theme='high-contrast'] {
+  --background: oklch(0.08 0 0);
+  --foreground: oklch(0.99 0 0);
+  --card: oklch(0.14 0 0);
+  --card-foreground: oklch(0.99 0 0);
+  --popover: oklch(0.14 0 0);
+  --popover-foreground: oklch(0.99 0 0);
+  --primary: oklch(0.99 0 0);
+  --primary-foreground: oklch(0.08 0 0);
+  --secondary: oklch(0.24 0 0);
+  --secondary-foreground: oklch(0.99 0 0);
+  --muted: oklch(0.24 0 0);
+  --muted-foreground: oklch(0.78 0 0);
+  --accent: oklch(0.24 0 0);
+  --accent-foreground: oklch(0.99 0 0);
+  --destructive: oklch(0.7 0.19 25);
+  --destructive-foreground: oklch(0.05 0 0);
+  --success: oklch(0.659 0.17 150);
+  --success-foreground: oklch(0.05 0 0);
+  --warning: oklch(0.679 0.18 85);
+  --warning-foreground: oklch(0.05 0 0);
+  --info: oklch(0.664 0.15 230);
+  --info-foreground: oklch(0.05 0 0);
+  --border: oklch(0.68 0 0);
+  --input: oklch(0.68 0 0);
+  --ring: oklch(0.8 0 0);
+  --chart-1: oklch(0.65 0.19 45);
+  --chart-2: oklch(0.72 0.18 145);
+  --chart-3: oklch(0.85 0.16 95);
+  --chart-4: oklch(0.62 0.18 260);
+  --chart-5: oklch(0.92 0.12 320);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.12 0 0);
+  --sidebar-foreground: oklch(0.99 0 0);
+  --sidebar-primary: oklch(0.99 0 0);
+  --sidebar-primary-foreground: oklch(0.08 0 0);
+  --sidebar-accent: oklch(0.24 0 0);
+  --sidebar-accent-foreground: oklch(0.99 0 0);
+  --sidebar-border: oklch(0.68 0 0);
+  --sidebar-ring: oklch(0.8 0 0);
+}

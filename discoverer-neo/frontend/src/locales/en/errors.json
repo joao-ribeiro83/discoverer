@@ -1,0 +1,17 @@
+{
+  "generic": "Something went wrong",
+  "network": "Unable to reach the server. Check your connection and try again.",
+  "unauthorized": "You are not authorized to perform this action.",
+  "notFound": "The requested resource could not be found.",
+  "validation": "Please correct the highlighted fields and try again.",
+  "loadFailed": "Failed to load data.",
+  "saveFailed": "Failed to save changes.",
+  "deleteFailed": "Failed to delete.",
+  "execution": {
+    "CONFIG": "The map configuration is invalid. Review its columns, conditions and parameters.",
+    "CONNECT": "Could not connect to the data source.",
+    "TIMEOUT": "The query timed out. Try narrowing the result set or adding conditions.",
+    "QUERY": "The database rejected the query.",
+    "CANCELLED": "The execution was cancelled."
+  }
+}

@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { z } from 'zod'
+import { useTranslation } from 'react-i18next'
 import type { ColumnDef } from '@tanstack/react-table'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { apiClient, getErrorMessage } from '@/lib/api'
@@ -27,23 +28,28 @@ import {
 
 const ROLES = ['ADMIN', 'MANAGER', 'USER', 'VIEWER'] as const
 
-const createSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(255),
-  email: z.string().email('Enter a valid email'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  role: z.enum(ROLES),
-})
+function buildCreateSchema(t: (key: string) => string) {
+  return z.object({
+    name: z.string().min(1, t('admin:shared.validation.nameRequired')).max(255),
+    email: z.string().email(t('admin:users.validation.emailInvalid')),
+    password: z.string().min(8, t('admin:users.validation.passwordMinLength')),
+    role: z.enum(ROLES),
+  })
+}
 
-const editSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(255),
-  email: z.string().email('Enter a valid email'),
-  password: z.string().min(8, 'Password must be at least 8 characters').or(z.literal('')),
-  role: z.enum(ROLES),
-})
+function buildEditSchema(t: (key: string) => string) {
+  return z.object({
+    name: z.string().min(1, t('admin:shared.validation.nameRequired')).max(255),
+    email: z.string().email(t('admin:users.validation.emailInvalid')),
+    password: z.string().min(8, t('admin:users.validation.passwordMinLength')).or(z.literal('')),
+    role: z.enum(ROLES),
+  })
+}
 
-type FormValues = z.infer<typeof createSchema>
+type FormValues = z.infer<ReturnType<typeof buildCreateSchema>>
 
 export function UsersPage() {
+  const { t } = useTranslation(['admin', 'common'])
   const queryClient = useQueryClient()
   const { toast } = useToast()
   const currentUser = useAuthStore((s) => s.user)
@@ -60,7 +66,7 @@ export function UsersPage() {
   })
 
   const form = useForm<FormValues>({
-    resolver: standardSchemaResolver(editing ? editSchema : createSchema),
+    resolver: standardSchemaResolver(editing ? buildEditSchema(t) : buildCreateSchema(t)),
     defaultValues: { name: '', email: '', password: '', role: 'USER' },
   })
 
@@ -87,12 +93,12 @@ export function UsersPage() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['users'] })
-      toast({ title: editing ? 'User updated' : 'User created' })
+      toast({ title: editing ? t('admin:users.toast.updated') : t('admin:users.toast.created') })
       setDialogOpen(false)
     },
     onError: (err) => {
       toast({
-        title: 'Save failed',
+        title: t('admin:shared.saveFailed'),
         description: getErrorMessage(err),
         variant: 'destructive',
       })
@@ -103,12 +109,12 @@ export function UsersPage() {
     mutationFn: async (id: string) => apiClient.users.delete(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['users'] })
-      toast({ title: 'User deleted' })
+      toast({ title: t('admin:users.toast.deleted') })
       setDeleting(null)
     },
     onError: (err) => {
       toast({
-        title: 'Delete failed',
+        title: t('admin:shared.deleteFailed'),
         description: getErrorMessage(err),
         variant: 'destructive',
       })
@@ -116,22 +122,22 @@ export function UsersPage() {
   })
 
   const columns: ColumnDef<AppUser>[] = [
-    { accessorKey: 'name', header: 'Name' },
-    { accessorKey: 'email', header: 'Email' },
-    { accessorKey: 'role', header: 'Role', cell: ({ row }) => <Badge variant="outline">{row.original.role}</Badge> },
+    { accessorKey: 'name', header: t('common:labels.name') },
+    { accessorKey: 'email', header: t('admin:users.columns.email') },
+    { accessorKey: 'role', header: t('admin:users.columns.role'), cell: ({ row }) => <Badge variant="outline">{row.original.role}</Badge> },
     {
       id: 'actions',
       header: '',
       cell: ({ row }) => (
         <div className="flex justify-end gap-1">
-          <Button variant="ghost" size="icon" onClick={() => openEdit(row.original)} title="Edit">
+          <Button variant="ghost" size="icon" onClick={() => openEdit(row.original)} title={t('common:actions.edit')}>
             <Pencil className="h-4 w-4" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setDeleting(row.original)}
-            title="Delete"
+            title={t('common:actions.delete')}
             disabled={row.original.id === currentUser?.id}
           >
             <Trash2 className="h-4 w-4" />
@@ -143,35 +149,35 @@ export function UsersPage() {
 
   if (!isAdmin) {
     return (
-      <AdminPageWrapper title="Users" description="Manage user accounts and permissions.">
-        <p className="text-sm text-muted-foreground">Only administrators can manage users.</p>
+      <AdminPageWrapper title={t('admin:users.title')} description={t('admin:users.description')}>
+        <p className="text-sm text-muted-foreground">{t('admin:users.adminOnlyMessage')}</p>
       </AdminPageWrapper>
     )
   }
 
   return (
     <AdminPageWrapper
-      title="Users"
-      description="Manage user accounts and permissions."
+      title={t('admin:users.title')}
+      description={t('admin:users.description')}
       action={
         <Button onClick={openCreate}>
-          <Plus className="h-4 w-4" /> New User
+          <Plus className="h-4 w-4" /> {t('admin:users.createButton')}
         </Button>
       }
     >
-      <DataTable columns={columns} data={users ?? []} isLoading={isLoading} emptyMessage="No users yet." />
+      <DataTable columns={columns} data={users ?? []} isLoading={isLoading} emptyMessage={t('admin:users.emptyMessage')} />
 
-      <CreateEditDialog open={dialogOpen} onOpenChange={setDialogOpen} title={editing ? 'Edit User' : 'New User'}>
+      <CreateEditDialog open={dialogOpen} onOpenChange={setDialogOpen} title={editing ? t('admin:users.dialog.editTitle') : t('admin:users.dialog.createTitle')}>
         <form className="space-y-4" onSubmit={(e) => void form.handleSubmit((values) => saveMutation.mutate(values))(e)}>
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">{t('common:labels.name')}</Label>
             <Input id="name" {...form.register('name')} />
             {form.formState.errors.name && (
               <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t('admin:users.form.emailLabel')}</Label>
             <Input id="email" type="email" {...form.register('email')} />
             {form.formState.errors.email && (
               <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>
@@ -179,7 +185,7 @@ export function UsersPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">
-              Password {editing && <span className="text-muted-foreground">(leave blank to keep current)</span>}
+              {t('admin:users.form.passwordLabel')} {editing && <span className="text-muted-foreground">{t('admin:users.form.passwordKeepHint')}</span>}
             </Label>
             <Input id="password" type="password" {...form.register('password')} />
             {form.formState.errors.password && (
@@ -187,7 +193,7 @@ export function UsersPage() {
             )}
           </div>
           <div className="space-y-2">
-            <Label>Role</Label>
+            <Label>{t('admin:users.form.roleLabel')}</Label>
             <Select value={form.watch('role')} onValueChange={(v) => form.setValue('role', v as FormValues['role'])}>
               <SelectTrigger>
                 <SelectValue />
@@ -203,10 +209,10 @@ export function UsersPage() {
           </div>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-              Cancel
+              {t('common:actions.cancel')}
             </Button>
             <Button type="submit" disabled={saveMutation.isPending}>
-              {saveMutation.isPending ? 'Saving...' : 'Save'}
+              {saveMutation.isPending ? t('admin:shared.saving') : t('common:actions.save')}
             </Button>
           </div>
         </form>
@@ -217,7 +223,7 @@ export function UsersPage() {
           open={!!deleting}
           onOpenChange={(open) => !open && setDeleting(null)}
           itemName={deleting.name}
-          itemLabel="user"
+          itemLabel={t('admin:users.entityLabel')}
           onConfirm={() => deleteMutation.mutate(deleting.id)}
           isPending={deleteMutation.isPending}
         />

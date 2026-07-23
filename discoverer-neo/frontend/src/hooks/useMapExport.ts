@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { apiClient, getErrorMessage } from '@/lib/api'
 import { downloadBlob, safeFilename } from '@/components/map-builder/export-utils'
 import { useToast } from '@/hooks/use-toast'
@@ -30,6 +31,7 @@ export function useMapExport(
   mapName: string,
   parameters: Record<string, unknown> = {},
 ): UseMapExportResult {
+  const { t } = useTranslation(['mapViewer'])
   const { toast } = useToast()
   const [jobId, setJobId] = useState<string | null>(null)
   const [downloadedJobId, setDownloadedJobId] = useState<string | null>(null)
@@ -44,7 +46,7 @@ export function useMapExport(
       format: ExportFileFormat
       calculatedFields?: MapCalculatedFieldInput[]
     }) => {
-      if (!mapId) throw new Error('Save the map before exporting.')
+      if (!mapId) throw new Error(t('mapViewer:export.saveBeforeExport'))
       const res = await apiClient.maps.createExport(mapId, { format, parameters, calculatedFields })
       return res.data.data
     },
@@ -54,7 +56,11 @@ export function useMapExport(
     },
     onSuccess: ({ jobId: id }) => setJobId(id),
     onError: (err) =>
-      toast({ title: 'Export failed', description: getErrorMessage(err), variant: 'destructive' }),
+      toast({
+        title: t('mapViewer:export.exportFailedTitle'),
+        description: getErrorMessage(err),
+        variant: 'destructive',
+      }),
   })
 
   const statusQuery = useQuery({
@@ -77,8 +83,11 @@ export function useMapExport(
     if (queuedToastShown.current) return
     if (Date.now() - startedAt.current < QUIET_POLL_MS) return
     queuedToastShown.current = true
-    toast({ title: 'Export queued', description: 'This may take a moment for large result sets.' })
-  }, [job, jobId, toast])
+    toast({
+      title: t('mapViewer:export.exportQueuedTitle'),
+      description: t('mapViewer:export.exportQueuedDescription'),
+    })
+  }, [job, jobId, toast, t])
 
   const download = useCallback(async () => {
     if (!jobId || !job) return
@@ -88,9 +97,13 @@ export function useMapExport(
       downloadBlob(res.data, `${safeFilename(mapName)}.${ext}`)
       setDownloadedJobId(jobId)
     } catch (err) {
-      toast({ title: 'Download failed', description: getErrorMessage(err), variant: 'destructive' })
+      toast({
+        title: t('mapViewer:export.downloadFailedTitle'),
+        description: getErrorMessage(err),
+        variant: 'destructive',
+      })
     }
-  }, [jobId, job, mapName, toast])
+  }, [jobId, job, mapName, toast, t])
 
   // Auto-download the instant a job completes (fast exports never show a
   // "queued" state at all — this just fires before the user notices).
@@ -100,12 +113,12 @@ export function useMapExport(
     }
     if (job?.status === 'FAILED') {
       toast({
-        title: 'Export failed',
-        description: job.errorMessage ?? 'The export job failed.',
+        title: t('mapViewer:export.exportFailedTitle'),
+        description: job.errorMessage ?? t('mapViewer:export.exportJobFailedFallback'),
         variant: 'destructive',
       })
     }
-  }, [job, jobId, downloadedJobId, download, toast])
+  }, [job, jobId, downloadedJobId, download, toast, t])
 
   const exportFormat = useCallback(
     (format: ExportFileFormat, options?: { calculatedFields?: MapCalculatedFieldInput[] }) => {

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Dialog,
   DialogContent,
@@ -57,6 +58,7 @@ export function ParameterPromptDialog({
   onOpenChange,
   onSubmit,
 }: ParameterPromptDialogProps) {
+  const { t } = useTranslation(['mapViewer', 'common'])
   const [values, setValues] = useState<Record<string, string>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -74,7 +76,7 @@ export function ParameterPromptDialog({
     for (const p of parameters) {
       const value = (values[p.name] ?? '').trim()
       if (p.isRequired && value === '') {
-        nextErrors[p.name] = 'This parameter is required.'
+        nextErrors[p.name] = t('mapViewer:parameters.required')
       }
     }
     if (Object.keys(nextErrors).length > 0) {
@@ -94,10 +96,8 @@ export function ParameterPromptDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Run parameters</DialogTitle>
-          <DialogDescription>
-            Enter values for this map&apos;s parameters, then run.
-          </DialogDescription>
+          <DialogTitle>{t('mapViewer:parameters.title')}</DialogTitle>
+          <DialogDescription>{t('mapViewer:parameters.description')}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-1">
@@ -112,7 +112,9 @@ export function ParameterPromptDialog({
                 type={inputType(p.paramType)}
                 value={values[p.name] ?? ''}
                 onChange={(e) => setValues((v) => ({ ...v, [p.name]: e.target.value }))}
-                placeholder={p.paramType === 'LIST' ? 'comma, separated, values' : undefined}
+                placeholder={
+                  p.paramType === 'LIST' ? t('mapViewer:parameters.listPlaceholder') : undefined
+                }
               />
               {errors[p.name] && <p className="text-sm text-destructive">{errors[p.name]}</p>}
             </div>
@@ -121,10 +123,10 @@ export function ParameterPromptDialog({
 
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t('common:actions.cancel')}
           </Button>
           <Button type="button" onClick={handleSubmit}>
-            Run
+            {t('common:actions.run')}
           </Button>
         </DialogFooter>
       </DialogContent>

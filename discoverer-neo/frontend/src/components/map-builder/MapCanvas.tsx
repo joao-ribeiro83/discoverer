@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -16,6 +17,7 @@ import { itemRole } from './item-utils'
 export const CANVAS_DROPPABLE_ID = 'canvas-dropzone'
 
 export function MapCanvas({ onConfigure }: { onConfigure: (key: string) => void }) {
+  const { t } = useTranslation(['mapBuilder'])
   const selectedItems = useMapBuilderStore((s) => s.selectedItems)
   const { setNodeRef, isOver } = useDroppable({ id: CANVAS_DROPPABLE_ID })
 
@@ -23,7 +25,7 @@ export function MapCanvas({ onConfigure }: { onConfigure: (key: string) => void 
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-2 border-b p-3">
         <LayoutGrid className="h-4 w-4 text-muted-foreground" />
-        <h3 className="text-sm font-semibold">Columns</h3>
+        <h3 className="text-sm font-semibold">{t('mapBuilder:canvas.title')}</h3>
         <Badge variant="secondary" className="ml-auto">
           {selectedItems.length}
         </Badge>
@@ -58,15 +60,14 @@ export function MapCanvas({ onConfigure }: { onConfigure: (key: string) => void 
 }
 
 function EmptyState({ isOver }: { isOver: boolean }) {
+  const { t } = useTranslation(['mapBuilder'])
   return (
     <div className="flex h-full min-h-[240px] flex-col items-center justify-center gap-2 text-center">
       <LayoutGrid className="h-10 w-10 text-muted-foreground/40" />
       <p className="text-sm font-medium text-muted-foreground">
-        {isOver ? 'Drop to add this column' : 'Drag items here to build your map'}
+        {isOver ? t('mapBuilder:canvas.emptyDropHint') : t('mapBuilder:canvas.emptyDragHint')}
       </p>
-      <p className="text-xs text-muted-foreground">
-        Pick dimensions and measures from the tree on the left.
-      </p>
+      <p className="text-xs text-muted-foreground">{t('mapBuilder:canvas.emptyPickHint')}</p>
     </div>
   )
 }
@@ -78,6 +79,7 @@ function ColumnRow({
   item: MapBuilderItem
   onConfigure: (key: string) => void
 }) {
+  const { t } = useTranslation(['mapBuilder'])
   const removeItem = useMapBuilderStore((s) => s.removeItem)
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: item.key, data: { type: 'canvas-item' } })
@@ -102,7 +104,7 @@ function ColumnRow({
       <button
         type="button"
         className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
-        aria-label="Reorder column"
+        aria-label={t('mapBuilder:canvas.reorderAria')}
         {...attributes}
         {...listeners}
       >
@@ -110,16 +112,16 @@ function ColumnRow({
       </button>
 
       {role === 'measure' ? (
-        <Sigma className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+        <Sigma className="h-4 w-4 shrink-0 text-chart-1" />
       ) : (
-        <Tag className="h-4 w-4 shrink-0 text-sky-600 dark:text-sky-400" />
+        <Tag className="h-4 w-4 shrink-0 text-chart-2" />
       )}
 
       <button
         type="button"
         onClick={() => onConfigure(item.key)}
         className="flex min-w-0 flex-1 items-center gap-2 text-left"
-        title="Configure column"
+        title={t('mapBuilder:canvas.configureTitle')}
       >
         <span className="truncate text-sm font-medium">{columnLabel(item)}</span>
         {agg && (
@@ -137,7 +139,7 @@ function ColumnRow({
         size="icon"
         className="h-7 w-7 shrink-0"
         onClick={() => removeItem(item.key)}
-        aria-label={`Remove ${columnLabel(item)}`}
+        aria-label={t('mapBuilder:canvas.removeAria', { label: columnLabel(item) })}
       >
         <X className="h-4 w-4" />
       </Button>

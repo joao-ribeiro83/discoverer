@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -10,6 +11,7 @@ import { ParametersPanel } from './ParametersPanel'
 import { CalculatedFieldsPanel } from './CalculatedFieldsPanel'
 
 export function RightPanelTabs() {
+  const { t } = useTranslation(['mapBuilder', 'common'])
   const description = useMapBuilderStore((s) => s.description)
   const isPublic = useMapBuilderStore((s) => s.isPublic)
   const selectedItems = useMapBuilderStore((s) => s.selectedItems)
@@ -25,16 +27,22 @@ export function RightPanelTabs() {
     <Tabs defaultValue="properties" className="flex h-full flex-col">
       <div className="overflow-x-auto border-b p-2">
         <TabsList className="w-max">
-          <TabsTrigger value="properties">Properties</TabsTrigger>
+          <TabsTrigger value="properties">{t('mapBuilder:panels.tabs.properties')}</TabsTrigger>
           <TabsTrigger value="conditions">
-            Conditions{conditions.length > 0 ? ` (${conditions.length})` : ''}
+            {t('mapBuilder:panels.tabs.conditions')}
+            {conditions.length > 0 ? ` (${conditions.length})` : ''}
           </TabsTrigger>
-          <TabsTrigger value="sort">Sort{sortedCount > 0 ? ` (${sortedCount})` : ''}</TabsTrigger>
+          <TabsTrigger value="sort">
+            {t('mapBuilder:panels.tabs.sort')}
+            {sortedCount > 0 ? ` (${sortedCount})` : ''}
+          </TabsTrigger>
           <TabsTrigger value="parameters">
-            Parameters{parameters.length > 0 ? ` (${parameters.length})` : ''}
+            {t('mapBuilder:panels.tabs.parameters')}
+            {parameters.length > 0 ? ` (${parameters.length})` : ''}
           </TabsTrigger>
           <TabsTrigger value="calc">
-            Calculated Fields{calculatedFields.length > 0 ? ` (${calculatedFields.length})` : ''}
+            {t('mapBuilder:panels.tabs.calculatedFields')}
+            {calculatedFields.length > 0 ? ` (${calculatedFields.length})` : ''}
           </TabsTrigger>
         </TabsList>
       </div>
@@ -42,13 +50,13 @@ export function RightPanelTabs() {
       <ScrollArea className="flex-1">
         <TabsContent value="properties" className="mt-0 space-y-4 p-4">
           <div className="space-y-2">
-            <Label htmlFor="map-description">Description</Label>
+            <Label htmlFor="map-description">{t('common:labels.description')}</Label>
             <Textarea
               id="map-description"
               rows={3}
               value={description ?? ''}
               onChange={(e) => setDescription(e.target.value || null)}
-              placeholder="Describe what this map reports on…"
+              placeholder={t('mapBuilder:panels.properties.descriptionPlaceholder')}
             />
           </div>
           <div className="flex items-center gap-2">
@@ -58,14 +66,26 @@ export function RightPanelTabs() {
               onCheckedChange={(v) => setIsPublic(v === true)}
             />
             <Label htmlFor="map-public" className="cursor-pointer">
-              Public (visible to everyone in the business area)
+              {t('mapBuilder:panels.properties.publicLabel')}
             </Label>
           </div>
           <dl className="space-y-1 rounded-md border p-3 text-sm">
-            <SummaryRow label="Columns" value={selectedItems.length} />
-            <SummaryRow label="Conditions" value={conditions.length} />
-            <SummaryRow label="Parameters" value={parameters.length} />
-            <SummaryRow label="Calculated fields" value={calculatedFields.length} />
+            <SummaryRow
+              label={t('mapBuilder:panels.properties.summary.columns')}
+              value={selectedItems.length}
+            />
+            <SummaryRow
+              label={t('mapBuilder:panels.properties.summary.conditions')}
+              value={conditions.length}
+            />
+            <SummaryRow
+              label={t('mapBuilder:panels.properties.summary.parameters')}
+              value={parameters.length}
+            />
+            <SummaryRow
+              label={t('mapBuilder:panels.properties.summary.calculatedFields')}
+              value={calculatedFields.length}
+            />
           </dl>
         </TabsContent>
 

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   DndContext,
@@ -40,6 +41,7 @@ import {
 type DragData = TreeItemDragData | { type: 'canvas-item' }
 
 export function MapBuilderPage() {
+  const { t } = useTranslation(['mapBuilder', 'common'])
   const { id } = useParams()
   const isNew = !id || id === 'new'
   const navigate = useNavigate()
@@ -121,7 +123,7 @@ export function MapBuilderPage() {
       } catch (err) {
         if (!cancelled) {
           toast({
-            title: 'Could not load map',
+            title: t('mapBuilder:page.loadFailedTitle'),
             description: getErrorMessage(err),
             variant: 'destructive',
           })
@@ -135,7 +137,7 @@ export function MapBuilderPage() {
     return () => {
       cancelled = true
     }
-  }, [id, isNew, toast])
+  }, [id, isNew, toast, t])
 
   // Reset the store when leaving so the next visit hydrates fresh.
   useEffect(() => () => useMapBuilderStore.getState().clearMap(), [])
@@ -152,36 +154,40 @@ export function MapBuilderPage() {
   const persist = useCallback(async (): Promise<MapWithDetails> => {
     const state = useMapBuilderStore.getState()
     if (state.selectedItems.length === 0) {
-      throw new Error('Add at least one column before saving.')
+      throw new Error(t('mapBuilder:page.saveErrorNoColumns'))
     }
     const input = state.toInput()
     let map: MapWithDetails
     if (state.mapId) {
       map = (await apiClient.maps.update(state.mapId, input)).data.data
     } else {
-      if (!state.businessAreaId) throw new Error('No business area selected.')
+      if (!state.businessAreaId) throw new Error(t('mapBuilder:page.saveErrorNoBusinessArea'))
       map = (await apiClient.maps.create(state.businessAreaId, input)).data.data
     }
     useMapBuilderStore.getState().markSaved(map.id)
     return map
-  }, [])
+  }, [t])
 
   const saveMutation = useMutation({
     mutationFn: persist,
     onSuccess: (map) => {
       maybeNavigate(map)
       void queryClient.invalidateQueries({ queryKey: ['maps'] })
-      toast({ title: 'Map saved' })
+      toast({ title: t('mapBuilder:page.savedTitle') })
     },
     onError: (err) =>
-      toast({ title: 'Save failed', description: getErrorMessage(err), variant: 'destructive' }),
+      toast({
+        title: t('mapBuilder:page.saveFailedTitle'),
+        description: getErrorMessage(err),
+        variant: 'destructive',
+      }),
   })
 
   const runMutation = useMutation({
     mutationFn: async (parameters: Record<string, unknown>): Promise<ExecuteResult> => {
       let state = useMapBuilderStore.getState()
       if (state.selectedItems.length === 0) {
-        throw new Error('Add at least one column before running.')
+        throw new Error(t('mapBuilder:page.runErrorNoColumns'))
       }
       // Execution needs a persisted, up-to-date map.
       if (!state.mapId || state.isDirty) {
@@ -195,17 +201,24 @@ export function MapBuilderPage() {
       setResult(res)
       setLastParameters(parameters)
       void queryClient.invalidateQueries({ queryKey: ['maps'] })
-      toast({ title: 'Map executed', description: `${res.rowCount} row(s) returned.` })
+      toast({
+        title: t('mapBuilder:page.executedTitle'),
+        description: t('mapBuilder:page.executedDescription', { count: res.rowCount }),
+      })
     },
     onError: (err) =>
-      toast({ title: 'Run failed', description: getErrorMessage(err), variant: 'destructive' }),
+      toast({
+        title: t('mapBuilder:page.runFailedTitle'),
+        description: getErrorMessage(err),
+        variant: 'destructive',
+      }),
   })
 
   /** Only prompt when at least one declared parameter lacks a usable default. */
   const triggerRun = useCallback(() => {
     const state = useMapBuilderStore.getState()
     if (state.selectedItems.length === 0) {
-      toast({ title: 'Add at least one column before running.' })
+      toast({ title: t('mapBuilder:page.runErrorNoColumns') })
       return
     }
     if (needsParameterPrompt(state.parameters)) {
@@ -217,7 +230,7 @@ export function MapBuilderPage() {
       if (p.defaultValue != null && p.defaultValue !== '') defaults[p.name] = p.defaultValue
     }
     runMutation.mutate(defaults)
-  }, [runMutation, toast])
+  }, [runMutation, toast, t])
 
   const handleParamPromptSubmit = useCallback(
     (values: Record<string, unknown>) => {
@@ -231,7 +244,10 @@ export function MapBuilderPage() {
     async (format: ExportFormat) => {
       const state = useMapBuilderStore.getState()
       if (!state.mapId) {
-        toast({ title: 'Save the map first', description: 'Export needs a saved map.' })
+        toast({
+          title: t('mapBuilder:page.saveMapFirstTitle'),
+          description: t('mapBuilder:page.saveMapFirstDescription'),
+        })
         return
       }
       if (format === 'xml') {
@@ -239,13 +255,17 @@ export function MapBuilderPage() {
           const xml = (await apiClient.maps.exportXml(state.mapId)).data
           downloadXml(xml, state.name)
         } catch (err) {
-          toast({ title: 'Export failed', description: getErrorMessage(err), variant: 'destructive' })
+          toast({
+            title: t('mapBuilder:page.exportFailedTitle'),
+            description: getErrorMessage(err),
+            variant: 'destructive',
+          })
         }
         return
       }
       exportCtl.exportFormat(format === 'csv' ? 'CSV' : 'XLSX')
     },
-    [exportCtl, toast],
+    [exportCtl, toast, t],
   )
 
   // --- drag and drop -------------------------------------------------------
@@ -287,10 +307,15 @@ export function MapBuilderPage() {
       if (!outcome.ok) {
         toast(
           outcome.reason === 'duplicate'
-            ? { title: 'Already added', description: `"${activeData.source.name}" is already on the canvas.` }
+            ? {
+                title: t('mapBuilder:page.duplicateTitle'),
+                description: t('mapBuilder:page.duplicateDescription', {
+                  name: activeData.source.name,
+                }),
+              }
             : {
-                title: 'Different business area',
-                description: 'All columns in a map must come from the same business area.',
+                title: t('mapBuilder:page.crossBusinessAreaTitle'),
+                description: t('mapBuilder:page.crossBusinessAreaDescription'),
                 variant: 'destructive',
               },
         )
@@ -305,7 +330,7 @@ export function MapBuilderPage() {
   if (hydrating) {
     return (
       <div className="flex h-full items-center justify-center text-muted-foreground">
-        <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Loading map…
+        <Loader2 className="mr-2 h-5 w-5 animate-spin" /> {t('mapBuilder:page.loading')}
       </div>
     )
   }
@@ -365,8 +390,12 @@ export function MapBuilderPage() {
                 'flex w-8 items-start justify-center py-3 text-muted-foreground hover:bg-accent hover:text-foreground',
                 rightOpen && 'border-l',
               )}
-              aria-label={rightOpen ? 'Collapse panel' : 'Expand panel'}
-              title={rightOpen ? 'Collapse panel' : 'Expand panel'}
+              aria-label={
+                rightOpen ? t('mapBuilder:page.collapsePanel') : t('mapBuilder:page.expandPanel')
+              }
+              title={
+                rightOpen ? t('mapBuilder:page.collapsePanel') : t('mapBuilder:page.expandPanel')
+              }
             >
               {rightOpen ? (
                 <PanelRightClose className="h-4 w-4" />

@@ -1,0 +1,112 @@
+{
+  "page": {
+    "title": "Migration",
+    "description": "Import an Oracle Discoverer End User Layer (EUL) into Discoverer Neo."
+  },
+  "actions": {
+    "detectVersion": "Detect version",
+    "analyze": "Analyze",
+    "runDryRun": "Run dry run",
+    "runMigration": "Run migration"
+  },
+  "source": {
+    "title": "Source",
+    "description": "Pick a registered Oracle data source. Its stored credentials are used on the server — passwords are never sent from this page. The migration always targets this Discoverer Neo database.",
+    "dataSourceLabel": "Oracle data source",
+    "selectDataSourcePlaceholder": "Select a data source",
+    "noOracleDataSources": "No Oracle data sources",
+    "schemaOwnerLabel": "EUL schema owner (optional)",
+    "schemaOwnerPlaceholder": "e.g. EUL5_US",
+    "versionLabel": "EUL version",
+    "autoDetect": "Auto-detect",
+    "forceEul4": "Force EUL4",
+    "forceEul5": "Force EUL5",
+    "dryRunLabel": "Dry run (validate without writing)",
+    "liveMigrationWarning": "A live migration writes into this Discoverer Neo database. Run a dry run first and review the report below."
+  },
+  "detected": {
+    "title": "Detected source",
+    "supported": "Supported",
+    "notSupported": "Not supported",
+    "discovererRelease": "Discoverer release",
+    "schemaVersion": "EUL schema version",
+    "schemaOwner": "Schema owner",
+    "tablesFound": "EUL tables found"
+  },
+  "assessment": {
+    "title": "Assessment",
+    "description": "Readiness {{score}}/100 ({{rating}}) · complexity {{complexity}} · estimated effort {{estimate}}",
+    "counts": {
+      "businessAreas": "Business areas",
+      "folders": "Folders",
+      "items": "Items",
+      "joins": "Joins",
+      "hierarchies": "Hierarchies",
+      "customFunctions": "Custom functions",
+      "workbooks": "Workbooks",
+      "conditions": "Conditions",
+      "securityConditions": "Security conditions",
+      "users": "Users",
+      "grants": "Grants",
+      "orphanedObjects": "Orphaned objects"
+    },
+    "blockers": "Blockers",
+    "warningsCount": "Warnings ({{count}})"
+  },
+  "job": {
+    "dryRunLabel": "Dry run",
+    "migrationLabel": "Migration",
+    "requestedVersion": "requested {{version}}",
+    "started": "Started",
+    "progressAriaLabel": "Migration progress",
+    "rowsPlanned": "Rows that would be inserted",
+    "rowsInserted": "Rows inserted",
+    "tableColumn": "Table",
+    "rowsColumn": "Rows",
+    "summary": "Summary",
+    "sourceIntegrity": "Source integrity: {{status}} ({{errorCount}} error(s), {{warningCount}} warning(s)). Skipped {{skippedCount}} object(s). Took {{duration}}s.",
+    "valid": "valid",
+    "invalid": "invalid",
+    "reconciliation": "Post-migration reconciliation: {{status}}",
+    "rowCountsMatch": "row counts match",
+    "mismatch": "MISMATCH",
+    "syntheticBusinessAreasNotice": "A “Migrated Workbooks” business area was created to host workbook maps; their worksheet layout must be rebuilt manually.",
+    "migratedAccountsNotice": "Migrated user accounts cannot sign in until an admin sets a password.",
+    "versionSpecificNotes": "Version-specific notes ({{count}})",
+    "logTitle": "Migration log",
+    "droppedLogsNotice": "({{count}} earlier line(s) trimmed)",
+    "noLogEntries": "No log entries yet."
+  },
+  "tables": {
+    "users": "Users",
+    "business_areas": "Business areas",
+    "folders": "Folders",
+    "items": "Items",
+    "joins": "Joins",
+    "hierarchies": "Hierarchies",
+    "hierarchy_levels": "Hierarchy levels",
+    "custom_functions": "Custom functions",
+    "maps": "Maps",
+    "map_items": "Map columns",
+    "user_business_area_grants": "Grants"
+  },
+  "toasts": {
+    "detectedTitle": "Detected {{version}}",
+    "detectedDescription": "Discoverer {{discovererVersion}} · schema {{schemaVersion}}",
+    "detectionFailed": "Detection failed",
+    "analysisComplete": "Analysis complete",
+    "analysisCompleteDescription": "Readiness {{score}}/100",
+    "analysisFailed": "Analysis failed",
+    "dryRunStarted": "Dry run started",
+    "migrationStarted": "Migration started",
+    "progressUpdatesBelow": "Progress updates below.",
+    "couldNotStart": "Could not start",
+    "dryRunComplete": "Dry run complete",
+    "migrationComplete": "Migration complete",
+    "noRowsWritten": "No rows were written.",
+    "migratedFrom": "Migrated from {{source}}.",
+    "theSource": "the source",
+    "migrationFailed": "Migration failed",
+    "seeLogBelow": "See the log below."
+  }
+}

@@ -1,15 +1,17 @@
 import { Suspense } from 'react'
 import { Outlet } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Loader2 } from 'lucide-react'
 import { Sidebar } from './Sidebar'
 import { Header } from './Header'
 
 function RouteFallback() {
+  const { t } = useTranslation('nav')
   return (
     <div
       className="flex h-64 items-center justify-center text-muted-foreground"
       role="status"
-      aria-label="Loading page"
+      aria-label={t('loadingPage')}
     >
       <Loader2 className="h-6 w-6 animate-spin" />
     </div>

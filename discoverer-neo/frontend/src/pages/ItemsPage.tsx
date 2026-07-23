@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { z } from 'zod'
+import { useTranslation } from 'react-i18next'
 import type { ColumnDef } from '@tanstack/react-table'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { apiClient, getErrorMessage } from '@/lib/api'
@@ -25,33 +26,41 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-const ITEM_TYPES = [
-  { value: 'CI', label: 'Column Item (CI)' },
-  { value: 'CU', label: 'Calculated Item (CU)' },
-  { value: 'CO', label: 'Condition (CO)' },
-  { value: 'JI', label: 'Join Item (JI)' },
-  { value: 'HI', label: 'Hierarchy Item (HI)' },
-  { value: 'AG', label: 'Aggregation (AG)' },
-  { value: 'FU', label: 'Function (FU)' },
-] as const
+const ITEM_TYPES = ['CI', 'CU', 'CO', 'JI', 'HI', 'AG', 'FU'] as const
+
+function buildItemTypeOptions(t: (key: string) => string) {
+  return [
+    { value: 'CI', label: t('admin:items.itemTypes.ci') },
+    { value: 'CU', label: t('admin:items.itemTypes.cu') },
+    { value: 'CO', label: t('admin:items.itemTypes.co') },
+    { value: 'JI', label: t('admin:items.itemTypes.ji') },
+    { value: 'HI', label: t('admin:items.itemTypes.hi') },
+    { value: 'AG', label: t('admin:items.itemTypes.ag') },
+    { value: 'FU', label: t('admin:items.itemTypes.fu') },
+  ] as const
+}
 
 const AGG_FUNCTIONS = ['NONE', 'SUM', 'COUNT', 'AVG', 'MIN', 'MAX'] as const
 
-const formSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(255),
-  description: z.string().optional(),
-  itemType: z.enum(['CI', 'CU', 'CO', 'JI', 'HI', 'AG', 'FU']),
-  columnName: z.string().optional(),
-  formula: z.string().optional(),
-  dataType: z.string().optional(),
-  formatMask: z.string().optional(),
-  aggFunction: z.string().optional(),
-})
-type FormValues = z.infer<typeof formSchema>
+function buildFormSchema(t: (key: string) => string) {
+  return z.object({
+    name: z.string().min(1, t('admin:shared.validation.nameRequired')).max(255),
+    description: z.string().optional(),
+    itemType: z.enum(ITEM_TYPES),
+    columnName: z.string().optional(),
+    formula: z.string().optional(),
+    dataType: z.string().optional(),
+    formatMask: z.string().optional(),
+    aggFunction: z.string().optional(),
+  })
+}
+type FormValues = z.infer<ReturnType<typeof buildFormSchema>>
 
 export function ItemsPage() {
+  const { t } = useTranslation(['admin', 'common'])
   const queryClient = useQueryClient()
   const { toast } = useToast()
+  const ITEM_TYPE_OPTIONS = buildItemTypeOptions(t)
 
   const [businessAreaId, setBusinessAreaId] = useState('')
   const [folderId, setFolderId] = useState('')
@@ -77,7 +86,7 @@ export function ItemsPage() {
   })
 
   const form = useForm<FormValues>({
-    resolver: standardSchemaResolver(formSchema),
+    resolver: standardSchemaResolver(buildFormSchema(t)),
     defaultValues: { name: '', description: '', itemType: 'CI', columnName: '', formula: '', dataType: '', formatMask: '', aggFunction: 'NONE' },
   })
 
@@ -122,12 +131,12 @@ export function ItemsPage() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['items', folderId] })
-      toast({ title: editing ? 'Item updated' : 'Item created' })
+      toast({ title: editing ? t('admin:items.toast.updated') : t('admin:items.toast.created') })
       setDialogOpen(false)
     },
     onError: (err) => {
       toast({
-        title: 'Save failed',
+        title: t('admin:shared.saveFailed'),
         description: getErrorMessage(err),
         variant: 'destructive',
       })
@@ -138,26 +147,26 @@ export function ItemsPage() {
     mutationFn: async (id: string) => apiClient.items.delete(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['items', folderId] })
-      toast({ title: 'Item deactivated' })
+      toast({ title: t('admin:items.toast.deactivated') })
       setDeleting(null)
     },
   })
 
   const columns: ColumnDef<Item>[] = [
-    { accessorKey: 'name', header: 'Name' },
-    { accessorKey: 'itemType', header: 'Type', cell: ({ row }) => <Badge variant="outline">{row.original.itemType}</Badge> },
-    { accessorKey: 'columnName', header: 'Column', cell: ({ row }) => row.original.columnName || '—' },
-    { accessorKey: 'dataType', header: 'Data Type', cell: ({ row }) => row.original.dataType || '—' },
-    { accessorKey: 'aggFunction', header: 'Aggregation', cell: ({ row }) => row.original.aggFunction || '—' },
+    { accessorKey: 'name', header: t('common:labels.name') },
+    { accessorKey: 'itemType', header: t('common:labels.type'), cell: ({ row }) => <Badge variant="outline">{row.original.itemType}</Badge> },
+    { accessorKey: 'columnName', header: t('admin:items.columns.column'), cell: ({ row }) => row.original.columnName || '—' },
+    { accessorKey: 'dataType', header: t('admin:items.columns.dataType'), cell: ({ row }) => row.original.dataType || '—' },
+    { accessorKey: 'aggFunction', header: t('admin:items.columns.aggregation'), cell: ({ row }) => row.original.aggFunction || '—' },
     {
       id: 'actions',
       header: '',
       cell: ({ row }) => (
         <div className="flex justify-end gap-1">
-          <Button variant="ghost" size="icon" onClick={() => openEdit(row.original)} title="Edit">
+          <Button variant="ghost" size="icon" onClick={() => openEdit(row.original)} title={t('common:actions.edit')}>
             <Pencil className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => setDeleting(row.original)} title="Delete">
+          <Button variant="ghost" size="icon" onClick={() => setDeleting(row.original)} title={t('common:actions.delete')}>
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
@@ -169,17 +178,17 @@ export function ItemsPage() {
 
   return (
     <AdminPageWrapper
-      title="Items"
-      description="Manage items exposed from folders — columns, calculations, and aggregations."
+      title={t('admin:items.title')}
+      description={t('admin:items.description')}
       action={
         <Button onClick={openCreate} disabled={!folderId}>
-          <Plus className="h-4 w-4" /> New Item
+          <Plus className="h-4 w-4" /> {t('admin:items.createButton')}
         </Button>
       }
     >
       <div className="flex gap-4">
         <div className="w-64 space-y-2">
-          <Label>Business Area</Label>
+          <Label>{t('admin:shared.businessAreaLabel')}</Label>
           <Select
             value={businessAreaId}
             onValueChange={(v) => {
@@ -187,8 +196,8 @@ export function ItemsPage() {
               setFolderId('')
             }}
           >
-            <SelectTrigger aria-label="Business Area">
-              <SelectValue placeholder="Select a business area" />
+            <SelectTrigger aria-label={t('admin:shared.businessAreaLabel')}>
+              <SelectValue placeholder={t('admin:shared.selectBusinessAreaPlaceholder')} />
             </SelectTrigger>
             <SelectContent>
               {(businessAreas ?? []).map((ba) => (
@@ -200,10 +209,10 @@ export function ItemsPage() {
           </Select>
         </div>
         <div className="w-64 space-y-2">
-          <Label>Folder</Label>
+          <Label>{t('admin:shared.folderLabel')}</Label>
           <Select value={folderId} onValueChange={setFolderId} disabled={!businessAreaId}>
-            <SelectTrigger aria-label="Folder">
-              <SelectValue placeholder="Select a folder" />
+            <SelectTrigger aria-label={t('admin:shared.folderLabel')}>
+              <SelectValue placeholder={t('admin:items.selectFolderPlaceholder')} />
             </SelectTrigger>
             <SelectContent>
               {(folders ?? []).map((f) => (
@@ -217,34 +226,34 @@ export function ItemsPage() {
       </div>
 
       {folderId ? (
-        <DataTable columns={columns} data={items ?? []} isLoading={isLoading} emptyMessage="No items in this folder yet." />
+        <DataTable columns={columns} data={items ?? []} isLoading={isLoading} emptyMessage={t('admin:items.emptyMessage')} />
       ) : (
-        <p className="text-sm text-muted-foreground">Select a business area and folder to view its items.</p>
+        <p className="text-sm text-muted-foreground">{t('admin:items.selectBusinessAreaPrompt')}</p>
       )}
 
-      <CreateEditDialog open={dialogOpen} onOpenChange={setDialogOpen} title={editing ? 'Edit Item' : 'New Item'}>
+      <CreateEditDialog open={dialogOpen} onOpenChange={setDialogOpen} title={editing ? t('admin:items.dialog.editTitle') : t('admin:items.dialog.createTitle')}>
         <form className="space-y-4" onSubmit={(e) => void form.handleSubmit((values) => saveMutation.mutate(values))(e)}>
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">{t('common:labels.name')}</Label>
             <Input id="name" {...form.register('name')} />
             {form.formState.errors.name && (
               <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{t('common:labels.description')}</Label>
             <Textarea id="description" {...form.register('description')} />
           </div>
           <div className="space-y-2">
-            <Label>Item Type</Label>
+            <Label>{t('admin:items.form.itemTypeLabel')}</Label>
             <Select value={itemType} onValueChange={(v) => form.setValue('itemType', v as FormValues['itemType'])}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {ITEM_TYPES.map((t) => (
-                  <SelectItem key={t.value} value={t.value}>
-                    {t.label}
+                {ITEM_TYPE_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -253,29 +262,29 @@ export function ItemsPage() {
 
           {itemType === 'CI' ? (
             <div className="space-y-2">
-              <Label htmlFor="columnName">Column Name</Label>
-              <Input id="columnName" {...form.register('columnName')} placeholder="e.g. CUSTOMER_ID" />
+              <Label htmlFor="columnName">{t('admin:items.form.columnNameLabel')}</Label>
+              <Input id="columnName" {...form.register('columnName')} placeholder={t('admin:items.form.columnNamePlaceholder')} />
             </div>
           ) : (
             <div className="space-y-2">
-              <Label htmlFor="formula">Formula</Label>
-              <Textarea id="formula" rows={4} {...form.register('formula')} placeholder="e.g. QUANTITY * UNIT_PRICE" />
+              <Label htmlFor="formula">{t('admin:items.form.formulaLabel')}</Label>
+              <Textarea id="formula" rows={4} {...form.register('formula')} placeholder={t('admin:items.form.formulaPlaceholder')} />
             </div>
           )}
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="dataType">Data Type</Label>
-              <Input id="dataType" {...form.register('dataType')} placeholder="e.g. NUMBER" />
+              <Label htmlFor="dataType">{t('admin:items.form.dataTypeLabel')}</Label>
+              <Input id="dataType" {...form.register('dataType')} placeholder={t('admin:items.form.dataTypePlaceholder')} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="formatMask">Format Mask</Label>
-              <Input id="formatMask" {...form.register('formatMask')} placeholder="e.g. 999,999.00" />
+              <Label htmlFor="formatMask">{t('admin:items.form.formatMaskLabel')}</Label>
+              <Input id="formatMask" {...form.register('formatMask')} placeholder={t('admin:items.form.formatMaskPlaceholder')} />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label>Aggregation</Label>
+            <Label>{t('admin:items.form.aggregationLabel')}</Label>
             <Select value={form.watch('aggFunction')} onValueChange={(v) => form.setValue('aggFunction', v)}>
               <SelectTrigger>
                 <SelectValue />
@@ -292,10 +301,10 @@ export function ItemsPage() {
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-              Cancel
+              {t('common:actions.cancel')}
             </Button>
             <Button type="submit" disabled={saveMutation.isPending}>
-              {saveMutation.isPending ? 'Saving...' : 'Save'}
+              {saveMutation.isPending ? t('admin:shared.saving') : t('common:actions.save')}
             </Button>
           </div>
         </form>
@@ -306,7 +315,7 @@ export function ItemsPage() {
           open={!!deleting}
           onOpenChange={(open) => !open && setDeleting(null)}
           itemName={deleting.name}
-          itemLabel="item"
+          itemLabel={t('admin:items.entityLabel')}
           onConfirm={() => deleteMutation.mutate(deleting.id)}
           isPending={deleteMutation.isPending}
         />

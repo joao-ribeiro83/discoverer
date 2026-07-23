@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import {
   AlertTriangle,
   CheckCircle2,
@@ -21,6 +22,8 @@ import type {
   MigrationTable,
 } from '@/lib/types'
 import { useToast } from '@/hooks/use-toast'
+import { useLocale } from '@/hooks/useLocale'
+import { formatDateTime } from '@/lib/format'
 import { AdminPageWrapper } from '@/components/admin/AdminPageWrapper'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -39,33 +42,32 @@ import {
 /** Poll interval while a migration job is running. */
 const JOB_POLL_MS = 1000
 
-const TABLE_LABELS: Record<MigrationTable, string> = {
-  users: 'Users',
-  business_areas: 'Business areas',
-  folders: 'Folders',
-  items: 'Items',
-  joins: 'Joins',
-  hierarchies: 'Hierarchies',
-  hierarchy_levels: 'Hierarchy levels',
-  custom_functions: 'Custom functions',
-  maps: 'Maps',
-  map_items: 'Map columns',
-  user_business_area_grants: 'Grants',
-}
-
-const TABLE_ORDER = Object.keys(TABLE_LABELS) as MigrationTable[]
+/** Target tables the migrator writes, in dependency order (see MigrationTable). */
+const TABLE_ORDER: MigrationTable[] = [
+  'users',
+  'business_areas',
+  'folders',
+  'items',
+  'joins',
+  'hierarchies',
+  'hierarchy_levels',
+  'custom_functions',
+  'maps',
+  'map_items',
+  'user_business_area_grants',
+]
 
 function VersionBadge({ version }: { version: string }) {
   const tone =
     version === 'EUL5'
-      ? 'bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200'
+      ? 'bg-success text-success-foreground'
       : version === 'EUL4'
-        ? 'bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200'
-        : 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200'
+        ? 'bg-info text-info-foreground'
+        : 'bg-warning text-warning-foreground'
   return <span className={`rounded px-2.5 py-1 text-lg font-bold tracking-tight ${tone}`}>{version}</span>
 }
 
-function ProgressBar({ value }: { value: number }) {
+function ProgressBar({ value, label }: { value: number; label: string }) {
   const clamped = Math.max(0, Math.min(100, value))
   return (
     <div
@@ -74,7 +76,7 @@ function ProgressBar({ value }: { value: number }) {
       aria-valuenow={clamped}
       aria-valuemin={0}
       aria-valuemax={100}
-      aria-label="Migration progress"
+      aria-label={label}
     >
       <div
         className="h-full rounded-full bg-primary transition-all duration-500"
@@ -86,12 +88,14 @@ function ProgressBar({ value }: { value: number }) {
 
 function severityIcon(severity: 'info' | 'warning' | 'error') {
   if (severity === 'error') return <XCircle className="h-4 w-4 shrink-0 text-destructive" />
-  if (severity === 'warning') return <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600" />
+  if (severity === 'warning') return <AlertTriangle className="h-4 w-4 shrink-0 text-warning" />
   return <Info className="h-4 w-4 shrink-0 text-muted-foreground" />
 }
 
 export function MigrationPage() {
+  const { t } = useTranslation(['migration', 'common'])
   const { toast } = useToast()
+  const { locale } = useLocale()
   const queryClient = useQueryClient()
 
   const [dataSourceId, setDataSourceId] = useState('')
@@ -130,12 +134,15 @@ export function MigrationPage() {
     onSuccess: (version) => {
       setDetected(version)
       toast({
-        title: `Detected ${version.version}`,
-        description: `Discoverer ${version.discovererVersion} · schema ${version.schemaVersion}`,
+        title: t('migration:toasts.detectedTitle', { version: version.version }),
+        description: t('migration:toasts.detectedDescription', {
+          discovererVersion: version.discovererVersion,
+          schemaVersion: version.schemaVersion,
+        }),
       })
     },
     onError: (err) =>
-      toast({ title: 'Detection failed', description: getErrorMessage(err), variant: 'destructive' }),
+      toast({ title: t('migration:toasts.detectionFailed'), description: getErrorMessage(err), variant: 'destructive' }),
   })
 
   const analyzeMutation = useMutation({
@@ -144,10 +151,13 @@ export function MigrationPage() {
     onSuccess: (result) => {
       setReport(result)
       setDetected(result.version)
-      toast({ title: 'Analysis complete', description: `Readiness ${result.readiness.score}/100` })
+      toast({
+        title: t('migration:toasts.analysisComplete'),
+        description: t('migration:toasts.analysisCompleteDescription', { score: result.readiness.score }),
+      })
     },
     onError: (err) =>
-      toast({ title: 'Analysis failed', description: getErrorMessage(err), variant: 'destructive' }),
+      toast({ title: t('migration:toasts.analysisFailed'), description: getErrorMessage(err), variant: 'destructive' }),
   })
 
   const runMutation = useMutation({
@@ -163,12 +173,12 @@ export function MigrationPage() {
     onSuccess: (started) => {
       setActiveJobId(started.id)
       toast({
-        title: dryRun ? 'Dry run started' : 'Migration started',
-        description: 'Progress updates below.',
+        title: dryRun ? t('migration:toasts.dryRunStarted') : t('migration:toasts.migrationStarted'),
+        description: t('migration:toasts.progressUpdatesBelow'),
       })
     },
     onError: (err) =>
-      toast({ title: 'Could not start', description: getErrorMessage(err), variant: 'destructive' }),
+      toast({ title: t('migration:toasts.couldNotStart'), description: getErrorMessage(err), variant: 'destructive' }),
   })
 
   // Announce the outcome once, when the job leaves RUNNING.
@@ -178,22 +188,24 @@ export function MigrationPage() {
     if (lastStatusRef.current === 'RUNNING' || lastStatusRef.current === null) {
       if (job.status === 'COMPLETED') {
         toast({
-          title: job.dryRun ? 'Dry run complete' : 'Migration complete',
+          title: job.dryRun ? t('migration:toasts.dryRunComplete') : t('migration:toasts.migrationComplete'),
           description: job.dryRun
-            ? 'No rows were written.'
-            : `Migrated from ${job.detectedVersion ?? 'the source'}.`,
+            ? t('migration:toasts.noRowsWritten')
+            : t('migration:toasts.migratedFrom', {
+                source: job.detectedVersion ?? t('migration:toasts.theSource'),
+              }),
         })
         if (!job.dryRun) void queryClient.invalidateQueries({ queryKey: ['business-areas'] })
       } else if (job.status === 'FAILED') {
         toast({
-          title: 'Migration failed',
-          description: job.error ?? 'See the log below.',
+          title: t('migration:toasts.migrationFailed'),
+          description: job.error ?? t('migration:toasts.seeLogBelow'),
           variant: 'destructive',
         })
       }
     }
     lastStatusRef.current = job.status
-  }, [job, toast, queryClient])
+  }, [job, toast, queryClient, t])
 
   // Keep the log viewer pinned to the newest line.
   useEffect(() => {
@@ -209,28 +221,26 @@ export function MigrationPage() {
 
   return (
     <AdminPageWrapper
-      title="Migration"
-      description="Import an Oracle Discoverer End User Layer (EUL) into Discoverer Neo."
+      title={t('migration:page.title')}
+      description={t('migration:page.description')}
     >
       {/* ---------------------------------------------------------------- */}
       {/* Source configuration                                             */}
       {/* ---------------------------------------------------------------- */}
       <Card>
         <CardHeader>
-          <CardTitle>Source</CardTitle>
+          <CardTitle>{t('migration:source.title')}</CardTitle>
           <CardDescription>
-            Pick a registered Oracle data source. Its stored credentials are used on the server —
-            passwords are never sent from this page. The migration always targets this
-            Discoverer&nbsp;Neo database.
+            {t('migration:source.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
-              <Label htmlFor="migration-source">Oracle data source</Label>
+              <Label htmlFor="migration-source">{t('migration:source.dataSourceLabel')}</Label>
               <Select value={dataSourceId} onValueChange={setDataSourceId}>
-                <SelectTrigger id="migration-source" aria-label="Oracle data source">
-                  <SelectValue placeholder={oracleSources.length ? 'Select a data source' : 'No Oracle data sources'} />
+                <SelectTrigger id="migration-source" aria-label={t('migration:source.dataSourceLabel')}>
+                  <SelectValue placeholder={oracleSources.length ? t('migration:source.selectDataSourcePlaceholder') : t('migration:source.noOracleDataSources')} />
                 </SelectTrigger>
                 <SelectContent>
                   {oracleSources.map((ds: DataSource) => (
@@ -243,28 +253,28 @@ export function MigrationPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="migration-schema-owner">EUL schema owner (optional)</Label>
+              <Label htmlFor="migration-schema-owner">{t('migration:source.schemaOwnerLabel')}</Label>
               <Input
                 id="migration-schema-owner"
-                placeholder="e.g. EUL5_US"
+                placeholder={t('migration:source.schemaOwnerPlaceholder')}
                 value={schemaOwner}
                 onChange={(e) => setSchemaOwner(e.target.value)}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="migration-version">EUL version</Label>
+              <Label htmlFor="migration-version">{t('migration:source.versionLabel')}</Label>
               <Select
                 value={versionOverride}
                 onValueChange={(v) => setVersionOverride(v as 'auto' | 'EUL4' | 'EUL5')}
               >
-                <SelectTrigger id="migration-version" aria-label="EUL version">
+                <SelectTrigger id="migration-version" aria-label={t('migration:source.versionLabel')}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="auto">Auto-detect</SelectItem>
-                  <SelectItem value="EUL4">Force EUL4</SelectItem>
-                  <SelectItem value="EUL5">Force EUL5</SelectItem>
+                  <SelectItem value="auto">{t('migration:source.autoDetect')}</SelectItem>
+                  <SelectItem value="EUL4">{t('migration:source.forceEul4')}</SelectItem>
+                  <SelectItem value="EUL5">{t('migration:source.forceEul5')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -277,7 +287,7 @@ export function MigrationPage() {
               ) : (
                 <ScanSearch className="mr-2 h-4 w-4" />
               )}
-              Detect version
+              {t('migration:actions.detectVersion')}
             </Button>
             <Button variant="outline" onClick={() => analyzeMutation.mutate()} disabled={!canAct}>
               {analyzeMutation.isPending ? (
@@ -285,7 +295,7 @@ export function MigrationPage() {
               ) : (
                 <FileSearch className="mr-2 h-4 w-4" />
               )}
-              Analyze
+              {t('migration:actions.analyze')}
             </Button>
 
             <div className="flex items-center gap-2">
@@ -295,7 +305,7 @@ export function MigrationPage() {
                 onCheckedChange={(v) => setDryRun(v === true)}
               />
               <Label htmlFor="migration-dry-run" className="cursor-pointer font-normal">
-                Dry run (validate without writing)
+                {t('migration:source.dryRunLabel')}
               </Label>
             </div>
 
@@ -305,15 +315,14 @@ export function MigrationPage() {
               ) : (
                 <Play className="mr-2 h-4 w-4" />
               )}
-              {dryRun ? 'Run dry run' : 'Run migration'}
+              {dryRun ? t('migration:actions.runDryRun') : t('migration:actions.runMigration')}
             </Button>
           </div>
 
           {!dryRun && (
-            <p className="flex items-start gap-2 text-sm text-amber-700 dark:text-amber-500">
+            <p className="flex items-start gap-2 text-sm text-warning">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-              A live migration writes into this Discoverer Neo database. Run a dry run first and
-              review the report below.
+              {t('migration:source.liveMigrationWarning')}
             </p>
           )}
         </CardContent>
@@ -327,31 +336,31 @@ export function MigrationPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
               <Database className="h-5 w-5" />
-              Detected source
+              {t('migration:detected.title')}
               <VersionBadge version={detected.version} />
               {detected.supported ? (
-                <Badge variant="secondary">Supported</Badge>
+                <Badge variant="secondary">{t('migration:detected.supported')}</Badge>
               ) : (
-                <Badge variant="destructive">Not supported</Badge>
+                <Badge variant="destructive">{t('migration:detected.notSupported')}</Badge>
               )}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <dl className="grid gap-x-6 gap-y-2 sm:grid-cols-2 lg:grid-cols-4">
               <div>
-                <dt className="text-muted-foreground">Discoverer release</dt>
+                <dt className="text-muted-foreground">{t('migration:detected.discovererRelease')}</dt>
                 <dd className="font-medium">{detected.discovererVersion}</dd>
               </div>
               <div>
-                <dt className="text-muted-foreground">EUL schema version</dt>
+                <dt className="text-muted-foreground">{t('migration:detected.schemaVersion')}</dt>
                 <dd className="font-medium">{detected.schemaVersion}</dd>
               </div>
               <div>
-                <dt className="text-muted-foreground">Schema owner</dt>
+                <dt className="text-muted-foreground">{t('migration:detected.schemaOwner')}</dt>
                 <dd className="font-medium">{detected.owner ?? '—'}</dd>
               </div>
               <div>
-                <dt className="text-muted-foreground">EUL tables found</dt>
+                <dt className="text-muted-foreground">{t('migration:detected.tablesFound')}</dt>
                 <dd className="font-medium">{detected.tableNames.length}</dd>
               </div>
             </dl>
@@ -359,7 +368,7 @@ export function MigrationPage() {
               <ul className="space-y-1">
                 {detected.warnings.map((w) => (
                   <li key={w} className="flex items-start gap-2 text-muted-foreground">
-                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
                     {w}
                   </li>
                 ))}
@@ -375,28 +384,32 @@ export function MigrationPage() {
       {report && (
         <Card>
           <CardHeader>
-            <CardTitle>Assessment</CardTitle>
+            <CardTitle>{t('migration:assessment.title')}</CardTitle>
             <CardDescription>
-              Readiness {report.readiness.score}/100 ({report.readiness.rating}) · complexity{' '}
-              {report.complexity.score} · estimated effort {report.estimate.humanReadable}
+              {t('migration:assessment.description', {
+                score: report.readiness.score,
+                rating: report.readiness.rating,
+                complexity: report.complexity.score,
+                estimate: report.estimate.humanReadable,
+              })}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-sm">
             <dl className="grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-3 lg:grid-cols-6">
               {(
                 [
-                  ['Business areas', report.counts.businessAreas],
-                  ['Folders', report.counts.folders],
-                  ['Items', report.counts.items],
-                  ['Joins', report.counts.joins],
-                  ['Hierarchies', report.counts.hierarchies],
-                  ['Custom functions', report.counts.customFunctions],
-                  ['Workbooks', report.counts.workbooks],
-                  ['Conditions', report.counts.conditions],
-                  ['Security conditions', report.counts.securityConditions],
-                  ['Users', report.counts.users],
-                  ['Grants', report.counts.grants],
-                  ['Orphaned objects', report.orphans.total],
+                  [t('migration:assessment.counts.businessAreas'), report.counts.businessAreas],
+                  [t('migration:assessment.counts.folders'), report.counts.folders],
+                  [t('migration:assessment.counts.items'), report.counts.items],
+                  [t('migration:assessment.counts.joins'), report.counts.joins],
+                  [t('migration:assessment.counts.hierarchies'), report.counts.hierarchies],
+                  [t('migration:assessment.counts.customFunctions'), report.counts.customFunctions],
+                  [t('migration:assessment.counts.workbooks'), report.counts.workbooks],
+                  [t('migration:assessment.counts.conditions'), report.counts.conditions],
+                  [t('migration:assessment.counts.securityConditions'), report.counts.securityConditions],
+                  [t('migration:assessment.counts.users'), report.counts.users],
+                  [t('migration:assessment.counts.grants'), report.counts.grants],
+                  [t('migration:assessment.counts.orphanedObjects'), report.orphans.total],
                 ] as const
               ).map(([label, value]) => (
                 <div key={label}>
@@ -408,7 +421,7 @@ export function MigrationPage() {
 
             {report.readiness.blockers.length > 0 && (
               <div className="space-y-1">
-                <h4 className="font-medium text-destructive">Blockers</h4>
+                <h4 className="font-medium text-destructive">{t('migration:assessment.blockers')}</h4>
                 {report.readiness.blockers.map((b) => (
                   <p key={b} className="flex items-start gap-2">
                     <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
@@ -420,7 +433,7 @@ export function MigrationPage() {
 
             {report.warnings.length > 0 && (
               <div className="space-y-1">
-                <h4 className="font-medium">Warnings ({report.warnings.length})</h4>
+                <h4 className="font-medium">{t('migration:assessment.warningsCount', { count: report.warnings.length })}</h4>
                 <ul className="space-y-1">
                   {report.warnings.map((w, i) => (
                     <li key={`${w.code}-${i}`} className="flex items-start gap-2">
@@ -446,22 +459,22 @@ export function MigrationPage() {
           <CardHeader>
             <CardTitle className="flex flex-wrap items-center gap-3">
               {job.status === 'RUNNING' && <Loader2 className="h-5 w-5 animate-spin" />}
-              {job.status === 'COMPLETED' && <CheckCircle2 className="h-5 w-5 text-emerald-600" />}
+              {job.status === 'COMPLETED' && <CheckCircle2 className="h-5 w-5 text-success" />}
               {job.status === 'FAILED' && <XCircle className="h-5 w-5 text-destructive" />}
-              {job.dryRun ? 'Dry run' : 'Migration'} — {job.status}
+              {job.dryRun ? t('migration:job.dryRunLabel') : t('migration:job.migrationLabel')} — {job.status}
               {job.detectedVersion && <VersionBadge version={job.detectedVersion} />}
               {job.requestedVersion !== 'auto' && (
-                <Badge variant="outline">requested {job.requestedVersion}</Badge>
+                <Badge variant="outline">{t('migration:job.requestedVersion', { version: job.requestedVersion })}</Badge>
               )}
             </CardTitle>
             <CardDescription>
-              Started {new Date(job.startedAt).toLocaleString()}
+              {t('migration:job.started')} {formatDateTime(job.startedAt, locale)}
               {job.currentPhase && ` · ${job.currentPhase}`}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-1">
-              <ProgressBar value={job.progress} />
+              <ProgressBar value={job.progress} label={t('migration:job.progressAriaLabel')} />
               <p className="text-right text-xs text-muted-foreground">{job.progress}%</p>
             </div>
 
@@ -476,20 +489,20 @@ export function MigrationPage() {
             {counts && (
               <div>
                 <h4 className="mb-2 text-sm font-medium">
-                  {job.dryRun ? 'Rows that would be inserted' : 'Rows inserted'}
+                  {job.dryRun ? t('migration:job.rowsPlanned') : t('migration:job.rowsInserted')}
                 </h4>
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[420px] text-sm">
                     <thead>
                       <tr className="border-b text-left text-muted-foreground">
-                        <th className="py-1 font-medium">Table</th>
-                        <th className="py-1 text-right font-medium">Rows</th>
+                        <th className="py-1 font-medium">{t('migration:job.tableColumn')}</th>
+                        <th className="py-1 text-right font-medium">{t('migration:job.rowsColumn')}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {TABLE_ORDER.map((table) => (
                         <tr key={table} className="border-b last:border-0">
-                          <td className="py-1">{TABLE_LABELS[table]}</td>
+                          <td className="py-1">{t(`migration:tables.${table}`)}</td>
                           <td className="py-1 text-right tabular-nums">{counts[table]}</td>
                         </tr>
                       ))}
@@ -502,21 +515,25 @@ export function MigrationPage() {
             {/* Post-migration summary */}
             {result && (
               <div className="space-y-2 rounded border p-3 text-sm">
-                <h4 className="font-medium">Summary</h4>
+                <h4 className="font-medium">{t('migration:job.summary')}</h4>
                 <p className="text-muted-foreground">
-                  Source integrity: {result.sourceValidation.valid ? 'valid' : 'invalid'} (
-                  {result.sourceValidation.errorCount} error(s),{' '}
-                  {result.sourceValidation.warningCount} warning(s)). Skipped{' '}
-                  {result.skipped.length} object(s). Took {(result.durationMs / 1000).toFixed(1)}s.
+                  {t('migration:job.sourceIntegrity', {
+                    status: result.sourceValidation.valid ? t('migration:job.valid') : t('migration:job.invalid'),
+                    errorCount: result.sourceValidation.errorCount,
+                    warningCount: result.sourceValidation.warningCount,
+                    skippedCount: result.skipped.length,
+                    duration: (result.durationMs / 1000).toFixed(1),
+                  })}
                 </p>
                 {result.validation && (
                   <p
                     className={
-                      result.validation.valid ? 'text-emerald-700 dark:text-emerald-500' : 'text-destructive'
+                      result.validation.valid ? 'text-success' : 'text-destructive'
                     }
                   >
-                    Post-migration reconciliation:{' '}
-                    {result.validation.valid ? 'row counts match' : 'MISMATCH'}
+                    {t('migration:job.reconciliation', {
+                      status: result.validation.valid ? t('migration:job.rowCountsMatch') : t('migration:job.mismatch'),
+                    })}
                     {result.validation.issues.map((issue) => (
                       <span key={issue} className="block">
                         {issue}
@@ -526,19 +543,18 @@ export function MigrationPage() {
                 )}
                 {result.syntheticBusinessAreas > 0 && (
                   <p className="text-muted-foreground">
-                    A “Migrated Workbooks” business area was created to host workbook maps; their
-                    worksheet layout must be rebuilt manually.
+                    {t('migration:job.syntheticBusinessAreasNotice')}
                   </p>
                 )}
                 {!result.dryRun && (
                   <p className="text-muted-foreground">
-                    Migrated user accounts cannot sign in until an admin sets a password.
+                    {t('migration:job.migratedAccountsNotice')}
                   </p>
                 )}
                 {result.warnings.length > 0 && (
                   <details>
                     <summary className="cursor-pointer font-medium">
-                      Version-specific notes ({result.warnings.length})
+                      {t('migration:job.versionSpecificNotes', { count: result.warnings.length })}
                     </summary>
                     <ul className="mt-2 space-y-1">
                       {Object.entries(
@@ -550,7 +566,7 @@ export function MigrationPage() {
                         .sort((a, b) => b[1] - a[1])
                         .map(([code, n]) => (
                           <li key={code} className="flex items-start gap-2">
-                            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
                             <span>
                               <span className="font-mono text-xs">{code}</span> ×{n} —{' '}
                               {result.warnings.find((w) => w.code === code)?.message}
@@ -566,20 +582,20 @@ export function MigrationPage() {
             {/* Log viewer */}
             <div>
               <h4 className="mb-2 text-sm font-medium">
-                Migration log
+                {t('migration:job.logTitle')}
                 {job.droppedLogs > 0 && (
                   <span className="ml-2 text-xs font-normal text-muted-foreground">
-                    ({job.droppedLogs} earlier line(s) trimmed)
+                    {t('migration:job.droppedLogsNotice', { count: job.droppedLogs })}
                   </span>
                 )}
               </h4>
               <div
                 className="max-h-72 overflow-y-auto rounded border bg-muted/40 p-3 font-mono text-xs"
                 role="log"
-                aria-label="Migration log"
+                aria-label={t('migration:job.logTitle')}
               >
                 {job.logs.length === 0 ? (
-                  <p className="text-muted-foreground">No log entries yet.</p>
+                  <p className="text-muted-foreground">{t('migration:job.noLogEntries')}</p>
                 ) : (
                   job.logs.map((line, i) => (
                     <div key={`${line.at}-${i}`} className="flex gap-2">
@@ -588,7 +604,7 @@ export function MigrationPage() {
                           line.level === 'ERROR'
                             ? 'text-destructive'
                             : line.level === 'WARN'
-                              ? 'text-amber-600'
+                              ? 'text-warning'
                               : 'text-muted-foreground'
                         }
                       >

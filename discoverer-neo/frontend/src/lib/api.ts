@@ -110,6 +110,15 @@ interface AuthUser {
   email: string
   name: string
   role: string
+  // Added in Session 7.1 — the user's saved UI preferences.
+  locale?: string
+  theme?: string
+}
+
+/** User preferences payload (Session 7.1 backend: /api/users/me/preferences). */
+export interface UserPreferences {
+  locale: string
+  theme: string
 }
 
 // Typed API client — placeholder methods for future endpoints
@@ -221,6 +230,11 @@ export const apiClient = {
     // Unlike the CRUD methods above (admin-only), search is available to any
     // authenticated user — it backs the map-sharing user picker.
     search: (q: string) => api.get<Envelope<UserOption[]>>('/users/search', { params: { q } }),
+    // Current user's UI preferences (locale/theme). Available to any
+    // authenticated user for their own row (Session 7.1).
+    getPreferences: () => api.get<Envelope<UserPreferences>>('/users/me/preferences'),
+    updatePreferences: (data: Partial<UserPreferences>) =>
+      api.patch<Envelope<UserPreferences>>('/users/me/preferences', data),
   },
   // Maps
   // Note: maps are created under a business area

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Plus, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -22,6 +23,7 @@ function inputType(paramType: MapParameter['paramType']): 'text' | 'number' | 'd
 }
 
 export function ParametersPanel() {
+  const { t } = useTranslation(['mapBuilder', 'common'])
   const parameters = useMapBuilderStore((s) => s.parameters)
   const addParameter = useMapBuilderStore((s) => s.addParameter)
   const removeParameter = useMapBuilderStore((s) => s.removeParameter)
@@ -30,16 +32,14 @@ export function ParametersPanel() {
   return (
     <div className="space-y-4 p-4">
       <div className="flex items-center justify-between gap-2">
-        <h4 className="text-sm font-semibold">Parameters</h4>
+        <h4 className="text-sm font-semibold">{t('mapBuilder:panels.parameters.title')}</h4>
         <Button size="sm" onClick={addParameter}>
-          <Plus className="h-3.5 w-3.5" /> Add Parameter
+          <Plus className="h-3.5 w-3.5" /> {t('mapBuilder:panels.parameters.addButton')}
         </Button>
       </div>
 
       {parameters.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          No parameters. Add one to prompt users at run time.
-        </p>
+        <p className="text-sm text-muted-foreground">{t('mapBuilder:panels.parameters.empty')}</p>
       ) : (
         <div className="space-y-3">
           {parameters.map((p) => (
@@ -55,12 +55,14 @@ export function ParametersPanel() {
 
       {parameters.length > 0 && (
         <div className="space-y-2 border-t pt-3">
-          <Label className="text-xs text-muted-foreground">Run-time prompt preview</Label>
+          <Label className="text-xs text-muted-foreground">
+            {t('mapBuilder:panels.parameters.previewLabel')}
+          </Label>
           <div className="space-y-3 rounded-md border bg-muted/30 p-3">
             {parameters.map((p) => (
               <div key={p.key} className="space-y-1">
                 <Label className="text-xs">
-                  {p.name || 'Unnamed parameter'}
+                  {p.name || t('mapBuilder:panels.parameters.unnamed')}
                   {p.isRequired && <span className="text-destructive"> *</span>}
                 </Label>
                 <PreviewInput parameter={p} />
@@ -82,6 +84,7 @@ function ParameterRow({
   onUpdate: (patch: Partial<Omit<MapBuilderParameter, 'key'>>) => void
   onRemove: () => void
 }) {
+  const { t } = useTranslation(['mapBuilder', 'common'])
   return (
     <div className="space-y-2 rounded-md border bg-card p-2">
       <div className="flex gap-2">
@@ -89,20 +92,20 @@ function ParameterRow({
           className="h-8 flex-1"
           value={parameter.name}
           onChange={(e) => onUpdate({ name: e.target.value })}
-          placeholder="Parameter name"
-          aria-label="Parameter name"
+          placeholder={t('mapBuilder:panels.parameters.namePlaceholder')}
+          aria-label={t('mapBuilder:panels.parameters.nameAria')}
         />
         <Select
           value={parameter.paramType}
           onValueChange={(v) => onUpdate({ paramType: v as MapBuilderParameter['paramType'] })}
         >
-          <SelectTrigger className="h-8 w-28" aria-label="Parameter type">
+          <SelectTrigger className="h-8 w-28" aria-label={t('mapBuilder:panels.parameters.typeAria')}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {PARAM_TYPES.map((t) => (
-              <SelectItem key={t} value={t}>
-                {t}
+            {PARAM_TYPES.map((pt) => (
+              <SelectItem key={pt} value={pt}>
+                {pt}
               </SelectItem>
             ))}
           </SelectContent>
@@ -113,7 +116,7 @@ function ParameterRow({
           size="icon"
           className="h-8 w-8 shrink-0"
           onClick={onRemove}
-          aria-label={`Delete parameter ${parameter.name || ''}`}
+          aria-label={t('mapBuilder:panels.parameters.deleteAria', { name: parameter.name || '' })}
         >
           <X className="h-4 w-4" />
         </Button>
@@ -128,7 +131,7 @@ function ParameterRow({
           onCheckedChange={(v) => onUpdate({ isRequired: v === true })}
         />
         <Label htmlFor={`param-required-${parameter.key}`} className="cursor-pointer text-xs">
-          Required
+          {t('common:labels.required')}
         </Label>
       </div>
     </div>
@@ -142,7 +145,11 @@ function DefaultValueInput({
   parameter: MapBuilderParameter
   onChange: (value: string | null) => void
 }) {
-  const placeholder = parameter.paramType === 'LIST' ? 'comma, separated, values' : 'Default value'
+  const { t } = useTranslation(['mapBuilder'])
+  const placeholder =
+    parameter.paramType === 'LIST'
+      ? t('mapBuilder:panels.parameters.defaultValueListPlaceholder')
+      : t('mapBuilder:panels.parameters.defaultValuePlaceholder')
   return (
     <Input
       className="h-8"
@@ -150,19 +157,24 @@ function DefaultValueInput({
       value={parameter.defaultValue ?? ''}
       placeholder={placeholder}
       onChange={(e) => onChange(e.target.value === '' ? null : e.target.value)}
-      aria-label="Default value"
+      aria-label={t('mapBuilder:panels.parameters.defaultValueAria')}
     />
   )
 }
 
 function PreviewInput({ parameter }: { parameter: MapBuilderParameter }) {
+  const { t } = useTranslation(['mapBuilder'])
   return (
     <Input
       className="h-8"
       type={inputType(parameter.paramType)}
       disabled
       defaultValue={parameter.defaultValue ?? ''}
-      placeholder={parameter.paramType === 'LIST' ? 'comma, separated, values' : 'Enter a value'}
+      placeholder={
+        parameter.paramType === 'LIST'
+          ? t('mapBuilder:panels.parameters.defaultValueListPlaceholder')
+          : t('mapBuilder:panels.parameters.previewValuePlaceholder')
+      }
     />
   )
 }

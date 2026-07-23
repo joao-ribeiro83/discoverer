@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { z } from 'zod'
+import { useTranslation } from 'react-i18next'
 import type { ColumnDef } from '@tanstack/react-table'
 import { Plug, Plus, Pencil, Trash2, Search, Download } from 'lucide-react'
 import { apiClient, getErrorMessage } from '@/lib/api'
@@ -26,20 +27,23 @@ import {
 } from '@/components/ui/select'
 import { formatDate } from '@/lib/utils'
 
-const formSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(255),
-  description: z.string().optional(),
-  connectionType: z.enum(['oracle', 'postgres']),
-  host: z.string().optional(),
-  port: z.coerce.number().int().positive().optional().or(z.literal('')),
-  serviceName: z.string().optional(),
-  sid: z.string().optional(),
-  username: z.string().optional(),
-  password: z.string().optional(),
-})
-type FormValues = z.infer<typeof formSchema>
+function buildFormSchema(t: (key: string) => string) {
+  return z.object({
+    name: z.string().min(1, t('admin:shared.validation.nameRequired')).max(255),
+    description: z.string().optional(),
+    connectionType: z.enum(['oracle', 'postgres']),
+    host: z.string().optional(),
+    port: z.coerce.number().int().positive().optional().or(z.literal('')),
+    serviceName: z.string().optional(),
+    sid: z.string().optional(),
+    username: z.string().optional(),
+    password: z.string().optional(),
+  })
+}
+type FormValues = z.infer<ReturnType<typeof buildFormSchema>>
 
 export function DataSourcesPage() {
+  const { t } = useTranslation(['admin', 'common'])
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
@@ -55,7 +59,7 @@ export function DataSourcesPage() {
   })
 
   const form = useForm<FormValues>({
-    resolver: standardSchemaResolver(formSchema),
+    resolver: standardSchemaResolver(buildFormSchema(t)),
     defaultValues: { name: '', description: '', connectionType: 'oracle' },
   })
 
@@ -102,12 +106,12 @@ export function DataSourcesPage() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['data-sources'] })
-      toast({ title: editing ? 'Data source updated' : 'Data source created' })
+      toast({ title: editing ? t('admin:dataSources.toast.updated') : t('admin:dataSources.toast.created') })
       setDialogOpen(false)
     },
     onError: (err) => {
       toast({
-        title: 'Save failed',
+        title: t('admin:shared.saveFailed'),
         description: getErrorMessage(err),
         variant: 'destructive',
       })
@@ -118,7 +122,7 @@ export function DataSourcesPage() {
     mutationFn: async (id: string) => apiClient.dataSources.delete(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['data-sources'] })
-      toast({ title: 'Data source deactivated' })
+      toast({ title: t('admin:dataSources.toast.deactivated') })
       setDeleting(null)
     },
   })
@@ -128,14 +132,14 @@ export function DataSourcesPage() {
     onSuccess: (result, id) => {
       setTestResult({ id, success: result.success, message: result.message })
       toast({
-        title: result.success ? 'Connection succeeded' : 'Connection failed',
+        title: result.success ? t('admin:dataSources.toast.connectionSucceeded') : t('admin:dataSources.toast.connectionFailed'),
         description: result.message,
         variant: result.success ? 'default' : 'destructive',
       })
     },
     onError: (err) => {
       toast({
-        title: 'Test failed',
+        title: t('admin:dataSources.toast.testFailed'),
         description: getErrorMessage(err),
         variant: 'destructive',
       })
@@ -145,11 +149,11 @@ export function DataSourcesPage() {
   const introspectMutation = useMutation({
     mutationFn: async (id: string) => (await apiClient.dataSources.introspect(id)).data.data,
     onSuccess: (result) => {
-      toast({ title: 'Introspection complete', description: `Discovered ${result.count} table(s).` })
+      toast({ title: t('admin:dataSources.toast.introspectionComplete'), description: t('admin:dataSources.toast.introspectionCompleteDescription', { count: result.count }) })
     },
     onError: (err) => {
       toast({
-        title: 'Introspection failed',
+        title: t('admin:dataSources.toast.introspectionFailed'),
         description: getErrorMessage(err),
         variant: 'destructive',
       })
@@ -157,21 +161,21 @@ export function DataSourcesPage() {
   })
 
   const columns: ColumnDef<DataSource>[] = [
-    { accessorKey: 'name', header: 'Name' },
-    { accessorKey: 'connectionType', header: 'Type', cell: ({ row }) => <Badge variant="outline">{row.original.connectionType}</Badge> },
-    { accessorKey: 'host', header: 'Host', cell: ({ row }) => row.original.host || '—' },
+    { accessorKey: 'name', header: t('common:labels.name') },
+    { accessorKey: 'connectionType', header: t('common:labels.type'), cell: ({ row }) => <Badge variant="outline">{row.original.connectionType}</Badge> },
+    { accessorKey: 'host', header: t('admin:dataSources.columns.host'), cell: ({ row }) => row.original.host || '—' },
     {
       accessorKey: 'isActive',
-      header: 'Status',
+      header: t('common:labels.status'),
       cell: ({ row }) => (
         <Badge variant={row.original.isActive ? 'default' : 'secondary'}>
-          {row.original.isActive ? 'Active' : 'Inactive'}
+          {row.original.isActive ? t('common:labels.active') : t('common:labels.inactive')}
         </Badge>
       ),
     },
     {
       accessorKey: 'createdAt',
-      header: 'Created',
+      header: t('common:labels.createdAt'),
       cell: ({ row }) => formatDate(row.original.createdAt),
     },
     {
@@ -182,7 +186,7 @@ export function DataSourcesPage() {
           <Button
             variant="ghost"
             size="icon"
-            title="Test connection"
+            title={t('admin:dataSources.actions.testConnection')}
             onClick={() => testMutation.mutate(row.original.id)}
             disabled={testMutation.isPending}
           >
@@ -191,19 +195,19 @@ export function DataSourcesPage() {
           <Button
             variant="ghost"
             size="icon"
-            title="Introspect schema"
+            title={t('admin:dataSources.actions.introspectSchema')}
             onClick={() => introspectMutation.mutate(row.original.id)}
             disabled={introspectMutation.isPending || row.original.connectionType !== 'oracle'}
           >
             <Search className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" title="Import tables" onClick={() => setImportFor(row.original)}>
+          <Button variant="ghost" size="icon" title={t('admin:dataSources.actions.importTables')} onClick={() => setImportFor(row.original)}>
             <Download className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => openEdit(row.original)} title="Edit">
+          <Button variant="ghost" size="icon" onClick={() => openEdit(row.original)} title={t('common:actions.edit')}>
             <Pencil className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => setDeleting(row.original)} title="Delete">
+          <Button variant="ghost" size="icon" onClick={() => setDeleting(row.original)} title={t('common:actions.delete')}>
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
@@ -213,39 +217,39 @@ export function DataSourcesPage() {
 
   return (
     <AdminPageWrapper
-      title="Data Sources"
-      description="Manage database connections used to introspect and import schema."
+      title={t('admin:dataSources.title')}
+      description={t('admin:dataSources.description')}
       action={
         <Button onClick={openCreate}>
-          <Plus className="h-4 w-4" /> New Data Source
+          <Plus className="h-4 w-4" /> {t('admin:dataSources.createButton')}
         </Button>
       }
     >
       {testResult && (
         <div
-          className={`rounded-md border p-3 text-sm ${testResult.success ? 'border-green-500/50 bg-green-500/10' : 'border-destructive/50 bg-destructive/10'}`}
+          className={`rounded-md border p-3 text-sm ${testResult.success ? 'border-success/50 bg-success/10' : 'border-destructive/50 bg-destructive/10'}`}
         >
           {testResult.message}
         </div>
       )}
 
-      <DataTable columns={columns} data={sources ?? []} isLoading={isLoading} emptyMessage="No data sources yet." />
+      <DataTable columns={columns} data={sources ?? []} isLoading={isLoading} emptyMessage={t('admin:dataSources.emptyMessage')} />
 
       <CreateEditDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        title={editing ? 'Edit Data Source' : 'New Data Source'}
+        title={editing ? t('admin:dataSources.dialog.editTitle') : t('admin:dataSources.dialog.createTitle')}
       >
         <form className="space-y-4" onSubmit={(e) => void form.handleSubmit((values) => saveMutation.mutate(values))(e)}>
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">{t('common:labels.name')}</Label>
             <Input id="name" {...form.register('name')} />
             {form.formState.errors.name && (
               <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
             )}
           </div>
           <div className="space-y-2">
-            <Label>Connection Type</Label>
+            <Label>{t('admin:dataSources.form.connectionTypeLabel')}</Label>
             <Select
               value={form.watch('connectionType')}
               onValueChange={(v) => form.setValue('connectionType', v as 'oracle' | 'postgres')}
@@ -254,51 +258,51 @@ export function DataSourcesPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="oracle">Oracle</SelectItem>
-                <SelectItem value="postgres">PostgreSQL</SelectItem>
+                <SelectItem value="oracle">{t('admin:dataSources.form.connectionTypeOracle')}</SelectItem>
+                <SelectItem value="postgres">{t('admin:dataSources.form.connectionTypePostgres')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="host">Host</Label>
+              <Label htmlFor="host">{t('admin:dataSources.form.hostLabel')}</Label>
               <Input id="host" {...form.register('host')} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="port">Port</Label>
+              <Label htmlFor="port">{t('admin:dataSources.form.portLabel')}</Label>
               <Input id="port" type="number" {...form.register('port')} />
             </div>
           </div>
           {form.watch('connectionType') === 'oracle' ? (
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="serviceName">Service Name</Label>
+                <Label htmlFor="serviceName">{t('admin:dataSources.form.serviceNameLabel')}</Label>
                 <Input id="serviceName" {...form.register('serviceName')} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="sid">SID</Label>
+                <Label htmlFor="sid">{t('admin:dataSources.form.sidLabel')}</Label>
                 <Input id="sid" {...form.register('sid')} />
               </div>
             </div>
           ) : null}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username">{t('admin:dataSources.form.usernameLabel')}</Label>
               <Input id="username" {...form.register('username')} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">
-                Password {editing?.hasPassword && <span className="text-muted-foreground">(leave blank to keep)</span>}
+                {t('admin:dataSources.form.passwordLabel')} {editing?.hasPassword && <span className="text-muted-foreground">{t('admin:dataSources.form.passwordKeepHint')}</span>}
               </Label>
               <Input id="password" type="password" {...form.register('password')} />
             </div>
           </div>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-              Cancel
+              {t('common:actions.cancel')}
             </Button>
             <Button type="submit" disabled={saveMutation.isPending}>
-              {saveMutation.isPending ? 'Saving...' : 'Save'}
+              {saveMutation.isPending ? t('admin:shared.saving') : t('common:actions.save')}
             </Button>
           </div>
         </form>
@@ -309,7 +313,7 @@ export function DataSourcesPage() {
           open={!!deleting}
           onOpenChange={(open) => !open && setDeleting(null)}
           itemName={deleting.name}
-          itemLabel="data source"
+          itemLabel={t('admin:dataSources.entityLabel')}
           onConfirm={() => deleteMutation.mutate(deleting.id)}
           isPending={deleteMutation.isPending}
         />
@@ -321,6 +325,7 @@ export function DataSourcesPage() {
 }
 
 function ImportTablesDialog({ dataSource, onClose }: { dataSource: DataSource; onClose: () => void }) {
+  const { t } = useTranslation(['admin', 'common'])
   const { toast } = useToast()
   const [tableOwner, setTableOwner] = useState(dataSource.username ?? '')
   const [businessAreaId, setBusinessAreaId] = useState('')
@@ -347,14 +352,14 @@ function ImportTablesDialog({ dataSource, onClose }: { dataSource: DataSource; o
     onSuccess: (res) => {
       const { created, skipped } = res.data.data
       toast({
-        title: 'Import complete',
-        description: `Created ${created.length} folder(s), skipped ${skipped.length}.`,
+        title: t('admin:dataSources.import.toast.importComplete'),
+        description: t('admin:dataSources.import.toast.importCompleteDescription', { created: created.length, skipped: skipped.length }),
       })
       onClose()
     },
     onError: (err) => {
       toast({
-        title: 'Import failed',
+        title: t('admin:dataSources.import.toast.importFailed'),
         description: getErrorMessage(err),
         variant: 'destructive',
       })
@@ -374,25 +379,25 @@ function ImportTablesDialog({ dataSource, onClose }: { dataSource: DataSource; o
     <CreateEditDialog
       open
       onOpenChange={(open) => !open && onClose()}
-      title={`Import Tables — ${dataSource.name}`}
-      description="Discover tables and import selected tables as folders."
+      title={t('admin:dataSources.import.dialogTitle', { name: dataSource.name })}
+      description={t('admin:dataSources.import.dialogDescription')}
     >
       <div className="space-y-4">
         <div className="flex items-end gap-2">
           <div className="flex-1 space-y-2">
-            <Label>Table Owner / Schema</Label>
-            <Input value={tableOwner} onChange={(e) => setTableOwner(e.target.value)} placeholder="e.g. SCOTT" />
+            <Label>{t('admin:dataSources.import.tableOwnerLabel')}</Label>
+            <Input value={tableOwner} onChange={(e) => setTableOwner(e.target.value)} placeholder={t('admin:dataSources.import.tableOwnerPlaceholder')} />
           </div>
           <Button onClick={() => void tablesQuery.refetch()} disabled={tablesQuery.isFetching}>
-            <Search className="h-4 w-4" /> Discover Tables
+            <Search className="h-4 w-4" /> {t('admin:shared.discoverTablesButton')}
           </Button>
         </div>
 
         <div className="space-y-2">
-          <Label>Business Area</Label>
+          <Label>{t('admin:shared.businessAreaLabel')}</Label>
           <Select value={businessAreaId} onValueChange={setBusinessAreaId}>
             <SelectTrigger>
-              <SelectValue placeholder="Select destination business area" />
+              <SelectValue placeholder={t('admin:dataSources.import.selectDestinationPlaceholder')} />
             </SelectTrigger>
             <SelectContent>
               {(businessAreas ?? []).map((ba) => (
@@ -405,28 +410,28 @@ function ImportTablesDialog({ dataSource, onClose }: { dataSource: DataSource; o
         </div>
 
         <div className="max-h-64 space-y-1 overflow-y-auto rounded-md border p-2">
-          {tablesQuery.isFetching && <p className="text-sm text-muted-foreground">Discovering tables...</p>}
+          {tablesQuery.isFetching && <p className="text-sm text-muted-foreground">{t('admin:dataSources.import.discoveringTables')}</p>}
           {!tablesQuery.isFetching && (tablesQuery.data ?? []).length === 0 && (
-            <p className="text-sm text-muted-foreground">No tables discovered yet.</p>
+            <p className="text-sm text-muted-foreground">{t('admin:dataSources.import.noTablesDiscovered')}</p>
           )}
-          {(tablesQuery.data ?? []).map((t) => (
-            <label key={t.tableName} className="flex items-center gap-2 rounded px-2 py-1 hover:bg-muted/50">
-              <Checkbox checked={selected.has(t.tableName)} onCheckedChange={() => toggle(t.tableName)} />
-              <span className="text-sm">{t.tableName}</span>
-              <span className="text-xs text-muted-foreground">({t.columns.length} columns)</span>
+          {(tablesQuery.data ?? []).map((tbl) => (
+            <label key={tbl.tableName} className="flex items-center gap-2 rounded px-2 py-1 hover:bg-muted/50">
+              <Checkbox checked={selected.has(tbl.tableName)} onCheckedChange={() => toggle(tbl.tableName)} />
+              <span className="text-sm">{tbl.tableName}</span>
+              <span className="text-xs text-muted-foreground">{t('admin:dataSources.import.columnsCount', { count: tbl.columns.length })}</span>
             </label>
           ))}
         </div>
 
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={onClose}>
-            Cancel
+            {t('common:actions.cancel')}
           </Button>
           <Button
             disabled={selected.size === 0 || !businessAreaId || !tableOwner || importMutation.isPending}
             onClick={() => importMutation.mutate()}
           >
-            {importMutation.isPending ? 'Importing...' : `Import ${selected.size} table(s)`}
+            {importMutation.isPending ? t('admin:dataSources.import.importing') : t('admin:dataSources.import.importButton', { count: selected.size })}
           </Button>
         </div>
       </div>

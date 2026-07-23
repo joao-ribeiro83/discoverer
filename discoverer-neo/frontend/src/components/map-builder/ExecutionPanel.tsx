@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import {
   X,
   Clock,
@@ -26,12 +27,16 @@ const TERMINAL_JOB_STATUSES: AsyncJobStatus[] = [
   'CANCELLED',
 ]
 
-const ERROR_KIND_LABEL: Record<ExecutionErrorKind, string> = {
-  CONFIG: 'Configuration error',
-  CONNECT: 'Connection error',
-  TIMEOUT: 'Query timed out',
-  QUERY: 'Query error',
-  CANCELLED: 'Cancelled',
+// Short headline labels for the error banner, keyed by the backend's `kind`
+// discriminant. Deliberately distinct from the longer `errors:execution.*`
+// descriptions (which read as full sentences) — these are single-line
+// headlines paired with the raw backend message underneath.
+const ERROR_KIND_KEY: Record<ExecutionErrorKind, string> = {
+  CONFIG: 'mapViewer:execution.errorKind.CONFIG',
+  CONNECT: 'mapViewer:execution.errorKind.CONNECT',
+  TIMEOUT: 'mapViewer:execution.errorKind.TIMEOUT',
+  QUERY: 'mapViewer:execution.errorKind.QUERY',
+  CANCELLED: 'mapViewer:execution.errorKind.CANCELLED',
 }
 
 export interface ExecutionPanelProps {
@@ -66,6 +71,7 @@ export function ExecutionPanel({
   onResultChange,
   onClose,
 }: ExecutionPanelProps) {
+  const { t } = useTranslation(['mapViewer', 'common'])
   const { toast } = useToast()
   const [sqlOpen, setSqlOpen] = useState(false)
   const [bgJobId, setBgJobId] = useState<string | null>(null)
@@ -75,7 +81,7 @@ export function ExecutionPanel({
   // --- "Load more": re-executes with a growing offset, appending pages ------
   const loadMoreMutation = useMutation({
     mutationFn: async () => {
-      if (!mapId || !result) throw new Error('Nothing to load more of yet.')
+      if (!mapId || !result) throw new Error(t('mapViewer:execution.nothingToLoadMore'))
       const res = await apiClient.maps.execute(mapId, {
         parameters,
         offset: result.rows.length,
@@ -94,19 +100,27 @@ export function ExecutionPanel({
       })
     },
     onError: (err) =>
-      toast({ title: 'Load more failed', description: getErrorMessage(err), variant: 'destructive' }),
+      toast({
+        title: t('mapViewer:execution.loadMoreFailedTitle'),
+        description: getErrorMessage(err),
+        variant: 'destructive',
+      }),
   })
 
   // --- Background (async) run: full result up to the async row cap ---------
   const bgRunMutation = useMutation({
     mutationFn: async () => {
-      if (!mapId) throw new Error('Save the map before running in the background.')
+      if (!mapId) throw new Error(t('mapViewer:execution.saveBeforeBackgroundRun'))
       const res = await apiClient.maps.executeAsync(mapId, { parameters })
       return res.data.data
     },
     onSuccess: ({ jobId }) => setBgJobId(jobId),
     onError: (err) =>
-      toast({ title: 'Run failed', description: getErrorMessage(err), variant: 'destructive' }),
+      toast({
+        title: t('mapViewer:execution.runFailedTitle'),
+        description: getErrorMessage(err),
+        variant: 'destructive',
+      }),
   })
 
   const bgStatusQuery = useQuery({
@@ -125,12 +139,15 @@ export function ExecutionPanel({
     if (!bgJob || !bgJobId) return
     if (bgJob.status === 'COMPLETED' && bgJob.result) {
       onResultChange(bgJob.result)
-      toast({ title: 'Background run complete', description: `${bgJob.result.rowCount} row(s) returned.` })
+      toast({
+        title: t('mapViewer:execution.backgroundRunCompleteTitle'),
+        description: t('mapViewer:execution.rowsReturned', { count: bgJob.result.rowCount }),
+      })
       setBgJobId(null)
     } else if (bgJob.status === 'FAILED' || bgJob.status === 'TIMEOUT') {
       toast({
-        title: 'Background run failed',
-        description: bgJob.error ?? 'The execution failed.',
+        title: t('mapViewer:execution.backgroundRunFailedTitle'),
+        description: bgJob.error ?? t('mapViewer:execution.executionFailedFallback'),
         variant: 'destructive',
       })
       setBgJobId(null)
@@ -150,18 +167,20 @@ export function ExecutionPanel({
   return (
     <div className="flex h-full flex-col">
       <div className="flex flex-wrap items-center gap-2 border-b px-4 py-2">
-        <span className="text-sm font-semibold">Results</span>
+        <span className="text-sm font-semibold">{t('mapViewer:execution.results')}</span>
         {result && (
           <>
             <Badge variant="secondary" className="gap-1">
-              <Rows3 className="h-3.5 w-3.5" /> {result.rowCount} row{result.rowCount === 1 ? '' : 's'}
+              <Rows3 className="h-3.5 w-3.5" />{' '}
+              {t('mapViewer:execution.rowCount', { count: result.rowCount })}
             </Badge>
             <Badge variant="secondary" className="gap-1">
-              <Clock className="h-3.5 w-3.5" /> {result.executionTimeMs} ms
+              <Clock className="h-3.5 w-3.5" />{' '}
+              {t('mapViewer:execution.executionTime', { ms: result.executionTimeMs })}
             </Badge>
             {result.truncated && (
-              <Badge variant="outline" className="gap-1 text-amber-600 dark:text-amber-400">
-                <AlertTriangle className="h-3.5 w-3.5" /> More rows available
+              <Badge variant="outline" className="gap-1 text-warning">
+                <AlertTriangle className="h-3.5 w-3.5" /> {t('mapViewer:execution.moreRowsAvailable')}
               </Badge>
             )}
             {result.sql && (
@@ -172,7 +191,7 @@ export function ExecutionPanel({
                 onClick={() => setSqlOpen((v) => !v)}
               >
                 {sqlOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-                SQL
+                {t('mapViewer:execution.sql')}
               </Button>
             )}
           </>
@@ -193,7 +212,7 @@ export function ExecutionPanel({
                 ) : (
                   <Download className="h-3.5 w-3.5" />
                 )}
-                Excel
+                {t('mapViewer:execution.excel')}
               </Button>
               <Button
                 variant="outline"
@@ -207,7 +226,7 @@ export function ExecutionPanel({
                 ) : (
                   <Download className="h-3.5 w-3.5" />
                 )}
-                CSV
+                {t('mapViewer:execution.csv')}
               </Button>
             </>
           )}
@@ -217,7 +236,7 @@ export function ExecutionPanel({
               size="icon"
               className="h-7 w-7"
               onClick={onClose}
-              aria-label="Close results"
+              aria-label={t('mapViewer:execution.closeResults')}
             >
               <X className="h-4 w-4" />
             </Button>
@@ -236,7 +255,7 @@ export function ExecutionPanel({
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
           <div>
             <p className="font-medium text-destructive">
-              {errorKind ? ERROR_KIND_LABEL[errorKind] : 'Execution error'}
+              {errorKind ? t(ERROR_KIND_KEY[errorKind]) : t('mapViewer:execution.executionError')}
             </p>
             <p className="text-muted-foreground">{errorText}</p>
           </div>
@@ -248,13 +267,15 @@ export function ExecutionPanel({
           columns={result?.columns ?? []}
           rows={result?.rows ?? []}
           isLoading={isRunning}
-          emptyMessage={result ? 'Query returned no rows.' : 'Run the map to see results.'}
+          emptyMessage={
+            result ? t('mapViewer:execution.noRows') : t('mapViewer:execution.runToSeeResults')
+          }
         />
       </div>
 
       {result?.truncated && (
         <div className="flex flex-wrap items-center gap-2 border-t px-4 py-2 text-xs text-muted-foreground">
-          <span>Not all rows are loaded.</span>
+          <span>{t('mapViewer:execution.notAllRowsLoaded')}</span>
           <Button
             variant="outline"
             size="sm"
@@ -263,7 +284,7 @@ export function ExecutionPanel({
             onClick={() => loadMoreMutation.mutate()}
           >
             {loadMoreMutation.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-            Load more
+            {t('common:actions.loadMore')}
           </Button>
           <Button
             variant="outline"
@@ -271,14 +292,16 @@ export function ExecutionPanel({
             className="h-7 gap-1 text-xs"
             disabled={bgRunning || !mapId}
             onClick={() => bgRunMutation.mutate()}
-            title="Run the full query in the background (up to 100,000 rows)"
+            title={t('mapViewer:execution.runFullResultTooltip')}
           >
             {bgRunning ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
             ) : (
               <PlayCircle className="h-3.5 w-3.5" />
             )}
-            {bgRunning ? `Running… (${bgJob?.status ?? 'QUEUED'})` : 'Run full result'}
+            {bgRunning
+              ? t('mapViewer:execution.runningStatus', { status: bgJob?.status ?? 'QUEUED' })
+              : t('mapViewer:execution.runFullResult')}
           </Button>
         </div>
       )}

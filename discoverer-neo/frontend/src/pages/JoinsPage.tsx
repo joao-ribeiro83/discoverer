@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { z } from 'zod'
+import { useTranslation } from 'react-i18next'
 import type { ColumnDef } from '@tanstack/react-table'
 import { Plus, Pencil, Trash2, Wand2 } from 'lucide-react'
 import { apiClient, getErrorMessage } from '@/lib/api'
@@ -26,17 +27,20 @@ import {
 
 const JOIN_TYPES = ['INNER', 'LEFT', 'RIGHT', 'FULL'] as const
 
-const formSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(255),
-  leftFolderId: z.string().min(1, 'Left folder is required'),
-  rightFolderId: z.string().min(1, 'Right folder is required'),
-  leftItemId: z.string().optional(),
-  rightItemId: z.string().optional(),
-  joinType: z.enum(JOIN_TYPES),
-})
-type FormValues = z.infer<typeof formSchema>
+function buildFormSchema(t: (key: string) => string) {
+  return z.object({
+    name: z.string().min(1, t('admin:shared.validation.nameRequired')).max(255),
+    leftFolderId: z.string().min(1, t('admin:joins.validation.leftFolderRequired')),
+    rightFolderId: z.string().min(1, t('admin:joins.validation.rightFolderRequired')),
+    leftItemId: z.string().optional(),
+    rightItemId: z.string().optional(),
+    joinType: z.enum(JOIN_TYPES),
+  })
+}
+type FormValues = z.infer<ReturnType<typeof buildFormSchema>>
 
 export function JoinsPage() {
+  const { t } = useTranslation(['admin', 'common'])
   const queryClient = useQueryClient()
   const { toast } = useToast()
 
@@ -64,7 +68,7 @@ export function JoinsPage() {
   })
 
   const form = useForm<FormValues>({
-    resolver: standardSchemaResolver(formSchema),
+    resolver: standardSchemaResolver(buildFormSchema(t)),
     defaultValues: { name: '', leftFolderId: '', rightFolderId: '', leftItemId: '', rightItemId: '', joinType: 'INNER' },
   })
 
@@ -109,12 +113,12 @@ export function JoinsPage() {
     onSuccess: (result) => {
       setSuggestions(result)
       if (result.length === 0) {
-        toast({ title: 'No join suggestions found for this folder' })
+        toast({ title: t('admin:joins.toast.noSuggestions') })
       }
     },
     onError: (err) => {
       toast({
-        title: 'Suggestion failed',
+        title: t('admin:joins.toast.suggestionFailed'),
         description: getErrorMessage(err),
         variant: 'destructive',
       })
@@ -150,12 +154,12 @@ export function JoinsPage() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['joins', businessAreaId] })
-      toast({ title: editing ? 'Join updated' : 'Join created' })
+      toast({ title: editing ? t('admin:joins.toast.updated') : t('admin:joins.toast.created') })
       setDialogOpen(false)
     },
     onError: (err) => {
       toast({
-        title: 'Save failed',
+        title: t('admin:shared.saveFailed'),
         description: getErrorMessage(err),
         variant: 'destructive',
       })
@@ -166,25 +170,25 @@ export function JoinsPage() {
     mutationFn: async (id: string) => apiClient.joins.delete(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['joins', businessAreaId] })
-      toast({ title: 'Join deactivated' })
+      toast({ title: t('admin:joins.toast.deactivated') })
       setDeleting(null)
     },
   })
 
   const columns: ColumnDef<Join>[] = [
-    { accessorKey: 'name', header: 'Name' },
-    { accessorKey: 'leftFolderName', header: 'Left Folder' },
-    { accessorKey: 'rightFolderName', header: 'Right Folder' },
-    { accessorKey: 'joinType', header: 'Type', cell: ({ row }) => <Badge variant="outline">{row.original.joinType}</Badge> },
+    { accessorKey: 'name', header: t('common:labels.name') },
+    { accessorKey: 'leftFolderName', header: t('admin:joins.columns.leftFolder') },
+    { accessorKey: 'rightFolderName', header: t('admin:joins.columns.rightFolder') },
+    { accessorKey: 'joinType', header: t('common:labels.type'), cell: ({ row }) => <Badge variant="outline">{row.original.joinType}</Badge> },
     {
       id: 'actions',
       header: '',
       cell: ({ row }) => (
         <div className="flex justify-end gap-1">
-          <Button variant="ghost" size="icon" onClick={() => openEdit(row.original)} title="Edit">
+          <Button variant="ghost" size="icon" onClick={() => openEdit(row.original)} title={t('common:actions.edit')}>
             <Pencil className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => setDeleting(row.original)} title="Delete">
+          <Button variant="ghost" size="icon" onClick={() => setDeleting(row.original)} title={t('common:actions.delete')}>
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
@@ -194,19 +198,19 @@ export function JoinsPage() {
 
   return (
     <AdminPageWrapper
-      title="Joins"
-      description="Define relationships between folders within a business area."
+      title={t('admin:joins.title')}
+      description={t('admin:joins.description')}
       action={
         <Button onClick={openCreate} disabled={!businessAreaId}>
-          <Plus className="h-4 w-4" /> New Join
+          <Plus className="h-4 w-4" /> {t('admin:joins.createButton')}
         </Button>
       }
     >
       <div className="w-72 space-y-2">
-        <Label>Business Area</Label>
+        <Label>{t('admin:shared.businessAreaLabel')}</Label>
         <Select value={businessAreaId} onValueChange={setBusinessAreaId}>
-          <SelectTrigger aria-label="Business Area">
-            <SelectValue placeholder="Select a business area" />
+          <SelectTrigger aria-label={t('admin:shared.businessAreaLabel')}>
+            <SelectValue placeholder={t('admin:shared.selectBusinessAreaPlaceholder')} />
           </SelectTrigger>
           <SelectContent>
             {(businessAreas ?? []).map((ba) => (
@@ -219,15 +223,15 @@ export function JoinsPage() {
       </div>
 
       {businessAreaId ? (
-        <DataTable columns={columns} data={joins ?? []} isLoading={isLoading} emptyMessage="No joins in this business area yet." />
+        <DataTable columns={columns} data={joins ?? []} isLoading={isLoading} emptyMessage={t('admin:joins.emptyMessage')} />
       ) : (
-        <p className="text-sm text-muted-foreground">Select a business area to view its joins.</p>
+        <p className="text-sm text-muted-foreground">{t('admin:joins.selectBusinessAreaPrompt')}</p>
       )}
 
-      <CreateEditDialog open={dialogOpen} onOpenChange={setDialogOpen} title={editing ? 'Edit Join' : 'New Join'}>
+      <CreateEditDialog open={dialogOpen} onOpenChange={setDialogOpen} title={editing ? t('admin:joins.dialog.editTitle') : t('admin:joins.dialog.createTitle')}>
         <form className="space-y-4" onSubmit={(e) => void form.handleSubmit((values) => saveMutation.mutate(values))(e)}>
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">{t('common:labels.name')}</Label>
             <Input id="name" {...form.register('name')} />
             {form.formState.errors.name && (
               <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
@@ -236,10 +240,10 @@ export function JoinsPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Left Folder</Label>
+              <Label>{t('admin:joins.form.leftFolderLabel')}</Label>
               <Select value={leftFolderId} onValueChange={(v) => form.setValue('leftFolderId', v)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select folder" />
+                  <SelectValue placeholder={t('admin:joins.form.selectFolderPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {(folders ?? []).map((f) => (
@@ -254,10 +258,10 @@ export function JoinsPage() {
               )}
             </div>
             <div className="space-y-2">
-              <Label>Right Folder</Label>
+              <Label>{t('admin:joins.form.rightFolderLabel')}</Label>
               <Select value={rightFolderId} onValueChange={(v) => form.setValue('rightFolderId', v)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select folder" />
+                  <SelectValue placeholder={t('admin:joins.form.selectFolderPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {(folders ?? []).map((f) => (
@@ -281,7 +285,7 @@ export function JoinsPage() {
               disabled={!leftFolderId || suggestMutation.isPending}
               onClick={() => leftFolderId && suggestMutation.mutate(leftFolderId)}
             >
-              <Wand2 className="h-4 w-4" /> Suggest Joins
+              <Wand2 className="h-4 w-4" /> {t('admin:joins.form.suggestJoinsButton')}
             </Button>
           </div>
 
@@ -303,10 +307,10 @@ export function JoinsPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Left Item</Label>
+              <Label>{t('admin:joins.form.leftItemLabel')}</Label>
               <Select value={form.watch('leftItemId')} onValueChange={(v) => form.setValue('leftItemId', v)} disabled={!leftFolderId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select item" />
+                  <SelectValue placeholder={t('admin:joins.form.selectItemPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {(leftItems ?? []).map((it) => (
@@ -318,10 +322,10 @@ export function JoinsPage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Right Item</Label>
+              <Label>{t('admin:joins.form.rightItemLabel')}</Label>
               <Select value={form.watch('rightItemId')} onValueChange={(v) => form.setValue('rightItemId', v)} disabled={!rightFolderId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select item" />
+                  <SelectValue placeholder={t('admin:joins.form.selectItemPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {(rightItems ?? []).map((it) => (
@@ -335,15 +339,15 @@ export function JoinsPage() {
           </div>
 
           <div className="space-y-2">
-            <Label>Join Type</Label>
+            <Label>{t('admin:joins.form.joinTypeLabel')}</Label>
             <Select value={form.watch('joinType')} onValueChange={(v) => form.setValue('joinType', v as FormValues['joinType'])}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {JOIN_TYPES.map((t) => (
-                  <SelectItem key={t} value={t}>
-                    {t}
+                {JOIN_TYPES.map((jt) => (
+                  <SelectItem key={jt} value={jt}>
+                    {jt}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -352,10 +356,10 @@ export function JoinsPage() {
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-              Cancel
+              {t('common:actions.cancel')}
             </Button>
             <Button type="submit" disabled={saveMutation.isPending}>
-              {saveMutation.isPending ? 'Saving...' : 'Save'}
+              {saveMutation.isPending ? t('admin:shared.saving') : t('common:actions.save')}
             </Button>
           </div>
         </form>
@@ -366,7 +370,7 @@ export function JoinsPage() {
           open={!!deleting}
           onOpenChange={(open) => !open && setDeleting(null)}
           itemName={deleting.name}
-          itemLabel="join"
+          itemLabel={t('admin:joins.entityLabel')}
           onConfirm={() => deleteMutation.mutate(deleting.id)}
           isPending={deleteMutation.isPending}
         />

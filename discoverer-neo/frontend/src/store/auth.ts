@@ -6,6 +6,9 @@ interface User {
   email: string
   name: string
   role: string
+  // Present since Session 7.1 — the backend returns these on login and /me.
+  locale?: string
+  theme?: string
 }
 
 interface AuthState {
