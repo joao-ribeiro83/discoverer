@@ -1,1 +1,317 @@
-{}
+{
+  "shared": {
+    "businessAreaLabel": "Domaine d'activité",
+    "selectBusinessAreaPlaceholder": "Sélectionner un domaine d'activité",
+    "folderLabel": "Dossier",
+    "discoverTablesButton": "Découvrir les tables",
+    "saving": "Enregistrement...",
+    "deleting": "Suppression...",
+    "loading": "Chargement...",
+    "defaultEmptyMessage": "Aucun résultat.",
+    "saveFailed": "Échec de l'enregistrement",
+    "deleteFailed": "Échec de la suppression",
+    "deleteConfirmTitle": "Supprimer {{itemLabel}} ?",
+    "defaultItemLabel": "élément",
+    "deleteConfirmDescriptionPrefix": "Cette opération désactivera",
+    "deleteConfirmDescriptionSuffix": "Cette action ne peut être annulée que par un administrateur.",
+    "validation": {
+      "nameRequired": "Le nom est obligatoire"
+    }
+  },
+  "businessAreas": {
+    "title": "Domaines d'activité",
+    "description": "Gérez les domaines d'activité de vos modèles de données.",
+    "createButton": "Nouveau domaine d'activité",
+    "emptyMessage": "Aucun domaine d'activité pour le moment.",
+    "manageGrantsTitle": "Gérer les accès",
+    "entityLabel": "domaine d'activité",
+    "dialog": {
+      "editTitle": "Modifier le domaine d'activité",
+      "createTitle": "Nouveau domaine d'activité"
+    },
+    "toast": {
+      "updated": "Domaine d'activité mis à jour",
+      "created": "Domaine d'activité créé",
+      "deactivated": "Domaine d'activité désactivé"
+    },
+    "grants": {
+      "dialogTitle": "Accès — {{name}}",
+      "dialogDescription": "Contrôlez quels utilisateurs peuvent accéder à ce domaine d'activité et ce qu'ils peuvent y faire.",
+      "userLabel": "Utilisateur",
+      "selectUserPlaceholder": "Sélectionner un utilisateur",
+      "permissionLabel": "Autorisation",
+      "addButton": "Ajouter",
+      "revokeTitle": "Révoquer",
+      "loadingGrants": "Chargement des accès...",
+      "noGrantsYet": "Aucun accès pour le moment.",
+      "closeButton": "Fermer",
+      "toast": {
+        "accessGranted": "Accès accordé",
+        "grantFailed": "Échec de l'octroi de l'accès",
+        "accessRevoked": "Accès révoqué"
+      }
+    }
+  },
+  "folders": {
+    "title": "Dossiers",
+    "description": "Gérez les dossiers (tables, vues et données dérivées) au sein d'un domaine d'activité.",
+    "createButton": "Nouveau dossier",
+    "emptyMessage": "Aucun dossier dans ce domaine d'activité pour le moment.",
+    "selectBusinessAreaPrompt": "Sélectionnez un domaine d'activité pour afficher ses dossiers.",
+    "entityLabel": "dossier",
+    "columns": {
+      "tableName": "Nom de la table",
+      "dataSource": "Source de données"
+    },
+    "dialog": {
+      "editTitle": "Modifier le dossier",
+      "createTitle": "Nouveau dossier"
+    },
+    "form": {
+      "folderTypeLabel": "Type de dossier",
+      "customSqlLabel": "SQL personnalisé",
+      "dataSourceLabel": "Source de données",
+      "selectDataSourcePlaceholder": "Sélectionner une source de données",
+      "tableNameLabel": "Nom de la table",
+      "tableOwnerLabel": "Propriétaire de la table"
+    },
+    "toast": {
+      "discoveryFailed": "Échec de la découverte",
+      "updated": "Dossier mis à jour",
+      "created": "Dossier créé",
+      "deactivated": "Dossier désactivé"
+    }
+  },
+  "items": {
+    "title": "Éléments",
+    "description": "Gérez les éléments exposés par les dossiers — colonnes, calculs et agrégations.",
+    "createButton": "Nouvel élément",
+    "emptyMessage": "Aucun élément dans ce dossier pour le moment.",
+    "selectBusinessAreaPrompt": "Sélectionnez un domaine d'activité et un dossier pour afficher ses éléments.",
+    "entityLabel": "élément",
+    "selectFolderPlaceholder": "Sélectionner un dossier",
+    "itemTypes": {
+      "ci": "Élément de colonne (CI)",
+      "cu": "Élément calculé (CU)",
+      "co": "Condition (CO)",
+      "ji": "Élément de jointure (JI)",
+      "hi": "Élément de hiérarchie (HI)",
+      "ag": "Agrégation (AG)",
+      "fu": "Fonction (FU)"
+    },
+    "columns": {
+      "column": "Colonne",
+      "dataType": "Type de données",
+      "aggregation": "Agrégation"
+    },
+    "dialog": {
+      "editTitle": "Modifier l'élément",
+      "createTitle": "Nouvel élément"
+    },
+    "form": {
+      "itemTypeLabel": "Type d'élément",
+      "columnNameLabel": "Nom de la colonne",
+      "columnNamePlaceholder": "p. ex. CUSTOMER_ID",
+      "formulaLabel": "Formule",
+      "formulaPlaceholder": "p. ex. QUANTITY * UNIT_PRICE",
+      "dataTypeLabel": "Type de données",
+      "dataTypePlaceholder": "p. ex. NUMBER",
+      "formatMaskLabel": "Masque de format",
+      "formatMaskPlaceholder": "p. ex. 999,999.00",
+      "aggregationLabel": "Agrégation"
+    },
+    "toast": {
+      "updated": "Élément mis à jour",
+      "created": "Élément créé",
+      "deactivated": "Élément désactivé"
+    }
+  },
+  "joins": {
+    "title": "Jointures",
+    "description": "Définissez les relations entre les dossiers au sein d'un domaine d'activité.",
+    "createButton": "Nouvelle jointure",
+    "emptyMessage": "Aucune jointure dans ce domaine d'activité pour le moment.",
+    "selectBusinessAreaPrompt": "Sélectionnez un domaine d'activité pour afficher ses jointures.",
+    "entityLabel": "jointure",
+    "columns": {
+      "leftFolder": "Dossier de gauche",
+      "rightFolder": "Dossier de droite"
+    },
+    "dialog": {
+      "editTitle": "Modifier la jointure",
+      "createTitle": "Nouvelle jointure"
+    },
+    "form": {
+      "leftFolderLabel": "Dossier de gauche",
+      "rightFolderLabel": "Dossier de droite",
+      "selectFolderPlaceholder": "Sélectionner un dossier",
+      "suggestJoinsButton": "Suggérer des jointures",
+      "leftItemLabel": "Élément de gauche",
+      "rightItemLabel": "Élément de droite",
+      "selectItemPlaceholder": "Sélectionner un élément",
+      "joinTypeLabel": "Type de jointure"
+    },
+    "validation": {
+      "leftFolderRequired": "Le dossier de gauche est obligatoire",
+      "rightFolderRequired": "Le dossier de droite est obligatoire"
+    },
+    "toast": {
+      "noSuggestions": "Aucune suggestion de jointure trouvée pour ce dossier",
+      "suggestionFailed": "Échec de la suggestion",
+      "updated": "Jointure mise à jour",
+      "created": "Jointure créée",
+      "deactivated": "Jointure désactivée"
+    }
+  },
+  "hierarchies": {
+    "title": "Hiérarchies",
+    "description": "Définissez des hiérarchies d'exploration en ordonnant les éléments par niveaux.",
+    "createButton": "Nouvelle hiérarchie",
+    "emptyMessage": "Aucune hiérarchie dans ce domaine d'activité pour le moment.",
+    "selectBusinessAreaPrompt": "Sélectionnez un domaine d'activité pour afficher ses hiérarchies.",
+    "entityLabel": "hiérarchie",
+    "columns": {
+      "levels": "Niveaux",
+      "levelsCount": "{{count}} niveau(x)"
+    },
+    "dialog": {
+      "editTitle": "Modifier la hiérarchie",
+      "createTitle": "Nouvelle hiérarchie"
+    },
+    "form": {
+      "levelsLabel": "Niveaux (de haut en bas)",
+      "addLevelButton": "Ajouter un niveau",
+      "noLevelsYet": "Aucun niveau pour le moment — ajoutez-en au moins un.",
+      "levelNamePlaceholder": "Nom du niveau",
+      "itemPlaceholder": "Élément"
+    },
+    "toast": {
+      "updated": "Hiérarchie mise à jour",
+      "created": "Hiérarchie créée",
+      "deactivated": "Hiérarchie désactivée"
+    }
+  },
+  "customFunctions": {
+    "title": "Fonctions personnalisées",
+    "description": "Enregistrez des fonctions SQL, PL/SQL et de package personnalisées disponibles pour les éléments calculés.",
+    "createButton": "Nouvelle fonction",
+    "emptyMessage": "Aucune fonction personnalisée pour le moment.",
+    "entityLabel": "fonction personnalisée",
+    "columns": {
+      "parameters": "Paramètres",
+      "parametersCount": "{{count}} paramètre(s)",
+      "returnType": "Type de retour"
+    },
+    "dialog": {
+      "editTitle": "Modifier la fonction personnalisée",
+      "createTitle": "Nouvelle fonction personnalisée"
+    },
+    "form": {
+      "functionTypeLabel": "Type de fonction",
+      "returnTypeLabel": "Type de retour",
+      "returnTypePlaceholder": "p. ex. NUMBER",
+      "parametersLabel": "Paramètres (JSON)",
+      "parametersPlaceholder": "[\n  { \"name\": \"p_id\", \"type\": \"NUMBER\", \"required\": true }\n]"
+    },
+    "validation": {
+      "parametersMustBeArray": "Les paramètres doivent être un tableau JSON",
+      "parameterNeedsNameAndType": "Chaque paramètre nécessite un « name » et un « type »",
+      "invalidJson": "JSON non valide"
+    },
+    "toast": {
+      "updated": "Fonction mise à jour",
+      "created": "Fonction créée",
+      "deactivated": "Fonction désactivée"
+    }
+  },
+  "dataSources": {
+    "title": "Sources de données",
+    "description": "Gérez les connexions à la base de données utilisées pour introspecter et importer le schéma.",
+    "createButton": "Nouvelle source de données",
+    "emptyMessage": "Aucune source de données pour le moment.",
+    "entityLabel": "source de données",
+    "columns": {
+      "host": "Hôte"
+    },
+    "actions": {
+      "testConnection": "Tester la connexion",
+      "introspectSchema": "Introspecter le schéma",
+      "importTables": "Importer des tables"
+    },
+    "dialog": {
+      "editTitle": "Modifier la source de données",
+      "createTitle": "Nouvelle source de données"
+    },
+    "form": {
+      "connectionTypeLabel": "Type de connexion",
+      "connectionTypeOracle": "Oracle",
+      "connectionTypePostgres": "PostgreSQL",
+      "hostLabel": "Hôte",
+      "portLabel": "Port",
+      "serviceNameLabel": "Nom du service",
+      "sidLabel": "SID",
+      "usernameLabel": "Nom d'utilisateur",
+      "passwordLabel": "Mot de passe",
+      "passwordKeepHint": "(laisser vide pour conserver)"
+    },
+    "toast": {
+      "updated": "Source de données mise à jour",
+      "created": "Source de données créée",
+      "deactivated": "Source de données désactivée",
+      "connectionSucceeded": "Connexion réussie",
+      "connectionFailed": "Échec de la connexion",
+      "testFailed": "Échec du test",
+      "introspectionComplete": "Introspection terminée",
+      "introspectionCompleteDescription": "{{count}} table(s) découverte(s).",
+      "introspectionFailed": "Échec de l'introspection"
+    },
+    "import": {
+      "dialogTitle": "Importer des tables — {{name}}",
+      "dialogDescription": "Découvrez des tables et importez les tables sélectionnées en tant que dossiers.",
+      "tableOwnerLabel": "Propriétaire de la table / Schéma",
+      "tableOwnerPlaceholder": "p. ex. SCOTT",
+      "selectDestinationPlaceholder": "Sélectionner le domaine d'activité de destination",
+      "discoveringTables": "Découverte des tables...",
+      "noTablesDiscovered": "Aucune table découverte pour le moment.",
+      "columnsCount": "({{count}} colonnes)",
+      "importing": "Importation...",
+      "importButton": "Importer {{count}} table(s)",
+      "toast": {
+        "importComplete": "Importation terminée",
+        "importCompleteDescription": "{{created}} dossier(s) créé(s), {{skipped}} ignoré(s).",
+        "importFailed": "Échec de l'importation"
+      }
+    }
+  },
+  "users": {
+    "title": "Utilisateurs",
+    "description": "Gérez les comptes d'utilisateur et les autorisations.",
+    "createButton": "Nouvel utilisateur",
+    "emptyMessage": "Aucun utilisateur pour le moment.",
+    "entityLabel": "utilisateur",
+    "adminOnlyMessage": "Seuls les administrateurs peuvent gérer les utilisateurs.",
+    "columns": {
+      "email": "E-mail",
+      "role": "Rôle"
+    },
+    "dialog": {
+      "editTitle": "Modifier l'utilisateur",
+      "createTitle": "Nouvel utilisateur"
+    },
+    "form": {
+      "emailLabel": "E-mail",
+      "passwordLabel": "Mot de passe",
+      "passwordKeepHint": "(laisser vide pour conserver l'actuel)",
+      "roleLabel": "Rôle"
+    },
+    "validation": {
+      "emailInvalid": "Saisissez un e-mail valide",
+      "passwordMinLength": "Le mot de passe doit comporter au moins 8 caractères"
+    },
+    "toast": {
+      "updated": "Utilisateur mis à jour",
+      "created": "Utilisateur créé",
+      "deleted": "Utilisateur supprimé"
+    }
+  }
+}

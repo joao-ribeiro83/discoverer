@@ -1,1 +1,112 @@
-{}
+{
+  "page": {
+    "title": "Migration",
+    "description": "Importez une couche End User Layer (EUL) d'Oracle Discoverer dans Discoverer Neo."
+  },
+  "actions": {
+    "detectVersion": "Détecter la version",
+    "analyze": "Analyser",
+    "runDryRun": "Lancer une simulation",
+    "runMigration": "Lancer la migration"
+  },
+  "source": {
+    "title": "Source",
+    "description": "Choisissez une source de données Oracle enregistrée. Ses identifiants stockés sont utilisés sur le serveur — les mots de passe ne sont jamais envoyés depuis cette page. La migration cible toujours cette base de données Discoverer Neo.",
+    "dataSourceLabel": "Source de données Oracle",
+    "selectDataSourcePlaceholder": "Sélectionner une source de données",
+    "noOracleDataSources": "Aucune source de données Oracle",
+    "schemaOwnerLabel": "Propriétaire du schéma EUL (facultatif)",
+    "schemaOwnerPlaceholder": "p. ex. EUL5_US",
+    "versionLabel": "Version EUL",
+    "autoDetect": "Détection automatique",
+    "forceEul4": "Forcer EUL4",
+    "forceEul5": "Forcer EUL5",
+    "dryRunLabel": "Simulation (valider sans écrire)",
+    "liveMigrationWarning": "Une migration réelle écrit dans cette base de données Discoverer Neo. Lancez d'abord une simulation et examinez le rapport ci-dessous."
+  },
+  "detected": {
+    "title": "Source détectée",
+    "supported": "Pris en charge",
+    "notSupported": "Non pris en charge",
+    "discovererRelease": "Version de Discoverer",
+    "schemaVersion": "Version du schéma EUL",
+    "schemaOwner": "Propriétaire du schéma",
+    "tablesFound": "Tables EUL trouvées"
+  },
+  "assessment": {
+    "title": "Évaluation",
+    "description": "Préparation {{score}}/100 ({{rating}}) · complexité {{complexity}} · effort estimé {{estimate}}",
+    "counts": {
+      "businessAreas": "Domaines d'activité",
+      "folders": "Dossiers",
+      "items": "Éléments",
+      "joins": "Jointures",
+      "hierarchies": "Hiérarchies",
+      "customFunctions": "Fonctions personnalisées",
+      "workbooks": "Classeurs",
+      "conditions": "Conditions",
+      "securityConditions": "Conditions de sécurité",
+      "users": "Utilisateurs",
+      "grants": "Octrois d'accès",
+      "orphanedObjects": "Objets orphelins"
+    },
+    "blockers": "Bloqueurs",
+    "warningsCount": "Avertissements ({{count}})"
+  },
+  "job": {
+    "dryRunLabel": "Simulation",
+    "migrationLabel": "Migration",
+    "requestedVersion": "{{version}} demandée",
+    "started": "Démarré",
+    "progressAriaLabel": "Progression de la migration",
+    "rowsPlanned": "Lignes qui seraient insérées",
+    "rowsInserted": "Lignes insérées",
+    "tableColumn": "Table",
+    "rowsColumn": "Lignes",
+    "summary": "Résumé",
+    "sourceIntegrity": "Intégrité de la source : {{status}} ({{errorCount}} erreur(s), {{warningCount}} avertissement(s)). {{skippedCount}} objet(s) ignoré(s). Durée : {{duration}} s.",
+    "valid": "valide",
+    "invalid": "invalide",
+    "reconciliation": "Rapprochement post-migration : {{status}}",
+    "rowCountsMatch": "les nombres de lignes correspondent",
+    "mismatch": "NON-CONCORDANCE",
+    "syntheticBusinessAreasNotice": "Un domaine d'activité « Migrated Workbooks » a été créé pour héberger les cartes issues des classeurs ; la disposition de leurs feuilles de calcul doit être reconstruite manuellement.",
+    "migratedAccountsNotice": "Les comptes d'utilisateur migrés ne peuvent pas se connecter tant qu'un administrateur n'a pas défini de mot de passe.",
+    "versionSpecificNotes": "Notes spécifiques à la version ({{count}})",
+    "logTitle": "Journal de la migration",
+    "droppedLogsNotice": "({{count}} ligne(s) antérieure(s) tronquée(s))",
+    "noLogEntries": "Aucune entrée de journal pour le moment."
+  },
+  "tables": {
+    "users": "Utilisateurs",
+    "business_areas": "Domaines d'activité",
+    "folders": "Dossiers",
+    "items": "Éléments",
+    "joins": "Jointures",
+    "hierarchies": "Hiérarchies",
+    "hierarchy_levels": "Niveaux de hiérarchie",
+    "custom_functions": "Fonctions personnalisées",
+    "maps": "Cartes",
+    "map_items": "Colonnes de carte",
+    "user_business_area_grants": "Octrois d'accès"
+  },
+  "toasts": {
+    "detectedTitle": "{{version}} détecté",
+    "detectedDescription": "Discoverer {{discovererVersion}} · schéma {{schemaVersion}}",
+    "detectionFailed": "Échec de la détection",
+    "analysisComplete": "Analyse terminée",
+    "analysisCompleteDescription": "Préparation {{score}}/100",
+    "analysisFailed": "Échec de l'analyse",
+    "dryRunStarted": "Simulation démarrée",
+    "migrationStarted": "Migration démarrée",
+    "progressUpdatesBelow": "Mises à jour de la progression ci-dessous.",
+    "couldNotStart": "Impossible de démarrer",
+    "dryRunComplete": "Simulation terminée",
+    "migrationComplete": "Migration terminée",
+    "noRowsWritten": "Aucune ligne n'a été écrite.",
+    "migratedFrom": "Migré depuis {{source}}.",
+    "theSource": "la source",
+    "migrationFailed": "Échec de la migration",
+    "seeLogBelow": "Consultez le journal ci-dessous."
+  }
+}

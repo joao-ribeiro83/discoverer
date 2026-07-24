@@ -48,10 +48,12 @@ describe('i18n', () => {
 
   it('falls back to en when a key is missing in the active locale', async () => {
     render(<Sample />)
-    await changeLanguage('fr-FR')
-    // fr-FR/common.json defines only actions.save & actions.cancel, so
-    // actions.close is absent and must fall back to the en baseline.
-    expect(screen.getByTestId('save')).toHaveTextContent('Enregistrer')
+    await changeLanguage('es-ES')
+    // es-ES/common.json is still a stub defining only actions.save &
+    // actions.cancel, so actions.close is absent and must fall back to the
+    // en baseline. (fr-FR is now fully translated, so it no longer exercises
+    // the missing-key path.)
+    expect(screen.getByTestId('save')).toHaveTextContent('Guardar')
     expect(screen.getByTestId('close')).toHaveTextContent('Close')
   })
 

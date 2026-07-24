@@ -1,1 +1,84 @@
-{}
+{
+  "page": {
+    "title": "Stratégies de sécurité",
+    "description": "Les stratégies de sécurité au niveau des lignes limitent les lignes que les utilisateurs peuvent voir. Les prédicats sont combinés par un ET logique dans chaque requête exécutée par les utilisateurs d'une stratégie.",
+    "nonAdminDescription": "Les stratégies de sécurité au niveau des lignes limitent les lignes que les utilisateurs peuvent voir.",
+    "nonAdminMessage": "Seuls les administrateurs peuvent gérer les stratégies de sécurité.",
+    "newPolicy": "Nouvelle stratégie",
+    "emptyMessage": "Aucune stratégie de sécurité pour le moment. Sans stratégie, les utilisateurs voient toutes les lignes que leurs autorisations de carte permettent."
+  },
+  "table": {
+    "rules": "Règles",
+    "assignments": "Attributions"
+  },
+  "dialog": {
+    "editTitle": "Modifier la stratégie",
+    "newTitle": "Nouvelle stratégie",
+    "description": "Les règles ciblent un domaine d'activité ou un dossier ; leurs prédicats SQL sont combinés par un ET logique dans la clause WHERE des requêtes correspondantes.",
+    "rulesLabel": "Règles",
+    "addRule": "Ajouter une règle",
+    "minRuleNotice": "Une stratégie nécessite au moins une règle."
+  },
+  "rule": {
+    "appliesTo": "S'applique à",
+    "targetTypeAriaLabel": "Type de cible de la règle",
+    "businessArea": "Domaine d'activité",
+    "folder": "Dossier",
+    "businessAreaLabel": "Domaine d'activité",
+    "businessAreaAriaLabel": "Domaine d'activité de la règle",
+    "selectBusinessArea": "Sélectionner un domaine d'activité",
+    "folderLabel": "Dossier",
+    "folderAriaLabel": "Dossier de la règle",
+    "selectFolder": "Sélectionner un dossier",
+    "removeRule": "Supprimer la règle",
+    "predicateLabel": "Prédicat SQL (fragment de clause WHERE)",
+    "validating": "Validation…",
+    "validPredicate": "Prédicat valide",
+    "bindsLabel": "Liaisons :",
+    "aliasResolves": "correspond à l'alias de requête du dossier"
+  },
+  "assignments": {
+    "title": "Attributions — {{name}}",
+    "description": "La stratégie s'applique à chaque utilisateur attribué et à chaque utilisateur détenant un rôle attribué.",
+    "assignTo": "Attribuer à",
+    "kindAriaLabel": "Type d'attribution",
+    "user": "Utilisateur",
+    "role": "Rôle",
+    "userAriaLabel": "Utilisateur à attribuer",
+    "selectUser": "Sélectionner un utilisateur",
+    "roleAriaLabel": "Rôle à attribuer",
+    "selectRole": "Sélectionner un rôle",
+    "assign": "Attribuer",
+    "notAssigned": "Non attribuée — cette stratégie ne restreint actuellement personne.",
+    "unknownUser": "Utilisateur inconnu",
+    "roleLabel": "Rôle",
+    "removeAssignment": "Supprimer l'attribution"
+  },
+  "test": {
+    "buttonLabel": "Tester",
+    "dialogTitle": "Tester une stratégie",
+    "description": "Prévisualisez l'emplacement des prédicats d'une stratégie dans une requête d'exemple. L'application réelle a lieu dans le générateur SQL lors de l'exécution des cartes.",
+    "policyLabel": "Stratégie",
+    "policyAriaLabel": "Stratégie à tester",
+    "selectPolicy": "Sélectionner une stratégie",
+    "sampleQueryLabel": "Requête d'exemple",
+    "testing": "Test en cours…",
+    "runTest": "Exécuter le test",
+    "resultLabel": "Requête avec prédicats de sécurité"
+  },
+  "deleteConfirm": {
+    "itemLabel": "stratégie"
+  },
+  "toasts": {
+    "loadPolicyFailed": "Échec du chargement de la stratégie",
+    "policyUpdated": "Stratégie mise à jour",
+    "policyCreated": "Stratégie créée",
+    "saveFailed": "Échec de l'enregistrement",
+    "policyDeleted": "Stratégie supprimée",
+    "deleteFailed": "Échec de la suppression",
+    "policyAssigned": "Stratégie attribuée",
+    "assignFailed": "Échec de l'attribution",
+    "assignmentRemoved": "Attribution supprimée",
+    "removeFailed": "Échec de la suppression"
+  }
+}

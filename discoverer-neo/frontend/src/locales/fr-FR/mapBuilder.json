@@ -1,1 +1,233 @@
-{}
+{
+  "toolbar": {
+    "run": "Exécuter",
+    "save": "Enregistrer",
+    "export": "Exporter",
+    "schedule": "Planifier",
+    "share": "Partager",
+    "mapNameAria": "Nom de la carte",
+    "mapTypeAria": "Type de carte",
+    "unsavedTitle": "Modifications non enregistrées",
+    "unsavedLabel": "● Non enregistré",
+    "mapTypes": {
+      "table": "Tableau",
+      "crosstab": "Tableau croisé",
+      "pageDetail": "Page-Détail",
+      "chart": "Graphique"
+    },
+    "exportDataHeader": "Données (réexécute la requête sur le serveur)",
+    "exportExcel": "Excel (.xlsx)",
+    "exportCsv": "CSV (.csv)",
+    "exportXml": "Définition de la carte (.xml)",
+    "shareDisabledTitle": "Enregistrez la carte avant de la partager",
+    "comingSoonTitle": "{{feature}} bientôt disponible",
+    "comingSoonDescription": "{{feature}} sera disponible dans une prochaine session.",
+    "featureScheduling": "Planification"
+  },
+  "page": {
+    "loading": "Chargement de la carte…",
+    "loadFailedTitle": "Impossible de charger la carte",
+    "saveErrorNoColumns": "Ajoutez au moins une colonne avant d'enregistrer.",
+    "saveErrorNoBusinessArea": "Aucun domaine d'activité sélectionné.",
+    "savedTitle": "Carte enregistrée",
+    "saveFailedTitle": "Échec de l'enregistrement",
+    "runErrorNoColumns": "Ajoutez au moins une colonne avant d'exécuter.",
+    "executedTitle": "Carte exécutée",
+    "executedDescription": "{{count}} ligne(s) renvoyée(s).",
+    "runFailedTitle": "Échec de l'exécution",
+    "saveMapFirstTitle": "Enregistrez d'abord la carte",
+    "saveMapFirstDescription": "L'exportation nécessite une carte enregistrée.",
+    "exportFailedTitle": "Échec de l'exportation",
+    "duplicateTitle": "Déjà ajouté",
+    "duplicateDescription": "« {{name}} » se trouve déjà dans la zone de travail.",
+    "crossBusinessAreaTitle": "Domaine d'activité différent",
+    "crossBusinessAreaDescription": "Toutes les colonnes d'une carte doivent provenir du même domaine d'activité.",
+    "collapsePanel": "Réduire le panneau",
+    "expandPanel": "Développer le panneau"
+  },
+  "tree": {
+    "title": "Domaines d'activité",
+    "filterPlaceholder": "Filtrer les éléments…",
+    "filterAria": "Filtrer les éléments",
+    "loading": "Chargement…",
+    "emptyBusinessAreas": "Aucun domaine d'activité.",
+    "emptyFolders": "Aucun dossier",
+    "emptyMatchingItems": "Aucun élément correspondant",
+    "emptyItems": "Aucun élément",
+    "roleMeasure": "Mesure",
+    "roleDimension": "Dimension"
+  },
+  "canvas": {
+    "title": "Colonnes",
+    "emptyDropHint": "Déposez pour ajouter cette colonne",
+    "emptyDragHint": "Faites glisser les éléments ici pour créer votre carte",
+    "emptyPickHint": "Choisissez des dimensions et des mesures dans l'arborescence de gauche.",
+    "reorderAria": "Réorganiser la colonne",
+    "configureTitle": "Configurer la colonne",
+    "removeAria": "Retirer {{label}}"
+  },
+  "columnConfig": {
+    "title": "Configurer la colonne",
+    "descriptionFallback": "Paramètres de la colonne",
+    "displayName": "Nom d'affichage",
+    "aggregation": "Agrégation",
+    "sortDirection": "Sens du tri",
+    "formatMask": "Masque de format",
+    "formatMaskPlaceholder": "p. ex. 999,999.00",
+    "formatPresetsAria": "Préréglages de format",
+    "formatPresetsPlaceholder": "Préréglages",
+    "sortOrder": "Ordre de tri",
+    "sortOrderPlaceholder": "p. ex. 1",
+    "columnWidth": "Largeur de colonne (px)",
+    "columnWidthPlaceholder": "p. ex. 120",
+    "presets": {
+      "number": "Nombre (1 234)",
+      "decimal": "Décimal (1 234,00)",
+      "currency": "Devise (1 234,00 €)",
+      "percent": "Pourcentage (12,3 %)",
+      "dateDmy": "Date (DD-MON-YYYY)",
+      "dateYmd": "Date (YYYY-MM-DD)"
+    }
+  },
+  "sortDirections": {
+    "asc": "Croissant",
+    "desc": "Décroissant"
+  },
+  "share": {
+    "title": "Partager la carte",
+    "description": "Accordez à d'autres utilisateurs l'accès pour consulter, exporter ou modifier cette carte.",
+    "searchPlaceholder": "Rechercher par nom ou e-mail…",
+    "searchAria": "Rechercher des utilisateurs avec qui partager",
+    "searching": "Recherche…",
+    "noMatchingUsers": "Aucun utilisateur correspondant",
+    "permissionAria": "Niveau d'autorisation",
+    "shareButton": "Partager",
+    "peopleWithAccess": "Personnes ayant accès",
+    "notSharedYet": "Pas encore partagée avec personne.",
+    "permissionForAria": "Autorisation pour {{name}}",
+    "revokeAria": "Révoquer l'accès de {{name}}",
+    "publicNotice": "Cette carte est publique — toute personne disposant du lien peut la consulter.",
+    "copyLink": "Copier le lien",
+    "permissions": {
+      "VIEW": "Peut consulter",
+      "EXPORT": "Peut exporter",
+      "EDIT": "Peut modifier"
+    },
+    "toastShared": "Carte partagée",
+    "toastShareFailedTitle": "Impossible de partager la carte",
+    "toastPermissionUpdated": "Autorisation mise à jour",
+    "toastPermissionUpdateFailedTitle": "Impossible de mettre à jour l'autorisation",
+    "toastRevoked": "Accès révoqué",
+    "toastRevokeFailedTitle": "Impossible de révoquer l'accès",
+    "toastLinkCopied": "Lien copié dans le presse-papiers",
+    "toastCopyFailedTitle": "Impossible de copier le lien"
+  },
+  "panels": {
+    "tabs": {
+      "properties": "Propriétés",
+      "conditions": "Conditions",
+      "sort": "Tri",
+      "parameters": "Paramètres",
+      "calculatedFields": "Champs calculés"
+    },
+    "properties": {
+      "descriptionPlaceholder": "Décrivez l'objet de cette carte…",
+      "publicLabel": "Public (visible par tous dans le domaine d'activité)",
+      "summary": {
+        "columns": "Colonnes",
+        "conditions": "Conditions",
+        "parameters": "Paramètres",
+        "calculatedFields": "Champs calculés"
+      }
+    },
+    "conditions": {
+      "title": "Conditions",
+      "addButton": "Ajouter une condition",
+      "addColumnsHint": "Ajoutez des colonnes à la zone de travail avant d'ajouter des conditions.",
+      "groupSelected": "Grouper les {{count}} conditions sélectionnées",
+      "noConditionsYet": "Aucune condition pour le moment.",
+      "groupHeader": "Groupe ({{count}})",
+      "ungroup": "Dégrouper",
+      "logicOperatorAria": "Opérateur logique",
+      "itemFallbackLabel": "élément",
+      "selectConditionAria": "Sélectionner une condition sur {{label}}",
+      "conditionItemAria": "Élément de condition",
+      "itemPlaceholder": "Élément",
+      "operatorAria": "Opérateur",
+      "staticValue": "Valeur statique",
+      "promptAtRuntime": "Demander à l'exécution",
+      "conditionValueAria": "Valeur de la condition",
+      "valuePlaceholderIn": "valeur1, valeur2, …",
+      "valuePlaceholderBetween": "min, max",
+      "valuePlaceholderDefault": "Valeur",
+      "parameterNameAria": "Nom du paramètre",
+      "parameterNamePlaceholder": "Nom du paramètre",
+      "deleteAria": "Supprimer la condition"
+    },
+    "sort": {
+      "emptyNoColumns": "Ajoutez des colonnes pour configurer le tri.",
+      "title": "Ordre de tri",
+      "noneSorted": "Aucune colonne n'est encore triée.",
+      "addSortLabel": "Ajouter un tri",
+      "pickColumnAria": "Choisir une colonne à trier",
+      "pickColumnPlaceholder": "Choisir une colonne",
+      "addSortButton": "Ajouter un tri",
+      "reorderAria": "Réorganiser {{label}}",
+      "sortDirectionAria": "Sens du tri pour {{label}}",
+      "removeAria": "Retirer le tri sur {{label}}"
+    },
+    "parameters": {
+      "title": "Paramètres",
+      "addButton": "Ajouter un paramètre",
+      "empty": "Aucun paramètre. Ajoutez-en un pour interroger les utilisateurs à l'exécution.",
+      "previewLabel": "Aperçu de l'invite d'exécution",
+      "unnamed": "Paramètre sans nom",
+      "nameAria": "Nom du paramètre",
+      "namePlaceholder": "Nom du paramètre",
+      "typeAria": "Type de paramètre",
+      "deleteAria": "Supprimer le paramètre {{name}}",
+      "defaultValueAria": "Valeur par défaut",
+      "defaultValuePlaceholder": "Valeur par défaut",
+      "defaultValueListPlaceholder": "valeurs, séparées, par des virgules",
+      "previewValuePlaceholder": "Saisir une valeur"
+    },
+    "calculatedFields": {
+      "title": "Champs calculés",
+      "addButton": "Ajouter un champ calculé",
+      "empty": "Aucun champ calculé. Ajoutez-en un pour dériver une nouvelle colonne à partir d'une formule.",
+      "reorderAria": "Réorganiser {{name}}",
+      "fallbackName": "champ calculé",
+      "nameAria": "Nom du champ calculé",
+      "namePlaceholder": "Nom du champ",
+      "displayOrderAria": "Ordre d'affichage",
+      "displayOrderTitle": "Ordre d'affichage",
+      "deleteAria": "Supprimer {{name}}",
+      "clickToWriteFormula": "Cliquez pour écrire une formule…"
+    },
+    "formula": {
+      "title": "Éditeur de formules",
+      "fallbackFieldName": "Champ calculé",
+      "testFormula": "Tester la formule",
+      "saveHint": "Enregistrez la carte pour tester les formules sur des données réelles.",
+      "noRows": "Aucune ligne.",
+      "previewHeader_one": "{{columnName}} ({{count}} première ligne)",
+      "previewHeader_other": "{{columnName}} ({{count}} premières lignes)",
+      "columnsHeader": "Colonnes",
+      "noColumnsYet": "Aucune colonne pour le moment.",
+      "categories": {
+        "arithmetic": "Arithmétique",
+        "string": "Chaîne",
+        "date": "Date",
+        "conditional": "Conditionnel / gestion des valeurs nulles"
+      },
+      "errors": {
+        "empty": "La formule est vide.",
+        "unbalancedQuotes": "Guillemets non équilibrés.",
+        "unbalancedParens": "Parenthèses non équilibrées.",
+        "unbalancedBrackets": "Références de colonne [ ] non équilibrées.",
+        "unknownFunction": "Fonction inconnue « {{name}} ».",
+        "unknownColumnReference": "Référence de colonne inconnue « [{{name}}] »."
+      }
+    }
+  }
+}

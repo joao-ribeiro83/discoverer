@@ -1,1 +1,59 @@
-{}
+{
+  "page": {
+    "title": "Journal d'audit",
+    "description": "Chaque requête de modification — modifications de données, exportations, migrations et événements d'authentification — capturée automatiquement."
+  },
+  "actions": {
+    "exportCsv": "Exporter le CSV (cette page)"
+  },
+  "actorUnknown": "Système / non authentifié",
+  "csv": {
+    "timestamp": "Horodatage",
+    "user": "Utilisateur",
+    "action": "Action",
+    "entityType": "Type d'entité",
+    "entityId": "ID d'entité",
+    "ipAddress": "Adresse IP"
+  },
+  "table": {
+    "timestamp": "Horodatage",
+    "user": "Utilisateur",
+    "action": "Action",
+    "entity": "Entité",
+    "ipAddress": "Adresse IP",
+    "viewDetails": "Afficher les détails",
+    "emptyMessage": "Aucune entrée d'audit ne correspond à ces filtres."
+  },
+  "stats": {
+    "totalActions": "Total des actions",
+    "selectedDateRange": "Dans la plage de dates sélectionnée",
+    "allTime": "Toute la période",
+    "topActions": "Actions principales",
+    "topActionsDescription": "Types d'action les plus fréquents",
+    "noActivity": "Aucune activité enregistrée pour le moment.",
+    "actionsPerDay": "Actions par jour",
+    "actionsPerDayDescription": "Volume d'activité quotidien pour la plage de dates sélectionnée"
+  },
+  "chart": {
+    "actions": "Actions"
+  },
+  "filters": {
+    "title": "Filtres",
+    "userLabel": "Utilisateur",
+    "userAriaLabel": "Filtrer par utilisateur",
+    "allUsers": "Tous les utilisateurs",
+    "entityTypeLabel": "Type d'entité",
+    "entityTypePlaceholder": "p. ex. maps",
+    "actionLabel": "Action",
+    "actionPlaceholder": "p. ex. POST /api/maps",
+    "fromLabel": "De",
+    "toLabel": "À"
+  },
+  "pagination": {
+    "noResults": "Aucun résultat"
+  },
+  "detail": {
+    "title": "Détails de l'entrée d'audit",
+    "descriptionTemplate": "{{action}} — {{date}}"
+  }
+}

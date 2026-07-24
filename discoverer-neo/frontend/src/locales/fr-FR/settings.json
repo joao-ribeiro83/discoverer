@@ -1,1 +1,20 @@
-{}
+{
+  "title": "Paramètres",
+  "subtitle": "Gérez les préférences de votre compte",
+  "language": {
+    "title": "Langue",
+    "description": "Choisissez la langue utilisée dans toute l'interface.",
+    "label": "Langue d'affichage"
+  },
+  "theme": {
+    "title": "Thème",
+    "description": "Choisissez l'apparence de l'interface.",
+    "label": "Apparence",
+    "options": {
+      "light": "Clair",
+      "dark": "Sombre",
+      "high-contrast": "Contraste élevé"
+    }
+  },
+  "saved": "Préférences enregistrées"
+}

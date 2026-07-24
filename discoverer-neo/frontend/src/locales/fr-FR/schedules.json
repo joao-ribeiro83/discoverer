@@ -1,1 +1,87 @@
-{}
+{
+  "page": {
+    "title": "Planifications",
+    "description": "Exécutez automatiquement des cartes selon une planification cron et stockez leurs résultats.",
+    "newSchedule": "Nouvelle planification",
+    "emptyMessage": "Aucune planification pour le moment."
+  },
+  "table": {
+    "name": "Nom",
+    "map": "Carte",
+    "schedule": "Planification",
+    "nextRun": "Prochaine exécution",
+    "format": "Format",
+    "status": "Statut",
+    "active": "Actif",
+    "paused": "En pause",
+    "runNow": "Exécuter maintenant",
+    "pause": "Suspendre",
+    "enable": "Activer",
+    "history": "Historique",
+    "edit": "Modifier",
+    "delete": "Supprimer"
+  },
+  "cronPresets": {
+    "daily": "Tous les jours (minuit)",
+    "weekly": "Toutes les semaines (dimanche, minuit)",
+    "monthly": "Tous les mois (le 1er, minuit)",
+    "custom": "Personnalisé"
+  },
+  "dialog": {
+    "editTitle": "Modifier la planification",
+    "createTitle": "Nouvelle planification",
+    "mapLabel": "Carte",
+    "mapPlaceholder": "Sélectionner une carte à planifier",
+    "sharedSuffix": "(partagée)",
+    "nameLabel": "Nom",
+    "frequencyLabel": "Fréquence",
+    "timezoneLabel": "Fuseau horaire",
+    "cronExpressionLabel": "Expression cron",
+    "cronExpressionHelp": "Syntaxe cron standard à 5 champs (minute heure jour-du-mois mois jour-de-la-semaine).",
+    "validFromLabel": "Valide à partir de (facultatif)",
+    "validUntilLabel": "Valide jusqu'au (facultatif)",
+    "outputFormatLabel": "Format de sortie",
+    "formatExcel": "Excel (.xlsx)",
+    "formatCsv": "CSV",
+    "parameterPresetsLabel": "Préréglages de paramètres",
+    "parameterValuePlaceholder": "Valeur utilisée pour chaque exécution planifiée",
+    "enabledLabel": "Activé",
+    "saving": "Enregistrement..."
+  },
+  "deleteDialog": {
+    "title": "Supprimer la planification ?",
+    "descriptionBefore": "Cette opération supprime définitivement",
+    "descriptionAfter": "ainsi que son historique d'exécution. Cette action est irréversible.",
+    "deleting": "Suppression..."
+  },
+  "history": {
+    "title": "Historique d'exécution — {{name}}",
+    "executed": "Exécuté",
+    "status": "Statut",
+    "rows": "Lignes",
+    "duration": "Durée",
+    "loading": "Chargement...",
+    "noRuns": "Aucune exécution pour le moment.",
+    "download": "Télécharger",
+    "durationSeconds": "{{seconds}} s"
+  },
+  "toasts": {
+    "scheduleUpdated": "Planification mise à jour",
+    "scheduleCreated": "Planification créée",
+    "saveFailedTitle": "Échec de l'enregistrement",
+    "scheduleDeleted": "Planification supprimée",
+    "deleteFailedTitle": "Échec de la suppression",
+    "schedulePaused": "Planification suspendue",
+    "scheduleEnabled": "Planification activée",
+    "updateFailedTitle": "Échec de la mise à jour",
+    "runQueuedTitle": "Exécution mise en file d'attente",
+    "runQueuedDescription": "Consultez l'historique dans quelques instants pour voir le résultat.",
+    "triggerFailedTitle": "Échec du déclenchement",
+    "downloadFailedTitle": "Échec du téléchargement"
+  },
+  "validation": {
+    "selectMap": "Sélectionnez une carte",
+    "nameRequired": "Le nom est obligatoire",
+    "cronExpressionRequired": "L'expression cron est obligatoire"
+  }
+}

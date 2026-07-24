@@ -1,1 +1,95 @@
-{}
+{
+  "viewer": {
+    "loading": "Chargement de la carte…",
+    "notFound": "Carte introuvable",
+    "notFoundDescription": "Impossible de charger cette carte.",
+    "executedTitle": "Carte exécutée",
+    "rowsReturned": "{{count}} ligne(s) renvoyée(s).",
+    "runFailedTitle": "Échec de l'exécution",
+    "scheduleManagement": "Gestion des planifications"
+  },
+  "mapsList": {
+    "title": "Cartes",
+    "description": "Parcourez et gérez vos cartes visuelles.",
+    "placeholderTitle": "Espace réservé",
+    "comingSoon": "Cette page sera bientôt disponible."
+  },
+  "dashboard": {
+    "welcome": "Bienvenue",
+    "welcomeWithName": "Bienvenue, {{name}}",
+    "subtitle": "Vue d'ensemble de votre espace de travail Discoverer Neo.",
+    "totalMaps": "Nombre total de cartes",
+    "totalMapsBreakdown": "{{mine}} à vous, {{shared}} partagées avec vous",
+    "totalExecutions": "Nombre total d'exécutions",
+    "totalExecutionsTooltip": "Aucun point de terminaison de comptage des exécutions à l'échelle de l'espace de travail n'existe encore — consultez l'historique de chaque carte pour ses propres exécutions.",
+    "perMapHistory": "L'historique par carte se trouve dans le visualiseur de chaque carte.",
+    "scheduledMaps": "Cartes planifiées",
+    "scheduledMapsTooltip": "La planification n'a pas encore été implémentée.",
+    "comingWithSchedules": "Disponible avec la fonctionnalité Planifications.",
+    "dataSources": "Sources de données",
+    "dataSourcesTooltip": "Consultez Administration -> Sources de données pour la liste complète.",
+    "manageConnections": "Gérez les connexions dans Administration.",
+    "recentMaps": "Cartes récentes",
+    "recentMapsDescription": "Vos 5 dernières cartes mises à jour.",
+    "noMapsYet": "Aucune carte pour le moment. Créez-en une depuis la page Cartes.",
+    "scheduledResults": "Résultats planifiés",
+    "scheduledResultsDescription": "Les 5 dernières exécutions planifiées.",
+    "schedulingNotAvailable": "La planification n'est pas encore disponible — cette section se remplira une fois les planifications disponibles."
+  },
+  "resultsTable": {
+    "nullValue": "NULL",
+    "noRows": "Aucune ligne.",
+    "filterPlaceholder": "Filtrer…",
+    "filterAriaLabel": "Filtrer {{column}}",
+    "rowCount_one": "{{formattedCount}} ligne",
+    "rowCount_other": "{{formattedCount}} lignes",
+    "filteredFrom": "(filtré sur {{total}})"
+  },
+  "execution": {
+    "nothingToLoadMore": "Rien de plus à charger pour le moment.",
+    "loadMoreFailedTitle": "Échec du chargement supplémentaire",
+    "saveBeforeBackgroundRun": "Enregistrez la carte avant de l'exécuter en arrière-plan.",
+    "runFailedTitle": "Échec de l'exécution",
+    "backgroundRunCompleteTitle": "Exécution en arrière-plan terminée",
+    "rowsReturned": "{{count}} ligne(s) renvoyée(s).",
+    "backgroundRunFailedTitle": "Échec de l'exécution en arrière-plan",
+    "executionFailedFallback": "L'exécution a échoué.",
+    "results": "Résultats",
+    "rowCount_one": "{{count}} ligne",
+    "rowCount_other": "{{count}} lignes",
+    "executionTime": "{{ms}} ms",
+    "moreRowsAvailable": "Lignes supplémentaires disponibles",
+    "sql": "SQL",
+    "excel": "Excel",
+    "csv": "CSV",
+    "closeResults": "Fermer les résultats",
+    "executionError": "Erreur d'exécution",
+    "errorKind": {
+      "CONFIG": "Erreur de configuration",
+      "CONNECT": "Erreur de connexion",
+      "TIMEOUT": "Délai de la requête dépassé",
+      "QUERY": "Erreur de requête",
+      "CANCELLED": "Annulé"
+    },
+    "noRows": "La requête n'a renvoyé aucune ligne.",
+    "runToSeeResults": "Exécutez la carte pour afficher les résultats.",
+    "notAllRowsLoaded": "Toutes les lignes ne sont pas chargées.",
+    "runFullResultTooltip": "Exécuter la requête complète en arrière-plan (jusqu'à 100 000 lignes)",
+    "runningStatus": "Exécution… ({{status}})",
+    "runFullResult": "Exécuter le résultat complet"
+  },
+  "parameters": {
+    "title": "Paramètres d'exécution",
+    "description": "Saisissez les valeurs des paramètres de cette carte, puis exécutez-la.",
+    "listPlaceholder": "valeurs, séparées, par des virgules",
+    "required": "Ce paramètre est obligatoire."
+  },
+  "export": {
+    "saveBeforeExport": "Enregistrez la carte avant de l'exporter.",
+    "exportFailedTitle": "Échec de l'exportation",
+    "exportQueuedTitle": "Exportation mise en file d'attente",
+    "exportQueuedDescription": "Cela peut prendre un moment pour les grands ensembles de résultats.",
+    "downloadFailedTitle": "Échec du téléchargement",
+    "exportJobFailedFallback": "La tâche d'exportation a échoué."
+  }
+}
