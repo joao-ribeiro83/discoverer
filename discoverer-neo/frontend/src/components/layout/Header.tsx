@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
-import { LogOut, User } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { LogOut, Settings, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -15,6 +16,7 @@ import { MobileSidebar } from './MobileSidebar'
 export function Header() {
   const { t } = useTranslation(['nav', 'auth'])
   const { user, logout } = useAuthStore()
+  const navigate = useNavigate()
 
   return (
     <header className="flex h-14 items-center justify-between border-b bg-background px-4 md:px-6">
@@ -34,6 +36,11 @@ export function Header() {
             <DropdownMenuLabel>{t('auth:account.menuLabel')}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem disabled>{user?.email}</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => { void navigate('/settings') }}>
+              <Settings className="mr-2 h-4 w-4" />
+              {t('nav:items.settings')}
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout} className="text-destructive">
               <LogOut className="mr-2 h-4 w-4" />

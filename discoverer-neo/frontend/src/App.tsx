@@ -42,6 +42,9 @@ const MigrationPage = lazy(() =>
 const AuditLogPage = lazy(() =>
   import('@/pages/AuditLogPage').then((m) => ({ default: m.AuditLogPage })),
 )
+const SettingsPage = lazy(() =>
+  import('@/pages/SettingsPage').then((m) => ({ default: m.SettingsPage })),
+)
 
 export function App() {
   return (
@@ -83,6 +86,7 @@ export function App() {
           <Route path=":id/view" element={<MapViewerPage />} />
         </Route>
         <Route path="schedules" element={<SchedulesPage />} />
+        <Route path="settings" element={<SettingsPage />} />
       </Route>
     </Routes>
   )

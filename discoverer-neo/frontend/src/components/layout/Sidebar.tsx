@@ -104,7 +104,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
       <div className="border-t p-3">
         <NavLink
-          to="/admin/settings"
+          to="/settings"
           onClick={onNavigate}
           className={({ isActive }) =>
             cn(
