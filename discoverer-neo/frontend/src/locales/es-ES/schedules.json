@@ -1,1 +1,87 @@
-{}
+{
+  "page": {
+    "title": "Programaciones",
+    "description": "Ejecute mapas automáticamente según una programación cron y almacene sus resultados.",
+    "newSchedule": "Nueva programación",
+    "emptyMessage": "Aún no hay programaciones."
+  },
+  "table": {
+    "name": "Nombre",
+    "map": "Mapa",
+    "schedule": "Programación",
+    "nextRun": "Próxima ejecución",
+    "format": "Formato",
+    "status": "Estado",
+    "active": "Activa",
+    "paused": "En pausa",
+    "runNow": "Ejecutar ahora",
+    "pause": "Pausar",
+    "enable": "Habilitar",
+    "history": "Historial",
+    "edit": "Editar",
+    "delete": "Eliminar"
+  },
+  "cronPresets": {
+    "daily": "Diaria (medianoche)",
+    "weekly": "Semanal (domingo, medianoche)",
+    "monthly": "Mensual (día 1, medianoche)",
+    "custom": "Personalizada"
+  },
+  "dialog": {
+    "editTitle": "Editar programación",
+    "createTitle": "Nueva programación",
+    "mapLabel": "Mapa",
+    "mapPlaceholder": "Seleccione un mapa para programar",
+    "sharedSuffix": "(compartido)",
+    "nameLabel": "Nombre",
+    "frequencyLabel": "Frecuencia",
+    "timezoneLabel": "Zona horaria",
+    "cronExpressionLabel": "Expresión cron",
+    "cronExpressionHelp": "Sintaxis cron estándar de 5 campos (minuto hora día-del-mes mes día-de-la-semana).",
+    "validFromLabel": "Válida desde (opcional)",
+    "validUntilLabel": "Válida hasta (opcional)",
+    "outputFormatLabel": "Formato de salida",
+    "formatExcel": "Excel (.xlsx)",
+    "formatCsv": "CSV",
+    "parameterPresetsLabel": "Valores predefinidos de parámetros",
+    "parameterValuePlaceholder": "Valor utilizado en cada ejecución programada",
+    "enabledLabel": "Habilitada",
+    "saving": "Guardando..."
+  },
+  "deleteDialog": {
+    "title": "¿Eliminar la programación?",
+    "descriptionBefore": "Esto elimina permanentemente",
+    "descriptionAfter": "y su historial de ejecución. Esta acción no se puede deshacer.",
+    "deleting": "Eliminando..."
+  },
+  "history": {
+    "title": "Historial de ejecución — {{name}}",
+    "executed": "Ejecutado",
+    "status": "Estado",
+    "rows": "Filas",
+    "duration": "Duración",
+    "loading": "Cargando...",
+    "noRuns": "Aún no hay ejecuciones.",
+    "download": "Descargar",
+    "durationSeconds": "{{seconds}} s"
+  },
+  "toasts": {
+    "scheduleUpdated": "Programación actualizada",
+    "scheduleCreated": "Programación creada",
+    "saveFailedTitle": "Error al guardar",
+    "scheduleDeleted": "Programación eliminada",
+    "deleteFailedTitle": "Error al eliminar",
+    "schedulePaused": "Programación pausada",
+    "scheduleEnabled": "Programación habilitada",
+    "updateFailedTitle": "Error al actualizar",
+    "runQueuedTitle": "Ejecución en cola",
+    "runQueuedDescription": "Consulte el historial en breve para ver el resultado.",
+    "triggerFailedTitle": "Error al iniciar la ejecución",
+    "downloadFailedTitle": "Error en la descarga"
+  },
+  "validation": {
+    "selectMap": "Seleccione un mapa",
+    "nameRequired": "El nombre es obligatorio",
+    "cronExpressionRequired": "La expresión cron es obligatoria"
+  }
+}

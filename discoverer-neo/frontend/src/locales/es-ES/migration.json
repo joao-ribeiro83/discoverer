@@ -1,1 +1,112 @@
-{}
+{
+  "page": {
+    "title": "Migración",
+    "description": "Importe una capa End User Layer (EUL) de Oracle Discoverer a Discoverer Neo."
+  },
+  "actions": {
+    "detectVersion": "Detectar versión",
+    "analyze": "Analizar",
+    "runDryRun": "Ejecutar simulación",
+    "runMigration": "Ejecutar migración"
+  },
+  "source": {
+    "title": "Origen",
+    "description": "Elija un origen de datos Oracle registrado. Sus credenciales almacenadas se utilizan en el servidor; las contraseñas nunca se envían desde esta página. La migración siempre se dirige a esta base de datos de Discoverer Neo.",
+    "dataSourceLabel": "Origen de datos Oracle",
+    "selectDataSourcePlaceholder": "Seleccione un origen de datos",
+    "noOracleDataSources": "No hay orígenes de datos Oracle",
+    "schemaOwnerLabel": "Propietario del esquema EUL (opcional)",
+    "schemaOwnerPlaceholder": "p. ej. EUL5_US",
+    "versionLabel": "Versión de EUL",
+    "autoDetect": "Detección automática",
+    "forceEul4": "Forzar EUL4",
+    "forceEul5": "Forzar EUL5",
+    "dryRunLabel": "Simulación (validar sin escribir)",
+    "liveMigrationWarning": "Una migración real escribe en esta base de datos de Discoverer Neo. Ejecute primero una simulación y revise el informe siguiente."
+  },
+  "detected": {
+    "title": "Origen detectado",
+    "supported": "Compatible",
+    "notSupported": "No compatible",
+    "discovererRelease": "Versión de Discoverer",
+    "schemaVersion": "Versión del esquema EUL",
+    "schemaOwner": "Propietario del esquema",
+    "tablesFound": "Tablas EUL encontradas"
+  },
+  "assessment": {
+    "title": "Evaluación",
+    "description": "Preparación {{score}}/100 ({{rating}}) · complejidad {{complexity}} · esfuerzo estimado {{estimate}}",
+    "counts": {
+      "businessAreas": "Áreas de negocio",
+      "folders": "Carpetas",
+      "items": "Elementos",
+      "joins": "Combinaciones",
+      "hierarchies": "Jerarquías",
+      "customFunctions": "Funciones personalizadas",
+      "workbooks": "Libros",
+      "conditions": "Condiciones",
+      "securityConditions": "Condiciones de seguridad",
+      "users": "Usuarios",
+      "grants": "Concesiones",
+      "orphanedObjects": "Objetos huérfanos"
+    },
+    "blockers": "Bloqueadores",
+    "warningsCount": "Advertencias ({{count}})"
+  },
+  "job": {
+    "dryRunLabel": "Simulación",
+    "migrationLabel": "Migración",
+    "requestedVersion": "{{version}} solicitada",
+    "started": "Iniciada",
+    "progressAriaLabel": "Progreso de la migración",
+    "rowsPlanned": "Filas que se insertarían",
+    "rowsInserted": "Filas insertadas",
+    "tableColumn": "Tabla",
+    "rowsColumn": "Filas",
+    "summary": "Resumen",
+    "sourceIntegrity": "Integridad del origen: {{status}} ({{errorCount}} error(es), {{warningCount}} advertencia(s)). Se omitieron {{skippedCount}} objeto(s). Duración: {{duration}} s.",
+    "valid": "válida",
+    "invalid": "no válida",
+    "reconciliation": "Conciliación posterior a la migración: {{status}}",
+    "rowCountsMatch": "los recuentos de filas coinciden",
+    "mismatch": "NO COINCIDE",
+    "syntheticBusinessAreasNotice": "Se creó un área de negocio «Migrated Workbooks» para alojar los mapas de los libros; el diseño de sus hojas de trabajo debe reconstruirse manualmente.",
+    "migratedAccountsNotice": "Las cuentas de usuario migradas no pueden iniciar sesión hasta que un administrador establezca una contraseña.",
+    "versionSpecificNotes": "Notas específicas de la versión ({{count}})",
+    "logTitle": "Registro de la migración",
+    "droppedLogsNotice": "({{count}} línea(s) anterior(es) recortada(s))",
+    "noLogEntries": "Aún no hay entradas de registro."
+  },
+  "tables": {
+    "users": "Usuarios",
+    "business_areas": "Áreas de negocio",
+    "folders": "Carpetas",
+    "items": "Elementos",
+    "joins": "Combinaciones",
+    "hierarchies": "Jerarquías",
+    "hierarchy_levels": "Niveles de jerarquía",
+    "custom_functions": "Funciones personalizadas",
+    "maps": "Mapas",
+    "map_items": "Columnas del mapa",
+    "user_business_area_grants": "Concesiones"
+  },
+  "toasts": {
+    "detectedTitle": "Se detectó {{version}}",
+    "detectedDescription": "Discoverer {{discovererVersion}} · esquema {{schemaVersion}}",
+    "detectionFailed": "Error en la detección",
+    "analysisComplete": "Análisis completado",
+    "analysisCompleteDescription": "Preparación {{score}}/100",
+    "analysisFailed": "Error en el análisis",
+    "dryRunStarted": "Simulación iniciada",
+    "migrationStarted": "Migración iniciada",
+    "progressUpdatesBelow": "Actualizaciones de progreso a continuación.",
+    "couldNotStart": "No se pudo iniciar",
+    "dryRunComplete": "Simulación completada",
+    "migrationComplete": "Migración completada",
+    "noRowsWritten": "No se escribió ninguna fila.",
+    "migratedFrom": "Migrado desde {{source}}.",
+    "theSource": "el origen",
+    "migrationFailed": "Error en la migración",
+    "seeLogBelow": "Consulte el registro a continuación."
+  }
+}

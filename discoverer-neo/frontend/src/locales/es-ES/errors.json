@@ -1,1 +1,17 @@
-{}
+{
+  "generic": "Se ha producido un error",
+  "network": "No se puede conectar con el servidor. Compruebe su conexión e inténtelo de nuevo.",
+  "unauthorized": "No tiene autorización para realizar esta acción.",
+  "notFound": "No se ha encontrado el recurso solicitado.",
+  "validation": "Corrija los campos resaltados e inténtelo de nuevo.",
+  "loadFailed": "No se han podido cargar los datos.",
+  "saveFailed": "No se han podido guardar los cambios.",
+  "deleteFailed": "No se ha podido eliminar.",
+  "execution": {
+    "CONFIG": "La configuración del mapa no es válida. Revise sus columnas, condiciones y parámetros.",
+    "CONNECT": "No se ha podido conectar con el origen de datos.",
+    "TIMEOUT": "Se ha agotado el tiempo de espera de la consulta. Intente limitar el conjunto de resultados o agregar condiciones.",
+    "QUERY": "La base de datos ha rechazado la consulta.",
+    "CANCELLED": "Se ha cancelado la ejecución."
+  }
+}

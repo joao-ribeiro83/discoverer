@@ -1,1 +1,59 @@
-{}
+{
+  "page": {
+    "title": "Registro de auditoría",
+    "description": "Todas las solicitudes de modificación (cambios de datos, exportaciones, migraciones y eventos de autenticación) se capturan automáticamente."
+  },
+  "actions": {
+    "exportCsv": "Exportar CSV (esta página)"
+  },
+  "actorUnknown": "Sistema / sin autenticar",
+  "csv": {
+    "timestamp": "Marca de tiempo",
+    "user": "Usuario",
+    "action": "Acción",
+    "entityType": "Tipo de entidad",
+    "entityId": "ID de entidad",
+    "ipAddress": "Dirección IP"
+  },
+  "table": {
+    "timestamp": "Marca de tiempo",
+    "user": "Usuario",
+    "action": "Acción",
+    "entity": "Entidad",
+    "ipAddress": "Dirección IP",
+    "viewDetails": "Ver detalles",
+    "emptyMessage": "No hay entradas de auditoría que coincidan con estos filtros."
+  },
+  "stats": {
+    "totalActions": "Total de acciones",
+    "selectedDateRange": "En el intervalo de fechas seleccionado",
+    "allTime": "Todo el periodo",
+    "topActions": "Acciones principales",
+    "topActionsDescription": "Tipos de acción más frecuentes",
+    "noActivity": "Aún no se ha registrado actividad.",
+    "actionsPerDay": "Acciones por día",
+    "actionsPerDayDescription": "Volumen de actividad diario para el intervalo de fechas seleccionado"
+  },
+  "chart": {
+    "actions": "Acciones"
+  },
+  "filters": {
+    "title": "Filtros",
+    "userLabel": "Usuario",
+    "userAriaLabel": "Filtrar por usuario",
+    "allUsers": "Todos los usuarios",
+    "entityTypeLabel": "Tipo de entidad",
+    "entityTypePlaceholder": "p. ej. maps",
+    "actionLabel": "Acción",
+    "actionPlaceholder": "p. ej. POST /api/maps",
+    "fromLabel": "Desde",
+    "toLabel": "Hasta"
+  },
+  "pagination": {
+    "noResults": "Sin resultados"
+  },
+  "detail": {
+    "title": "Detalles de la entrada de auditoría",
+    "descriptionTemplate": "{{action}} — {{date}}"
+  }
+}

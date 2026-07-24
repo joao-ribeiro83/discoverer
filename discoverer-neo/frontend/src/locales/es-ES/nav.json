@@ -1,1 +1,31 @@
-{}
+{
+  "appName": "Discoverer Neo",
+  "sections": {
+    "overview": "Información general",
+    "dataModeling": "Modelado de datos",
+    "maps": "Mapas",
+    "other": "Otros"
+  },
+  "items": {
+    "dashboard": "Panel",
+    "businessAreas": "Áreas de negocio",
+    "folders": "Carpetas",
+    "items": "Elementos",
+    "joins": "Combinaciones",
+    "hierarchies": "Jerarquías",
+    "customFunctions": "Funciones personalizadas",
+    "dataSources": "Orígenes de datos",
+    "users": "Usuarios",
+    "security": "Seguridad",
+    "auditLog": "Registro de auditoría",
+    "maps": "Mapas",
+    "schedules": "Programaciones",
+    "migration": "Migración",
+    "settings": "Configuración"
+  },
+  "mobile": {
+    "toggleMenu": "Mostrar u ocultar el menú",
+    "menuTitle": "Menú de navegación"
+  },
+  "loadingPage": "Cargando página"
+}

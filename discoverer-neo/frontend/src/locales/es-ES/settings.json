@@ -1,1 +1,20 @@
-{}
+{
+  "title": "Configuración",
+  "subtitle": "Administre las preferencias de su cuenta",
+  "language": {
+    "title": "Idioma",
+    "description": "Elija el idioma que se utiliza en toda la interfaz.",
+    "label": "Idioma de visualización"
+  },
+  "theme": {
+    "title": "Tema",
+    "description": "Elija el aspecto de la interfaz.",
+    "label": "Apariencia",
+    "options": {
+      "light": "Claro",
+      "dark": "Oscuro",
+      "high-contrast": "Alto contraste"
+    }
+  },
+  "saved": "Preferencias guardadas"
+}

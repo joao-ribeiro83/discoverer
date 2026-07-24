@@ -1,1 +1,95 @@
-{}
+{
+  "viewer": {
+    "loading": "Cargando mapa…",
+    "notFound": "Mapa no encontrado",
+    "notFoundDescription": "No se ha podido cargar este mapa.",
+    "executedTitle": "Mapa ejecutado",
+    "rowsReturned": "Se devolvieron {{count}} fila(s).",
+    "runFailedTitle": "Error en la ejecución",
+    "scheduleManagement": "Administración de programaciones"
+  },
+  "mapsList": {
+    "title": "Mapas",
+    "description": "Explore y administre sus mapas visuales.",
+    "placeholderTitle": "Marcador de posición",
+    "comingSoon": "Esta página estará disponible próximamente."
+  },
+  "dashboard": {
+    "welcome": "Le damos la bienvenida",
+    "welcomeWithName": "Le damos la bienvenida, {{name}}",
+    "subtitle": "Información general de su espacio de trabajo de Discoverer Neo.",
+    "totalMaps": "Total de mapas",
+    "totalMapsBreakdown": "{{mine}} suyos, {{shared}} compartidos con usted",
+    "totalExecutions": "Total de ejecuciones",
+    "totalExecutionsTooltip": "Aún no existe un punto de conexión de recuento de ejecuciones para todo el espacio de trabajo; consulte el historial de cada mapa para ver sus propias ejecuciones.",
+    "perMapHistory": "El historial por mapa se encuentra en el visor de cada mapa.",
+    "scheduledMaps": "Mapas programados",
+    "scheduledMapsTooltip": "La programación aún no se ha implementado.",
+    "comingWithSchedules": "Disponible con la función de programaciones.",
+    "dataSources": "Orígenes de datos",
+    "dataSourcesTooltip": "Consulte Administración -> Orígenes de datos para ver la lista completa.",
+    "manageConnections": "Administre las conexiones en Administración.",
+    "recentMaps": "Mapas recientes",
+    "recentMapsDescription": "Sus últimos 5 mapas actualizados.",
+    "noMapsYet": "Aún no hay mapas. Cree uno desde la página Mapas.",
+    "scheduledResults": "Resultados programados",
+    "scheduledResultsDescription": "Las últimas 5 ejecuciones programadas.",
+    "schedulingNotAvailable": "La programación aún no está disponible; esta sección se rellenará cuando las programaciones estén disponibles."
+  },
+  "resultsTable": {
+    "nullValue": "NULL",
+    "noRows": "No hay filas.",
+    "filterPlaceholder": "Filtrar…",
+    "filterAriaLabel": "Filtrar {{column}}",
+    "rowCount_one": "{{formattedCount}} fila",
+    "rowCount_other": "{{formattedCount}} filas",
+    "filteredFrom": "(filtrado de {{total}})"
+  },
+  "execution": {
+    "nothingToLoadMore": "No hay nada más que cargar.",
+    "loadMoreFailedTitle": "Error al cargar más",
+    "saveBeforeBackgroundRun": "Guarde el mapa antes de ejecutarlo en segundo plano.",
+    "runFailedTitle": "Error en la ejecución",
+    "backgroundRunCompleteTitle": "Ejecución en segundo plano completada",
+    "rowsReturned": "Se devolvieron {{count}} fila(s).",
+    "backgroundRunFailedTitle": "Error en la ejecución en segundo plano",
+    "executionFailedFallback": "La ejecución ha fallado.",
+    "results": "Resultados",
+    "rowCount_one": "{{count}} fila",
+    "rowCount_other": "{{count}} filas",
+    "executionTime": "{{ms}} ms",
+    "moreRowsAvailable": "Hay más filas disponibles",
+    "sql": "SQL",
+    "excel": "Excel",
+    "csv": "CSV",
+    "closeResults": "Cerrar resultados",
+    "executionError": "Error de ejecución",
+    "errorKind": {
+      "CONFIG": "Error de configuración",
+      "CONNECT": "Error de conexión",
+      "TIMEOUT": "Se agotó el tiempo de espera de la consulta",
+      "QUERY": "Error de consulta",
+      "CANCELLED": "Cancelada"
+    },
+    "noRows": "La consulta no devolvió ninguna fila.",
+    "runToSeeResults": "Ejecute el mapa para ver los resultados.",
+    "notAllRowsLoaded": "No se han cargado todas las filas.",
+    "runFullResultTooltip": "Ejecutar la consulta completa en segundo plano (hasta 100.000 filas)",
+    "runningStatus": "Ejecutando… ({{status}})",
+    "runFullResult": "Ejecutar resultado completo"
+  },
+  "parameters": {
+    "title": "Parámetros de ejecución",
+    "description": "Introduzca los valores de los parámetros de este mapa y, a continuación, ejecútelo.",
+    "listPlaceholder": "valores, separados, por comas",
+    "required": "Este parámetro es obligatorio."
+  },
+  "export": {
+    "saveBeforeExport": "Guarde el mapa antes de exportarlo.",
+    "exportFailedTitle": "Error en la exportación",
+    "exportQueuedTitle": "Exportación en cola",
+    "exportQueuedDescription": "Esto puede tardar un momento con conjuntos de resultados grandes.",
+    "downloadFailedTitle": "Error en la descarga",
+    "exportJobFailedFallback": "El trabajo de exportación ha fallado."
+  }
+}

@@ -1,1 +1,317 @@
-{}
+{
+  "shared": {
+    "businessAreaLabel": "Área de negocio",
+    "selectBusinessAreaPlaceholder": "Seleccione un área de negocio",
+    "folderLabel": "Carpeta",
+    "discoverTablesButton": "Descubrir tablas",
+    "saving": "Guardando...",
+    "deleting": "Eliminando...",
+    "loading": "Cargando...",
+    "defaultEmptyMessage": "Sin resultados.",
+    "saveFailed": "Error al guardar",
+    "deleteFailed": "Error al eliminar",
+    "deleteConfirmTitle": "¿Eliminar {{itemLabel}}?",
+    "defaultItemLabel": "elemento",
+    "deleteConfirmDescriptionPrefix": "Esto desactivará",
+    "deleteConfirmDescriptionSuffix": "Esta acción solo puede revertirla un administrador.",
+    "validation": {
+      "nameRequired": "El nombre es obligatorio"
+    }
+  },
+  "businessAreas": {
+    "title": "Áreas de negocio",
+    "description": "Administre las áreas de negocio de sus modelos de datos.",
+    "createButton": "Nueva área de negocio",
+    "emptyMessage": "Aún no hay áreas de negocio.",
+    "manageGrantsTitle": "Administrar concesiones",
+    "entityLabel": "área de negocio",
+    "dialog": {
+      "editTitle": "Editar área de negocio",
+      "createTitle": "Nueva área de negocio"
+    },
+    "toast": {
+      "updated": "Área de negocio actualizada",
+      "created": "Área de negocio creada",
+      "deactivated": "Área de negocio desactivada"
+    },
+    "grants": {
+      "dialogTitle": "Concesiones — {{name}}",
+      "dialogDescription": "Controle qué usuarios pueden acceder a esta área de negocio y qué pueden hacer.",
+      "userLabel": "Usuario",
+      "selectUserPlaceholder": "Seleccione un usuario",
+      "permissionLabel": "Permiso",
+      "addButton": "Agregar",
+      "revokeTitle": "Revocar",
+      "loadingGrants": "Cargando concesiones...",
+      "noGrantsYet": "Aún no hay concesiones.",
+      "closeButton": "Cerrar",
+      "toast": {
+        "accessGranted": "Acceso concedido",
+        "grantFailed": "Error al conceder el acceso",
+        "accessRevoked": "Acceso revocado"
+      }
+    }
+  },
+  "folders": {
+    "title": "Carpetas",
+    "description": "Administre las carpetas (tablas, vistas y datos derivados) de un área de negocio.",
+    "createButton": "Nueva carpeta",
+    "emptyMessage": "Aún no hay carpetas en esta área de negocio.",
+    "selectBusinessAreaPrompt": "Seleccione un área de negocio para ver sus carpetas.",
+    "entityLabel": "carpeta",
+    "columns": {
+      "tableName": "Nombre de la tabla",
+      "dataSource": "Origen de datos"
+    },
+    "dialog": {
+      "editTitle": "Editar carpeta",
+      "createTitle": "Nueva carpeta"
+    },
+    "form": {
+      "folderTypeLabel": "Tipo de carpeta",
+      "customSqlLabel": "SQL personalizado",
+      "dataSourceLabel": "Origen de datos",
+      "selectDataSourcePlaceholder": "Seleccione un origen de datos",
+      "tableNameLabel": "Nombre de la tabla",
+      "tableOwnerLabel": "Propietario de la tabla"
+    },
+    "toast": {
+      "discoveryFailed": "Error al descubrir",
+      "updated": "Carpeta actualizada",
+      "created": "Carpeta creada",
+      "deactivated": "Carpeta desactivada"
+    }
+  },
+  "items": {
+    "title": "Elementos",
+    "description": "Administre los elementos expuestos por las carpetas: columnas, cálculos y agregaciones.",
+    "createButton": "Nuevo elemento",
+    "emptyMessage": "Aún no hay elementos en esta carpeta.",
+    "selectBusinessAreaPrompt": "Seleccione un área de negocio y una carpeta para ver sus elementos.",
+    "entityLabel": "elemento",
+    "selectFolderPlaceholder": "Seleccione una carpeta",
+    "itemTypes": {
+      "ci": "Elemento de columna (CI)",
+      "cu": "Elemento calculado (CU)",
+      "co": "Condición (CO)",
+      "ji": "Elemento de combinación (JI)",
+      "hi": "Elemento de jerarquía (HI)",
+      "ag": "Agregación (AG)",
+      "fu": "Función (FU)"
+    },
+    "columns": {
+      "column": "Columna",
+      "dataType": "Tipo de datos",
+      "aggregation": "Agregación"
+    },
+    "dialog": {
+      "editTitle": "Editar elemento",
+      "createTitle": "Nuevo elemento"
+    },
+    "form": {
+      "itemTypeLabel": "Tipo de elemento",
+      "columnNameLabel": "Nombre de la columna",
+      "columnNamePlaceholder": "p. ej. CUSTOMER_ID",
+      "formulaLabel": "Fórmula",
+      "formulaPlaceholder": "p. ej. QUANTITY * UNIT_PRICE",
+      "dataTypeLabel": "Tipo de datos",
+      "dataTypePlaceholder": "p. ej. NUMBER",
+      "formatMaskLabel": "Máscara de formato",
+      "formatMaskPlaceholder": "p. ej. 999,999.00",
+      "aggregationLabel": "Agregación"
+    },
+    "toast": {
+      "updated": "Elemento actualizado",
+      "created": "Elemento creado",
+      "deactivated": "Elemento desactivado"
+    }
+  },
+  "joins": {
+    "title": "Combinaciones",
+    "description": "Defina las relaciones entre las carpetas de un área de negocio.",
+    "createButton": "Nueva combinación",
+    "emptyMessage": "Aún no hay combinaciones en esta área de negocio.",
+    "selectBusinessAreaPrompt": "Seleccione un área de negocio para ver sus combinaciones.",
+    "entityLabel": "combinación",
+    "columns": {
+      "leftFolder": "Carpeta izquierda",
+      "rightFolder": "Carpeta derecha"
+    },
+    "dialog": {
+      "editTitle": "Editar combinación",
+      "createTitle": "Nueva combinación"
+    },
+    "form": {
+      "leftFolderLabel": "Carpeta izquierda",
+      "rightFolderLabel": "Carpeta derecha",
+      "selectFolderPlaceholder": "Seleccione una carpeta",
+      "suggestJoinsButton": "Sugerir combinaciones",
+      "leftItemLabel": "Elemento izquierdo",
+      "rightItemLabel": "Elemento derecho",
+      "selectItemPlaceholder": "Seleccione un elemento",
+      "joinTypeLabel": "Tipo de combinación"
+    },
+    "validation": {
+      "leftFolderRequired": "La carpeta izquierda es obligatoria",
+      "rightFolderRequired": "La carpeta derecha es obligatoria"
+    },
+    "toast": {
+      "noSuggestions": "No se han encontrado sugerencias de combinación para esta carpeta",
+      "suggestionFailed": "Error al sugerir",
+      "updated": "Combinación actualizada",
+      "created": "Combinación creada",
+      "deactivated": "Combinación desactivada"
+    }
+  },
+  "hierarchies": {
+    "title": "Jerarquías",
+    "description": "Defina jerarquías de exploración en profundidad ordenando los elementos en niveles.",
+    "createButton": "Nueva jerarquía",
+    "emptyMessage": "Aún no hay jerarquías en esta área de negocio.",
+    "selectBusinessAreaPrompt": "Seleccione un área de negocio para ver sus jerarquías.",
+    "entityLabel": "jerarquía",
+    "columns": {
+      "levels": "Niveles",
+      "levelsCount": "{{count}} nivel(es)"
+    },
+    "dialog": {
+      "editTitle": "Editar jerarquía",
+      "createTitle": "Nueva jerarquía"
+    },
+    "form": {
+      "levelsLabel": "Niveles (de arriba abajo)",
+      "addLevelButton": "Agregar nivel",
+      "noLevelsYet": "Aún no hay niveles: agregue al menos uno.",
+      "levelNamePlaceholder": "Nombre del nivel",
+      "itemPlaceholder": "Elemento"
+    },
+    "toast": {
+      "updated": "Jerarquía actualizada",
+      "created": "Jerarquía creada",
+      "deactivated": "Jerarquía desactivada"
+    }
+  },
+  "customFunctions": {
+    "title": "Funciones personalizadas",
+    "description": "Registre funciones SQL, PL/SQL y de paquete personalizadas disponibles para los elementos calculados.",
+    "createButton": "Nueva función",
+    "emptyMessage": "Aún no hay funciones personalizadas.",
+    "entityLabel": "función personalizada",
+    "columns": {
+      "parameters": "Parámetros",
+      "parametersCount": "{{count}} parámetro(s)",
+      "returnType": "Tipo de retorno"
+    },
+    "dialog": {
+      "editTitle": "Editar función personalizada",
+      "createTitle": "Nueva función personalizada"
+    },
+    "form": {
+      "functionTypeLabel": "Tipo de función",
+      "returnTypeLabel": "Tipo de retorno",
+      "returnTypePlaceholder": "p. ej. NUMBER",
+      "parametersLabel": "Parámetros (JSON)",
+      "parametersPlaceholder": "[\n  { \"name\": \"p_id\", \"type\": \"NUMBER\", \"required\": true }\n]"
+    },
+    "validation": {
+      "parametersMustBeArray": "Los parámetros deben ser una matriz JSON",
+      "parameterNeedsNameAndType": "Cada parámetro necesita un «name» y un «type»",
+      "invalidJson": "JSON no válido"
+    },
+    "toast": {
+      "updated": "Función actualizada",
+      "created": "Función creada",
+      "deactivated": "Función desactivada"
+    }
+  },
+  "dataSources": {
+    "title": "Orígenes de datos",
+    "description": "Administre las conexiones a la base de datos que se utilizan para inspeccionar e importar esquemas.",
+    "createButton": "Nuevo origen de datos",
+    "emptyMessage": "Aún no hay orígenes de datos.",
+    "entityLabel": "origen de datos",
+    "columns": {
+      "host": "Host"
+    },
+    "actions": {
+      "testConnection": "Probar conexión",
+      "introspectSchema": "Inspeccionar esquema",
+      "importTables": "Importar tablas"
+    },
+    "dialog": {
+      "editTitle": "Editar origen de datos",
+      "createTitle": "Nuevo origen de datos"
+    },
+    "form": {
+      "connectionTypeLabel": "Tipo de conexión",
+      "connectionTypeOracle": "Oracle",
+      "connectionTypePostgres": "PostgreSQL",
+      "hostLabel": "Host",
+      "portLabel": "Puerto",
+      "serviceNameLabel": "Nombre del servicio",
+      "sidLabel": "SID",
+      "usernameLabel": "Nombre de usuario",
+      "passwordLabel": "Contraseña",
+      "passwordKeepHint": "(deje en blanco para mantenerla)"
+    },
+    "toast": {
+      "updated": "Origen de datos actualizado",
+      "created": "Origen de datos creado",
+      "deactivated": "Origen de datos desactivado",
+      "connectionSucceeded": "Conexión establecida",
+      "connectionFailed": "Error de conexión",
+      "testFailed": "Error en la prueba",
+      "introspectionComplete": "Inspección completada",
+      "introspectionCompleteDescription": "Se descubrieron {{count}} tabla(s).",
+      "introspectionFailed": "Error en la inspección"
+    },
+    "import": {
+      "dialogTitle": "Importar tablas — {{name}}",
+      "dialogDescription": "Descubra tablas e importe las tablas seleccionadas como carpetas.",
+      "tableOwnerLabel": "Propietario de la tabla / Esquema",
+      "tableOwnerPlaceholder": "p. ej. SCOTT",
+      "selectDestinationPlaceholder": "Seleccione el área de negocio de destino",
+      "discoveringTables": "Descubriendo tablas...",
+      "noTablesDiscovered": "Aún no se han descubierto tablas.",
+      "columnsCount": "({{count}} columnas)",
+      "importing": "Importando...",
+      "importButton": "Importar {{count}} tabla(s)",
+      "toast": {
+        "importComplete": "Importación completada",
+        "importCompleteDescription": "Se crearon {{created}} carpeta(s); se omitieron {{skipped}}.",
+        "importFailed": "Error en la importación"
+      }
+    }
+  },
+  "users": {
+    "title": "Usuarios",
+    "description": "Administre las cuentas de usuario y los permisos.",
+    "createButton": "Nuevo usuario",
+    "emptyMessage": "Aún no hay usuarios.",
+    "entityLabel": "usuario",
+    "adminOnlyMessage": "Solo los administradores pueden administrar usuarios.",
+    "columns": {
+      "email": "Correo electrónico",
+      "role": "Rol"
+    },
+    "dialog": {
+      "editTitle": "Editar usuario",
+      "createTitle": "Nuevo usuario"
+    },
+    "form": {
+      "emailLabel": "Correo electrónico",
+      "passwordLabel": "Contraseña",
+      "passwordKeepHint": "(deje en blanco para mantener la actual)",
+      "roleLabel": "Rol"
+    },
+    "validation": {
+      "emailInvalid": "Introduzca un correo electrónico válido",
+      "passwordMinLength": "La contraseña debe tener al menos 8 caracteres"
+    },
+    "toast": {
+      "updated": "Usuario actualizado",
+      "created": "Usuario creado",
+      "deleted": "Usuario eliminado"
+    }
+  }
+}

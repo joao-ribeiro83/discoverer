@@ -1,1 +1,84 @@
-{}
+{
+  "page": {
+    "title": "Directivas de seguridad",
+    "description": "Las directivas de seguridad de nivel de fila restringen las filas que los usuarios pueden ver. Los predicados se combinan mediante AND en todas las consultas que ejecutan los usuarios de una directiva.",
+    "nonAdminDescription": "Las directivas de seguridad de nivel de fila restringen las filas que los usuarios pueden ver.",
+    "nonAdminMessage": "Solo los administradores pueden administrar las directivas de seguridad.",
+    "newPolicy": "Nueva directiva",
+    "emptyMessage": "Aún no hay directivas de seguridad. Sin directivas, los usuarios ven todas las filas que permiten sus permisos de mapa."
+  },
+  "table": {
+    "rules": "Reglas",
+    "assignments": "Asignaciones"
+  },
+  "dialog": {
+    "editTitle": "Editar directiva",
+    "newTitle": "Nueva directiva",
+    "description": "Las reglas se dirigen a un área de negocio o una carpeta; sus predicados SQL se combinan mediante AND en la cláusula WHERE de las consultas coincidentes.",
+    "rulesLabel": "Reglas",
+    "addRule": "Agregar regla",
+    "minRuleNotice": "Una directiva necesita al menos una regla."
+  },
+  "rule": {
+    "appliesTo": "Se aplica a",
+    "targetTypeAriaLabel": "Tipo de destino de la regla",
+    "businessArea": "Área de negocio",
+    "folder": "Carpeta",
+    "businessAreaLabel": "Área de negocio",
+    "businessAreaAriaLabel": "Área de negocio de la regla",
+    "selectBusinessArea": "Seleccione un área de negocio",
+    "folderLabel": "Carpeta",
+    "folderAriaLabel": "Carpeta de la regla",
+    "selectFolder": "Seleccione una carpeta",
+    "removeRule": "Quitar regla",
+    "predicateLabel": "Predicado SQL (fragmento de cláusula WHERE)",
+    "validating": "Validando…",
+    "validPredicate": "Predicado válido",
+    "bindsLabel": "Enlaces:",
+    "aliasResolves": "corresponde al alias de consulta de la carpeta"
+  },
+  "assignments": {
+    "title": "Asignaciones — {{name}}",
+    "description": "La directiva se aplica a todos los usuarios asignados y a todos los usuarios que tengan un rol asignado.",
+    "assignTo": "Asignar a",
+    "kindAriaLabel": "Tipo de asignación",
+    "user": "Usuario",
+    "role": "Rol",
+    "userAriaLabel": "Usuario que se va a asignar",
+    "selectUser": "Seleccione un usuario",
+    "roleAriaLabel": "Rol que se va a asignar",
+    "selectRole": "Seleccione un rol",
+    "assign": "Asignar",
+    "notAssigned": "Sin asignar: actualmente esta directiva no restringe a nadie.",
+    "unknownUser": "Usuario desconocido",
+    "roleLabel": "Rol",
+    "removeAssignment": "Quitar asignación"
+  },
+  "test": {
+    "buttonLabel": "Probar",
+    "dialogTitle": "Probar una directiva",
+    "description": "Obtenga una vista previa de dónde se aplican los predicados de una directiva en una consulta de ejemplo. La aplicación real se produce en el generador de SQL cuando se ejecutan los mapas.",
+    "policyLabel": "Directiva",
+    "policyAriaLabel": "Directiva que se va a probar",
+    "selectPolicy": "Seleccione una directiva",
+    "sampleQueryLabel": "Consulta de ejemplo",
+    "testing": "Probando…",
+    "runTest": "Ejecutar prueba",
+    "resultLabel": "Consulta con predicados de seguridad"
+  },
+  "deleteConfirm": {
+    "itemLabel": "directiva"
+  },
+  "toasts": {
+    "loadPolicyFailed": "Error al cargar la directiva",
+    "policyUpdated": "Directiva actualizada",
+    "policyCreated": "Directiva creada",
+    "saveFailed": "Error al guardar",
+    "policyDeleted": "Directiva eliminada",
+    "deleteFailed": "Error al eliminar",
+    "policyAssigned": "Directiva asignada",
+    "assignFailed": "Error al asignar",
+    "assignmentRemoved": "Asignación eliminada",
+    "removeFailed": "Error al quitar"
+  }
+}
