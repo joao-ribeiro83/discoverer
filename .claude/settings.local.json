@@ -362,7 +362,26 @@
       "Bash(rm -f src/__smoke_test_tokens.tsx)",
       "Bash(rm -rf dist)",
       "Bash(curl -s -m 5 http://localhost:3000/api/health)",
-      "Bash(curl -s -m 5 http://localhost:8080/api/health)"
+      "Bash(curl -s -m 5 http://localhost:8080/api/health)",
+      "Bash(powershell -Command \"\\(Get-Item 'C:\\\\Users\\\\bugsbunny\\\\.claude\\\\projects\\\\E--claude-discoverer\\\\memory\\\\discoverer-neo-status.md'\\).LastWriteTime = Get-Date\")",
+      "Bash(node scripts/i18n-check.mjs pt-PT)",
+      "Bash(node scripts/i18n-check.mjs fr-FR)",
+      "Bash(node scripts/i18n-check.mjs es-ES)",
+      "Bash(cat \"C:\\\\Users\\\\bugsbunny\\\\.claude\\\\projects\\\\E--claude-discoverer\\\\memory\\\\discoverer-neo-status.md\" 2>/dev/null; echo \"---\"; ls -la /e/claude/ 2>/dev/null)",
+      "Bash(node -e \"console.log\\(JSON.stringify\\(require\\('./frontend/package.json'\\).scripts, null, 2\\)\\)\")",
+      "Bash(node -e \"const p=require\\('./frontend/package.json'\\); console.log\\(JSON.stringify\\({dep:p.dependencies,dev:p.devDependencies},null,2\\)\\)\")",
+      "Bash(node scripts/i18n-check.mjs pt-PT fr-FR es-ES)",
+      "Bash(curl -s -i http://localhost:5173/)",
+      "Bash(FRONTEND_PORT=5174 VITE_BACKEND_URL=http://localhost:3001 npx playwright test visual.spec.ts -g \"dark mode CSS wiring\" --reporter=list)",
+      "Bash(FRONTEND_PORT=5174 VITE_BACKEND_URL=http://localhost:3001 npx playwright test visual.spec.ts -g \"data-theme\" --reporter=list)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3001/api/health)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3001/)",
+      "Bash(FRONTEND_PORT=5174 VITE_BACKEND_URL=http://localhost:3001 npx playwright test i18n-theming.spec.ts -g \"Language switching\" --reporter=list)",
+      "Bash(FRONTEND_PORT=5174 VITE_BACKEND_URL=http://localhost:3001 npx playwright test i18n-theming.spec.ts -g \"Theme switching\" --reporter=list)",
+      "Bash(FRONTEND_PORT=5174 VITE_BACKEND_URL=http://localhost:3001 npx playwright test i18n-theming.spec.ts -g \"Missing translation\" --reporter=list)",
+      "Bash(FRONTEND_PORT=5174 VITE_BACKEND_URL=http://localhost:3001 npx playwright test i18n-theming.spec.ts -g \"Contrast\" --reporter=list)",
+      "Bash(FRONTEND_PORT=5174 VITE_BACKEND_URL=http://localhost:3001 npx playwright test i18n-theming.spec.ts -g \"Visual regression\" --reporter=list)",
+      "Bash(FRONTEND_PORT=5174 VITE_BACKEND_URL=http://localhost:3001 npx playwright test --reporter=list)"
     ]
   }
 }

@@ -93,6 +93,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck --workspace @discoverer-neo/frontend
 
+      - name: Check translation completeness
+        run: node scripts/i18n-check.mjs pt-PT fr-FR es-ES
+
       - name: Test
         run: npm test --workspace @discoverer-neo/frontend -- --run
 

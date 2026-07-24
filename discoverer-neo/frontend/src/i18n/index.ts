@@ -110,4 +110,11 @@ i18n.on('languageChanged', (lng) => {
   }
 })
 
+// Dev-only escape hatch for Playwright (see e2e/i18n-theming.spec.ts): lets a
+// test simulate a missing translation key at runtime instead of mutating
+// locale JSON files on disk. Never present in a production build.
+if (import.meta.env.DEV && typeof window !== 'undefined') {
+  ;(window as typeof window & { __i18n?: typeof i18n }).__i18n = i18n
+}
+
 export default i18n

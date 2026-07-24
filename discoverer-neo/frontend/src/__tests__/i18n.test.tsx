@@ -47,14 +47,15 @@ describe('i18n', () => {
   })
 
   it('falls back to en when a key is missing in the active locale', async () => {
+    // Inject a synthetic en-only key rather than relying on some namespace
+    // happening to be incomplete in a locale — every locale is now fully
+    // translated (Sessions 7.5–7.7), so an incidental gap can't be counted
+    // on to still exist.
+    i18n.addResourceBundle('en', 'common', { e2eProbe: { missing: 'English Fallback' } }, true, true)
     render(<Sample />)
     await changeLanguage('es-ES')
-    // es-ES/common.json is still a stub defining only actions.save &
-    // actions.cancel, so actions.close is absent and must fall back to the
-    // en baseline. (fr-FR is now fully translated, so it no longer exercises
-    // the missing-key path.)
     expect(screen.getByTestId('save')).toHaveTextContent('Guardar')
-    expect(screen.getByTestId('close')).toHaveTextContent('Close')
+    expect(i18n.t('common:e2eProbe.missing')).toBe('English Fallback')
   })
 
   it('re-renders translated text when the locale switches at runtime', async () => {

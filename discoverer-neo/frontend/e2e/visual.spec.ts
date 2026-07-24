@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { BUSINESS_AREA, MAP_WITH_DETAILS, jsonRoute, mockCommonApi, seedAuthedSession } from './fixtures'
+import { MAP_WITH_DETAILS, jsonRoute, mockCommonApi, seedAuthedSession } from './fixtures'
 
 const VIEWPORTS = [
   { name: '1280', width: 1280, height: 800 },
@@ -56,13 +56,17 @@ test.describe('Visual — dark mode CSS wiring', () => {
     await mockCommonApi(page)
   })
 
-  test('the .dark class token set is wired up even though no UI toggle exists yet', async ({ page }) => {
+  test('the [data-theme="dark"] token set is wired up', async ({ page }) => {
+    // Themes are selected via a `data-theme` attribute (see the note atop
+    // frontend/src/index.css), not a `.dark` class — this only checks the CSS
+    // wiring directly. Driving the switch through the real Settings UI is
+    // covered end-to-end by e2e/i18n-theming.spec.ts.
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
 
     const lightBg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor)
 
-    await page.evaluate(() => document.documentElement.classList.add('dark'))
+    await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'))
     const darkBg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor)
 
     expect(darkBg).not.toBe(lightBg)
