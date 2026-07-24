@@ -1,1 +1,112 @@
-{}
+{
+  "page": {
+    "title": "Migração",
+    "description": "Importe um End User Layer (EUL) do Oracle Discoverer para o Discoverer Neo."
+  },
+  "actions": {
+    "detectVersion": "Detetar versão",
+    "analyze": "Analisar",
+    "runDryRun": "Executar simulação",
+    "runMigration": "Executar migração"
+  },
+  "source": {
+    "title": "Origem",
+    "description": "Escolha uma origem de dados Oracle registada. As suas credenciais armazenadas são utilizadas no servidor — as palavras-passe nunca são enviadas a partir desta página. A migração tem sempre como destino esta base de dados do Discoverer Neo.",
+    "dataSourceLabel": "Origem de dados Oracle",
+    "selectDataSourcePlaceholder": "Selecione uma origem de dados",
+    "noOracleDataSources": "Sem origens de dados Oracle",
+    "schemaOwnerLabel": "Proprietário do esquema EUL (opcional)",
+    "schemaOwnerPlaceholder": "p. ex. EUL5_US",
+    "versionLabel": "Versão do EUL",
+    "autoDetect": "Deteção automática",
+    "forceEul4": "Forçar EUL4",
+    "forceEul5": "Forçar EUL5",
+    "dryRunLabel": "Simulação (validar sem escrever)",
+    "liveMigrationWarning": "Uma migração real escreve nesta base de dados do Discoverer Neo. Execute primeiro uma simulação e reveja o relatório abaixo."
+  },
+  "detected": {
+    "title": "Origem detetada",
+    "supported": "Suportado",
+    "notSupported": "Não suportado",
+    "discovererRelease": "Versão do Discoverer",
+    "schemaVersion": "Versão do esquema EUL",
+    "schemaOwner": "Proprietário do esquema",
+    "tablesFound": "Tabelas EUL encontradas"
+  },
+  "assessment": {
+    "title": "Avaliação",
+    "description": "Prontidão {{score}}/100 ({{rating}}) · complexidade {{complexity}} · esforço estimado {{estimate}}",
+    "counts": {
+      "businessAreas": "Áreas de negócio",
+      "folders": "Pastas",
+      "items": "Itens",
+      "joins": "Junções",
+      "hierarchies": "Hierarquias",
+      "customFunctions": "Funções personalizadas",
+      "workbooks": "Livros",
+      "conditions": "Condições",
+      "securityConditions": "Condições de segurança",
+      "users": "Utilizadores",
+      "grants": "Concessões",
+      "orphanedObjects": "Objetos órfãos"
+    },
+    "blockers": "Bloqueadores",
+    "warningsCount": "Avisos ({{count}})"
+  },
+  "job": {
+    "dryRunLabel": "Simulação",
+    "migrationLabel": "Migração",
+    "requestedVersion": "solicitado {{version}}",
+    "started": "Iniciado",
+    "progressAriaLabel": "Progresso da migração",
+    "rowsPlanned": "Linhas que seriam inseridas",
+    "rowsInserted": "Linhas inseridas",
+    "tableColumn": "Tabela",
+    "rowsColumn": "Linhas",
+    "summary": "Resumo",
+    "sourceIntegrity": "Integridade da origem: {{status}} ({{errorCount}} erro(s), {{warningCount}} aviso(s)). {{skippedCount}} objeto(s) ignorado(s). Demorou {{duration}}s.",
+    "valid": "válida",
+    "invalid": "inválida",
+    "reconciliation": "Reconciliação pós-migração: {{status}}",
+    "rowCountsMatch": "as contagens de linhas coincidem",
+    "mismatch": "DISCREPÂNCIA",
+    "syntheticBusinessAreasNotice": "Foi criada uma área de negócio “Migrated Workbooks” para alojar os mapas resultantes dos livros migrados; o esquema das suas folhas tem de ser reconstruído manualmente.",
+    "migratedAccountsNotice": "As contas de utilizador migradas não podem iniciar sessão até um administrador definir uma palavra-passe.",
+    "versionSpecificNotes": "Notas específicas da versão ({{count}})",
+    "logTitle": "Registo da migração",
+    "droppedLogsNotice": "({{count}} linha(s) anteriores omitidas)",
+    "noLogEntries": "Ainda não existem entradas no registo."
+  },
+  "tables": {
+    "users": "Utilizadores",
+    "business_areas": "Áreas de negócio",
+    "folders": "Pastas",
+    "items": "Itens",
+    "joins": "Junções",
+    "hierarchies": "Hierarquias",
+    "hierarchy_levels": "Níveis de hierarquia",
+    "custom_functions": "Funções personalizadas",
+    "maps": "Mapas",
+    "map_items": "Colunas do mapa",
+    "user_business_area_grants": "Concessões"
+  },
+  "toasts": {
+    "detectedTitle": "{{version}} detetado",
+    "detectedDescription": "Discoverer {{discovererVersion}} · esquema {{schemaVersion}}",
+    "detectionFailed": "Falha na deteção",
+    "analysisComplete": "Análise concluída",
+    "analysisCompleteDescription": "Prontidão {{score}}/100",
+    "analysisFailed": "Falha na análise",
+    "dryRunStarted": "Simulação iniciada",
+    "migrationStarted": "Migração iniciada",
+    "progressUpdatesBelow": "Atualizações de progresso abaixo.",
+    "couldNotStart": "Não foi possível iniciar",
+    "dryRunComplete": "Simulação concluída",
+    "migrationComplete": "Migração concluída",
+    "noRowsWritten": "Não foram escritas linhas.",
+    "migratedFrom": "Migrado a partir de {{source}}.",
+    "theSource": "a origem",
+    "migrationFailed": "Falha na migração",
+    "seeLogBelow": "Consulte o registo abaixo."
+  }
+}

@@ -1,1 +1,233 @@
-{}
+{
+  "toolbar": {
+    "run": "Executar",
+    "save": "Guardar",
+    "export": "Exportar",
+    "schedule": "Agendar",
+    "share": "Partilhar",
+    "mapNameAria": "Nome do mapa",
+    "mapTypeAria": "Tipo de mapa",
+    "unsavedTitle": "Alterações não guardadas",
+    "unsavedLabel": "● Não guardado",
+    "mapTypes": {
+      "table": "Tabela",
+      "crosstab": "Tabela Cruzada",
+      "pageDetail": "Página-Detalhe",
+      "chart": "Gráfico"
+    },
+    "exportDataHeader": "Dados (executa novamente a consulta no servidor)",
+    "exportExcel": "Excel (.xlsx)",
+    "exportCsv": "CSV (.csv)",
+    "exportXml": "Definição do mapa (.xml)",
+    "shareDisabledTitle": "Guarde o mapa antes de o partilhar",
+    "comingSoonTitle": "{{feature}} brevemente",
+    "comingSoonDescription": "{{feature}} estará disponível numa sessão posterior.",
+    "featureScheduling": "Agendamento"
+  },
+  "page": {
+    "loading": "A carregar mapa…",
+    "loadFailedTitle": "Não foi possível carregar o mapa",
+    "saveErrorNoColumns": "Adicione pelo menos uma coluna antes de guardar.",
+    "saveErrorNoBusinessArea": "Nenhuma área de negócio selecionada.",
+    "savedTitle": "Mapa guardado",
+    "saveFailedTitle": "Falha ao guardar",
+    "runErrorNoColumns": "Adicione pelo menos uma coluna antes de executar.",
+    "executedTitle": "Mapa executado",
+    "executedDescription": "{{count}} linha(s) devolvida(s).",
+    "runFailedTitle": "Falha na execução",
+    "saveMapFirstTitle": "Guarde primeiro o mapa",
+    "saveMapFirstDescription": "A exportação requer um mapa guardado.",
+    "exportFailedTitle": "Falha na exportação",
+    "duplicateTitle": "Já adicionado",
+    "duplicateDescription": "\"{{name}}\" já está no quadro.",
+    "crossBusinessAreaTitle": "Área de negócio diferente",
+    "crossBusinessAreaDescription": "Todas as colunas de um mapa devem pertencer à mesma área de negócio.",
+    "collapsePanel": "Colapsar painel",
+    "expandPanel": "Expandir painel"
+  },
+  "tree": {
+    "title": "Áreas de Negócio",
+    "filterPlaceholder": "Filtrar itens…",
+    "filterAria": "Filtrar itens",
+    "loading": "A carregar…",
+    "emptyBusinessAreas": "Nenhuma área de negócio.",
+    "emptyFolders": "Nenhuma pasta",
+    "emptyMatchingItems": "Nenhum item correspondente",
+    "emptyItems": "Nenhum item",
+    "roleMeasure": "Medida",
+    "roleDimension": "Dimensão"
+  },
+  "canvas": {
+    "title": "Colunas",
+    "emptyDropHint": "Solte para adicionar esta coluna",
+    "emptyDragHint": "Arraste itens para aqui para construir o seu mapa",
+    "emptyPickHint": "Escolha dimensões e medidas a partir da árvore à esquerda.",
+    "reorderAria": "Reordenar coluna",
+    "configureTitle": "Configurar coluna",
+    "removeAria": "Remover {{label}}"
+  },
+  "columnConfig": {
+    "title": "Configurar coluna",
+    "descriptionFallback": "Definições da coluna",
+    "displayName": "Nome a apresentar",
+    "aggregation": "Agregação",
+    "sortDirection": "Direção de ordenação",
+    "formatMask": "Máscara de formato",
+    "formatMaskPlaceholder": "p. ex. 999,999.00",
+    "formatPresetsAria": "Predefinições de formato",
+    "formatPresetsPlaceholder": "Predefinições",
+    "sortOrder": "Ordem de ordenação",
+    "sortOrderPlaceholder": "p. ex. 1",
+    "columnWidth": "Largura da coluna (px)",
+    "columnWidthPlaceholder": "p. ex. 120",
+    "presets": {
+      "number": "Número (1.234)",
+      "decimal": "Decimal (1.234,00)",
+      "currency": "Moeda (1.234,00 €)",
+      "percent": "Percentagem (12,3%)",
+      "dateDmy": "Data (DD-MON-YYYY)",
+      "dateYmd": "Data (YYYY-MM-DD)"
+    }
+  },
+  "sortDirections": {
+    "asc": "Ascendente",
+    "desc": "Descendente"
+  },
+  "share": {
+    "title": "Partilhar mapa",
+    "description": "Conceda a outros utilizadores acesso para ver, exportar ou editar este mapa.",
+    "searchPlaceholder": "Pesquisar por nome ou email…",
+    "searchAria": "Pesquisar utilizadores com quem partilhar",
+    "searching": "A pesquisar…",
+    "noMatchingUsers": "Nenhum utilizador correspondente",
+    "permissionAria": "Nível de permissão",
+    "shareButton": "Partilhar",
+    "peopleWithAccess": "Pessoas com acesso",
+    "notSharedYet": "Ainda não foi partilhado com ninguém.",
+    "permissionForAria": "Permissão para {{name}}",
+    "revokeAria": "Revogar acesso de {{name}}",
+    "publicNotice": "Este mapa é público — qualquer pessoa com a ligação pode vê-lo.",
+    "copyLink": "Copiar ligação",
+    "permissions": {
+      "VIEW": "Pode ver",
+      "EXPORT": "Pode exportar",
+      "EDIT": "Pode editar"
+    },
+    "toastShared": "Mapa partilhado",
+    "toastShareFailedTitle": "Não foi possível partilhar o mapa",
+    "toastPermissionUpdated": "Permissão atualizada",
+    "toastPermissionUpdateFailedTitle": "Não foi possível atualizar a permissão",
+    "toastRevoked": "Acesso revogado",
+    "toastRevokeFailedTitle": "Não foi possível revogar o acesso",
+    "toastLinkCopied": "Ligação copiada para a área de transferência",
+    "toastCopyFailedTitle": "Não foi possível copiar a ligação"
+  },
+  "panels": {
+    "tabs": {
+      "properties": "Propriedades",
+      "conditions": "Condições",
+      "sort": "Ordenação",
+      "parameters": "Parâmetros",
+      "calculatedFields": "Campos Calculados"
+    },
+    "properties": {
+      "descriptionPlaceholder": "Descreva o que este mapa reporta…",
+      "publicLabel": "Público (visível para todos na área de negócio)",
+      "summary": {
+        "columns": "Colunas",
+        "conditions": "Condições",
+        "parameters": "Parâmetros",
+        "calculatedFields": "Campos calculados"
+      }
+    },
+    "conditions": {
+      "title": "Condições",
+      "addButton": "Adicionar Condição",
+      "addColumnsHint": "Adicione colunas ao quadro antes de adicionar condições.",
+      "groupSelected": "Agrupar {{count}} condições selecionadas",
+      "noConditionsYet": "Ainda não existem condições.",
+      "groupHeader": "Grupo ({{count}})",
+      "ungroup": "Desagrupar",
+      "logicOperatorAria": "Operador lógico",
+      "itemFallbackLabel": "item",
+      "selectConditionAria": "Selecionar condição em {{label}}",
+      "conditionItemAria": "Item da condição",
+      "itemPlaceholder": "Item",
+      "operatorAria": "Operador",
+      "staticValue": "Valor estático",
+      "promptAtRuntime": "Pedir em tempo de execução",
+      "conditionValueAria": "Valor da condição",
+      "valuePlaceholderIn": "valor1, valor2, …",
+      "valuePlaceholderBetween": "mínimo, máximo",
+      "valuePlaceholderDefault": "Valor",
+      "parameterNameAria": "Nome do parâmetro",
+      "parameterNamePlaceholder": "Nome do parâmetro",
+      "deleteAria": "Eliminar condição"
+    },
+    "sort": {
+      "emptyNoColumns": "Adicione colunas para configurar a ordenação.",
+      "title": "Ordem de ordenação",
+      "noneSorted": "Ainda não existem colunas ordenadas.",
+      "addSortLabel": "Adicionar ordenação",
+      "pickColumnAria": "Escolher coluna para ordenar",
+      "pickColumnPlaceholder": "Escolha uma coluna",
+      "addSortButton": "Adicionar Ordenação",
+      "reorderAria": "Reordenar {{label}}",
+      "sortDirectionAria": "Direção de ordenação de {{label}}",
+      "removeAria": "Remover ordenação de {{label}}"
+    },
+    "parameters": {
+      "title": "Parâmetros",
+      "addButton": "Adicionar Parâmetro",
+      "empty": "Nenhum parâmetro. Adicione um para pedir aos utilizadores em tempo de execução.",
+      "previewLabel": "Pré-visualização do pedido em tempo de execução",
+      "unnamed": "Parâmetro sem nome",
+      "nameAria": "Nome do parâmetro",
+      "namePlaceholder": "Nome do parâmetro",
+      "typeAria": "Tipo de parâmetro",
+      "deleteAria": "Eliminar parâmetro {{name}}",
+      "defaultValueAria": "Valor predefinido",
+      "defaultValuePlaceholder": "Valor predefinido",
+      "defaultValueListPlaceholder": "valores, separados, por vírgula",
+      "previewValuePlaceholder": "Introduza um valor"
+    },
+    "calculatedFields": {
+      "title": "Campos calculados",
+      "addButton": "Adicionar Campo Calculado",
+      "empty": "Nenhum campo calculado. Adicione um para derivar uma nova coluna a partir de uma fórmula.",
+      "reorderAria": "Reordenar {{name}}",
+      "fallbackName": "campo calculado",
+      "nameAria": "Nome do campo calculado",
+      "namePlaceholder": "Nome do campo",
+      "displayOrderAria": "Ordem de exibição",
+      "displayOrderTitle": "Ordem de exibição",
+      "deleteAria": "Eliminar {{name}}",
+      "clickToWriteFormula": "Clique para escrever uma fórmula…"
+    },
+    "formula": {
+      "title": "Editor de fórmulas",
+      "fallbackFieldName": "Campo calculado",
+      "testFormula": "Testar fórmula",
+      "saveHint": "Guarde o mapa para testar fórmulas com dados reais.",
+      "noRows": "Sem linhas.",
+      "previewHeader_one": "{{columnName}} (primeira {{count}} linha)",
+      "previewHeader_other": "{{columnName}} (primeiras {{count}} linhas)",
+      "columnsHeader": "Colunas",
+      "noColumnsYet": "Ainda não existem colunas.",
+      "categories": {
+        "arithmetic": "Aritmética",
+        "string": "Texto",
+        "date": "Data",
+        "conditional": "Condicional / tratamento de nulos"
+      },
+      "errors": {
+        "empty": "A fórmula está vazia.",
+        "unbalancedQuotes": "Aspas não balanceadas.",
+        "unbalancedParens": "Parênteses não balanceados.",
+        "unbalancedBrackets": "Referências de coluna [ ] não balanceadas.",
+        "unknownFunction": "Função desconhecida \"{{name}}\".",
+        "unknownColumnReference": "Referência de coluna desconhecida \"[{{name}}]\"."
+      }
+    }
+  }
+}

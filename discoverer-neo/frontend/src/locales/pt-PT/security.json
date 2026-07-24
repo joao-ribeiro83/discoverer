@@ -1,1 +1,84 @@
-{}
+{
+  "page": {
+    "title": "Políticas de Segurança",
+    "description": "As políticas de segurança ao nível da linha restringem quais as linhas que os utilizadores podem ver. Os predicados de uma política são combinados com E lógico em todas as consultas executadas pelos seus utilizadores.",
+    "nonAdminDescription": "As políticas de segurança ao nível da linha restringem quais as linhas que os utilizadores podem ver.",
+    "nonAdminMessage": "Apenas os administradores podem gerir políticas de segurança.",
+    "newPolicy": "Nova Política",
+    "emptyMessage": "Ainda não existem políticas de segurança. Sem políticas, os utilizadores veem todas as linhas que as suas permissões de mapa permitem."
+  },
+  "table": {
+    "rules": "Regras",
+    "assignments": "Atribuições"
+  },
+  "dialog": {
+    "editTitle": "Editar Política",
+    "newTitle": "Nova Política",
+    "description": "As regras aplicam-se a uma área de negócio ou pasta; os respetivos predicados SQL são combinados com E lógico na cláusula WHERE das consultas correspondentes.",
+    "rulesLabel": "Regras",
+    "addRule": "Adicionar regra",
+    "minRuleNotice": "Uma política precisa de pelo menos uma regra."
+  },
+  "rule": {
+    "appliesTo": "Aplica-se a",
+    "targetTypeAriaLabel": "Tipo de alvo da regra",
+    "businessArea": "Área de Negócio",
+    "folder": "Pasta",
+    "businessAreaLabel": "Área de Negócio",
+    "businessAreaAriaLabel": "Área de negócio da regra",
+    "selectBusinessArea": "Selecione a área de negócio",
+    "folderLabel": "Pasta",
+    "folderAriaLabel": "Pasta da regra",
+    "selectFolder": "Selecione a pasta",
+    "removeRule": "Remover regra",
+    "predicateLabel": "Predicado SQL (fragmento da cláusula WHERE)",
+    "validating": "A validar…",
+    "validPredicate": "Predicado válido",
+    "bindsLabel": "Vinculações:",
+    "aliasResolves": "resolve para o alias de consulta da pasta"
+  },
+  "assignments": {
+    "title": "Atribuições — {{name}}",
+    "description": "A política aplica-se a todos os utilizadores atribuídos e a todos os utilizadores que possuam uma função atribuída.",
+    "assignTo": "Atribuir a",
+    "kindAriaLabel": "Tipo de atribuição",
+    "user": "Utilizador",
+    "role": "Função",
+    "userAriaLabel": "Utilizador a atribuir",
+    "selectUser": "Selecione o utilizador",
+    "roleAriaLabel": "Função a atribuir",
+    "selectRole": "Selecione a função",
+    "assign": "Atribuir",
+    "notAssigned": "Não atribuída — esta política não restringe atualmente ninguém.",
+    "unknownUser": "Utilizador desconhecido",
+    "roleLabel": "Função",
+    "removeAssignment": "Remover atribuição"
+  },
+  "test": {
+    "buttonLabel": "Testar",
+    "dialogTitle": "Testar uma política",
+    "description": "Pré-visualize onde os predicados de uma política se aplicam numa consulta de exemplo. A aplicação real ocorre dentro do gerador de SQL quando os mapas são executados.",
+    "policyLabel": "Política",
+    "policyAriaLabel": "Política a testar",
+    "selectPolicy": "Selecione a política",
+    "sampleQueryLabel": "Consulta de exemplo",
+    "testing": "A testar…",
+    "runTest": "Executar teste",
+    "resultLabel": "Consulta com predicados de segurança"
+  },
+  "deleteConfirm": {
+    "itemLabel": "política"
+  },
+  "toasts": {
+    "loadPolicyFailed": "Falha ao carregar a política",
+    "policyUpdated": "Política atualizada",
+    "policyCreated": "Política criada",
+    "saveFailed": "Falha ao guardar",
+    "policyDeleted": "Política eliminada",
+    "deleteFailed": "Falha ao eliminar",
+    "policyAssigned": "Política atribuída",
+    "assignFailed": "Falha ao atribuir",
+    "assignmentRemoved": "Atribuição removida",
+    "removeFailed": "Falha ao remover"
+  }
+}

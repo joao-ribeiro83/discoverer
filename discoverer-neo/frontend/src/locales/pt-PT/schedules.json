@@ -1,1 +1,87 @@
-{}
+{
+  "page": {
+    "title": "Agendamentos",
+    "description": "Execute mapas automaticamente com base num agendamento cron e armazene os respetivos resultados.",
+    "newSchedule": "Novo Agendamento",
+    "emptyMessage": "Ainda não existem agendamentos."
+  },
+  "table": {
+    "name": "Nome",
+    "map": "Mapa",
+    "schedule": "Agendamento",
+    "nextRun": "Próxima Execução",
+    "format": "Formato",
+    "status": "Estado",
+    "active": "Ativo",
+    "paused": "Em pausa",
+    "runNow": "Executar agora",
+    "pause": "Pausar",
+    "enable": "Ativar",
+    "history": "Histórico",
+    "edit": "Editar",
+    "delete": "Eliminar"
+  },
+  "cronPresets": {
+    "daily": "Diariamente (meia-noite)",
+    "weekly": "Semanalmente (domingo, meia-noite)",
+    "monthly": "Mensalmente (dia 1, meia-noite)",
+    "custom": "Personalizado"
+  },
+  "dialog": {
+    "editTitle": "Editar Agendamento",
+    "createTitle": "Novo Agendamento",
+    "mapLabel": "Mapa",
+    "mapPlaceholder": "Selecione um mapa para agendar",
+    "sharedSuffix": "(partilhado)",
+    "nameLabel": "Nome",
+    "frequencyLabel": "Frequência",
+    "timezoneLabel": "Fuso horário",
+    "cronExpressionLabel": "Expressão cron",
+    "cronExpressionHelp": "Sintaxe cron padrão de 5 campos (minuto hora dia-do-mês mês dia-da-semana).",
+    "validFromLabel": "Válido a partir de (opcional)",
+    "validUntilLabel": "Válido até (opcional)",
+    "outputFormatLabel": "Formato de Saída",
+    "formatExcel": "Excel (.xlsx)",
+    "formatCsv": "CSV",
+    "parameterPresetsLabel": "Predefinições de parâmetros",
+    "parameterValuePlaceholder": "Valor utilizado em todas as execuções agendadas",
+    "enabledLabel": "Ativado",
+    "saving": "A guardar..."
+  },
+  "deleteDialog": {
+    "title": "Eliminar agendamento?",
+    "descriptionBefore": "Isto elimina permanentemente",
+    "descriptionAfter": "e o seu histórico de execuções. Esta ação não pode ser anulada.",
+    "deleting": "A eliminar..."
+  },
+  "history": {
+    "title": "Histórico de Execuções — {{name}}",
+    "executed": "Executado",
+    "status": "Estado",
+    "rows": "Linhas",
+    "duration": "Duração",
+    "loading": "A carregar...",
+    "noRuns": "Ainda não existem execuções.",
+    "download": "Transferir",
+    "durationSeconds": "{{seconds}}s"
+  },
+  "toasts": {
+    "scheduleUpdated": "Agendamento atualizado",
+    "scheduleCreated": "Agendamento criado",
+    "saveFailedTitle": "Falha ao guardar",
+    "scheduleDeleted": "Agendamento eliminado",
+    "deleteFailedTitle": "Falha ao eliminar",
+    "schedulePaused": "Agendamento em pausa",
+    "scheduleEnabled": "Agendamento ativado",
+    "updateFailedTitle": "Falha na atualização",
+    "runQueuedTitle": "Execução em fila",
+    "runQueuedDescription": "Verifique o histórico dentro de momentos para ver o resultado.",
+    "triggerFailedTitle": "Falha ao acionar",
+    "downloadFailedTitle": "Falha na transferência"
+  },
+  "validation": {
+    "selectMap": "Selecione um mapa",
+    "nameRequired": "O nome é obrigatório",
+    "cronExpressionRequired": "A expressão cron é obrigatória"
+  }
+}

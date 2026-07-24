@@ -1,1 +1,317 @@
-{}
+{
+  "shared": {
+    "businessAreaLabel": "Área de Negócio",
+    "selectBusinessAreaPlaceholder": "Selecione uma área de negócio",
+    "folderLabel": "Pasta",
+    "discoverTablesButton": "Descobrir Tabelas",
+    "saving": "A guardar...",
+    "deleting": "A eliminar...",
+    "loading": "A carregar...",
+    "defaultEmptyMessage": "Sem resultados.",
+    "saveFailed": "Falha ao guardar",
+    "deleteFailed": "Falha ao eliminar",
+    "deleteConfirmTitle": "Eliminar {{itemLabel}}?",
+    "defaultItemLabel": "item",
+    "deleteConfirmDescriptionPrefix": "Isto irá desativar",
+    "deleteConfirmDescriptionSuffix": "Esta ação só pode ser revertida por um administrador.",
+    "validation": {
+      "nameRequired": "O nome é obrigatório"
+    }
+  },
+  "businessAreas": {
+    "title": "Áreas de Negócio",
+    "description": "Faça a gestão das áreas de negócio dos seus modelos de dados.",
+    "createButton": "Nova Área de Negócio",
+    "emptyMessage": "Ainda não existem áreas de negócio.",
+    "manageGrantsTitle": "Gerir concessões",
+    "entityLabel": "área de negócio",
+    "dialog": {
+      "editTitle": "Editar Área de Negócio",
+      "createTitle": "Nova Área de Negócio"
+    },
+    "toast": {
+      "updated": "Área de negócio atualizada",
+      "created": "Área de negócio criada",
+      "deactivated": "Área de negócio desativada"
+    },
+    "grants": {
+      "dialogTitle": "Concessões — {{name}}",
+      "dialogDescription": "Controle quais os utilizadores que podem aceder a esta área de negócio e o que podem fazer.",
+      "userLabel": "Utilizador",
+      "selectUserPlaceholder": "Selecione um utilizador",
+      "permissionLabel": "Permissão",
+      "addButton": "Adicionar",
+      "revokeTitle": "Revogar",
+      "loadingGrants": "A carregar concessões...",
+      "noGrantsYet": "Ainda não existem concessões.",
+      "closeButton": "Fechar",
+      "toast": {
+        "accessGranted": "Acesso concedido",
+        "grantFailed": "Falha ao conceder acesso",
+        "accessRevoked": "Acesso revogado"
+      }
+    }
+  },
+  "folders": {
+    "title": "Pastas",
+    "description": "Faça a gestão das pastas (tabelas, vistas e dados derivados) numa área de negócio.",
+    "createButton": "Nova Pasta",
+    "emptyMessage": "Ainda não existem pastas nesta área de negócio.",
+    "selectBusinessAreaPrompt": "Selecione uma área de negócio para ver as suas pastas.",
+    "entityLabel": "pasta",
+    "columns": {
+      "tableName": "Nome da Tabela",
+      "dataSource": "Origem de Dados"
+    },
+    "dialog": {
+      "editTitle": "Editar Pasta",
+      "createTitle": "Nova Pasta"
+    },
+    "form": {
+      "folderTypeLabel": "Tipo de Pasta",
+      "customSqlLabel": "SQL Personalizado",
+      "dataSourceLabel": "Origem de Dados",
+      "selectDataSourcePlaceholder": "Selecione uma origem de dados",
+      "tableNameLabel": "Nome da Tabela",
+      "tableOwnerLabel": "Proprietário da Tabela"
+    },
+    "toast": {
+      "discoveryFailed": "Falha na descoberta",
+      "updated": "Pasta atualizada",
+      "created": "Pasta criada",
+      "deactivated": "Pasta desativada"
+    }
+  },
+  "items": {
+    "title": "Itens",
+    "description": "Faça a gestão dos itens expostos pelas pastas — colunas, cálculos e agregações.",
+    "createButton": "Novo Item",
+    "emptyMessage": "Ainda não existem itens nesta pasta.",
+    "selectBusinessAreaPrompt": "Selecione uma área de negócio e uma pasta para ver os seus itens.",
+    "entityLabel": "item",
+    "selectFolderPlaceholder": "Selecione uma pasta",
+    "itemTypes": {
+      "ci": "Item de Coluna (CI)",
+      "cu": "Item Calculado (CU)",
+      "co": "Condição (CO)",
+      "ji": "Item de Junção (JI)",
+      "hi": "Item de Hierarquia (HI)",
+      "ag": "Agregação (AG)",
+      "fu": "Função (FU)"
+    },
+    "columns": {
+      "column": "Coluna",
+      "dataType": "Tipo de Dados",
+      "aggregation": "Agregação"
+    },
+    "dialog": {
+      "editTitle": "Editar Item",
+      "createTitle": "Novo Item"
+    },
+    "form": {
+      "itemTypeLabel": "Tipo de Item",
+      "columnNameLabel": "Nome da Coluna",
+      "columnNamePlaceholder": "p. ex. CUSTOMER_ID",
+      "formulaLabel": "Fórmula",
+      "formulaPlaceholder": "p. ex. QUANTITY * UNIT_PRICE",
+      "dataTypeLabel": "Tipo de Dados",
+      "dataTypePlaceholder": "p. ex. NUMBER",
+      "formatMaskLabel": "Máscara de Formato",
+      "formatMaskPlaceholder": "p. ex. 999,999.00",
+      "aggregationLabel": "Agregação"
+    },
+    "toast": {
+      "updated": "Item atualizado",
+      "created": "Item criado",
+      "deactivated": "Item desativado"
+    }
+  },
+  "joins": {
+    "title": "Junções",
+    "description": "Defina relações entre pastas numa área de negócio.",
+    "createButton": "Nova Junção",
+    "emptyMessage": "Ainda não existem junções nesta área de negócio.",
+    "selectBusinessAreaPrompt": "Selecione uma área de negócio para ver as suas junções.",
+    "entityLabel": "junção",
+    "columns": {
+      "leftFolder": "Pasta Esquerda",
+      "rightFolder": "Pasta Direita"
+    },
+    "dialog": {
+      "editTitle": "Editar Junção",
+      "createTitle": "Nova Junção"
+    },
+    "form": {
+      "leftFolderLabel": "Pasta Esquerda",
+      "rightFolderLabel": "Pasta Direita",
+      "selectFolderPlaceholder": "Selecione uma pasta",
+      "suggestJoinsButton": "Sugerir Junções",
+      "leftItemLabel": "Item Esquerdo",
+      "rightItemLabel": "Item Direito",
+      "selectItemPlaceholder": "Selecione um item",
+      "joinTypeLabel": "Tipo de Junção"
+    },
+    "validation": {
+      "leftFolderRequired": "A pasta esquerda é obrigatória",
+      "rightFolderRequired": "A pasta direita é obrigatória"
+    },
+    "toast": {
+      "noSuggestions": "Não foram encontradas sugestões de junção para esta pasta",
+      "suggestionFailed": "Falha na sugestão",
+      "updated": "Junção atualizada",
+      "created": "Junção criada",
+      "deactivated": "Junção desativada"
+    }
+  },
+  "hierarchies": {
+    "title": "Hierarquias",
+    "description": "Defina hierarquias de detalhe ordenando itens em níveis.",
+    "createButton": "Nova Hierarquia",
+    "emptyMessage": "Ainda não existem hierarquias nesta área de negócio.",
+    "selectBusinessAreaPrompt": "Selecione uma área de negócio para ver as suas hierarquias.",
+    "entityLabel": "hierarquia",
+    "columns": {
+      "levels": "Níveis",
+      "levelsCount": "{{count}} nível(eis)"
+    },
+    "dialog": {
+      "editTitle": "Editar Hierarquia",
+      "createTitle": "Nova Hierarquia"
+    },
+    "form": {
+      "levelsLabel": "Níveis (de cima para baixo)",
+      "addLevelButton": "Adicionar Nível",
+      "noLevelsYet": "Ainda não existem níveis — adicione pelo menos um.",
+      "levelNamePlaceholder": "Nome do nível",
+      "itemPlaceholder": "Item"
+    },
+    "toast": {
+      "updated": "Hierarquia atualizada",
+      "created": "Hierarquia criada",
+      "deactivated": "Hierarquia desativada"
+    }
+  },
+  "customFunctions": {
+    "title": "Funções Personalizadas",
+    "description": "Registe funções SQL, PL/SQL e de pacote personalizadas disponíveis para itens calculados.",
+    "createButton": "Nova Função",
+    "emptyMessage": "Ainda não existem funções personalizadas.",
+    "entityLabel": "função personalizada",
+    "columns": {
+      "parameters": "Parâmetros",
+      "parametersCount": "{{count}} parâmetro(s)",
+      "returnType": "Tipo de Retorno"
+    },
+    "dialog": {
+      "editTitle": "Editar Função Personalizada",
+      "createTitle": "Nova Função Personalizada"
+    },
+    "form": {
+      "functionTypeLabel": "Tipo de Função",
+      "returnTypeLabel": "Tipo de Retorno",
+      "returnTypePlaceholder": "p. ex. NUMBER",
+      "parametersLabel": "Parâmetros (JSON)",
+      "parametersPlaceholder": "[\n  { \"name\": \"p_id\", \"type\": \"NUMBER\", \"required\": true }\n]"
+    },
+    "validation": {
+      "parametersMustBeArray": "Os parâmetros devem ser um array JSON",
+      "parameterNeedsNameAndType": "Cada parâmetro precisa de um \"name\" e um \"type\"",
+      "invalidJson": "JSON inválido"
+    },
+    "toast": {
+      "updated": "Função atualizada",
+      "created": "Função criada",
+      "deactivated": "Função desativada"
+    }
+  },
+  "dataSources": {
+    "title": "Origens de Dados",
+    "description": "Faça a gestão das ligações à base de dados utilizadas para introspetar e importar esquemas.",
+    "createButton": "Nova Origem de Dados",
+    "emptyMessage": "Ainda não existem origens de dados.",
+    "entityLabel": "origem de dados",
+    "columns": {
+      "host": "Anfitrião"
+    },
+    "actions": {
+      "testConnection": "Testar ligação",
+      "introspectSchema": "Introspetar esquema",
+      "importTables": "Importar tabelas"
+    },
+    "dialog": {
+      "editTitle": "Editar Origem de Dados",
+      "createTitle": "Nova Origem de Dados"
+    },
+    "form": {
+      "connectionTypeLabel": "Tipo de Ligação",
+      "connectionTypeOracle": "Oracle",
+      "connectionTypePostgres": "PostgreSQL",
+      "hostLabel": "Anfitrião",
+      "portLabel": "Porta",
+      "serviceNameLabel": "Nome do Serviço",
+      "sidLabel": "SID",
+      "usernameLabel": "Nome de Utilizador",
+      "passwordLabel": "Palavra-passe",
+      "passwordKeepHint": "(deixe em branco para manter)"
+    },
+    "toast": {
+      "updated": "Origem de dados atualizada",
+      "created": "Origem de dados criada",
+      "deactivated": "Origem de dados desativada",
+      "connectionSucceeded": "Ligação bem-sucedida",
+      "connectionFailed": "Falha na ligação",
+      "testFailed": "Falha no teste",
+      "introspectionComplete": "Introspeção concluída",
+      "introspectionCompleteDescription": "Foram descobertas {{count}} tabela(s).",
+      "introspectionFailed": "Falha na introspeção"
+    },
+    "import": {
+      "dialogTitle": "Importar Tabelas — {{name}}",
+      "dialogDescription": "Descubra tabelas e importe as tabelas selecionadas como pastas.",
+      "tableOwnerLabel": "Proprietário da Tabela / Esquema",
+      "tableOwnerPlaceholder": "p. ex. SCOTT",
+      "selectDestinationPlaceholder": "Selecione a área de negócio de destino",
+      "discoveringTables": "A descobrir tabelas...",
+      "noTablesDiscovered": "Ainda não foram descobertas tabelas.",
+      "columnsCount": "({{count}} colunas)",
+      "importing": "A importar...",
+      "importButton": "Importar {{count}} tabela(s)",
+      "toast": {
+        "importComplete": "Importação concluída",
+        "importCompleteDescription": "Foram criadas {{created}} pasta(s), {{skipped}} ignorada(s).",
+        "importFailed": "Falha na importação"
+      }
+    }
+  },
+  "users": {
+    "title": "Utilizadores",
+    "description": "Faça a gestão das contas de utilizador e das permissões.",
+    "createButton": "Novo Utilizador",
+    "emptyMessage": "Ainda não existem utilizadores.",
+    "entityLabel": "utilizador",
+    "adminOnlyMessage": "Apenas os administradores podem gerir utilizadores.",
+    "columns": {
+      "email": "Email",
+      "role": "Função"
+    },
+    "dialog": {
+      "editTitle": "Editar Utilizador",
+      "createTitle": "Novo Utilizador"
+    },
+    "form": {
+      "emailLabel": "Email",
+      "passwordLabel": "Palavra-passe",
+      "passwordKeepHint": "(deixe em branco para manter a atual)",
+      "roleLabel": "Função"
+    },
+    "validation": {
+      "emailInvalid": "Introduza um email válido",
+      "passwordMinLength": "A palavra-passe deve ter pelo menos 8 carateres"
+    },
+    "toast": {
+      "updated": "Utilizador atualizado",
+      "created": "Utilizador criado",
+      "deleted": "Utilizador eliminado"
+    }
+  }
+}

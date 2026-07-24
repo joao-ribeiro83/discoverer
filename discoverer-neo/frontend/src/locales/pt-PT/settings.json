@@ -1,1 +1,20 @@
-{}
+{
+  "title": "Definições",
+  "subtitle": "Faça a gestão das preferências da sua conta",
+  "language": {
+    "title": "Idioma",
+    "description": "Escolha o idioma utilizado em toda a interface.",
+    "label": "Idioma de exibição"
+  },
+  "theme": {
+    "title": "Tema",
+    "description": "Escolha o aspeto da interface.",
+    "label": "Aparência",
+    "options": {
+      "light": "Claro",
+      "dark": "Escuro",
+      "high-contrast": "Alto contraste"
+    }
+  },
+  "saved": "Preferências guardadas"
+}
