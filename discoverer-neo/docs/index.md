@@ -2,6 +2,17 @@
 
 Welcome to Discoverer Neo documentation. This is a comprehensive guide for users, administrators, developers, and operators.
 
+## Languages
+
+The User Guide and Administrator Guide are also available in Português (Portugal), Français (France), and Español (España). Other sections (Developer Guide, Deployment, API, Migration) are English-only.
+
+| Language | User Guide | Administrator Guide |
+|----------|-----------|---------------------|
+| English (default) | [Getting Started](user-guide/getting-started.md) | [Metadata Management](admin-guide/metadata-management.md) |
+| Português (Portugal) | [Introdução](pt-PT/user-guide/getting-started.md) | [Gestão de Metadados](pt-PT/admin-guide/metadata-management.md) |
+| Français (France) | [Prise en main](fr-FR/user-guide/getting-started.md) | [Gestion des métadonnées](fr-FR/admin-guide/metadata-management.md) |
+| Español (España) | [Primeros pasos](es-ES/user-guide/getting-started.md) | [Gestión de metadatos](es-ES/admin-guide/metadata-management.md) |
+
 ## Overview
 
 - **[Project README](README.md)** — What is Discoverer Neo, features, quick start, and architecture
@@ -11,6 +22,7 @@ Welcome to Discoverer Neo documentation. This is a comprehensive guide for users
 Learn how to use the Discoverer Neo interface to build and run queries.
 
 - **[Getting Started](user-guide/getting-started.md)** — Logging in, navigating the interface
+- **[Settings](user-guide/settings.md)** — Language and theme preferences
 - **[Building Maps](user-guide/building-maps.md)** — Creating maps, selecting items, adding conditions
 - **[Executing Maps](user-guide/executing-maps.md)** — Running maps, viewing results, pagination
 - **[Exporting Data](user-guide/exporting-data.md)** — Exporting to Excel (XLSX) and CSV

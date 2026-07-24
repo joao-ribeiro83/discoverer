@@ -2,6 +2,17 @@
 
 Discoverer Neo is a modern, open-source business intelligence and reporting platform designed to replace the legacy Oracle Discoverer suite. It provides a web-based interface for defining business metadata, building ad-hoc queries, creating workbooks, and analyzing data — all with a contemporary cloud-ready architecture.
 
+## Documentation Languages
+
+The User Guide and Administrator Guide are available in the following languages. Other documentation (Developer Guide, Deployment, API, Migration) is available in English only.
+
+| Language | User Guide | Administrator Guide |
+|----------|-----------|---------------------|
+| English (default) | [Getting Started](docs/user-guide/getting-started.md) | [Metadata Management](docs/admin-guide/metadata-management.md) |
+| Português (Portugal) | [Introdução](docs/pt-PT/user-guide/getting-started.md) | [Gestão de Metadados](docs/pt-PT/admin-guide/metadata-management.md) |
+| Français (France) | [Prise en main](docs/fr-FR/user-guide/getting-started.md) | [Gestion des métadonnées](docs/fr-FR/admin-guide/metadata-management.md) |
+| Español (España) | [Primeros pasos](docs/es-ES/user-guide/getting-started.md) | [Gestión de metadatos](docs/es-ES/admin-guide/metadata-management.md) |
+
 ## Features
 
 ### Core Capabilities
@@ -14,6 +25,7 @@ Discoverer Neo is a modern, open-source business intelligence and reporting plat
 - **Row-Level Security** — Define security predicates to filter data by user/role
 - **Data Export** — Export results to Excel (XLSX) and CSV formats
 - **Sharing** — Share maps with other users with granular permissions (VIEW, EDIT, EXPORT)
+- **User Preferences** — Customize language and theme for your interface
 
 ### Administration
 - **Data Source Management** — Add Oracle or PostgreSQL connections (thin/thick mode for Oracle)

@@ -28,6 +28,7 @@ After logging in, you'll see the main dashboard with the following sections:
 - **Business Areas** — Organized collections of data
 - **Maps** — Saved queries and reports you've created
 - **Shared with Me** — Maps other users have shared with you
+- **Settings** — Customize language and theme preferences
 - **Admin** (if you have admin privileges) — System management
 
 ### Dashboard
@@ -77,6 +78,7 @@ Click on any map to see:
 
 ## What's Next?
 
+- **[Settings](settings.md)** — Customize language and theme
 - **[Building Maps](building-maps.md)** — Create your first query
 - **[Executing Maps](executing-maps.md)** — Run maps and view results
 - **[Exporting Data](exporting-data.md)** — Download results as Excel or CSV

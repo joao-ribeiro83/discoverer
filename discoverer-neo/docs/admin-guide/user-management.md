@@ -135,6 +135,15 @@ To require user password change:
 
 User will be prompted to change password next login.
 
+## User Preferences
+
+Users can manage their own interface preferences without administrator involvement:
+
+- **Language** — Users select their preferred UI language (English, Português, Français, Español) in Settings
+- **Theme** — Users choose their preferred visual theme (Light, Dark, High-Contrast) in Settings
+
+These preferences are self-service and per-user. Each user can access Settings via the sidebar or profile dropdown to customize their experience. No administrator configuration is needed.
+
 ## User Status
 
 ### Active/Inactive
