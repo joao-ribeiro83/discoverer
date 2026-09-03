@@ -175,3 +175,31 @@ ordering (`workbook-parser.ts:2705-2706` and the [DUMP] 872/2, 856/2 agreement g
 `D-051` parenthesise everything · `D-058` refuse rather than distort · `D-078` fresh-database
 cutover · the two authorisation gates in `D-016` (four early returns confirm one gate cannot
 cover it) · six join operators and four booleans (columns, not code paths).
+
+---
+
+## Phase 1.3 execution — amendments, 2026-09-03
+
+The four seam tests, the verifier and the readiness demotion all landed. Three
+decisions that were already marked FIXED are now actually implemented, and two
+need their wording corrected against what the code does.
+
+| ID | Amendment | Evidence |
+| -- | --------- | -------- |
+| **D-059** | **Implemented, but NOT by extending `diff-corpus.ts`.** That script needs a live Oracle source and uncommitted customer dumps, so it can never run in CI. The bucket partition lives in the verifier (`migrate/src/services/migration-verify.ts`, seam 2) with the classifier in `backend/src/services/formula-bucket.ts`; CI asserts `FAILED = 0`. `COMPILED` is deliberately unreachable — nothing may claim a formula works until the Phase 9.1 Oracle contract tests can prove it, so the ceiling today is `COMPILED_UNVERIFIED`. Baseline: 0 / 37 / 49 782 / 0 over 49 819 formulas | `migration-verify.ts` `checkFormulaCompileRate`; `formula-bucket.ts`; checkpoint Phase 1.3 |
+| **D-070** | **Implemented, with one structural split the decision did not anticipate.** `dn-migrate verify --target` runs post-commit, read-only, needs no source, and is re-runnable. But `generateSqlForMap` and the formula parser live in `backend/`, which depends on `@discoverer-neo/core` and not the reverse — so the verifier takes both as injected hooks and `dn-migrate verify` reports those two seams **SKIPPED**, never PASS. `npm run verify --workspace @discoverer-neo/backend` runs all four. Moving the 2 593-line SQL generator into core would close the split and is the structurally right fix; it was out of scope here | `migrate/src/cli.ts` `commandVerify`; `backend/src/scripts/verify-migration.ts`; `backend/package.json` |
+| **D-070** | **`COMPLETED_WITH_BLOCKERS` is wired to reconciliation numbers the code already computed and discarded** — a full run whose post-insert validation reports invalid, and a live maps re-import that wrote fewer rows than planned. Verification is deliberately **not** run automatically inside a migration job: that would put it back inside the run, which is the thing this decision argues against | `migration.service.ts` `MigrationJobStatus`; `MigrationPage.tsx` |
+| **D-071** | **Resolved as the review's amendment prescribed, not as the original decision stated.** `scoreReadiness` is now `scoreSourceReadiness`; no rating it can return says "ready" (`source-clean` / `source-minor-issues` / `source-needs-work` / `source-not-supported`), and every result carries `targetVerified: false` plus a standing note naming `dn-migrate verify` as the gate. No arithmetic changed — there was never an output in its scope to inspect | `assessment.ts`; `assessment.test.ts` "never reports that anything is ready, at any score" |
+| **BE-04** | **Confirmed and fixed.** `getConnection` inlined the acquisition into its timeout race, so a connection arriving after the timeout was checked out of the pool with no reference to it and never closed — one slot lost per timeout, permanently. Moved forward from 8.2 because Phases 3 and 4 hold connections across the whole estate | `oracle-connection-pool.ts` `discardLateAcquisition`; `oracle-connection-pool.test.ts` |
+| **INF-10** | **Pool portion done.** `oracle_pool_connections` (open / in_use / max per data source) and `oracle_pool_acquisition_timeouts_total`. The timeout counter is the one that matters: a pool that has lost its slots looks exactly like a pool that is busy | `backend/src/plugins/metrics.ts` |
+
+### New findings from this stage
+
+| Finding | Detail |
+| --- | --- |
+| **F-01 is overstated** | Not "zero of 923 maps can execute" — **116 generate SQL**. D-013's item-derived query scope had already fixed the rest. The 807 failures have seven distinct causes, dominated by the missing token renderer (714) rather than by scope |
+| **NEW, CRITICAL — no data source on any folder** | **211 of 212** migrated folders have `data_source_id` NULL. `resolveDataSourceId` (`map-execution.service.ts:247`) throws when the set is empty, so **even the 116 maps whose SQL generates cannot execute**. Seam 1 cannot see it: SQL generation never reads the column. Blocks every downstream phase |
+| **NEW — CI has not run since Phase 1.2** | Three jobs still named `@discoverer-neo/migrate`, renamed to `@discoverer-neo/core` when the schema was unified. The backend job died before lint, typecheck or a single test; the migrate job never ran. Fixed |
+| **F-23 was a defect, not a flake** | Every terminal branch of async execution set `job.status` before awaiting the execution-log write, so a caller polling to COMPLETED could read the history and find nothing. Fixed in all four terminal states. The "leaked handles" are the deliberate module-level `pg` Pool, already documented in `jest.config.js`; `forceExit` stays |
+| **NEW — the EUL5 fixture's own map cannot generate SQL** | Multi-folder aggregate, refused pending the fan-trap planner. The fixture every migration test depends on produces an inert map, and nothing had ever asked |
+| **NEW — `folder_business_areas` holds 0 rows** | Folder-to-business-area links come only from `folders.business_area_id`. Recorded, not acted on |
