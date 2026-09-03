@@ -402,7 +402,7 @@ describe('Migration seam tests', () => {
       ).rejects.toThrow('not a bare table name');
     });
 
-    it('keeps the checked-in declaration well formed', async () => {
+    it('keeps the checked-in declaration well formed', () => {
       expect(EXPECTED_LOSS_ALLOWANCES.length).toBeGreaterThan(0);
       for (const a of EXPECTED_LOSS_ALLOWANCES) {
         expect(a.table).toMatch(/^[a-z_][a-z0-9_]*$/);
