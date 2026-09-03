@@ -419,6 +419,9 @@ location, how it is protected, and what you must do with it.
 
 ## What's Next?
 
+- **[Verifying a migration](verify.md)** — `dn-migrate verify`: the four checks
+  that say whether what you migrated actually works. Run it after every
+  migration; a run that finished is not a run that worked
 - **[From Discoverer 4](from-discoverer4.md)** — Migration process overview
 - **[Troubleshooting](troubleshooting.md)** — Common issues and solutions
 
