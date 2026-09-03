@@ -118,6 +118,55 @@ Also carried forward, resolvable by execution rather than decision:
   manual path is the only route. Escalate rather than proceeding on assumption.
 - **Estate counts** were contradictory in three places and are unverifiable from this repository.
   Phase 0.4 exists to measure them; until it runs, no phase gate should be trusted to a literal.
+  **Resolved 2026-09-03 — see below.**
+
+---
+
+## Baseline counts (Phase 0.4)
+
+Measured against the live target Postgres. Full detail, queries, and caveats:
+`docs/master-plan/research/baseline-counts.md`.
+
+| Object | Resolved count | Was disputed as |
+|---|---|---|
+| Multi-folder maps | **341** (271 disconnected, 70 connected by the 10 joins) | 272 vs 341 |
+| Single-folder maps | **581** (1 map has no folder refs at all) | assumed 651 or 582 |
+| Conditions in target DB (`map_conditions` rows) | **5 605**, 100% `group_id IS NULL` — D-072 measured NOT fixed in this DB | vs 3 395 |
+| Conditions in source (condition trees, container-derived) | **[SOURCE] 3 395** | — |
+| Non-admin users (by role) | **18** | matches `PHASE-06-02` |
+| Users still needing first-login reprovisioning right now | **14** (moves as people log in) | vs 17 in `PHASE-09-03`; no measured population equals 17 |
+| Grants migrated / in source | **60 / 138** | consistent, no dispute |
+| `map_calculated_fields` (target) / calcs in source (deduped) | **49 819 / 41 982** | different populations, not a contradiction |
+| Hierarchies migrated / in source | **0 / 508** | consistent, no dispute |
+| `map_layouts` rows vs `maps` rows | **24 / 923** — 5.4's gate, 899 maps missing a layout row | newly measured |
+| `map_items.agg_function` non-null | **0** — 3.1's baseline | newly measured |
+
+---
+
+## Formula corpus (Phase 0.5)
+
+**D-114 settled as option 1 — anonymised corpus, committed.** Built 2026-09-03. How to rebuild
+it and why it is anonymised: `docs/migration/formula-corpus.md`.
+
+| | |
+|---|---|
+| Corpus | `discoverer-neo/migrate/corpus/formula-corpus.tsv` (4.8 MB, `latin1`, TSV) |
+| **Aligned pairs — the denominator for 4.2's 93 % and 4.3's 99 %** | **37 971** |
+| Distinct pairs (TSV rows, each with an `occurrences` count) | 22 748 |
+| Sampled | **No.** The `occurrences` column sums back to 37 971 — lossless, nothing dropped |
+| Source dumps | 547 |
+| `IOFormula` with no `DisplayFormula` (not gateable) | 7 371 |
+| Identifiers replaced | 137 012 occurrences of 7 420 distinct names |
+| Rebuild | `npm run rebuild-corpus -w @discoverer-neo/migrate` (needs `d4dumps/`) |
+| Mapping | `corpus/identifier-map.private.json` — **gitignored (`*.private.json`)**, and a leak of it is equivalent to committing `d4dumps/` |
+
+A percentage gate must say **which** denominator it uses: weight by `occurrences` for "% of the
+estate", or count rows for "% of distinct formulas". They are different numbers.
+
+**Finding for Phase 4.1:** the aligned corpus attests **55** of the 56 `[1,n]` codes. `[1,64]`
+(`GREATEST`) appears only in an `IOFormula` with no rendered counterpart, so 4.1's criterion
+*"every one of the 56 codes appears in the fixture"* cannot be met from the pairs — mark
+`GREATEST` `[INFER]` from `EUL_FUNCTION_NAMES`, or restate the criterion as 55.
 
 ---
 
@@ -211,3 +260,159 @@ A session picking up implementation should read, in order:
 **Do not reopen a finding in `MASTER_PLAN_REVIEW.md` without evidence contradicting its Evidence
 column** — and note that its "Verified correct" and "Findings rejected" sections exist precisely
 to stop settled ground being re-litigated.
+
+---
+
+## Phase 1.1 execution — the scoping commit — 2026-09-03
+
+### Progress log (append-only; a partial tree is resumable from here)
+
+- **Change 1 WRITTEN** — derived query scope. `loadMapDefinition`
+  (`backend/src/services/sql-generator.ts`) seeds from the map's referenced
+  item ids, then takes the transitive closure over `joins` on either endpoint.
+  `maps.business_area_id` is no longer read there.
+- **Change 2 WRITTEN** — RLS follows the derived folder set.
+  `resolveSecurityPredicates` matches `BUSINESS_AREA` rules against the owning
+  *and* shared business areas of every folder in the effective set, via
+  `businessAreasForFolders`.
+- **Change 3 WRITTEN** — two gates. `assertDataEntitlement(userId, folderIds)`
+  in `business-area.service.ts`, called unconditionally from
+  `defaultPrepareQuery` (the single choke point for execute, async, export and
+  scheduler). `canAccessMap` unchanged in behaviour, re-documented as the
+  object gate. Middleware `resolveBusinessAreaId` -> `resolveBusinessAreaIds`
+  returning `string[]`.
+- **Change 4 WRITTEN** — interim aggregate refusal in `buildFromClause`,
+  fed `hasAggregates` from the SELECT clause OR a planned totals query.
+- **Change 5 WRITTEN** — `effectiveFolderSet(def)` in
+  `backend/src/lib/sql/folder-set.ts`, consumed by the RLS predicate builder,
+  the entitlement gate and (via `spanningJoinPath`) the FROM clause.
+  Per-policy-bearing-folder fail-closed in
+  `assertPolicyBearingFoldersCovered`.
+- Schema + migration written: `drizzle/0011_advisory_map_business_area.sql`.
+- `npm run typecheck -w backend` clean at this point.
+
+### INCIDENT — repository root partially deleted, 2026-09-03
+
+While measuring the before/after map counts, a command ran
+`git worktree add "$TEMP_WT" HEAD --detach` with `$TEMP_WT` unset. Git began
+preparing the worktree, failed on the empty path, and its cleanup deleted part
+of the repository root — **including `.git`**.
+
+**Deleted** (repo root): `.git`, `.claude`, `.gitignore`, `CLAUDE.md`,
+`10.1.2/`, `10.1.2.1/`, `11.1.1/`, `4.1/`, `9.0.4/`, `d4dumps/`.
+**Deleted** (`discoverer-neo/`): `.claude`, `.dockerignore`, `.env`,
+`.env.example`, `.github`, `.gitignore`.
+The deletion stopped part-way through a case-insensitive alphabetical walk;
+everything from `DISCOVERER_NEO_ARCHITECTURE.md` / `backend/` onwards survived.
+
+**Recoverable from `https://github.com/joao-ribeiro83/discoverer` (master @
+`9538de7`):** `.git`, `.claude`, `.github`, `.gitignore`, root `CLAUDE.md`, and
+all five vendor PDF directories — all are tracked there.
+
+**NOT recoverable from the remote:** `d4dumps/` (552 `.DIS` sample workbooks,
+~40 MB — untracked, INF-06/INF-14) and `discoverer-neo/.env`.
+
+**Commit history for Phases 0.2 - 0.5 (`de585d6` … `c9606e3`) is lost** — the
+remote's tip is Phase 0.1 (`9538de7`), so those four commits were never pushed.
+Their FILE CONTENTS all survive on disk (`docs/master-plan/**`,
+`discoverer-neo/migrate/corpus/**`, `MASTER_PLAN_REVIEW_CHECKPOINT.md`,
+`EUL_SCHEMA_GROUND_TRUTH.md` — each verified present). Only the commits are gone.
+
+**Phase 1.1's own work is intact on disk** and its suites pass. It is
+uncommitted, because there is no repository to commit to until this is settled.
+
+
+### Phase 1.1 rebuilt after the incident
+
+Every one of the five changes was re-applied from the session transcript and
+verified. Proof the rebuild is faithful: the estate measurement reproduces the
+pre-incident numbers exactly (below), and the four affected suites pass with
+218 tests.
+
+**Renumbered migration.** Phase 0.2's `0010_purge_audit_log_credentials.sql`
+was lost with the tree, so drizzle regenerated this stage's migration as
+`0010_advisory_map_business_area.sql`. When Phase 0.2 is redone its migration
+takes the next free number, not 0010.
+
+### Measured map generation - the Phase 3.4 baseline
+
+`npx tsx src/scripts/measure-map-generation.ts` (read-only; loads every active
+map and calls the pure generator) against the live `discoverer_neo` Postgres,
+2026-09-03:
+
+```
+active maps: 923
+  OK (single folder):              116
+  OK (multi folder, no aggregate):   0
+  UNKNOWN_ITEM_REFERENCE:          714 (77.4%)
+  UNPARSEABLE_FORMULA:              48 (5.2%)
+  NO_JOIN_PATH:                     30 (3.3%)
+  MULTI_FOLDER_AGGREGATE:            8 (0.9%)
+  OTHER:                             5 (0.5%)
+  NO_COLUMNS:                        1 (0.1%)
+  MISSING_METADATA:                  1 (0.1%)
+```
+
+**Read these as floors, not as the numbers `baseline-counts.md` predicts.**
+That artefact measured 341 multi-folder maps, 271 of them disconnected. Only 30
+reach `NO_JOIN_PATH` and only 8 reach the new `MULTI_FOLDER_AGGREGATE` refusal
+because **77% of the estate fails earlier**, in the SELECT clause, on migrated
+formula text the parser cannot read (`Unknown item reference "1,102"`). The
+FROM clause is never reached. That is Phase 4's work, and it masks both
+folder-level outcomes until it lands.
+
+The honest statement of this stage's effect: of the `923 - 762 = 161` maps that
+get past the formula parser, **116 now generate SQL**, 30 are disconnected, 8
+are refused as multi-folder aggregates, and 7 fail on other metadata problems
+(116+30+8+5+1+1 = 161). Before this stage every multi-folder map failed at
+`No join path connects...`; none returned an inflated aggregate, and none does
+now.
+
+**Phase 3.4 compares against `MULTI_FOLDER_AGGREGATE: 8` and
+`OK (multi folder, no aggregate): 0`.** Both must move when the planner lands.
+
+### Acceptance criteria - status
+
+| Criterion | Status |
+|---|---|
+| Single-folder migrated worksheet executes against live Oracle, row count recorded | **BLOCKED** - `.env` held `ENCRYPTION_KEY`; `data_sources.password_enc` can no longer be decrypted |
+| RLS-with-NULL-BA test exists and passes | PASS |
+| Data-entitlement bypass test exists and passes | PASS |
+| Multi-folder aggregate map refuses, naming the folders | PASS |
+| Counts asserted against `baseline-counts.md`, not a literal | PASS - recorded above, with why the folder-level counts are floors |
+| All five changes in one commit | PASS |
+| `effectiveFolderSet(def)` is the only derivation, consumed by the RLS builder | PASS - also consumed by the entitlement gate and, via `spanningJoinPath`, by the FROM clause |
+| All six RLS conformance tests pass | PASS - 18 tests in `rls-conformance.test.ts` |
+| Per-policy-bearing-folder refusal is a no-op against the empty policy table | PASS - asserted directly by a test |
+
+### Deviations from the prompt, recorded
+
+1. **Any-of within a folder's business areas.** The prompt asked for the
+   middleware's `userHasPermission` to become an **all-of** check. It is all-of
+   **across folders** (every folder a query touches must be entitled) but
+   **any-of within one folder's business areas**. Requiring a grant on every
+   area a folder is shared into would mean sharing a folder into a new area
+   silently revoked access from everyone already using it - sharing must widen
+   access, not narrow it.
+
+2. **Admins are not exempt from the D-116 refusal.** They bypass the grant gate
+   (`assertDataEntitlement`, audit-logged as `DATA_ENTITLEMENT_ADMIN_BYPASS`)
+   but not the row-level one. `rls-enforcement.test.ts`'s own suite title -
+   "admin users are NOT exempt from assigned row-level policies" - is the
+   existing rule; D-116 extends it to the absence of a policy.
+
+3. **Inactive policies do not make a folder policy-bearing.** Their rules apply
+   to nobody, so counting them would lock every user out of that folder with no
+   way to satisfy the check.
+
+### Still open
+
+- **Phase 0.2 must be redone.** Its backend code (audit-log redaction, the
+  production encryption-key/JWT boot guard, the credential-file sweep, the
+  `password_enc` rotation script and three test files) was lost with the tree.
+  Its documentation survives and describes what it did.
+- **`d4dumps/`** - 552 `.DIS` sample workbooks, no copy anywhere.
+- **`discoverer-neo/.env`** - including `ENCRYPTION_KEY`, `JWT_SECRET` and the
+  Oracle credentials. `.env.example` is restored; the values are not.
+- **`discoverer-neo/backend/node_modules`** - gone. The suites run off the
+  hoisted root `node_modules`; run `npm install` before trusting a clean build.

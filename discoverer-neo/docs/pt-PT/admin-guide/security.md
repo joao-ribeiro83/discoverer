@@ -202,6 +202,64 @@ Acompanhe as alterações às políticas de segurança:
 2. Filtre por tipo de entidade: SECURITY_POLICY
 3. Veja quem criou/modificou/eliminou políticas
 
+## Redacção de credenciais no registo de auditoria
+
+Todos os pedidos que alteram dados (`POST`, `PUT`, `PATCH`, `DELETE`) têm os
+seus parâmetros, query string, corpo do pedido e corpo da resposta guardados em
+`audit_log.details`. Alguns desses corpos transportam credenciais em texto
+simples — a palavra-passe Oracle de uma fonte de dados chega à API em texto
+simples e só é cifrada no servidor, e uma alteração de palavra-passe transporta
+a nova palavra-passe.
+
+### A regra
+
+Antes de qualquer coisa ser guardada, qualquer chave cujo nome **contenha** uma
+destas subcadeias, sem distinguir maiúsculas de minúsculas, a qualquer
+profundidade, tem o seu valor substituído por `[REDACTED]`:
+
+| Subcadeia | Apanha, entre outros |
+|-----------|----------------------|
+| `password` | `password`, `passwordEnc`, `newPassword`, `currentPassword`, `passwordHash` |
+| `secret` | `secret`, `clientSecret`, `client_secret` |
+| `token` | `token`, `apiToken`, `refreshToken`, `accessToken` |
+| `credential` | `credential`, `dbCredential`, `credentials` |
+| `apikey` | `apiKey`, `api_key` |
+| `authorization` | `authorization` |
+
+A regra é `isSensitiveKey` em `backend/src/plugins/audit.ts`. Os arrays e os
+objectos aninhados são percorridos até uma profundidade de seis.
+
+### Porquê subcadeia e não uma lista exacta
+
+Antes era uma lista exacta de nomes de chaves, e uma lista exacta é a lista dos
+nomes em que alguém se lembrou de pensar. Faltavam dois — `passwordEnc` e
+`newPassword` — e **174 palavras-passe de fontes de dados Oracle e 5
+palavras-passe de utilizadores foram escritas em `audit_log` em texto simples**.
+Não cifradas; a cadeia de caracteres tal e qual.
+
+Uma regra por subcadeia apanha todas as variantes com prefixo, com sufixo e em
+camelCase da mesma palavra, sem ninguém ter de as enumerar. O texto simples
+existente foi expurgado pela migração `0010_purge_audit_log_credentials`, que
+redige os valores no lugar em vez de apagar linhas — um registo de auditoria
+cujas linhas desaparecem é um registo de auditoria pior.
+
+### O que a redacção não cobre
+
+- **Valores, não chaves.** Uma palavra-passe colada num campo de *descrição* é
+  guardada. O redactor faz a correspondência pelo nome do campo; não consegue
+  reconhecer um segredo só de olhar para ele.
+- **Texto de erro.** Uma mensagem de falha do Oracle ou do Postgres pode citar
+  a palavra "password" ("password authentication failed"). São mensagens, não
+  credenciais, e ficam intactas.
+
+### Se adicionar um campo que transporte um segredo
+
+Dê-lhe um nome que contenha uma das seis subcadeias. `apiToken` está coberto;
+`apiPass` não está. Acrescentar um nome que não corresponda é acrescentar uma
+fuga, e o hook de auditoria não tem forma de o avisar.
+
+`backend/src/__tests__/audit-redaction.test.ts` fixa a regra.
+
 ## Melhores Práticas
 
 1. **Comece de Forma Simples** — Comece com filtragem por uma única coluna (região, departamento)

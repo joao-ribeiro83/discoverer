@@ -19,7 +19,13 @@ Write and **rehearse** the runbook.
 5. **Re-provision user credentials.** Legacy password hashes are **IMPOSSIBLE to migrate, and
    correctly so** (D-094) — `EUL4_EUL_USERS` holds Discoverer's own credentials, and Neo
    re-provisions with bcrypt behind the `!migrat` sentinel, which **fails closed** (verified).
-   **Every one of the 17 migrated users needs a credential and a first-login path.**
+   **Every user still carrying `must_change_password = true` needs a credential and a
+   first-login path — query this count live at cutover time, do not assert a literal.**
+   Phase 0.4's baseline measured 14 at the time of measurement
+   (`docs/master-plan/research/baseline-counts.md`); no schema column marks "migrated"
+   provenance, so this number moves as people complete first login and has no fixed value
+   to design the runbook against — **17 does not match any measured population and should
+   not be quoted.**
 6. **Delete the UTF-16 dumps so nobody mistakes them for restore points** (INF-06), if still
    present.
 7. **The MANUAL decisions**, surfaced and answered before cutover:

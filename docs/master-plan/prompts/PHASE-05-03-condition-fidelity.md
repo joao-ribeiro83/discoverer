@@ -9,7 +9,10 @@ building an expression tree the corpus does not need.**
 
 ## The measurement that scopes this stage
 
-Over **all 3 395 live conditions**:
+Over **all 3 395 source condition trees** — the full population; see
+`docs/master-plan/research/baseline-counts.md` §1 for why this does not conflict with the
+5 605 `map_conditions` rows in the target DB (a different, later-stage population: one row per
+flattened leaf predicate, not per tree):
 
 | Depth | Share |
 | ----- | ----- |
@@ -172,20 +175,20 @@ thing; a session following D-007 cannot follow this prompt.
 
 **No stage may name two models (D-119).**
 
-### 2. D-072's central claim rests on a population this prompt does not reconcile (F-05)
+### 2. D-072's central claim rests on a population — resolved by Phase 0.4 (F-05)
 
-This prompt measures the depth distribution *"over all **3 395** live conditions"*. Phase 1.2 and
-Phase 5.2 both say **5 605** conditions import with `group_id = NULL`. **The ~2 210 gap is never
-explained anywhere in the plan.**
+**Resolved.** `docs/master-plan/research/baseline-counts.md` §1 measured both populations: the
+distribution was taken over 3 395 source **condition trees** (the full source population, not a
+subset), while 5 605 is the target `map_conditions` **row count after flattening** each tree's
+leaves into individual rows — a different, later-stage population, not 2 210 excluded
+conditions. D-072's claim covers the entire measured corpus, as stated; nothing was excluded.
 
-That matters because this distribution — depth 0 = 92.6%, depth 1 = 7.3%, depth 2 = 7 instances,
-depth ≥ 3 = zero — is the **sole evidence** for D-072's claim that a `negated` boolean *"covers
-the entire measured corpus"*. **If 2 210 conditions were excluded, the claim covers 61%, not
-all.**
-
-- [ ] **State which population the distribution was measured over, and what the difference from
-      Phase 0.4's total is.** If the excluded set is not empty, re-measure over the whole corpus
-      or restate D-072's claim to match what was actually measured.
+**Also newly measured and worth carrying into this stage:** every one of the 5 605
+`map_conditions` rows in the current target DB has `group_id IS NULL` — the write-path fix
+D-072 marks `FIXED` has not taken effect in this database (either not re-run, or not doing what
+the register claims). Depth-1 and depth-2 grouping cannot currently survive import. Confirm
+before assuming "existing depth-1/depth-2 conditions still emit unchanged" (Tests, above) means
+anything beyond depth-0 in this database today.
 
 ### 3. Note for Phase 5's planning
 

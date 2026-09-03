@@ -1,0 +1,15 @@
+{
+  "generatedBy": "migrate/src/scripts/build-formula-corpus.ts",
+  "decision": "D-114 option 1 - anonymised corpus",
+  "encoding": "latin1 (cp1252 single-byte, as the dumps are)",
+  "sampled": false,
+  "dumps": 547,
+  "alignedPairs": 37971,
+  "distinctPairs": 22748,
+  "ioWithoutDisplay": 7371,
+  "distinctIdentifiers": 7420,
+  "identifiersLeftInPlace": 2116,
+  "identifierReplacements": 137012,
+  "distinctBuiltinCodes": 55,
+  "sha256": "5754a080e8e8fd36f0dd1e6629306d4b1c3d0d753e606d57792025eb0537ca34"
+}

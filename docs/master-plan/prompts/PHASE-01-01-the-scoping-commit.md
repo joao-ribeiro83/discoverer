@@ -122,9 +122,9 @@ Nothing catches it because `security_policy_rules` is empty, so no test exercise
 Phase 0 complete — **all five stages**:
 
 - **0.3**, whose Q1 cardinality probe settles the master/detail orientation by measurement.
-- **0.4**, whose baseline supplies the counts this stage's acceptance criteria assert against.
-  The source documents disagree (272 / 341 / "271 of 341"), so **assert against the recorded
-  baseline, never a literal.**
+- **0.4**, whose baseline (`docs/master-plan/research/baseline-counts.md`) supplies the counts
+  this stage's acceptance criteria assert against. The source documents used to disagree, so
+  **assert against the recorded baseline, never a literal.**
 
 ## Required files to read first
 
@@ -225,8 +225,9 @@ execute a known multi-folder aggregate map and assert the new refusal message.
 - [ ] The data-entitlement bypass test exists and passes
 - [ ] A multi-folder aggregate map refuses, naming the folders
 - [ ] Single-folder maps generate SQL and multi-folder aggregates refuse, **in the proportions
-      Phase 0.4 recorded**. Do NOT assert against a literal — the source documents disagree
-      (272 in this prompt's v1.0 vs 341 in Phase 3.2's vs "271 of 341" in the research)
+      `docs/master-plan/research/baseline-counts.md` recorded**. Do NOT assert against a
+      literal — this prompt's earlier drafts and the research disagreed before that
+      measurement existed.
 - [ ] All **five** changes are in **one commit**
 - [ ] `effectiveFolderSet(def)` exists, is the **only** derivation of the folder set, and is
       consumed by the RLS predicate builder

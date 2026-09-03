@@ -450,3 +450,123 @@ junk-path deletion, which was already gone). User chose to leave it red and
 log it rather than mask it by skipping the lint step. **This is a new,
 unplanned blocker — needs its own stage before Backend can go green.**
 `!migrat` sentinel fails closed)
+
+---
+
+## Phase 0.2 execution — credential remediation, tier 0 — 2026-09-03
+
+All six scope items done, one commit each, in the prescribed order.
+
+### CREDENTIAL ROTATION — the fact this section exists to record
+
+**Oracle credentials were re-encrypted under a new `ENCRYPTION_KEY` on
+2026-09-03.** One credential, `SIID_TESTES`
+(`c5ed9133-3e4c-4c0b-869e-6f62d6f8b194`), the only data source carrying a
+stored password. The rotation completed in a single transaction; nothing was
+left half-rotated.
+
+The previous key was the published development default
+(`dev-only-insecure-encryption-key-change-me`) — `.env` never set
+`ENCRYPTION_KEY` at all. **Treat that credential's Oracle password as having
+been protected by a key printed in this repository for the whole of its life
+to date. Rotating the encryption key does not rotate the Oracle password
+itself; that is the DBA's action and it has NOT been done.**
+
+The new key lives in the gitignored `discoverer-neo/.env`, which compose
+passes through via `env_file`. It is not committed anywhere.
+
+Verified: the credential decrypts under the new key and no longer under the
+old default. AES-GCM's auth tag makes the successful new-key decrypt a proof
+the plaintext is intact, not an inference. Backup taken before rotation:
+`backups/postgres/discoverer_neo_20260903-012612.dump.gz`.
+
+### What each item found
+
+**1. SEC-02 redactor (`18a3b8b`).** Replaced the exact-name list with a
+substring rule (`password`, `secret`, `token`, `credential`, plus `apikey`
+and `authorization`, which contain none of the four). Subsumes every entry
+the old list had. Landed before the purge, as required.
+
+**2. Purge (`10a371a`).** Drizzle migration
+`0010_purge_audit_log_credentials`, not a script. Redacts in place rather
+than deleting rows. Applied live: **7257 of 16045 rows rewritten**. A
+recursive scan for any sensitive-keyed value that is not `[REDACTED]`
+returns **0**. 109 rows still match the words — all Oracle/Postgres error
+text ("password authentication failed", "NJS-116: password verifier type"),
+not credentials.
+
+*Note for the plan:* the stage's validation command queries
+`audit_log.request_body`. That column does not exist; the column is
+`details` (jsonb). Corrected query in the git log for `10a371a`.
+
+**3. Boot guard (`5ebbe84`).** `assertProductionSecrets` in `config.ts`
+throws when `NODE_ENV=production` and either secret is still default,
+naming which. Exported as a pure function so the test asserts each default
+in turn without booting a production process. Both defaults moved into an
+exported `INSECURE_DEFAULTS` table so schema and guard cannot drift.
+
+**4. Rotation path (`4738aeb`).** `encryption.ts` gains
+`deriveKey`/`encryptWith`/`decryptWith`; `encrypt`/`decrypt` delegate and
+are unchanged for every caller. `scripts/rotate-encryption-key.ts` decrypts
+everything before writing anything, verifies each new ciphertext round-trips
+before it replaces the old one, aborts on any row that will not open under
+the old key, and never prints a plaintext. **`data_sources.password_enc` is
+the only encrypted column in the schema** — verified, `encrypt`/`decrypt`
+have no other call site.
+
+**5. Credential-file sweep (`de585d6`).** `sweepCredentialFiles` deletes
+anything past `CREDENTIAL_FILE_TTL_HOURS` (default 24), at boot as well as
+hourly. The nine existing plaintext CSVs are deleted (7 in
+`storage/credentials/`, 2 in `credentials/`). Both directories were already
+gitignored and untracked — nothing was ever committed.
+
+**6. Seed placeholder (`79d1aa8`).** The seeded "Sample Oracle DB" was
+active and stored the literal string `PLACEHOLDER_ENCRYPTED_PASSWORD`. It
+surfaced by **blocking the rotation** — the script correctly refuses to
+rewrite a set it cannot fully open. Row deleted from the live database;
+zero folders referenced it.
+
+**Docs (`fdcb7a4`).** Rotation runbook in
+`docs/deployment/configuration.md`; redaction policy in
+`docs/admin-guide/security.md`, mirrored into pt-PT, fr-FR, es-ES. Only
+`admin-guide` is translated in this repository — there is no locale
+`deployment` tree for the runbook to mirror into.
+
+### Still open, and deliberately so
+
+- **The Oracle password for `SIID_TESTES` has not been rotated at the
+  database.** Re-encryption protects it going forward; it does not undo the
+  exposure. That is a DBA action.
+- **`backend/src/db/seed.ts` still opens with an unscoped
+  `db.delete(dataSources)`.** Running the seed against a real database
+  destroys registered data sources — the same failure mode that already cost
+  this repo one Oracle source. Out of scope for this stage; worth its own.
+- **Two pre-existing lint errors sit on lines this stage touched** —
+  `encryption.ts` (`decipher.update() + decipher.final()`) and `audit.ts`
+  (`async` hook with no `await`). Both are original code, verified present
+  at `9538de7`; they are part of the 993 backend lint errors logged in Phase
+  0.1, not new.
+- **INF-06/INF-14 (40 MB of untracked dumps)** were listed in the brief's
+  Tier 0 table but not in this stage's six scope items. Not done.
+
+### Test suite: green serially, not in parallel
+
+```
+npx jest --runInBand   ->  48 suites, 1088 tests, 0 failures
+npm test -w backend    ->  4 suites, 17 tests failed
+```
+
+The same four suites (`business-areas`, `joins`, `hierarchies`,
+`rbac.integration`) pass in isolation and fail under parallel workers, with
+404s and 400s on rows another worker deleted. **Cross-suite interference over
+one shared test database — not a logic regression.** This stage added three
+test files, which re-sharded the workers and surfaced it; the underlying
+problem is older, and `backend/jest.config.js` already documents the same
+class of failure in its `forceExit` comment.
+
+Consequence for CI: the backend test step needs `--runInBand`, or the suites
+need per-suite schema isolation. Until one of those lands, a parallel run is
+not a trustworthy signal. Worth its own stage — it will block Backend from
+ever going green even after the 993 lint errors are fixed.
+
+

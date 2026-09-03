@@ -212,19 +212,21 @@ did not intend to:
 
 ### 3. Reconcile the three counts and record them (B-04 / R-10)
 
-The counts disagree across the plan: this prompt says **341** multi-folder maps, Phase 1.1 says
-**272**, and the research says *"271 of 341"*. Meanwhile the workbook container records join
-usage on only **24** worksheets (tag `0x0127`, graded [DUMP] 24/0).
+**Resolved by Phase 0.4** (`docs/master-plan/research/baseline-counts.md`) — the counts used to
+disagree across the plan; they no longer do:
 
-**Record three numbers in the checkpoint**, from Phase 0.4's baseline:
+1. **341** maps span more than one folder (confirms this prompt; the 272 once quoted elsewhere
+   was wrong).
+2. **70** of those 341 have a folder set **connected by the 10 known joins**.
+3. **271** of those 341 are not connected by any of the 10 joins and hit the disconnection
+   refusal — exactly the research's "271 of 341".
+4. **24** worksheets declare join usage in the container (tag `0x0127`, [DUMP] 24/0) — smaller
+   than 70 because most of the 70 get connected implicitly by the BFS spanning tree, without
+   the source query ever forcing the join.
 
-1. maps spanning more than one folder;
-2. maps whose folder set is **connected by the 10 known joins**;
-3. maps declaring join usage in the container.
-
-**Adding predicates to 10 joins cannot connect a map whose folders were never joined in
-Discoverer either.** Phase 3.4's expected histogram is predicted from this reconciliation, not
-from `total − single-folder`.
+**Adding predicates to 10 joins cannot connect the other 271** — their folders were never
+joined in Discoverer either. Phase 3.4's expected histogram is **70 connected / 271
+refused**, not `total − single-folder`.
 
 ### 4. Orientation
 

@@ -178,5 +178,7 @@ reachable, so this is where it gets checked.**
 
 ### ⟐ Counts
 
-Assert against **Phase 0.4's recorded baseline**, never a literal. This prompt's v1.0 arithmetic
-inherited the disputed `272`; Phase 3.2's prompt says `341`; the research says *"271 of 341"*.
+Assert against **Phase 0.4's recorded baseline** (`docs/master-plan/research/baseline-counts.md`),
+never a literal. Resolved: **341** multi-folder maps (the `272` this prompt's v1.0 arithmetic
+once inherited was wrong), of which **70** are connected by the 10 known joins and **271** are
+not — exactly the research's "271 of 341".

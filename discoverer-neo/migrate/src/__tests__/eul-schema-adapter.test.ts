@@ -337,8 +337,9 @@ describe('unified read functions', () => {
       expect(joins).toHaveLength(1);
       expect(joins[0]).toMatchObject({
         sourceId: 400,
-        masterFolderId: 200,
-        detailFolderId: 201,
+        // KEY_OBJ_ID (200) is the DETAIL; FK_OBJ_ID_REMOTE (201) is the MASTER.
+        detailFolderId: 200,
+        masterFolderId: 201,
         description: 'Invoices to Summary',
       });
       // Joins bind folders; item-level keys are unconfirmed and stay empty.
@@ -360,7 +361,7 @@ describe('unified read functions', () => {
 
       expect(joins).toHaveLength(1);
       expect(joins[0]?.sourceId).toBe(0);
-      expect(joins[0]?.masterFolderId).toBe(200);
+      expect(joins[0]?.detailFolderId).toBe(200);
     });
 
     it('EUL4: reads the same shape under the EUL4_ prefix', async () => {
@@ -368,8 +369,51 @@ describe('unified read functions', () => {
       const joins = await readJoins(adapter, execute);
 
       expect(joins).toHaveLength(1);
-      expect(joins[0]?.masterFolderId).toBe(20);
+      expect(joins[0]?.detailFolderId).toBe(20);
       expect(joins[0]?.joinType).toBe('INNER');
+    });
+
+    /**
+     * Orientation regression — the evidence, not just the conclusion.
+     *
+     * Measured on the live EUL4 (`SIID_TESTES`) by the Phase 0.3 probe;
+     * raw output in `docs/master-plan/research/eul-probe-results.md` Q1.
+     * `KEY_ID` 108451 `M M111 -> M M111 1` is the only join in that estate
+     * where one side's join key is *exactly* unique — the textbook master —
+     * and that side is `FK_OBJ_ID_REMOTE`:
+     *
+     *   FK_OBJ_ID_REMOTE -> M M111   (M_M111)    1830 rows / 1830 keys  => MASTER
+     *   KEY_OBJ_ID       -> M M111 1 (M_M111_1)   216 rows /   94 keys  => DETAIL
+     *
+     * An inversion here does not throw. It pushes the wrong side into the
+     * fan-trap inline view and returns correct-looking wrong numbers.
+     */
+    it('EUL4 live shape: KEY_OBJ_ID is the detail, FK_OBJ_ID_REMOTE the master', async () => {
+      const MASTER_M_M111 = { folderId: 107430, rows: 1830, distinctKeys: 1830 };
+      const DETAIL_M_M111_1 = { folderId: 107431, rows: 216, distinctKeys: 94 };
+
+      // The master's join key is unique; the detail's is not. That is the
+      // arithmetic the orientation rests on.
+      expect(MASTER_M_M111.distinctKeys).toBe(MASTER_M_M111.rows);
+      expect(DETAIL_M_M111_1.distinctKeys).toBeLessThan(DETAIL_M_M111_1.rows);
+
+      const db = eul4Db();
+      db.tables.EUL4_KEY_CONS = [
+        {
+          KEY_ID: 108451,
+          KEY_NAME: 'M M111 -> M M111 1',
+          KEY_TYPE: 'FK',
+          KEY_OBJ_ID: DETAIL_M_M111_1.folderId,
+          FK_OBJ_ID_REMOTE: MASTER_M_M111.folderId,
+          KEY_DESCRIPTION: null,
+        },
+      ];
+
+      const { adapter, execute } = await adapterFor(db);
+      const [join] = await readJoins(adapter, execute);
+
+      expect(join?.detailFolderId).toBe(DETAIL_M_M111_1.folderId);
+      expect(join?.masterFolderId).toBe(MASTER_M_M111.folderId);
     });
   });
 

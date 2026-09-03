@@ -41,9 +41,13 @@ Complete environment variable reference for Discoverer Neo.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `JWT_SECRET` | dev-only-insecure-secret-change-me | JWT signing secret (min 16 chars) |
+| `JWT_SECRET` | dev-only-insecure-secret-change-me | JWT signing secret (min 16 chars). **The backend refuses to start with `NODE_ENV=production` while this default is in force.** |
 | `JWT_EXPIRES_IN` | 7d | Token expiration (e.g., "7d", "24h", "3600") |
-| `ENCRYPTION_KEY` | dev-only-insecure-encryption-key-change-me | AES-256 encryption for stored credentials (min 32 chars) |
+| `ENCRYPTION_KEY` | dev-only-insecure-encryption-key-change-me | AES-256-GCM key for stored credentials (min 32 chars). **The backend refuses to start with `NODE_ENV=production` while this default is in force.** Changing it requires re-encrypting stored credentials — see [Rotating the encryption key](#rotating-the-encryption-key). |
+
+Both defaults are published in this repository, so neither protects anything
+from anyone holding a copy of it. The guard lives in `backend/src/config.ts`
+(`assertProductionSecrets`) and throws before any config value is read.
 
 ### Oracle Database Connectivity
 
@@ -153,6 +157,93 @@ openssl rand -hex 32
 # Example output
 abc123def456ghi789jkl012mno345pqr789stu012vwx345yz
 ```
+
+## Rotating the encryption key
+
+`ENCRYPTION_KEY` is the AES-256-GCM key protecting every stored Oracle
+data-source password (`data_sources.password_enc` — the only encrypted column
+in the schema).
+
+**Changing it without re-encrypting makes every stored password permanently
+undecryptable.** There is no recovery except re-entering each password by hand.
+The application will not error usefully; it will simply fail to connect.
+
+Rotate when the key may have been exposed: a leaked `.env`, an operator
+leaving, or — as here — discovering the deployment was running on the
+published development default.
+
+### 1. Back up first
+
+```bash
+./scripts/backup.sh
+```
+
+This is the rollback. Note the timestamp it prints; the dump lands in
+`backups/postgres/`.
+
+### 2. Generate the new key
+
+```bash
+openssl rand -hex 32
+```
+
+Do not commit it, and do not overwrite the old one yet — the rotation needs
+both at once.
+
+### 3. Dry-run the rotation
+
+```bash
+cd backend
+OLD_ENCRYPTION_KEY='<current>' NEW_ENCRYPTION_KEY='<new>' \
+  npx tsx src/scripts/rotate-encryption-key.ts --dry-run
+```
+
+The dry run reports how many credentials would be rewritten and names any that
+will not decrypt under the old key.
+
+**If a credential does not decrypt, stop.** Either the old key is wrong — in
+which case rotating would destroy every password — or that row was never valid
+ciphertext. Inspect it. Only once you know which, re-run with
+`--allow-undecryptable` to rotate the rest and leave that row untouched.
+
+### 4. Rotate
+
+```bash
+OLD_ENCRYPTION_KEY='<current>' NEW_ENCRYPTION_KEY='<new>' \
+  npx tsx src/scripts/rotate-encryption-key.ts
+```
+
+Every row is rewritten in one transaction, and each new ciphertext is decrypted
+back before it replaces the old one. A crash halfway leaves the whole set on the
+old key, which the old key still opens. No plaintext is printed or written.
+
+### 5. Install the new key and restart
+
+Set `ENCRYPTION_KEY` to the new value in `.env` (which `docker-compose` passes
+through via `env_file`), then:
+
+```bash
+docker compose up -d --force-recreate backend
+```
+
+### 6. Verify
+
+Open each data source's **Test Connection** in the admin UI. A connection that
+succeeded before rotation and fails after it means the rotation did not take —
+restore the backup from step 1 and start again with the correct old key.
+
+### Rolling back
+
+```bash
+./scripts/restore.sh backups/postgres/discoverer_neo_<timestamp>.dump.gz
+```
+
+Then put the **old** `ENCRYPTION_KEY` back. The two must always move together.
+
+### Rotating `JWT_SECRET`
+
+Far simpler: change it and restart. Every existing session token becomes
+invalid, so everyone is logged out once. Nothing stored needs rewriting.
 
 ## Performance Tuning
 

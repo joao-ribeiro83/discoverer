@@ -185,8 +185,9 @@ Read the checkpoint, run the no-policy test. If it returns zero rows, this stage
 ### 1. Phase 1.1 already shipped the interim — this stage completes it (D-116 / R-02)
 
 RLS **fails open** today: `map-execution.service.ts:290-291` returns zero predicates when the
-user has no policy. v1.0 fixed that here, in Phase 6 — five phases after Phase 1.1 made 651
-worksheets executable. **Phase 1.1 now ships a per-policy-bearing-folder refusal** (a no-op
+user has no policy. v1.0 fixed that here, in Phase 6 — five phases after Phase 1.1 made the
+estate's single-folder maps executable (**581**, per
+`docs/master-plan/research/baseline-counts.md` — not the disputed `651` figure). **Phase 1.1 now ships a per-policy-bearing-folder refusal** (a no-op
 against the empty policy table, correct the moment a policy exists). This stage completes it:
 full fail-closed, plus the COMPLEX-folder refusal.
 
