@@ -438,8 +438,9 @@ one, lower the constant in the same commit.
 
 CI gates on `FAILED === 0` only. An unhandled path is our bug; a quarantine is a
 data problem waiting on the phase that fixes it. A quarantine without a stated
-reason is the unknown these tests exist to delete, so the verifier never falls
-back to a placeholder.
+reason is the unknown these tests exist to delete, so a classifier that returns
+one gets `no reason given` counted against it in the report — visible, rather
+than blending into the quarantine total.
 
 ### The expected-loss allowance file
 

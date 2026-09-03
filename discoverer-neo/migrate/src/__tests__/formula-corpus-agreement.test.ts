@@ -1,6 +1,7 @@
 import { describe, it, expect } from '@jest/globals';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { tmpdir } from 'node:os';
 
 import {
   measureAgreement,
@@ -82,6 +83,39 @@ describe('formula corpus agreement gate', () => {
     const declines = measureAgreement(rows.slice(0, 50), NO_RENDERER);
     expect(declines.distinctThrew).toBe(0);
     expect(declines.distinctUnrendered).toBe(50);
+  });
+
+  it('skips malformed lines rather than scoring them as disagreements', () => {
+    // A truncated or re-encoded corpus must not read as "the renderer got
+    // worse" — that is a ratchet failing for the wrong reason, which is how a
+    // gate stops being believed.
+    const path = resolve(tmpdir(), 'corpus-malformed.tsv');
+    const TAB = '\t';
+    writeFileSync(
+      path,
+      [
+        `occurrences${TAB}io_formula${TAB}display_formula`,
+        `3${TAB}[1,1]${TAB}A`,
+        'no-tabs-here',
+        '',
+        `x${TAB}[1,2]${TAB}B`,
+      ].join('\n'),
+      'latin1',
+    );
+    try {
+      const parsed = readFormulaCorpus(path);
+      expect(parsed).toHaveLength(2);
+      // A non-numeric count is 0, not NaN — NaN would poison every total.
+      expect(parsed.map((r) => r.occurrences)).toEqual([3, 0]);
+    } finally {
+      rmSync(path, { force: true });
+    }
+  });
+
+  it('reports 0%, not NaN, over an empty corpus', () => {
+    const empty = measureAgreement([], NO_RENDERER);
+    expect(empty.distinctRate).toBe(0);
+    expect(empty.weightedRate).toBe(0);
   });
 
   it('bounds its sample, whatever the size of the corpus', () => {
