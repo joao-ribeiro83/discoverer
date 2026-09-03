@@ -72,16 +72,27 @@ export default {
   },
   testMatch: ['**/?(*.)+(spec|test).ts'],
   clearMocks: true,
-  // Integration tests share a database — run them sequentially to avoid data races.
-  // Unit tests (under __tests__/ but not __tests__/integration/) can still run in parallel.
+  // Every suite here shares one database, so the whole run is sequential. The
+  // split between `__tests__/` and `__tests__/integration/` is about what a
+  // suite NEEDS, not about how it is scheduled: `npm run test:unit` is the
+  // fast loop that touches no infrastructure.
   maxWorkers: process.env.JEST_MAX_WORKERS
     ? Number(process.env.JEST_MAX_WORKERS)
     : 1,
-  // ponytail: baseline from the 2026-09-03 measured run (lines 75.38%,
-  // branches 56.1%) — raise as coverage improves, not a target to hit blind.
+  /**
+   * A floor at what the suite measurably achieves, not a target — raise it in
+   * the commit that earns it.
+   *
+   * Branches, not lines: for a SQL generator full of conditionals a line
+   * figure says almost nothing about whether the interesting paths were taken.
+   *
+   * 71% is the 2026-09-03 measured run (87.23% lines, 71.86% branches over
+   * 1 123 tests). The 56.1% the audit reported came from a six-week-old
+   * committed artefact — which is the argument against committing one.
+   */
   coverageThreshold: {
     global: {
-      branches: 56,
+      branches: 71,
     },
   },
 };

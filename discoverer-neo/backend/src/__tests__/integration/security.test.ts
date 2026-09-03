@@ -9,8 +9,8 @@ import {
 import type { FastifyInstance } from 'fastify';
 import type { Connection } from 'oracledb';
 import { eq } from 'drizzle-orm';
-import { buildApp } from '../app.js';
-import { db } from '../db/index.js';
+import { buildApp } from '../../app.js';
+import { db } from '../../db/index.js';
 import {
   businessAreas,
   dataSources,
@@ -30,23 +30,23 @@ import {
   type Map,
   type MapCondition,
   type MapItem,
-} from '../db/schema.js';
-import { hashPassword } from '../lib/password.js';
+} from '../../db/schema.js';
+import { hashPassword } from '../../lib/password.js';
 import {
   previewSecuredSql,
   stripStringLiterals,
   validatePredicate,
-} from '../lib/sql/security-predicates.js';
-import { generateSql, loadMapDefinition } from '../services/sql-generator.js';
+} from '../../lib/sql/security-predicates.js';
+import { generateSql, loadMapDefinition } from '../../services/sql-generator.js';
 import {
   defaultDeps,
   executeMap,
   resolveSecurityPredicates,
   MapExecutionError,
   type MapExecutionDeps,
-} from '../services/map-execution.service.js';
-import { getUserPolicies } from '../services/security.service.js';
-import { SqlGenerationError, type MapDefinition } from '../types/sql.js';
+} from '../../services/map-execution.service.js';
+import { getUserPolicies } from '../../services/security.service.js';
+import { SqlGenerationError, type MapDefinition } from '../../types/sql.js';
 
 // ---------------------------------------------------------------------------
 // Pure fixture factories (same pattern as sql-generator.test.ts)

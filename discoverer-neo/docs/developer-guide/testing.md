@@ -49,6 +49,9 @@ npm run test --workspace=backend
 # Watch mode (re-run on changes)
 npm run test:watch --workspace=backend
 
+# Only the suites that need no infrastructure — no Docker required
+npm run test:unit --workspace=backend
+
 # Integration tests only
 npm run test:integration --workspace=backend
 
@@ -63,8 +66,22 @@ npm run test -- --coverage --workspace=backend
 
 Located in `backend/src/__tests__/`:
 
-- `**/*.test.ts` — Unit tests
-- `integration/` — Integration tests (require services)
+- `*.test.ts` — suites needing **no** infrastructure. Pure functions and
+  fakes only; they run with Docker down.
+- `integration/` — everything that touches Postgres, Redis, a queue or the
+  Fastify app.
+
+The split is about what a suite **needs**, not how it is scheduled: the whole
+run is sequential either way, because every integration suite shares one
+database. Twenty-four suites lived in the top directory while requiring a live
+Postgres, which made `*.test.ts` look like a fast inner loop that did not
+exist.
+
+**It is still not a fast loop, and the reason is not the database.** A
+21-assertion pure-function suite takes ~15 s, essentially all of it ts-jest
+type-checking the program graph. Moving the infrastructure-bound suites made
+the directory honest; making the loop quick means addressing the transform
+(`isolatedModules`, swc, or a project-references split), not test placement.
 
 **Naming:** `<feature>.test.ts`
 

@@ -725,3 +725,24 @@ test files, 201 real). Core and frontend: 0.
 The data-source finding (2) is the one that blocks everything downstream: with
 `folders.data_source_id` null across the estate, no map executes regardless of
 what Phases 3 and 4 fix about SQL and formulas.
+
+### Phase 1.3 addendum — two measurements that corrected the audit
+
+**Backend branch coverage is 71.86%, not 56.10%.** Measured over the full
+48-suite, 1 123-test run on 2026-09-03 (87.23% lines). The 56.10% figure came
+from a committed `coverage/` artefact six weeks stale — which is the argument
+against committing one. The backend threshold is raised from 56 to **71** to
+match; core is at 71.02% against a 71 floor, frontend at its 78.
+
+**The unit suite was not slow because of the database.** The audit read ~250 s
+of DB-bound work filed as unit tests, and 24 suites did indeed require a live
+Postgres, Redis, a queue or the Fastify app while sitting in the top-level
+`__tests__/` directory. Those have moved to `__tests__/integration/`, and
+`npm run test:unit -w backend` now runs the 8 that genuinely need nothing —
+267 tests, no Docker.
+
+It still takes **5m21s**, and a single 21-assertion pure-function suite takes
+**15 s**. That is ts-jest type-checking the program graph per suite, not
+infrastructure. The move made the directory honest; a genuinely fast inner
+loop needs the transform addressed (`isolatedModules`, swc, or project
+references), and that is a separate piece of work this stage did not do.

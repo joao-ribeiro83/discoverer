@@ -20,16 +20,16 @@ import { eq } from 'drizzle-orm';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
-import { buildApp } from '../app.js';
-import { db } from '../db/index.js';
+import { buildApp } from '../../app.js';
+import { db } from '../../db/index.js';
 import {
   users,
   businessAreas,
   maps,
   exportJobs,
-} from '../db/schema.js';
-import { hashPassword } from '../lib/password.js';
-import { closeExportQueue } from '../queues/export.queue.js';
+} from '../../db/schema.js';
+import { hashPassword } from '../../lib/password.js';
+import { closeExportQueue } from '../../queues/export.queue.js';
 
 let app: FastifyInstance;
 

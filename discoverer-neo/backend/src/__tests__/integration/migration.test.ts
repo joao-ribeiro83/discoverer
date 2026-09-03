@@ -14,11 +14,11 @@ import { eq } from 'drizzle-orm';
 import { createFakeWriter, eul4Db, eul5Db, mockExecutor } from '@discoverer-neo/core/testing';
 import type { EulConnectionConfig } from '@discoverer-neo/core/migration';
 
-import { buildApp } from '../app.js';
-import { db } from '../db/index.js';
-import { dataSources, users } from '../db/schema.js';
-import { encrypt } from '../lib/encryption.js';
-import { hashPassword } from '../lib/password.js';
+import { buildApp } from '../../app.js';
+import { db } from '../../db/index.js';
+import { dataSources, users } from '../../db/schema.js';
+import { encrypt } from '../../lib/encryption.js';
+import { hashPassword } from '../../lib/password.js';
 import {
   MigrationError,
   loadEulConnection,
@@ -26,8 +26,8 @@ import {
   resetJobs,
   startMapReimport,
   startMigration,
-} from '../services/migration.service.js';
-import type { MigrationDeps, MigrationJob } from '../services/migration.service.js';
+} from '../../services/migration.service.js';
+import type { MigrationDeps, MigrationJob } from '../../services/migration.service.js';
 
 let app: FastifyInstance;
 

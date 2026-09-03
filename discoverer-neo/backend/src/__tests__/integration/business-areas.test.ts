@@ -1,14 +1,14 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from '@jest/globals';
 import type { FastifyInstance } from 'fastify';
 import { eq, and } from 'drizzle-orm';
-import { buildApp } from '../app.js';
-import { db } from '../db/index.js';
+import { buildApp } from '../../app.js';
+import { db } from '../../db/index.js';
 import {
   users,
   businessAreas,
   userBusinessAreaGrants,
-} from '../db/schema.js';
-import { hashPassword } from '../lib/password.js';
+} from '../../db/schema.js';
+import { hashPassword } from '../../lib/password.js';
 
 // ---------------------------------------------------------------------------
 // Helpers

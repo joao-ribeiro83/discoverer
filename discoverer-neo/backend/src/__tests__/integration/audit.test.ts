@@ -7,10 +7,10 @@ import {
 } from '@jest/globals';
 import type { FastifyInstance } from 'fastify';
 import { eq } from 'drizzle-orm';
-import { buildApp } from '../app.js';
-import { db } from '../db/index.js';
-import { auditLog, businessAreas, users } from '../db/schema.js';
-import { hashPassword } from '../lib/password.js';
+import { buildApp } from '../../app.js';
+import { db } from '../../db/index.js';
+import { auditLog, businessAreas, users } from '../../db/schema.js';
+import { hashPassword } from '../../lib/password.js';
 
 let app: FastifyInstance;
 
