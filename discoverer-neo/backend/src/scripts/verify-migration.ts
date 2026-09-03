@@ -22,6 +22,7 @@ import { verifyMigration, formatVerifyReport } from '@discoverer-neo/core/migrat
 
 import { db, pool } from '../db/index.js';
 import { generateSqlForMap } from '../services/sql-generator.js';
+import { bucketFormula } from '../services/formula-bucket.js';
 
 function numericFlag(name: string): number | undefined {
   const i = process.argv.indexOf(name);
@@ -33,6 +34,7 @@ function numericFlag(name: string): number | undefined {
 async function main(): Promise<void> {
   const report = await verifyMigration(db, {
     generateSqlForMap: (mapId) => generateSqlForMap(mapId),
+    compileFormula: bucketFormula,
     maxMaps: numericFlag('--max-maps'),
     sampleLimit: numericFlag('--samples'),
   });

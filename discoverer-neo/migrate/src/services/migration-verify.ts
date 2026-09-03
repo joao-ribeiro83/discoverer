@@ -203,6 +203,121 @@ function describe(err: unknown): string {
 }
 
 // ---------------------------------------------------------------------------
+// Seam 2 — formula compile rate
+// ---------------------------------------------------------------------------
+
+/** Rows read per page. Formulas are short; this only bounds peak memory. */
+const FORMULA_PAGE = 5_000;
+
+/**
+ * Every stored formula must land in a named bucket (D-059). A formula that
+ * neither compiles nor carries a stated quarantine reason is the unknown this
+ * seam exists to delete: F-02 was "we do not know how many formulas work", and
+ * a number with a reason attached is the whole deliverable.
+ *
+ * `FAILED` means the classifier hit a path it does not handle — our bug — so
+ * that is the only bucket gated on. Quarantine counts are reported and shrink
+ * as the Phase 4 token renderer lands.
+ */
+export async function checkFormulaCompileRate(
+  db: VerifyDb,
+  options: VerifyOptions = {},
+): Promise<SeamResult> {
+  const name = 'every calculated field compiles or is quarantined with a reason';
+  const limit = options.sampleLimit ?? 10;
+
+  const buckets: Record<CompileBucket, number> = {
+    COMPILED: 0,
+    COMPILED_UNVERIFIED: 0,
+    QUARANTINED: 0,
+    FAILED: 0,
+  };
+  const reasons = new globalThis.Map<string, number>();
+  const tally = (reason: string) => reasons.set(reason, (reasons.get(reason) ?? 0) + 1);
+
+  const compile = options.compileFormula;
+  let total = 0;
+  let offset = 0;
+  for (;;) {
+    const page = await rows(
+      db,
+      sql`SELECT f.id::text AS id, f.formula
+          FROM map_calculated_fields f
+          JOIN maps ON maps.id = f.map_id
+          WHERE ${mapScope(options.mapIdPrefix)}
+          ORDER BY f.id
+          LIMIT ${FORMULA_PAGE} OFFSET ${offset}`,
+    );
+    if (page.length === 0) break;
+    offset += page.length;
+    total += page.length;
+
+    for (const row of page) {
+      const formula = typeof row.formula === 'string' ? row.formula : '';
+      if (!compile) {
+        // No compiler here. Still a real, reportable bucket — but the seam
+        // itself reports SKIPPED below, so this can never read as success.
+        buckets.QUARANTINED += 1;
+        tally('no formula compiler injected');
+        continue;
+      }
+      try {
+        const verdict = compile(formula);
+        const bucket = typeof verdict === 'string' ? verdict : verdict.bucket;
+        const reason = typeof verdict === 'string' ? undefined : verdict.reason;
+        buckets[bucket] += 1;
+        if (bucket === 'QUARANTINED' || bucket === 'FAILED') {
+          tally(reason ?? 'no reason given');
+        }
+      } catch (err) {
+        // The classifier threw. An unhandled path is a bug in us, not a data
+        // problem — which is exactly what FAILED is reserved for.
+        buckets.FAILED += 1;
+        tally(`classifier threw: ${describe(err)}`);
+      }
+    }
+  }
+
+  const findings = [...reasons.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([reason, count]) => `${count}x ${reason}`);
+
+  const metrics: Record<string, number> = {
+    formulas: total,
+    compiled: buckets.COMPILED,
+    compiledUnverified: buckets.COMPILED_UNVERIFIED,
+    quarantined: buckets.QUARANTINED,
+    failed: buckets.FAILED,
+    distinctReasons: reasons.size,
+  };
+
+  if (!compile) {
+    return {
+      id: 'formula-compile',
+      name,
+      status: 'SKIPPED',
+      metrics,
+      findings,
+      reason:
+        'no formula compiler injected — it lives in the backend workspace; run `npm run verify --workspace backend`',
+    };
+  }
+
+  return {
+    id: 'formula-compile',
+    name,
+    status: buckets.FAILED === 0 ? 'PASS' : 'FAIL',
+    metrics,
+    findings,
+    reason:
+      buckets.FAILED > 0
+        ? `${buckets.FAILED} formula(s) hit a classifier path we do not handle`
+        : undefined,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Report assembly
 // ---------------------------------------------------------------------------
 
@@ -213,7 +328,10 @@ export async function verifyMigration(
 ): Promise<VerifyReport> {
   const target = text((await rows(db, sql`SELECT current_database() AS db`))[0], 'db', 'unknown');
 
-  const seams: SeamResult[] = [await checkSqlGeneration(db, options)];
+  const seams: SeamResult[] = [
+    await checkSqlGeneration(db, options),
+    await checkFormulaCompileRate(db, options),
+  ];
 
   return summarise(target, seams);
 }

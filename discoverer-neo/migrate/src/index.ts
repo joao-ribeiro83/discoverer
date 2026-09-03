@@ -168,6 +168,7 @@ export type {
 export {
   verifyMigration,
   checkSqlGeneration,
+  checkFormulaCompileRate,
   summarise,
   formatVerifyReport,
 } from './services/migration-verify.js';
