@@ -26,13 +26,20 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-const ITEM_TYPES = ['CI', 'CU', 'CO', 'JI', 'HI', 'AG', 'FU'] as const
+// CO first: it is the plain column-backed item and the overwhelmingly common
+// case in a real EUL. CI is a *created* item (a calculation). See
+// migrate/EUL_SCHEMA_GROUND_TRUTH.md §3.2 — these two were previously
+// inverted in both the labels and the form logic below.
+const ITEM_TYPES = ['CO', 'CI', 'CU', 'JI', 'HI', 'AG', 'FU'] as const
+
+/** Item types that are bound to a physical column rather than a formula. */
+const COLUMN_BACKED_ITEM_TYPES: readonly string[] = ['CO']
 
 function buildItemTypeOptions(t: (key: string) => string) {
   return [
+    { value: 'CO', label: t('admin:items.itemTypes.co') },
     { value: 'CI', label: t('admin:items.itemTypes.ci') },
     { value: 'CU', label: t('admin:items.itemTypes.cu') },
-    { value: 'CO', label: t('admin:items.itemTypes.co') },
     { value: 'JI', label: t('admin:items.itemTypes.ji') },
     { value: 'HI', label: t('admin:items.itemTypes.hi') },
     { value: 'AG', label: t('admin:items.itemTypes.ag') },
@@ -87,12 +94,12 @@ export function ItemsPage() {
 
   const form = useForm<FormValues>({
     resolver: standardSchemaResolver(buildFormSchema(t)),
-    defaultValues: { name: '', description: '', itemType: 'CI', columnName: '', formula: '', dataType: '', formatMask: '', aggFunction: 'NONE' },
+    defaultValues: { name: '', description: '', itemType: 'CO', columnName: '', formula: '', dataType: '', formatMask: '', aggFunction: 'NONE' },
   })
 
   function openCreate() {
     setEditing(null)
-    form.reset({ name: '', description: '', itemType: 'CI', columnName: '', formula: '', dataType: '', formatMask: '', aggFunction: 'NONE' })
+    form.reset({ name: '', description: '', itemType: 'CO', columnName: '', formula: '', dataType: '', formatMask: '', aggFunction: 'NONE' })
     setDialogOpen(true)
   }
 
@@ -260,7 +267,7 @@ export function ItemsPage() {
             </Select>
           </div>
 
-          {itemType === 'CI' ? (
+          {COLUMN_BACKED_ITEM_TYPES.includes(itemType) ? (
             <div className="space-y-2">
               <Label htmlFor="columnName">{t('admin:items.form.columnNameLabel')}</Label>
               <Input id="columnName" {...form.register('columnName')} placeholder={t('admin:items.form.columnNamePlaceholder')} />

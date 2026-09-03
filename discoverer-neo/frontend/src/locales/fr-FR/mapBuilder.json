@@ -87,7 +87,23 @@
       "percent": "Pourcentage (12,3 %)",
       "dateDmy": "Date (DD-MON-YYYY)",
       "dateYmd": "Date (YYYY-MM-DD)"
-    }
+    },
+    "axisType": "Placement",
+    "axisTypes": {
+      "AXIS": "Grouper par (axe)",
+      "MEASURE": "Mesure",
+      "PAGE": "Élément de page"
+    },
+    "axisEdge": "Bord du tableau croisé",
+    "axisEdges": {
+      "ROW": "Sur le côté",
+      "COLUMN": "En haut"
+    },
+    "axisEdgeHint": "Seuls les tableaux croisés l'utilisent. Les feuilles migrées n'ont aucun bord enregistré.",
+    "sortGroup": "Grouper et rompre",
+    "sortGroupHint": "Masquer les valeurs répétées et commencer un nouveau sous-total à chaque changement de cette colonne.",
+    "isHidden": "Requête seulement, ne pas afficher",
+    "isHiddenHint": "La requête demande toujours cette colonne, pour qu’un filtre, un tri ou un total puisse s’en servir."
   },
   "sortDirections": {
     "asc": "Croissant",

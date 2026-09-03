@@ -80,6 +80,26 @@
       "updated": "Carpeta actualizada",
       "created": "Carpeta creada",
       "deactivated": "Carpeta desactivada"
+    },
+    "sharedBadge": "Compartida",
+    "sharedTooltip": "Pertenece a otra área de negocio y se ha compartido con esta",
+    "manageSharing": "Gestionar áreas de negocio",
+    "sharing": {
+      "title": "Áreas de negocio de «{{name}}»",
+      "description": "Una carpeta pertenece a un área de negocio y puede compartirse con otras, como en Oracle Discoverer.",
+      "memberOf": "Pertenece a",
+      "owning": "propietaria",
+      "owningTooltip": "El área de negocio propietaria no se puede eliminar",
+      "noShares": "No compartida con ninguna otra área de negocio.",
+      "addTo": "Compartir con",
+      "selectPlaceholder": "Seleccione un área de negocio",
+      "noneAvailable": "No hay otras áreas de negocio disponibles",
+      "share": "Compartir",
+      "removeShare": "Quitar uso compartido con {{name}}",
+      "shared": "Carpeta compartida",
+      "unshared": "Uso compartido eliminado",
+      "shareFailed": "No se pudo compartir la carpeta",
+      "unshareFailed": "No se pudo quitar el uso compartido"
     }
   },
   "items": {
@@ -91,9 +111,9 @@
     "entityLabel": "elemento",
     "selectFolderPlaceholder": "Seleccione una carpeta",
     "itemTypes": {
-      "ci": "Elemento de columna (CI)",
+      "co": "Elemento de base de datos (CO)",
+      "ci": "Elemento creado (CI)",
       "cu": "Elemento calculado (CU)",
-      "co": "Condición (CO)",
       "ji": "Elemento de combinación (JI)",
       "hi": "Elemento de jerarquía (HI)",
       "ag": "Agregación (AG)",

@@ -1,0 +1,251 @@
+:Base d4ursf.hlp>main
+:Title Oracle Discoverer Plus -ohjelman Online-ohje
+1 Tietoja Oracle Discoverer -ohjelmasta
+2 Tietoja kyselyistä ja työkirjoista=CON_ABOUT_QUERIES>main
+2 Tietoja tauluista ja matriiseista=CON_ABOUT_TANDC>main
+2 Tietoja määristä=CON_ABOUT_TOTALS>main
+2 Tietoja prosenttiosuuksista=CON_ABOUT_PERCENTAGES>main
+2 Tietoja ajoitetuista työkirjoista=CON_ABOUT_SCHEDULED>main
+2 Oracle Discoverer -ohjelman ohjeet
+3 Oracle Discoverer -ohjelman ohjeet=CON_LEARN_OD>main
+1 Vaiheittaiset ohjeet
+2 Oracle Discoverer -ohjelman aloitus ja lopetus
+3 Oracle Discoverer -ohjelman aloitus=To_start_Oracle_Discoverer>main
+3 Yhteys-valintaikkunan konfigurointi Oracle Applications -käyttäjiä varten=HIDD_OPTIONS_CONNECTION>main
+3 Yhdistäminen tietokantaan=To_connect_to_a_database>main
+3 Oracle Discoverer -ohjelman lopetus=To_exit_Oracle_Discoverer>main
+2 Työkirjojen käyttö
+3 Uuden työkirjan luonti=To_create_a_new_workbook>main
+3 Tallennetun työkirjan avaus=To_open_a_saved_workbook>main
+3 Työkirjan tallennus=To_save_a_workbook>main
+3 Työkirjan sulkeminen=To_close_a_workbook>main
+3 Työkirjan poisto tietokannasta=To_delete_a_workbook_from_the_database>main
+3 Uuden arkin lisäys työkirjaan=To_add_a_new_sheet_to_a_workbook>main
+3 Arkin muokkaus=To_edit_a_sheet>main
+3 Arkin kopiointi tauluksi=To_duplicate_a_sheet_as_a_table>main
+3 Arkin kopiointi matriisiksi=To_duplicate_a_sheet_as_a_crosstab>main
+3 Arkin nimeäminen=To_name_a_sheet>main
+3 Arkin nimen muokkaus=To_edit_the_name_of_a_sheet>main
+3 Arkin poisto työkirjasta=To_delete_a_sheet_from_a_workbook>main
+3 Työkirjan jakaminen muiden käyttäjien kanssa=To_share_a_workbook_with_other_users>main
+3 Käsiteltävän arkin SQL-koodin tarkastelu=To_view_the_SQL_code_for_the_current_sheet>main
+3 Valitun alkion ominaisuuksien tarkastelu=To_view_the_properties_of_a_selected_item>main
+3 Käsiteltävän työkirjan ominaisuuksien tarkastelu=To_view_the_properties_of_the_current_workbook>main
+3 Diagrammin luonti käsiteltävään arkkiin=To_show_data_in_a_sheet_as_a_graph>main
+3 Diagrammin näyttö=To_Hide_or_Show_a_Graph>main
+3 Diagrammin piilotus=To_Hide_or_Show_a_Graph>main
+2 Tietojen lisäys ja poisto
+3 Alkion lisäys arkkiin=To_add_an_item_to_a_sheet>main
+3 Alkion poisto arkista=To_delete_an_item_from_a_sheet>main
+3 Alkion näytettävien arvojen muuttaminen=To_change_displayed_values_for_an_item>main
+3 Siirtyminen
+4 Siirtyminen ylös=To_drill_up>main
+4 Siirtyminen alas=To_drill_down>main
+4 Toisessa arkissa olevaan liittyvään alkioon siirtyminen=To_drill_to_a_related_item_in_another_sheet>main
+4 Toisessa sovelluksessa olevaan liittyvään tietoon siirtyminen=To_drill_to_related_information_in_another_application>main
+4 Alkion tiivistys=To_collapse_an_item>main
+3 Kyselyn muokkaus ehtojen avulla
+4 Ehdon määritys=To_define_a_condition>main
+4 Ehdon muokkaus=To_apply_a_condition>main
+4 Laskutoimituksen lisäys olemassa olevaan ehtoon=To_add_a_calculation_to_an_existing_condition>main
+4 Laskutoimituksen sisältävän ehdon luominen=To_create_a_condition_that_includes_a_calculation>main
+4 Ehdon poisto=To_delete_a_condition>main
+3 Laskutoimitusten käyttö
+4 Laskutoimituksen luonti=To_create_a_calculation>main
+4 Laskutoimituksen muokkaus=To_edit_a_calculation>main
+3 Kyselyn tulosten yhteenvedon esitys määrien avulla
+4 Määrän luonti=To_create_a_total>main
+4 Määrän muokkaus=To_edit_a_total>main
+2 Tietojen ja otsikoiden muokkaus
+3 Alkion siirto akselista toiseen=To_move_an_item_from_one_axis_to_another>main
+3 Sivualkion luonti=To_create_a_page_item>main
+3 Graafisten pylväiden näyttö soluissa=To_show_graphic_bars_in_cells>main
+3 Tietojen lajittelu
+4 Taulun lajittelu=To_sort_a_table>main
+4 Matriisin lajittelu=To_sort_a_crosstab>main
+2 Oracle Discoverer -ohjelman suorittamien kyselyiden määritys
+3 Kyselyjen vaiheittainen ajo=To_run_queries_incrementally>main
+3 Vaiheittaisten asetusten kumoaminen ja kyselyn kaikkien rivien palautus=To_override_an_incremental_setting_and_return_all_rows_in_a_query>main
+3 Kyselyn palauttamien rivien enimmäismäärän määritys=To_specify_the_maximum_number_of_rows_returned_in_a_query>main
+3 Tietokannan välimuistin asetusten määritys=To_set_preferences_for_the_database_cache>main
+3 Matriisimuotoisen arkin asetusten määritys=To_set_preferences_for_crosstab_layout_sheets>main
+3 Taulumuotoisen arkin asetusten määritys=To_set_preferences_for_table_layout_sheets>main
+2 Muotoilu
+3 Arkin tietojen muotoilu=To_format_data_in_a_sheet>main
+3 Arkin otsikoiden muokkaus=To_format_headings_in_a_sheet>main
+3 Numeroiden muotoilu=To_format_numbers>main
+3 Arkin otsikon muotoilu=To_format_the_title_of_a_sheet>main
+3 Sarakeleveyden muuttaminen=To_change_a_column_width>main
+3 Otsikon lisäys arkkiin=To_add_a_title_to_a_sheet>main
+3 Arkin otsikon muokkaus=To_edit_the_title_of_a_sheet>main
+3 Taustan lisäys arkkiin=To_add_a_background_to_a_sheet>main
+3 Arkin taustan poisto=To_remove_a_background_from_a_sheet>main
+3 Tietojen korostus poikkeusten avulla
+4 Poikkeuksen luonti=To_create_an_exception>main
+4 Poikkeuksen muokkaus=To_edit_an_exception>main
+4 Poikkeuksen poisto=To_delete_an_exception>main
+3 Tietojen näyttö diagrammina
+4 Tietojen näyttö arkissa diagrammina=To_show_data_in_a_sheet_as_a_graph>main
+4 Diagrammin tyylin muuttaminen=To_change_the_style_of_a_graph>main
+4 Diagrammin kolmiulotteisen näkymän muokkaus=To_manipulate_the_three_dimensional_view_of_a_graph>main
+4 Otsikoiden lisäys diagrammiin=To_add_titles_to_a_graph>main
+4 Diagrammin otsikoiden muokkaus=To_edit_titles_in_a_graph>main
+4 Diagrammin otsikoiden poisto=To_delete_titles_from_a_graph>main
+4 Diagrammin vienti toiseen sovellukseen=To_export_a_graph_to_another_application>main
+2 Tulostus
+3 Työkirjan tulostus=To_print_a_workbook>main
+3 Arkin tulostus=To_print_a_sheet>main
+3 Akselinimien tulostus=To_print_axis_labels>main
+3 Sivunvaihtojen lisäys=To_add_page_breaks>main
+3 Sivujen tulostusjärjestyksen määritys=To_set_the_printing_order_of_pages>main
+3 Sivun asettelun määritys=To_set_up_the_page_layout>main
+3 Tulostuksen esikatselu=To_preview_the_printout>main
+3 Ylä- ja alatunnisteiden lisäys
+4 Alatunnisteen lisäys=To_add_a_footer>main
+4 Räätälöidyn alatunnisteen luonti=To_create_a_custom_footer>main
+4 Ylätunnisteen lisäys=To_add_a_header>main
+4 Räätälöidyn ylätunnisteen luonti=To_create_a_custom_header>main
+2 Oracle Discoverer -ohjelman käyttö muiden sovellusten rinnalla
+3 Tietojen vienti ja tallennus toisessa tiedostomuodossa=To_export_data_and_save_it_in_another_file_format>main
+3 Kyselyn upotus toisen sovelluksen tiedostoon=To_embed_a_query_in_a_file_in_another_application>main
+1 Sanasto
+2 Sanasto=DCM_GLOSSARY>gloss
+1 Käyttöliittymäohjeet
+2 Ohjatut toiminnot, valintaikkunat ja tietoikkunat
+3 Tasaus-sivu=HIDD_FORMAT_ALIGN>main
+3 Taustaväri-sivu=HIDD_FORMAT_COLOR>main
+3 Välimuisti-sivu=HIDD_OPTIONS_CACHE>main
+3 Laskutoimitukset-valintaikkuna=HIDD_DCMCALCULATIONS>main
+3 Laskenta: yhteenlasku -valintaikkuna=HIDD_CALC_ADD>main
+3 Laskenta: jakolasku -valintaikkuna=HIDD_CALC_DIV>main
+3 Laskenta: kertolasku -valintaikkuna=HIDD_CALC_MULT>main
+3 Laskenta: prosenttiosuus -valintaikkuna=HIDD_CALC_PERCENT>main
+3 Laskenta: vähennyslasku -valintaikkuna=HIDD_CALC_SUB>main
+3 Ehdot-valintaikkuna=HIDD_DCMCONDITIONS>main
+3 Yhdistäminen Oracle Discovereriin -valintaikkuna=HIDD_CONNECT>main
+3 Matriisi-sivu=HIDD_OPTIONS_MATRIX>main
+3 Työkirjan poisto tietokannasta -valintaikkuna=HIDD_DELETE_DB>main
+3 Siirtyminen-valintaikkuna=HIDD_DRILL_WIZARD>main
+3 Siirtymisvalinnat-valintaikkuna=HIDD_DRILL_OPTIONS>main
+3 Laskutoimituksen muokkaus -valintaikkuna=HIDD_CALC_EDIT>main
+3 Parametrin muokkaus -valintaikkuna=HIDD_PARAM_EDIT>main
+3 Poikkeus-sivu=HIDD_FORMAT_EXCEPTION_NEW>main
+3 Poikkeukset-valintaikkuna=HIDD_EXCEPTION>main
+3 Vienti-valintaikkuna=HIDD_EXPORT_NAME>main
+3 Tiedoston ominaisuudet -valintaikkuna=HIDD_FILEPROP>main
+3 Kirjasinlaji-sivu=HIDD_FORMAT_FONT>main
+3 Asettelun muotoilu -valintaikkuna=HIDD_WIZARD_LAYOUT>main
+3 Muotoilut-sivu=HIDD_OPTIONS_FORMAT>main
+3 Ylä-/alatunniste-sivu=HIDD_SETUP_HEADER>main
+3 Alkioleikepöytä-tietoikkuna=HIDD_DCMCLIPBOARD>main
+3 Alkion ominaisuudet -valintaikkuna=HIDD_ITEMPROP>main
+3 Asettelu-valintaikkuna=HIDD_WIZARD_START>main
+3 Marginaalisivu=HIDD_SETUP_MARGIN>main
+3 Uusi parametri -valintaikkuna=HIDD_PARAM_NEW>main
+3 Työkirjan avaus -valintaikkuna=HIDD_OPEN>main
+3 Työkirjan avaus tietokannasta -valintaikkuna=HIDD_OPEN_DB>main
+3 Valinnat-valintaikkuna yleiskuvaus=HIDD_WIZARD_OPTIONS>main
+3 Sivun asetukset -valintaikkuna yleiskatsaus=HIDD_WIZARD_PREVIEW>main
+3 Parametrit-valintaikkuna=HIDD_PARAMETERS>main
+3 Ohjattu parametrin määritys=HIDD_PARAMETERS_RUNTIME>main
+3 Työkirjan tallennus -valintaikkuna=HIDD_SAVE>main
+3 Työkirjan tallennus tietokantaan -valintaikkuna=HIDD_SAVE_DB>main
+3 Arkki-sivu=HIDD_SETUP_SHEET>main
+3 Matriisin lajittelu -valintaikkuna=HIDD_SORT_CROSSTAB>main
+3 Taulun lajittelu -valintaikkuna=HIDD_SORT_TABLE>main
+3 SQL-tarkistus-valintaikkuna=HIDD_DCMSQL>main
+3 Taulu-sivu=HIDD_OPTIONS_TABLE>main
+3 Teksti-/numerosivu=HIDD_FORMAT_MASK>main
+3 Otsikko-valintaikkuna - Kuva-välilehti=HIDD_TITLE_BMP>main
+3 Otsikko-valintaikkuna - Teksti-välilehti=HIDD_TITLE_TEXT>main
+3 Määrät-valintaikkuna=HIDD_SUMMARIES>main
+3 Määrä-valintaikkuna (matriisissa)=HIDD_TOTAL_EDIT_CROSSTAB>main
+3 Määrä-valintaikkuna (tauluissa)=HIDD_TOTAL_EDIT_TABLE>main
+3 Käyttäjä > Työkirja -sivu=HIDD_GRANT_USERTOBOOK>main
+3 Arvot-valintaikkuna=HIDD_DCMLIST>main
+3 Työkirja kuuluu toiselle tietokannan käyttäjätunnukselle -valintaikkuna=HIDD_CONNECT_IO>main
+3 Työkirja > Käyttäjä -sivu=HIDD_GRANT_BOOKTOUSER>main
+1 Tiedosto-valikko
+2 Uusi-komento=HID_FILE_NEW>main
+2 Avaa-komento=HID_FILE_OPEN>main
+2 Sulje-komento=HID_FILE_CLOSE>main
+2 Tallenna-komento=HID_FILE_SAVE>main
+2 Tallenna nimellä -komento=HID_FILE_SAVE_AS>main
+2 Ajoita-komento=HID_FILE_SCHEDULE
+2 Sivun asetukset -komento=HID_FILE_PAGE_SETUP
+2 Esikatsele-komento=HID_FILE_PRINT_PREVIEW>main
+2 Tulosta-komento=HID_FILE_PRINT>main
+2 Tuo SQL -komento=HID_FILE_IMPORT>main
+2 Vie-komento=HID_FILE_EXPORT>main
+2 Käsittele työkirjoja -komento=Manage_Workbooks_command>main
+2 Yhteys tietokantaan -komento=HID_FILE_CONNECT>main
+2 Lopeta-komento=HID_APP_EXIT>main
+1 Muokkaa-valikko
+2 Peruuta-/Toista-komento=HID_EDIT_UNDO>main
+2 Toista-komento=HID_EDIT_REPEAT>main
+2 Leikkaa-komento=HID_EDIT_CUT>main
+2 Kopioi-komento=HID_EDIT_COPY>main
+2 Liitä alkio -komento=HID_EDIT_PASTE>main
+2 Poista alkio -komento=HID_EDIT_DELETEITEM>main
+2 Valitse kaikki -komento=HID_EDIT_SELECTALL>main
+2 Etsi-komento=HID_TOOLS_FIND>main
+2 Alkion ominaisuudet -komento=HID_EDIT_ITEMPROPERTIES>main
+1 Näytä-valikko
+2 Työkalurivi-komento=HID_VIEW_TOOLBAR>main
+2 Muotoilurivi-komento=HID_TOOLBAR_FORMAT>main
+2 Analyysirivi-komento=HID_TOOLBAR_ANALYSIS>main
+2 Tilarivi-komento=HID_VIEW_STATUS_BAR>main
+2 Sivun alkiot=View_Page_Items
+2 Alkioleikepöytä-komento=HID_VIEW_CLIPBOARD>main
+2 SQL-tarkistus-komento=HID_VIEW_SQL>main
+1 Arkki-valikko
+2 Uusi arkki -komento=HID_SHEET_NEW>main
+2 Muokkaa arkkia -komento=HID_SHEET_MODIFY>main
+2 Kopioi tauluksi -komento=HID_DUPLICATE_TABLE>main
+2 Kopioi matriisiksi -komento=HID_DUPLICATE_CROSSTAB>main
+2 Nimeä arkki uudelleen -komento=HID_SHEET_RENAME>main
+2 Poista arkki -komento=HID_SHEET_DELETE>main
+2 Muokkaa otsikkoa -komento=HID_SHEET_TITLE>main
+2 Siirry-komento=HID_SHEET_DRILLDOWN>main
+2 Tiivistä-komento=HID_SHEET_ROLLUP>main
+2 Muokkaa parametrin arvoja -komento=HID_SHEET_MODPARAMS>main
+2 Päivitä arkki=HIDD_Sheet_Refresh
+2 Hae kaikki rivit -komento=HID_SHEET_FETCHALL>main
+2 Laske kaikki rivit -komento=HID_SHEET_COUNTALL>main
+1 Muotoile-valikko
+2 Tiedot-komento=HID_FORMAT_DATA>main
+2 Otsikot-komento=HID_FORMAT_HEADINGS>main
+2 Poikkeukset-komento=HID_FORMAT_EXCEPTIONS>main
+2 Sarakkeen leveys -komento=HID_COLUMN_WIDTH>main
+2 Sarakkeen koon automaattinen määritys -komento=HID_COLUMN_AUTOFIT>main
+2 Arkin otsikko -komento=HID_FORMAT_SHEETTITLE>main
+2 Arkin taustan määritys -komento=HID_FORMAT_SHEETBKGND>main
+2 Tyhjennä tausta -komento=HID_FORMAT_SHEETCLEAR>main
+1 Työkalut-valikko
+2 Ehdot-komento=HID_TOOLS_CONDITIONS>main
+2 Lajittele-komento=HID_TOOLS_SORT>main
+2 Määrät-komento=HID_TOOLS_TOTALS>main
+2 Prosenttiosuudet-komento=HIDD_PERCENTAGES
+2 Laskutoimitukset-komento=HID_TOOLS_CALCULATIONS>main
+2 Parametrit-komento=HID_TOOLS_PARAMS>main
+2 Valinnat-komento=HID_TOOLS_OPTIONS>main
+1 Diagrammi-valikko
+2 Uusi diagrammi -komento=New_Graph_command>main
+2 Näytä-komento=HID_MENU_VIEW_GRAPH>main
+2 Tulosta-komento=Print_command_graph
+2 Kopioi leikepöydälle -komento=Copy_to_clipboard_command_graph>main
+2 Selite-komento=Legend_command>main
+2 X-akselin otsikot -komento=X_Labels_command>main
+2 Tilarivi-komento=Status_bar_command_graph>main
+2 Skaalaus-komento=HID_GRAPH_SCALE>main
+2 Kolmiulotteinen näkymä -komento=HID_GRAPH_3D>main
+1 Ikkuna-valikko
+2 Järjestä kuvakkeet -komento=HID_WINDOW_ARRANGE>main
+2 Limittäin-komento=HID_WINDOW_CASCADE>main
+2 Järjestä allekkain -komento=HID_WINDOW_TILE_HORZ>main
+2 Järjestä vierekkäin -komento=HID_WINDOW_TILE_VERT>main
+1 Ohje-valikko
+2 Ohjeen aiheet -komento=HID_HELP_INDEX>main
+2 Ohjeen käyttö -komento=HID_HELP_USING>main
+2 Oppaat-komento=HID_HELP_MANUALS>main
+2 Tietoja Discovererista -komento=HID_APP_ABOUT>main

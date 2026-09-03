@@ -1,0 +1,398 @@
+
+<!DOCTYPE html public "-//w3c//dtd html 3.2 transitional//en.us">
+<HTML lang="en.us">
+<HEAD>
+
+<META NAME="Generator" CONTENT="Quadralay WebWorks Publisher 5.0.4">
+<META NAME="Page" CONTENT="DefaultSingle">
+<META NAME="Title" CONTENT="">
+<meta http-equiv="Content-Type" content="text/html;  charset=iso-8859-1">
+
+<Title>Reference topic </Title>
+	   
+<LINK REL="home" HREF="../../library.htm" TITLE="Library">
+<LINK REL="toc" HREF="toc.htm" TITLE="Contents">
+<LINK REL="index" HREF="bookix.htm" TITLE="Index">
+<LINK REL="copyright" HREF="./html/cpyr.htm" TITLE="Copyright">
+<LINK REL="up" HREF="toc.htm" TITLE="Up">
+<LINK REL="next" HREF="adncco01.htm" TITLE="Next">
+<LINK REL="previous" HREF="adnsfo01.htm" TITLE="Previous">
+
+
+</HEAD>
+       
+<BODY BGCOLOR="#ffffff">
+
+<A NAME="top"></A>
+
+
+
+
+<A HREF="#BEGIN">Skip Headers</A><BR><BR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+ 
+<TD ALIGN="LEFT" VALIGN="TOP"><FONT COLOR="#330099" FACE="Helvetica, Arial, sans-serif"><STRONG>Oracle Discoverer Administrator Administration Guide (Online Help)<BR>10<i>g</i> (9.0.4)</STRONG><BR>Part Number B10270-01</FONT></TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="144">
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+
+
+
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<HR>
+<P>
+<A HREF="adnsfo01.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+
+<A HREF="adncco01.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+    
+
+
+<A NAME="BEGIN"></A>
+
+
+
+<DIV CLASS="IND">
+<!-- End Header -->
+
+
+
+
+
+
+
+<A NAME="1005113"></A>
+<!--TOC=h1-"1005113"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> New Condition dialog (Advanced)</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005807"></A>
+<P CLASS="BP">
+Use this dialog to create a new condition for use in the business area. 
+</P>
+<A NAME="1006090"></A>
+<P CLASS="BP">
+For more information, see:
+</P>
+<A NAME="1006094"></A>
+<P CLASS="BP">
+<A HREF="conditio.htm#1004628">"What are conditions?"</a>
+</P>
+<A NAME="1006098"></A>
+<P CLASS="BP">
+<A HREF="conditio.htm#1004605">"What are the different types of condition?"</a>
+</P>
+<A NAME="1006102"></A>
+<P CLASS="BP">
+<A HREF="conditio.htm#1004606">"How to create simple conditions"</a>
+</P>
+<A NAME="1006106"></A>
+<P CLASS="BP">
+<A HREF="conditio.htm#1004608">"How to create advanced conditions"</a>
+</P>
+<A NAME="1006088"></A>
+<P CLASS="BP">
+Advanced conditions contain multiple criteria. For example:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005808"></A>to restrict Discoverer end users to data for the year 2001 in the first quarter, you might create a mandatory condition here: Year = 2001 AND Quarter = Q1. When they access workbooks, Discoverer end users will always see data for the year 2001 in the first quarter.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005809"></A>to enable Discoverer end users to easily look at data for different quarters in the year 2001, you might create the optional conditions: 
+<P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005961"></A>Year = 2001 AND Quarter = Q1 
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005962"></A>Year = 2001 AND Quarter = Q2 
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005963"></A>Year = 2001 AND Quarter = Q3
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1006115"></A>Year = 2001 AND Quarter = Q4
+<P>
+</UL>
+
+<A NAME="1005933"></A>
+<P CLASS="BP1">
+When they access workbooks, Discoverer end users will be able to focus on data for particular quarters in the year 2001 by applying these conditions.
+</P>
+</UL>
+
+<A NAME="1005811"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Name</FONT></H4>
+<A NAME="1005812"></A>
+<P CLASS="BP">
+Use this field to enter a name for the new condition.
+</P>
+
+<A NAME="1005813"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Generate name automatically</FONT></H4>
+<A NAME="1005814"></A>
+<P CLASS="BP">
+Select this check box forDiscoverer to create a name for you.
+</P>
+<A NAME="1006786"></A>
+<P CLASS="BP">
+Clear this check box to enable the <STRONG CLASS="Bold">Name</STRONG> field and enter a condition name.
+</P>
+
+<A NAME="1005815"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Description</FONT></H4>
+<A NAME="1005816"></A>
+<P CLASS="BP">
+Use this field to enter additional information about the condition. This description is displayed when you select this condition in the Workarea, and in Discoverer Plus. Make your description useful to both you and your users.
+</P>
+
+<A NAME="1005817"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Location</FONT></H4>
+<A NAME="1005818"></A>
+<P CLASS="BP">
+This field displays the name for folder that will store the condition. This is the location you selected when you chose Insert | Condition.
+</P>
+
+<A NAME="1005819"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Type</FONT></H4>
+<A NAME="1005820"></A>
+<P CLASS="BP">
+Use this drop down list to choose the condition type: 
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005821"></A>Mandatory
+<P>
+
+<A NAME="1006724"></A>
+<P CLASS="BP1">
+Mandatory conditions are always applied to a worksheet that contains one or more items from the folder that contains the condition. Discoverer Plus users are not notified of mandatory conditions and can not turn them off.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005827"></A>Optional
+<P>
+
+<A NAME="1006728"></A>
+<P CLASS="BP1">
+Optional conditions can be turned on or off as required by Discoverer Plus users.
+</P>
+</UL>
+
+<A NAME="1005829"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Formula</FONT></H4>
+<A NAME="1005830"></A>
+<P CLASS="BP">
+Use this field to specify the filter criterion that you want to use.
+</P>
+<UL>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005831"></A>Item
+<P>
+
+<A NAME="1005832"></A>
+<P CLASS="BP2">
+Use this drop down list to choose what item you want to filter the data on. For example, choose Year here if you want to display data for a particular year.
+</P>
+ 
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005833"></A>Condition
+<P>
+
+<A NAME="1005834"></A>
+<P CLASS="BP2">
+Use this drop down list to choose how to match data against the item. For example, choose the '&gt;' symbol (greater than) here to filter data where the item value is greater than a particular number.
+</P>
+ 
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005835"></A>Value(s)
+<P>
+
+<A NAME="1005836"></A>
+<P CLASS="BP2">
+Use this field to define what data you want to match against. For example, enter 2001 here to look only at data for the year 2001. 
+</P>
+
+<A NAME="1006741"></A>
+<P CLASS="BP2">
+If you created a list of values for the item, these items appear in the drop down list.
+</P>
+
+<A NAME="1006823"></A>
+<P CLASS="BP2">
+You can also click the drop down list and match against the following:
+</P>
+ 
+
+<UL CLASS="LD3">
+
+<LI CLASS="LD3" TYPE="CIRCLE"><A NAME="1006736"></A>Click <STRONG CLASS="Bold">Select Multiple Values</STRONG> to display the <A HREF="advalu01.htm#1005113">"Values dialog"</a>.
+<P>
+
+<A NAME="1006836"></A>
+<P CLASS="BP3">
+You select one or more values to use in the condition.
+</P>
+
+<LI CLASS="LD3" TYPE="CIRCLE"><A NAME="1006742"></A>Click <STRONG CLASS="Bold">Create Calculation</STRONG> to display the <A HREF="adnite01.htm#1005113">"New Item dialog"</a>.
+<P>
+
+<A NAME="1006843"></A>
+<P CLASS="BP3">
+You create a calculated item to use in the condition.
+</P>
+
+<LI CLASS="LD3" TYPE="CIRCLE"><A NAME="1006751"></A>Use the <STRONG CLASS="Bold">Select Item</STRONG> option to display the <A HREF="aditem01.htm#1005113">"Items dialog"</a>.
+<P>
+
+<A NAME="1006868"></A>
+<P CLASS="BP3">
+You select an item to use in the condition.
+</P>
+</UL>
+</UL>
+</UL>
+
+<A NAME="1005837"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Match case</FONT></H4>
+<A NAME="1005875"></A>
+<P CLASS="BP">
+Use this check box to match upper and lower case text data exactly. When selected, the match value 'New York' would not return data for 'new york'.
+</P>
+
+<A NAME="1006798"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Advanced</FONT></H4>
+<A NAME="1006799"></A>
+<P CLASS="BP">
+Use this button to add one or more new criteria lines to the condition. Use this button to display the Add, Delete, And, Or and Not buttons.
+</P>
+
+<A NAME="1005876"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Add</FONT></H4>
+<A NAME="1005879"></A>
+<P CLASS="BP">
+Use this button to insert a new criterion line to the condition. By default, the new item is grouped with a logical AND, which means that data must match all criteria contained within the AND group.
+</P>
+
+<A NAME="1005868"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Delete</FONT></H4>
+<A NAME="1005883"></A>
+<P CLASS="BP">
+Use this button to remove the currently selected filter criterion from the condition.
+</P>
+
+<A NAME="1006793"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">And</FONT></H4>
+<A NAME="1005884"></A>
+<P CLASS="BP">
+Use this button to insert a new criterion line to the condition. The new item is grouped with a logical AND, which means that data must match all criteria contained within the AND group.
+</P>
+
+<A NAME="1005869"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Or</FONT></H4>
+<A NAME="1005887"></A>
+<P CLASS="BP">
+Use this button to insert a new criterion line to the condition. The new item is grouped with a logical OR, which means that data much match at least one of the criteria contained within the OR group.
+</P>
+
+<A NAME="1005870"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Not</FONT></H4>
+<A NAME="1005890"></A>
+<P CLASS="BP">
+Use this button to invert the condition for the currently selected group. The item is grouped with a logical NOT AND or NOT OR, which means that data must <EM CLASS="Italic">not</EM> match the criteria contained with the NOT group.
+</P>
+
+<A NAME="1005865"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes </FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005709"></A>The buttons Delete, And, and Or are only available if you have selected a criteria in the Formula display.
+<P>
+</UL>
+
+
+
+
+
+
+<!-- Start Footer -->
+</DIV>
+
+<DIV CLASS="OUTD">
+<HR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+<TD VALIGN="BOTTOM" WIDTH="33%">
+<TABLE CELLSPACING="0" CELLPADDING="0">
+<TR>
+<TD ALIGN="CENTER"><A HREF="adnsfo01.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+
+<TD ALIGN="CENTER"><A HREF="adncco01.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+    
+</TR>
+</TABLE>
+</TD>
+<TD ALIGN="CENTER" WIDTH="34%">
+<A HREF="./html/cpyr.htm"><IMG SRC="./gifs/oracle.gif" ALT="Oracle" BORDER="0"><BR>
+<FONT SIZE="-2">Copyright &copy 2003 Oracle Corporation.</FONT></A>
+<BR>
+<FONT SIZE="-2">All Rights Reserved.</FONT>
+</TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="33%"> 
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="144">
+<TR>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+  
+</DIV>
+
+</BODY>
+</HTML>
+

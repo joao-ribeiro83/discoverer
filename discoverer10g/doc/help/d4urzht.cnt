@@ -1,0 +1,252 @@
+:Base d4urzht.hlp>main
+:Title Oracle Discoverer Plus 線上說明
+1 介紹 Oracle Discoverer
+2 關於查詢與工作簿=CON_ABOUT_QUERIES>main
+2 關於表格與交叉參考列表=CON_ABOUT_TANDC>main
+2 關於總計=CON_ABOUT_TOTALS>main
+2 關於百分比=CON_ABOUT_PERCENTAGES>main
+2 關於排程工作簿=CON_ABOUT_SCHEDULED>main
+2 學習 Oracle Discoverer
+3 學習 Oracle Discoverer=CON_LEARN_OD>main
+1 逐步程序
+2 啟動與停止 Oracle Discoverer
+3 啟動 Oracle Discoverer=To_start_Oracle_Discoverer>main
+3 設定 Oracle 應用管理系統使用者的「連線」對話方塊=HIDD_OPTIONS_CONNECTION>main
+3 連線至資料庫=To_connect_to_a_database>main
+3 結束 Oracle Discoverer=To_exit_Oracle_Discoverer>main
+2 使用工作簿
+3 建立新的工作簿=To_create_a_new_workbook>main
+3 開啟已儲存的工作簿=To_open_a_saved_workbook>main
+3 儲存工作簿=To_save_a_workbook>main
+3 關閉工作簿=To_close_a_workbook>main
+3 刪除資料庫中的工作簿=To_delete_a_workbook_from_the_database>main
+3 在工作簿中加入新工作表=To_add_a_new_sheet_to_a_workbook>main
+3 編輯工作表=To_edit_a_sheet>main
+3 將工作表複製為表格=To_duplicate_a_sheet_as_a_table>main
+3 將工作表複製為交叉參考列表=To_duplicate_a_sheet_as_a_crosstab>main
+3 指定工作表名稱=To_name_a_sheet>main
+3 編輯工作表名稱=To_edit_the_name_of_a_sheet>main
+3 刪除工作簿中的工作表=To_delete_a_sheet_from_a_workbook>main
+3 與其他使用者共用工作簿=To_share_a_workbook_with_other_users>main
+3 檢視目前工作表的 SQL 程式碼=To_view_the_SQL_code_for_the_current_sheet>main
+3 檢視選取項目的內容=To_view_the_properties_of_a_selected_item>main
+3 檢視目前工作簿的內容=To_view_the_properties_of_the_current_workbook>main
+3 對目前的工作表建立一個圖表=To_show_data_in_a_sheet_as_a_graph>main
+3 顯示圖表=To_Hide_or_Show_a_Graph>main
+3 隱藏圖表=To_Hide_or_Show_a_Graph>main
+2 新增與除去資料
+3 在工作表中加入項目=To_add_an_item_to_a_sheet>main
+3 刪除工作表中的項目=To_delete_an_item_from_a_sheet>main
+3 變更項目的顯示值=To_change_displayed_values_for_an_item>main
+3 展開
+4 向上展開=To_drill_up>main
+4 向下展開=To_drill_down>main
+4 在另一個工作表中展開相關項目=To_drill_to_a_related_item_in_another_sheet>main
+4 在另一個應用程式中展開相關資訊=To_drill_to_related_information_in_another_application>main
+4 隱藏項目=To_collapse_an_item>main
+3 使用條件來篩選縮小查詢
+4 定義條件=To_define_a_condition>main
+4 編輯條件=To_apply_a_condition>main
+4 在現有條件中加入一個運算式=To_add_a_calculation_to_an_existing_condition>main
+4 建立條件includes a calculation=To_create_a_condition_that_includes_a_calculation>main
+4 刪除條件=To_delete_a_condition>main
+3 使用運算式
+4 建立運算式=To_create_a_calculation>main
+4 編輯運算式=To_edit_a_calculation>main
+3 使用總計來彙總查詢結果
+4 建立總計=To_create_a_total>main
+4 編輯總計=To_edit_a_total>main
+2 操控資料與標題
+3 將某個座標軸的項目移到另一個座標軸中=To_move_an_item_from_one_axis_to_another>main
+3 建立頁項=To_create_a_page_item>main
+3 在儲存格中顯示長條圖=To_show_graphic_bars_in_cells>main
+3 排序資料
+4 排序表格=To_sort_a_table>main
+4 排序交叉參考列表=To_sort_a_crosstab>main
+2 指定 Oracle Discoverer 執行查詢的方式
+3 以增量方式執行查詢=To_run_queries_incrementally>main
+3 置換增量設定並傳回查詢中的所有資料列=To_override_an_incremental_setting_and_return_all_rows_in_a_query>main
+3 指定可在查詢中傳回的最大資料列數目=To_specify_the_maximum_number_of_rows_returned_in_a_query>main
+3 設定資料庫快取的喜好設定=To_set_preferences_for_the_database_cache>main
+3 設定交叉參考列表版面工作表的喜好設定=To_set_preferences_for_crosstab_layout_sheets>main
+3 設定表格版面工作表的喜好設定=To_set_preferences_for_table_layout_sheets>main
+2 正在製作格式
+3 製作工作表中資料的格式=To_format_data_in_a_sheet>main
+3 製作工作表中標題的格式=To_format_headings_in_a_sheet>main
+3 製作數字格式=To_format_numbers>main
+3 製作工作表標題的格式=To_format_the_title_of_a_sheet>main
+3 變更資料欄寬度=To_change_a_column_width>main
+3 在工作表中加入標題=To_add_a_title_to_a_sheet>main
+3 編輯工作表標題=To_edit_the_title_of_a_sheet>main
+3 在工作表中加入背景=To_add_a_background_to_a_sheet>main
+3 除去工作表中的背景=To_remove_a_background_from_a_sheet>main
+3 使用特殊條件來標明資料
+4 建立特殊條件=To_create_an_exception>main
+4 編輯特殊條件=To_edit_an_exception>main
+4 刪除特殊條件=To_delete_an_exception>main
+3 將資料顯示為圖表
+4 將工作表中的資料顯示為圖表=To_show_data_in_a_sheet_as_a_graph>main
+4 變更圖表樣式=To_change_the_style_of_a_graph>main
+4 操控圖表的立體檢視=To_manipulate_the_three_dimensional_view_of_a_graph>main
+4 在圖表中加入標題=To_add_titles_to_a_graph>main
+4 編輯圖表中的標題=To_edit_titles_in_a_graph>main
+4 刪除圖表中的標題=To_delete_titles_from_a_graph>main
+4 將圖表匯出至另一個應用程式中=To_export_a_graph_to_another_application>main
+2 列印
+3 列印工作簿=To_print_a_workbook>main
+3 列印工作表=To_print_a_sheet>main
+3 列印座標軸標籤=To_print_axis_labels>main
+3 新增分隔線=To_add_page_breaks>main
+3 設定頁面的列印順序=To_set_the_printing_order_of_pages>main
+3 設定版面=To_set_up_the_page_layout>main
+3 預覽輸出=To_preview_the_printout>main
+3 新增頁首與頁尾
+4 新增頁尾=To_add_a_footer>main
+4 建立自訂頁尾=To_create_a_custom_footer>main
+4 新增頁首=To_add_a_header>main
+4 建立自訂頁首=To_create_a_custom_header>main
+2 Oracle Discoverer 與其他應用程式一起搭配使用
+3 以另一種檔案格式匯出資料並儲存它=To_export_data_and_save_it_in_another_file_format>main
+3 將查詢內嵌在另一個應用程式的檔案中=To_embed_a_query_in_a_file_in_another_application>main
+1 辭彙
+2 辭彙=DCM_GLOSSARY>gloss
+1 使用者介面參考
+2 精靈程式、對話方塊與資訊方塊
+3 對齊方式頁面=HIDD_FORMAT_ALIGN>main
+3 背景顏色頁面=HIDD_FORMAT_COLOR>main
+3 快取頁面=HIDD_OPTIONS_CACHE>main
+3 運算式對話方塊=HIDD_DCMCALCULATIONS>main
+3 運算式：加對話方塊=HIDD_CALC_ADD>main
+3 運算式：除對話方塊=HIDD_CALC_DIV>main
+3 運算式：乘對話方塊=HIDD_CALC_MULT>main
+3 運算式：百分比對話方塊=HIDD_CALC_PERCENT>main
+3 運算式：減對話方塊=HIDD_CALC_SUB>main
+3 條件對話方塊=HIDD_DCMCONDITIONS>main
+3 連線到 Oracle Discoverer 對話方塊=HIDD_CONNECT>main
+3 交叉參考列表頁面=HIDD_OPTIONS_MATRIX>main
+3 刪除資料庫中的工作簿對話方塊=HIDD_DELETE_DB>main
+3 展開對話方塊=HIDD_DRILL_WIZARD>main
+3 展開選項對話方塊=HIDD_DRILL_OPTIONS>main
+3 編輯運算式對話方塊=HIDD_CALC_EDIT>main
+3 編輯參數對話方塊=HIDD_PARAM_EDIT>main
+3 特殊條件頁面=HIDD_FORMAT_EXCEPTION_NEW>main
+3 特殊條件對話方塊=HIDD_EXCEPTION>main
+3 匯出對話方塊=HIDD_EXPORT_NAME>main
+3 檔案內容對話方塊=HIDD_FILEPROP>main
+3 字型頁面=HIDD_FORMAT_FONT>main
+3 製作格式版面對話方塊=HIDD_WIZARD_LAYOUT>main
+3 格式頁面=HIDD_OPTIONS_FORMAT>main
+3 頁首/頁尾頁面=HIDD_SETUP_HEADER>main
+3 項目剪貼簿資訊方塊=HIDD_DCMCLIPBOARD>main
+3 項目內容對話方塊=HIDD_ITEMPROP>main
+3 版面對話方塊=HIDD_WIZARD_START>main
+3 邊界頁面=HIDD_SETUP_MARGIN>main
+3 新參數對話方塊=HIDD_PARAM_NEW>main
+3 開啟工作簿對話方塊=HIDD_OPEN>main
+3 從資料庫開啟工作簿對話方塊=HIDD_OPEN_DB>main
+3 選項對話方塊概觀=HIDD_WIZARD_OPTIONS>main
+3 設定列印格式對話方塊概觀=HIDD_WIZARD_PREVIEW>main
+3 參數對話方塊=HIDD_PARAMETERS>main
+3 參數精靈程式=HIDD_PARAMETERS_RUNTIME>main
+3 儲存工作簿對話方塊=HIDD_SAVE>main
+3 將工作簿儲存至資料庫對話方塊=HIDD_SAVE_DB>main
+3 工作表頁面=HIDD_SETUP_SHEET>main
+3 排序交叉參考列表對話方塊=HIDD_SORT_CROSSTAB>main
+3 排序表格對話方塊=HIDD_SORT_TABLE>main
+3 SQL 檢視器對話方塊=HIDD_DCMSQL>main
+3 表格頁面=HIDD_OPTIONS_TABLE>main
+3 文字/數字頁面=HIDD_FORMAT_MASK>main
+3 標題對話方塊 - 點陣圖標籤=HIDD_TITLE_BMP>main
+3 標題對話方塊 - 文字標籤=HIDD_TITLE_TEXT>main
+3 總計對話方塊=HIDD_SUMMARIES>main
+3 總計對話方塊 (交叉參考列表)=HIDD_TOTAL_EDIT_CROSSTAB>main
+3 總計對話方塊 (表格)=HIDD_TOTAL_EDIT_TABLE>main
+3 使用者 >工作簿頁面=HIDD_GRANT_USERTOBOOK>main
+3 數值對話方塊=HIDD_DCMLIST>main
+3 其他資料庫帳號中的工作簿對話方塊=HIDD_CONNECT_IO>main
+3 工作簿 >使用者頁面=HIDD_GRANT_BOOKTOUSER>main
+1 檔案功能表
+2 開新檔案指令=HID_FILE_NEW>main
+2 開啟舊檔指令=HID_FILE_OPEN>main
+2 關閉指令=HID_FILE_CLOSE>main
+2 儲存指令=HID_FILE_SAVE>main
+2 另存新檔指令=HID_FILE_SAVE_AS>main
+2 排程指令=HID_FILE_SCHEDULE
+2 設定列印格式指令=HID_FILE_PAGE_SETUP
+2 預覽列印指令=HID_FILE_PRINT_PREVIEW>main
+2 列印指令=HID_FILE_PRINT>main
+2 匯入 SQL 指令=HID_FILE_IMPORT>main
+2 匯出指令=HID_FILE_EXPORT>main
+2 管理工作簿指令=Manage_Workbooks_command>main
+2 連線至資料庫=HID_FILE_CONNECT>main
+2 結束指令=HID_APP_EXIT>main
+1 編輯功能表
+2 復原/重做指令=HID_EDIT_UNDO>main
+2 重複指令=HID_EDIT_REPEAT>main
+2 剪下指令=HID_EDIT_CUT>main
+2 複製指令=HID_EDIT_COPY>main
+2 貼上項目指令=HID_EDIT_PASTE>main
+2 刪除項目指令=HID_EDIT_DELETEITEM>main
+2 全選指令=HID_EDIT_SELECTALL>main
+2 尋找指令=HID_TOOLS_FIND>main
+2 項目內容指令=HID_EDIT_ITEMPROPERTIES>main
+1 檢視功能表
+2 工具列指令=HID_VIEW_TOOLBAR>main
+2 格式工具列指令=HID_TOOLBAR_FORMAT>main
+2 分析工具列指令=HID_TOOLBAR_ANALYSIS>main
+2 狀態列指令=HID_VIEW_STATUS_BAR>main
+2 頁項=View_Page_Items
+2 項目剪貼簿指令=HID_VIEW_CLIPBOARD>main
+2 SQL 檢視器指令=HID_VIEW_SQL>main
+1 工作表功能表
+2 新的工作表指令=HID_SHEET_NEW>main
+2 編輯工作表指令=HID_SHEET_MODIFY>main
+2 複製為表格指令=HID_DUPLICATE_TABLE>main
+2 複製為交叉參考列表指令=HID_DUPLICATE_CROSSTAB>main
+2 更改工作表名稱指令=HID_SHEET_RENAME>main
+2 刪除工作表指令=HID_SHEET_DELETE>main
+2 編輯標題指令=HID_SHEET_TITLE>main
+2 展開指令=HID_SHEET_DRILLDOWN>main
+2 隱藏指令=HID_SHEET_ROLLUP>main
+2 編輯參數值指令=HID_SHEET_MODPARAMS>main
+2 重新整理工作表=HIDD_Sheet_Refresh
+2 擷取全部資料列指令=HID_SHEET_FETCHALL>main
+2 計算全部資料列指令=HID_SHEET_COUNTALL>main
+1 格式功能表
+2 資料指令=HID_FORMAT_DATA>main
+2 標題指令=HID_FORMAT_HEADINGS>main
+2 特殊條件指令=HID_FORMAT_EXCEPTIONS>main
+2 資料欄寬度指令=HID_COLUMN_WIDTH>main
+2 自動調整資料欄寬度指令=HID_COLUMN_AUTOFIT>main
+2 工作表標題指令=HID_FORMAT_SHEETTITLE>main
+2 工作表設定背景指令=HID_FORMAT_SHEETBKGND>main
+2 清除背景指令=HID_FORMAT_SHEETCLEAR>main
+1 工具功能表
+2 條件指令=HID_TOOLS_CONDITIONS>main
+2 排序指令=HID_TOOLS_SORT>main
+2 總計指令=HID_TOOLS_TOTALS>main
+2 百分比指令=HIDD_PERCENTAGES
+2 運算式指令=HID_TOOLS_CALCULATIONS>main
+2 參數指令=HID_TOOLS_PARAMS>main
+2 選項指令=HID_TOOLS_OPTIONS>main
+1 圖表功能表
+2 新圖表指令=New_Graph_command>main
+2 顯示指令=HID_MENU_VIEW_GRAPH>main
+2 列印指令=Print_command_graph
+2 複製到剪貼簿指令=Copy_to_clipboard_command_graph>main
+2 圖例指令=Legend_command>main
+2 X 軸標籤指令=X_Labels_command>main
+2 狀態列指令=Status_bar_command_graph>main
+2 縮放比例指令=HID_GRAPH_SCALE>main
+2 立體檢視指令=HID_GRAPH_3D>main
+1 視窗功能表
+2 排列圖示指令=HID_WINDOW_ARRANGE>main
+2 重疊顯示指令=HID_WINDOW_CASCADE>main
+2 水平並排顯示指令=HID_WINDOW_TILE_HORZ>main
+2 垂直並排顯示指令=HID_WINDOW_TILE_VERT>main
+1 說明功能表
+2 說明主題指令=HID_HELP_INDEX>main
+2 使用說明指令=HID_HELP_USING>main
+2 手冊指令=HID_HELP_MANUALS>main
+2 關於 Discoverer 指令=HID_APP_ABOUT>main
+

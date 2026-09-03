@@ -1,0 +1,270 @@
+
+<!DOCTYPE html public "-//w3c//dtd html 3.2 transitional//en.us">
+<HTML lang="en.us">
+<HEAD>
+
+<META NAME="Generator" CONTENT="Quadralay WebWorks Publisher 5.0.4">
+<META NAME="Page" CONTENT="DefaultSingle">
+<META NAME="Title" CONTENT="">
+<meta http-equiv="Content-Type" content="text/html;  charset=iso-8859-1">
+
+<Title>Reference topic </Title>
+	   
+<LINK REL="home" HREF="../../library.htm" TITLE="Library">
+<LINK REL="toc" HREF="toc.htm" TITLE="Contents">
+<LINK REL="index" HREF="bookix.htm" TITLE="Index">
+<LINK REL="copyright" HREF="./html/cpyr.htm" TITLE="Copyright">
+<LINK REL="up" HREF="toc.htm" TITLE="Up">
+<LINK REL="next" HREF="adicwc01.htm" TITLE="Next">
+<LINK REL="previous" HREF="adicwi01.htm" TITLE="Previous">
+
+
+</HEAD>
+       
+<BODY BGCOLOR="#ffffff">
+
+<A NAME="top"></A>
+
+
+
+
+<A HREF="#BEGIN">Skip Headers</A><BR><BR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+ 
+<TD ALIGN="LEFT" VALIGN="TOP"><FONT COLOR="#330099" FACE="Helvetica, Arial, sans-serif"><STRONG>Oracle Discoverer Administrator Administration Guide (Online Help)<BR>10<i>g</i> (9.0.4)</STRONG><BR>Part Number B10270-01</FONT></TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="144">
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+
+
+
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<HR>
+<P>
+<A HREF="adicwi01.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+
+<A HREF="adicwc01.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+    
+
+
+<A NAME="BEGIN"></A>
+
+
+
+<DIV CLASS="IND">
+<!-- End Header -->
+
+
+
+
+
+
+
+<A NAME="1005113"></A>
+<!--TOC=h1-"1005113"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Item Class Wizard: Advanced options for list of values dialog</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005693"></A>
+<P CLASS="BP">
+Use this dialog to change advanced list of value (LOV) options for an item class. The settings made here affect how Discoverer Plus users select and display LOV options.
+</P>
+<A NAME="1006452"></A>
+<P CLASS="BP">
+This dialog is also displayed as:
+</P>
+
+<UL>
+
+<A NAME="1006480"></A>
+<P CLASS="BP1">
+Item Class Wizard: Step 4
+</P>
+
+<A NAME="1006454"></A>
+<P CLASS="BP1">
+Item Class Wizard: Step 5
+</P>
+
+<A NAME="1006488"></A>
+<P CLASS="BP1">
+Edit Item Class: Options tab
+</P>
+</UL>
+<A NAME="1006310"></A>
+<P CLASS="BP">
+For more information, see:
+</P>
+<A NAME="1006314"></A>
+<P CLASS="BP">
+<A HREF="item_cla.htm#1010838">"Maintaining items and item classes"</a>
+</P>
+
+<A NAME="1005700"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Retrieve values in groups of</FONT></H4>
+<A NAME="1005695"></A>
+<P CLASS="BP">
+Use this spin box to specify the maximum number of rows to display to an end user (for each array fetch of data from the database), when a list of values is expanded in Discoverer Plus.
+</P>
+<A NAME="1006146"></A>
+<P CLASS="BP">
+Discoverer end users see the results of each database array fetch as a block of data that they can scroll up and down. End users can also easily display the next block of data (for more information, see the <EM CLASS="Italic">Oracle Application Server Discoverer Plus User's Guide</EM>).
+</P>
+<A NAME="1006368"></A>
+<P CLASS="BP">
+This setting is useful in Discoverer where a LOV might contain many rows, as it removes the risk of having to wait to retrieve all the values from the database at once. Discoverer displays the LOV values in blocks of a specific number of rows.
+</P>
+<A NAME="1005795"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> The value set here is used as a default when the <STRONG CLASS="Bold">Require user to always search for values</STRONG> check box is cleared (for more information, see the <A HREF="adicwa01.htm#1006224">"Require user to always search for values"</a> item below). 
+</P>
+<A NAME="1006698"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> In Discoverer Plus, the server will always fetch from the database, the number of rows specified in the <STRONG CLASS="Bold">Retrieve values in groups of</STRONG> field no matter how large the number is. However, the maximum number of values that can be fetched by the client from the server is 100.
+</P>
+<A NAME="1006678"></A>
+<P CLASS="BP">
+This means that if the Discoverer manager sets the fetch size to be 1000, (more than the 100 maximum above), in Discoverer Plus the rows are always fetched by the client in groups of 100. If the Discoverer manager sets the fetch size to be 50, (less than the 100 max), in Discoverer Plus the rows are always fetched in groups of 50. 
+</P>
+
+<A NAME="1006163"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Sort the values and remove duplicates</FONT></H4>
+<A NAME="1006164"></A>
+<P CLASS="BP">
+Select this check box to hide duplicate values and alphabetically sort the display order of the list of values (for an item class) in Discoverer.
+</P>
+<A NAME="1006188"></A>
+<P CLASS="BP">
+Clear this check box to display duplicate values and display rows in the same order as the values stored in the database.
+</P>
+<A NAME="1006191"></A>
+<P CLASS="BP">
+This option enables you to decide whether LOV statements should automatically add the DISTINCT and ORDER BY clauses. If you know that your data is already distinct and ordered (or if it doesn't matter if your data is returned this way) then you can choose to turn this setting off.
+</P>
+<A NAME="1006165"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> The time taken to display large lists of values depends upon how long it takes to complete a search of the database tables. Clearing this check box can improve the time taken to display large lists of values.
+</P>
+
+<A NAME="1006205"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Show values in "Select Items" page of Worksheet Wizard</FONT></H4>
+<A NAME="1006209"></A>
+<P CLASS="BP">
+Select this check box to display LOV items in the Select Items dialog of the Worksheet Wizard (the item navigator) in Discoverer Plus.
+</P>
+<A NAME="1006210"></A>
+<P CLASS="BP">
+Clear this check box not to display LOV items in the Select Items dialog of the Worksheet Wizard (the item navigator) in Discoverer Plus.
+</P>
+<A NAME="1006215"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> In the Item Navigator, the LOV does not use the array fetch size (as specified in the <A HREF="adicwa01.htm#1005700">"Retrieve values in groups of"</a> spin box). In this specific instance only, Discoverer will fetch all the values first before they are displayed. If you have millions of rows, this could potentially take a long time and you would want to have this option selected.
+</P>
+
+<A NAME="1006224"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Require user to always search for values</FONT></H4>
+<A NAME="1006225"></A>
+<P CLASS="BP">
+Sometimes, for performance reasons you might want to force end users to query a subset of the LOV. To do this you use this check box.
+</P>
+<A NAME="1006444"></A>
+<P CLASS="BP">
+Select this check box when you want Discoverer to display a <STRONG CLASS="Bold">Search Criteria</STRONG> field that forces end users to enter search criteria to reduce the list of values to a subset of the whole list.
+</P>
+<A NAME="1006226"></A>
+<P CLASS="BP">
+Clear this check box when you want Discoverer to display the number of rows specified in the <STRONG CLASS="Bold">Retrieve values in groups of</STRONG> spin box (for more information, see <A HREF="adicwa01.htm#1005700">"Retrieve values in groups of"</a>).
+</P>
+
+<A NAME="1005753"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Cache list of values during each connection</FONT></H4>
+<A NAME="1006028"></A>
+<P CLASS="BP">
+Select this check box to cache the LOV (during the current session) once it has been displayed for the first time. Use a cache when your data is static during your session. This is the recommended setting.
+</P>
+<A NAME="1006053"></A>
+<P CLASS="BP">
+Clear this check box to fetch LOVs from the database each time. This option is most useful when the data is extremely dynamic and you wish end users to always see the very latest (up-to-the-second) list of values.
+</P>
+
+
+
+
+
+
+<!-- Start Footer -->
+</DIV>
+
+<DIV CLASS="OUTD">
+<HR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+<TD VALIGN="BOTTOM" WIDTH="33%">
+<TABLE CELLSPACING="0" CELLPADDING="0">
+<TR>
+<TD ALIGN="CENTER"><A HREF="adicwi01.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+
+<TD ALIGN="CENTER"><A HREF="adicwc01.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+    
+</TR>
+</TABLE>
+</TD>
+<TD ALIGN="CENTER" WIDTH="34%">
+<A HREF="./html/cpyr.htm"><IMG SRC="./gifs/oracle.gif" ALT="Oracle" BORDER="0"><BR>
+<FONT SIZE="-2">Copyright &copy 2003 Oracle Corporation.</FONT></A>
+<BR>
+<FONT SIZE="-2">All Rights Reserved.</FONT>
+</TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="33%"> 
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="144">
+<TR>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+  
+</DIV>
+
+</BODY>
+</HTML>
+

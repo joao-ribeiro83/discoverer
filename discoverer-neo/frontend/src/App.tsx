@@ -1,4 +1,4 @@
-import { lazy } from 'react'
+import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { Layout } from '@/components/layout/Layout'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
@@ -36,6 +36,9 @@ const MapViewerPage = lazy(() =>
   import('@/pages/MapViewerPage').then((m) => ({ default: m.MapViewerPage })),
 )
 const SchedulesPage = lazy(() => import('@/pages/SchedulesPage').then((m) => ({ default: m.SchedulesPage })))
+const ChangePasswordPage = lazy(() =>
+  import('@/pages/ChangePasswordPage').then((m) => ({ default: m.ChangePasswordPage })),
+)
 const MigrationPage = lazy(() =>
   import('@/pages/MigrationPage').then((m) => ({ default: m.MigrationPage })),
 )
@@ -55,6 +58,16 @@ export function App() {
           <AuthLayout>
             <LoginPage />
           </AuthLayout>
+        }
+      />
+      <Route
+        path="/change-password"
+        element={
+          <ProtectedRoute>
+            <Suspense fallback={null}>
+              <ChangePasswordPage />
+            </Suspense>
+          </ProtectedRoute>
         }
       />
       <Route

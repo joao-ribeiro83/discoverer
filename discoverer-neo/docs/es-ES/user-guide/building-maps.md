@@ -163,6 +163,41 @@ Los nombres de los parámetros deben:
 - Contener únicamente letras, dígitos y guiones bajos
 - Ejemplos de nombres correctos: `start_date`, `region_code`, `customer_id`
 
+### Agrupar y cortar
+
+Marque **Agrupar y cortar** en una columna para ocultar sus valores repetidos y
+empezar un subtotal nuevo cada vez que cambie. Las columnas de grupo se ordenan
+siempre antes que todas las demás: un corte solo agrupa si nada se ordena fuera
+de él.
+
+### Colocación y borde de la tabla cruzada
+
+La **colocación** indica para qué sirve una columna:
+
+- **Agrupar por (eje)** — una columna por la que agrupa el informe. Nunca se
+  agrega, aunque el elemento de origen tenga una agregación predeterminada.
+- **Medida** — un valor que se agrega.
+- **Elemento de página** — filtra toda la hoja; no se dibuja en la cuadrícula.
+
+El **borde de la tabla cruzada** se aplica a un mapa `CROSSTAB`: ponga una
+columna *En la parte superior* para cruzar el informe. Los mapas migrados desde
+Discoverer no tienen ningún borde registrado —Discoverer no tenía ese campo—,
+por lo que una tabla cruzada migrada se muestra como tabla hasta que defina
+uno.
+
+### Columnas solo de consulta
+
+Marque **Solo consulta, no mostrar** para mantener una columna fuera de los
+resultados mientras la consulta la sigue pidiendo. Úselo cuando un filtro, una
+ordenación o un total necesite una columna que el lector no debe ver.
+
+### Formatos de columna
+
+La **máscara de formato** usa la notación de Oracle (`999,999.00`, `$9,999.00`,
+`DD-MON-YYYY`). Se lee por su significado —miles agrupados, dos decimales,
+día-mes-año— y después se muestra en el idioma de cada lector, de modo que el
+mismo mapa se lee correctamente para todos.
+
 ## ¿Qué sigue?
 
 - **[Ejecución de mapas](executing-maps.md)** — Ejecute su mapa y consulte los resultados

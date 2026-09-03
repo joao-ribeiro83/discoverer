@@ -17,6 +17,32 @@ Saisissez vos identifiants, puis cliquez sur **Se connecter**.
 
 **Première visite ?** Contactez votre administrateur pour faire créer un compte.
 
+## Première connexion avec un mot de passe temporaire
+
+Si votre compte provient d'Oracle Discoverer, votre administrateur vous remettra
+un **mot de passe temporaire**. C'est une chaîne aléatoire de 16 caractères, par
+exemple `ufNnRksjgR7U%M6X`.
+
+1. Connectez-vous avec votre adresse e-mail et le mot de passe temporaire.
+2. Vous arrivez directement sur **Changer votre mot de passe** — cette étape ne
+   peut pas être ignorée. Tant que vous n'avez pas choisi de mot de passe, le
+   reste de l'application est indisponible.
+3. Saisissez à nouveau le mot de passe temporaire, puis votre nouveau mot de
+   passe deux fois.
+4. Vous arrivez sur le tableau de bord et le mot de passe temporaire cesse
+   immédiatement de fonctionner.
+
+Votre nouveau mot de passe doit comporter **au moins 12 caractères** et être
+différent du temporaire.
+
+> **Astuce :** le mot de passe temporaire évite délibérément les caractères
+> faciles à confondre — ni `O` majuscule ni zéro, ni `l` minuscule ni un. Si un
+> caractère vous paraît ambigu, ce n'est aucun de ceux-là.
+
+Si vous saisissez mal le mot de passe temporaire, l'écran vous le signale et rien
+n'est modifié ; demandez à votre administrateur de le réinitialiser si vous
+l'avez perdu.
+
 ## Interface principale
 
 Une fois connecté, le tableau de bord principal s'affiche avec les sections suivantes :

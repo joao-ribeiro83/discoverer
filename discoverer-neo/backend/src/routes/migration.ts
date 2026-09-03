@@ -16,6 +16,7 @@ import {
   detectVersion,
   getJob,
   listJobs,
+  startMapReimport,
   startMigration,
 } from '../services/migration.service.js';
 import { invalidateAll } from '../lib/metadata-cache.js';
@@ -33,6 +34,11 @@ const RunBodySchema = SourceBodySchema.extend({
   dryRun: z.boolean().optional(),
   // Accept either case from the UI; normalized below.
   version: z.enum(['auto', 'eul4', 'eul5', 'EUL4', 'EUL5']).optional(),
+});
+
+/** A maps re-import takes no version override — it reads what the target was migrated from. */
+const ReimportMapsBodySchema = SourceBodySchema.extend({
+  dryRun: z.boolean().optional(),
 });
 
 const JobParamsSchema = z.object({ jobId: z.string().uuid() });
@@ -191,6 +197,59 @@ export default async function migrationRoutes(fastify: FastifyInstance) {
         request.log.error({ err }, 'Failed to start migration');
         return reply.code(400).send({
           error: `Failed to start migration: ${err instanceof Error ? err.message : String(err)}`,
+        });
+      }
+    },
+  );
+
+  // POST /api/migration/reimport-maps — rebuild the migrated maps in place
+  //
+  // Separate from /run because a Neo database accepts exactly one full
+  // migration: a target whose maps are empty (migrated before the tool could
+  // read DOC_DOCUMENT) cannot be fixed by re-running it. See
+  // `startMapReimport` — this replaces only the maps, and is destructive for
+  // edits made to a migrated map since the original run.
+  fastify.post(
+    '/api/migration/reimport-maps',
+    {
+      preHandler: adminPreHandler,
+      schema: {
+        tags,
+        security,
+        response: {
+          202: looseData,
+          400: errorResponse,
+          401: errorResponse,
+          403: errorResponse,
+          404: errorResponse,
+          409: errorResponse,
+        },
+      },
+    },
+    async (request, reply) => {
+      const parsed = ReimportMapsBodySchema.safeParse(request.body);
+      if (!parsed.success) {
+        return reply.code(400).send({ error: 'A valid dataSourceId is required' });
+      }
+      const userId = request.user?.sub;
+      if (!userId) return reply.code(401).send({ error: 'Unauthenticated' });
+
+      try {
+        const job = startMapReimport({
+          dataSourceId: parsed.data.dataSourceId,
+          schemaOwner: parsed.data.schemaOwner,
+          dryRun: parsed.data.dryRun === true,
+          startedBy: userId,
+          onSettled: () => invalidateAll(fastify.redis),
+        });
+        return reply.code(202).send({ data: job });
+      } catch (err) {
+        if (err instanceof MigrationError) {
+          return reply.code(err.statusCode).send({ error: err.message });
+        }
+        request.log.error({ err }, 'Failed to start map re-import');
+        return reply.code(400).send({
+          error: `Failed to start map re-import: ${err instanceof Error ? err.message : String(err)}`,
         });
       }
     },

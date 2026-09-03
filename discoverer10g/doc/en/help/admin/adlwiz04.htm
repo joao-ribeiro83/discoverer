@@ -1,0 +1,340 @@
+
+<!DOCTYPE html public "-//w3c//dtd html 3.2 transitional//en.us">
+<HTML lang="en.us">
+<HEAD>
+
+<META NAME="Generator" CONTENT="Quadralay WebWorks Publisher 5.0.4">
+<META NAME="Page" CONTENT="DefaultSingle">
+<META NAME="Title" CONTENT="">
+<meta http-equiv="Content-Type" content="text/html;  charset=iso-8859-1">
+
+<Title>Reference topic </Title>
+	   
+<LINK REL="home" HREF="../../library.htm" TITLE="Library">
+<LINK REL="toc" HREF="toc.htm" TITLE="Contents">
+<LINK REL="index" HREF="bookix.htm" TITLE="Index">
+<LINK REL="copyright" HREF="./html/cpyr.htm" TITLE="Copyright">
+<LINK REL="up" HREF="toc.htm" TITLE="Up">
+<LINK REL="next" HREF="adlwiz05.htm" TITLE="Next">
+<LINK REL="previous" HREF="adlwiz03.htm" TITLE="Previous">
+
+
+</HEAD>
+       
+<BODY BGCOLOR="#ffffff">
+
+<A NAME="top"></A>
+
+
+
+
+<A HREF="#BEGIN">Skip Headers</A><BR><BR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+ 
+<TD ALIGN="LEFT" VALIGN="TOP"><FONT COLOR="#330099" FACE="Helvetica, Arial, sans-serif"><STRONG>Oracle Discoverer Administrator Administration Guide (Online Help)<BR>10<i>g</i> (9.0.4)</STRONG><BR>Part Number B10270-01</FONT></TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="144">
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+
+
+
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<HR>
+<P>
+<A HREF="adlwiz03.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+
+<A HREF="adlwiz05.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+    
+
+
+<A NAME="BEGIN"></A>
+
+
+
+<DIV CLASS="IND">
+<!-- End Header -->
+
+
+
+
+
+
+
+<A NAME="1005847"></A>
+<!--TOC=h1-"1005847"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Load Wizard: Step 4 dialog</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005848"></A>
+<P CLASS="BP">
+Use this dialog to configure the joins and additional objects that Discoverer generates when data is loaded into the new business area.
+</P>
+<A NAME="1006264"></A>
+<P CLASS="BP">
+For more information, see:
+</P>
+<A NAME="1006268"></A>
+<P CLASS="BP">
+<A HREF="business.htm#1004607">"What is the Load Wizard?"</a>
+</P>
+<A NAME="1006272"></A>
+<P CLASS="BP">
+<A HREF="business.htm#1006126">"How to create a business area using the Load Wizard"</a>
+</P>
+
+<A NAME="1006285"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Do you want to create joins?</FONT></H4>
+
+<A NAME="1006101"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Yes, create joins from:</FONT></H4>
+<A NAME="1006107"></A>
+<P CLASS="BP">
+Use this check box to create joins on items in the business area.
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006102"></A><STRONG CLASS="Bold">Primary/foreign key constraints</STRONG>
+<P>
+
+<A NAME="1006855"></A>
+<P CLASS="BP1">
+Use this radio button to create joins on primary and foreign keys. For example, if Regions contain many Stores, the primary key Region.Region Name might be joined to the foreign key Stores.Region Name.
+</P>
+
+<A NAME="1007173"></A>
+<P CLASS="BP1">
+It is recommended that you use this option:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1007186"></A>when primary and foreign key constraints are defined in the database
+<P>
+</UL>
+
+<A NAME="1006879"></A>
+<P CLASS="BP1">
+You use this option because:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1007314"></A>it saves you having to create the joins manually
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1007336"></A>Discoverer will always create joins that are correct (i.e. the master and detail relationship is specified the right way round)
+<P>
+</UL>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006011"></A><STRONG CLASS="Bold">Matching column names</STRONG>
+<P>
+
+<A NAME="1005757"></A>
+<P CLASS="BP1">
+Use this radio button to create joins on matching column names in the database tables. You use this option when no primary and foreign key constraints are defined, for example, if you are using a non-Oracle database.
+</P>
+
+<A NAME="1007208"></A>
+<P CLASS="BP1">
+If you choose this option, Discoverer checks every column name of every object being loaded against every other column name.  As the number of columns that are loaded increases, the amount of processing required also increases. A side effect of doing this is that the joins created must be checked after the load to make sure they are valid. The master-detail folder relationship must be verified as being the correct way round, and the join condition must be verified as being valid (i.e. not created accidentally by two different columns using the same name.)
+</P>
+</UL>
+
+<A NAME="1005697"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">What additional objects do you want to generate?</FONT></H4>
+
+<A NAME="1005698"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Summaries based on folders that are created</FONT></H4>
+<A NAME="1005770"></A>
+<P CLASS="BP">
+Use this check box to use automated summary management (ASM) to create summary folders after the load process, based on folders that Discoverer creates.
+</P>
+<A NAME="1005700"></A>
+<P CLASS="BP">
+ASM attempts to create a set of suitable summary folders after analyzing the table structure. Selecting this option might slightly increase duration of the business area load, but should give end users improved query performance.
+</P>
+<A NAME="1005702"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> Do not choose this option if you are going to run ASM, or if your database space is low.
+</P>
+
+<A NAME="1005704"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Date hierarchies:</FONT></H4>
+<A NAME="1005782"></A>
+<P CLASS="BP">
+Use this check box to automatically create date hierarchies for date items.
+</P>
+<A NAME="1007133"></A>
+<P CLASS="BP">
+Choose a hierarchy from the drop down list of default date hierarchy formats. The date hierarchy is applied to all date columns in the business area. Creating a date hierarchy enables end users to drill up/down through date items. For example, from years to quarters or from months to days.
+</P>
+<A NAME="1005705"></A>
+<P CLASS="BP">
+Automatically generating date hierarchies inserts additional (i.e. calculated) items into the folder. An extra item is created for every date item in each node in the date hierarchy. For example a date hierarchy containing year|quarter|month|day applied to a table with three date columns, generates an additional 12 items in the folder. For more information, see <A HREF="hierarch.htm#1004595">Chapter&nbsp;12, "Creating and maintaining hierarchies"</a>.
+</P>
+
+<A NAME="1005706"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Default aggregate on data points </FONT></H4>
+<A NAME="1005792"></A>
+<P CLASS="BP">
+Use this check box to specify a default aggregate for numeric items.
+</P>
+<A NAME="1007145"></A>
+<P CLASS="BP">
+Choose an aggregate from the drop down list. The default aggregate is SUM.
+</P>
+
+<A NAME="1005707"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">List of values for items of type:</FONT></H4>
+<A NAME="1005799"></A>
+<P CLASS="BP">
+Use this check box to generate lists of values based on the types you select. This option automatically creates lists of values for each axis item of each type specified, except character items longer than 40 characters. The values are derived from the values in the database column.
+</P>
+
+<A NAME="1005916"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006909"></A>Items are loaded as data points if they are DECIMALS (i.e. a NUMBER data type) and have a non-zero precision. Integer numbers, all keys, and all other data types are loaded as axis items, with a default position of Top.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007260"></A>Axis items are usually displayed on one of the axes of a worksheet. For example, the term Monthly Profit might be an axis item in a worksheet. 
+<P>
+
+<A NAME="1007355"></A>
+<P CLASS="BP1">
+The alternative term for an axis item is a dimension.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007284"></A>Data points are usually displayed in the body of a worksheet. For example, an amount in dollars (e.g. $2,000) might be a data point item representing Monthly Profit in a worksheet. 
+<P>
+
+<A NAME="1007359"></A>
+<P CLASS="BP1">
+The alternative term for a data point is a measure.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005934"></A>In Discoverer Plus, whether an item is an axis item or data point determines the items' default placement on cross tab worksheets, as follows:
+<P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005936"></A>Because data points usually include the numbers that users want to analyze, they are displayed by default with aggregate functions in the center of cross tabular reports.
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005937"></A>Axis items can have lists of values but data points cannot. Axis items appear on the page, top, or side of cross tabular worksheets by default.
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005949"></A>The default position of an axis item or data point item in a worksheet is determined by the Discoverer manager. However, Discoverer Plus users can alter the position of axis items and datapoint items in a worksheet.
+<P>
+</UL>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006062"></A>Lists of values are derived by querying the database when Discoverer users click the plus (+) symbol next to the item. Lists are dynamic and change if the values in the database change. When the plus (+) symbol is clicked, Discoverer caches the values on the client machine for performance reasons, unless the <STRONG CLASS="Bold">Cache list of values during each connection</STRONG> check box is cleared, when creating or editing an item class in the following dialogs:
+<P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1006349"></A>Item Class Wizard: Step 4/5 dialog
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1006353"></A>Edit Item Class dialog: Options tab
+<P>
+</UL>
+
+<A NAME="1007396"></A>
+<P CLASS="BP1">
+If you select the <STRONG CLASS="Bold">Cache list of values during each connection</STRONG> check box and you want to display new values in a list, you must reconnect (for more information about this setting, see <A HREF="adicwa01.htm#1005113">"Item Class Wizard: Advanced options for list of values dialog"</a>). 
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006939"></A>Avoid creating lists of values on items that will contain many values (e.g. decimals).
+<P>
+
+<A NAME="1006358"></A>
+<P CLASS="BP1">
+
+</P>
+</UL>
+
+
+
+
+
+
+<!-- Start Footer -->
+</DIV>
+
+<DIV CLASS="OUTD">
+<HR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+<TD VALIGN="BOTTOM" WIDTH="33%">
+<TABLE CELLSPACING="0" CELLPADDING="0">
+<TR>
+<TD ALIGN="CENTER"><A HREF="adlwiz03.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+
+<TD ALIGN="CENTER"><A HREF="adlwiz05.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+    
+</TR>
+</TABLE>
+</TD>
+<TD ALIGN="CENTER" WIDTH="34%">
+<A HREF="./html/cpyr.htm"><IMG SRC="./gifs/oracle.gif" ALT="Oracle" BORDER="0"><BR>
+<FONT SIZE="-2">Copyright &copy 2003 Oracle Corporation.</FONT></A>
+<BR>
+<FONT SIZE="-2">All Rights Reserved.</FONT>
+</TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="33%"> 
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="144">
+<TR>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+  
+</DIV>
+
+</BODY>
+</HTML>
+

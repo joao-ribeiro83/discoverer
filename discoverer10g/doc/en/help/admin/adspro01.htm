@@ -1,0 +1,371 @@
+
+<!DOCTYPE html public "-//w3c//dtd html 3.2 transitional//en.us">
+<HTML lang="en.us">
+<HEAD>
+
+<META NAME="Generator" CONTENT="Quadralay WebWorks Publisher 5.0.4">
+<META NAME="Page" CONTENT="DefaultSingle">
+<META NAME="Title" CONTENT="">
+<meta http-equiv="Content-Type" content="text/html;  charset=iso-8859-1">
+
+<Title>Reference topic </Title>
+	   
+<LINK REL="home" HREF="../../library.htm" TITLE="Library">
+<LINK REL="toc" HREF="toc.htm" TITLE="Contents">
+<LINK REL="index" HREF="bookix.htm" TITLE="Index">
+<LINK REL="copyright" HREF="./html/cpyr.htm" TITLE="Copyright">
+<LINK REL="up" HREF="toc.htm" TITLE="Up">
+<LINK REL="next" HREF="adswli01.htm" TITLE="Next">
+<LINK REL="previous" HREF="adsis201.htm" TITLE="Previous">
+
+
+</HEAD>
+       
+<BODY BGCOLOR="#ffffff">
+
+<A NAME="top"></A>
+
+
+
+
+<A HREF="#BEGIN">Skip Headers</A><BR><BR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+ 
+<TD ALIGN="LEFT" VALIGN="TOP"><FONT COLOR="#330099" FACE="Helvetica, Arial, sans-serif"><STRONG>Oracle Discoverer Administrator Administration Guide (Online Help)<BR>10<i>g</i> (9.0.4)</STRONG><BR>Part Number B10270-01</FONT></TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="144">
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+
+
+
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<HR>
+<P>
+<A HREF="adsis201.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+
+<A HREF="adswli01.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+    
+
+
+<A NAME="BEGIN"></A>
+
+
+
+<DIV CLASS="IND">
+<!-- End Header -->
+
+
+
+
+
+
+
+<A NAME="1005113"></A>
+<!--TOC=h1-"1005113"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Summary Properties dialog</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1006072"></A>
+<P CLASS="BP">
+Use this dialog to view and configure properties for this summary folder. For example, to look at the status, or change the next refresh date for a summary folder.
+</P>
+<A NAME="1006258"></A>
+<P CLASS="BP">
+For more information, see:
+</P>
+<A NAME="1006583"></A>
+<P CLASS="BP">
+<A HREF="managing.htm#1009688">"Managing summary folders"</a>
+</P>
+<A NAME="1006262"></A>
+<P CLASS="BP">
+<A HREF="managing.htm#1012639">"What are summary folders?"</a>
+</P>
+<A NAME="1006266"></A>
+<P CLASS="BP">
+<A HREF="managing.htm#1004703">"What are Discoverer summary tables?"</a>
+</P>
+<A NAME="1006270"></A>
+<P CLASS="BP">
+<A HREF="managing.htm#1004708">"What are materialized views?"</a>
+</P>
+<A NAME="1006274"></A>
+<P CLASS="BP">
+<A HREF="managing.htm#1007303">"Why must you refresh summary data?"</a>
+</P>
+
+<A NAME="1006073"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Name </FONT></H4>
+<A NAME="1006103"></A>
+<P CLASS="BP">
+Use this field to enter a name for the summary folder.
+</P>
+
+<A NAME="1006074"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Description </FONT></H4>
+<A NAME="1006104"></A>
+<P CLASS="BP">
+Use this field to enter a description for the summary folder.
+</P>
+
+<A NAME="1006289"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Type</FONT></H4>
+<A NAME="1006292"></A>
+<P CLASS="BP">
+This read-only field indicates whether a summary folder is managed or external.
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006076"></A>Managed summary folder
+<P>
+
+<A NAME="1006118"></A>
+<P CLASS="BP1">
+Managed summary folders have their data refreshed at intervals you specify. Managed summary folders can contain many summary combinations. Discoverer can create the materialized views required, and enables you to specify summary folder name, summary item names, and storage properties for summary folders you create. Alternatively you can pre-create the summary tables, and simply tell Discoverer the table owner and name.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006077"></A>External summary folder
+<P>
+
+<A NAME="1006122"></A>
+<P CLASS="BP1">
+External summary folders contain tables created by an application external to Discoverer. The column and item names might differ from those in Discoverer. With this option, you register each external table and map its columns to items in the End User Layer. You can specify that Discoverer takes over management of the external summary folder, so that Discoverer can populate the materialized view and refresh the summary folder.
+</P>
+</UL>
+
+<A NAME="1006078"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Available for queries</FONT></H4>
+<A NAME="1006142"></A>
+<P CLASS="BP">
+Use this field to specify whether this summary folder can be used for worksheets run in Discoverer Plus. For example, when a Discoverer end user opens a worksheet that displays items from this summary folder Discoverer Plus might use the summary folder to display the worksheet results.
+</P>
+
+<A NAME="1006079"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Status</FONT></H4>
+<A NAME="1006129"></A>
+<P CLASS="BP">
+This read-only field displays the current point in the life cycle of this summary folder. Only summary folders that have the status Complete, are available for queries.
+</P>
+<A NAME="1007329"></A>
+<P CLASS="BP">
+The following list explains the meaning of values displayed in the Status field:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007359"></A>Pending
+<P>
+
+<A NAME="1007360"></A>
+<P CLASS="BP1">
+The summary refresh job is scheduled on DBMS_JOB queue, but has not yet started execution.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007361"></A>Under construction
+<P>
+
+<A NAME="1007362"></A>
+<P CLASS="BP1">
+The summary refresh job has started, and is inserting the rows into the materialized view.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007363"></A>Unusable
+<P>
+
+<A NAME="1007364"></A>
+<P CLASS="BP1">
+Discoverer has created a new summary a folder but has not yet refreshed it for the first time (Oracle 8.1.7 (or later) Enterprise Edition databases).
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007365"></A>Stale
+<P>
+
+<A NAME="1007366"></A>
+<P CLASS="BP1">
+The summary folder data is inconsistent with the detail data for a materialized view (Oracle 8.1.7 (or later) Enterprise Edition databases).
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007367"></A>Complete
+<P>
+
+<A NAME="1007368"></A>
+<P CLASS="BP1">
+The summary folder is complete and ready for use.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007369"></A>Failed
+<P>
+
+<A NAME="1007370"></A>
+<P CLASS="BP1">
+The summary refresh job fails and Oracle displays a database error.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007371"></A>Refresh Required
+<P>
+
+<A NAME="1007372"></A>
+<P CLASS="BP1">
+The end user must refresh the summary folder before it can be used. This normally happens only when the Discoverer manager has changed folder, item or join definitions in a way that requires the summary folder to be rebuilt. Discoverer displays the following reasons when refresh is required:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1007373"></A>Incompatible with database version
+<P>
+
+<A NAME="1007520"></A>
+<P CLASS="BP2">
+The EUL definition of the materialized view is incompatible with the version of the database. This can occur if a database export/import of the EUL has occurred across database versions. For example, from an Oracle Standard Edition database to an Oracle 8.1.7 (or later) Enterprise Edition database.
+</P>
+ 
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1007374"></A>EUL has changed
+<P>
+
+<A NAME="1007512"></A>
+<P CLASS="BP2">
+Dependent EUL item has changed its definition. For example, the formula of an item used in the summary folder. 
+</P>
+ 
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1007375"></A>Server has changed
+<P>
+
+<A NAME="1007516"></A>
+<P CLASS="BP2">
+The definition of the materialized view in the database is inconsistent with the definition in the EUL (Oracle 8.1.7 (or later) Enterprise Edition databases).
+</P>
+ 
+</UL>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007376"></A>External
+<P>
+
+<A NAME="1007377"></A>
+<P CLASS="BP1">
+This summary folder is external and uses summary tables created in an application external to Discoverer.
+</P>
+</UL>
+
+<A NAME="1006091"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Last refreshed </FONT></H4>
+<A NAME="1006231"></A>
+<P CLASS="BP">
+This read-only field displays the date when this summary folder last received up-to-date data from the database. This is only available for managed summary folders.
+</P>
+
+<A NAME="1006092"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Next Refresh </FONT></H4>
+<A NAME="1006237"></A>
+<P CLASS="BP">
+Use this field to change the date when this summary folder will next receive up-to-date data from the database. This is only available for managed summary folders.
+</P>
+
+<A NAME="1006093"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Refresh Interval </FONT></H4>
+<A NAME="1006241"></A>
+<P CLASS="BP">
+Use this field to change how often this summary folder receives up-to-date data from the database. This is only available for managed summary folders.
+</P>
+
+<A NAME="1006094"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Identifier </FONT></H4>
+<A NAME="1006245"></A>
+<P CLASS="BP">
+Use this field to change the unique identifier that Discoverer uses to identify EUL and workbook objects. Discoverer uses identifiers to locate objects in different EULs that refer to the same business object.
+</P>
+
+<A NAME="1006095"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Automatically save changes after each edit </FONT></H4>
+<A NAME="1006249"></A>
+<P CLASS="BP">
+Use this check box to save changes each time a field in the Summary Properties dialog is updated.
+</P>
+<A NAME="1006320"></A>
+<P CLASS="BP">
+
+</P>
+
+
+
+
+
+
+<!-- Start Footer -->
+</DIV>
+
+<DIV CLASS="OUTD">
+<HR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+<TD VALIGN="BOTTOM" WIDTH="33%">
+<TABLE CELLSPACING="0" CELLPADDING="0">
+<TR>
+<TD ALIGN="CENTER"><A HREF="adsis201.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+
+<TD ALIGN="CENTER"><A HREF="adswli01.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+    
+</TR>
+</TABLE>
+</TD>
+<TD ALIGN="CENTER" WIDTH="34%">
+<A HREF="./html/cpyr.htm"><IMG SRC="./gifs/oracle.gif" ALT="Oracle" BORDER="0"><BR>
+<FONT SIZE="-2">Copyright &copy 2003 Oracle Corporation.</FONT></A>
+<BR>
+<FONT SIZE="-2">All Rights Reserved.</FONT>
+</TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="33%"> 
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="144">
+<TR>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+  
+</DIV>
+
+</BODY>
+</HTML>
+

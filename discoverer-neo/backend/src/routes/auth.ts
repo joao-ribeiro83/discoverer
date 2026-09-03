@@ -3,12 +3,20 @@ import { z } from 'zod';
 import { eq } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { users } from '../db/schema.js';
-import { verifyPassword } from '../lib/password.js';
+import { hashPassword, verifyPassword } from '../lib/password.js';
 import { config } from '../config.js';
 
 // ---------------------------------------------------------------------------
 // Validation schemas
 // ---------------------------------------------------------------------------
+
+/** Floor for a user-chosen password. Temporary ones are longer still. */
+const MIN_PASSWORD_LENGTH = 12;
+
+const ChangePasswordBodySchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(MIN_PASSWORD_LENGTH),
+});
 
 const LoginBodySchema = z.object({
   email: z.string().email(),
@@ -55,6 +63,8 @@ export default async function authRoutes(fastify: FastifyInstance) {
                       role: { type: 'string' },
                       locale: { type: 'string' },
                       theme: { type: 'string' },
+                      colorPalette: { type: 'string' },
+                      mustChangePassword: { type: 'boolean' },
                     },
                   },
                 },
@@ -118,6 +128,11 @@ export default async function authRoutes(fastify: FastifyInstance) {
             role: user.role,
             locale: user.locale,
             theme: user.theme,
+            colorPalette: user.colorPalette,
+            // The client uses this to route straight to the change screen.
+            // It is not the control — the auth guard is — but it saves the
+            // user a pointless 403 on their first request.
+            mustChangePassword: user.mustChangePassword,
           },
         },
       });
@@ -244,6 +259,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
                   role: { type: 'string' },
                   locale: { type: 'string' },
                   theme: { type: 'string' },
+                  colorPalette: { type: 'string' },
                 },
               },
             },
@@ -260,10 +276,15 @@ export default async function authRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const user = request.user;
 
-      // locale/theme can change after the JWT was issued, so read them fresh
-      // rather than trusting the token payload.
+      // locale/theme/colorPalette can change after the JWT was issued, so
+      // read them fresh rather than trusting the token payload.
       const [row] = await db
-        .select({ locale: users.locale, theme: users.theme })
+        .select({
+          locale: users.locale,
+          theme: users.theme,
+          colorPalette: users.colorPalette,
+          mustChangePassword: users.mustChangePassword,
+        })
         .from(users)
         .where(eq(users.id, user.sub))
         .limit(1);
@@ -276,7 +297,81 @@ export default async function authRoutes(fastify: FastifyInstance) {
           role: user.role,
           locale: row?.locale ?? 'en',
           theme: row?.theme ?? 'light',
+          colorPalette: row?.colorPalette ?? 'navy',
+          mustChangePassword: row?.mustChangePassword ?? false,
         },
+      });
+    },
+  );
+
+  // POST /api/auth/change-password
+  //
+  // Reachable while `must_change_password` is set — it is one of the few
+  // routes the auth guard exempts, precisely so a provisioned account can get
+  // itself into a usable state and nothing more.
+  fastify.post(
+    '/api/auth/change-password',
+    {
+      preHandler: [fastify.authenticate],
+      schema: {
+        tags: ['Auth'],
+        security: [{ bearerAuth: [] }],
+        body: {
+          type: 'object',
+          required: ['currentPassword', 'newPassword'],
+          properties: {
+            currentPassword: { type: 'string', minLength: 1 },
+            newPassword: { type: 'string', minLength: MIN_PASSWORD_LENGTH },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const parsed = ChangePasswordBodySchema.safeParse(request.body);
+      if (!parsed.success) {
+        return reply.code(400).send({
+          error: 'Validation failed',
+          details: parsed.error.flatten(),
+        });
+      }
+      const { currentPassword, newPassword } = parsed.data;
+
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, request.user.sub))
+        .limit(1);
+      if (!user) {
+        return reply.code(401).send({ error: 'Unauthorized' });
+      }
+
+      // Re-verify the current password even though the caller holds a valid
+      // token: it stops a borrowed or stolen session from silently taking
+      // ownership of the account by rotating the credential.
+      const ok = await verifyPassword(currentPassword, user.passwordHash);
+      if (!ok) {
+        return reply.code(401).send({ error: 'Current password is incorrect' });
+      }
+
+      if (newPassword === currentPassword) {
+        return reply.code(400).send({
+          error: 'The new password must be different from the current one',
+        });
+      }
+
+      await db
+        .update(users)
+        .set({
+          passwordHash: await hashPassword(newPassword),
+          mustChangePassword: false,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, user.id));
+
+      // The existing token stays valid: it never encoded the flag, and the
+      // guard re-reads it from the database on the next request.
+      return reply.code(200).send({
+        data: { message: 'Password changed' },
       });
     },
   );

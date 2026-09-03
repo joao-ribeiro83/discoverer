@@ -58,7 +58,7 @@ function NavSection({
   const { t } = useTranslation('nav')
   return (
     <div className="px-3 py-2">
-      <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">{title}</h2>
+      <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight text-sidebar-foreground">{title}</h2>
       <div className="space-y-1">
         {items.map((item) => (
           <NavLink
@@ -68,7 +68,7 @@ function NavSection({
             className={({ isActive }) =>
               cn(
                 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground',
-                isActive ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'
+                isActive ? 'bg-accent text-accent-foreground' : 'text-sidebar-foreground'
               )
             }
           >
@@ -87,7 +87,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
     <>
       <div className="flex h-14 items-center gap-2 border-b px-4">
         <Database className="h-6 w-6 text-primary" />
-        <span className="text-lg font-bold">{t('appName')}</span>
+        <span className="text-lg font-bold text-sidebar-foreground">{t('appName')}</span>
       </div>
       <nav className="flex-1 overflow-y-auto py-2">
         <NavSection title={t('sections.overview')} items={mainNavItems} onNavigate={onNavigate} />
@@ -109,7 +109,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
           className={({ isActive }) =>
             cn(
               'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground',
-              isActive ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'
+              isActive ? 'bg-accent text-accent-foreground' : 'text-sidebar-foreground'
             )
           }
         >

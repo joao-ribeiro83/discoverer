@@ -2,10 +2,16 @@
  * Type definitions and version constants for the EUL version detection and
  * schema adapter layer.
  *
- * Source of truth for the version differences encoded here:
- * `EUL_VERSION_REFERENCE.md` (repo root) — the authoritative EUL3/EUL4/EUL5
- * schema comparison — plus §8 of `oracle_discoverer_complete_reference.md`
- * for the full EUL5 column-level detail.
+ * Source of truth: `EUL_SCHEMA_GROUND_TRUTH.md` (this package), derived from
+ * Oracle's own shipped scripts under `discoverer10g/sql/` — `euldrop.sql` and
+ * `eul4del.sql` for the table inventory, `Lineage.sql` and `batchusr.sql` for
+ * real column names, `eulver.sql` for the version stamp.
+ *
+ * Do NOT take table or column names from `EUL_VERSION_REFERENCE.md` or §8 of
+ * `oracle_discoverer_complete_reference.md`. Both describe a schema that does
+ * not exist in any Discoverer release (`EUL5_JOINS`, `OBJ_TABLE_NAME`,
+ * `EXP_COL_NAME`, `EUL5_ELEM_ACCESS`, …) and were the origin of a fleet of
+ * fabricated identifiers in this package.
  *
  * A note on EUL3: Oracle's own documentation for the 3.x EUL schema is
  * essentially gone. Everywhere this module needs a column-level answer for
@@ -39,40 +45,55 @@ export const EUL_VERSIONS_BY_PRECEDENCE: readonly EulVersion[] = [
 // Table inventory (base names, without prefix)
 // ---------------------------------------------------------------------------
 
-/** Base table names present in every EUL version. */
+/**
+ * Base table names present in every EUL version, verified against Oracle's
+ * `euldrop.sql` (EUL5) and `eul4del.sql` (EUL4).
+ *
+ * The EUL4 and EUL5 inventories are effectively identical — the version
+ * difference is the table-name prefix, not the set of tables.
+ */
 export const CORE_TABLES: readonly string[] = [
-  'BA',
+  'BAS',
+  'BA_OBJ_LINKS',
   'OBJS',
+  'OBJ_DEPS',
+  'OBJ_JOIN_USGS',
   'EXPRESSIONS',
-  'JOINS',
-  'JOI_COMP',
+  'EXP_DEPS',
+  'KEY_CONS',
   'HIERARCHIES',
-  'HIER_LEVELS',
-  'SUMMARIES',
+  'HI_NODES',
+  'HI_SEGMENTS',
+  'SUMMARY_OBJS',
   'FUNCTIONS',
-  'ELEM_ACCESS',
+  'ACCESS_PRIVS',
+  'EUL_USERS',
   'DOCUMENTS',
+  'ELEM_XREFS',
   'QPP_STATS',
-  'EUL',
-  'OPTIONS',
+  'VERSIONS',
 ];
 
-/** Base table names that exist only in EUL5. */
-export const EUL5_ONLY_TABLES: readonly string[] = [
-  'QPP_QUERY',
-  'LOCK',
-  'TRANSLATIONS',
+/**
+ * Base table names found only in EUL4's inventory (`eul4del.sql`) and absent
+ * from EUL5's (`euldrop.sql`). These are the only genuine inventory
+ * difference between the two versions, and the only usable table-presence
+ * discriminator beyond the prefix itself.
+ */
+export const EUL4_ONLY_TABLES: readonly string[] = [
+  'NAMED_ELEMS',
+  'ODBC_CATALOGS',
+  'ODBC_SCHEMAS',
 ];
 
-/** Base table names that exist only in EUL3/EUL4 (absorbed into EUL5's security model). */
-export const PRE_EUL5_ONLY_TABLES: readonly string[] = ['USERS', 'ROLES'];
+/**
+ * The table that stamps the EUL's own version. Read `VER_RELEASE` from it.
+ * There is no `<prefix>EUL` table in any release.
+ */
+export const VERSION_TABLE = 'VERSIONS';
 
-/** Role-based grant tables — always in EUL5, only sometimes present in EUL4. */
-export const ROLE_GRANT_TABLES: readonly string[] = [
-  'BA_ROLES',
-  'OBJ_ROLES',
-  'APP_ROLES',
-];
+/** Business-area marker table — the presence test that identifies an EUL. */
+export const BUSINESS_AREA_TABLE = 'BAS';
 
 // ---------------------------------------------------------------------------
 // Version info (detector output)
@@ -98,7 +119,12 @@ export interface EulVersionInfo {
 // Column mappings (adapter output)
 // ---------------------------------------------------------------------------
 
-export type ColumnType = 'string' | 'number' | 'date' | 'boolean' | 'clob';
+/**
+ * `raw` is the workbook body (`DOCUMENTS.DOC_DOCUMENT`, a `LONG RAW`): it is
+ * carried through as a Buffer with no coercion, because it is a proprietary
+ * binary container rather than text — see `workbook-parser.ts`.
+ */
+export type ColumnType = 'string' | 'number' | 'date' | 'boolean' | 'clob' | 'raw';
 
 export interface ColumnMapping {
   /** Actual column name in the source DB (uppercase). */
@@ -124,59 +150,67 @@ export interface ColumnMapping {
 // ---------------------------------------------------------------------------
 
 export interface EulFeatureFlags {
-  multiLanguage: boolean;
-  derivedFolders: boolean;
+  /** Summary folders (`SUMMARY_OBJS`) — present in EUL4 and EUL5 alike. */
   summaryFolders: boolean;
   /**
-   * All three versions ship a HIER_LEVELS table; EUL5 additionally encodes
-   * levels via EUL5_EXPRESSIONS.IT_EXP_ID (used as a fallback when the
-   * levels table is empty — see EUL_VERSION_REFERENCE.md §3.6).
+   * Hierarchies are a parent/child node tree (`HI_NODES` + `HI_SEGMENTS`) in
+   * every version — there is no table of numbered levels. Kept as a flag so
+   * callers can branch if a future source ever differs.
    */
-  separateHierarchyLevelsTable: boolean;
-  securityManagerInExpressions: boolean;
-  roleBasedGrants: boolean;
+  hierarchyNodeTree: boolean;
+  /**
+   * Grants are rows in `ACCESS_PRIVS` keyed to `EUL_USERS.EU_ID`. A grantee
+   * may be a database role rather than a user; `EU_ROLE_FLAG` says which.
+   */
+  roleAwareGrantees: boolean;
 }
 
 export const VERSION_FEATURES: Record<EulVersion, EulFeatureFlags> = {
-  EUL3: {
-    multiLanguage: false,
-    derivedFolders: false,
-    summaryFolders: false,
-    separateHierarchyLevelsTable: true,
-    securityManagerInExpressions: false,
-    roleBasedGrants: false,
-  },
-  EUL4: {
-    multiLanguage: false,
-    derivedFolders: false,
-    summaryFolders: false,
-    separateHierarchyLevelsTable: true,
-    securityManagerInExpressions: false,
-    roleBasedGrants: false, // upgraded to true when *_BA_ROLES is actually detected
-  },
-  EUL5: {
-    multiLanguage: true,
-    derivedFolders: true,
-    summaryFolders: true,
-    separateHierarchyLevelsTable: true,
-    securityManagerInExpressions: true,
-    roleBasedGrants: true,
-  },
+  EUL3: { summaryFolders: false, hierarchyNodeTree: true, roleAwareGrantees: true },
+  EUL4: { summaryFolders: true, hierarchyNodeTree: true, roleAwareGrantees: true },
+  EUL5: { summaryFolders: true, hierarchyNodeTree: true, roleAwareGrantees: true },
 };
 
-/** EXP_TYPE values valid per version (AG and SM are EUL5-only). */
+/**
+ * `EXPRESSIONS.EXP_TYPE` values. Confirmed: `CO` is a database (base) item
+ * bound to a real column via `IT_EXT_COLUMN`; `CI` is a *created* item — a
+ * calculation, date-hierarchy item, or complex-folder item.
+ *
+ * Note the direction: `CO` is the plain column-backed item. Reading only `CI`
+ * yields calculations and skips every real column, which is exactly the bug
+ * the pre-rewrite code shipped.
+ */
+export const EXP_TYPE_DATABASE_ITEM = 'CO';
+export const EXP_TYPE_CREATED_ITEM = 'CI';
+
 export const EXP_TYPES_BY_VERSION: Record<EulVersion, readonly string[]> = {
-  EUL3: ['CI', 'CU', 'CO', 'JI', 'HI', 'FU'],
-  EUL4: ['CI', 'CU', 'CO', 'JI', 'HI', 'FU'],
-  EUL5: ['CI', 'CU', 'CO', 'JI', 'HI', 'FU', 'AG', 'SM'],
+  EUL3: [EXP_TYPE_DATABASE_ITEM, EXP_TYPE_CREATED_ITEM],
+  EUL4: [EXP_TYPE_DATABASE_ITEM, EXP_TYPE_CREATED_ITEM],
+  EUL5: [EXP_TYPE_DATABASE_ITEM, EXP_TYPE_CREATED_ITEM],
 };
 
-/** Folder (OBJ_TYPE) values valid per version. */
+/**
+ * `OBJS.OBJ_TYPE` values: `SOBJ` = simple folder (over a base table/view,
+ * named by `SOBJ_EXT_TABLE`), `COBJ` = complex folder (a join of others).
+ * Confirmed by `Lineage.sql`: `where obj_id = COBJ_ID and obj_type = 'SOBJ'`.
+ */
+export const FOLDER_TYPE_SIMPLE = 'SOBJ';
+export const FOLDER_TYPE_COMPLEX = 'COBJ';
+
 export const FOLDER_TYPES_BY_VERSION: Record<EulVersion, readonly string[]> = {
-  EUL3: ['TABLE', 'VIEW', 'COMPLEX', 'JOIN'],
-  EUL4: ['TABLE', 'VIEW', 'COMPLEX', 'JOIN'],
-  EUL5: ['TABLE', 'VIEW', 'COMPLEX', 'JOIN', 'DERIVED', 'SUMMARY'],
+  EUL3: [FOLDER_TYPE_SIMPLE, FOLDER_TYPE_COMPLEX],
+  EUL4: [FOLDER_TYPE_SIMPLE, FOLDER_TYPE_COMPLEX],
+  EUL5: [FOLDER_TYPE_SIMPLE, FOLDER_TYPE_COMPLEX],
 };
+
+/**
+ * What `FOLDER_TYPES_BY_VERSION` becomes after `normalizeFolderType()`.
+ *
+ * The read layer normalizes the raw SOBJ/COBJ codes into this vocabulary, so
+ * anything inspecting a `Folder.folderType` must compare against THESE values
+ * — comparing against the raw codes would flag every folder as anomalous.
+ */
+export const NORMALIZED_FOLDER_TYPES: readonly string[] = ['TABLE', 'COMPLEX'];
 
 // ---------------------------------------------------------------------------
 // Schema adapter interface
@@ -185,43 +219,49 @@ export const FOLDER_TYPES_BY_VERSION: Record<EulVersion, readonly string[]> = {
 export interface EulSchemaAdapter {
   version: EulVersionInfo;
 
-  /** e.g. 'BA' → 'EUL5_BA' / 'EUL4_BA' / 'EUL_BA'. */
+  /** e.g. 'BAS' → 'EUL5_BAS' / 'EUL4_BAS' / 'EUL_BAS'. */
   getTableName(baseName: string): string;
-  /** Owner-qualified name for use in SQL, e.g. 'EUL5_US.EUL5_BA'. */
+  /** Owner-qualified name for use in SQL, e.g. 'EUL5_US.EUL5_BAS'. */
   getQualifiedTableName(baseName: string): string;
   /** Whether the given base table was actually found in the source DB. */
   hasTable(baseName: string): boolean;
 
   getBusinessAreaColumns(): ColumnMapping[];
+  /** `BA_OBJ_LINKS` — the folder↔business-area link table. */
+  getBusinessAreaLinkColumns(): ColumnMapping[];
   getFolderColumns(): ColumnMapping[];
   getExpressionColumns(): ColumnMapping[];
+  /** `KEY_CONS` — folder-to-folder joins. */
   getJoinColumns(): ColumnMapping[];
-  getJoinComponentColumns(): ColumnMapping[];
   getHierarchyColumns(): ColumnMapping[];
-  getHierarchyLevelColumns(): ColumnMapping[];
+  /** `HI_NODES` — hierarchy nodes. */
+  getHierarchyNodeColumns(): ColumnMapping[];
+  /** `HI_SEGMENTS` — the parent/child edges between nodes. */
+  getHierarchySegmentColumns(): ColumnMapping[];
   getDocumentColumns(): ColumnMapping[];
   getFunctionColumns(): ColumnMapping[];
   getUserColumns(): ColumnMapping[];
   getGrantColumns(): ColumnMapping[];
 
-  supportsMultiLanguage(): boolean;
-  supportsDerivedFolders(): boolean;
   supportsSummaryFolders(): boolean;
-  hasSeparateHierarchyLevelsTable(): boolean;
-  hasSecurityManagerInExpressions(): boolean;
-  hasRoleBasedGrants(): boolean;
+  hasHierarchyNodeTree(): boolean;
+  hasRoleAwareGrantees(): boolean;
 }
 
 // ---------------------------------------------------------------------------
 // Normalized entities (version-independent read-function output)
 // ---------------------------------------------------------------------------
 
+/**
+ * `BAS`. Note there is no BA_LANGUAGE or BA_DEVELOPER_KEY column in any
+ * confirmed source — both were inherited from the fabricated reference and
+ * have been removed rather than defaulted, so nothing downstream can branch
+ * on metadata the EUL never had.
+ */
 export interface BusinessArea {
   sourceId: number;
   name: string;
   description: string | null;
-  language: string;
-  developerKey: string | null;
   createdBy: string | null;
   createdAt: Date | null;
   updatedBy: string | null;
@@ -230,7 +270,17 @@ export interface BusinessArea {
 
 export interface Folder {
   sourceId: number;
+  /**
+   * The business area this folder migrates into. In the EUL the relationship
+   * is MANY-TO-MANY (`BA_OBJ_LINKS`) — sharing one folder across several
+   * business areas is normal Discoverer practice — but Neo's `folders` table
+   * has a single non-null `business_area_id`. This holds the first link;
+   * `sharedBusinessAreaIds` holds every link so the loss is reportable
+   * instead of silent.
+   */
   businessAreaId: number | null;
+  /** Every `BA_OBJ_LINKS` business area for this folder, in read order. */
+  sharedBusinessAreaIds: number[];
   name: string;
   description: string | null;
   folderType: string;
@@ -263,9 +313,18 @@ export interface Item {
   updatedAt: Date | null;
 }
 
+/**
+ * A join in the EUL binds two FOLDERS, not two items: `KEY_CONS.KEY_OBJ_ID`
+ * is the local folder and `FK_OBJ_ID_REMOTE` the remote one. This matches
+ * Neo's `joins` table, whose folder ids are NOT NULL and item ids nullable.
+ *
+ * `masterItemId`/`detailItemId` are the optional item-level key columns. The
+ * `KEY_CONS` column names carrying them are NOT yet confirmed against a live
+ * EUL (see EUL_SCHEMA_GROUND_TRUTH.md §3.4), so they stay null until they are.
+ */
 export interface JoinComponent {
-  masterItemId: number;
-  detailItemId: number;
+  masterItemId: number | null;
+  detailItemId: number | null;
   operator: string;
 }
 
@@ -273,6 +332,10 @@ export interface Join {
   sourceId: number;
   name: string;
   description: string | null;
+  /** Local/detail folder — `KEY_CONS.KEY_OBJ_ID`. */
+  masterFolderId: number | null;
+  /** Remote/master folder — `KEY_CONS.FK_OBJ_ID_REMOTE`. */
+  detailFolderId: number | null;
   /** Normalized: INNER | LEFT | RIGHT | FULL (EUL4's OUTER maps to LEFT). */
   joinType: string;
   components: JoinComponent[];
@@ -280,12 +343,22 @@ export interface Join {
   createdAt: Date | null;
 }
 
-export interface HierarchyLevel {
+/**
+ * One node of a hierarchy's drill path — a row of `HI_NODES`. Structure is
+ * the parent/child edge list in `HI_SEGMENTS`, so `depth` is DERIVED by
+ * walking that tree from the root (the node with no parent segment), not read
+ * from any column. There is no `HIER_LEVELS` table and no level-number column
+ * in any Discoverer release.
+ */
+export interface HierarchyNode {
   sourceId: number;
   hierarchyId: number | null;
   itemId: number | null;
   name: string;
-  levelNumber: number | null;
+  /** `HI_SEGMENTS.IHS_HN_ID_PARENT`; null at the root. */
+  parentNodeId: number | null;
+  /** Derived by tree walk: root = 1. Null when the node is unreachable. */
+  depth: number | null;
 }
 
 export interface Hierarchy {
@@ -293,7 +366,8 @@ export interface Hierarchy {
   businessAreaId: number | null;
   name: string;
   description: string | null;
-  levels: HierarchyLevel[];
+  /** Ordered root-first by derived depth. */
+  nodes: HierarchyNode[];
   createdBy: string | null;
   createdAt: Date | null;
   updatedBy: string | null;
@@ -310,8 +384,25 @@ export interface Workbook {
   sourceId: number;
   name: string;
   description: string | null;
-  /** Proprietary Discoverer workbook XML (from the LONG DOC_CONTENT column). */
-  content: string | null;
+  /**
+   * `DOC_CONTENT_TYPE` — e.g. `application/vnd.oracle-disco.wb` for a 4.x
+   * workbook.
+   */
+  contentType: string | null;
+  /**
+   * The workbook body, read from `DOC_DOCUMENT` (a `LONG RAW` on EUL4).
+   *
+   * A Buffer for the Discoverer binary container, a string when a source
+   * stores the body as XML, null when the carrying column is absent or empty.
+   * `workbook-parser.ts` turns it into worksheets, columns, conditions,
+   * parameters and calculations.
+   */
+  content: Buffer | string | null;
+  /** `DOC_LENGTH` — the body's byte length as the EUL records it. */
+  contentLength: number | null;
+  /** `DOC_BATCH` — non-zero for a workbook scheduled as a batch report. */
+  isBatch: boolean;
+  /** `DOC_EU_ID` → `EUL_USERS.EU_ID`, resolved to a name when possible. */
   owner: string | null;
   developerKey: string | null;
   createdBy: string | null;
@@ -320,21 +411,51 @@ export interface Workbook {
   updatedAt: Date | null;
 }
 
-export interface EulUser {
-  /** Oracle DB username or role name. */
-  username: string;
-  /** Where the user was discovered (currently always ELEM_ACCESS grants). */
-  source: 'ELEM_ACCESS';
+/**
+ * `ELEM_XREFS` — the relational index of which items a workbook uses.
+ * `EX_FROM_ID` is the referencing element (e.g. a `DOC_ID`) and `EX_TO_ID` the
+ * referenced one (e.g. an `EXP_ID`).
+ */
+export interface WorkbookItemRef {
+  fromId: number;
+  toId: number;
+  toParentName: string | null;
 }
 
+export interface EulUser {
+  /** `EUL_USERS.EU_ID` — grants reference this, not the name. */
+  sourceId: number;
+  /** Oracle DB username or role name (`EU_USERNAME`). */
+  username: string;
+  /** `EU_ROLE_FLAG` — true when the grantee is a database role, not a user. */
+  isRole: boolean;
+  source: 'EUL_USERS';
+}
+
+/**
+ * A row of `ACCESS_PRIVS`, resolved to a grantee name through `EUL_USERS`.
+ *
+ * `GP_APP_ID` is a numeric privilege code (values such as 1006 and 1015 appear
+ * in Oracle's own `batchusr.sql`); the full code table is not documented in
+ * any source available offline, so it is carried through verbatim as
+ * `privCode` and mapped conservatively.
+ *
+ * `businessAreaId`/`folderId` come from optional `ACCESS_PRIVS` columns whose
+ * names are NOT confirmed offline — the reader probes for them and leaves both
+ * null when absent, rather than guessing a column name into the SQL.
+ */
 export interface Grant {
   sourceId: number;
   businessAreaId: number | null;
   folderId: number | null;
+  /** `GD_DOC_ID` — set when the grant is on a workbook. */
+  documentId: number | null;
   grantee: string;
+  granteeIsRole: boolean;
+  privCode: number | null;
   privType: string | null;
-  /** Derived: BUSINESS_AREA when BA_ID is set, else FOLDER. */
-  level: 'BUSINESS_AREA' | 'FOLDER';
+  /** Derived from whichever target id is populated. */
+  level: 'BUSINESS_AREA' | 'FOLDER' | 'DOCUMENT' | 'EUL';
   createdBy: string | null;
   createdAt: Date | null;
 }

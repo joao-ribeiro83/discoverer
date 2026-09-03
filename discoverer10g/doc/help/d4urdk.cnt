@@ -1,0 +1,251 @@
+:Base d4urdk.hlp>main
+:Title Oracle Discoverer Plus Online Hjælp
+1 Introduktion til Oracle Discoverer
+2 Om forespørgsler og projektmapper=CON_ABOUT_QUERIES>main
+2 Om tabeller og krydstabuleringer=CON_ABOUT_TANDC>main
+2 Om totaler=CON_ABOUT_TOTALS>main
+2 Om procentdele=CON_ABOUT_PERCENTAGES>main
+2 Om planlagte projektmapper=CON_ABOUT_SCHEDULED>main
+2 Brug af Oracle Discoverer
+3 Brug af Oracle Discoverer=CON_LEARN_OD>main
+1 Trinvise fremgangsmåder
+2 Start og stop af Oracle Discoverer
+3 Sådan starter du Oracle Discoverer=To_start_Oracle_Discoverer>main
+3 Sådan konfigureres dialogboksen Opret forbindelse for Oracle Applications-brugere=HIDD_OPTIONS_CONNECTION>main
+3 Sådan opretter du forbindelse til en database=To_connect_to_a_database>main
+3 Sådan afslutter du Oracle Discoverer=To_exit_Oracle_Discoverer>main
+2 Arbejdet med projektmapper
+3 Sådan opretter du en ny projektmappe=To_create_a_new_workbook>main
+3 Sådan åbner du en gemt projektmappe=To_open_a_saved_workbook>main
+3 Sådan gemmer du en projektmappe=To_save_a_workbook>main
+3 Sådan lukker du en projektmappe=To_close_a_workbook>main
+3 Sådan sletter du en projektmappe fra databasen=To_delete_a_workbook_from_the_database>main
+3 Sådan føjer du et nyt ark til en projektmappe=To_add_a_new_sheet_to_a_workbook>main
+3 Sådan redigerer du et ark=To_edit_a_sheet>main
+3 Sådan duplikerer du et ark som en tabel=To_duplicate_a_sheet_as_a_table>main
+3 Sådan duplikerer du et ark som en krydstabulering=To_duplicate_a_sheet_as_a_crosstab>main
+3 Sådan navngiver du et ark=To_name_a_sheet>main
+3 Sådan redigerer du navnet på et ark=To_edit_the_name_of_a_sheet>main
+3 Sådan sletter du et ark fra en projektmappe=To_delete_a_sheet_from_a_workbook>main
+3 Sådan deler du en projektmappe med andre brugere=To_share_a_workbook_with_other_users>main
+3 Sådan viser du SQL-koden for det aktuelle ark=To_view_the_SQL_code_for_the_current_sheet>main
+3 Sådan viser du egenskaberne for et markeret element=To_view_the_properties_of_a_selected_item>main
+3 Sådan viser du egenskaberne for den aktuelle projektmappe=To_view_the_properties_of_the_current_workbook>main
+3 Sådan opretter du et diagram for det aktuelle ark=To_show_data_in_a_sheet_as_a_graph>main
+3 Sådan får du vist et diagram=To_Hide_or_Show_a_Graph>main
+3 Sådan skjuler du et diagram=To_Hide_or_Show_a_Graph>main
+2 Tilføje og fjerne data
+3 Sådan føjer du et element til et ark=To_add_an_item_to_a_sheet>main
+3 Sådan sletter du et element i et ark=To_delete_an_item_from_a_sheet>main
+3 Sådan ændrer du de viste værdier for et element=To_change_displayed_values_for_an_item>main
+3 Bore
+4 Sådan borer du op=To_drill_up>main
+4 Sådan borer du ned=To_drill_down>main
+4 Sådan borer du til et relateret element i et andet ark=To_drill_to_a_related_item_in_another_sheet>main
+4 Sådan borer du til relaterede oplysninger i et andet program=To_drill_to_related_information_in_another_application>main
+4 Sådan formindsker du et element=To_collapse_an_item>main
+3 Bruge betingelser til at forbedre en forespørgsel
+4 Sådan definerer du en betingelse=To_define_a_condition>main
+4 Sådan redigerer du en betingelse=To_apply_a_condition>main
+4 Sådan tilføjer du en beregning til en eksisterende betingelse=To_add_a_calculation_to_an_existing_condition>main
+4 Sådan opretter du en betingelse, der omfatter en beregning=To_create_a_condition_that_includes_a_calculation>main
+4 Sådan sletter du en betingelse=To_delete_a_condition>main
+3 Brug af beregninger
+4 Sådan opretter du en beregning=To_create_a_calculation>main
+4 Sådan redigerer du en beregning=To_edit_a_calculation>main
+3 Brug af totaler til opsummering af forespørgselsresultater
+4 Sådan opretter du en total=To_create_a_total>main
+4 Sådan redigerer du en total=To_edit_a_total>main
+2 Behandling af data og overskrifter
+3 Sådan flytter du et element fra én akse til en anden=To_move_an_item_from_one_axis_to_another>main
+3 Sådan opretter du et sideelement=To_create_a_page_item>main
+3 Sådan viser du grafiklinjer i celler=To_show_graphic_bars_in_cells>main
+3 Sortering af data
+4 Sådan sorterer du en tabel=To_sort_a_table>main
+4 Sådan sorterer du en krydstabulering=To_sort_a_crosstab>main
+2 Angivelse af, hvordan Oracle Discoverer udfører forespørgsler
+3 Sådan kører du forespørgsler gradvist=To_run_queries_incrementally>main
+3 Sådan tilsidesætter du en gradvis indstilling og returnerer alle rækker i en forespørgsel=To_override_an_incremental_setting_and_return_all_rows_in_a_query>main
+3 Sådan angiver du det maksimale antal rækker, der returneres i en forespørgsel=To_specify_the_maximum_number_of_rows_returned_in_a_query>main
+3 Sådan angiver du præferencer for databasecachen=To_set_preferences_for_the_database_cache>main
+3 Sådan angiver du præferencer for ark i krydstabuleringslayout=To_set_preferences_for_crosstab_layout_sheets>main
+3 Sådan angiver du præferencer for ark i tabellayout=To_set_preferences_for_table_layout_sheets>main
+2 Formatering
+3 Sådan formaterer du data i et ark=To_format_data_in_a_sheet>main
+3 Sådan formaterer du overskrifter i et ark=To_format_headings_in_a_sheet>main
+3 Sådan formaterer du tal=To_format_numbers>main
+3 Sådan formaterer du titlen på et ark=To_format_the_title_of_a_sheet>main
+3 Sådan ændrer du kolonnebredden=To_change_a_column_width>main
+3 Sådan føjer du en titel til et ark=To_add_a_title_to_a_sheet>main
+3 Sådan redigerer du titlen på et ark=To_edit_the_title_of_a_sheet>main
+3 Sådan føjer du en baggrund til et ark=To_add_a_background_to_a_sheet>main
+3 Sådan fjerner du en baggrund fra et ark=To_remove_a_background_from_a_sheet>main
+3 Brug af undtagelser til fremhævelse af data
+4 Sådan opretter du en undtagelse=To_create_an_exception>main
+4 Sådan redigerer du en undtagelse=To_edit_an_exception>main
+4 Sådan sletter du en undtagelse=To_delete_an_exception>main
+3 Visning af data som et diagram
+4 Sådan viser du data i et ark som et diagram=To_show_data_in_a_sheet_as_a_graph>main
+4 Sådan ændrer du diagramtypen=To_change_the_style_of_a_graph>main
+4 Sådan behandler du den tredimensionelle visning af et diagram=To_manipulate_the_three_dimensional_view_of_a_graph>main
+4 Sådan føjer du titler til et diagram=To_add_titles_to_a_graph>main
+4 Sådan redigerer du titler i et diagram=To_edit_titles_in_a_graph>main
+4 Sådan sletter du titler i et diagram=To_delete_titles_from_a_graph>main
+4 Sådan eksporterer du et diagram til et andet program=To_export_a_graph_to_another_application>main
+2 Udskrivning
+3 Sådan udskriver du en projektmappe=To_print_a_workbook>main
+3 Sådan udskriver du et ark=To_print_a_sheet>main
+3 Sådan udskriver du etiketter til akse=To_print_axis_labels>main
+3 Sådan tilføjer du sideskift=To_add_page_breaks>main
+3 Sådan angiver du sidernes udskrivningsrækkefølge=To_set_the_printing_order_of_pages>main
+3 Sådan indstiller du sidelayoutet=To_set_up_the_page_layout>main
+3 Sådan viser du udskriften=To_preview_the_printout>main
+3 Tilføjelse af toptekster og bundtekster
+4 Sådan tilføjer du en bundtekst=To_add_a_footer>main
+4 Sådan opretter du en brugerdefineret bundtekst=To_create_a_custom_footer>main
+4 Sådan tilføjer du en toptekst=To_add_a_header>main
+4 Sådan opretter du en brugerdefineret toptekst=To_create_a_custom_header>main
+2 Brug af Oracle Discoverer sammen med andre applikationer
+3 Sådan eksporterer du data og gemmer dem i et andet filformat=To_export_data_and_save_it_in_another_file_format>main
+3 Sådan integrerer du en forespørgsel i en fil i et andet program=To_embed_a_query_in_a_file_in_another_application>main
+1 Glossar
+2 Glossar=DCM_GLOSSARY>gloss
+1 Brugergrænseflade
+2 Guider, dialogbokse og informationsbokse
+3 Siden Justering=HIDD_FORMAT_ALIGN>main
+3 Siden Baggrundsfarve=HIDD_FORMAT_COLOR>main
+3 Siden Cache=HIDD_OPTIONS_CACHE>main
+3 Dialogboksen Beregninger=HIDD_DCMCALCULATIONS>main
+3 Dialogboksen Beregning: Addere=HIDD_CALC_ADD>main
+3 Dialogboksen Beregning: Dividere=HIDD_CALC_DIV>main
+3 Dialogboksen Beregning: Multiplicere=HIDD_CALC_MULT>main
+3 Dialogboksen Beregning: Procentdel=HIDD_CALC_PERCENT>main
+3 Dialogboksen Beregning: Subtrahere=HIDD_CALC_SUB>main
+3 Dialogboksen Betingelser=HIDD_DCMCONDITIONS>main
+3 Dialogboksen Tilslut til Oracle Discoverer=HIDD_CONNECT>main
+3 Siden Krydstabulering=HIDD_OPTIONS_MATRIX>main
+3 Dialogboksen Slet projektmappe fra database=HIDD_DELETE_DB>main
+3 Dialogboksen Bor=HIDD_DRILL_WIZARD>main
+3 Dialogboksen Boreindstillinger=HIDD_DRILL_OPTIONS>main
+3 Dialogboksen Redigér beregning=HIDD_CALC_EDIT>main
+3 Dialogboksen Redigér parameter=HIDD_PARAM_EDIT>main
+3 Undtagelse=HIDD_FORMAT_EXCEPTION_NEW>main
+3 Dialogboksen Undtagelser=HIDD_EXCEPTION>main
+3 Dialogboksen Eksportér=HIDD_EXPORT_NAME>main
+3 Dialogboksen Filegenskaber=HIDD_FILEPROP>main
+3 Siden Skrifttype=HIDD_FORMAT_FONT>main
+3 Dialogboksen Formatér layout=HIDD_WIZARD_LAYOUT>main
+3 Siden Formater=HIDD_OPTIONS_FORMAT>main
+3 Siden Toptekst/bundtekst=HIDD_SETUP_HEADER>main
+3 Oplysningsboksen Elementudklipsholder=HIDD_DCMCLIPBOARD>main
+3 Dialogboksen Elementegenskaber=HIDD_ITEMPROP>main
+3 Dialogboksen Layout=HIDD_WIZARD_START>main
+3 Siden Margen=HIDD_SETUP_MARGIN>main
+3 Dialogboksen Ny parameter=HIDD_PARAM_NEW>main
+3 Dialogboksen Åbn projektmappe=HIDD_OPEN>main
+3 Dialogboksen Åbn projektmappe fra database=HIDD_OPEN_DB>main
+3 Oversigt over dialogboksen Indstillinger=HIDD_WIZARD_OPTIONS>main
+3 Oversigt over dialogboksen Sideopsætning=HIDD_WIZARD_PREVIEW>main
+3 Dialogboksen Parametre=HIDD_PARAMETERS>main
+3 Guiden Parameter=HIDD_PARAMETERS_RUNTIME>main
+3 Dialogboksen Gem projektmappe=HIDD_SAVE>main
+3 Dialogboksen Gem projektmappe i database=HIDD_SAVE_DB>main
+3 Siden Ark=HIDD_SETUP_SHEET>main
+3 Dialogboksen Sortér krydstabulering=HIDD_SORT_CROSSTAB>main
+3 Dialogboksen Sortér tabel=HIDD_SORT_TABLE>main
+3 Dialogboksen SQL-fremviser=HIDD_DCMSQL>main
+3 Siden Tabel=HIDD_OPTIONS_TABLE>main
+3 Siden Tekst/tal=HIDD_FORMAT_MASK>main
+3 Dialogboksen Titel, fanen Bitmap=HIDD_TITLE_BMP>main
+3 Dialogboksen Titel, fanen Tekst=HIDD_TITLE_TEXT>main
+3 Dialogboksen Totaler=HIDD_SUMMARIES>main
+3 Dialogboksen Total (til krydstabuleringer)=HIDD_TOTAL_EDIT_CROSSTAB>main
+3 Dialogboksen Total (til tabeller)=HIDD_TOTAL_EDIT_TABLE>main
+3 Siden Projektmappe > Bruger=HIDD_GRANT_USERTOBOOK>main
+3 Dialogboksen Værdier=HIDD_DCMLIST>main
+3 Dialogboksen Projektmappe i anden databasekonto=HIDD_CONNECT_IO>main
+3 Siden Projektmappe > Bruger=HIDD_GRANT_BOOKTOUSER>main
+1 Menuen Filer
+2 Kommandoen Ny=HID_FILE_NEW>main
+2 Kommandoen Åbn=HID_FILE_OPEN>main
+2 Kommandoen Luk=HID_FILE_CLOSE>main
+2 Kommandoen Gem=HID_FILE_SAVE>main
+2 Kommandoen Gem som=HID_FILE_SAVE_AS>main
+2 Kommandoen Planlæg=HID_FILE_SCHEDULE
+2 Kommandoen Sideopsætning=HID_FILE_PAGE_SETUP
+2 Kommandoen Vis udskrift=HID_FILE_PRINT_PREVIEW>main
+2 Kommandoen Udskriv=HID_FILE_PRINT>main
+2 Kommandoen Importér SQL=HID_FILE_IMPORT>main
+2 Kommandoen Eksportér=HID_FILE_EXPORT>main
+2 Kommandoen Styring af projektmapper=Manage_Workbooks_command>main
+2 Kommandoen Opret forbindelse til database =HID_FILE_CONNECT>main
+2 Kommandoen Afslut=HID_APP_EXIT>main
+1 Menuen Redigér
+2 Kommandoen Fortryd/annullér fortryd=HID_EDIT_UNDO>main
+2 Kommandoen Gentag=HID_EDIT_REPEAT>main
+2 Kommandoen Klip=HID_EDIT_CUT>main
+2 Kommandoen Kopiér=HID_EDIT_COPY>main
+2 Kommandoen Indsæt element=HID_EDIT_PASTE>main
+2 Kommandoen Slet element=HID_EDIT_DELETEITEM>main
+2 Kommandoen Markér alt=HID_EDIT_SELECTALL>main
+2 Kommandoen Søg=HID_TOOLS_FIND>main
+2 Kommandoen Elementegenskaber=HID_EDIT_ITEMPROPERTIES>main
+1 Menuen Vis
+2 Kommandoen Værktøjslinje=HID_VIEW_TOOLBAR>main
+2 Kommandoen Formateringslinje=HID_TOOLBAR_FORMAT>main
+2 Kommandoen Analysepanel=HID_TOOLBAR_ANALYSIS>main
+2 Kommandoen Statuslinje=HID_VIEW_STATUS_BAR>main
+2 Sideelementer=View_Page_Items
+2 Kommandoen Elementudklipsholder=HID_VIEW_CLIPBOARD>main
+2 Kommandoen SQL-fremviser=HID_VIEW_SQL>main
+1 Menuen Ark
+2 Kommandoen Nyt ark=HID_SHEET_NEW>main
+2 Kommandoen Redigér ark=HID_SHEET_MODIFY>main
+2 Kommandoen Duplikér som tabel=HID_DUPLICATE_TABLE>main
+2 Kommandoen Duplikér som krydstabulering=HID_DUPLICATE_CROSSTAB>main
+2 Kommandoen Omdøb ark=HID_SHEET_RENAME>main
+2 Kommandoen Slet ark=HID_SHEET_DELETE>main
+2 Kommandoen Redigér titel=HID_SHEET_TITLE>main
+2 Kommandoen Bor=HID_SHEET_DRILLDOWN>main
+2 Kommandoen Formindsk=HID_SHEET_ROLLUP>main
+2 Kommandoen Redigér parameterværdier=HID_SHEET_MODPARAMS>main
+2 Opdatér ark=HIDD_Sheet_Refresh
+2 Kommandoen Hent alle rækker=HID_SHEET_FETCHALL>main
+2 Kommandoen Tæl alle rækker=HID_SHEET_COUNTALL>main
+1 Menuen Format
+2 Kommandoen Data=HID_FORMAT_DATA>main
+2 Kommandoen Overskrifter=HID_FORMAT_HEADINGS>main
+2 Kommandoen Undtagelser =HID_FORMAT_EXCEPTIONS>main
+2 Kommandoen Kolonnebredde=HID_COLUMN_WIDTH>main
+2 Kommandoen Tilpas størrelse på kolonne automatisk=HID_COLUMN_AUTOFIT>main
+2 Kommandoen Arktitel=HID_FORMAT_SHEETTITLE>main
+2 Kommandoen Definér baggrund for ark=HID_FORMAT_SHEETBKGND>main
+2 Kommandoen Ryd baggrund=HID_FORMAT_SHEETCLEAR>main
+1 Menuen Værktøjer
+2 Kommandoen Betingelser=HID_TOOLS_CONDITIONS>main
+2 Kommandoen Sortér=HID_TOOLS_SORT>main
+2 Kommandoen Totaler=HID_TOOLS_TOTALS>main
+2 Procentdele, kommando=HIDD_PERCENTAGES
+2 Kommandoen Beregninger=HID_TOOLS_CALCULATIONS>main
+2 Kommandoen Parametre=HID_TOOLS_PARAMS>main
+2 Kommandoen Indstillinger=HID_TOOLS_OPTIONS>main
+1 Menuen Diagram
+2 Kommandoen Nyt diagram=New_Graph_command>main
+2 Kommandoen Vis=HID_MENU_VIEW_GRAPH>main
+2 Kommandoen Udskriv=Print_command_graph
+2 Kommandoen Kopiér til udklipsholderen=Copy_to_clipboard_command_graph>main
+2 Kommandoen Forklaring=Legend_command>main
+2 Kommandoen X-etiketter=X_Labels_command>main
+2 Kommandoen Statuslinje=Status_bar_command_graph>main
+2 Kommandoen Skala=HID_GRAPH_SCALE>main
+2 Kommandoen 3D-visning=HID_GRAPH_3D>main
+1 Menuen Vindue
+2 Kommandoen Arrangér ikoner=HID_WINDOW_ARRANGE>main
+2 Kommandoen Overlappet=HID_WINDOW_CASCADE>main
+2 Kommandoen Delt vandret=HID_WINDOW_TILE_HORZ>main
+2 Kommandoen Delt lodret=HID_WINDOW_TILE_VERT>main
+1 Menuen Hjælp
+2 Kommandoen Emner i Hjælp=HID_HELP_INDEX>main
+2 Kommandoen Brug af Hjælp=HID_HELP_USING>main
+2 Kommandoen Håndbøger=HID_HELP_MANUALS>main
+2 Kommandoen Om Discoverer=HID_APP_ABOUT>main

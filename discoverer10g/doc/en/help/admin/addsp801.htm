@@ -1,0 +1,513 @@
+
+<!DOCTYPE html public "-//w3c//dtd html 3.2 transitional//en.us">
+<HTML lang="en.us">
+<HEAD>
+
+<META NAME="Generator" CONTENT="Quadralay WebWorks Publisher 5.0.4">
+<META NAME="Page" CONTENT="DefaultSingle">
+<META NAME="Title" CONTENT="">
+<meta http-equiv="Content-Type" content="text/html;  charset=iso-8859-1">
+
+<Title>Reference topic </Title>
+	   
+<LINK REL="home" HREF="../../library.htm" TITLE="Library">
+<LINK REL="toc" HREF="toc.htm" TITLE="Contents">
+<LINK REL="index" HREF="bookix.htm" TITLE="Index">
+<LINK REL="copyright" HREF="./html/cpyr.htm" TITLE="Copyright">
+<LINK REL="up" HREF="toc.htm" TITLE="Up">
+<LINK REL="next" HREF="addspm01.htm" TITLE="Next">
+<LINK REL="previous" HREF="addspl01.htm" TITLE="Previous">
+
+
+</HEAD>
+       
+<BODY BGCOLOR="#ffffff">
+
+<A NAME="top"></A>
+
+
+
+
+<A HREF="#BEGIN">Skip Headers</A><BR><BR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+ 
+<TD ALIGN="LEFT" VALIGN="TOP"><FONT COLOR="#330099" FACE="Helvetica, Arial, sans-serif"><STRONG>Oracle Discoverer Administrator Administration Guide (Online Help)<BR>10<i>g</i> (9.0.4)</STRONG><BR>Part Number B10270-01</FONT></TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="144">
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+
+
+
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<HR>
+<P>
+<A HREF="addspl01.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+
+<A HREF="addspm01.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+    
+
+
+<A NAME="BEGIN"></A>
+
+
+
+<DIV CLASS="IND">
+<!-- End Header -->
+
+
+
+
+
+
+
+<A NAME="1005113"></A>
+<!--TOC=h1-"1005113"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Database Storage Properties dialog: Materialized Views tab</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005685"></A>
+<P CLASS="BP">
+Use this tab to view and set database storage properties that are specific to Oracle 8.1.7 (or later) Enterprise Edition databases.
+</P>
+<A NAME="1007376"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> Database storage properties do not apply to summary folders based on external summary tables.
+</P>
+<A NAME="1006001"></A>
+<P CLASS="BP">
+For more information, see:
+</P>
+<A NAME="1006942"></A>
+<P CLASS="BP">
+<A HREF="managing.htm#1009688">"Managing summary folders"</a>
+</P>
+<A NAME="1006977"></A>
+<P CLASS="BP">
+<A HREF="managing.htm#1004708">"What are materialized views?"</a>
+</P>
+<A NAME="1006985"></A>
+<P CLASS="BP">
+<A HREF="creating.htm#1007292">"Creating summary folders manually"</a>
+</P>
+<A NAME="1007001"></A>
+<P CLASS="BP">
+<A HREF="creating.htm#1004919">"How to edit database storage properties of summary combinations for a summary folder"</a>
+</P>
+<A NAME="1005687"></A>
+<P CLASS="BP">
+The following table lists the properties and their default values, where appropriate. When you select a property, the panel at the bottom of the dialog displays a description of the purpose of the property.
+</P>
+   
+<A NAME="1007464">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1007051"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG><STRONG CLASS="Bold">Property</STRONG></STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1007053"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Default Value</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1007055"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Range</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1007057"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Create/Edit</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1007059"></A>
+<P CLASS="TB">
+Parallel Inserts&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007061"></A>
+<P CLASS="TB">
+No&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007063"></A>
+<P CLASS="TB">
+Yes/No/Default&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007065"></A>
+<P CLASS="TB">
+yes&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1007067"></A>
+<P CLASS="TB">
+No. of Processes&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007069"></A>
+<P CLASS="TB">
+1&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007071"></A>
+<P CLASS="TB">
+&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007073"></A>
+<P CLASS="TB">
+yes, if Parallel Inserts set to yes&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1007075"></A>
+<P CLASS="TB">
+Logging&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007077"></A>
+<P CLASS="TB">
+Same as user's tablespace&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007079"></A>
+<P CLASS="TB">
+Yes/No&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007081"></A>
+<P CLASS="TB">
+yes&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1007083"></A>
+<P CLASS="TB">
+Cache&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007085"></A>
+<P CLASS="TB">
+No&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007087"></A>
+<P CLASS="TB">
+Yes/No&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007089"></A>
+<P CLASS="TB">
+yes, if Logging set to yes&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1007091"></A>
+<P CLASS="TB">
+Refresh Type&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007093"></A>
+<P CLASS="TB">
+Full&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007095"></A>
+<P CLASS="TB">
+Full/Incremental&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007097"></A>
+<P CLASS="TB">
+yes&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1007099"></A>
+<P CLASS="TB">
+Refresh&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007101"></A>
+<P CLASS="TB">
+On demand&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007103"></A>
+<P CLASS="TB">
+On demand/On commit&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007105"></A>
+<P CLASS="TB">
+&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1007107"></A>
+<P CLASS="TB">
+Last Refresh&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007109"></A>
+<P CLASS="TB">
+&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007111"></A>
+<P CLASS="TB">
+&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007113"></A>
+<P CLASS="TB">
+no&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1007115"></A>
+<P CLASS="TB">
+Incremental Load&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007117"></A>
+<P CLASS="TB">
+&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007119"></A>
+<P CLASS="TB">
+&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007121"></A>
+<P CLASS="TB">
+no&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1007123"></A>
+<P CLASS="TB">
+Stale&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007125"></A>
+<P CLASS="TB">
+&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007127"></A>
+<P CLASS="TB">
+&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007129"></A>
+<P CLASS="TB">
+no&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   
+<A NAME="1007298"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Parallel Inserts</FONT></H4>
+<A NAME="1007299"></A>
+<P CLASS="BP">
+Use this property to choose whether to use parallel inserts when refreshing summary folders.
+</P>
+
+<A NAME="1005700"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">No. of processes</FONT></H4>
+<A NAME="1007307"></A>
+<P CLASS="BP">
+Use this property (if Parallel Inserts is set to Yes) to set the number of parallel processes used when refreshing summary folders.
+</P>
+
+<A NAME="1007306"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Logging</FONT></H4>
+<A NAME="1007309"></A>
+<P CLASS="BP">
+Use this property to enable or disable database logging.
+</P>
+
+<A NAME="1007308"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Cache</FONT></H4>
+<A NAME="1007311"></A>
+<P CLASS="BP">
+Use this property to enable or disable database caching.
+</P>
+
+<A NAME="1007310"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Refresh Type </FONT></H4>
+<A NAME="1007150"></A>
+<P CLASS="BP">
+Use this property to specify whether the summary folder Refresh Type is Incremental or Full.
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005701"></A>Incremental
+<P>
+
+<A NAME="1005828"></A>
+<P CLASS="BP1">
+Only rows that have changed in the detail tables will be applied to the summary folder.
+</P>
+
+<A NAME="1006569"></A>
+<P CLASS="BP1">
+For more information on the conditions required for incremental refresh, see the <EM CLASS="Italic">Oracle9i Data Warehousing Guide</EM>.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005702"></A>Full
+<P>
+
+<A NAME="1005835"></A>
+<P CLASS="BP1">
+The summary folder is entirely rebuilt from the detail tables.
+</P>
+</UL>
+
+<A NAME="1005704"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Refresh Mode</FONT></H4>
+<A NAME="1007149"></A>
+<P CLASS="BP">
+Use this property to specify whether the summary folder Refresh Mode is On demand or On commit.
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005705"></A>On demand
+<P>
+
+<A NAME="1005847"></A>
+<P CLASS="BP1">
+Select this option to refresh manually or through scheduled refreshes.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005706"></A>On commit
+<P>
+
+<A NAME="1006103"></A>
+<P CLASS="BP1">
+Select this option to refresh every time the detail tables are updated. There is no need to schedule refreshes, and the scheduling option of the Summary Wizard is not enabled.
+</P>
+
+<A NAME="1006093"></A>
+<P CLASS="BP1">
+Restrictions apply as to when you can perform a refresh On commit. For more information, see the <EM CLASS="Italic">Oracle9i Data Warehousing Guide</EM>.
+</P>
+</UL>
+
+<A NAME="1005708"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Last Refresh</FONT></H4>
+<A NAME="1007343"></A>
+<P CLASS="BP">
+This read-only property indicates the date when the last summary folder was refreshed.
+</P>
+
+<A NAME="1007342"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Incremental Load</FONT></H4>
+<A NAME="1005865"></A>
+<P CLASS="BP">
+This read-only property indicates the types of inserts to the detail/fact table that can be incrementally refreshed.
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005709"></A>None 
+<P>
+
+<A NAME="1005880"></A>
+<P CLASS="BP1">
+The materialized view cannot be incrementally refreshed.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005710"></A>Direct Load
+<P>
+
+<A NAME="1005883"></A>
+<P CLASS="BP1">
+Only direct loads can be handled.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005711"></A>DML 
+<P>
+
+<A NAME="1005884"></A>
+<P CLASS="BP1">
+Only DML (data manipulation language) statements can be handled.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005712"></A>Direct Load and DML
+<P>
+
+<A NAME="1005887"></A>
+<P CLASS="BP1">
+Both direct loads and DML can be handled.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005713"></A>Direct Load and limited DML
+<P>
+
+<A NAME="1005891"></A>
+<P CLASS="BP1">
+Direct loads and a subset of DML will be handled (for more information, see the Oracle9i Database documentation)
+</P>
+</UL>
+
+<A NAME="1007332"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Stale</FONT></H4>
+<A NAME="1007339"></A>
+<P CLASS="BP">
+This read-only property indicates whether the detail tables have changed since the last summary folder refresh.
+</P>
+
+
+
+
+
+
+<!-- Start Footer -->
+</DIV>
+
+<DIV CLASS="OUTD">
+<HR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+<TD VALIGN="BOTTOM" WIDTH="33%">
+<TABLE CELLSPACING="0" CELLPADDING="0">
+<TR>
+<TD ALIGN="CENTER"><A HREF="addspl01.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+
+<TD ALIGN="CENTER"><A HREF="addspm01.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+    
+</TR>
+</TABLE>
+</TD>
+<TD ALIGN="CENTER" WIDTH="34%">
+<A HREF="./html/cpyr.htm"><IMG SRC="./gifs/oracle.gif" ALT="Oracle" BORDER="0"><BR>
+<FONT SIZE="-2">Copyright &copy 2003 Oracle Corporation.</FONT></A>
+<BR>
+<FONT SIZE="-2">All Rights Reserved.</FONT>
+</TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="33%"> 
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="144">
+<TR>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+  
+</DIV>
+
+</BODY>
+</HTML>
+

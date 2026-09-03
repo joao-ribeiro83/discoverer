@@ -11,15 +11,21 @@ import {
 
 const LOCALE_VALUES = ['en', 'pt-PT', 'fr-FR', 'es-ES'] as const;
 const THEME_VALUES = ['light', 'dark', 'high-contrast'] as const;
+const COLOR_PALETTE_VALUES = ['default', 'navy'] as const;
 
 const UpdateBodySchema = z
   .object({
     locale: z.enum(LOCALE_VALUES).optional(),
     theme: z.enum(THEME_VALUES).optional(),
+    colorPalette: z.enum(COLOR_PALETTE_VALUES).optional(),
   })
-  .refine((data) => data.locale !== undefined || data.theme !== undefined, {
-    message: 'At least one of "locale" or "theme" is required',
-  });
+  .refine(
+    (data) =>
+      data.locale !== undefined || data.theme !== undefined || data.colorPalette !== undefined,
+    {
+      message: 'At least one of "locale", "theme", or "colorPalette" is required',
+    },
+  );
 
 // ---------------------------------------------------------------------------
 // JSON schema shapes
@@ -30,6 +36,7 @@ const preferencesSchema = {
   properties: {
     locale: { type: 'string', enum: LOCALE_VALUES },
     theme: { type: 'string', enum: THEME_VALUES },
+    colorPalette: { type: 'string', enum: COLOR_PALETTE_VALUES },
   },
 } as const;
 
@@ -85,6 +92,7 @@ export default async function userPreferencesRoutes(
           properties: {
             locale: { type: 'string', enum: LOCALE_VALUES },
             theme: { type: 'string', enum: THEME_VALUES },
+            colorPalette: { type: 'string', enum: COLOR_PALETTE_VALUES },
           },
         },
         response: {

@@ -80,6 +80,10 @@ describe('POST /api/auth/login', () => {
       role: 'USER',
       locale: 'en',
       theme: 'light',
+      colorPalette: 'navy',
+      // Clients branch on this to force the change screen; an ordinary
+      // account is false. See docs/migration/user-credentials.md.
+      mustChangePassword: false,
     });
   });
 
@@ -148,6 +152,7 @@ describe('GET /api/auth/me', () => {
       role: 'USER',
       locale: 'en',
       theme: 'light',
+      colorPalette: 'navy',
     });
   });
 

@@ -18,7 +18,14 @@ import { useToast } from '@/hooks/use-toast'
 import { useMapExport } from '@/hooks/useMapExport'
 import { apiClient, getErrorKind, getErrorMessage } from '@/lib/api'
 import { ResultsTable } from '@/components/data-table/ResultsTable'
-import type { AsyncExecutionJob, AsyncJobStatus, ExecuteResult, ExecutionErrorKind } from '@/lib/types'
+import { CrosstabTable, crosstabAxes } from '@/components/data-table/CrosstabTable'
+import type {
+  AsyncExecutionJob,
+  AsyncJobStatus,
+  ExecuteResult,
+  ExecutionErrorKind,
+  MapType,
+} from '@/lib/types'
 
 const TERMINAL_JOB_STATUSES: AsyncJobStatus[] = [
   'COMPLETED',
@@ -53,6 +60,11 @@ export interface ExecutionPanelProps {
   /** Called whenever this panel obtains a new/updated result (load more, background run). */
   onResultChange: (result: ExecuteResult | null) => void
   onClose?: () => void
+  /**
+   * The map's view type. `CROSSTAB` pivots the result instead of listing it;
+   * everything else draws the worksheet grid.
+   */
+  mapType?: MapType
 }
 
 /**
@@ -70,6 +82,7 @@ export function ExecutionPanel({
   runError,
   onResultChange,
   onClose,
+  mapType,
 }: ExecutionPanelProps) {
   const { t } = useTranslation(['mapViewer', 'common'])
   const { toast } = useToast()
@@ -97,6 +110,11 @@ export function ExecutionPanel({
         executionTimeMs: page.executionTimeMs,
         truncated: page.truncated,
         sql: page.sql ?? result.sql,
+        // Breaks and totals describe the whole filtered set, not the page, so
+        // the newest run's copies apply to the appended rows too.
+        groupBreakAliases: page.groupBreakAliases ?? result.groupBreakAliases,
+        totals: page.totals ?? result.totals,
+        warnings: page.warnings ?? result.warnings,
       })
     },
     onError: (err) =>
@@ -163,6 +181,14 @@ export function ExecutionPanel({
 
   const errorKind = runError ? getErrorKind(runError) : undefined
   const errorText = runError ? getErrorMessage(runError) : null
+
+  // A crosstab needs a column edge, and Discoverer records none — so a
+  // migrated crosstab arrives with every axis column on the row edge and
+  // cannot be pivoted until someone assigns one. Rather than draw an empty
+  // pivot, fall back to the grid and say why.
+  const wantsCrosstab = mapType === 'CROSSTAB'
+  const canPivot = !!result && crosstabAxes(result.columns).canPivot
+  const showCrosstab = wantsCrosstab && canPivot
 
   return (
     <div className="flex h-full flex-col">
@@ -262,15 +288,55 @@ export function ExecutionPanel({
         </div>
       )}
 
+      {wantsCrosstab && result && !canPivot && (
+        <div
+          className="mx-4 mt-3 rounded-md border bg-muted/40 p-3 text-sm text-muted-foreground"
+          data-testid="crosstab-fallback-note"
+        >
+          {t('mapViewer:crosstab.noColumnEdge')}
+        </div>
+      )}
+
+      {/* Semantics the map defines that this run could not carry — a sort
+          dropped under SELECT DISTINCT, a total whose Discoverer aggregate did
+          not migrate. Advisory: the rows above them are valid. */}
+      {result?.warnings && result.warnings.length > 0 && (
+        <div className="mx-4 mt-3 rounded-md border border-warning/50 bg-warning/10 p-3 text-sm">
+          <p className="flex items-center gap-2 font-medium">
+            <AlertTriangle className="h-4 w-4 shrink-0 text-warning" />
+            {t('mapViewer:execution.worksheetWarningsTitle', {
+              count: result.warnings.length,
+            })}
+          </p>
+          <ul className="ml-6 mt-1 list-disc text-muted-foreground">
+            {result.warnings.map((warning) => (
+              <li key={warning}>{warning}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <div className="min-h-0 flex-1">
-        <ResultsTable
-          columns={result?.columns ?? []}
-          rows={result?.rows ?? []}
-          isLoading={isRunning}
-          emptyMessage={
-            result ? t('mapViewer:execution.noRows') : t('mapViewer:execution.runToSeeResults')
-          }
-        />
+        {showCrosstab ? (
+          <CrosstabTable
+            columns={result?.columns ?? []}
+            rows={result?.rows ?? []}
+            emptyMessage={
+              result ? t('mapViewer:execution.noRows') : t('mapViewer:execution.runToSeeResults')
+            }
+          />
+        ) : (
+          <ResultsTable
+            columns={result?.columns ?? []}
+            rows={result?.rows ?? []}
+            isLoading={isRunning}
+            emptyMessage={
+              result ? t('mapViewer:execution.noRows') : t('mapViewer:execution.runToSeeResults')
+            }
+            groupBreakAliases={result?.groupBreakAliases}
+            totals={result?.totals}
+          />
+        )}
       </div>
 
       {result?.truncated && (

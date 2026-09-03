@@ -1,0 +1,982 @@
+
+<!DOCTYPE html public "-//w3c//dtd html 3.2 transitional//en.us">
+<HTML lang="en.us">
+<HEAD>
+
+<META NAME="Generator" CONTENT="Quadralay WebWorks Publisher 5.0.4">
+<META NAME="Page" CONTENT="DefaultSingle">
+<META NAME="Title" CONTENT="Predicting query performance">
+<meta http-equiv="Content-Type" content="text/html;  charset=iso-8859-1">
+
+<TITLE>Predicting query performance</TITLE>
+	   
+<LINK REL="home" HREF="../../library.htm" TITLE="Library">
+<LINK REL="toc" HREF="toc.htm" TITLE="Contents">
+<LINK REL="index" HREF="bookix.htm" TITLE="Index">
+<LINK REL="copyright" HREF="./html/cpyr.htm" TITLE="Copyright">
+<LINK REL="up" HREF="toc.htm" TITLE="Up">
+<LINK REL="next" HREF="registry.htm" TITLE="Next">
+<LINK REL="previous" HREF="eul_stat.htm" TITLE="Previous">
+
+
+</HEAD>
+       
+<BODY BGCOLOR="#ffffff">
+
+<A NAME="top"></A>
+
+
+
+
+<A HREF="#BEGIN">Skip Headers</A><BR><BR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+ 
+<TD ALIGN="LEFT" VALIGN="TOP"><FONT COLOR="#330099" FACE="Helvetica, Arial, sans-serif"><STRONG>Oracle Discoverer Administrator Administration Guide (Online Help)<BR>10<i>g</i> (9.0.4)</STRONG><BR>Part Number B10270-01</FONT></TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="144">
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+
+
+
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<HR>
+<P>
+<A HREF="eul_stat.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+
+<A HREF="registry.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+    
+
+
+<A NAME="BEGIN"></A>
+
+
+
+<DIV CLASS="IND">
+<!-- End Header -->
+
+
+
+
+
+
+
+<A NAME="1656"></A>
+<!--TOC=Title-"1656"-->
+<H1 CLASS="Title"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099">19<BR>Predicting query performance</FONT></H1>
+
+<!--/TOC=Title-->
+
+<A NAME="1004703"></A>
+<!--TOC=h1-"1004703"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Predicting query performance</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005062"></A>
+<P CLASS="BP">
+This chapter explains how to use query prediction in Discoverer Administrator and contains the following topics:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005830"></A><A HREF="query_pr.htm#1004755">"About predicting query performance"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005831"></A><A HREF="query_pr.htm#1004759">"How does query prediction work in Discoverer Plus?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005815"></A><A HREF="query_pr.htm#1004942">"Why might query prediction not be available?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006116"></A><A HREF="query_pr.htm#1006096">"About improving the speed and accuracy of query prediction"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004720"></A><A HREF="query_pr.htm#1004795">"How to make the necessary database views available for query prediction"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004724"></A><A HREF="query_pr.htm#1005385">"How to verify and change the timed_statistics parameter for query prediction"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004728"></A><A HREF="query_pr.htm#1005437">"How to analyze data tables"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004732"></A><A HREF="query_pr.htm#1004837">"How to verify and change the optimizer_mode parameter for query prediction"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004736"></A><A HREF="query_pr.htm#1004858">"How to reduce long query prediction times"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004748"></A><A HREF="query_pr.htm#1004891">"How to use query prediction with secure views"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004752"></A><A HREF="query_pr.htm#1004905">"How to delete old query prediction statistics"</a>
+<P>
+</UL>
+
+<A NAME="1004755"></A>
+<!--TOC=h1-"1004755"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About predicting query performance</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004756"></A>
+<P CLASS="BP">
+Discoverer includes functionality to predict the time required to retrieve the information in a Discoverer query. The query prediction appears before the query begins, enabling Discoverer users to decide whether or not to run the query. This is a powerful facility that enables Discoverer users to control how long they wait for large reports. 
+</P>
+<A NAME="1004979"></A>
+<P CLASS="BP">
+Query Prediction uses the Cost-Based Optimizer (CBO) in the Oracle RDBMS. Therefore query prediction is not available when running against other databases.
+</P>
+
+<A NAME="1004759"></A>
+<!--TOC=h1-"1004759"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How does query prediction work in Discoverer Plus?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004943"></A>
+<P CLASS="BP">
+Discoverer end users can specify that they be informed when a query is predicted to take longer than a defined time. A dialog displays the query prediction details and the option to cancel the query.
+</P>
+   
+<BR><A NAME="1004946">
+
+
+<img src="qp.gif" ALT="Text description of qp.gif follows.">
+<A HREF="img_text/qp.htm"><br>Text description of the illustration qp.gif</A>
+
+
+</A>
+   <A NAME="1004950"></A>
+<P CLASS="BP">
+If the user chooses to cancel the query they can schedule the workbook for Discoverer to run the query later, for example, overnight so that the user can open the worksheet the next morning (for more information about scheduling workbooks in Discoverer Plus, see the <EM CLASS="Italic">Oracle Application Server Discoverer Plus User's Guide</EM>). For more information about enabling end users to schedule workbooks using Discoverer Administrator, see <A HREF="schedule.htm#1007803">Chapter&nbsp;7, "Scheduling workbooks"</a>.
+</P>
+
+<A NAME="1004942"></A>
+<!--TOC=h1-"1004942"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Why might query prediction not be available?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005167"></A>
+<P CLASS="BP">
+Discoverer end users might find that query prediction is not available when running a worksheet. To see possible reasons (in Discoverer Administrator), choose Help | Database Information to display the <A HREF="addinf01.htm#1005113">"Database Information dialog"</a>. Query prediction might not be available for any of the following reasons:
+</P>
+   
+<A NAME="1007209">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1005216"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG><STRONG CLASS="Bold">Reason</STRONG></STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1005218"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Solution</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1005220"></A>
+<P CLASS="TB">
+Connection to a database that does not support query prediction (e.g. Oracle 7.1.x)&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1005222"></A>
+<P CLASS="TB">
+Upgrade the database.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1005224"></A>
+<P CLASS="TB">
+Views required for query prediction are not available.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1005226"></A>
+<P CLASS="TB">
+Refer to <A HREF="query_pr.htm#1004795">"How to make the necessary database views available for query prediction"</a>&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1005228"></A>
+<P CLASS="TB">
+The timed-statistics parameter in init&lt;sid&gt;.ora is set to FALSE (the default value).&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1005230"></A>
+<P CLASS="TB">
+Refer to <A HREF="query_pr.htm#1005385">"How to verify and change the timed_statistics parameter for query prediction"</a>&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1005232"></A>
+<P CLASS="TB">
+Data tables have not been analyzed.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1005295"></A>
+<P CLASS="TB">
+Refer to <A HREF="query_pr.htm#1005437">"How to analyze data tables"</a>&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1005277"></A>
+<P CLASS="TB">
+The optimizer mode parameter in init&lt;sid&gt;.ora is set to RULE instead of CHOOSE&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1005305"></A>
+<P CLASS="TB">
+Refer to <A HREF="query_pr.htm#1004837">"How to verify and change the optimizer_mode parameter for query prediction"</a>&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   
+<A NAME="1006096"></A>
+<!--TOC=h1-"1006096"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About improving the speed and accuracy of query prediction</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1006097"></A>
+<P CLASS="BP">
+When users have confidence in the speed and accuracy of query prediction, they will be more likely to schedule long-running queries to run later. With accurate query prediction, the load placed on the server is typically reduced and query performance is improved for all users.
+</P>
+<A NAME="1006098"></A>
+<P CLASS="BP">
+To implement query prediction effectively:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006100"></A>Analyze the tables that users will query using the ANALYZE TABLE command. Use the Business Areas and Folders worksheet of the EUL Data Definition workbook to display when the folders in the EUL were analyzed. For information about how to analyze data tables, see <A HREF="query_pr.htm#1005437">"How to analyze data tables"</a>.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006104"></A>Grant your users access to the system view V$SQL (for more information, see <A HREF="query_pr.htm#1004891">"How to use query prediction with secure views"</a>)
+<P>
+</UL>
+
+<A NAME="1004795"></A>
+<!--TOC=h1-"1004795"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to make the necessary database views available for query prediction</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005332"></A>
+<P CLASS="BP">
+Various database views must have the SELECT privilege granted to the public user before query prediction is enabled in Discoverer. For more information, see the Oracle9<EM CLASS="Italic">i</EM> documentation. 
+</P>
+<A NAME="1007104"></A>
+<P CLASS="BP">
+To make the necessary views available for query prediction, for Oracle9<EM CLASS="Italic">i</EM> databases:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1007110"></A>Start SQL*Plus (if it is not already running) and connect as the SYS user, or a user to which the sysdba privilege has been granted.
+<P>
+
+<A NAME="1007111"></A>
+<P CLASS="BP1">
+For example, if SQL*Plus is already running, you might type the following at the command prompt:
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1007112"></A>SQL&gt; CONNECT sys/sys_pw@database AS SYSDBA;
+<A NAME="1007113"></A>
+</PRE>
+   
+<A NAME="1007114"></A>
+<P CLASS="BP1">
+Where sys is the SYS user and sys_pw is the SYS user password.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1007115"></A>Type the following at the command prompt: 
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1006552"></A>SQL&gt; CONNECT username/password@database AS SYSDBA;
+<A NAME="1006553"></A>
+</PRE>
+    
+
+<A NAME="1006567"></A>
+<P CLASS="BP1">
+The username must have sufficient privileges to complete the following grants.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1006589"></A>Grant SELECT access on the views necessary for query prediction by typing the following at the command prompt: 
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1006568"></A>SQL&gt; grant select on v_$session to public;
+<A NAME="1006569"></A>SQL&gt; grant select on v_$sesstat to public; 
+<A NAME="1006570"></A>SQL&gt; grant select on v_$parameter to public; 
+<A NAME="1006571"></A>
+</PRE>
+    
+
+<A NAME="1006572"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> To grant SELECT ON V_$PARAMETER you must be logged in as the SYS user. If you are unsure about the SYS user name and password, see your database administrator.
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1006556"></A>
+</PRE>
+   </OL>
+<A NAME="1006547"></A>
+<P CLASS="BP">
+To make the necessary views available for query prediction, for Oracle databases earlier than Oracle9<EM CLASS="Italic">i</EM>:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1004796"></A>From NT choose Start | Run.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1004797"></A>Type in one of the following:
+<P>
+ 
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005334"></A><CODE>SVRMGRL</CODE> (for Oracle 8.0)
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1006177"></A><CODE>SVRMGR</CODE> (for Oracle8<EM CLASS="Italic">i </EM>Personal Edition)
+<P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1006178"></A>When in the DBA facility, type <CODE>connect internal</CODE> 
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1006179"></A>Grant SELECT access on the views necessary for query prediction by typing the following at the command prompt: 
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1004803"></A>SQLDBA&gt; grant select on v_$session to public;
+<A NAME="1004804"></A>SQLDBA&gt; grant select on v_$sesstat to public; 
+<A NAME="1004805"></A>SQLDBA&gt; grant select on v_$parameter to public; 
+<A NAME="1006462"></A>
+</PRE>
+    
+
+<A NAME="1006459"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> To grant SELECT ON V_$PARAMETER you must be logged in as the SYS user. If you are unsure about the SYS user name and password, see your database administrator.
+</P>
+</OL>
+
+<A NAME="1005385"></A>
+<!--TOC=h1-"1005385"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to verify and change the timed_statistics parameter for query prediction</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005387"></A>
+<P CLASS="BP">
+The timed_statistics parameter found in the database view v_$parameter must be set to TRUE to enable query prediction in Discoverer.
+</P>
+<A NAME="1006042"></A>
+<P CLASS="BP">
+To verify that timed_statistics is set to TRUE:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1007123"></A>Start SQL*Plus (if it is not already running) and connect as the database administrator.
+<P>
+
+<A NAME="1007124"></A>
+<P CLASS="BP1">
+For example, if SQL*Plus is already running, you might type the following at the command prompt:
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1007125"></A>SQL&gt; CONNECT dba_user/dba_pw@database;
+<A NAME="1007126"></A>
+</PRE>
+   
+<A NAME="1007127"></A>
+<P CLASS="BP1">
+Where <CODE>dba_user</CODE> is the database administrator and dba_pw is the database administrator password.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1007128"></A>Type the following at the command prompt:
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1004814"></A>SQL&gt; select value from v$parameter where name = 'timed_statistics';
+<A NAME="1005377"></A>
+</PRE>
+    
+
+<A NAME="1004817"></A>
+<P CLASS="BP1">
+If the query returns the value TRUE, timed_statistics is set correctly for query prediction. If the query returns the value FALSE, query prediction will not be available unless you change the value of the timed_statistics parameter in the init&lt;sid&gt;.ora file.
+</P>
+</OL>
+<A NAME="1005391"></A>
+<P CLASS="BP">
+To edit the init&lt;sid&gt;.ora file:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1004819"></A>Locate the INIT&lt;SID&gt;.ORA file.
+<P>
+
+<A NAME="1006742"></A>
+<P CLASS="BP1">
+The INIT&lt;SID&gt;.ORA file is held in &lt;ORACLE_HOME&gt;\database. The default name of the file is INITORCL.ORA, where ORCL is the &lt;SID&gt; name.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1004821"></A>Edit the file to include the following line:
+<P>
+ 
+
+<A NAME="1004822"></A>
+<P CLASS="BP1">
+<CODE>timed_statistics = TRUE</CODE>
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005435"></A>For the change to take effect, shut down and restart the database. 
+<P>
+ 
+</OL>
+
+<A NAME="1005437"></A>
+<!--TOC=h1-"1005437"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to analyze data tables</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005441"></A>
+<P CLASS="BP">
+Discoverer uses the results of data table analysis for query prediction. Data table analysis generates information about the database tables (e.g. the size of a table). For more information, see the Oracle9<EM CLASS="Italic">i</EM> database documentation.
+</P>
+<A NAME="1006057"></A>
+<P CLASS="BP">
+To analyze data tables:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005438"></A>Start SQL*Plus (if it is not already running) and connect as the owner of the data tables you want to analyze.
+<P>
+
+<A NAME="1005444"></A>
+<P CLASS="BP1">
+For example, if SQL*Plus is already running, you might type the following at the command prompt:
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1005448"></A>SQL&gt; connect tab_owner/tab_pw@database
+<A NAME="1005453"></A>
+</PRE>
+   
+<A NAME="1005449"></A>
+<P CLASS="BP1">
+Where tab_owner is the username and tab_pw is the password of the data table owner.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1004828"></A>Type the following query: 
+<P>
+ 
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1004833"></A>For Oracle 8.0 (and later) databases:
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1004834"></A>SQL&gt; analyze table &lt;tabowner.tablename&gt; compute statistics for all columns;
+<A NAME="1005462"></A>
+</PRE>
+   </UL>
+</OL>
+
+<A NAME="1004835"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif"><STRONG CLASS="Bold">Notes</STRONG></FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005466"></A>If you expect the table contents to change significantly over time, analyze the data tables at regular intervals.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006452"></A>If your end users find that query prediction itself takes a long time (i.e. &gt; 10 seconds) this suggests that the tables have not been analyzed. For example, if it takes 25 seconds or so for Discoverer to display the query prediction but the query runs in less than 2 seconds.
+<P>
+</UL>
+
+<A NAME="1004837"></A>
+<!--TOC=h1-"1004837"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to verify and change the optimizer_mode parameter for query prediction</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004839"></A>
+<P CLASS="BP">
+To verify that the optimizer_mode parameter is set to CHOOSE:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1007158"></A>Start SQL*Plus (if it is not already running) and connect as the database administrator.
+<P>
+
+<A NAME="1007159"></A>
+<P CLASS="BP1">
+For example, if SQL*Plus is already running, you might type the following at the command prompt:
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1007160"></A>SQL&gt; CONNECT dba_user/dba_pw@database;
+<A NAME="1007161"></A>
+</PRE>
+   
+<A NAME="1007162"></A>
+<P CLASS="BP1">
+Where <CODE>dba_user</CODE> is the database administrator and dba_pw is the database administrator password.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1007163"></A>Type the following at the command prompt:
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1004844"></A>SQL&gt; select value from v$parameter where name = 'optimizer_mode'; 
+<A NAME="1005499"></A>
+</PRE>
+    
+
+<A NAME="1005500"></A>
+<P CLASS="BP1">
+
+</P>
+</OL>
+<A NAME="1004848"></A>
+<P CLASS="BP">
+If the query returns the value CHOOSE, optimizer_mode is set correctly for query prediction. The system will use the Cost Based Optimizer if the tables have been analyzed, and the Rule Based Optimizer if the tables have not.
+</P>
+<A NAME="1005510"></A>
+<P CLASS="BP">
+If the query returns the values FIRSTROWS or ALLROWS, optimizer_mode is also set correctly for query prediction
+</P>
+<A NAME="1005519"></A>
+<P CLASS="BP">
+Both FIRSTROWS and ALLROWS force the use of the Cost Based Optimizer, even if the tables have not been analyzed.
+</P>
+<A NAME="1004850"></A>
+<P CLASS="BP">
+If the query returns the value RULE, query prediction will not be available unless you change the value of the optimizer_mode parameter in the init&lt;sid&gt;.ora file. 
+</P>
+<A NAME="1005534"></A>
+<P CLASS="BP">
+To edit the init&lt;sid&gt;.ora file:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1004852"></A>Locate INIT&lt;SID&gt;.ORA.
+<P>
+
+<A NAME="1006750"></A>
+<P CLASS="BP1">
+The INIT&lt;SID&gt;.ORA file is held in &lt;ORACLE_HOME&gt;\database. The default name of the file is INITORCL.ORA, where ORCL is the &lt;SID&gt; name.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1004854"></A>Edit the file to include the following line:
+<P>
+ 
+
+<A NAME="1004855"></A>
+<P CLASS="BP1">
+<CODE>optimizer_mode = CHOOSE</CODE>
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005545"></A>For the change to take effect, shut down and restart the database.
+<P>
+ 
+</OL>
+
+<A NAME="1004858"></A>
+<!--TOC=h1-"1004858"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to reduce long query prediction times </FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004859"></A>
+<P CLASS="BP">
+Discoverer uses the Cost-Based Optimizer within the query prediction process. Note that the Cost-Based Optimizer only parses the query statements, and that query execution is usually governed by the server's default optimizer mode. 
+</P>
+<A NAME="1004860"></A>
+<P CLASS="BP">
+In a large schema environment (e.g. Oracle Applications), the database can take a long time to parse a statement using the Cost-Based Optimizer. The query prediction process might therefore take several minutes to complete. 
+</P>
+<A NAME="1005566"></A>
+<P CLASS="BP">
+If users are having to wait a long time before the query prediction process is complete, consider the following three solutions:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004861"></A>You could turn off query prediction using the appropriate Discoverer registry setting, as follows:
+<P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1006211"></A>For Discoverer Desktop
+<P>
+
+<A NAME="1006215"></A>
+<P CLASS="BP2">
+In the Windows registry, set the DWORD value of the <CODE>HKEY_CURRENT_USER\Software\Oracle\Discoverer9\Database\QPPEnable registry key to 0 (zero). </CODE>
+</P>
+
+<A NAME="1005578"></A>
+<P CLASS="BP2">
+If you subsequently decide to re-enable query prediction, either remove the registry key or set it to 1.
+</P>
+
+<A NAME="1006627"></A>
+<P CLASS="BP2">
+For more information about Discoverer registry settings stored in the Windows registry, see <A HREF="registry.htm#1005114">Chapter&nbsp;20, "About Discoverer Administrator and Discoverer Desktop registry settings"</a>.
+</P>
+ 
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1006223"></A>For Discoverer Plus and Discoverer Viewer
+<P>
+
+<A NAME="1006409"></A>
+<P CLASS="BP2">
+Change the value of the QPPEnable registry setting in the .reg_key.dc Discoverer registry file. If QPPEnable is set to 01 00 00 00, query prediction is turned on. To turn query prediction off, set QPPEnable to 00 00 00 00.
+</P>
+
+<A NAME="1006609"></A>
+<P CLASS="BP2">
+For more information about Discoverer registry settings stored in the .reg_key.dc file, see <A HREF="registry.htm#1006128">Chapter&nbsp;20, "About Discoverer Plus and Discoverer Viewer registry settings"</a>.
+</P>
+ 
+</UL>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004865"></A>You could make sure that query prediction does not enforce the use of the Cost-Based Optimizer using the appropriate Discoverer registry setting, as follows:
+<P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1006227"></A>For Discoverer Desktop
+<P>
+
+<A NAME="1006237"></A>
+<P CLASS="BP2">
+In the Windows registry, set the DWORD value of the <CODE>HKEY_CURRENT_USER\Software\Oracle\Discoverer9\Database\QPPCBOEnforced registry key to 0 (zero).</CODE>
+</P>
+
+<A NAME="1006275"></A>
+<P CLASS="BP2">
+When this registry key is set to zero, use of the Cost-based Optimizer (CBO) is not enforced and will follow the normal rules of the database server.
+</P>
+
+<A NAME="1006283"></A>
+<P CLASS="BP2">
+If you subsequently decide that you want query prediction to force the use of the Cost-Based Optimizer, either remove the registry key or set it to 1.
+</P>
+
+<A NAME="1006638"></A>
+<P CLASS="BP2">
+For more information about Discoverer registry settings stored in the Windows registry, see <A HREF="registry.htm#1005114">Chapter&nbsp;20, "About Discoverer Administrator and Discoverer Desktop registry settings"</a>.
+</P>
+ 
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1006251"></A>For Discoverer Plus and Discoverer Viewer
+<P>
+
+<A NAME="1006643"></A>
+<P CLASS="BP2">
+Change the value of the <CODE>QPPCBOEnforced registry setting in the</CODE> .reg_key.dc Discoverer registry file. If <CODE>QPPCBOEnforced is set to </CODE>01 00 00 00, query prediction will enforce the use of the cost-based optimizer. To specify that query prediction is to use the default optimizer, set <CODE>QPPCBOEnforced</CODE> to 00 00 00 00.
+</P>
+
+<A NAME="1006675"></A>
+<P CLASS="BP2">
+For more information about Discoverer registry settings stored in the .reg_key.dc file, see <A HREF="registry.htm#1006128">Chapter&nbsp;20, "About Discoverer Plus and Discoverer Viewer registry settings"</a>.
+</P>
+ 
+</UL>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004869"></A>You could tune the way the Cost-Based Optimizer uses indexes. For example, you could adjust the following database parameters:
+<P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1004870"></A>optimizer_index_cost_adj
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1004871"></A>optimizer_index_caching
+<P>
+</UL>
+
+<A NAME="1004872"></A>
+<P CLASS="BP1">
+For more information about database parameters, see the Oracle9<EM CLASS="Italic">i </EM>documentation.
+</P>
+</UL>
+
+<A NAME="1004891"></A>
+<!--TOC=h1-"1004891"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to use query prediction with secure views</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004892"></A>
+<P CLASS="BP">
+Discoverer's query prediction feature uses the EXPLAIN PLAN statement to analyze queries. However, EXPLAIN PLAN cannot analyze queries against secure views, with the result that query prediction is not normally able to work in these environments. To work around this limitation, grant your users access to the system view V$SQL. 
+</P>
+<A NAME="1006496"></A>
+<P CLASS="BP">
+To grant your users access to the system view V$SQL, for Oracle9<EM CLASS="Italic">i</EM> databases:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1007178"></A>Start SQL*Plus (if it is not already running) and connect as the SYS user, or a user to which the sysdba privilege has been granted.
+<P>
+
+<A NAME="1007179"></A>
+<P CLASS="BP1">
+For example, if SQL*Plus is already running, you might type the following at the command prompt:
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1007180"></A>SQL&gt; CONNECT sys/sys_pw@database AS SYSDBA;
+<A NAME="1007181"></A>
+</PRE>
+   
+<A NAME="1007182"></A>
+<P CLASS="BP1">
+Where sys is the SYS user and sys_pw is the SYS user password.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1006524"></A>Grant SELECT access on the views necessary for query prediction by typing the following at the command prompt: 
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1006525"></A>SQL&gt; grant select on v_$sql to public;
+<A NAME="1006526"></A>
+</PRE>
+    
+</OL>
+<A NAME="1005692"></A>
+<P CLASS="BP">
+To grant your users access to the system view V$SQL, for Oracle databases earlier than Oracle9<EM CLASS="Italic">i</EM>:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005693"></A>From NT choose Start | Run.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1005694"></A>Type in one of the following:
+<P>
+ 
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005695"></A><CODE>SVRMGRL</CODE> (for Oracle 8.0)
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005696"></A><CODE>SVRMGR</CODE> (for Oracle8<EM CLASS="Italic">i </EM>Personal Edition)
+<P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005697"></A>When in the DBA facility, type <CODE>connect internal</CODE> 
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1005698"></A>Grant SELECT access on the views necessary for query prediction by typing the following at the command prompt: 
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1005699"></A>SQLDBA&gt; grant select on v_$sql to public;
+<A NAME="1005732"></A>
+</PRE>
+    
+</OL>
+
+<A NAME="1004900"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif"><STRONG CLASS="Bold">Notes</STRONG></FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004903"></A>You can also grant your users access to the system view V$SQL by running the following script in SQL*Plus:
+<P>
+
+<A NAME="1005770"></A>
+<P CLASS="BP1">
+&lt;ORACLE_HOME&gt;\discoverer\util\eulsuqpp.sql
+</P>
+
+<A NAME="1005774"></A>
+<P CLASS="BP1">
+You must know the SYSTEM password to use this script.
+</P>
+</UL>
+
+<A NAME="1004905"></A>
+<!--TOC=h1-"1004905"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to delete old query prediction statistics</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004906"></A>
+<P CLASS="BP">
+Query prediction statistics can become obsolete for many reasons. You can delete all query prediction statistics that were created before a specified date.
+</P>
+<A NAME="1005877"></A>
+<P CLASS="BP">
+To delete old query prediction statistics from the database:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005879"></A>Start SQL*Plus (if it is not already running) and connect as the EUL owner.
+<P>
+
+<A NAME="1005880"></A>
+<P CLASS="BP1">
+For example, if SQL*Plus is already running, you might type the following at the command prompt:
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1005881"></A>SQL&gt; connect jchan/tiger
+<A NAME="1005882"></A>
+</PRE>
+   
+<A NAME="1005883"></A>
+<P CLASS="BP1">
+Where jchan is the EUL owner's username and tiger is the EUL owner's password.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1005884"></A>Run the SQL file eulstdel.sql.
+<P>
+ 
+
+<A NAME="1005885"></A>
+<P CLASS="BP1">
+For example you might type the following at the command prompt:
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1005886"></A>SQL&gt; start d:\&lt;ORACLE_ HOME&gt;\discoverer\util\eulstdel.sql
+<A NAME="1005887"></A>
+</PRE>
+   
+<A NAME="1005888"></A>
+<P CLASS="BP1">
+Where &lt;ORACLE_HOME&gt; is where Discoverer Administrator is installed.
+</P>
+
+<A NAME="1005889"></A>
+<P CLASS="BP1">
+A summary of the query statistics stored in the database is displayed. You are given the option to delete query statistics older than a specified number of days. 
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1004915"></A>(optional) Enter the number of days after which query statistics will be deleted (or leave it blank if you do not want to delete any statistics).
+<P>
+ 
+
+<A NAME="1005911"></A>
+<P CLASS="BP1">
+If you do not specify a number of days, no query statistics are deleted.
+</P>
+</OL>
+
+
+
+
+
+
+<!-- Start Footer -->
+</DIV>
+
+<DIV CLASS="OUTD">
+<HR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+<TD VALIGN="BOTTOM" WIDTH="33%">
+<TABLE CELLSPACING="0" CELLPADDING="0">
+<TR>
+<TD ALIGN="CENTER"><A HREF="eul_stat.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+
+<TD ALIGN="CENTER"><A HREF="registry.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+    
+</TR>
+</TABLE>
+</TD>
+<TD ALIGN="CENTER" WIDTH="34%">
+<A HREF="./html/cpyr.htm"><IMG SRC="./gifs/oracle.gif" ALT="Oracle" BORDER="0"><BR>
+<FONT SIZE="-2">Copyright &copy 2003 Oracle Corporation.</FONT></A>
+<BR>
+<FONT SIZE="-2">All Rights Reserved.</FONT>
+</TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="33%"> 
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="144">
+<TR>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+  
+</DIV>
+
+</BODY>
+</HTML>
+

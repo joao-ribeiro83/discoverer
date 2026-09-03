@@ -69,9 +69,17 @@ export interface Folder {
   dataSourceId: string | null
   dataSourceName: string | null
   isActive: boolean
+  /**
+   * Only present when listing folders by business area: true when the folder
+   * is shared INTO that area rather than owned by it. Discoverer models
+   * folder↔business-area as many-to-many (BA_OBJ_LINKS).
+   */
+  isShared?: boolean
 }
 
-export type ItemType = 'CI' | 'CU' | 'CO' | 'JI' | 'HI' | 'AG' | 'FU'
+// CO is the plain column-backed database item; CI is a *created* item (a
+// calculation). Listed CO-first to match how they are presented in the UI.
+export type ItemType = 'CO' | 'CI' | 'CU' | 'JI' | 'HI' | 'AG' | 'FU'
 
 export interface Item {
   id: string
@@ -155,6 +163,11 @@ export interface AppUser {
   email: string
   name: string
   role: UserRole
+  /**
+   * True when this principal is an Oracle database ROLE migrated from the EUL
+   * (EUL_USERS.EU_ROLE_FLAG), not a person. Roles hold grants and cannot sign in.
+   */
+  isRole?: boolean
   createdAt: string
 }
 
@@ -192,6 +205,16 @@ export interface MapItem {
   sortDirection: SortDirection | null
   sortOrder: number | null
   columnWidth: number | null
+  /** Worksheet placement — see `MapItemInput` for what each field means. */
+  axisType: MapAxisType | null
+  axisEdge: MapAxisEdge | null
+  axisOrder: number | null
+  isHidden: boolean
+  sortGroup: boolean
+  dataType: string | null
+  headingFormatMask: string | null
+  alignment: MapAlignment | null
+  wordWrap: boolean | null
   createdAt: string
 }
 
@@ -201,6 +224,7 @@ export interface MapCondition {
   itemId: string
   operator: ConditionOperator
   value: string | null
+  /** The referenced parameter's `bindName` — see `MapParameter`. */
   paramName: string | null
   conditionType: 'PARAMETER' | 'STATIC'
   groupId: string | null
@@ -212,7 +236,13 @@ export interface MapCondition {
 export interface MapParameter {
   id: string
   mapId: string
+  /** The prompt shown to the user, and the key its value is submitted under. */
   name: string
+  /**
+   * The Oracle identifier this prompt binds as, derived server-side from
+   * `name`. `MapCondition.paramName` holds this, not the prompt.
+   */
+  bindName: string
   paramType: 'STRING' | 'NUMBER' | 'DATE' | 'LIST'
   defaultValue: string | null
   isRequired: boolean
@@ -278,12 +308,26 @@ export interface MapItemInput {
   sortDirection?: SortDirection | null
   sortOrder?: number | null
   columnWidth?: number | null
+  /** `AXIS` groups, `MEASURE` is aggregated, `PAGE` filters the whole sheet. */
+  axisType?: MapAxisType | null
+  /** Which edge of a crosstab an `AXIS` column sits on. */
+  axisEdge?: MapAxisEdge | null
+  axisOrder?: number | null
+  /** The query names the item but draws no column for it. */
+  isHidden?: boolean
+  /** Group/break sort: suppress repeats and give a subtotal its boundary. */
+  sortGroup?: boolean
 }
 
 export interface MapConditionInput {
   itemId: string
   operator: ConditionOperator
   value?: string | null
+  /**
+   * The parameter this condition prompts for, named either by its prompt or by
+   * its `bindName`. The server resolves it to a bind name before storing, so
+   * sending the prompt is what lets a renamed parameter keep its conditions.
+   */
   paramName?: string | null
   conditionType: 'PARAMETER' | 'STATIC'
   groupId?: string | null
@@ -319,10 +363,60 @@ export type UpdateMapInput = Partial<CreateMapInput>
 
 // --- execution -------------------------------------------------------------
 
+export type MapAxisType = 'AXIS' | 'MEASURE' | 'PAGE'
+export type MapAxisEdge = 'ROW' | 'COLUMN'
+export type MapAlignment = 'LEFT' | 'CENTER' | 'RIGHT'
+
+/**
+ * A result column plus the presentation the map defines for it. Everything
+ * after `isAggregate` comes from the map item and is absent for columns with
+ * no map item behind them (ad-hoc calculated fields).
+ */
 export interface ResultColumn {
   name: string
   label: string
   isAggregate: boolean
+  /** Raw Oracle data type of the source item, e.g. 'NUMBER', 'DATE'. */
+  dataType?: string
+  /** Oracle-style format mask, e.g. '999,999.00' or 'DD-MON-YYYY'. */
+  formatMask?: string
+  /** Preferred column width in pixels. */
+  columnWidth?: number
+  alignment?: MapAlignment
+  wordWrap?: boolean
+  headingFormatMask?: string
+  axisType?: MapAxisType
+  axisEdge?: MapAxisEdge
+}
+
+/** One total or percentage in a totals group. */
+export interface ResultTotal {
+  id: string
+  kind: 'TOTAL' | 'PERCENTAGE'
+  /** Key of this value in the group's rows. */
+  alias: string
+  /** Result column this total belongs under, when the map draws it. */
+  targetAlias?: string
+  targetLabel: string
+  /** 'SUM' | 'COUNT' | 'AVG' | 'MIN' | 'MAX', or 'INLINE' for a calculation. */
+  aggFunction: string
+  /** Discoverer's label template, `&value` / `&item` interpolation intact. */
+  label?: string
+  displayOrder: number
+}
+
+/**
+ * One executed totals statement. A grand-total group has `breakAlias === null`
+ * and exactly one row; a subtotal group has one row per distinct value of the
+ * break column, each carrying that value under `breakAlias`.
+ */
+export interface ResultTotalsGroup {
+  breakAlias: string | null
+  breakLabel?: string
+  /** The break column's alias in the main result set, when it is drawn. */
+  breakTargetAlias?: string
+  totals: ResultTotal[]
+  rows: Record<string, unknown>[]
 }
 
 export interface ExecuteResult {
@@ -333,6 +427,19 @@ export interface ExecuteResult {
   truncated: boolean
   /** The generated SQL actually executed, when the backend includes it. */
   sql?: string
+  /**
+   * Columns the query sorted on first, outermost first — where the grid draws
+   * a break at each change.
+   */
+  groupBreakAliases?: string[]
+  /** Totals and subtotals the map defines, already computed. */
+  totals?: ResultTotalsGroup[]
+  /**
+   * Map semantics this run could not honour — a sort dropped under
+   * `SELECT DISTINCT`, a total whose Discoverer aggregate did not migrate.
+   * The rows are still valid.
+   */
+  warnings?: string[]
 }
 
 export interface ExecuteMapBody {
@@ -551,6 +658,18 @@ export interface AssessmentWarning {
   message: string
 }
 
+/** Coverage of the worksheet-fidelity model (layout, sort, totals, joins). */
+export interface WorksheetFidelitySummary {
+  totalWorksheets: number
+  layoutDecoded: number
+  layoutUndecoded: number
+  crosstabs: number
+  withSorts: number
+  withTotals: number
+  withForcedJoins: number
+  selectDistinct: number
+}
+
 export interface AssessmentReport {
   version: EulVersionInfo
   counts: MigrationAssessmentCounts
@@ -565,6 +684,7 @@ export interface AssessmentReport {
     blockers: string[]
     notes: string[]
   }
+  worksheetFidelity: WorksheetFidelitySummary
 }
 
 /** Target tables the migrator writes, in dependency order. */
@@ -579,6 +699,14 @@ export type MigrationTable =
   | 'custom_functions'
   | 'maps'
   | 'map_items'
+  | 'map_conditions'
+  | 'map_parameters'
+  | 'map_calculated_fields'
+  | 'map_layouts'
+  | 'map_totals'
+  | 'map_page_setup'
+  | 'map_conditional_formats'
+  | 'folder_business_areas'
   | 'user_business_area_grants'
 
 export type MigrationTableCounts = Record<MigrationTable, number>
@@ -614,6 +742,8 @@ export interface MigrationResult {
   }
   syntheticBusinessAreas: number
   migrationUserEmail: string
+  /** Target-side check; a dry run reports it instead of throwing. */
+  preflight: { alreadyMigrated: boolean; message: string | null }
   durationMs: number
 }
 
@@ -624,8 +754,12 @@ export interface MigrationLogLine {
   at: string
 }
 
+/** 'FULL' is the whole pipeline; 'MAPS' rebuilds only the migrated maps. */
+export type MigrationJobKind = 'FULL' | 'MAPS'
+
 export interface MigrationJob {
   id: string
+  kind: MigrationJobKind
   status: 'RUNNING' | 'COMPLETED' | 'FAILED'
   dataSourceId: string
   dryRun: boolean
@@ -639,7 +773,38 @@ export interface MigrationJob {
   logs: MigrationLogLine[]
   droppedLogs: number
   result: MigrationResult | null
+  /** Set instead of `result` when `kind` is 'MAPS'. */
+  mapsResult: MapReimportResult | null
   error: string | null
+}
+
+export interface MapReimportCounts {
+  workbooks: number
+  worksheets: number
+  maps: number
+  map_items: number
+  map_conditions: number
+  map_parameters: number
+  map_calculated_fields: number
+  map_totals: number
+  map_layouts: number
+  map_page_setup: number
+}
+
+export interface MapReimportResult {
+  dryRun: boolean
+  /** Maps that were in the host business area before the run. */
+  replacedMaps: number
+  written: MapReimportCounts
+  planned: MapReimportCounts
+  unresolvedItems: number
+  /** Conditions dropped because an item they filter is no longer in the EUL. */
+  unresolvedConditions: number
+  /** Totals dropped because the column they aggregate is no longer in the EUL. */
+  unresolvedTotals: number
+  /** Conditions Neo's filter model cannot express; the job log gives each reason. */
+  inexpressibleConditions: number
+  durationMs: number
 }
 
 export interface StartMigrationInput {
@@ -647,6 +812,13 @@ export interface StartMigrationInput {
   schemaOwner?: string
   dryRun?: boolean
   version?: 'auto' | 'EUL4' | 'EUL5'
+}
+
+/** A maps re-import takes no version override — it re-reads the same source. */
+export interface StartMapReimportInput {
+  dataSourceId: string
+  schemaOwner?: string
+  dryRun?: boolean
 }
 
 // ---------------------------------------------------------------------------

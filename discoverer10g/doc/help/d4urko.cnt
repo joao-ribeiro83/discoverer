@@ -1,0 +1,251 @@
+:Base d4urko.hlp>main
+:Title Oracle Discoverer Plus 온라인 도움말
+1 Oracle Discoverer 소개
+2 질의 및 워크북=CON_ABOUT_QUERIES>main
+2 테이블 및 크로스탭=CON_ABOUT_TANDC>main
+2 합계 정보=CON_ABOUT_TOTALS>main
+2 백분율=CON_ABOUT_PERCENTAGES>main
+2 일정이 잡힌 워크북=CON_ABOUT_SCHEDULED>main
+2 Oracle Discoverer 도움말
+3 Oracle Discoverer 도움말=CON_LEARN_OD>main
+1 단계별 절차
+2 Oracle Discoverer 시작 및 종료
+3 Oracle Discoverer 시작 방법=To_start_Oracle_Discoverer>main
+3 Oracle Applications 사용자를 위한 연결 대화상자 구성=HIDD_OPTIONS_CONNECTION>main
+3 데이터베이스 접속 방법=To_connect_to_a_database>main
+3 Oracle Discoverer 종료 방법=To_exit_Oracle_Discoverer>main
+2 워크북 작업
+3 새 워크북 작성 방법=To_create_a_new_workbook>main
+3 저장된 워크북 열기=To_open_a_saved_workbook>main
+3 워크북 저장 방법=To_save_a_workbook>main
+3 워크북 닫기=To_close_a_workbook>main
+3 데이터베이스에서 워크북 삭제 방법=To_delete_a_workbook_from_the_database>main
+3 워크북에 새 시트 추가 방법=To_add_a_new_sheet_to_a_workbook>main
+3 시트 편집 방법=To_edit_a_sheet>main
+3 시트를 테이블로 복제하는 방법=To_duplicate_a_sheet_as_a_table
+3 시트를 크로스탭으로 복제하는 방법=To_duplicate_a_sheet_as_a_crosstab
+3 시트 이름 지정 방법=To_name_a_sheet>main
+3 시트 이름 편집 방법=To_edit_the_name_of_a_sheet>main
+3 워크북에서 시트 삭제 방법=To_delete_a_sheet_from_a_workbook>main
+3 다른 사용자와 워크북 공유 방법=To_share_a_workbook_with_other_users
+3 현재 시트의 SQL 코드 보기=To_view_the_SQL_code_for_the_current_sheet>main
+3 선택한 항목의 속성 보기=To_view_the_properties_of_a_selected_item>main
+3 현재 워크북의 속성 보기=To_view_the_properties_of_the_current_workbook>main
+3 현재 시트의 그래프 작성 방법=To_show_data_in_a_sheet_as_a_graph>main
+3 그래프 보기=To_Hide_or_Show_a_Graph>main
+3 그래프 숨기기=To_Hide_or_Show_a_Graph>main
+2 데이터 추가 및 삭제
+3 시트에 항목 추가 방법=To_add_an_item_to_a_sheet>main
+3 시트에서 항목 삭제 방법=To_delete_an_item_from_a_sheet>main
+3 항목의 표시 값 변경 방법=To_change_displayed_values_for_an_item>main
+3 드릴
+4 위로 드릴=To_drill_up>main
+4 아래로 드릴=To_drill_down>main
+4 다른 시트의 관련 항목으로 드릴=To_drill_to_a_related_item_in_another_sheet>main
+4 다른 응용 프로그램의 관련 정보로 드릴=To_drill_to_related_information_in_another_application>main
+4 항목 접기=To_collapse_an_item>main
+3 조건을 사용하여 질의 정의
+4 조건 정의 방법=To_define_a_condition>main
+4 조건 편집 방법=To_apply_a_condition>main
+4 기존 조건에 계산 추가 방법=To_add_a_calculation_to_an_existing_condition>main
+4 계산을 포함한 조건 작성 방법=To_create_a_condition_that_includes_a_calculation>main
+4 조건 삭제 방법=To_delete_a_condition>main
+3 계산 사용
+4 계산 작성 방법=To_create_a_calculation>main
+4 계산 편집 방법=To_edit_a_calculation>main
+3 합계를 사용하여 질의 결과 요약
+4 합계 작성 방법=To_create_a_total>main
+4 합계 편집 방법=To_edit_a_total>main
+2 데이터 및 머리글 조작
+3 항목을 다른 축으로 이동=To_move_an_item_from_one_axis_to_another>main
+3 페이지 항목 작성 방법=To_create_a_page_item>main
+3 셀에 그래픽 막대 나타내기=To_show_graphic_bars_in_cells>main
+3 데이터 정렬
+4 테이블 정렬 방법=To_sort_a_table>main
+4 크로스탭 정렬 방법=To_sort_a_crosstab>main
+2 Oracle Discoverer 질의 수행 방법 지정
+3 질의 단계적 실행 방법=To_run_queries_incrementally>main
+3 단계적 질의 실행 설정을 무시하고 모든 행 리턴=To_override_an_incremental_setting_and_return_all_rows_in_a_query>main
+3 질의에서 리턴할 최대 행 수 지정 방법=To_specify_the_maximum_number_of_rows_returned_in_a_query>main
+3 데이터베이스 캐시 환경 설정 방법=To_set_preferences_for_the_database_cache>main
+3 크로스탭 레이아웃 시트 환경 설정 방법=To_set_preferences_for_crosstab_layout_sheets>main
+3 테이블 레이아웃 시트 환경 설정 방법=To_set_preferences_for_table_layout_sheets>main
+2 포맷 설정
+3 시트의 데이터 포맷 설정 방법=To_format_data_in_a_sheet>main
+3 시트의 머리글 포맷 설정 방법=To_format_headings_in_a_sheet>main
+3 숫자 포맷 설정 방법=To_format_numbers>main
+3 시트 제목의 포맷 설정 방법=To_format_the_title_of_a_sheet>main
+3 열 너비 변경 방법=To_change_a_column_width>main
+3 시트에 제목 추가 방법=To_add_a_title_to_a_sheet>main
+3 시트 제목 편집 방법=To_edit_the_title_of_a_sheet>main
+3 시트에 배경 추가 방법=To_add_a_background_to_a_sheet>main
+3 시트 배경 지우기=To_remove_a_background_from_a_sheet>main
+3 예외 사항을 사용하여 데이터 선택
+4 예외 사항 작성 방법=To_create_an_exception>main
+4 예외 사항 편집 방법=To_edit_an_exception>main
+4 예외 사항 삭제 방법=To_delete_an_exception>main
+3 그래프로 데이터 표시
+4 현재 시트의 그래프 작성 방법=To_show_data_in_a_sheet_as_a_graph>main
+4 그래프 모양 변경 방법=To_change_the_style_of_a_graph>main
+4 그래프의 3차원 보기 조작 방법=To_manipulate_the_three_dimensional_view_of_a_graph>main
+4 그래프 제목 추가 방법=To_add_titles_to_a_graph>main
+4 그래프 제목 편집 방법=To_edit_titles_in_a_graph>main
+4 그래프에서 제목 삭제 방법=To_delete_titles_from_a_graph>main
+4 그래프를 다른 응용 프로그램으로 엑스포트=To_export_a_graph_to_another_application>main
+2 인쇄
+3 워크북 인쇄 방법=To_print_a_workbook>main
+3 시트 인쇄 방법=To_print_a_sheet>main
+3 축 레이블 인쇄 방법=To_print_axis_labels>main
+3 페이지 구분 추가 방법=To_add_page_breaks>main
+3 페이지의 인쇄 순서 설정 방법=To_set_the_printing_order_of_pages>main
+3 페이지 레이아웃 설정 방법=To_set_up_the_page_layout>main
+3 인쇄 결과 미리 보기=To_preview_the_printout>main
+3 머리글 및 바닥글 추가
+4 바닥글 추가 방법=To_add_a_footer>main
+4 사용자 바닥글 작성 방법=To_create_a_custom_footer>main
+4 머리글 추가 방법=To_add_a_header>main
+4 사용자 머리글 작성 방법=To_create_a_custom_header>main
+2 다른 응용 프로그램과 함께 Oracle Discoverer 사용
+3 데이터를 엑스포트하여 다른 파일 형식으로 저장=To_export_data_and_save_it_in_another_file_format>main
+3 다른 응용 프로그램 파일에 질의 포함 방법=To_embed_a_query_in_a_file_in_another_application>main
+1 용어집
+2 용어집=DCM_GLOSSARY>gloss
+1 사용자 인터페이스 참조
+2 마법사, 대화상자, 정보 상자
+3 맞춤 페이지=HIDD_FORMAT_ALIGN>main
+3 배경 색상 페이지=HIDD_FORMAT_COLOR>main
+3 캐시 페이지=HIDD_OPTIONS_CACHE>main
+3 계산 대화상자=HIDD_DCMCALCULATIONS>main
+3 계산: 추가 대화상자=HIDD_CALC_ADD>main
+3 계산: 나누기 대화상자=HIDD_CALC_DIV>main
+3 계산: 곱하기 대화상자=HIDD_CALC_MULT>main
+3 계산: 백분율 대화상자=HIDD_CALC_PERCENT>main
+3 계산: 빼기 대화상자=HIDD_CALC_SUB>main
+3 조건 대화상자=HIDD_DCMCONDITIONS>main
+3 Oracle Discoverer에 연결 대화상자=HIDD_CONNECT>main
+3 크로스탭 페이지=HIDD_OPTIONS_MATRIX>main
+3 데이터베이스에서 워크북 삭제 대화상자=HIDD_DELETE_DB>main
+3 드릴 대화상자=HIDD_DRILL_WIZARD>main
+3 드릴 옵션 대화상자=HIDD_DRILL_OPTIONS>main
+3 계산 편집 대화상자=HIDD_CALC_EDIT>main
+3 매개변수 편집 대화상자=HIDD_PARAM_EDIT>main
+3 예외 사항 페이지=HIDD_FORMAT_EXCEPTION_NEW>main
+3 예외 사항 대화상자=HIDD_EXCEPTION>main
+3 엑스포트 대화상자=HIDD_EXPORT_NAME>main
+3 파일 속성 대화상자=HIDD_FILEPROP>main
+3 글꼴 페이지=HIDD_FORMAT_FONT>main
+3 레이아웃 포맷 설정 대화상자=HIDD_WIZARD_LAYOUT>main
+3 포맷 대화상자=HIDD_OPTIONS_FORMAT>main
+3 머리글/바닥글 페이지=HIDD_SETUP_HEADER>main
+3 항목 클립보드 정보 상자=HIDD_DCMCLIPBOARD>main
+3 항목 속성 대화상자=HIDD_ITEMPROP>main
+3 레이아웃 대화상자=HIDD_WIZARD_START>main
+3 여백 페이지=HIDD_SETUP_MARGIN>main
+3 새 매개변수 대화상자=HIDD_PARAM_NEW>main
+3 워크북 열기 대화상자=HIDD_OPEN>main
+3 데이터베이스에서 워크북 열기 대화상자=HIDD_OPEN_DB>main
+3 옵션 대화상자 개요=HIDD_WIZARD_OPTIONS>main
+3 페이지 설정 대화상자 개요=HIDD_WIZARD_PREVIEW>main
+3 매개변수 대화상자=HIDD_PARAMETERS>main
+3 매개변수 마법사=HIDD_PARAMETERS_RUNTIME>main
+3 워크북 저장 대화상자=HIDD_SAVE>main
+3 데이터베이스에 워크북 저장 대화상자=HIDD_SAVE_DB>main
+3 시트 페이지=HIDD_SETUP_SHEET>main
+3 크로스탭 정렬 대화상자=HIDD_SORT_CROSSTAB>main
+3 테이블 정렬 대화상자=HIDD_SORT_TABLE>main
+3 SQL 분석기 대화상자=HIDD_DCMSQL>main
+3 테이블 페이지=HIDD_OPTIONS_TABLE>main
+3 텍스트/숫자 페이지=HIDD_FORMAT_MASK>main
+3 제목 대화상자 - 비트맵 탭=HIDD_TITLE_BMP>main
+3 제목 대화상자 - 텍스트 탭=HIDD_TITLE_TEXT>main
+3 합계 대화상자=HIDD_SUMMARIES>main
+3 합계 대화상자(크로스탭에서)=HIDD_TOTAL_EDIT_CROSSTAB>main
+3 합계 대화상자(테이블에서)=HIDD_TOTAL_EDIT_TABLE>main
+3 사용자 > 워크북 페이지=HIDD_GRANT_USERTOBOOK>main
+3 값 대화상자=HIDD_DCMLIST>main
+3 다른 데이터베이스 계정에 있는 워크북 대화상자=HIDD_CONNECT_IO>main
+3 워크북 > 사용자 페이지=HIDD_GRANT_BOOKTOUSER>main
+1 파일 메뉴
+2 새 파일 명령=HID_FILE_NEW>main
+2 열기 명령=HID_FILE_OPEN>main
+2 닫기 명령=HID_FILE_CLOSE>main
+2 저장 명령=HID_FILE_SAVE>main
+2 다른 이름으로 저장 명령=HID_FILE_SAVE_AS>main
+2 일정 잡기 명령=HID_FILE_SCHEDULE
+2 페이지 설정 명령=HID_FILE_PAGE_SETUP
+2 미리 보기 명령=HID_FILE_PRINT_PREVIEW>main
+2 인쇄 명령=HID_FILE_PRINT>main
+2 SQL 임포트 명령=HID_FILE_IMPORT>main
+2 엑스포트 명령=HID_FILE_EXPORT>main
+2 워크북 관리 명령=Manage_Workbooks_command>main
+2 데이터베이스에 접속 명령=HID_FILE_CONNECT>main
+2 종료 명령=HID_APP_EXIT>main
+1 편집 메뉴
+2 실행 취소/재실행 명령=HID_EDIT_UNDO>main
+2 반복 명령=HID_EDIT_REPEAT>main
+2 잘라내기 명령=HID_EDIT_CUT>main
+2 복사 명령=HID_EDIT_COPY>main
+2 항목 붙여넣기 명령=HID_EDIT_PASTE>main
+2 항목 삭제 명령=HID_EDIT_DELETEITEM>main
+2 모두 선택 명령=HID_EDIT_SELECTALL>main
+2 찾기 명령=HID_TOOLS_FIND>main
+2 항목 속성 명령=HID_EDIT_ITEMPROPERTIES>main
+1 보기 메뉴
+2 도구 모음 명령=HID_VIEW_TOOLBAR>main
+2 포맷팅 표시줄 명령=HID_TOOLBAR_FORMAT>main
+2 분석 표시줄 명령=HID_TOOLBAR_ANALYSIS>main
+2 상태 표시줄 명령=HID_VIEW_STATUS_BAR>main
+2 페이지 항목=View_Page_Items
+2 항목 클립보드 명령=HID_VIEW_CLIPBOARD>main
+2 SQL 분석기 명령=HID_VIEW_SQL>main
+1 시트 메뉴
+2 새 시트 명령=HID_SHEET_NEW>main
+2 시트 편집 명령=HID_SHEET_MODIFY>main
+2 테이블로 복제 명령=HID_DUPLICATE_TABLE>main
+2 크로스탭으로 복제 명령=HID_DUPLICATE_CROSSTAB>main
+2 시트 이름 변경 명령=HID_SHEET_RENAME>main
+2 시트 삭제 명령=HID_SHEET_DELETE>main
+2 제목 편집 명령=HID_SHEET_TITLE>main
+2 드릴 명령=HID_SHEET_DRILLDOWN>main
+2 접기 명령=HID_SHEET_ROLLUP>main
+2 매개변수 값 편집 명령=HID_SHEET_MODPARAMS>main
+2 시트 갱신=HIDD_Sheet_Refresh
+2 모든 행 읽어오기 명령=HID_SHEET_FETCHALL>main
+2 모든 행 세기 명령=HID_SHEET_COUNTALL>main
+1 포맷 메뉴
+2 데이터 명령=HID_FORMAT_DATA>main
+2 머리글 명령=HID_FORMAT_HEADINGS>main
+2 예외 사항 명령=HID_FORMAT_EXCEPTIONS>main
+2 열 너비 명령=HID_COLUMN_WIDTH>main
+2 열 자동 크기 조정 명령=HID_COLUMN_AUTOFIT>main
+2 시트 제목 명령=HID_FORMAT_SHEETTITLE>main
+2 시트 배경 설정 명령=HID_FORMAT_SHEETBKGND>main
+2 배경 지우기 명령=HID_FORMAT_SHEETCLEAR>main
+1 도구 메뉴
+2 조건 명령=HID_TOOLS_CONDITIONS>main
+2 정렬 명령=HID_TOOLS_SORT>main
+2 합계 명령=HID_TOOLS_TOTALS>main
+2 백분율 명령=HIDD_PERCENTAGES
+2 계산 명령=HID_TOOLS_CALCULATIONS>main
+2 매개변수 명령=HID_TOOLS_PARAMS>main
+2 옵션 명령=HID_TOOLS_OPTIONS>main
+1 그래프 메뉴
+2 새 그래프 명령=New_Graph_command>main
+2 보기 명령=HID_MENU_VIEW_GRAPH>main
+2 인쇄 명령=Print_command_graph
+2 클립보드로 복사 명령=Copy_to_clipboard_command_graph>main
+2 범례 명령=Legend_command>main
+2 X 레이블 명령=X_Labels_command>main
+2 상태 표시줄 명령=Status_bar_command_graph>main
+2 크기 명령=HID_GRAPH_SCALE>main
+2 3차원 보기 명령=HID_GRAPH_3D>main
+1 창 메뉴
+2 아이콘 정렬 명령=HID_WINDOW_ARRANGE>main
+2 계단식 명령=HID_WINDOW_CASCADE>main
+2 수평 바둑판식 명령=HID_WINDOW_TILE_HORZ>main
+2 수직 바둑판식 명령=HID_WINDOW_TILE_VERT>main
+1 도움말 메뉴
+2 도움말 항목 메뉴=HID_HELP_INDEX>main
+2 도움말 사용 메뉴=HID_HELP_USING>main
+2 설명서 명령=HID_HELP_MANUALS>main
+2 Discoverer 정보 명령=HID_APP_ABOUT>main

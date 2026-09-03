@@ -6,6 +6,40 @@ Learn how to write and run tests for Discoverer Neo.
 
 Backend uses **Jest** for unit and integration tests.
 
+### The tests run against their own database
+
+Backend tests clean up with unscoped `DELETE FROM`. That is correct for a
+throwaway database and destructive for a working one, so the suite runs against
+**`discoverer_neo_test`**, never your dev database.
+
+You do not have to set this up: `pretest` creates the database and applies every
+migration before the suite runs, and it is idempotent.
+
+Two rules are enforced in `src/__tests__/setup/test-database.ts`:
+
+| `DATABASE_URL` | Result |
+| --- | --- |
+| unset | defaults to `discoverer_neo_test` |
+| set to a `*_test` database | used as given |
+| set to anything else | **the run aborts** before a single test executes |
+
+The third row is deliberate. Passing `DATABASE_URL=…/discoverer_neo` used to
+silently wipe your business areas, folders and registered Oracle data sources;
+now it fails with a message naming the database and how to fix it. The guard is
+never "helpful" — it will not quietly redirect you, because that would hide the
+mistake.
+
+```bash
+# Create / migrate the test database by hand (pretest does this for you)
+npm run db:test:setup --workspace=backend
+
+# Start completely clean — drops and recreates it
+npm run db:test:reset --workspace=backend
+```
+
+If a test run ever hangs, kill it. A hung jest process holds an open connection
+and can still delete rows; leaving one running for hours is how data gets lost.
+
 ### Running Tests
 
 ```bash
@@ -88,7 +122,26 @@ describe('Authentication', () => {
 Tests use:
 - **Fastify's `inject`** — Simulate HTTP requests (no real network)
 - **Jest mocks** — Mock services and database
-- **Test database** — Isolated PostgreSQL for integration tests
+- **Test database** — `discoverer_neo_test`, never your dev database (above)
+
+#### The `migrate` workspace resolves to source, not `dist`
+
+`migration.test.ts` imports `@discoverer-neo/migrate/testing`. Both
+`moduleNameMapper` **and** the ts-jest `paths` override in `jest.config.js`
+point that at `migrate/src/**`, so no build is required.
+
+The `paths` half is easy to lose and expensive when it goes: without it, ts-jest
+type-checks the import through the package's `exports` map and needs
+`migrate/dist/**/*.d.ts` to exist. A stale or missing build then makes the suite
+fail to **load** (`TS2307`) reporting zero tests — which reads like a broken
+suite rather than a missing build step, and cost real debugging time once
+already. If you touch that config, verify with:
+
+```bash
+rm -rf migrate/dist && npm run test -- migration.test --workspace=backend
+```
+
+It must still pass with `dist` absent.
 
 ### Coverage Goals
 

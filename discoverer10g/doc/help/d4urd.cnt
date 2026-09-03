@@ -1,0 +1,251 @@
+:Base d4urd.hlp>main
+:Title Online-Hilfe zu Oracle Discoverer Plus
+1 Einführung in Oracle Discoverer
+2 Über Abfragen und Arbeitsmappen=CON_ABOUT_QUERIES>main
+2 Über Tabellen und Kreuztabellen=CON_ABOUT_TANDC>main
+2 Über Summen=CON_ABOUT_TOTALS>main
+2 Über Prozentsätze=CON_ABOUT_PERCENTAGES>main
+2 Über geplante Arbeitsmappen=CON_ABOUT_SCHEDULED>main
+2 Erste Schritte mit Oracle Discoverer
+3 Erste Schritte mit Oracle Discoverer=CON_LEARN_OD>main
+1 Schrittweise Prozeduren
+2 Oracle Discoverer starten und stoppen
+3 So starten Sie Oracle Discoverer=To_start_Oracle_Discoverer>main
+3 So konfigurieren Sie das Dialogfeld Anmelden für Oracle Applications-Benutzer=HIDD_OPTIONS_CONNECTION>main
+3 So melden Sie sich bei einer Datenbank an=To_connect_to_a_database>main
+3 So beenden Sie Oracle Discoverer=To_exit_Oracle_Discoverer>main
+2 Mit Arbeitsmappen arbeiten
+3 So erstellen Sie eine neue Arbeitsmappe=To_create_a_new_workbook>main
+3 So öffnen Sie eine gespeicherte Arbeitsmappe=To_open_a_saved_workbook>main
+3 So speichern Sie eine Arbeitsmappe=To_save_a_workbook>main
+3 So schließen Sie eine Arbeitsmappe=To_close_a_workbook>main
+3 So löschen Sie eine Arbeitsmappe aus der Datenbank=To_delete_a_workbook_from_the_database>main
+3 So fügen Sie einer Arbeitsmappe ein neues Blatt hinzu=To_add_a_new_sheet_to_a_workbook>main
+3 So bearbeiten Sie ein Blatt=To_edit_a_sheet>main
+3 So duplizieren Sie ein Blatt als Tabelle=To_duplicate_a_sheet_as_a_table>main
+3 So duplizieren Sie ein Blatt als Kreuztabelle=To_duplicate_a_sheet_as_a_crosstab>main
+3 So benennen Sie ein Blatt=To_name_a_sheet>main
+3 So bearbeiten Sie einen Blattnamen=To_edit_the_name_of_a_sheet>main
+3 So löschen Sie ein Blatt aus einer Arbeitsmappe=To_delete_a_sheet_from_a_workbook>main
+3 So nutzen Sie eine Arbeitsmappe mit anderen Benutzern gemeinsam=To_share_a_workbook_with_other_users>main
+3 So zeigen Sie den SQL-Code für das aktuelle Blatt an=To_view_the_SQL_code_for_the_current_sheet>main
+3 So zeigen Sie die Attribute eines ausgewählten Elements an=To_view_the_properties_of_a_selected_item>main
+3 So zeigen Sie die Attribute der aktuellen Arbeitsmappe an=To_view_the_properties_of_the_current_workbook>main
+3 So erstellen Sie ein Diagramm für das aktuelle Blatt=To_show_data_in_a_sheet_as_a_graph>main
+3 So zeigen Sie ein Diagramm an=To_Hide_or_Show_a_Graph>main
+3 So verbergen Sie ein Diagramm=To_Hide_or_Show_a_Graph>main
+2 Daten hinzufügen und entfernen
+3 So fügen Sie einem Blatt ein Element hinzu=To_add_an_item_to_a_sheet>main
+3 So löschen Sie ein Element aus einem Blatt=To_delete_an_item_from_a_sheet>main
+3 So ändern Sie angezeigte Werte eines Elements=To_change_displayed_values_for_an_item>main
+3 Aufgliedern
+4 So zeigen Sie weniger Verzweigungsebenen an=To_drill_up>main
+4 So zeigen Sie mehr Verzweigungsebenen an=To_drill_down>main
+4 So gehen Sie zu einem zugeordneten Element in einem anderen Blatt=To_drill_to_a_related_item_in_another_sheet>main
+4 So gehen Sie zu einem zugeordneten Element in einer anderen Anwendung=To_drill_to_related_information_in_another_application>main
+4 So blenden Sie ein Element aus=To_collapse_an_item>main
+3 Bedingungen zur Optimierung einer Abfrage verwenden
+4 So definieren Sie eine Bedingung=To_define_a_condition>main
+4 So bearbeiten Sie eine Bedingung=To_apply_a_condition>main
+4 So fügen Sie einer vorhandenen Bedingung eine Berechnung hinzu=To_add_a_calculation_to_an_existing_condition>main
+4 So erstellen Sie eine Bedingung, die eine Berechnung enthält=To_create_a_condition_that_includes_a_calculation>main
+4 So löschen Sie eine Bedingung=To_delete_a_condition>main
+3 Berechnungen verwenden
+4 So erstellen Sie eine Berechnung=To_create_a_calculation>main
+4 So bearbeiten Sie eine Berechnung=To_edit_a_calculation>main
+3 Summen zur Zusammenfassung von Abfrageergebnissen verwenden
+4 So erstellen Sie eine Summe=To_create_a_total>main
+4 So bearbeiten Sie eine Summe=To_edit_a_total>main
+2 Daten und Überschriften verarbeiten
+3 So verschieben Sie ein Element aus einer Achse in eine andere=To_move_an_item_from_one_axis_to_another>main
+3 So erstellen Sie ein Seitenelement=To_create_a_page_item>main
+3 So zeigen Sie Grafikleisten in Zellen an=To_show_graphic_bars_in_cells>main
+3 Daten sortieren
+4 So sortieren Sie eine Tabelle=To_sort_a_table>main
+4 So sortieren Sie eine Kreuztabelle=To_sort_a_crosstab>main
+2 Angeben, wie Oracle Discoverer Abfragen ausführt
+3 So führen Sie Abfragen schrittweise aus=To_run_queries_incrementally>main
+3 So setzen Sie eine schrittweise Abfrage außer Kraft und rufen alle Zeilen ab=To_override_an_incremental_setting_and_return_all_rows_in_a_query>main
+3 So legen Sie die maximale Zahl zurückgegebener Zeilen in einer Abfrage fest=To_specify_the_maximum_number_of_rows_returned_in_a_query>main
+3 So legen Sie die Voreinstellungen für den Datenbank-Cache fest=To_set_preferences_for_the_database_cache>main
+3 So legen Sie die Voreinstellungen für die Blätter mit einem Kreuztabellen-Layout fest=To_set_preferences_for_crosstab_layout_sheets>main
+3 So legen Sie die Voreinstellungen für die Blätter mit Tabellenlayouts fest=To_set_preferences_for_table_layout_sheets>main
+2 Formatierung
+3 So formatieren Sie in einem Blatt=To_format_data_in_a_sheet>main
+3 So formatieren Sie Überschriften in einem Blatt=To_format_headings_in_a_sheet>main
+3 So formatieren Sie Zahlen=To_format_numbers>main
+3 So formatieren Sie den Titel in einem Blatt=To_format_the_title_of_a_sheet>main
+3 So ändern Sie die Spaltenbreite=To_change_a_column_width>main
+3 So fügen Sie einem Blatt einen Titel hinzu=To_add_a_title_to_a_sheet>main
+3 So bearbeiten Sie den Titel eines Blattes=To_edit_the_title_of_a_sheet>main
+3 So fügen Sie einem Blatt einen Hintergrund hinzu=To_add_a_background_to_a_sheet>main
+3 So entfernen Sie einen Hintergrund aus einem Blatt=To_remove_a_background_from_a_sheet>main
+3 Ausnahmen zur Hervorhebung von Daten verwenden
+4 So erstellen Sie eine Ausnahme=To_create_an_exception>main
+4 So bearbeiten Sie eine Ausnahme=To_edit_an_exception>main
+4 So löschen Sie eine Ausnahme=To_delete_an_exception>main
+3 Daten in Form eines Diagramms anzeigen
+4 So zeigen Sie Daten in einem Blatt als Diagramm an=To_show_data_in_a_sheet_as_a_graph>main
+4 So ändern Sie den Stil eines Diagramms=To_change_the_style_of_a_graph>main
+4 So ändern Sie die dreidimensionale Ansicht eines Diagramms=To_manipulate_the_three_dimensional_view_of_a_graph>main
+4 So fügen Sie einem Diagramm Titel hinzu=To_add_titles_to_a_graph>main
+4 So bearbeiten Sie Titel in einem Diagramm=To_edit_titles_in_a_graph>main
+4 So löschen Sie Titel aus einem Diagramm=To_delete_titles_from_a_graph>main
+4 So exportieren Sie ein Diagramm in eine andere Anwendung=To_export_a_graph_to_another_application>main
+2 Drucken
+3 So drucken Sie eine Arbeitsmappe=To_print_a_workbook>main
+3 So drucken Sie ein Blatt=To_print_a_sheet>main
+3 So drucken Sie Achsenbeschriftungen=To_print_axis_labels>main
+3 So fügen Sie Seitenumbrüche hinzu=To_add_page_breaks>main
+3 So legen Sie die Druckreihenfolge von Seiten fest=To_set_the_printing_order_of_pages>main
+3 So richten Sie das Seitenlayout ein=To_set_up_the_page_layout>main
+3 So zeigen Sie eine Seitenansicht an=To_preview_the_printout>main
+3 Kopf- und Fußzeilen hinzufügen
+4 So fügen Sie eine Fußzeile hinzu=To_add_a_footer>main
+4 So erstellen Sie eine benutzerdefinierte Fußzeile=To_create_a_custom_footer>main
+4 So fügen Sie eine Kopfzeile hinzu=To_add_a_header>main
+4 So erstellen Sie eine benutzerdefinierte Kopfzeile=To_create_a_custom_header>main
+2 Oracle Discoverer mit anderen Anwendungen verwenden
+3 So exportieren Sie Daten und speichern sie in einem anderen Dateiformat=To_export_data_and_save_it_in_another_file_format>main
+3 So betten Sie eine Abfrage in eine Datei einer anderen Anwendung ein=To_embed_a_query_in_a_file_in_another_application>main
+1 Glossar
+2 Glossar=DCM_GLOSSARY>gloss
+1 Referenz zu Benutzeroberfläche
+2 Assistenten, Dialogfelder und Informationsfelder
+3 Register Ausrichtung=HIDD_FORMAT_ALIGN>main
+3 Register Hintergrundfarbe=HIDD_FORMAT_COLOR>main
+3 Register Cache=HIDD_OPTIONS_CACHE>main
+3 Dialogfeld Berechnungen=HIDD_DCMCALCULATIONS>main
+3 Dialogfeld Berechnung: Addieren=HIDD_CALC_ADD>main
+3 Dialogfeld Berechnung: Dividieren=HIDD_CALC_DIV>main
+3 Dialogfeld Berechnung: Multiplizieren=HIDD_CALC_MULT>main
+3 Dialogfeld Berechnung: Prozent=HIDD_CALC_PERCENT>main
+3 Dialogfeld Berechnung: Subtrahieren=HIDD_CALC_SUB>main
+3 Dialogfeld Bedingungen=HIDD_DCMCONDITIONS>main
+3 Dialogfeld Anmelden bei Oracle Discoverer=HIDD_CONNECT>main
+3 Register Kreuztabelle=HIDD_OPTIONS_MATRIX>main
+3 Dialogfeld Arbeitsmappe aus Datenbank löschen=HIDD_DELETE_DB>main
+3 Dialogfeld Aufgliedern=HIDD_DRILL_WIZARD>main
+3 Dialogfeld Aufgliederungsoptionen=HIDD_DRILL_OPTIONS>main
+3 Dialogfeld Berechnung bearbeiten=HIDD_CALC_EDIT>main
+3 Dialogfeld Parameter bearbeiten=HIDD_PARAM_EDIT>main
+3 Register Ausnahme=HIDD_FORMAT_EXCEPTION_NEW>main
+3 Dialogfeld Ausnahmen=HIDD_EXCEPTION>main
+3 Dialogfeld Exportieren=HIDD_EXPORT_NAME>main
+3 Dialogfeld Dateiattribute=HIDD_FILEPROP>main
+3 Register Schriftart=HIDD_FORMAT_FONT>main
+3 Dialogfeld Layout formatieren=HIDD_WIZARD_LAYOUT>main
+3 Register Formate=HIDD_OPTIONS_FORMAT>main
+3 Register Kopf-/Fußzeile=HIDD_SETUP_HEADER>main
+3 Informationsfeld Element-Zwischenablage=HIDD_DCMCLIPBOARD>main
+3 Dialogfeld Elementattribute=HIDD_ITEMPROP>main
+3 Dialogfeld Layout=HIDD_WIZARD_START>main
+3 Register Ränder=HIDD_SETUP_MARGIN>main
+3 Dialogfeld Neuer Parameter=HIDD_PARAM_NEW>main
+3 Dialogfeld Arbeitsmappe öffnen=HIDD_OPEN>main
+3 Dialogfeld Arbeitsmappe aus Datenbank öffnen=HIDD_OPEN_DB>main
+3 Dialogfeld Optionen: Überblick=HIDD_WIZARD_OPTIONS>main
+3 Dialogfeld Seite einrichten: Überblick=HIDD_WIZARD_PREVIEW>main
+3 Dialogfeld Parameter=HIDD_PARAMETERS>main
+3 Parameter-Assistent=HIDD_PARAMETERS_RUNTIME>main
+3 Dialogfeld Arbeitsmappe speichern=HIDD_SAVE>main
+3 Dialogfeld Arbeitsmappe in Datenbank speichern=HIDD_SAVE_DB>main
+3 Register Blatt=HIDD_SETUP_SHEET>main
+3 Dialogfeld Kreuztabelle sortieren=HIDD_SORT_CROSSTAB>main
+3 Dialogfeld Tabelle sortieren=HIDD_SORT_TABLE>main
+3 Dialogfeld SQL-Inspektor=HIDD_DCMSQL>main
+3 Register Tabelle=HIDD_OPTIONS_TABLE>main
+3 Register Text/Zahl=HIDD_FORMAT_MASK>main
+3 Dialogfeld Titel - Register Bitmap=HIDD_TITLE_BMP>main
+3 Dialogfeld Titel - Register Text=HIDD_TITLE_TEXT>main
+3 Dialogfeld Summen=HIDD_SUMMARIES>main
+3 Dialogfeld Summe (in Kreuztabellen)=HIDD_TOTAL_EDIT_CROSSTAB>main
+3 Dialogfeld Summe (für Tabellen)=HIDD_TOTAL_EDIT_TABLE>main
+3 Register Benutzer > Arbeitsmappe=HIDD_GRANT_USERTOBOOK>main
+3 Dialogfeld Werte=HIDD_DCMLIST>main
+3 Dialogfeld Arbeitsmappe in anderem Datenbank-Account=HIDD_CONNECT_IO>main
+3 Register Arbeitsmappe > Benutzer=HIDD_GRANT_BOOKTOUSER>main
+1 Menü Datei
+2 Befehl Neu=HID_FILE_NEW>main
+2 Befehl Öffnen=HID_FILE_OPEN>main
+2 Befehl Schließen=HID_FILE_CLOSE>main
+2 Befehl Speichern=HID_FILE_SAVE>main
+2 Befehl Speichern unter=HID_FILE_SAVE_AS>main
+2 Befehl Planen=HID_FILE_SCHEDULE
+2 Befehl Seite einrichten=HID_FILE_PAGE_SETUP
+2 Befehl Seitenansicht=HID_FILE_PRINT_PREVIEW>main
+2 Befehl Drucken=HID_FILE_PRINT>main
+2 Befehl SQL importieren=HID_FILE_IMPORT>main
+2 Befehl Exportieren=HID_FILE_EXPORT>main
+2 Befehl Arbeitsmappen verwalten=Manage_Workbooks_command>main
+2 Befehl Bei Datenbank anmelden=HID_FILE_CONNECT>main
+2 Befehl Beenden=HID_APP_EXIT>main
+1 Menü Bearbeiten
+2 Befehl Rückgängig/Wiederholen=HID_EDIT_UNDO>main
+2 Befehl Wiederholen=HID_EDIT_REPEAT>main
+2 Befehl Ausschneiden=HID_EDIT_CUT>main
+2 Befehl Kopieren=HID_EDIT_COPY>main
+2 Befehl Seitenelement=HID_EDIT_PASTE>main
+2 Befehl Element löschen=HID_EDIT_DELETEITEM>main
+2 Befehl Alle auswählen=HID_EDIT_SELECTALL>main
+2 Befehl Suchen=HID_TOOLS_FIND>main
+2 Befehl Elementattribute=HID_EDIT_ITEMPROPERTIES>main
+1 Menü Ansicht
+2 Befehl Symbolleiste=HID_VIEW_TOOLBAR>main
+2 Befehl Formatierungsleiste=HID_TOOLBAR_FORMAT>main
+2 Befehl Analyseleiste=HID_TOOLBAR_ANALYSIS>main
+2 Befehl Statusleiste=HID_VIEW_STATUS_BAR>main
+2 Seitenelemente=View_Page_Items
+2 Befehl Element-Zwischenablage=HID_VIEW_CLIPBOARD>main
+2 Befehl SQL-Inspektor=HID_VIEW_SQL>main
+1 Menü Blatt
+2 Befehl Neues Blatt=HID_SHEET_NEW>main
+2 Befehl Blatt bearbeiten=HID_SHEET_MODIFY>main
+2 Befehl Als Tabelle duplizieren=HID_DUPLICATE_TABLE>main
+2 Befehl Als Kreuztabelle duplizieren=HID_DUPLICATE_CROSSTAB>main
+2 Befehl Blatt umbenennen=HID_SHEET_RENAME>main
+2 Befehl Blatt löschen=HID_SHEET_DELETE>main
+2 Befehl Titel bearbeiten=HID_SHEET_TITLE>main
+2 Befehl Aufgliedern=HID_SHEET_DRILLDOWN>main
+2 Befehl Ausblenden=HID_SHEET_ROLLUP>main
+2 Befehl Parameterwerte bearbeiten=HID_SHEET_MODPARAMS>main
+2 Blatt abgleichen=HIDD_Sheet_Refresh
+2 Befehl Alle Zeilen abrufen=HID_SHEET_FETCHALL>main
+2 Befehl Alle Zeilen zählen=HID_SHEET_COUNTALL>main
+1 Menü Format
+2 Befehl Daten=HID_FORMAT_DATA>main
+2 Befehl Überschriften=HID_FORMAT_HEADINGS>main
+2 Befehl Ausnahmen=HID_FORMAT_EXCEPTIONS>main
+2 Befehl Spalten/Breite=HID_COLUMN_WIDTH>main
+2 Befehl Spalten/Autom.Größe=HID_COLUMN_AUTOFIT>main
+2 Befehl Blatt/Titel=HID_FORMAT_SHEETTITLE>main
+2 Befehl Blatt/Hintergrund festlegen=HID_FORMAT_SHEETBKGND>main
+2 Befehl Hintergrund löschen=HID_FORMAT_SHEETCLEAR>main
+1 Menü Werkzeuge
+2 Befehl Bedingungen=HID_TOOLS_CONDITIONS>main
+2 Befehl Sortieren=HID_TOOLS_SORT>main
+2 Befehl Summen=HID_TOOLS_TOTALS>main
+2 Befehl Prozentsätze=HIDD_PERCENTAGES
+2 Befehl Berechnungen=HID_TOOLS_CALCULATIONS>main
+2 Befehl Parameter=HID_TOOLS_PARAMS>main
+2 Befehl Optionen=HID_TOOLS_OPTIONS>main
+1 Menü Diagramm
+2 Befehl Neues Diagramm=New_Graph_command>main
+2 Befehl Anzeigen=HID_MENU_VIEW_GRAPH>main
+2 Befehl Drucken=Print_command_graph
+2 Befehl In die Zwischenablage kopieren=Copy_to_clipboard_command_graph>main
+2 Befehl Legende=Legend_command>main
+2 Befehl X-Beschriftungen=X_Labels_command>main
+2 Befehl Statusleiste=Status_bar_command_graph>main
+2 Befehl Skalieren=HID_GRAPH_SCALE>main
+2 Befehl 3D-Ansicht=HID_GRAPH_3D>main
+1 Menü Fenster
+2 Befehl Symbole anordnen=HID_WINDOW_ARRANGE>main
+2 Befehl Überlappend=HID_WINDOW_CASCADE>main
+2 Befehl Horizontal nebeneinander=HID_WINDOW_TILE_HORZ>main
+2 Befehl Vertikal nebeneinander=HID_WINDOW_TILE_VERT>main
+1 Menü ? (Hilfe)
+2 Befehl Hilfethemen=HID_HELP_INDEX>main
+2 Befehl Hilfe verwenden=HID_HELP_USING>main
+2 Befehl Handbücher=HID_HELP_MANUALS>main
+2 Befehl Info Discoverer=HID_APP_ABOUT>main

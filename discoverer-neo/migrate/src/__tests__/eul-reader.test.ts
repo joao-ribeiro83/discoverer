@@ -9,9 +9,11 @@ import {
   readFolders,
   readWorkbookUsage,
   readWorkbooks,
+  summarizeWorkbookDocument,
 } from '../services/eul-reader.js';
 import type { MockDb } from './helpers/mock-eul.js';
 import { eul4Db, eul5Db, mixedDb, mockExecutor } from './helpers/mock-eul.js';
+import { buildWorkbookFixture } from '../testing/workbook-fixture.js';
 
 async function adapterFor(db: MockDb) {
   const execute = mockExecutor(db);
@@ -20,75 +22,108 @@ async function adapterFor(db: MockDb) {
 }
 
 describe('parseWorkbookContent', () => {
-  it('parses EUL5-style Workbook XML with worksheet names', async () => {
-    const info = await parseWorkbookContent(
+  it('decodes a Discoverer binary workbook into worksheets and columns', () => {
+    const doc = parseWorkbookContent(
+      buildWorkbookFixture({
+        name: 'WB',
+        worksheets: [
+          {
+            name: 'Sales',
+            columns: [
+              { folderLabel: 'F', itemLabel: 'Amount', heading: 'Total', formatMask: '9999' },
+            ],
+          },
+        ],
+      }),
+    );
+    expect(doc.format).toBe('DIS');
+    expect(doc.name).toBe('WB');
+    expect(doc.worksheets.map((w) => w.name)).toEqual(['Sales']);
+    expect(doc.worksheets[0]?.columns).toEqual([
+      expect.objectContaining({ itemLabel: 'Amount', heading: 'Total', formatMask: '9999' }),
+    ]);
+  });
+
+  it('summarizes a decoded workbook for the assessment report', () => {
+    const info = summarizeWorkbookDocument(
+      parseWorkbookContent(
+        buildWorkbookFixture({
+          worksheets: [
+            { name: 'A', columns: [{ itemLabel: 'X' }, { itemLabel: 'Y' }] },
+            { name: 'B', columns: [{ itemLabel: 'Z' }] },
+          ],
+          parameters: [{ name: 'P' }],
+        }),
+      ),
+    );
+    expect(info).toMatchObject({
+      parsed: true,
+      format: 'DIS',
+      worksheetCount: 2,
+      itemReferenceCount: 3,
+      parameterCount: 1,
+    });
+    expect(info.worksheets.map((w) => w.name)).toEqual(['A', 'B']);
+  });
+
+  it('falls back to an XML summary when the body is text (later releases)', () => {
+    const doc = parseWorkbookContent(
       '<Workbook name="WB"><Worksheet name="Sales"/><Worksheet name="Margins"/></Workbook>',
     );
-    expect(info.parsed).toBe(true);
-    expect(info.rootName).toBe('Workbook');
-    expect(info.worksheetCount).toBe(2);
-    expect(info.worksheets.map((w) => w.name)).toEqual(['Sales', 'Margins']);
-    expect(info.parseError).toBeUndefined();
+    expect(doc.format).toBe('XML');
+    expect(doc.name).toBe('WB');
+    expect(doc.worksheets.map((w) => w.name)).toEqual(['Sales', 'Margins']);
   });
 
-  it('parses the lowercase EUL4 dialect case-insensitively', async () => {
-    const info = await parseWorkbookContent('<workbook><worksheet name="Q1"/></workbook>');
-    expect(info.parsed).toBe(true);
-    expect(info.worksheetCount).toBe(1);
-    expect(info.worksheets[0]?.name).toBe('Q1');
+  it('reports an empty body rather than failing', () => {
+    expect(parseWorkbookContent(null).format).toBe('EMPTY');
+    expect(parseWorkbookContent('   ').format).toBe('EMPTY');
+    expect(parseWorkbookContent(Buffer.alloc(0)).format).toBe('EMPTY');
   });
 
-  it('counts attribute-less worksheets (empty-string nodes from xml2js)', async () => {
-    const info = await parseWorkbookContent('<workbook><worksheet/><worksheet/></workbook>');
-    expect(info.worksheetCount).toBe(2);
-    expect(info.worksheets.map((w) => w.name)).toEqual([null, null]);
-  });
-
-  it('counts nested item references', async () => {
-    const info = await parseWorkbookContent(
-      '<workbook><worksheet name="S"><item/><item/><column/></worksheet></workbook>',
-    );
-    expect(info.worksheetCount).toBe(1);
-    expect(info.itemReferenceCount).toBe(3);
-  });
-
-  it('handles an empty root workbook', async () => {
-    const info = await parseWorkbookContent('<workbook/>');
-    expect(info.parsed).toBe(true);
-    expect(info.rootName).toBe('workbook');
-    expect(info.worksheetCount).toBe(0);
-  });
-
-  it('returns parsed:false for null or empty content, with no error', async () => {
-    const nul = await parseWorkbookContent(null);
-    expect(nul.parsed).toBe(false);
-    expect(nul.parseError).toBeUndefined();
-    const empty = await parseWorkbookContent('   ');
-    expect(empty.parsed).toBe(false);
-  });
-
-  it('returns parsed:false with an error for non-XML content', async () => {
-    const info = await parseWorkbookContent(' binary discoverer blob, not xml');
-    expect(info.parsed).toBe(false);
-    expect(info.parseError).toBeTruthy();
-    expect(info.worksheetCount).toBe(0);
+  it('reports a body that carries no Discoverer records', () => {
+    const doc = parseWorkbookContent(Buffer.from('not a workbook at all', 'latin1'));
+    expect(doc.format).toBe('UNKNOWN');
+    expect(doc.worksheets).toHaveLength(0);
+    expect(doc.warnings.length).toBeGreaterThan(0);
   });
 });
 
 describe('readWorkbooks', () => {
-  it('EUL5: reads and parses workbook DOC_CONTENT', async () => {
+  it('EUL5: reads the workbook body from DOC_DOCUMENT and decodes it', async () => {
     const workbooks = await readWorkbooks(mockExecutor(eul5Db()));
     expect(workbooks).toHaveLength(1);
     expect(workbooks[0]?.name).toBe('Monthly Sales');
+    expect(workbooks[0]?.contentType).toBe('application/vnd.oracle-disco.wb');
+    expect(Buffer.isBuffer(workbooks[0]?.content)).toBe(true);
     expect(workbooks[0]?.info.parsed).toBe(true);
-    expect(workbooks[0]?.info.worksheetCount).toBe(1);
-    expect(workbooks[0]?.info.worksheets[0]?.name).toBe('Sales');
+    expect(workbooks[0]?.document.worksheets.map((w) => w.name)).toEqual(['Sales']);
+    expect(workbooks[0]?.document.worksheets[0]?.columns.map((c) => c.itemLabel)).toEqual([
+      'Invoice Amount',
+      'Region',
+    ]);
   });
 
-  it('EUL4: parses the minimal empty workbook', async () => {
+  it('EUL4: same read under the EUL4_ prefix', async () => {
     const workbooks = await readWorkbooks(mockExecutor(eul4Db()));
-    expect(workbooks[0]?.info.parsed).toBe(true);
-    expect(workbooks[0]?.info.worksheetCount).toBe(0);
+    expect(workbooks[0]?.name).toBe('Trial Balance');
+    expect(workbooks[0]?.info.worksheetCount).toBe(1);
+    expect(workbooks[0]?.contentLength).toBeGreaterThan(0);
+    expect(workbooks[0]?.isBatch).toBe(false);
+  });
+
+  // The body column is probed, not assumed: a source without it must still
+  // yield workbook metadata rather than failing the whole read.
+  it('degrades to metadata-only when no body column exists', async () => {
+    const db = eul5Db();
+    db.tables.EUL5_DOCUMENTS = db.tables.EUL5_DOCUMENTS!.map((row) => {
+      const { DOC_DOCUMENT: _omitted, ...rest } = row;
+      return rest;
+    });
+    const workbooks = await readWorkbooks(mockExecutor(db));
+    expect(workbooks[0]?.name).toBe('Monthly Sales');
+    expect(workbooks[0]?.content).toBeNull();
+    expect(workbooks[0]?.info.parsed).toBe(false);
   });
 });
 
@@ -97,22 +132,22 @@ describe('readWorkbookUsage', () => {
     const db = eul5Db();
     db.tables.EUL5_QPP_STATS = [
       {
-        DOC_NAME: 'Monthly Sales',
-        ES_ELAPSED_TIME: 100,
-        ES_ROWS_RETURNED: 500,
-        ES_CREATED_DATE: new Date('2012-01-01T00:00:00Z'),
+        QS_DOC_NAME: 'Monthly Sales',
+        QS_ACT_ELAP_TIME: 100,
+        QS_NUM_ROWS: 500,
+        QS_CREATED_DATE: new Date('2012-01-01T00:00:00Z'),
       },
       {
-        DOC_NAME: 'Monthly Sales',
-        ES_ELAPSED_TIME: 300,
-        ES_ROWS_RETURNED: 700,
-        ES_CREATED_DATE: new Date('2012-02-01T00:00:00Z'),
+        QS_DOC_NAME: 'Monthly Sales',
+        QS_ACT_ELAP_TIME: 300,
+        QS_NUM_ROWS: 700,
+        QS_CREATED_DATE: new Date('2012-02-01T00:00:00Z'),
       },
       {
-        DOC_NAME: 'Trial Balance',
-        ES_ELAPSED_TIME: 50,
-        ES_ROWS_RETURNED: 10,
-        ES_CREATED_DATE: new Date('2012-01-15T00:00:00Z'),
+        QS_DOC_NAME: 'Trial Balance',
+        QS_ACT_ELAP_TIME: 50,
+        QS_NUM_ROWS: 10,
+        QS_CREATED_DATE: new Date('2012-01-15T00:00:00Z'),
       },
     ];
     const { adapter, execute } = await adapterFor(db);
@@ -144,41 +179,42 @@ describe('readEulSchema', () => {
     const { version, data } = await readEulSchema(mockExecutor(eul5Db()));
 
     expect(version.version).toBe('EUL5');
-    expect(data.businessAreas).toHaveLength(1);
+    expect(data.businessAreas).toHaveLength(2);
     expect(data.folders).toHaveLength(2);
-    expect(data.items.map((i) => i.expType).sort()).toEqual(['CI', 'CU']);
+    // CO (database items) plus CI (created items) — CO is the one the old
+    // ['CI','CU'] default silently skipped.
+    expect(data.items.map((i) => i.expType).sort()).toEqual(['CI', 'CO', 'CO']);
+    // No confirmed EXP_TYPE discriminates a condition row, so these stay
+    // empty rather than re-reading items under a wrong label.
     expect(data.conditions).toHaveLength(0);
-    // The 'SM' security-manager expression is read into securityConditions.
-    expect(data.securityConditions).toHaveLength(1);
-    expect(data.securityConditions[0]?.expType).toBe('SM');
+    expect(data.securityConditions).toHaveLength(0);
     expect(data.joins).toHaveLength(1);
     expect(data.hierarchies).toHaveLength(1);
     expect(data.customFunctions).toHaveLength(1);
-    expect(data.users.map((u) => u.username)).toEqual(['JSMITH', 'MJONES']);
+    expect(data.users.map((u) => u.username)).toEqual(['JSMITH', 'MJONES', 'SALES_ROLE']);
     expect(data.grants).toHaveLength(3);
     expect(data.workbooks).toHaveLength(1);
-    expect(data.workbooks[0]?.info.worksheetCount).toBe(1);
     expect(data.workbookUsage).toEqual([]);
   });
 
-  it('EUL4: never reads securityConditions and fills version defaults', async () => {
+  it('EUL4: reads the same normalized shape as EUL5', async () => {
     const { version, data } = await readEulSchema(mockExecutor(eul4Db()));
 
     expect(version.version).toBe('EUL4');
     expect(data.securityConditions).toEqual([]);
-    expect(data.businessAreas[0]?.language).toBe('US'); // EUL4 default
+    expect(data.businessAreas[0]?.name).toBe('Finance');
     expect(data.items).toHaveLength(2);
-    expect(data.workbooks[0]?.info.parsed).toBe(true);
+    expect(data.workbooks).toHaveLength(1);
   });
 
   it('reads workbook usage into the data set when a query log exists', async () => {
     const db = eul5Db();
     db.tables.EUL5_QPP_STATS = [
       {
-        DOC_NAME: 'Monthly Sales',
-        ES_ELAPSED_TIME: 120,
-        ES_ROWS_RETURNED: 42,
-        ES_CREATED_DATE: new Date('2012-03-01T00:00:00Z'),
+        QS_DOC_NAME: 'Monthly Sales',
+        QS_ACT_ELAP_TIME: 120,
+        QS_NUM_ROWS: 42,
+        QS_CREATED_DATE: new Date('2012-03-01T00:00:00Z'),
       },
     ];
     const { data } = await readEulSchema(mockExecutor(db));

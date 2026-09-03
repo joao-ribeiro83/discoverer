@@ -1,0 +1,346 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Development Services">
+   <meta name="GENERATOR" content="Mozilla/4.76 [en] (WinNT; U) [Netscape]">
+   <title>Discoverer Release Notes</title>
+</head>
+<body>
+<b><font face="Times New Roman,Times"><font size=+2>Oracle
+Discoverer</font><sup><font size=-2>TM</font></sup><font size=+2> Desktop
+Edition</font></font></b>
+<br><b><font face="Times New Roman,Times">Release 4.1.37 for Microsoft
+Windows 95/98/2000/NT Release Notes</font></b>
+<p><b><font face="Times New Roman,Times"><font size=-1>(c) Copyright Oracle
+Corporation, 2001</font></font></b>
+<br><b><font size=-1>April 18th 2001</font></b>
+<br><b><font size=-1>Release 4.1.37</font></b>
+<p><font size=-1>This document provides various installation and late-breaking
+product information for Oracle Discoverer Desktop Edition release 4.1.37
+for Windows 95/98/2000/NT.</font>
+<p><b><font face="Times New Roman,Times"><font size=+1>Contents</font></font></b>
+<p><font face="Times New Roman,Times"><font size=-1>1&nbsp;&nbsp; Oracle
+Discoverer User Edition name change</font></font>
+<br><font face="Times New Roman,Times"><font size=-1>2&nbsp;&nbsp; New
+features from Discoverer 3.1</font></font>
+<br><font face="Times New Roman,Times"><font size=-1>3&nbsp;&nbsp; ODBC
+support</font></font>
+<br><font face="Times New Roman,Times"><font size=-1>4&nbsp;&nbsp; Known
+issues and workarounds</font></font>
+<br><font face="Times New Roman,Times"><font size=-1>5&nbsp;&nbsp; Issues
+fixed in this release (4.1.37)</font></font>
+<br><font face="Times New Roman,Times"><font size=-1>6&nbsp;&nbsp; Issues
+fixed in previous releases</font></font>
+<p><b><font face="Times New Roman,Times"><font size=+1>1. Oracle Discoverer
+User Edition name change</font></font></b>
+<p><font face="Times New Roman,Times"><font size=-1>Oracle Discoverer User
+Edition has changed its name.&nbsp; The client-server release is now called
+Discoverer Desktop Edition.&nbsp; And the web release, formerly Discoverer
+3i User Edition,&nbsp; is now called Discoverer<i> </i>Plus.</font></font>
+<p><b><font face="Times New Roman,Times"><font size=+1>2. New Features
+from Discoverer 3.1</font></font></b>
+<ul>
+<li>
+<font face="Times New Roman,Times"><font size=-1>Support for Oracle8<i>i</i>
+Analytic Functions - the video store tutorial ships a workbook "VIDAF4.DIS"
+which contains examples of the usage of these functions</font></font></li>
+
+<li>
+<font face="Times New Roman,Times"><font size=-1>Explain Plan added to
+SQL Inspector</font></font></li>
+
+<li>
+<font face="Times New Roman,Times"><font size=-1>Workbook level parameters</font></font></li>
+</ul>
+<font face="Times New Roman,Times"><font size=-1>Please see the documentation
+supplied with Discoverer for detailed descriptions of these new features
+and instructions in their use.</font></font>
+<p><b><font size=+1>3. ODBC support</font></b>
+<p><b><u><font face="Times New Roman,Times"><font size=-1>3.1 Introduction</font></font></u></b>
+<p><font face="Times New Roman,Times"><font size=-1>Oracle Discoverer Release
+4.1 supports access to non Oracle Data Sources via ODBC.&nbsp; The implementation
+requires that the appropriate client software and ODBC Driver be installed
+on the machine running Oracle Discoverer. Oracle Discoverer allows the
+End User Layer to be created on the ODBC Data Source, alongside the data
+to be reported on. There is no requirement for an intermediate Oracle database
+to hold the EUL.&nbsp; Security on the ODBC Data Source will be used to
+control access to the created EUL and the data it defines.</font></font>
+<p><font face="Times New Roman,Times"><font size=-1>To access an ODBC datasource
+enter</font></font><tt> <b>ODBC:<i>datasourcename</i></b> </tt><font face="Times New Roman,Times"><font size=-1>as
+the connect string in the opening dialog, where </font></font><b><i><tt>datasourcename</tt></i></b><font face="Times New Roman,Times"><font size=-1>
+is the name of your ODBC source as set up in the Control Panel ODBC Data
+Source Administrator.</font></font>
+<p><font face="Times New Roman,Times"><font size=-1>Available functionality
+will depend on the capabilities of both the Data Source and the Driver
+being used. Restrictions identified during testing are highlighted later
+in this document.</font></font>
+<p><b><u><font face="Times New Roman,Times"><font size=-1>3.2 Supported
+datasources</font></font></u></b>
+<p><font face="Times New Roman,Times"><font size=-1>Oracle Discoverer Release
+4.1 has only been tested against the non Oracle Data Sources listed in
+this document. The implementation of support for ODBC Data Sources is intended
+to be as generic as possible and may allow other Data Sources to be accessed
+using the current release. However, it is possible that&nbsp; some functionality
+may not be available and Oracle cannot guarantee that the information returned
+by an untested Data Source will be correct.</font></font>
+<p><font face="Times New Roman,Times"><font size=-1>The following matrix
+shows which version of each Data Source have been tested, together with
+the ODBC Driver used and it's version :</font></font>
+<br>&nbsp;
+<table BORDER >
+<tr>
+<td>
+<center><b><font face="Times New Roman,Times"><font size=-1>Data Source
+Name</font></font></b></center>
+</td>
+
+<td>
+<center><b><font face="Times New Roman,Times"><font size=-1>Data Source
+Version&nbsp;</font></font></b></center>
+</td>
+
+<td>
+<center><b><font face="Times New Roman,Times"><font size=-1>ODBC Driver&nbsp;</font></font></b></center>
+</td>
+
+<td><b><font face="Times New Roman,Times"><font size=-1>ODBC Driver Version</font></font></b></td>
+</tr>
+
+<tr>
+<td><font face="Times New Roman,Times"><font size=-1>SQL Server&nbsp;</font></font></td>
+
+<td><font face="Times New Roman,Times"><font size=-1>v7.0</font></font></td>
+
+<td><font face="Times New Roman,Times"><font size=-1>Microsoft SQL Server&nbsp;</font></font></td>
+
+<td><font face="Times New Roman,Times"><font size=-1>3.70.06.90</font></font></td>
+</tr>
+
+<tr>
+<td><font face="Times New Roman,Times"><font size=-1>SQL Server</font></font></td>
+
+<td><font face="Times New Roman,Times"><font size=-1>v6.5</font></font></td>
+
+<td><font face="Times New Roman,Times"><font size=-1>Microsoft SQL Server</font></font></td>
+
+<td><font face="Times New Roman,Times"><font size=-1>2.65.0201</font></font></td>
+</tr>
+
+<tr>
+<td><font face="Times New Roman,Times"><font size=-1>Sybase</font></font></td>
+
+<td><font face="Times New Roman,Times"><font size=-1>11.5</font></font></td>
+
+<td><font face="Times New Roman,Times"><font size=-1>Sybase</font></font></td>
+
+<td><font face="Times New Roman,Times"><font size=-1>3.01.00.00</font></font></td>
+</tr>
+
+<tr>
+<td><font face="Times New Roman,Times"><font size=-1>Informix</font></font></td>
+
+<td><font face="Times New Roman,Times"><font size=-1>7.2.TC2</font></font></td>
+
+<td><font face="Times New Roman,Times"><font size=-1>Intersolv</font></font></td>
+
+<td><font face="Times New Roman,Times"><font size=-1>2.12.0000</font></font></td>
+</tr>
+</table>
+
+<p><font face="Times New Roman,Times"><font size=-1>Testing has been carried
+out against these versions only and using the ODBC Drivers identified below.
+Other combinations of Data Source version and ODBC Driver may work but
+Oracle cannot guarantee that the information returned by an untested configuration
+will be correct.</font></font>
+<p><font face="Times New Roman,Times"><font size=-1>Other ODBC drivers
+will work against these data sources but some functionality may not be
+available. For example, SQL Server can be accessed via the Intersolv driver
+version 2.12.0000 but Administrators may find that locking is handled inefficiently</font></font>
+<p><font face="Times New Roman,Times"><font size=-1><b>Note: </b>For Discoverer
+to work correctly when connecting via ODBC to a Sybase 11 server, you should
+ensure that the server database option ddl in tran is set to TRUE.</font></font>
+<p><b><u><font face="Times New Roman,Times"><font size=-1>3.3 Disabled
+Functionality</font></font></u></b>
+<p><font face="Times New Roman,Times"><font size=-1>Some Features within
+Oracle Discoverer have been disabled when connected to any ODBC Data Source.
+Users will find the relevant Menu Options, Windows and Wizards of the User
+Edition and Administrator Edition will be unavailable. Features affected
+in this way include :</font></font>
+<br>&nbsp;
+<table BORDER WIDTH="54%" >
+<tr>
+<td><b><font face="Times New Roman,Times"><font size=-1>Feature&nbsp;</font></font></b></td>
+
+<td><b><font face="Times New Roman,Times"><font size=-1>Reason</font></font></b></td>
+</tr>
+
+<tr>
+<td><font face="Times New Roman,Times"><font size=-1>Batch&nbsp;</font></font></td>
+
+<td><font face="Times New Roman,Times"><font size=-1>Requires Oracle PL/SQL
+to submit jobs for batch execution.</font></font></td>
+</tr>
+
+<tr>
+<td><font face="Times New Roman,Times"><font size=-1>Summary Management(1)&nbsp;</font></font></td>
+
+<td><font face="Times New Roman,Times"><font size=-1>Requires Oracle PL/SQL
+to perform management functions</font></font></td>
+</tr>
+
+<tr>
+<td><font face="Times New Roman,Times"><font size=-1>Query Performance
+Prediction</font></font></td>
+
+<td><font face="Times New Roman,Times"><font size=-1>Requires Oracle specific
+database objects and functions.</font></font></td>
+</tr>
+
+<tr>
+<td><font face="Times New Roman,Times"><font size=-1>Date Hierarchies</font></font></td>
+
+<td><font face="Times New Roman,Times"><font size=-1>Requires Oracle specific
+DECODE() Syntax.</font></font></td>
+</tr>
+
+<tr>
+<td><font face="Times New Roman,Times"><font size=-1>EUL Gateways(2)&nbsp;</font></font></td>
+
+<td><font face="Times New Roman,Times"><font size=-1>Requires checkpoints
+for partial transaction rollback.</font></font></td>
+</tr>
+</table>
+
+<p><font face="Times New Roman,Times"><font size=-1>(1) It should be noted
+that it is only the Management of Summaries which is disabled. External
+summaries can be created and managed by the administrator, and will be
+used when appropriate in query execution.</font></font>
+<p><font face="Times New Roman,Times"><font size=-1>(2) EUL Gateways have
+been enabled for Microsoft SQL Server and Sybase as these databases support
+partial transaction rollback via checkpoints and have been tested as part
+of the Discoverer ODBC certification process. EUL Gateways are not available
+on other data sources as&nbsp; ODBC does not support a common syntax for
+"rollback to checkpoint". This includes some data sources which do have
+support for checkpoints but where the required data source specific syntax
+has not passed the Discoverer ODBC certification process.</font></font>
+<p><b><u><font face="Times New Roman,Times"><font size=-1>3.4 Partial Functionality</font></font></u></b>
+<p><font face="Times New Roman,Times"><font size=-1>Some features within
+Oracle Discoverer have been made partially available when connected to
+a non-Oracle data Source via ODBC. The implementation has been designed
+to leave as much of a feature in place as is practicable, while only disabling
+those aspects which ODBC cannot support. These include :</font></font>
+<br>&nbsp;
+<table BORDER >
+<tr>
+<td><b><font face="Times New Roman,Times"><font size=-1>Feature</font></font></b></td>
+
+<td><b><font face="Times New Roman,Times"><font size=-1>Implementation
+Restrictions</font></font></b></td>
+</tr>
+
+<tr>
+<td><font face="Times New Roman,Times"><font size=-1>EUL Management&nbsp;</font></font></td>
+
+<td><font face="Times New Roman,Times"><font size=-1>Users can create EUL's
+under their current user or an existing other database user. The facility
+to identify and create a new user is not available. Similarly, the tutorial
+data can only be created if the tutorial user has been created in advance.</font></font></td>
+</tr>
+
+<tr>
+<td><font face="Times New Roman,Times"><font size=-1>Count All Rows&nbsp;</font></font></td>
+
+<td><font face="Times New Roman,Times"><font size=-1>The facility to return
+a count of all the rows to be returned by a query will not work for all
+possible queries. Oracle Discoverer creates a new query to return this
+count and makes use of an Inline View to improve performance. As Inline
+View syntax is not supported by ODBC, it is necessary to "Flatten" the
+SQL before it is sent to the ODBC Data Source. This process is not possible
+when the query whose whose rows are being counted contains any aggregate
+function(s). In this case, a message will be returned to the user explaining
+that a count is not available on the current query.</font></font></td>
+</tr>
+
+<tr>
+<td><font face="Times New Roman,Times"><font size=-1>Available Functions&nbsp;</font></font></td>
+
+<td><font face="Times New Roman,Times"><font size=-1>Users can still create
+derived or complex items using the formula editor and combining items and
+constants with database functions. However, the list of available functions
+is not the same under ODBC as for Oracle. A restricted list is provided
+offering those functions for which an equivalent is recognised by the ODBC
+driver as being available on the current data source. For example, DECODE()
+is an Oracle specific function and is not available on ODBC, while SYSDATE
+will be replaced by the ODBC function NOW().</font></font></td>
+</tr>
+</table>
+
+<p><font face="Times New Roman,Times"><font size=-1>Users can still create
+derived or complex items using the formula editor and combining items and
+constants with database functions. However, the list of available functions
+is not the same under ODBC as for Oracle. A restricted list is provided
+offering those functions for which an equivalent is recognized by the ODBC
+driver as being available on the current data source. For example, DECODE()
+is an Oracle specific function and is not available on ODBC, while SYSDATE
+will be replaced by the ODBC function NOW().</font></font>
+<p><b><u><font face="Times New Roman,Times"><font size=-1>3.5 Compatible
+ODBC datasources for saving workbooks in the database</font></font></u></b>
+<p><font face="Times New Roman,Times"><font size=-1>&nbsp;The compatible
+ODBC Data sources are Microsoft SQL Server v6.5/v7.0, Sybase 11.5 and Informix
+7.20.TC2. The drivers are listed in the previous table.</font></font>
+<p><b><font face="Times New Roman,Times"><font size=+1>4. Known issues
+and workarounds</font></font></b>
+<p><font face="Times New Roman,Times"><font size=-1>Below is a list of
+known issues and workarounds where possible</font></font>
+<p><b><u><font face="Times New Roman,Times"><font size=-1>4.1 Required
+Support Files (RSF) Upgrade</font></font></u></b>
+<p><font face="Times New Roman,Times"><font size=-1>Discoverer installs
+RSF 8.0.6.0.0 but in order to solve the following issues upgrade to RSF
+8.0.6.1.1 or later</font></font>
+<ul>
+<li>
+<tt>1040536&nbsp; NLS: ZHT16MSWIN950 character set conversion causes errors.</tt></li>
+
+<br><font face="Times New Roman,Times"><font size=-1>Discoverer server
+can not connect to the database of which character set is ZHT16MSWIN950.</font></font>
+<li>
+<tt>729977&nbsp;&nbsp; NLS: "Date format not recognized" error occurs using
+date format mask</tt></li>
+
+<br><font face="Times New Roman,Times"><font size=-1>Non-English language
+users may experience errors with date type data. This manifests itself
+in the error "Data format not recognized" and no list of values.</font></font>
+<li>
+<tt>770803&nbsp;&nbsp; NLS: Linguistic sort causes unexpected results</tt></li>
+
+<br><font face="Times New Roman,Times"><font size=-1>If data to be sorted
+includes punctuation (e.g. a full stop or a comma) then incorrect results
+can be generated by performing a sort.</font></font></ul>
+<b><font size=+1>5. Issues fixed in this release (4.1.37)</font></b>
+<p><font size=-1>No new bug fixes.&nbsp; (Internal development bugs which
+are not visibile to the end-user are fixed in this release.)</font>
+<p><b><font size=+1>6. Issues fixed in previous releases</font></b>
+<p><font size=-1>Issues fixed in 4.1.36</font>
+<p><tt>664469&nbsp;&nbsp; Totals:display totals for a subset of columns
+on one line in crosstabs</tt>
+<br><tt>1395507&nbsp; Target path in short-cut tab on user icon will not
+launched shared workbook in Apps mode</tt>
+<br><tt>1488343&nbsp; Unable to remove axis item from sheet</tt>
+<br><tt>1559405&nbsp; Nls bidi : condition with hebrew values is not saved
+with the workbook</tt>
+<br><tt>1651449&nbsp; Extracting workbook sql seems to work but isn't saved
+correctly</tt>
+<br><tt>1664945&nbsp; Share workbooks user list takes long time and cannot
+display more than 32k users</tt>
+<br><tt>1700388&nbsp; Percent of grand figure is wrong and changes after
+page item pivot</tt>
+<p><font size=-1>Issues fixed in 4.1.33f</font>
+<p><tt>856891&nbsp;&nbsp; Error when running qstats31.dis after creating
+summary tables</tt>
+<br><tt>1371136&nbsp; NLS: Description format none and standard is not
+translated correctly in German</tt>
+<br><tt>1395284&nbsp; Numeric overflow error with qstats31.dis</tt>
+<br>&nbsp;
+</body>
+</html>

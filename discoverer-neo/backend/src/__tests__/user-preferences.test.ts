@@ -61,7 +61,7 @@ beforeEach(async () => {
 // ---------------------------------------------------------------------------
 
 describe('GET /api/users/me/preferences', () => {
-  it('returns default locale/theme for a newly created user', async () => {
+  it('returns default locale/theme/colorPalette for a newly created user', async () => {
     await createTestUser();
     const token = await loginAndReturnToken();
 
@@ -72,7 +72,7 @@ describe('GET /api/users/me/preferences', () => {
     });
 
     expect(res.statusCode).toBe(200);
-    expect(res.json().data).toEqual({ locale: 'en', theme: 'light' });
+    expect(res.json().data).toEqual({ locale: 'en', theme: 'light', colorPalette: 'navy' });
   });
 
   it('rejects an unauthenticated request', async () => {
@@ -98,7 +98,7 @@ describe('PATCH /api/users/me/preferences', () => {
     });
 
     expect(res.statusCode).toBe(200);
-    expect(res.json().data).toEqual({ locale: 'pt-PT', theme: 'light' });
+    expect(res.json().data).toEqual({ locale: 'pt-PT', theme: 'light', colorPalette: 'navy' });
   });
 
   it('updates theme only', async () => {
@@ -113,10 +113,10 @@ describe('PATCH /api/users/me/preferences', () => {
     });
 
     expect(res.statusCode).toBe(200);
-    expect(res.json().data).toEqual({ locale: 'en', theme: 'dark' });
+    expect(res.json().data).toEqual({ locale: 'en', theme: 'dark', colorPalette: 'navy' });
   });
 
-  it('updates both locale and theme', async () => {
+  it('updates colorPalette only', async () => {
     await createTestUser();
     const token = await loginAndReturnToken();
 
@@ -124,11 +124,26 @@ describe('PATCH /api/users/me/preferences', () => {
       method: 'PATCH',
       url: '/api/users/me/preferences',
       headers: { authorization: `Bearer ${token}` },
-      payload: { locale: 'fr-FR', theme: 'high-contrast' },
+      payload: { colorPalette: 'default' },
     });
 
     expect(res.statusCode).toBe(200);
-    expect(res.json().data).toEqual({ locale: 'fr-FR', theme: 'high-contrast' });
+    expect(res.json().data).toEqual({ locale: 'en', theme: 'light', colorPalette: 'default' });
+  });
+
+  it('updates locale, theme, and colorPalette together', async () => {
+    await createTestUser();
+    const token = await loginAndReturnToken();
+
+    const res = await app.inject({
+      method: 'PATCH',
+      url: '/api/users/me/preferences',
+      headers: { authorization: `Bearer ${token}` },
+      payload: { locale: 'fr-FR', theme: 'high-contrast', colorPalette: 'default' },
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.json().data).toEqual({ locale: 'fr-FR', theme: 'high-contrast', colorPalette: 'default' });
   });
 
   it('rejects an invalid locale', async () => {
@@ -154,6 +169,20 @@ describe('PATCH /api/users/me/preferences', () => {
       url: '/api/users/me/preferences',
       headers: { authorization: `Bearer ${token}` },
       payload: { theme: 'neon' },
+    });
+
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('rejects an invalid colorPalette', async () => {
+    await createTestUser();
+    const token = await loginAndReturnToken();
+
+    const res = await app.inject({
+      method: 'PATCH',
+      url: '/api/users/me/preferences',
+      headers: { authorization: `Bearer ${token}` },
+      payload: { colorPalette: 'sunset' },
     });
 
     expect(res.statusCode).toBe(400);
@@ -191,7 +220,7 @@ describe('PATCH /api/users/me/preferences', () => {
       method: 'PATCH',
       url: '/api/users/me/preferences',
       headers: { authorization: `Bearer ${token}` },
-      payload: { locale: 'es-ES', theme: 'dark' },
+      payload: { locale: 'es-ES', theme: 'dark', colorPalette: 'default' },
     });
 
     const res = await app.inject({
@@ -201,12 +230,12 @@ describe('PATCH /api/users/me/preferences', () => {
     });
 
     expect(res.statusCode).toBe(200);
-    expect(res.json().data).toEqual({ locale: 'es-ES', theme: 'dark' });
+    expect(res.json().data).toEqual({ locale: 'es-ES', theme: 'dark', colorPalette: 'default' });
   });
 });
 
 describe('login/me payload', () => {
-  it('includes locale and theme in the login response', async () => {
+  it('includes locale, theme, and colorPalette in the login response', async () => {
     await createTestUser();
 
     const res = await app.inject({
@@ -216,10 +245,10 @@ describe('login/me payload', () => {
     });
 
     expect(res.statusCode).toBe(200);
-    expect(res.json().data.user).toMatchObject({ locale: 'en', theme: 'light' });
+    expect(res.json().data.user).toMatchObject({ locale: 'en', theme: 'light', colorPalette: 'navy' });
   });
 
-  it('includes locale and theme in the /api/auth/me response', async () => {
+  it('includes locale, theme, and colorPalette in the /api/auth/me response', async () => {
     await createTestUser();
     const token = await loginAndReturnToken();
 
@@ -237,6 +266,6 @@ describe('login/me payload', () => {
     });
 
     expect(res.statusCode).toBe(200);
-    expect(res.json().data).toMatchObject({ locale: 'en', theme: 'dark' });
+    expect(res.json().data).toMatchObject({ locale: 'en', theme: 'dark', colorPalette: 'navy' });
   });
 });

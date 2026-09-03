@@ -55,3 +55,7 @@ backend/storage/exports/
 
 # Generated OpenAPI spec (npm run generate-spec — canonical copy lives at docs/api/openapi.yaml)
 backend/openapi-spec.json
+
+# Temporary-password files written by a migration. NEVER commit these:
+# they contain working credentials for provisioned accounts.
+credentials/

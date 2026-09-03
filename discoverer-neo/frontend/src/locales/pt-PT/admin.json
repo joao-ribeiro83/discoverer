@@ -80,6 +80,26 @@
       "updated": "Pasta atualizada",
       "created": "Pasta criada",
       "deactivated": "Pasta desativada"
+    },
+    "sharedBadge": "Partilhada",
+    "sharedTooltip": "Pertence a outra área de negócio e foi partilhada com esta",
+    "manageSharing": "Gerir áreas de negócio",
+    "sharing": {
+      "title": "Áreas de negócio de \"{{name}}\"",
+      "description": "Uma pasta pertence a uma área de negócio e pode ser partilhada com outras, tal como no Oracle Discoverer.",
+      "memberOf": "Pertence a",
+      "owning": "proprietária",
+      "owningTooltip": "A área de negócio proprietária não pode ser removida",
+      "noShares": "Não partilhada com nenhuma outra área de negócio.",
+      "addTo": "Partilhar com",
+      "selectPlaceholder": "Selecione uma área de negócio",
+      "noneAvailable": "Não há outras áreas de negócio disponíveis",
+      "share": "Partilhar",
+      "removeShare": "Remover partilha com {{name}}",
+      "shared": "Pasta partilhada",
+      "unshared": "Partilha removida",
+      "shareFailed": "Não foi possível partilhar a pasta",
+      "unshareFailed": "Não foi possível remover a partilha"
     }
   },
   "items": {
@@ -91,9 +111,9 @@
     "entityLabel": "item",
     "selectFolderPlaceholder": "Selecione uma pasta",
     "itemTypes": {
-      "ci": "Item de Coluna (CI)",
+      "co": "Item de Base de Dados (CO)",
+      "ci": "Item Criado (CI)",
       "cu": "Item Calculado (CU)",
-      "co": "Condição (CO)",
       "ji": "Item de Junção (JI)",
       "hi": "Item de Hierarquia (HI)",
       "ag": "Agregação (AG)",

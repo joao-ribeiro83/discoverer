@@ -18,8 +18,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
 import { useMapBuilderStore, columnLabel } from '@/store/mapBuilder'
-import type { AggFunction, SortDirection } from '@/lib/types'
+import type { AggFunction, MapAxisEdge, MapAxisType, SortDirection } from '@/lib/types'
 
 const AGG_FUNCTIONS: AggFunction[] = ['NONE', 'SUM', 'COUNT', 'AVG', 'MIN', 'MAX']
 
@@ -35,6 +36,18 @@ const FORMAT_PRESETS = [
 ] as const
 
 const SORT_NONE = 'NONE'
+/** Radix forbids an empty SelectItem value, so "not recorded" needs a token. */
+const AXIS_UNSET = 'UNSET'
+
+/**
+ * Where the column sits on the sheet.
+ *
+ * `AXIS` groups and `MEASURE` is aggregated — the SQL generator reads this to
+ * decide whether an item's default aggregation applies. `PAGE` is Discoverer's
+ * page axis. A migrated worksheet always arrives with one of the three; a
+ * column added here starts unset and behaves as it always has.
+ */
+const AXIS_TYPES: MapAxisType[] = ['AXIS', 'MEASURE', 'PAGE']
 
 interface FormState {
   displayName: string
@@ -43,6 +56,10 @@ interface FormState {
   sortDirection: SortDirection | typeof SORT_NONE
   sortOrder: string
   columnWidth: string
+  axisType: MapAxisType | typeof AXIS_UNSET
+  axisEdge: MapAxisEdge | typeof AXIS_UNSET
+  sortGroup: boolean
+  isHidden: boolean
 }
 
 export function ColumnConfigDialog({
@@ -67,6 +84,10 @@ export function ColumnConfigDialog({
     sortDirection: SORT_NONE,
     sortOrder: '',
     columnWidth: '',
+    axisType: AXIS_UNSET,
+    axisEdge: AXIS_UNSET,
+    sortGroup: false,
+    isHidden: false,
   })
 
   // Re-seed the form whenever a different column is opened.
@@ -79,6 +100,10 @@ export function ColumnConfigDialog({
       sortDirection: item.sortDirection ?? SORT_NONE,
       sortOrder: item.sortOrder != null ? String(item.sortOrder) : '',
       columnWidth: item.columnWidth != null ? String(item.columnWidth) : '',
+      axisType: item.axisType ?? AXIS_UNSET,
+      axisEdge: item.axisEdge ?? AXIS_UNSET,
+      sortGroup: item.sortGroup,
+      isHidden: item.isHidden,
     })
   }, [open, item])
 
@@ -100,6 +125,14 @@ export function ColumnConfigDialog({
         columnWidthNum != null && Number.isFinite(columnWidthNum) && columnWidthNum > 0
           ? columnWidthNum
           : null,
+      axisType: form.axisType === AXIS_UNSET ? null : form.axisType,
+      // An edge only means anything on an axis column; storing one on a
+      // measure would put a value in the crosstab's column headings that the
+      // pivot then has nothing to measure.
+      axisEdge:
+        form.axisEdge === AXIS_UNSET || form.axisType === 'MEASURE' ? null : form.axisEdge,
+      sortGroup: form.sortGroup,
+      isHidden: form.isHidden,
     })
     onOpenChange(false)
   }
@@ -208,6 +241,79 @@ export function ColumnConfigDialog({
                 onChange={(e) => set('columnWidth', e.target.value)}
                 placeholder={t('mapBuilder:columnConfig.columnWidthPlaceholder')}
               />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>{t('mapBuilder:columnConfig.axisType')}</Label>
+              <Select
+                value={form.axisType}
+                onValueChange={(v) => set('axisType', v as FormState['axisType'])}
+              >
+                <SelectTrigger aria-label={t('mapBuilder:columnConfig.axisType')}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={AXIS_UNSET}>{t('common:labels.none')}</SelectItem>
+                  {AXIS_TYPES.map((a) => (
+                    <SelectItem key={a} value={a}>
+                      {t(`mapBuilder:columnConfig.axisTypes.${a}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>{t('mapBuilder:columnConfig.axisEdge')}</Label>
+              <Select
+                value={form.axisEdge}
+                onValueChange={(v) => set('axisEdge', v as FormState['axisEdge'])}
+                disabled={form.axisType === 'MEASURE'}
+              >
+                <SelectTrigger aria-label={t('mapBuilder:columnConfig.axisEdge')}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={AXIS_UNSET}>{t('common:labels.none')}</SelectItem>
+                  <SelectItem value="ROW">{t('mapBuilder:columnConfig.axisEdges.ROW')}</SelectItem>
+                  <SelectItem value="COLUMN">
+                    {t('mapBuilder:columnConfig.axisEdges.COLUMN')}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {t('mapBuilder:columnConfig.axisEdgeHint')}
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-start gap-2">
+              <Checkbox
+                id="col-sort-group"
+                checked={form.sortGroup}
+                onCheckedChange={(v) => set('sortGroup', v === true)}
+              />
+              <div className="space-y-0.5">
+                <Label htmlFor="col-sort-group">{t('mapBuilder:columnConfig.sortGroup')}</Label>
+                <p className="text-xs text-muted-foreground">
+                  {t('mapBuilder:columnConfig.sortGroupHint')}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <Checkbox
+                id="col-hidden"
+                checked={form.isHidden}
+                onCheckedChange={(v) => set('isHidden', v === true)}
+              />
+              <div className="space-y-0.5">
+                <Label htmlFor="col-hidden">{t('mapBuilder:columnConfig.isHidden')}</Label>
+                <p className="text-xs text-muted-foreground">
+                  {t('mapBuilder:columnConfig.isHiddenHint')}
+                </p>
+              </div>
             </div>
           </div>
         </div>

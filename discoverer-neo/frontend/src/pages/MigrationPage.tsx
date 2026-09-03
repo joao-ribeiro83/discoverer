@@ -9,6 +9,7 @@ import {
   Info,
   Loader2,
   Play,
+  RefreshCw,
   ScanSearch,
   XCircle,
 } from 'lucide-react'
@@ -18,6 +19,7 @@ import type {
   AssessmentReport,
   DataSource,
   EulVersionInfo,
+  MapReimportCounts,
   MigrationJob,
   MigrationTable,
 } from '@/lib/types'
@@ -54,8 +56,27 @@ const TABLE_ORDER: MigrationTable[] = [
   'custom_functions',
   'maps',
   'map_items',
+  'map_conditions',
+  'map_parameters',
+  'map_calculated_fields',
+  'map_layouts',
+  'map_totals',
+  'map_page_setup',
+  'map_conditional_formats',
   'user_business_area_grants',
 ]
+
+/** Tables a maps-only re-import writes, in the order it writes them. */
+const MAP_TABLE_ORDER = [
+  'maps',
+  'map_items',
+  'map_conditions',
+  'map_parameters',
+  'map_calculated_fields',
+  'map_layouts',
+  'map_totals',
+  'map_page_setup',
+] as const satisfies readonly (keyof MapReimportCounts)[]
 
 function VersionBadge({ version }: { version: string }) {
   const tone =
@@ -181,6 +202,31 @@ export function MigrationPage() {
       toast({ title: t('migration:toasts.couldNotStart'), description: getErrorMessage(err), variant: 'destructive' }),
   })
 
+  // Rebuilds only the maps of an already-migrated database. Separate from the
+  // run mutation because it is refused-by-design as a full re-run, and because
+  // it deletes the existing migrated maps before writing new ones.
+  const reimportMapsMutation = useMutation({
+    mutationFn: async () =>
+      (
+        await apiClient.migration.reimportMaps({
+          dataSourceId,
+          schemaOwner: schemaOwner || undefined,
+          dryRun,
+        })
+      ).data.data,
+    onSuccess: (started) => {
+      setActiveJobId(started.id)
+      toast({
+        title: dryRun
+          ? t('migration:toasts.dryRunStarted')
+          : t('migration:toasts.mapReimportStarted'),
+        description: t('migration:toasts.progressUpdatesBelow'),
+      })
+    },
+    onError: (err) =>
+      toast({ title: t('migration:toasts.couldNotStart'), description: getErrorMessage(err), variant: 'destructive' }),
+  })
+
   // Announce the outcome once, when the job leaves RUNNING.
   const lastStatusRef = useRef<string | null>(null)
   useEffect(() => {
@@ -213,11 +259,18 @@ export function MigrationPage() {
   }, [job?.logs.length])
 
   const isRunning = job?.status === 'RUNNING'
-  const busy = detectMutation.isPending || analyzeMutation.isPending || runMutation.isPending
+  const busy =
+    detectMutation.isPending ||
+    analyzeMutation.isPending ||
+    runMutation.isPending ||
+    reimportMapsMutation.isPending
   const canAct = dataSourceId !== '' && !busy && !isRunning
 
   const result = job?.result ?? null
   const counts = result ? (result.dryRun ? result.planned : result.inserted) : null
+  // A maps re-import reports its own counts; a dry run reports what it planned.
+  const mapsResult = job?.mapsResult ?? null
+  const mapsCounts = mapsResult ? (mapsResult.dryRun ? mapsResult.planned : mapsResult.written) : null
 
   return (
     <AdminPageWrapper
@@ -317,7 +370,24 @@ export function MigrationPage() {
               )}
               {dryRun ? t('migration:actions.runDryRun') : t('migration:actions.runMigration')}
             </Button>
+
+            <Button
+              variant="outline"
+              onClick={() => reimportMapsMutation.mutate()}
+              disabled={!canAct}
+            >
+              {reimportMapsMutation.isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="mr-2 h-4 w-4" />
+              )}
+              {t('migration:actions.reimportMaps')}
+            </Button>
           </div>
+
+          <p className="text-sm text-muted-foreground">
+            {t('migration:source.reimportMapsHelp')}
+          </p>
 
           {!dryRun && (
             <p className="flex items-start gap-2 text-sm text-warning">
@@ -419,6 +489,30 @@ export function MigrationPage() {
               ))}
             </dl>
 
+            {report.worksheetFidelity.totalWorksheets > 0 && (
+              <div>
+                <h4 className="mb-2 font-medium">{t('migration:assessment.fidelity.title')}</h4>
+                <dl className="grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-3 lg:grid-cols-7">
+                  {(
+                    [
+                      [t('migration:assessment.fidelity.totalWorksheets'), report.worksheetFidelity.totalWorksheets],
+                      [t('migration:assessment.fidelity.layoutDecoded'), report.worksheetFidelity.layoutDecoded],
+                      [t('migration:assessment.fidelity.crosstabs'), report.worksheetFidelity.crosstabs],
+                      [t('migration:assessment.fidelity.withSorts'), report.worksheetFidelity.withSorts],
+                      [t('migration:assessment.fidelity.withTotals'), report.worksheetFidelity.withTotals],
+                      [t('migration:assessment.fidelity.withForcedJoins'), report.worksheetFidelity.withForcedJoins],
+                      [t('migration:assessment.fidelity.selectDistinct'), report.worksheetFidelity.selectDistinct],
+                    ] as const
+                  ).map(([label, value]) => (
+                    <div key={label}>
+                      <dt className="text-muted-foreground">{label}</dt>
+                      <dd className="text-lg font-semibold">{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            )}
+
             {report.readiness.blockers.length > 0 && (
               <div className="space-y-1">
                 <h4 className="font-medium text-destructive">{t('migration:assessment.blockers')}</h4>
@@ -485,6 +579,18 @@ export function MigrationPage() {
               </p>
             )}
 
+            {/* A dry run finishes against an already-migrated target; without
+                this it would report a clean plan for a run that cannot run. */}
+            {result?.preflight.alreadyMigrated && (
+              <div className="space-y-1 rounded border border-destructive/50 bg-destructive/10 p-3 text-sm">
+                <p className="flex items-start gap-2 font-medium">
+                  <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+                  {t('migration:job.targetBlockedTitle')}
+                </p>
+                <p className="text-muted-foreground">{result.preflight.message}</p>
+              </div>
+            )}
+
             {/* Row counts */}
             {counts && (
               <div>
@@ -509,6 +615,63 @@ export function MigrationPage() {
                     </tbody>
                   </table>
                 </div>
+              </div>
+            )}
+
+            {/* Maps re-import counts */}
+            {mapsCounts && (
+              <div>
+                <h4 className="mb-2 text-sm font-medium">
+                  {job.dryRun ? t('migration:job.rowsPlanned') : t('migration:job.rowsInserted')}
+                </h4>
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[420px] text-sm">
+                    <thead>
+                      <tr className="border-b text-left text-muted-foreground">
+                        <th className="py-1 font-medium">{t('migration:job.tableColumn')}</th>
+                        <th className="py-1 text-right font-medium">{t('migration:job.rowsColumn')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {MAP_TABLE_ORDER.map((table) => (
+                        <tr key={table} className="border-b last:border-0">
+                          <td className="py-1">{t(`migration:tables.${table}`)}</td>
+                          <td className="py-1 text-right tabular-nums">{mapsCounts[table]}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Maps re-import summary */}
+            {mapsResult && (
+              <div className="space-y-2 rounded border p-3 text-sm">
+                <h4 className="font-medium">{t('migration:job.summary')}</h4>
+                <p className="text-muted-foreground">
+                  {t('migration:job.mapsReimportSummary', {
+                    replaced: mapsResult.replacedMaps,
+                    workbooks: mapsResult.planned.workbooks,
+                    worksheets: mapsResult.planned.worksheets,
+                    duration: (mapsResult.durationMs / 1000).toFixed(1),
+                  })}
+                </p>
+                {(mapsResult.unresolvedItems > 0 ||
+                  mapsResult.unresolvedConditions +
+                    mapsResult.inexpressibleConditions >
+                    0) && (
+                  <p className="text-warning">
+                    {/* One total here; the job log above splits it into the two
+                        causes and names each condition with its own reason. */}
+                    {t('migration:job.mapsReimportUnresolved', {
+                      columns: mapsResult.unresolvedItems,
+                      conditions:
+                        mapsResult.unresolvedConditions +
+                        mapsResult.inexpressibleConditions,
+                    })}
+                  </p>
+                )}
               </div>
             )}
 

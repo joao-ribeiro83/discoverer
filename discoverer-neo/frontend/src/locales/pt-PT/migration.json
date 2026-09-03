@@ -7,7 +7,8 @@
     "detectVersion": "Detetar versão",
     "analyze": "Analisar",
     "runDryRun": "Executar simulação",
-    "runMigration": "Executar migração"
+    "runMigration": "Executar migração",
+    "reimportMaps": "Reimportar mapas"
   },
   "source": {
     "title": "Origem",
@@ -22,7 +23,8 @@
     "forceEul4": "Forçar EUL4",
     "forceEul5": "Forçar EUL5",
     "dryRunLabel": "Simulação (validar sem escrever)",
-    "liveMigrationWarning": "Uma migração real escreve nesta base de dados do Discoverer Neo. Execute primeiro uma simulação e reveja o relatório abaixo."
+    "liveMigrationWarning": "Uma migração real escreve nesta base de dados do Discoverer Neo. Execute primeiro uma simulação e reveja o relatório abaixo.",
+    "reimportMapsHelp": "A reimportação de mapas reconstrói apenas os mapas de uma base de dados já migrada, a partir dos livros do EUL. Substitui todos os mapas da área de negócio «Migrated Workbooks» — as alterações feitas desde a migração original perdem-se — e não toca em utilizadores, pastas, itens nem concessões. Execute primeiro como simulação."
   },
   "detected": {
     "title": "Origem detetada",
@@ -51,7 +53,17 @@
       "orphanedObjects": "Objetos órfãos"
     },
     "blockers": "Bloqueadores",
-    "warningsCount": "Avisos ({{count}})"
+    "warningsCount": "Avisos ({{count}})",
+    "fidelity": {
+      "title": "Cobertura do esquema das folhas de cálculo",
+      "totalWorksheets": "Folhas de cálculo",
+      "layoutDecoded": "Esquema descodificado",
+      "crosstabs": "Tabelas cruzadas",
+      "withSorts": "Com ordenação",
+      "withTotals": "Com totais",
+      "withForcedJoins": "Com junções forçadas",
+      "selectDistinct": "Select distinct"
+    }
   },
   "job": {
     "dryRunLabel": "Simulação",
@@ -63,6 +75,7 @@
     "rowsInserted": "Linhas inseridas",
     "tableColumn": "Tabela",
     "rowsColumn": "Linhas",
+    "targetBlockedTitle": "A base de dados de destino já foi migrada",
     "summary": "Resumo",
     "sourceIntegrity": "Integridade da origem: {{status}} ({{errorCount}} erro(s), {{warningCount}} aviso(s)). {{skippedCount}} objeto(s) ignorado(s). Demorou {{duration}}s.",
     "valid": "válida",
@@ -70,12 +83,14 @@
     "reconciliation": "Reconciliação pós-migração: {{status}}",
     "rowCountsMatch": "as contagens de linhas coincidem",
     "mismatch": "DISCREPÂNCIA",
-    "syntheticBusinessAreasNotice": "Foi criada uma área de negócio “Migrated Workbooks” para alojar os mapas resultantes dos livros migrados; o esquema das suas folhas tem de ser reconstruído manualmente.",
+    "syntheticBusinessAreasNotice": "Foi criada uma área de negócio «Migrated Workbooks» para alojar os mapas migrados a partir dos livros. Reveja cada mapa e mova-o para a área de negócio a que pertence.",
     "migratedAccountsNotice": "As contas de utilizador migradas não podem iniciar sessão até um administrador definir uma palavra-passe.",
     "versionSpecificNotes": "Notas específicas da versão ({{count}})",
     "logTitle": "Registo da migração",
     "droppedLogsNotice": "({{count}} linha(s) anteriores omitidas)",
-    "noLogEntries": "Ainda não existem entradas no registo."
+    "noLogEntries": "Ainda não existem entradas no registo.",
+    "mapsReimportSummary": "Substituídos {{replaced}} mapa(s) a partir de {{workbooks}} livro(s) com {{worksheets}} folha(s), em {{duration}}s.",
+    "mapsReimportUnresolved": "Não foi possível migrar {{columns}} coluna(s) e {{conditions}} condição(ões). Consulte o registo acima."
   },
   "tables": {
     "users": "Utilizadores",
@@ -88,7 +103,17 @@
     "custom_functions": "Funções personalizadas",
     "maps": "Mapas",
     "map_items": "Colunas do mapa",
-    "user_business_area_grants": "Concessões"
+    "user_business_area_grants": "Concessões",
+    "map_conditions": "Condições do mapa",
+    "map_parameters": "Parâmetros do mapa",
+    "map_calculated_fields": "Campos calculados do mapa",
+    "map_layouts": "Esquemas do mapa",
+    "map_totals": "Totais e percentagens do mapa",
+    "map_page_setup": "Configuração de página do mapa",
+    "map_conditional_formats": "Formatos condicionais do mapa",
+    "folder_business_areas": "Partilhas de pastas",
+    "workbooks": "Livros lidos",
+    "worksheets": "Folhas lidas"
   },
   "toasts": {
     "detectedTitle": "{{version}} detetado",
@@ -107,6 +132,7 @@
     "migratedFrom": "Migrado a partir de {{source}}.",
     "theSource": "a origem",
     "migrationFailed": "Falha na migração",
-    "seeLogBelow": "Consulte o registo abaixo."
+    "seeLogBelow": "Consulte o registo abaixo.",
+    "mapReimportStarted": "Reimportação de mapas iniciada"
   }
 }

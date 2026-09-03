@@ -1,12 +1,16 @@
 /**
  * EUL version detection.
  *
- * Detection algorithm (EUL_VERSION_REFERENCE.md §5):
+ * Detection algorithm (see EUL_SCHEMA_GROUND_TRUTH.md):
  *   1. Query ALL_TABLES for tables matching 'EUL%'
- *   2. EUL5_BA exists → EUL5; else EUL4_BA → EUL4; else EUL_BA → EUL3
+ *   2. EUL5_BAS exists → EUL5; else EUL4_BAS → EUL4; else EUL_BAS → EUL3
  *   3. Else → no EUL detected (throws EulDetectionError)
- *   4. Read EUL*_EUL for EU_VERSION (+ EU_DISC_VERSION on EUL5)
- *   5. Scan version-specific tables to confirm, collect warnings
+ *   4. Read EUL*_VERSIONS.VER_RELEASE for the schema version
+ *   5. Scan core tables to confirm, collect warnings
+ *
+ * Because the EUL4 and EUL5 table inventories are effectively identical, the
+ * table-name PREFIX is the only reliable version discriminator — there is no
+ * set of "EUL5-only" tables to corroborate it with.
  *
  * Mixed schemas (EUL4_ and EUL5_ side by side — Oracle's official upgrade is
  * non-destructive, so this is a real state) resolve to EUL5 with a warning;
@@ -22,10 +26,12 @@ import type {
   EulVersionInfo,
 } from '../types/eul-versions.js';
 import {
+  BUSINESS_AREA_TABLE,
   CORE_TABLES,
-  EUL5_ONLY_TABLES,
+  EUL4_ONLY_TABLES,
   EUL_PREFIX,
   EUL_VERSIONS_BY_PRECEDENCE,
+  VERSION_TABLE,
 } from '../types/eul-versions.js';
 
 export class EulDetectionError extends Error {
@@ -115,10 +121,13 @@ async function currentUser(execute: OracleExecutor): Promise<string | null> {
 }
 
 function versionsPresent(tableNames: Set<string>): EulVersion[] {
-  // Precedence-ordered. Note EUL5_BA also matches the 'EUL%' pattern of
-  // EUL_BA — membership checks are exact, so there is no ambiguity.
+  // Precedence-ordered. The marker is the Business Areas table, which Oracle
+  // ships as EUL5_BAS / EUL4_BAS / EUL_BAS (plural — not "_BA", which is only
+  // a substring of link tables like EUL5_BA_OBJ_LINKS). Note EUL5_BAS also
+  // matches the 'EUL%' pattern of EUL_BAS — membership checks are exact, so
+  // there is no ambiguity.
   return EUL_VERSIONS_BY_PRECEDENCE.filter((v) =>
-    tableNames.has(`${EUL_PREFIX[v]}BA`),
+    tableNames.has(`${EUL_PREFIX[v]}${BUSINESS_AREA_TABLE}`),
   );
 }
 
@@ -177,33 +186,37 @@ async function readEulIdentity(
   execute: OracleExecutor,
   owner: string,
   prefix: EulTablePrefix,
-  version: EulVersion,
+  _version: EulVersion,
   warnings: string[],
 ): Promise<EulIdentity> {
-  const table = `${assertSafeIdentifier(owner)}.${prefix}EUL`;
-  const columns =
-    version === 'EUL5'
-      ? 'EU_ID, EU_NAME, EU_VERSION, EU_DISC_VERSION'
-      : 'EU_ID, EU_NAME, EU_VERSION';
+  // <prefix>VERSIONS(VER_RELEASE, VER_MIN_CODE_VER, VER_EUL_TIMESTAMP) — see
+  // Oracle's own eulver.sql, which INSERTs exactly these three columns. There
+  // is no <prefix>EUL table and no EU_VERSION/EU_DISC_VERSION column anywhere.
+  const table = `${assertSafeIdentifier(owner)}.${prefix}${VERSION_TABLE}`;
   try {
-    const rows = await execute(`SELECT ${columns} FROM ${table}`);
+    const rows = await execute(
+      `SELECT VER_RELEASE, VER_MIN_CODE_VER, VER_EUL_TIMESTAMP FROM ${table}`,
+    );
     if (rows.length === 0) {
-      warnings.push(`${prefix}EUL is empty — EUL schema version is unknown`);
+      warnings.push(
+        `${prefix}${VERSION_TABLE} is empty — EUL schema version is unknown`,
+      );
       return { schemaVersion: 'unknown', discVersion: null };
     }
     if (rows.length > 1) {
       warnings.push(
-        `${prefix}EUL has ${rows.length} rows (expected 1); using the first`,
+        `${prefix}${VERSION_TABLE} has ${rows.length} rows (expected 1); using the first`,
       );
     }
     const row = rows[0] ?? {};
-    const schemaVersion = row.EU_VERSION ? dbString(row.EU_VERSION) : 'unknown';
-    const discVersion = row.EU_DISC_VERSION ? dbString(row.EU_DISC_VERSION) : null;
-    return { schemaVersion, discVersion };
+    const schemaVersion = row.VER_RELEASE ? dbString(row.VER_RELEASE) : 'unknown';
+    // The EUL stamps its own release, not the client build that wrote it —
+    // the Discoverer release is derived from it (describeDiscovererRelease).
+    return { schemaVersion, discVersion: null };
   } catch (err) {
     if (isTableNotFoundError(err)) {
       warnings.push(
-        `${prefix}EUL table not found or not readable — EUL schema version is unknown`,
+        `${prefix}${VERSION_TABLE} not found or not readable — EUL schema version is unknown`,
       );
       return { schemaVersion: 'unknown', discVersion: null };
     }
@@ -227,7 +240,7 @@ export async function detectEulVersionFromExecutor(
 
   if (owner === null) {
     throw new EulDetectionError(
-      'No EUL schema detected: no accessible EUL_BA/EUL4_BA/EUL5_BA table found. ' +
+      'No EUL schema detected: no accessible EUL_BAS/EUL4_BAS/EUL5_BAS table found. ' +
         'Check that the connection user can see the EUL owner schema.',
     );
   }
@@ -286,13 +299,19 @@ export async function detectEulVersionFromExecutor(
     );
   }
 
-  // Confirm version-specific tables.
+  // The EUL4 and EUL5 inventories are effectively identical, so there is no
+  // "EUL5-only" table to corroborate the prefix with. The one real difference
+  // runs the other way: EUL4 ships NAMED_ELEMS/ODBC_* and EUL5 dropped them.
+  // Finding those under an EUL5_ prefix means the prefix is lying.
   if (version === 'EUL5') {
-    const eul5Markers = EUL5_ONLY_TABLES.map((base) => `${prefix}${base}`);
-    if (!eul5Markers.some((t) => tableNames.has(t))) {
+    const eul4Leftovers = EUL4_ONLY_TABLES.map((base) => `${prefix}${base}`).filter(
+      (t) => tableNames.has(t),
+    );
+    if (eul4Leftovers.length > 0) {
       warnings.push(
-        `None of the EUL5-only tables (${eul5Markers.join(', ')}) were found — ` +
-          `the schema may be incomplete or from a very early 9.0.2 EUL.`,
+        `Tables retired in EUL5 are present under the EUL5_ prefix ` +
+          `(${eul4Leftovers.join(', ')}) — this schema may be a partially ` +
+          `upgraded EUL4.`,
       );
     }
   }
@@ -313,10 +332,9 @@ export async function detectEulVersionFromExecutor(
     );
   }
 
-  const discovererVersion =
-    version === 'EUL5' && identity.discVersion
-      ? identity.discVersion
-      : describeDiscovererRelease(version, identity.schemaVersion);
+  // The EUL stamps only its own schema release; the Discoverer client release
+  // is derived from it.
+  const discovererVersion = describeDiscovererRelease(version, identity.schemaVersion);
 
   return {
     version,

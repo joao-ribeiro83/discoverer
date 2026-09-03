@@ -1,0 +1,1257 @@
+
+<!DOCTYPE html public "-//w3c//dtd html 3.2 transitional//en.us">
+<HTML lang="en.us">
+<HEAD>
+
+<META NAME="Generator" CONTENT="Quadralay WebWorks Publisher 5.0.4">
+<META NAME="Page" CONTENT="DefaultSingle">
+<META NAME="Title" CONTENT="Discoverer support for non-Oracle databases and Oracle Rdb ">
+<meta http-equiv="Content-Type" content="text/html;  charset=iso-8859-1">
+
+<TITLE>Discoverer support for non-Oracle databases and Oracle Rdb </TITLE>
+	   
+<LINK REL="home" HREF="../../library.htm" TITLE="Library">
+<LINK REL="toc" HREF="toc.htm" TITLE="Contents">
+<LINK REL="index" HREF="bookix.htm" TITLE="Index">
+<LINK REL="copyright" HREF="./html/cpyr.htm" TITLE="Copyright">
+<LINK REL="up" HREF="toc.htm" TITLE="Up">
+<LINK REL="next" HREF="upgrade.htm" TITLE="Next">
+<LINK REL="previous" HREF="command_.htm" TITLE="Previous">
+
+
+</HEAD>
+       
+<BODY BGCOLOR="#ffffff">
+
+<A NAME="top"></A>
+
+
+
+
+<A HREF="#BEGIN">Skip Headers</A><BR><BR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+ 
+<TD ALIGN="LEFT" VALIGN="TOP"><FONT COLOR="#330099" FACE="Helvetica, Arial, sans-serif"><STRONG>Oracle Discoverer Administrator Administration Guide (Online Help)<BR>10<i>g</i> (9.0.4)</STRONG><BR>Part Number B10270-01</FONT></TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="144">
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+
+
+
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<HR>
+<P>
+<A HREF="command_.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+
+<A HREF="upgrade.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+    
+
+
+<A NAME="BEGIN"></A>
+
+
+
+<DIV CLASS="IND">
+<!-- End Header -->
+
+
+
+
+
+
+
+<A NAME="1656"></A>
+<!--TOC=Title-"1656"-->
+<H1 CLASS="Title"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099">22<BR>Discoverer support for non-Oracle databases and Oracle Rdb </FONT></H1>
+
+<!--/TOC=Title-->
+
+<A NAME="1004702"></A>
+<!--TOC=h1-"1004702"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Discoverer support for non-Oracle databases and Oracle Rdb</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004747"></A>
+<P CLASS="BP">
+This chapter contains information about using Discoverer with non-Oracle databases and Oracle Rdb, and contains the following topics:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011352"></A><A HREF="rdb_supp.htm#1010235">"What are Heterogeneous Services?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010792"></A><A HREF="rdb_supp.htm#1011366">"About using generic connectivity to connect to non-Oracle databases"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009080"></A><A HREF="rdb_supp.htm#1009076">"About using the Transparent Gateway to connect to non-Oracle databases"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014375"></A><A HREF="rdb_supp.htm#1014255">"About Discoverer support for Oracle Rdb"</a>
+<P>
+</UL>
+
+<A NAME="1010235"></A>
+<!--TOC=h1-"1010235"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are Heterogeneous Services?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1011318"></A>
+<P CLASS="BP">
+Heterogeneous Services are the common architecture and administration mechanisms provided with the Oracle database to enable you to connect to non-Oracle databases. 
+</P>
+<A NAME="1012780"></A>
+<P CLASS="BP">
+You connect to non-Oracle databases using Heterogeneous Services in two ways:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011910"></A>using generic connectivity (for more information, see <A HREF="rdb_supp.htm#1011366">"About using generic connectivity to connect to non-Oracle databases"</a>)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1012722"></A>using the Transparent Gateway (for more information, see <A HREF="rdb_supp.htm#1009076">"About using the Transparent Gateway to connect to non-Oracle databases"</a>)
+<P>
+</UL>
+<A NAME="1012725"></A>
+<P CLASS="BP">
+For more information about Heterogeneous Services, see the <EM CLASS="Italic">Oracle9i Heterogeneous Connectivity Administrator's Guide.</EM>
+</P>
+
+<A NAME="1011366"></A>
+<!--TOC=h1-"1011366"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About using generic connectivity to connect to non-Oracle databases</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1013448"></A>
+<P CLASS="BP">
+Generic connectivity is one of the mechanisms supported by the Oracle database Heterogeneous Services feature for accessing non-Oracle databases.
+</P>
+<A NAME="1012772"></A>
+<P CLASS="BP">
+Discoverer users can use generic connectivity to access ODBC or OLE DB (object linking and embedding database) databases.
+</P>
+<A NAME="1012771"></A>
+<P CLASS="BP">
+The non-Oracle database must comply sufficiently with the ODBC standard (for more information about ODBC and OLE DB connectivity requirements, see the <EM CLASS="Italic">Oracle9i Heterogeneous Connectivity Administrator's Guide.</EM>
+</P>
+<A NAME="1012779"></A>
+<P CLASS="BP">
+This section contains the following topics:
+</P>
+<UL>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1011944"></A><A HREF="rdb_supp.htm#1011858">"What is the difference between using generic connectivity and ODBC drivers to connect to non-Oracle databases?"</a>
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1012743"></A><A HREF="rdb_supp.htm#1008544">"What are the advantages of using generic connectivity?"</a>
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1011948"></A><A HREF="rdb_supp.htm#1010568">"How to set up generic connectivity for Discoverer using Enterprise Manager"</a>
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1011951"></A><A HREF="rdb_supp.htm#1010588">"How to migrate an EUL from a non-Oracle database (accessed using native ODBC drivers) to an Oracle database (to support generic connectivity)"</a>
+<P>
+</UL>
+</UL>
+
+<A NAME="1011858"></A>
+<!--TOC=h2-"1011858"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What is the difference between using generic connectivity and ODBC drivers to connect to non-Oracle databases?</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1012739"></A>
+<P CLASS="BP">
+In previous versions of Discoverer, users could connect to non-Oracle databases using ODBC drivers. The major difference between using ODBC drivers to connect to a non-Oracle database and using the Oracle database generic connectivity feature is the location of the EUL, as follows:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1012976"></A>with ODBC drivers, the EUL is stored in the non-Oracle database
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011859"></A>with generic connectivity, the EUL is stored in the Oracle database
+<P>
+
+<A NAME="1013343"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 22-1 &#32;EUL location using ODBC drivers versus using generic connectivity</EM></FONT></H4>
+  
+<BR><A NAME="1013347">
+
+
+<img src="hdsmigr.gif" ALT="Text description of hdsmigr.gif follows.">
+<A HREF="img_text/hdsmigr.htm"><br>Text description of the illustration hdsmigr.gif</A>
+
+
+</A>
+  </UL>
+<A NAME="1013348"></A>
+<P CLASS="BP">
+The above diagram illustrates the following:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1013480"></A>when Discoverer connects to a non-Oracle database using ODBC drivers, both the EUL and the data reside on the non-Oracle database
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1013484"></A>when Discoverer connects to a non-Oracle database using generic connectivity, the data continues to reside on the non-Oracle database but the EUL must be located on the Oracle database
+<P>
+</UL>
+<A NAME="1013474"></A>
+<P CLASS="BP">
+Discoverer no longer supports the use of native ODBC drivers to connect to non-Oracle databases. You must now use generic connectivity to retrieve data from the non-Oracle database. In other words, the EUL must be stored in an Oracle database. To find out how to move an EUL from a non-Oracle database to an Oracle database, see <A HREF="rdb_supp.htm#1010588">"How to migrate an EUL from a non-Oracle database (accessed using native ODBC drivers) to an Oracle database (to support generic connectivity)"</a>.
+</P>
+
+<A NAME="1008544"></A>
+<!--TOC=h2-"1008544"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are the advantages of using generic connectivity?</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1012997"></A>
+<P CLASS="BP">
+Using Discoverer with the Oracle database's generic connectivity feature rather than native ODBC drivers to connect to a non-Oracle database has the following advantages:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008367"></A>enables connections to a greater number of ODBC databases
+<P>
+
+<A NAME="1008368"></A>
+<P CLASS="BP1">
+Generic connectivity provides access to any ODBC database that is compliant with the ODBC standard. Compliance varies with both databases and ODBC drivers.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008371"></A>enables Discoverer end users to query data from multiple different databases simultaneously
+<P>
+
+<A NAME="1009099"></A>
+<P CLASS="BP1">
+For example, you can create a single business area with folders based on tables held in Sybase, DB2 and Oracle databases. An end user query can return data joined across multiple databases. 
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008375"></A>enables query prediction with ODBC data
+<P>
+
+<A NAME="1008376"></A>
+<P CLASS="BP1">
+Discoverer's query prediction uses query statistics that are generated when end users run queries and which are saved in the EUL. Because the EUL is in the Oracle database, Discoverer is able to carry out query prediction for the ODBC data on the Oracle database.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008378"></A>enables batch support for scheduling workbooks
+<P>
+
+<A NAME="1008379"></A>
+<P CLASS="BP1">
+Discoverer uses the batch scheduler in the Oracle database. Because the EUL is in the Oracle database, Discoverer is able to schedule workbooks with ODBC data.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008382"></A>enables you to apply Oracle analytical functions (and other Oracle functions) to data provided from an ODBC database
+<P>
+
+<A NAME="1008384"></A>
+<P CLASS="BP1">
+Because the data is brought into the Oracle database you can apply the full set of Oracle functions to the data, instead of being restricted to the functions supported by the non-Oracle database.
+</P>
+</UL>
+
+<A NAME="1010568"></A>
+<!--TOC=h2-"1010568"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to set up generic connectivity for Discoverer using Enterprise Manager</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1010569"></A>
+<P CLASS="BP">
+Before you can use generic connectivity, you must configure the Oracle database to support generic connectivity. 
+</P>
+<A NAME="1010601"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> You should work with your database administrator to set up generic connectivity for Discoverer. However, if you want to use the Enterprise Manager console to set up generic connectivity for Discoverer, you can use the following example (using Enterprise Manager version 2.2).
+</P>
+<A NAME="1014206"></A>
+<P CLASS="BP">
+To set up generic connectivity for Discoverer using Enterprise Manager:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1013894"></A>To set the Global Names parameter to FALSE, from the Windows Start menu, choose Programs | Oracle Home | Enterprise Manager Console to display the Enterprise Manager Console Login dialog.
+<P>
+
+<A NAME="1014091"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> To set the Global Names parameter for Oracle 8.1.7 (or later) Enterprise Edition databases, you change the global_names parameter to false in the init.ora file as follows, then go to step 9:
+</P>
+
+<OL CLASS="LA2" TYPE="a">
+
+<LI CLASS="LA2" TYPE="a" VALUE="1"><A NAME="1014033"></A>Open the init.ora file in a text editor.
+<P>
+
+<A NAME="1014034"></A>
+<P CLASS="BP2">
+Work with your database administrator to locate and edit the init.ora file.
+</P>
+ 
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1014035"></A>Change the global_names parameter to false.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1014036"></A>Close and save the init.ora file.
+<P>
+</OL>
+
+<A NAME="1014037"></A>
+<P CLASS="BP1">
+The init.ora file is the initialization file that the Oracle database uses when you start up the Oracle database.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1013910"></A>Select the <STRONG CLASS="Bold">Launch standalone</STRONG> radio button and click OK to display the Enterprise Manager console.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1013911"></A>In the left hand pane of the Enterprise Manager Console, expand the tree by clicking the plus (+) symbols, choosing Database | Instance | Configuration.
+<P>
+ 
+
+<A NAME="1013914"></A>
+<P CLASS="BP1">
+The Enterprise Manager console displays the General tab.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1013915"></A>Click All Initialization Parameters to display the Edit Database Configuration page.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1013922"></A>Select the <STRONG CLASS="Bold">SPFile</STRONG> radio button to display the list of SPFile parameters.
+<P>
+ 
+
+<A NAME="1013929"></A>
+<P CLASS="BP1">
+The SPFile parameters are the parameters that are stored in the server side persistent file (spfile).
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1013930"></A>Scroll down to the Global Names parameter, click the <STRONG CLASS="Bold">Value</STRONG> field and set it to FALSE.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1013934"></A>Click Apply.
+<P>
+ 
+
+<A NAME="1013939"></A>
+<P CLASS="BP1">
+Enterprise Manager displays a message confirming that the parameters have changed.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="8"><A NAME="1013943"></A>Click OK.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="9"><A NAME="1010572"></A>To modify the inithsodbc.ora file, make a copy of the inithsodbc.ora file.
+<P>
+ 
+
+<A NAME="1011550"></A>
+<P CLASS="BP1">
+On Windows, the inithsodbc.ora file is typically located in the &lt;ORACLE_HOME&gt;\hs\admin directory.
+</P>
+
+<A NAME="1013045"></A>
+<P CLASS="BP1">
+The inithsodbc.ora file is an example of an initialization file that the Oracle database uses for Heterogeneous Services connections.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="10"><A NAME="1013046"></A>Rename the copy of the inithsodbc.ora file to init&lt;<EM CLASS="Italic">database name</EM>&gt;.ora, where &lt;<EM CLASS="Italic">database name</EM>&gt; is the name of the non-Oracle database.
+<P>
+ 
+
+<A NAME="1012467"></A>
+<P CLASS="BP1">
+For example, if the database name is DD1, you would rename the copy of the inithsodbc.ora file to initDD1.ora.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="11"><A NAME="1011552"></A>Open the init&lt;<EM CLASS="Italic">database name</EM>&gt;.ora file (i.e. the inithsodbc.ora file that you renamed in the previous step) in a text editor and make the following changes:
+<P>
+ 
+
+<OL CLASS="LA2" TYPE="a">
+
+<LI CLASS="LA2" TYPE="a" VALUE="1"><A NAME="1013066"></A>Insert a # symbol at the beginning of the following line to comment out the line:
+<P>
+   
+<PRE CLASS="CE2">
+<A NAME="1013071"></A>HS_FDS_TRACE_LEVEL = &lt;trace_level&gt;<br>
+
+</PRE>
+   
+<A NAME="1011233"></A>
+<P CLASS="BP2">
+Having made the change, the line will look like this:
+</P>
+  
+<PRE CLASS="CE2">
+<A NAME="1010729"></A># HS_FDS_TRACE_LEVEL = &lt;trace_level&gt;<br>
+
+</PRE>
+   
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1012475"></A>Insert the name of the non-Oracle database in the following line, where &lt;<EM CLASS="Italic">data source name</EM>&gt; is the name of the ODBC data source:
+<P>
+  
+<PRE CLASS="CE2">
+<A NAME="1010725"></A>HS_FDS_CONNECT_INFO = &lt;data source name&gt;<br>
+
+</PRE>
+  
+<A NAME="1012495"></A>
+<P CLASS="BP2">
+For example, if the ODBC data source name is DD1, you would change the line as follows:
+</P>
+  
+<PRE CLASS="CE2">
+<A NAME="1010573"></A>HS_FDS_CONNECT_INFO = DD1<br>
+
+</PRE>
+   
+</OL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="12"><A NAME="1010782"></A>Close and save the init&lt;<EM CLASS="Italic">database name</EM>&gt;.ora file.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="13"><A NAME="1012292"></A>Create a new entry for the non-Oracle database in the listener.ora file as follows:
+<P>
+ 
+
+<OL CLASS="LA2" TYPE="a">
+
+<LI CLASS="LA2" TYPE="a" VALUE="1"><A NAME="1012861"></A>Open the listener.ora file in a text editor.
+<P>
+
+<A NAME="1013528"></A>
+<P CLASS="BP2">
+On Windows, the listener.ora file is typically located in the &lt;ORACLE_HOME&gt;\network\admin directory.
+</P>
+ 
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1013518"></A>Create a SID_DESC entry for the non-Oracle database under the SID_LIST_LISTENER heading.
+<P>
+
+<A NAME="1013579"></A>
+<P CLASS="BP2">
+For example:
+</P>
+  
+<PRE CLASS="CE2">
+<A NAME="1012319"></A>(SID_DESC = 
+<A NAME="1012320"></A>(SID_NAME=DD1)
+<A NAME="1012321"></A>(ORACLE_HOME=E:\ORACLE\ORA9I)
+<A NAME="1012322"></A>(PROGRAM=hsagent)
+<A NAME="1013974"></A>)
+<A NAME="1012324"></A>
+</PRE>
+  
+<A NAME="1013537"></A>
+<P CLASS="BP2">
+where:
+</P>
+ 
+
+<UL CLASS="LD3">
+
+<LI CLASS="LD3" TYPE="CIRCLE"><A NAME="1013541"></A>DD1 is the non-Oracle database name
+<P>
+
+<LI CLASS="LD3" TYPE="CIRCLE"><A NAME="1013540"></A>E:\ORACLE\ORA9I is the &lt;ORACLE_HOME&gt;
+<P>
+
+<LI CLASS="LD3" TYPE="CIRCLE"><A NAME="1013950"></A>PROGRAM=hsagent defines the hsagent.exe file as the executable file enabling Heterogeneous Services to access the specified non-Oracle database
+<P>
+</UL>
+</OL>
+
+<A NAME="1011241"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> The above SID_DESC= entry example would be different when using an Oracle 8.1.7 (or later) Enterprise Edition database as follows:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1013996"></A>the path must point to the 8i ORACLE_HOME (e.g. ORACLE_HOME=E:\ORACLE\ORA8I)
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1014003"></A>the PROGRAM= setting must be set to PROGRAM=hsodbc.
+<P>
+</UL>
+
+<A NAME="1013970"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Hint</STRONG>: To help you add new entries to the listener.ora file, Oracle provides a sample source file. You might want to copy text from the sample file, paste it into the corresponding listener.ora file and then modify the entry appropriately. On Windows, the listener.ora.sample file is typically located in the &lt;ORACLE_HOME&gt;\hs\admin\sample directory.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="14"><A NAME="1010783"></A>Save and close the listener.ora file.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="15"><A NAME="1012553"></A>Create a new entry for the non-Oracle database in the tnsnames.ora file as follows:
+<P>
+ 
+
+<OL CLASS="LA2" TYPE="a">
+
+<LI CLASS="LA2" TYPE="a" VALUE="1"><A NAME="1013788"></A>Open the tnsnames.ora file in a text editor.
+<P>
+
+<A NAME="1013129"></A>
+<P CLASS="BP2">
+On Windows, the tnsnames.ora file is typically located in the &lt;ORACLE_HOME&gt;\network\admin directory.
+</P>
+ 
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1012542"></A>Create an entry in the tnsnames.ora file for the non-Oracle database.
+<P>
+
+<A NAME="1013795"></A>
+<P CLASS="BP2">
+For example:
+</P>
+  
+<PRE CLASS="CE2">
+<A NAME="1011282"></A>SALES =
+<A NAME="1011290"></A> (DESCRIPTION=
+<A NAME="1011291"></A>  (ADDRESS_LIST=
+<A NAME="1011292"></A>   (Address=(PROTOCOL=TCP)(HOST=localhost)(PORT=1521))
+<A NAME="1014013"></A>   (CONNECT_DATA=(SID=DD1))
+<A NAME="1011295"></A>   (HS=)
+<A NAME="1014010"></A>  )
+<A NAME="1011289"></A> )
+</PRE>
+  
+<A NAME="1012518"></A>
+<P CLASS="BP2">
+where:
+</P>
+ 
+
+<UL CLASS="LD3">
+
+<LI CLASS="LD3" TYPE="CIRCLE"><A NAME="1013805"></A>SALES is the name of the tnsnames entry for the non-Oracle database
+<P>
+
+<LI CLASS="LD3" TYPE="CIRCLE"><A NAME="1013812"></A>DD1 is the SID of the non-Oracle database
+<P>
+
+<LI CLASS="LD3" TYPE="CIRCLE"><A NAME="1013824"></A>(HS=) indicates that this is a Heterogeneous Services connection.
+<P>
+</UL>
+</OL>
+
+<A NAME="1013209"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Hint</STRONG>: To help you add new entries to the tnsnames.ora file, Oracle provides a sample source file. You might want to copy text from the sample file, paste it into the corresponding tnsnames.ora file and then modify the entry appropriately. On Windows, the tnsnames.ora.sample file is typically located in the &lt;ORACLE_HOME&gt;\hs\admin\sample directory.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="16"><A NAME="1013211"></A>Save and close the tnsnames.ora file.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="17"><A NAME="1010576"></A>Restart the database and tnslistener.
+<P>
+ 
+
+<A NAME="1010989"></A>
+<P CLASS="BP1">
+Work with your database administrator to restart the database and tnslistener.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="18"><A NAME="1010577"></A>Display an operating system command prompt.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="19"><A NAME="1011299"></A>Type the following at the command prompt to test that the listener is working correctly:
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1011129"></A>tnsping &lt;data source name&gt;<br>
+
+</PRE>
+    
+
+<A NAME="1012926"></A>
+<P CLASS="BP1">
+where &lt;<EM CLASS="Italic">data source name</EM>&gt; is the name of the non-Oracle database you want to test.
+</P>
+
+<A NAME="1012931"></A>
+<P CLASS="BP1">
+For example, if the database name is DD1, type the following at the command prompt:
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1012566"></A>tnsping DD1
+<A NAME="1012570"></A>
+</PRE>
+   
+<A NAME="1012565"></A>
+<P CLASS="BP1">
+The tnsping command should display an OK message. If the tnsping command does not succeed, it will display an appropriate error message indicating why the command did not succeed.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="20"><A NAME="1014403"></A>Start SQL*Plus (if it is not already running) and connect as the EUL owner.
+<P>
+ 
+
+<A NAME="1014404"></A>
+<P CLASS="BP1">
+For example, if SQL*Plus is already running, you might type the following at the command prompt:
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1014405"></A>SQL&gt; CONNECT jchan/tiger@database;
+<A NAME="1014406"></A>
+</PRE>
+   
+<A NAME="1014407"></A>
+<P CLASS="BP1">
+Where <CODE>jchan</CODE> is the EUL owner and tiger is the EUL owner password.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="21"><A NAME="1014408"></A>Type the following at the command prompt:
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1010579"></A>SQL&gt; create [public] database link &lt;<EM CLASS="Italic">name</EM>&gt; connect to &lt;<EM CLASS="Italic">odbcuser</EM>&gt; identified 
+by &lt;<EM CLASS="Italic">odbcpassword</EM>&gt; using '&lt;<EM CLASS="Italic">tnsnames entry</EM>&gt;';<br>
+
+</PRE>
+    
+
+<A NAME="1013253"></A>
+<P CLASS="BP1">
+where:
+</P>
+
+<A NAME="1013254"></A>
+<P CLASS="BP1">
+[public] is an optional argument that creates a public database link. If the  [public] argument is not used, the statement creates a private database link. A public database link enforces a lower level of security than if you create a private database link (for more information, see your database administrator).
+</P>
+
+<A NAME="1013731"></A>
+<P CLASS="BP1">
+&lt;<EM CLASS="Italic">name</EM>&gt; is the name of the database link.
+</P>
+
+<A NAME="1013265"></A>
+<P CLASS="BP1">
+&lt;<EM CLASS="Italic">odbcuser</EM>&gt; is the user on the non-Oracle database.
+</P>
+
+<A NAME="1013266"></A>
+<P CLASS="BP1">
+&lt;<EM CLASS="Italic">odbcpassword</EM>&gt; is the password of the &lt;<EM CLASS="Italic">odbcuser</EM>&gt; on the non-Oracle database.
+</P>
+
+<A NAME="1013251"></A>
+<P CLASS="BP1">
+&lt;<EM CLASS="Italic">tnsnames entry</EM>&gt; is the name used at the start of each tnsnames entry in the tnsnames.ora file (e.g. from the earlier example, the &lt;<EM CLASS="Italic">tnsnames entry</EM>&gt; would be SALES).
+</P>
+
+<A NAME="1013241"></A>
+<P CLASS="BP1">
+For example:
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1013625"></A>SQL&gt; create database link sales_link connect to odbc_username identified by 
+odbc_userpassword using 'SALES';<br>
+
+</PRE>
+   
+<A NAME="1013623"></A>
+<P CLASS="BP1">
+Note the following:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1013289"></A>To create a private database link, the EUL owner must have the <CODE>CREATE DATABASE LINK</CODE> privilege.
+<P>
+
+<A NAME="1013675"></A>
+<P CLASS="BP2">
+For example, to grant the create private database link privilege in SQL*Plus you would issue the following statement:
+</P>
+  
+<PRE CLASS="CE2">
+<A NAME="1013651"></A>SQL&gt; grant create database link to hdsuser;
+<A NAME="1013665"></A>
+</PRE>
+  
+<A NAME="1013682"></A>
+<P CLASS="BP2">
+where hdsuser is the EUL owner
+</P>
+ 
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1013735"></A>To create a public database link, the EUL owner must have the<CODE> CREATE PUBLIC DATABASE LINK</CODE> privilege.
+<P>
+
+<A NAME="1013740"></A>
+<P CLASS="BP2">
+For example, to grant the create public database link privilege in SQL*Plus you would issue the following statement:
+</P>
+  
+<PRE CLASS="CE2">
+<A NAME="1013741"></A>SQL&gt; grant create public database link to hdsuser;
+<A NAME="1013742"></A>
+</PRE>
+  
+<A NAME="1013743"></A>
+<P CLASS="BP2">
+where hdsuser is the EUL owner.
+</P>
+ 
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1013648"></A>You can include a domain as part of the link's name (e.g. SALES.mycompany.com). 
+<P>
+
+<A NAME="1013758"></A>
+<P CLASS="BP2">
+Whether you need to include a domain as part of the database link name depends on how you configure SQL*Net (for more information about SQL*Net configuration, see your database administrator).
+</P>
+ 
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1013312"></A>If the non-Oracle database does not support usernames, you can omit the <CODE>connect to &lt;</CODE><EM CLASS="Italic">odbcuser</EM><CODE>&gt; identified by &lt;</CODE><EM CLASS="Italic">odbcpassword</EM><CODE>&gt;</CODE> section.
+<P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="22"><A NAME="1010582"></A>In SQL*Plus, test the connection to the non-Oracle database by issuing a SELECT statement against a table on the non-Oracle database.
+<P>
+ 
+
+<A NAME="1011300"></A>
+<P CLASS="BP1">
+For example:
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1011305"></A>SQL&gt; select * from PRODUCT@sales_link;
+<A NAME="1011309"></A>
+</PRE>
+   
+<A NAME="1011301"></A>
+<P CLASS="BP1">
+where PRODUCT is the name of a table on the non-Oracle database, and sales_link is the name of the database link to the non-Oracle database specified in the previous step.
+</P>
+
+<A NAME="1012588"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> Do not use DESC in the SQL statement because DESC is not supported against ODBC and gives unpredictable results.
+</P>
+</OL>
+<A NAME="1010587"></A>
+<P CLASS="BP">
+For more information about generic connectivity, see the <EM CLASS="Italic">Oracle9i Heterogeneous Connectivity Administrator's Guide</EM>.
+</P>
+
+<A NAME="1010588"></A>
+<!--TOC=h2-"1010588"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to migrate an EUL from a non-Oracle database (accessed using native ODBC drivers) to an Oracle database (to support generic connectivity)</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1010589"></A>
+<P CLASS="BP">
+To migrate an EUL from a non-Oracle database to an Oracle database:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1010590"></A>Export the EUL objects from the non-Oracle database to an .eex file.
+<P>
+
+<A NAME="1011186"></A>
+<P CLASS="BP1">
+For more information, see <A HREF="maintain.htm#1008392">"Which export/import method to use"</a>.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1010591"></A>Set up generic connectivity in the Oracle database that will contain the EUL.
+<P>
+ 
+
+<A NAME="1011150"></A>
+<P CLASS="BP1">
+For more information, see <A HREF="rdb_supp.htm#1010568">"How to set up generic connectivity for Discoverer using Enterprise Manager"</a>.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1010592"></A>Create an EUL on the Oracle database.
+<P>
+ 
+
+<A NAME="1011203"></A>
+<P CLASS="BP1">
+For more information about how to create an EUL, see <A HREF="maintain.htm#1005496">"Creating and maintaining End User Layers"</a>.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1010593"></A>Import the .eex file you created in step 1 into the Oracle database.
+<P>
+ 
+
+<A NAME="1011213"></A>
+<P CLASS="BP1">
+For more information, see <A HREF="maintain.htm#1008392">"Which export/import method to use"</a>.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1010594"></A>Resolve any mappings (i.e. Discoverer Business areas and underlying objects).
+<P>
+ 
+
+<OL CLASS="LA2" TYPE="a">
+
+<LI CLASS="LA2" TYPE="a" VALUE="1"><A NAME="1014067"></A>Choose View | Validate | Folders
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1014071"></A>Select the first folder that displays an error and choose Edit | Properties to display the <A HREF="adfpro01.htm#1005113">"Folder Properties dialog"</a>.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1014072"></A>Click the Database field to display the <A HREF="adctvd01.htm#1006370">"Choose user dialog"</a>.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1014079"></A>Select the database link that you created in the <A HREF="rdb_supp.htm#1010568">"How to set up generic connectivity for Discoverer using Enterprise Manager"</a> task.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1014080"></A>Select the correct user on the non-Oracle database.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1014081"></A>Click OK to close the Choose user dialog.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1014085"></A>Click OK to apply the new value in the Database field and close the Folder Properties dialog.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1014086"></A>Repeat steps a) to g) for each folder that displays an error.
+<P>
+</OL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1010595"></A>Set up security on the Oracle database for database users.
+<P>
+ 
+
+<A NAME="1011222"></A>
+<P CLASS="BP1">
+For more information, see <A HREF="privileg.htm#1006184">"Controlling access to information"</a>.
+</P>
+
+<A NAME="1011225"></A>
+<P CLASS="BP1">
+Discoverer users can now connect to the non-Oracle database using generic connectivity and continue to use their existing workbooks and worksheets.
+</P>
+</OL>
+
+<A NAME="1009076"></A>
+<!--TOC=h1-"1009076"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About using the Transparent Gateway to connect to non-Oracle databases</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1009077"></A>
+<P CLASS="BP">
+The Transparent Gateway is one of the mechanisms supported by the Oracle database Heterogeneous Services feature for accessing non-Oracle databases.
+</P>
+<A NAME="1013359"></A>
+<P CLASS="BP">
+Discoverer users can use an Oracle Transparent Gateway in conjunction with Heterogeneous Services to access a particular, vendor-specific, non-Oracle database. For example, you would use the Oracle Transparent Gateway for Sybase on Solaris to access a Sybase database that was operating on a Sun Solaris platform.
+</P>
+<A NAME="1013375"></A>
+<P CLASS="BP">
+You must have the appropriate Oracle Transparent Gateway software installed. 
+</P>
+<A NAME="1011464"></A>
+<P CLASS="BP">
+For more information about the Oracle Transparent Gateway and how to set it up, see the <EM CLASS="Italic">Oracle9i Database Installation Guide</EM>.
+</P>
+
+<A NAME="1014255"></A>
+<!--TOC=h1-"1014255"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About Discoverer support for Oracle Rdb</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1014256"></A>
+<P CLASS="BP">
+Discoverer can access Oracle Rdb without the need for (and restrictions of) open database connectivity (ODBC). 
+</P>
+<A NAME="1014257"></A>
+<P CLASS="BP">
+Topics in this section include the following:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014261"></A><A HREF="rdb_supp.htm#1014273">"What are the software requirements for using Discoverer with Oracle Rdb?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014265"></A><A HREF="rdb_supp.htm#1014294">"Which Discoverer features are not supported by Oracle Rdb?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014269"></A><A HREF="rdb_supp.htm#1014335">"Which Discoverer features are partially supported by Oracle Rdb?"</a>
+<P>
+</UL>
+
+<A NAME="1014273"></A>
+<!--TOC=h2-"1014273"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are the software requirements for using Discoverer with Oracle Rdb?</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1014274"></A>
+<P CLASS="BP">
+To use Oracle<EM CLASS="Italic"> </EM>Discoverer directly with Oracle Rdb you must install:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014275"></A>OracleAS Discoverer Version 9.0.4, Oracle Discoverer Administrator or Oracle Discoverer Desktop
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014276"></A>Oracle Rdb Release 7.0.1.3 or later
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014277"></A>SQL*Net for Oracle Rdb7 Release 1.0.2. or later
+<P>
+</UL>
+<A NAME="1014278"></A>
+<P CLASS="BP">
+You might find that the version of SQL*Net for Oracle Rdb7 requires a special patch with bug fixes specifically for Discoverer (for more information, see your database administrator). Providing you have the necessary support agreement, you can obtain this patch by contacting your Oracle support representative. 
+</P>
+<A NAME="1014279"></A>
+<P CLASS="BP">
+SQL*Net for Oracle Rdb7 enables an Oracle Rdb7 server to appear as an Oracle server to the client. 
+</P>
+<A NAME="1014280"></A>
+<P CLASS="BP">
+You need to install SQL*Net for Oracle Rdb7 software only once on each server system. You also need to prepare each Oracle Rdb7 database environment by defining the Oracle functions and the emulated Oracle data dictionary to serve with SQL*Net for Oracle Rdb7.
+</P>
+<A NAME="1014281"></A>
+<P CLASS="BP">
+For more information about SQL*Net for Oracle Rdb7, see the following documentation:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014282"></A>Guide to SQL*Net for Rdb7
+<P>
+
+<A NAME="1014283"></A>
+<P CLASS="BP1">
+This guide helps you set up and use SQL*Net for Oracle Rdb7 software to configure and develop useful connections between SQL*Net clients and Oracle Oracle Rdb7 databases.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014284"></A>Oracle SQL/Services Release Notes Release 7.1.2 
+<P>
+
+<A NAME="1014285"></A>
+<P CLASS="BP1">
+This manual contains Oracle SQL/Services Release Notes that are specific to SQL*Net for Oracle Rdb7 Release 7.1.2. The notes describe:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1014286"></A>changed and enhanced features
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1014287"></A>upgrade and compatibility information
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1014288"></A>new and existing software problems and restrictions
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1014289"></A>other software documentation
+<P>
+</UL>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014290"></A>Comparison of SQL Dialects for Oracle and Rdb
+<P>
+
+<A NAME="1014291"></A>
+<P CLASS="BP1">
+The principal purpose of this manual is to help Discoverer managers (who use SQL*Net for Oracle Rdb software) to understand differences in the Oracle and Oracle Rdb7 SQL dialects. This manual identifies where differences in the SQL dialects might occur, and provides additional information to help you achieve the desired functions.
+</P>
+</UL>
+
+<A NAME="1014294"></A>
+<!--TOC=h2-"1014294"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Which Discoverer features are not supported by Oracle Rdb?</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1014295"></A>
+<P CLASS="BP">
+The following Discoverer features are not supported when using Discoverer with Oracle Rdb:
+</P>
+   
+<A NAME="1014494">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1014298"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG><STRONG CLASS="Bold">Feature</STRONG></STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1014300"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Reason for non-support</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1014302"></A>
+<P CLASS="TB">
+Query Prediction.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014304"></A>
+<P CLASS="TB">
+Uses Oracle's Cost Based Optimizer.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1014306"></A>
+<P CLASS="TB">
+The Discoverer EUL V5 Workbooks - eul5.eex.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014308"></A>
+<P CLASS="TB">
+Uses Oracle's PL/SQL.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1014310"></A>
+<P CLASS="TB">
+Register PL/SQL functions.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014312"></A>
+<P CLASS="TB">
+Uses Oracle's PL/SQL.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1014314"></A>
+<P CLASS="TB">
+Summary folders where refresh is managed by Discoverer.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014316"></A>
+<P CLASS="TB">
+Uses Oracle's PL/SQL.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1014318"></A>
+<P CLASS="TB">
+Database Roles.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014320"></A>
+<P CLASS="TB">
+Oracle RDBMS specific.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1014322"></A>
+<P CLASS="TB">
+Parser Hints on Folders.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014324"></A>
+<P CLASS="TB">
+Oracle RDBMS specific.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1014326"></A>
+<P CLASS="TB">
+Server side scheduled reporting.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014328"></A>
+<P CLASS="TB">
+Uses Oracle's PL/SQL.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1014330"></A>
+<P CLASS="TB">
+Oracle analytic functions.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014332"></A>
+<P CLASS="TB">
+Oracle RDBMS specific.&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   
+<A NAME="1014335"></A>
+<!--TOC=h2-"1014335"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Which Discoverer features are partially supported by Oracle Rdb?</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1014360"></A>
+<P CLASS="BP">
+The following features are partially supported by Oracle Rdb:
+</P>
+   
+<A NAME="1014498">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1014338"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Feature</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1014340"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Reason for non support</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1014342"></A>
+<P CLASS="TB">
+Some functions:
+<UL CLASS="TLB">
+
+<LI CLASS="TLB" TYPE="DISC"><A NAME="1014343"></A>INSTR
+<P>
+
+<LI CLASS="TLB" TYPE="DISC"><A NAME="1014344"></A>INSTRB
+<P>
+
+<LI CLASS="TLB" TYPE="DISC"><A NAME="1014345"></A>VSIZE
+<P>
+
+<LI CLASS="TLB" TYPE="DISC"><A NAME="1014346"></A>UID
+<P>
+
+<LI CLASS="TLB" TYPE="DISC"><A NAME="1014347"></A>DUMP
+<P>
+
+<LI CLASS="TLB" TYPE="DISC"><A NAME="1014348"></A>TRANSLATE
+<P>
+
+<LI CLASS="TLB" TYPE="DISC"><A NAME="1014349"></A>SOUNDEX
+<P>
+
+<LI CLASS="TLB" TYPE="DISC"><A NAME="1014350"></A>STDDEV
+<P>
+
+<LI CLASS="TLB" TYPE="DISC"><A NAME="1014351"></A>VARIANCE
+<P>
+
+<LI CLASS="TLB" TYPE="DISC"><A NAME="1014352"></A>STDDEV_DISTINCT
+<P>
+
+<LI CLASS="TLB" TYPE="DISC"><A NAME="1014353"></A>VARIANCE_DISTINCT
+<P>
+</UL>&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014355"></A>
+<P CLASS="TB">
+Oracle RDBMS specific&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1014357"></A>
+<P CLASS="TB">
+Security - Roles and Users&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014359"></A>
+<P CLASS="TB">
+Not supported directly, needs to be set up by the Rdb administrator.&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   <A NAME="1014251"></A>
+<P CLASS="BP">
+
+</P>
+
+
+
+
+
+
+<!-- Start Footer -->
+</DIV>
+
+<DIV CLASS="OUTD">
+<HR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+<TD VALIGN="BOTTOM" WIDTH="33%">
+<TABLE CELLSPACING="0" CELLPADDING="0">
+<TR>
+<TD ALIGN="CENTER"><A HREF="command_.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+
+<TD ALIGN="CENTER"><A HREF="upgrade.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+    
+</TR>
+</TABLE>
+</TD>
+<TD ALIGN="CENTER" WIDTH="34%">
+<A HREF="./html/cpyr.htm"><IMG SRC="./gifs/oracle.gif" ALT="Oracle" BORDER="0"><BR>
+<FONT SIZE="-2">Copyright &copy 2003 Oracle Corporation.</FONT></A>
+<BR>
+<FONT SIZE="-2">All Rights Reserved.</FONT>
+</TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="33%"> 
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="144">
+<TR>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+  
+</DIV>
+
+</BODY>
+</HTML>
+

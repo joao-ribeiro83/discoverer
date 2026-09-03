@@ -1,0 +1,251 @@
+:Base d4urs.hlp>main
+:Title Direkthjälp till Oracle Discoverer Plus
+1 Inledning till Oracle Discoverer
+2 Om frågor och arbetsböcker=CON_ABOUT_QUERIES>main
+2 Om tabeller och matriser=CON_ABOUT_TANDC>main
+2 Om totaler=CON_ABOUT_TOTALS>main
+2 Om procenttal=CON_ABOUT_PERCENTAGES>main
+2 Om planerade arbetsböcker=CON_ABOUT_SCHEDULED>main
+2 Lära sig Oracle Discoverer
+3 Lära sig Oracle Discoverer=CON_LEARN_OD>main
+1 Stegvisa procedurer
+2 Starta och avsluta Oracle Discoverer
+3 Starta Oracle Discoverer=To_start_Oracle_Discoverer>main
+3 Ställa in dialogrutan Anslut för användare i Oracle Applications=HIDD_OPTIONS_CONNECTION>main
+3 Ansluta till en databas=To_connect_to_a_database>main
+3 Avsluta Oracle Discoverer=To_exit_Oracle_Discoverer>main
+2 Arbeta med arbetsböcker
+3 Skapa en ny arbetsbok=To_create_a_new_workbook>main
+3 Öppna en sparad arbetsbok=To_open_a_saved_workbook>main
+3 Spara en arbetsbok=To_save_a_workbook>main
+3 Stänga en arbetsbok=To_close_a_workbook>main
+3 Ta bort en arbetsbok från databasen=To_delete_a_workbook_from_the_database>main
+3 Lägga till ett nytt blad i arbetsboken=To_add_a_new_sheet_to_a_workbook>main
+3 Redigera ett blad=To_edit_a_sheet>main
+3 Duplicera ett blad som en tabell=To_duplicate_a_sheet_as_a_table>main
+3 Duplicera ett blad som en matris=To_duplicate_a_sheet_as_a_crosstab>main
+3 Namnge ett blad=To_name_a_sheet>main
+3 Redigera namnet på ett blad=To_edit_the_name_of_a_sheet>main
+3 Ta bort ett blad från en arbetsbok=To_delete_a_sheet_from_a_workbook>main
+3 Dela en arbetsbok med andra användare=To_share_a_workbook_with_other_users>main
+3 Visa SQL-koden för aktuellt blad=To_view_the_SQL_code_for_the_current_sheet>main
+3 Visa egenskaperna för ett markerat objekt=To_view_the_properties_of_a_selected_item>main
+3 Visa egenskaperna för aktuell arbetsbok=To_view_the_properties_of_the_current_workbook>main
+3 Skapa ett diagram för det aktuella bladet=To_show_data_in_a_sheet_as_a_graph>main
+3 Visa ett diagram=To_Hide_or_Show_a_Graph>main
+3 Dölja ett diagram=To_Hide_or_Show_a_Graph>main
+2 Lägga till och ta bort data
+3 Lägga till ett objekt i ett blad=To_add_an_item_to_a_sheet>main
+3 Ta bort ett objekt från ett blad=To_delete_an_item_from_a_sheet>main
+3 Ändra ett objekts värden=To_change_displayed_values_for_an_item>main
+3 Detaljgranska
+4 Visa detaljer=To_drill_up>main
+4 Dölja detaljer=To_drill_down>main
+4 Detaljgranska ett relaterat objekt i ett annat blad=To_drill_to_a_related_item_in_another_sheet>main
+4 Detaljgranska relaterad information i ett annat program=To_drill_to_related_information_in_another_application>main
+4 Komprimera ett objekt=To_collapse_an_item>main
+3 Använda villkor för att förbättra en fråga
+4 Definiera ett villkor=To_define_a_condition>main
+4 Redigera ett villkor=To_apply_a_condition>main
+4 Lägga till en beräkning i ett befintligt villkor=To_add_a_calculation_to_an_existing_condition>main
+4 Skapa ett villkor som innehåller en beräkning=To_create_a_condition_that_includes_a_calculation>main
+4 Ta bort ett villkor=To_delete_a_condition>main
+3 Använda beräkningar
+4 Skapa en beräkning=To_create_a_calculation>main
+4 Redigera en beräkning=To_edit_a_calculation>main
+3 Använda totaler för att summera sökresultat
+4 Skapa en total=To_create_a_total>main
+4 Redigera en total=To_edit_a_total>main
+2 Hantera data och rubriker
+3 Flytta ett objekt från en axel till en annan=To_move_an_item_from_one_axis_to_another>main
+3 Skapa ett sidobjekt=To_create_a_page_item>main
+3 Visa diagramstaplar i celler=To_show_graphic_bars_in_cells>main
+3 Sortera data
+4 Sortera en tabell=To_sort_a_table>main
+4 Sortera en matris=To_sort_a_crosstab>main
+2 Ange hur Oracle Discoverer utför frågor
+3 Köra frågor stegvis=To_run_queries_incrementally>main
+3 Åsidosätta en stegvis inställning och returnera alla rader i en fråga=To_override_an_incremental_setting_and_return_all_rows_in_a_query>main
+3 Ange maximalt antal rader som returneras i en fråga=To_specify_the_maximum_number_of_rows_returned_in_a_query>main
+3 Ange inställningar för databasens cache=To_set_preferences_for_the_database_cache>main
+3 Ange inställningar för blad med matrislayout=To_set_preferences_for_crosstab_layout_sheets>main
+3 Ange inställningar för blad med tabellayout=To_set_preferences_for_table_layout_sheets>main
+2 Formatera
+3 Formatera data i ett blad=To_format_data_in_a_sheet>main
+3 Formatera rubriker i ett blad=To_format_headings_in_a_sheet>main
+3 Formatera tal=To_format_numbers>main
+3 Formatera rubriken i ett blad=To_format_the_title_of_a_sheet>main
+3 Ändra en kolumnbredd=To_change_a_column_width>main
+3 Lägga till en rubrik i ett blad=To_add_a_title_to_a_sheet>main
+3 Redigera rubriken i ett blad=To_edit_the_title_of_a_sheet>main
+3 Lägga till en bakgrund i ett blad=To_add_a_background_to_a_sheet>main
+3 Ta bort en bakgrund i ett blad=To_remove_a_background_from_a_sheet>main
+3 Använda avvikelser för att markera data
+4 Skapa en avvikelse=To_create_an_exception>main
+4 Redigera en avvikelse=To_edit_an_exception>main
+4 Ta bort en avvikelse=To_delete_an_exception>main
+3 Visa data som ett diagram
+4 Visa data i ett blad som ett diagram=To_show_data_in_a_sheet_as_a_graph>main
+4 Ändra formatet på ett diagram=To_change_the_style_of_a_graph>main
+4 Hantera tredimensionell visning av diagram=To_manipulate_the_three_dimensional_view_of_a_graph>main
+4 Lägga till rubriker i ett diagram=To_add_titles_to_a_graph>main
+4 Redigera rubriker i ett diagram=To_edit_titles_in_a_graph>main
+4 Ta bort rubriker i ett diagram=To_delete_titles_from_a_graph>main
+4 Exportera ett diagram till ett annat program=To_export_a_graph_to_another_application>main
+2 Skriva ut
+3 Skriva ut en arbetsbok=To_print_a_workbook>main
+3 Skriva ut ett blad=To_print_a_sheet>main
+3 Skriva ut axeletiketter=To_print_axis_labels>main
+3 Lägga till sidbrytningar=To_add_page_breaks>main
+3 Ange sidornas utskriftsordning=To_set_the_printing_order_of_pages>main
+3 Ställa in sidlayout=To_set_up_the_page_layout>main
+3 Förhandsgranska utskriften=To_preview_the_printout>main
+3 Lägga till sidhuvud och sidfötter
+4 Lägga till en sidfot=To_add_a_footer>main
+4 Skapa en anpassad sidfot=To_create_a_custom_footer>main
+4 Lägga till ett sidhuvud=To_add_a_header>main
+4 Skapa ett anpassat sidhuvud=To_create_a_custom_header>main
+2 Använda Oracle Discoverer med andra applikationer
+3 Exportera data och spara dem i ett annat filformat=To_export_data_and_save_it_in_another_file_format>main
+3 Bädda in en fråga i en fil i ett annat program=To_embed_a_query_in_a_file_in_another_application>main
+1 Ordlista
+2 Ordlista=DCM_GLOSSARY>gloss
+1 Referens till användargränssnittet
+2 Guider, dialogrutor och informationsrutor
+3 Sidan Justering=HIDD_FORMAT_ALIGN>main
+3 Sidan Bakgrundsfärg=HIDD_FORMAT_COLOR>main
+3 Sidan Cache=HIDD_OPTIONS_CACHE>main
+3 Dialogrutan Beräkningar=HIDD_DCMCALCULATIONS>main
+3 Dialogrutan Beräkning: Addera=HIDD_CALC_ADD>main
+3 Dialogrutan Beräkning: Dividera=HIDD_CALC_DIV>main
+3 Dialogrutan Beräkning: Multiplicera=HIDD_CALC_MULT>main
+3 Dialogrutan Beräkning: Procent=HIDD_CALC_PERCENT>main
+3 Dialogrutan Beräkning: Subtrahera=HIDD_CALC_SUB>main
+3 Dialogrutan Villkor=HIDD_DCMCONDITIONS>main
+3 Dialogrutan Anslut till Oracle Discoverer=HIDD_CONNECT>main
+3 Sidan Matris=HIDD_OPTIONS_MATRIX>main
+3 Dialogrutan Ta bort arbetsbok från databas=HIDD_DELETE_DB>main
+3 Dialogrutan Visa/dölj detalj=HIDD_DRILL_WIZARD>main
+3 Dialogrutan Alternativ för detaljgranskning=HIDD_DRILL_OPTIONS>main
+3 Dialogrutan Redigera beräkning=HIDD_CALC_EDIT>main
+3 Dialogrutan Redigera parameter=HIDD_PARAM_EDIT>main
+3 Sidan Avvikelse=HIDD_FORMAT_EXCEPTION_NEW>main
+3 Dialogrutan Avvikelser=HIDD_EXCEPTION>main
+3 Dialogrutan Exportera=HIDD_EXPORT_NAME>main
+3 Dialogrutan Filegenskaper=HIDD_FILEPROP>main
+3 Sidan Teckensnitt=HIDD_FORMAT_FONT>main
+3 Dialogrutan Formatera layout=HIDD_WIZARD_LAYOUT>main
+3 Sidan Format=HIDD_OPTIONS_FORMAT>main
+3 Sidan Sidhuvud/sidfot=HIDD_SETUP_HEADER>main
+3 Informationsrutan Urklipp=HIDD_DCMCLIPBOARD>main
+3 Dialogrutan Objektegenskaper=HIDD_ITEMPROP>main
+3 Dialogrutan Layout=HIDD_WIZARD_START>main
+3 Sidan Marginaler=HIDD_SETUP_MARGIN>main
+3 Dialogrutan Ny parameter=HIDD_PARAM_NEW>main
+3 Dialogrutan Öppna arbetsbok=HIDD_OPEN>main
+3 Dialogrutan Öppna arbetsbok från databas=HIDD_OPEN_DB>main
+3 Översikt över dialogrutan Alternativ=HIDD_WIZARD_OPTIONS>main
+3 Översikt över dialogrutan Utskriftsformat=HIDD_WIZARD_PREVIEW>main
+3 Dialogrutan Parametrar=HIDD_PARAMETERS>main
+3 Parameterguiden=HIDD_PARAMETERS_RUNTIME>main
+3 Dialogrutan Spara arbetsbok=HIDD_SAVE>main
+3 Dialogrutan Spara arbetsbok i databas=HIDD_SAVE_DB>main
+3 Sidan Blad=HIDD_SETUP_SHEET>main
+3 Dialogrutan Sortera matris=HIDD_SORT_CROSSTAB>main
+3 Dialogrutan Sortera tabell=HIDD_SORT_TABLE>main
+3 Dialogrutan SQL-kontroll=HIDD_DCMSQL>main
+3 Sidan Tabell=HIDD_OPTIONS_TABLE>main
+3 Sidan Text/tal=HIDD_FORMAT_MASK>main
+3 Dialogrutan Rubrik - fliken Bitmapp=HIDD_TITLE_BMP>main
+3 Dialogrutan Rubrik - fliken Text=HIDD_TITLE_TEXT>main
+3 Dialogrutan Totaler=HIDD_SUMMARIES>main
+3 Dialogrutan Totaler (för matriser)=HIDD_TOTAL_EDIT_CROSSTAB>main
+3 Dialogrutan Totaler (för tabeller)=HIDD_TOTAL_EDIT_TABLE>main
+3 Sidan Användare >Arbetsbok=HIDD_GRANT_USERTOBOOK>main
+3 Dialogrutan Värden=HIDD_DCMLIST>main
+3 Dialogrutan Arbetsbok på annat databaskonto=HIDD_CONNECT_IO>main
+3 Sidan Arbetsbok >Användare=HIDD_GRANT_BOOKTOUSER>main
+1 Arkiv-menyn
+2 Kommandot Nytt=HID_FILE_NEW>main
+2 Kommandot Öppna=HID_FILE_OPEN>main
+2 Kommandot Stäng=HID_FILE_CLOSE>main
+2 Kommandot Spara=HID_FILE_SAVE>main
+2 Kommandot Spara som=HID_FILE_SAVE_AS>main
+2 Kommandot Planera=HID_FILE_SCHEDULE
+2 Kommandot Utskriftsformat=HID_FILE_PAGE_SETUP
+2 Kommandot Förhandsgranska=HID_FILE_PRINT_PREVIEW>main
+2 Kommandot Skriv ut=HID_FILE_PRINT>main
+2 Kommandot Importera SQL=HID_FILE_IMPORT>main
+2 Kommandot Exportera=HID_FILE_EXPORT>main
+2 Kommandot Hantera arbetsböcker=Manage_Workbooks_command>main
+2 Kommandot Anslut till databasen=HID_FILE_CONNECT>main
+2 Kommandot Avsluta=HID_APP_EXIT>main
+1 Redigera-menyn
+2 Kommandot Ångra/gör om=HID_EDIT_UNDO>main
+2 Kommandot Upprepa=HID_EDIT_REPEAT>main
+2 Kommandot Klipp ut=HID_EDIT_CUT>main
+2 Kommandot Kopiera=HID_EDIT_COPY>main
+2 Kommandot Klistra in objekt=HID_EDIT_PASTE>main
+2 Kommandot Ta bort objekt=HID_EDIT_DELETEITEM>main
+2 Kommandot Markera allt=HID_EDIT_SELECTALL>main
+2 Kommandot Sök=HID_TOOLS_FIND>main
+2 Kommandot Objektegenskaper=HID_EDIT_ITEMPROPERTIES>main
+1 Visa-menyn
+2 Kommandot Verktygsfält=HID_VIEW_TOOLBAR>main
+2 Kommandot Formatfält=HID_TOOLBAR_FORMAT>main
+2 Kommandot Analysfält=HID_TOOLBAR_ANALYSIS>main
+2 Kommandot Statusfält=HID_VIEW_STATUS_BAR>main
+2 Sidobjekt=View_Page_Items
+2 Kommandot Urklipp=HID_VIEW_CLIPBOARD>main
+2 Kommandot SQL-kontroll=HID_VIEW_SQL>main
+1 Blad-menyn
+2 Kommandot Nytt blad=HID_SHEET_NEW>main
+2 Kommandot Redigera blad=HID_SHEET_MODIFY>main
+2 Kommandot Duplicera som tabell=HID_DUPLICATE_TABLE>main
+2 Kommandot Duplicera som matris=HID_DUPLICATE_CROSSTAB>main
+2 Kommandot Byt namn på blad=HID_SHEET_RENAME>main
+2 Kommandot Ta bort blad=HID_SHEET_DELETE>main
+2 Kommandot Redigera rubrik=HID_SHEET_TITLE>main
+2 Kommandot Visa/dölj detaljer=HID_SHEET_DRILLDOWN>main
+2 Kommandot Komprimera=HID_SHEET_ROLLUP>main
+2 Kommandot Redigera parametervärden=HID_SHEET_MODPARAMS>main
+2 Uppdatera ark=HIDD_Sheet_Refresh
+2 Kommandot Hämta alla rader=HID_SHEET_FETCHALL>main
+2 Kommandot Räkna alla rader=HID_SHEET_COUNTALL>main
+1 Format-menyn
+2 Kommandot Data=HID_FORMAT_DATA>main
+2 Kommandot Rubriker=HID_FORMAT_HEADINGS>main
+2 Kommandot Avvikelser=HID_FORMAT_EXCEPTIONS>main
+2 Kommandot Kolumnbredd=HID_COLUMN_WIDTH>main
+2 Kommandot Auto-storlek för kolumn=HID_COLUMN_AUTOFIT>main
+2 Kommandot Bladrubrik=HID_FORMAT_SHEETTITLE>main
+2 Kommandot Ange bakgrund=HID_FORMAT_SHEETBKGND>main
+2 Kommandot Ta bort bakgrund=HID_FORMAT_SHEETCLEAR>main
+1 Verktyg-menyn
+2 Kommandot Villkor=HID_TOOLS_CONDITIONS>main
+2 Kommandot Sortera=HID_TOOLS_SORT>main
+2 Kommandot Totaler=HID_TOOLS_TOTALS>main
+2 Kommandot Procentandelar=HIDD_PERCENTAGES
+2 Kommandot Beräkningar=HID_TOOLS_CALCULATIONS>main
+2 Kommandot Parametrar=HID_TOOLS_PARAMS>main
+2 Kommandot Alternativ=HID_TOOLS_OPTIONS>main
+1 Diagram-menyn
+2 Kommandot Nytt diagram=New_Graph_command>main
+2 Kommandot Visa=HID_MENU_VIEW_GRAPH>main
+2 Kommandot Skriv ut=Print_command_graph
+2 Kommandot Kopiera till Urklipp=Copy_to_clipboard_command_graph>main
+2 Kommandot Förklaringar=Legend_command>main
+2 Kommandot X-etiketter=X_Labels_command>main
+2 Kommandot Statusfält=Status_bar_command_graph>main
+2 Kommandot Skala=HID_GRAPH_SCALE>main
+2 Kommandot 3D-vy=HID_GRAPH_3D>main
+1 Fönster-menyn
+2 Kommandot Ordna ikoner=HID_WINDOW_ARRANGE>main
+2 Kommandot Överlappande=HID_WINDOW_CASCADE>main
+2 Kommandot Över och under=HID_WINDOW_TILE_HORZ>main
+2 Kommandot Sida vid sida=HID_WINDOW_TILE_VERT>main
+1 Hjälp-menyn
+2 Kommandot Hjälpavsnitt=HID_HELP_INDEX>main
+2 Kommandot Använda hjälp=HID_HELP_USING>main
+2 Kommandot Handböcker=HID_HELP_MANUALS>main
+2 Kommandot Om Discoverer=HID_APP_ABOUT>main

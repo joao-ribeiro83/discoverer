@@ -174,6 +174,10 @@ describe('reorderAndRenumber (SortPanel)', () => {
       sortDirection: 'ASC',
       sortOrder,
       columnWidth: null,
+      axisType: null,
+      axisEdge: null,
+      isHidden: false,
+      sortGroup: false,
     }
   }
 

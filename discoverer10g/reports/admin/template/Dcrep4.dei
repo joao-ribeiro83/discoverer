@@ -1,0 +1,106 @@
+/* Copyright (c) Oracle Corporation 1996.  All Rights Reserved */
+
+/****************************************************************************
+  NAME
+    dcrep4.dei - V3 deinstall script for Windows Oracle Reports 6.0 package
+
+  DESCRIPTION
+    This script deinstalls Windows Oracle Reports 6.0 package
+
+  MODIFIED    MM/DD/YY   Reason
+   pgupta     01/14/98   created.
+*****************************************************************************/
+
+{
+    /************************************************
+    Set necessary variables for deinstallation
+    *************************************************/
+    EXECUTE_SCRIPT = "SET_DEINSTALL_VARIABLES";
+    execute("%installer_home%\disr3dei.usr");
+    /************************************************/
+
+    deinstall_prompt01 = nls("deinstall_prompt01", "Other products are dependent on %%registry_label%% (or one of its components). Removing it may cause other products to work improperly. Are you sure you want to deinstall it?");
+    deinstall_files01   = nls("deinstall_files01", "Other products are dependent on %%registry_label%% (or one of its components). Removing it will remove all its underlying components also, which may cause other products to work improperly. It is therefore recommended that you do not remove %%registry_label%%. Choose 'No' to leave %%registry_label%% intact. Choose 'Yes' if you are sure you want to remove it.");
+
+    {doit = execute("%installer_home%%dir_separator%%operating_system%.dei");}
+    [
+        'UNBOUND_VARIABLE: signal('failure,instantiate(nls("instver_too_early2",
+                                                           "The version of the Installer currently running is %%installer_version%%. The product(s) you have chosen to deinstall were installed with a later version of the Installer. Please use a later version of the Installer to deinstall these Product(s).")));
+    ]
+
+    if (doit)
+    {
+        /************************************************
+        Create a label with the product name, and version
+        *************************************************/
+        EXECUTE_SCRIPT = "CREATE_LABEL";
+        execute("%installer_home%%dir_separator%disr3dei.usr");
+        /************************************************/
+
+        /*********************
+        Create dependency list
+        **********************/
+        dependency_list = list("rsf80");
+        /*********************/
+
+        /***************************
+        Validate deinstallation path
+        ****************************/
+        deinstall_variable = "RW60";
+        section_heading = registry_filename(current_registry);
+        EXECUTE_SCRIPT = "GET_DEINSTALLATION_PATH";
+        RW60 = execute("%installer_home%%dir_separator%disr3dei.usr");
+        /***************************/
+
+        permit_retry_operations  = TRUE;
+        permit_ignore_operations = TRUE;
+        permit_process_operations= TRUE;
+
+
+        /***********************************
+        Unreference & Deinstall Dependencies
+        ************************************/
+        EXECUTE_SCRIPT = "UNREFERENCE_DEPENDENCIES";
+        execute("%installer_home%%dir_separator%disr3dei.usr");
+       /***********************************/
+
+        /*********************
+        Unregister the product
+        **********************/
+        ui_product(instantiate(display_registry_label));
+        ui_action(instantiate(deinstall_unregister));
+        unregister(current_registry);
+        /*********************/
+
+
+        /********************
+        Deinstall the product
+        *********************/
+        ui_action(instantiate(deinstall_files));
+        remove(deinst);
+       remove(msg);
+        remove(res);
+        /********************/
+
+        /**********************************
+         Remove Registry/CONFIG.ORA variable
+         ***********************************/
+         {modify("RW60", "", ora_config, section_heading);}       /* remove REPORT60 variable from Registry/CONFIG.ORA */
+         [ 'UNBOUND_ENVIRONMENT_VARIABLE: continue(); ]
+
+
+         {modify("REPORTS60_PATH", "", ora_config, section_heading);}
+         [ 'UNBOUND_ENVIRONMENT_VARIABLE: continue(); ]
+
+         {modify("REPORTS60_TMP", "", ora_config, section_heading);}
+         [ 'UNBOUND_ENVIRONMENT_VARIABLE: continue(); ]
+
+         {remove_directory("%ORACLE_HOME%%dir_separator%Report60");}
+         [ 'INVALID_FILE_NAME, 'PERMISSION_DENIED, 'WRITE_ERROR, 'OS_ERROR: continue(); ]
+
+
+
+
+    permit_retry_operations = FALSE;
+    }
+}

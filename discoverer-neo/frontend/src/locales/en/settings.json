@@ -16,5 +16,15 @@
       "high-contrast": "High contrast"
     }
   },
+  "palette": {
+    "title": "Color palette",
+    "description": "Choose the accent colors used across the interface.",
+    "unavailableHighContrast": "Not available while High contrast is selected — that mode uses its own fixed colors for accessibility.",
+    "label": "Palette",
+    "options": {
+      "default": "Classic",
+      "navy": "Navy"
+    }
+  },
   "saved": "Preferences saved"
 }

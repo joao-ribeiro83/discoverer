@@ -17,6 +17,28 @@ Introduzca sus credenciales y haga clic en **Iniciar sesión**.
 
 **¿Es la primera vez?** Póngase en contacto con su administrador para crear una cuenta.
 
+## Primer inicio de sesión con una contraseña temporal
+
+Si su cuenta se trasladó desde Oracle Discoverer, su administrador le dará una
+**contraseña temporal**. Es una cadena aleatoria de 16 caracteres, por ejemplo
+`ufNnRksjgR7U%M6X`.
+
+1. Inicie sesión con su dirección de correo y la contraseña temporal.
+2. Irá directamente a **Cambiar la contraseña**: no puede omitir este paso. Hasta
+   que elija una contraseña, el resto de la aplicación no está disponible.
+3. Introduzca de nuevo la contraseña temporal y después la nueva dos veces.
+4. Llegará al panel y la contraseña temporal dejará de funcionar de inmediato.
+
+Su nueva contraseña debe tener **al menos 12 caracteres** y ser distinta de la
+temporal.
+
+> **Consejo:** la contraseña temporal evita deliberadamente los caracteres fáciles
+> de confundir: sin `O` mayúscula ni cero, sin `l` minúscula ni uno. Si un
+> carácter le parece ambiguo, no es ninguno de esos.
+
+Si escribe mal la contraseña temporal, la pantalla se lo indica y no se cambia
+nada; pida a su administrador que la restablezca si la ha perdido.
+
 ## Interfaz principal
 
 Tras iniciar sesión, verá el panel principal con las siguientes secciones:

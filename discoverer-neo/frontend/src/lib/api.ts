@@ -41,6 +41,7 @@ import type {
   AssessmentReport,
   EulVersionInfo,
   MigrationJob,
+  StartMapReimportInput,
   StartMigrationInput,
   AuditLogEntry,
   AuditQueryFilters,
@@ -113,12 +114,16 @@ interface AuthUser {
   // Added in Session 7.1 — the user's saved UI preferences.
   locale?: string
   theme?: string
+  // Added alongside the Allianz Trade-inspired color palette — independent
+  // of theme (light/dark/high-contrast), see PaletteProvider.
+  colorPalette?: string
 }
 
 /** User preferences payload (Session 7.1 backend: /api/users/me/preferences). */
 export interface UserPreferences {
   locale: string
   theme: string
+  colorPalette: string
 }
 
 // Typed API client — placeholder methods for future endpoints
@@ -132,6 +137,11 @@ export const apiClient = {
       }),
     logout: () => api.post('/auth/logout'),
     me: () => api.get<{ data: AuthUser }>('/auth/me'),
+    changePassword: (currentPassword: string, newPassword: string) =>
+      api.post<Envelope<{ message: string }>>('/auth/change-password', {
+        currentPassword,
+        newPassword,
+      }),
     refresh: (token: string) =>
       api.post<{ data: { token: string } }>('/auth/refresh', { token }),
   },
@@ -156,6 +166,18 @@ export const apiClient = {
       api.post<Envelope<Folder>>(`/business-areas/${businessAreaId}/folders`, data),
     update: (id: string, data: unknown) => api.put<Envelope<Folder>>(`/folders/${id}`, data),
     delete: (id: string) => api.delete<Envelope<{ message: string }>>(`/folders/${id}`),
+    // Folder↔business-area is many-to-many in Discoverer (BA_OBJ_LINKS): a
+    // folder is owned by one area and can be shared into others.
+    listSharedBusinessAreas: (id: string) =>
+      api.get<Envelope<string[]>>(`/folders/${id}/business-areas`),
+    shareWithBusinessArea: (id: string, businessAreaId: string) =>
+      api.post<Envelope<{ message: string }>>(`/folders/${id}/business-areas`, {
+        businessAreaId,
+      }),
+    unshareWithBusinessArea: (id: string, businessAreaId: string) =>
+      api.delete<Envelope<{ message: string }>>(
+        `/folders/${id}/business-areas/${businessAreaId}`,
+      ),
   },
   // Items (scoped to a folder for list/create; flat for get/update/delete)
   items: {
@@ -344,6 +366,11 @@ export const apiClient = {
     analyze: (dataSourceId: string, schemaOwner?: string) =>
       api.post<Envelope<AssessmentReport>>('/migration/analyze', { dataSourceId, schemaOwner }),
     run: (data: StartMigrationInput) => api.post<Envelope<MigrationJob>>('/migration/run', data),
+    // Rebuilds only the maps, for a database migrated before the tool could
+    // read the workbook body. Destructive for migrated maps — see the
+    // migration docs.
+    reimportMaps: (data: StartMapReimportInput) =>
+      api.post<Envelope<MigrationJob>>('/migration/reimport-maps', data),
     listJobs: () => api.get<Envelope<MigrationJob[]>>('/migration/jobs'),
     getJob: (jobId: string) => api.get<Envelope<MigrationJob>>(`/migration/jobs/${jobId}`),
   },

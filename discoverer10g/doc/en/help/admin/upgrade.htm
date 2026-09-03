@@ -1,0 +1,1616 @@
+
+<!DOCTYPE html public "-//w3c//dtd html 3.2 transitional//en.us">
+<HTML lang="en.us">
+<HEAD>
+
+<META NAME="Generator" CONTENT="Quadralay WebWorks Publisher 5.0.4">
+<META NAME="Page" CONTENT="DefaultSingle">
+<META NAME="Title" CONTENT="Upgrading from earlier versions of Discoverer  ">
+<meta http-equiv="Content-Type" content="text/html;  charset=iso-8859-1">
+
+<TITLE>Upgrading from earlier versions of Discoverer  </TITLE>
+	   
+<LINK REL="home" HREF="../../library.htm" TITLE="Library">
+<LINK REL="toc" HREF="toc.htm" TITLE="Contents">
+<LINK REL="index" HREF="bookix.htm" TITLE="Index">
+<LINK REL="copyright" HREF="./html/cpyr.htm" TITLE="Copyright">
+<LINK REL="up" HREF="toc.htm" TITLE="Up">
+<LINK REL="next" HREF="referenc.htm" TITLE="Next">
+<LINK REL="previous" HREF="rdb_supp.htm" TITLE="Previous">
+
+
+</HEAD>
+       
+<BODY BGCOLOR="#ffffff">
+
+<A NAME="top"></A>
+
+
+
+
+<A HREF="#BEGIN">Skip Headers</A><BR><BR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+ 
+<TD ALIGN="LEFT" VALIGN="TOP"><FONT COLOR="#330099" FACE="Helvetica, Arial, sans-serif"><STRONG>Oracle Discoverer Administrator Administration Guide (Online Help)<BR>10<i>g</i> (9.0.4)</STRONG><BR>Part Number B10270-01</FONT></TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="144">
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+
+
+
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<HR>
+<P>
+<A HREF="rdb_supp.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+
+<A HREF="referenc.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+    
+
+
+<A NAME="BEGIN"></A>
+
+
+
+<DIV CLASS="IND">
+<!-- End Header -->
+
+
+
+
+
+
+
+<A NAME="1004903"></A>
+<!--TOC=Title-"1004903"-->
+<H1 CLASS="Title"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099">23<BR>Upgrading from earlier versions of Discoverer  </FONT></H1>
+
+<!--/TOC=Title-->
+
+<A NAME="1005581"></A>
+<!--TOC=h1-"1005581"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Upgrading from earlier versions of Discoverer</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1008573"></A>
+<P CLASS="BP">
+This chapter explains how to upgrade to this version of Discoverer and contains the following topics: 
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008528"></A><A HREF="upgrade.htm#1008546">"Which upgrade path to take?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008960"></A><A HREF="upgrade.htm#1011582">"What are the prerequisites for upgrading to Discoverer Version 9.0.4?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010917"></A><A HREF="upgrade.htm#1009918">"About Discoverer versions and EUL versions"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010926"></A><A HREF="upgrade.htm#1010306">"An overview of the upgrade process"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008625"></A><A HREF="upgrade.htm#1009980">"Upgrading from Discoverer Release 3.1 (or earlier) to Discoverer Version 9.0.4"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009764"></A><A HREF="upgrade.htm#1008619">"Upgrading from Discoverer Release 4.1 to Discoverer Version 9.0.4"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008535"></A><A HREF="upgrade.htm#1008551">"Upgrading from Discoverer Version 9.0.2 to Discoverer Version 9.0.4"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009735"></A><A HREF="upgrade.htm#1009701">"Notes about upgrading to Discoverer Version 9.0.4"</a>
+<P>
+</UL>
+
+<A NAME="1008546"></A>
+<!--TOC=h1-"1008546"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Which upgrade path to take?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1008620"></A>
+<P CLASS="BP">
+The upgrade path to choose depends on the version of Discoverer you are upgrading from, as follows:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008683"></A>if you are upgrading from Release 3.1 or earlier, you have to upgrade to Release 4.1 (for more information, see <A HREF="upgrade.htm#1009980">"Upgrading from Discoverer Release 3.1 (or earlier) to Discoverer Version 9.0.4"</a>)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009752"></A>if you are upgrading from Release 4.1, you can upgrade straight to Version 9.0.4 (for more information, see <A HREF="upgrade.htm#1008619">"Upgrading from Discoverer Release 4.1 to Discoverer Version 9.0.4"</a>)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008686"></A>if you are upgrading from Version 9.0.2, you can upgrade straight to Version 9.0.4 (for more information, see <A HREF="upgrade.htm#1008551">"Upgrading from Discoverer Version 9.0.2 to Discoverer Version 9.0.4"</a>)
+<P>
+</UL>
+<A NAME="1011003"></A>
+<P CLASS="BP">
+The different upgrade paths are shown in the flowchart below:
+</P>
+
+<A NAME="1011004"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 23-1 &#32;Discoverer upgrade flowchart</EM></FONT></H4>
+   
+<BR><A NAME="1011008">
+
+
+<img src="ad_flow3.gif" ALT="Text description of ad_flow3.gif follows.">
+<A HREF="img_text/ad_flow3.htm"><br>Text description of the illustration ad_flow3.gif</A>
+
+
+</A>
+   
+<A NAME="1011582"></A>
+<!--TOC=h1-"1011582"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are the prerequisites for upgrading to Discoverer Version 9.0.4?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1011583"></A>
+<P CLASS="BP">
+Before you can upgrade to Discoverer Version 9.0.4, Oracle Developer Suite (including Discoverer Administrator Version 9.0.4) must already be installed.
+</P>
+<A NAME="1011584"></A>
+<P CLASS="BP">
+In addition, to upgrade End User Layers, the EUL owners must have the following privileges:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008931"></A>CREATE PROCEDURE
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008932"></A>CREATE SESSION
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008933"></A>CREATE TABLE
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008934"></A>CREATE VIEW
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008935"></A>CREATE SEQUENCE
+<P>
+</UL>
+<A NAME="1008936"></A>
+<P CLASS="BP">
+If upgrading to an Oracle 8.1.7 (or later) database, summaries are implemented as materialized views and the EUL owners therefore require the following privileges:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008937"></A>CREATE ANY MATERIALIZED VIEW
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008938"></A>DROP ANY MATERIALIZED VIEW
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008939"></A>ALTER ANY MATERIALIZED VIEW
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008940"></A>GLOBAL QUERY REWRITE
+<P>
+</UL>
+<A NAME="1008941"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Important: </STRONG>To maintain the consistency of data transferred to upgraded EULs, it is very important that no Discoverer Administrator sessions are opened on the earlier version of the EUL while the upgrade is in progress.
+</P>
+
+<A NAME="1009918"></A>
+<!--TOC=h1-"1009918"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About Discoverer versions and EUL versions</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1009919"></A>
+<P CLASS="BP">
+Specific versions of Discoverer are compatible with particular EUL versions. 
+</P>
+<A NAME="1009977"></A>
+<P CLASS="BP">
+Discoverer end users will be unable to connect to an EUL that is not compatible with the version of the Discoverer product that they are using.
+</P>
+<A NAME="1009978"></A>
+<P CLASS="BP">
+Note that Discoverer version numbers and EUL version numbers are not totally synchronized, as follows:
+</P>
+   
+<A NAME="1011241">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1009950"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG><STRONG CLASS="Bold">Discoverer Release/Version Number</STRONG></STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1009952"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>EUL Version Number</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1009954"></A>
+<P CLASS="TB">
+Release 3.1.x/3.3.x&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1009956"></A>
+<P CLASS="TB">
+Release 3.1.x&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1009962"></A>
+<P CLASS="TB">
+Release 4.1.x&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1009964"></A>
+<P CLASS="TB">
+Release 4.1.x&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1009958"></A>
+<P CLASS="TB">
+Version 9.0.2.52 and earlier&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1009960"></A>
+<P CLASS="TB">
+Version 5.0.0.x&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010116"></A>
+<P CLASS="TB">
+Version 9.0.2.53 and later&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010118"></A>
+<P CLASS="TB">
+Version 5.0.2.x&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1009974"></A>
+<P CLASS="TB">
+Version 9.0.4.x&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1009976"></A>
+<P CLASS="TB">
+Version 5.0.2.x&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   <A NAME="1010258"></A>
+<P CLASS="BP">
+If you attempt to connect to a Release 4.1 EUL or a Version 5.0.0.x EUL using Discoverer Administrator Version 9.0.4, you will be prompted to upgrade the EUL to the current version.
+</P>
+<A NAME="1010256"></A>
+<P CLASS="BP">
+For more information about compatibility between Discoverer versions and EUL versions, see the Discoverer Release Notes.
+</P>
+
+<A NAME="1010306"></A>
+<!--TOC=h1-"1010306"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> An overview of the upgrade process</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1010310"></A>
+<P CLASS="BP">
+During the upgrade process, you will perform a number of steps. Some of these steps will depend on the version of Discoverer you are upgrading from.
+</P>
+<A NAME="1010462"></A>
+<P CLASS="BP">
+Below is an overview of the steps that you will follow:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010311"></A>You will use the database export utility to take a back up of each EUL that you will upgrade <STRONG CLASS="Bold">(not required when upgrading from Version 9.0.2.53 (or later) to Version 9.0.4)</STRONG>. It is important that you take a database export instead of an EUL export to include the EUL tables themselves (including workbook definitions saved to the database, and query statistics) as well as the EUL metadata.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010312"></A>You will upgrade EULs by opening each EUL in the latest version of Discoverer Administrator <STRONG CLASS="Bold">(not required when upgrading from Version 9.0.2.53 (or later) to Version 9.0.4)</STRONG>. When you log on to Discoverer Administrator as the owner of a Release 4.1 or Version 5.0.0.x EUL, Discoverer Administrator automatically prompts you to upgrade the EUL to the current version.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010322"></A>You will refresh summary folders <STRONG CLASS="Bold">(not required when upgrading from Version 9.0.2 to Version 9.0.4)</STRONG>. Although summary folder metadata is upgraded during the EUL upgrade, you will have to refresh the summary data when the EUL upgrade is complete.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010325"></A>You will migrate users to the new version of Discoverer. Users of older versions of Discoverer will not be able to access upgraded EULs. Note that:
+<P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1010334"></A>users of Discoverer Release 4.1 will still be able to access an original Release 4.1 EUL, but any changes they make will not be visible in the upgraded Version 5.0.2.x EUL
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1010346"></A>users of Discoverer Release 9.0.2 who accessed a Version 5.0.0.x EUL will not be able to access that EUL when the EUL has been upgraded to Version 5.0.2.x
+<P>
+</UL>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010316"></A>You will remove the old EULs from the database <STRONG CLASS="Bold">(not required when upgrading from Version 9.0.2 to Version 9.0.4)</STRONG>. Initially you will probably want to just prevent access to the original EULs and only allow users to access the upgraded EULs. When you are confident that all users are successfully accessing the upgraded EULs, you will remove the old EULs.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010435"></A>You will remove old versions of Discoverer from client machines. When you are confident that all users are successfully accessing the upgraded EULs with the latest version of Discoverer, you will typically want to remove old versions of Discoverer. 
+<P>
+</UL>
+<A NAME="1010892"></A>
+<P CLASS="BP">
+The above steps are shown in the flowchart below:
+</P>
+
+<A NAME="1010902"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 23-2 &#32;Discoverer upgrade flowchart</EM></FONT></H4>
+   
+<BR><A NAME="1010906">
+
+
+<img src="ad_flow2.gif" ALT="Text description of ad_flow2.gif follows.">
+<A HREF="img_text/ad_flow2.htm"><br>Text description of the illustration ad_flow2.gif</A>
+
+
+</A>
+   <A NAME="1010894"></A>
+<P CLASS="BP">
+Depending on how the Discoverer system has been set up, there might be other issues to consider (for more information, see <A HREF="upgrade.htm#1009701">"Notes about upgrading to Discoverer Version 9.0.4"</a>).
+</P>
+
+<A NAME="1009980"></A>
+<!--TOC=h1-"1009980"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Upgrading from Discoverer Release 3.1 (or earlier) to Discoverer Version 9.0.4</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1009770"></A>
+<P CLASS="BP">
+There is no direct upgrade path from Discoverer Release 3.1 (or earlier) to Discoverer Version 9.0.4. Instead, use the following upgrade path:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009790"></A>if upgrading from a version of Discoverer earlier than Release 3.1, upgrade to Discoverer Release 3.1 (for more information, see<EM CLASS="Italic"> Oracle Discoverer 3.1 Installation and Upgrade Guide</EM>)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009778"></A>upgrade from Discoverer Release 3.1 to Discoverer Release 4.1 (for more information, see <EM CLASS="Italic">Oracle Discoverer 4.1 Installation and Upgrade Guide</EM>)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009783"></A>upgrade from Discoverer Release 4.1 to Discoverer Version 9.0.4 (for more information, see <A HREF="upgrade.htm#1008619">"Upgrading from Discoverer Release 4.1 to Discoverer Version 9.0.4"</a>)
+<P>
+</UL>
+
+<A NAME="1008619"></A>
+<!--TOC=h1-"1008619"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Upgrading from Discoverer Release 4.1 to Discoverer Version 9.0.4</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005906"></A>
+<P CLASS="BP">
+This section explains how to upgrade to Discoverer Version 9.0.4, and includes the following topics:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006300"></A><A HREF="upgrade.htm#1006302">"About upgrading from Discoverer Release 4.1 to Discoverer Version 9.0.4"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006321"></A><A HREF="upgrade.htm#1006366">"Upgrade step 1: Back up the Release 4.1 EUL"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006322"></A><A HREF="upgrade.htm#1006367">"Upgrade step 2: Upgrade the Release 4.1 EUL"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006323"></A><A HREF="upgrade.htm#1006368">"Upgrade step 3: Refresh summary folders"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006338"></A><A HREF="upgrade.htm#1006805">"Upgrade step 4: Migrate users to Discoverer Version 9.0.4"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007135"></A><A HREF="upgrade.htm#1006370">"Upgrade step 5: Remove the Release 4.1 EULs"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007136"></A><A HREF="upgrade.htm#1008157">"Upgrade step 6: Remove Discoverer Release 4.1 products from client machines"</a>
+<P>
+</UL>
+
+<A NAME="1006302"></A>
+<!--TOC=h2-"1006302"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About upgrading from Discoverer Release 4.1 to Discoverer Version 9.0.4</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1007188"></A>
+<P CLASS="BP">
+Before you do anything else, you will take a back up of the Release 4.1 EUL as described in the following upgrade step:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007194"></A><A HREF="upgrade.htm#1006366">"Upgrade step 1: Back up the Release 4.1 EUL"</a>
+<P>
+</UL>
+<A NAME="1010530"></A>
+<P CLASS="BP">
+To use Discoverer Version 9.0.4, Discoverer users must have access to a Discoverer Version 5 End User Layer (EUL). If users have been using a Discoverer Release 4.1 EUL, that EUL must be upgraded before the users can access it using Discoverer Version 9.0.4.
+</P>
+<A NAME="1010531"></A>
+<P CLASS="BP">
+The EUL upgrade process creates new Version 5 EUL tables, and then copies metadata from the Release 4.1 EUL tables into the new tables. Existing users can continue working with Discoverer Release 4.1 during the upgrade process because the upgrade process is non-destructive (i.e. the Release 4.1 EUL tables are not deleted).
+</P>
+<A NAME="1010525"></A>
+<P CLASS="BP">
+Follow the upgrade steps below to upgrade the EUL using Discoverer Administrator:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007198"></A><A HREF="upgrade.htm#1006367">"Upgrade step 2: Upgrade the Release 4.1 EUL"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007202"></A><A HREF="upgrade.htm#1006368">"Upgrade step 3: Refresh summary folders"</a>
+<P>
+</UL>
+<A NAME="1006570"></A>
+<P CLASS="BP">
+When you are satisfied that all Release 4.1 EULs have been successfully upgraded, follow the upgrade steps below:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007227"></A><A HREF="upgrade.htm#1006805">"Upgrade step 4: Migrate users to Discoverer Version 9.0.4"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007231"></A><A HREF="upgrade.htm#1006370">"Upgrade step 5: Remove the Release 4.1 EULs"</a>
+<P>
+</UL>
+<A NAME="1007222"></A>
+<P CLASS="BP">
+When you have upgraded all users and removed all Release 4.1 EULs, follow the upgrade step below:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007237"></A><A HREF="upgrade.htm#1008157">"Upgrade step 6: Remove Discoverer Release 4.1 products from client machines"</a>
+<P>
+</UL>
+
+<A NAME="1006366"></A>
+<!--TOC=h2-"1006366"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Upgrade step 1: Back up the Release 4.1 EUL</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1006375"></A>
+<P CLASS="BP">
+Before you can upgrade a Discoverer Release 4.1 EUL to a Discoverer Version 5 EUL, you must first back up the EUL tables by exporting the EUL owner using the standard database export utility. 
+</P>
+<A NAME="1006396"></A>
+<P CLASS="BP">
+How to export the EUL owner will depend on:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007391"></A>the version of the Oracle client software installed on your machine
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007392"></A>the version of the Oracle database on which the Release 4.1 EUL resides
+<P>
+</UL>
+<A NAME="1007403"></A>
+<P CLASS="BP">
+We recommend that the version of the Oracle database and the version of the Oracle database client software installed on your machine are the same. If the versions are not the same (e.g. if the EUL is on an Oracle8<EM CLASS="Italic">i</EM> database and Oracle9<EM CLASS="Italic">i</EM> client software is installed on your machine), you might not be able to follow the instructions below. If you are unable to export the EUL, contact your database administrator and ask them to export the EUL for you.
+</P>
+<A NAME="1007401"></A>
+<P CLASS="BP">
+To back up a Release 4.1 EUL (assuming the EUL resides on an Oracle9<EM CLASS="Italic">i</EM> database and you are using a machine on which you have installed Oracle Developer Suite), follow the steps described in <A HREF="maintain.htm#1008613">Chapter&nbsp;3, "How to export an EUL using the standard database export utility"</a>.
+</P>
+<A NAME="1007393"></A>
+<P CLASS="BP">
+Having backed up the Release 4.1 EUL, you are now ready to upgrade it to Version 5.
+</P>
+
+<A NAME="1006367"></A>
+<!--TOC=h2-"1006367"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Upgrade step 2: Upgrade the Release 4.1 EUL</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1006439"></A>
+<P CLASS="BP">
+Having backed up a Release 4.1 EUL, you can now upgrade the EUL to Version 5. To upgrade an EUL, you simply open the EUL in the latest version of Discoverer Administrator by following the instructions below. The same database user that owned the Release 4.1 EUL will own the Version 5 EUL.
+</P>
+<A NAME="1006618"></A>
+<P CLASS="BP">
+Note that Release 4.1 end users are not affected by the upgrade and can continue using the Release 4.1 EUL. However, any changes (e.g. modifications to workbooks) that end users make in the Release 4.1 EUL after the upgrade process has started will not be present in the Version 5 EUL.
+</P>
+<A NAME="1006597"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Important:</STRONG> To maintain the consistency of data transferred to the Version 5 EUL, it is very important that no Discoverer Administrator sessions are opened on the Release 4.1 EUL while the upgrade is in progress.
+</P>
+<A NAME="1006440"></A>
+<P CLASS="BP">
+To upgrade a Release 4.1 EUL to Version 5:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1006450"></A>From the Windows Start menu, choose Programs | Oracle Developer Suite - &lt;HOME_NAME&gt; | Discoverer Administrator to display the Connect to Oracle<EM CLASS="Italic"> </EM>Discoverer Administrator dialog. 
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1006451"></A>Enter the database user name and password of the owner of the Discoverer Release 4.1 EUL that you want to upgrade.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1007282"></A>Click OK. 
+<P>
+ 
+
+<A NAME="1006452"></A>
+<P CLASS="BP1">
+The EUL Upgrade dialog is displayed.
+</P>
+
+<A NAME="1006453"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 23-3 &#32;EUL Upgrade dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1006457">
+
+
+<img src="eulup2.gif" ALT="Text description of eulup2.gif follows.">
+<A HREF="img_text/eulup2.htm"><br>Text description of the illustration eulup2.gif</A>
+
+
+</A>
+ 
+<A NAME="1007263"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note: </STRONG>If you have not already exported the Release 4.1 EUL, click Cancel and export the EUL (for more information, see <A HREF="upgrade.htm#1006366">"Upgrade step 1: Back up the Release 4.1 EUL"</a>).
+</P>
+</OL>
+<A NAME="1011077"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1006547"></A>Select the <STRONG CLASS="Bold">Yes, I have completed a database export</STRONG> check box to confirm that you have exported the Discoverer Release 4.1 EUL.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1006551"></A>Click Upgrade to create a new Version 5 EUL using data copied from the Release 4.1 EUL. 
+<P>
+ 
+
+<A NAME="1006553"></A>
+<P CLASS="BP1">
+The EUL Upgrade progress bar displays the status of the upgrade.
+</P>
+
+<A NAME="1010265"></A>
+<P CLASS="BP1">
+Any messages that are output during the upgrade process are displayed in the End User Layer Upgrade Log dialog. For more information about messages that refer to invalid characters in identifiers, see <A HREF="upgrade.htm#1011158">"Notes about upgrading identifiers containing invalid characters"</a>.
+</P>
+
+<A NAME="1006554"></A>
+<P CLASS="BP1">
+If there are summary folders in the upgraded EUL, the following message dialog is displayed, indicating that the summary folders are invalid and must be refreshed.
+</P>
+
+<A NAME="1007371"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 23-4 &#32;Invalid summaries warning message dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1007375">
+
+
+<img src="suminv.gif" ALT="Text description of suminv.gif follows.">
+<A HREF="img_text/suminv.htm"><br>Text description of the illustration suminv.gif</A>
+
+
+</A>
+ </UL>
+ 
+<A NAME="1007368"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1007293"></A>If the above message dialog is displayed, click OK.
+<P>
+ 
+
+<A NAME="1006635"></A>
+<P CLASS="BP1">
+The Load Wizard is displayed.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1006636"></A>Click Cancel to close the Load Wizard.
+<P>
+ 
+
+<A NAME="1006634"></A>
+<P CLASS="BP1">
+The EUL upgrade is complete. You can use this EUL to connect to the database using Discoverer Administrator Version 9.0.4. 
+</P>
+</OL>
+
+<A NAME="1006368"></A>
+<!--TOC=h2-"1006368"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Upgrade step 3: Refresh summary folders</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1006642"></A>
+<P CLASS="BP">
+If there are summary folders in the EUL you have upgraded, you must refresh the summary folders. 
+</P>
+<A NAME="1006784"></A>
+<P CLASS="BP">
+The definitions of any Release 4.1 summary folders are copied into the new Version 5 EUL and the status of any upgraded summary folders is changed to "Refresh Required". The database tables or materialized views on which the upgraded summary folders are based are not actually created until the summary folders are refreshed.
+</P>
+<A NAME="1006751"></A>
+<P CLASS="BP">
+When you refresh upgraded summary folders:
+</P>
+<UL>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1006752"></A>on Oracle Standard Edition databases, Discoverer creates summary tables
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1006753"></A>on Oracle 8.1.7 (or later) Enterprise Edition databases, Discoverer creates materialized views
+<P>
+</UL>
+</UL>
+<A NAME="1006754"></A>
+<P CLASS="BP">
+When the summary tables or materialized views have been created, Discoverer can then use the summary folders to optimize queries.
+</P>
+<A NAME="1006755"></A>
+<P CLASS="BP">
+For more information about summary folders, summary tables, and materialized views, see <A HREF="managing.htm#1009688">Chapter&nbsp;13, "Managing summary folders"</a>. 
+</P>
+<A NAME="1006756"></A>
+<P CLASS="BP">
+To refresh upgraded summary folders:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1006757"></A>Connect to Discoverer Administrator as the owner of the upgraded EUL.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1006758"></A>Open the business area containing the summary folders that you want to refresh.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1006759"></A>Display the Summaries tab of the Workarea.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1006760"></A>Select the summary folders that you want to refresh.
+<P>
+ 
+
+<A NAME="1006761"></A>
+<P CLASS="BP1">
+You will have to refresh all of the summary folders before Discoverer can use them. However, depending on the amount of data, you might not want to refresh all the summary folders at the same time.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1006762"></A>Select Tools | Refresh Summaries. 
+<P>
+ 
+
+<A NAME="1006763"></A>
+<P CLASS="BP1">
+For any summary folders not based on external summary tables, the Refresh Summaries dialog is displayed.
+</P>
+
+<A NAME="1006764"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 23-5 &#32;Refresh Summaries dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1006768">
+
+
+<img src="sumfrefa.gif" ALT="Text description of sumfrefa.gif follows.">
+<A HREF="img_text/sumfrefa.htm"><br>Text description of the illustration sumfrefa.gif</A>
+
+
+</A>
+ </OL>
+<A NAME="1006769"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1006770"></A>Specify refresh options as required.
+<P>
+ 
+
+<A NAME="1006771"></A>
+<P CLASS="BP1">
+You can refresh summary folders immediately or specify a time for the refresh. Depending on the amount of data, you might want to schedule the refresh for an off-peak time.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1006772"></A>Click OK to refresh the summary folders. 
+<P>
+ 
+</OL>
+
+<A NAME="1006773"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006774"></A>If an upgraded EUL contains summary folders based on external summary tables, you must also refresh those summary folders. During the refresh, Discoverer updates EUL metadata for summary folders based on external summary tables. If you are using Oracle 8.1.7 (or later), Discoverer creates a materialized view that references the external summary table.
+<P>
+</UL>
+
+<A NAME="1006805"></A>
+<!--TOC=h2-"1006805"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Upgrade step 4: Migrate users to Discoverer Version 9.0.4</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1006806"></A>
+<P CLASS="BP">
+When you have upgraded all Release 4.1 EULs and you are satisfied that the upgraded EULs are ready for use, migrate Discoverer users to Discoverer Version 9.0.4. 
+</P>
+<A NAME="1006851"></A>
+<P CLASS="BP">
+While you are rolling out the migration across the organization, users can continue to work with Discoverer Release 4.1 (accessing the original EUL) or with Discoverer Version 9.0.4 (accessing the upgraded EUL). However, note that any changes you make using one version of Discoverer Administrator will not be available to users of the other version of Discoverer.
+</P>
+<A NAME="1006787"></A>
+<P CLASS="BP">
+How to migrate Discoverer users to Discoverer Version 9.0.4 will depend on the Discoverer tools they use.
+</P>
+<A NAME="1006791"></A>
+<P CLASS="BP">
+To migrate Discoverer Plus and Discoverer Viewer users
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1006832"></A>Install Oracle<EM CLASS="Italic"> </EM>Application Server Discoverer.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1006835"></A>Follow the instructions in <EM CLASS="Italic">Oracle Application Server 10g Upgrading to 10g (9.0.4)</EM> to upgrade the Discoverer components on the middle tier
+<P>
+ 
+</OL>
+<A NAME="1006838"></A>
+<P CLASS="BP">
+To migrate Discoverer Desktop users:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1006792"></A>Install Discoverer Desktop on client machines using the Discoverer Desktop CD supplied with Oracle Developer Suite.
+<P>
+
+<A NAME="1006849"></A>
+<P CLASS="BP1">
+The Oracle Installer automatically installs Discoverer Desktop Version 9.0.4 in a separate directory from Discoverer Release 4.1.
+</P>
+</OL>
+
+<A NAME="1006850"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+<A NAME="1006861"></A>
+<P CLASS="BP">
+When a user logs into Discoverer for the first time (i.e. using Discoverer Plus, Discoverer Desktop, or Discoverer Viewer), Discoverer searches for any Version 5 EULs that the user has access to, as follows:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006862"></A>If a valid EUL is found, the user can connect and can start work in Discoverer Version 9.0.4.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006863"></A>If no valid EUL is found, Discoverer alerts the user that they cannot connect to the database. At this point, the user must contact their Discoverer manager because it is likely that an EUL has not yet been upgraded. Note that the user can still use Discoverer Release 4.1 against an existing Release 4.1 EUL.
+<P>
+</UL>
+
+<A NAME="1006370"></A>
+<!--TOC=h2-"1006370"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Upgrade step 5: Remove the Release 4.1 EULs</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1010841"></A>
+<P CLASS="BP">
+When you have upgraded the Release 4.1 EULs and migrated all users to Discoverer 9.0.4, you can remove the Release 4.1 EULs. 
+</P>
+<A NAME="1010854"></A>
+<P CLASS="BP">
+Initially you will probably want to just prevent access to the original EULs and only allow users to access the upgraded EULs. When you are confident that all users are successfully accessing the upgraded EULs, you can remove the old EULs.
+</P>
+<A NAME="1006967"></A>
+<P CLASS="BP">
+A SQL script called eul4del.sql is shipped with Discoverer that enables you to remove Release 4.1 EULs and associated tables (including summary tables/materialized views). 
+</P>
+<A NAME="1008180"></A>
+<P CLASS="BP">
+Note the following:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008185"></A>When you run the eul4del.sql script, you are prompted for the password of the SYSTEM user. If you are not sure of the password of the SYSTEM user, contact your database administrator. Rather than give you the SYSTEM user's password, your database administrator might prefer to run the script for you.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008186"></A>The eul4del.sql script will not complete successfully if there are any summary folders owned by users other than the EUL owner. The script will list any such summary folders and their owners. The summary folder owners must delete their summary folders before you can remove the Release 4.1 EUL.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010084"></A>If you have access to Discoverer Administration Edition Release 4.1, you can delete EULs using the EUL Manager instead of using the eul4del.sql script.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010867"></A>If users have modified the Release 4.1 EUL since you upgraded it, their changes will not be in the Version 9.0.4 EUL. If you think significant changes might have been made, consider taking another backup of the Release 4.1 EUL before removing it (for more information, see <A HREF="upgrade.htm#1006366">"Upgrade step 1: Back up the Release 4.1 EUL"</a>).
+<P>
+</UL>
+<A NAME="1007013"></A>
+<P CLASS="BP">
+To remove a Release 4.1 EUL using the eul4del.sql script:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1006889"></A>Choose ORACLE | Application Development | SQL*Plus from the Windows Start menu to display the SQL*Plus Log On dialog.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1006890"></A>Enter the database user name, password and database for the owner of the Discoverer Release 4.1 EUL that you want to remove.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1006891"></A>Type the following at the command prompt to start the Release 4.1 EUL deinstallation script:
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1006892"></A>SQL&gt; @&lt;ORACLE_HOME&gt;\discoverer\util\eul4del.sql
+<A NAME="1006893"></A>
+</PRE>
+    
+
+<A NAME="1006894"></A>
+<P CLASS="BP1">
+The deinstallation script removes a specified Release 4.1 EUL and any associated database objects, including summary tables/materialized views. 
+</P>
+
+<A NAME="1006895"></A>
+<P CLASS="BP1">
+A summary of the deinstallation script is displayed:
+</P>
+   
+<PRE CLASS="CE2">
+<A NAME="1006896"></A>Removing summary refresh jobs ...
+<A NAME="1006897"></A>Discoverer End User Layer Database Tables (4.x Production) 
+deinstallation
+<A NAME="1006898"></A>This script will remove a version 4.x EUL and any associated database 
+objects.
+<A NAME="1006899"></A>It will:
+<A NAME="1006900"></A>1.  Ask you to enter the ORACLE SYSTEM password and connect string.
+<A NAME="1006901"></A>2.  Ask you to enter the name and password of the 4.x EUL owner.
+<A NAME="1006902"></A>3.  Confirm that you wish to drop the 4.x EUL.
+<A NAME="1006903"></A>4.  Check for database jobs for users other than the 4.x EUL owner.
+<A NAME="1006904"></A>5.  Confirm whether to drop 4.x tutorial tables (if any).
+<A NAME="1006905"></A>6.  Log in as the 4.x EUL owner and remove any database jobs for it.
+<A NAME="1006906"></A>7.  Remove all summary database objects for the 4.x EUL.
+<A NAME="1006907"></A>8.  Remove all scheduled workbook database objects for the 4.x EUL.
+<A NAME="1006908"></A>9.  Remove the 4.x EUL tables.
+<A NAME="1006909"></A>10. Remove user and public synonyms (if any) for the 4.x EUL tables.
+<A NAME="1006910"></A>
+</PRE>
+   
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1006911"></A>When prompted, enter the password and database connect string for the SYSTEM user.
+<P>
+ 
+
+<A NAME="1008177"></A>
+<P CLASS="BP1">
+If you are not sure of the password of the SYSTEM user, contact your database administrator.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1006913"></A>Enter the name and password of the owner of the Release 4.1 EUL.
+<P>
+ 
+
+<A NAME="1006914"></A>
+<P CLASS="BP1">
+The following text is displayed:
+</P>
+   
+<PRE CLASS="CE2">
+<A NAME="1006915"></A>Preparing to remove EUL 4.x owned by &lt;username&gt; at &lt;today's date&gt;
+<A NAME="1006916"></A>If you continue, the specified 4.x End User Layer will be PERMANENTLY 
+dropped. All End User Layer information and workbooks stored in the 
+database will be deleted. 
+<A NAME="1006917"></A>Any 5.x End User Layer tables will NOT be affected by this process.
+<A NAME="1006918"></A>THIS PROCESS IS NON-REVERSIBLE.
+<A NAME="1006919"></A>Do you wish to continue [N]: 
+<A NAME="1006920"></A>
+</PRE>
+   
+<A NAME="1006924"></A>
+<P CLASS="BP1">
+Note that the EUL removal process is not reversible.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1006997"></A>Type <CODE>Y</CODE> to confirm that you want to drop the Release 4.1 EUL.
+<P>
+ 
+
+<A NAME="1007006"></A>
+<P CLASS="BP1">
+If the script detects the Release 4.1 tutorial tables, you are prompted to confirm whether to delete the tables.
+</P>
+
+<A NAME="1006926"></A>
+<P CLASS="BP1">
+During the process of dropping the Release 4.1 EUL, the script will check whether there are any summary folders owned by users other than the EUL owner. 
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1006927"></A>If there are no summary folders owned by other users, then the Release 4.1 EUL is dropped. You will see a number of messages showing the various stages of the drop process, as follows:
+<P>
+   
+<PRE CLASS="CE3">
+<A NAME="1006928"></A>Removing summary refresh jobs ...
+<A NAME="1006929"></A>Dropping internally managed summary data ...
+<A NAME="1006930"></A>Removing scheduled workbook jobs ...
+<A NAME="1006931"></A>Dropping scheduled workbook data ...
+<A NAME="1006932"></A>Dropping 4.x End User Layer Tables  ...
+<A NAME="1006933"></A>Removing public synonyms (if any) ...
+<A NAME="1006934"></A>Connected.
+<A NAME="1006935"></A>
+<A NAME="1006936"></A>Finished removing 4.x End User Layer.
+<A NAME="1006937"></A>
+</PRE>
+   
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1006938"></A>If there are summary folders owned by users other than the EUL owner, the script will halt and display the following text:
+<P>
+   
+<PRE CLASS="CE3">
+<A NAME="1006939"></A>The following users have managed summaries which must be dropped 
+before this EUL can be deinstalled:
+<A NAME="1006940"></A>User: SCOTT, Summary: Scott's Summary
+<A NAME="1006941"></A>User: FRED, Summary: Fred's Summary
+<A NAME="1006942"></A>etc.
+<A NAME="1006943"></A>Quitting - no changes made.
+<A NAME="1006944"></A>
+</PRE>
+   
+<A NAME="1006945"></A>
+<P CLASS="BP2">
+If this message appears, the specified users must log into Discoverer Administration Edition Release 4.1 and remove the specified summary folders (for more information, see <A HREF="creating.htm#1004938">Chapter&nbsp;14, "How to delete summary folders"</a>). When these summary folders have been dropped, rerun the script eul4del.sql in order to drop the Release 4.1 EUL.
+</P>
+ 
+</UL>
+</OL>
+
+<A NAME="1008157"></A>
+<!--TOC=h2-"1008157"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Upgrade step 6: Remove Discoverer Release 4.1 products from client machines</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1008158"></A>
+<P CLASS="BP">
+When you and your users have connected successfully to Discoverer Version 9.0.4 and you are confident that summary folders are working correctly, you can remove Discoverer Release 4.1 products (i.e. Discoverer Administration Edition, Discoverer Desktop Edition) from client machines.
+</P>
+<A NAME="1007049"></A>
+<P CLASS="BP">
+To remove Discoverer Release 4.1 products from client machines:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1007021"></A>Insert the CD from which you installed Discoverer Release 4.1 products into your computer. 
+<P>
+
+<A NAME="1007031"></A>
+<P CLASS="BP1">
+The Oracle Installer starts automatically. If the Installer does not start automatically, access the CD-ROM with Windows Explorer and run setup.exe from the CD root directory.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1007022"></A>Use the Oracle Installer dialogs to remove Discoverer Release 4.1 products.
+<P>
+ 
+
+<A NAME="1007033"></A>
+<P CLASS="BP1">
+Note that any workbooks created in Discoverer Release 4.1 and saved in the &lt;ORACLE_HOME&gt;\discvr4 directory will not be deleted.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1007068"></A>(optional) To retain workbooks from the &lt;ORACLE_HOME&gt;\discvr4 directory for future use:
+<P>
+ 
+
+<OL CLASS="LA2" TYPE="a">
+
+<LI CLASS="LA2" TYPE="a" VALUE="1"><A NAME="1007034"></A>Move any Discoverer Release 4.1 workbooks from the &lt;ORACLE_HOME&gt;\discvr4 directory to a new directory for use with Discoverer Version 9.0.4.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1007075"></A>Delete the \discvr4 directory.
+<P>
+</OL>
+</OL>
+
+<A NAME="1008551"></A>
+<!--TOC=h1-"1008551"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Upgrading from Discoverer Version 9.0.2 to Discoverer Version 9.0.4</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1008552"></A>
+<P CLASS="BP">
+This section explains how to upgrade from Discoverer 9.0.2 to 9.0.4 and contains the following topics:
+</P>
+<A NAME="1008212"></A>
+<P CLASS="BP">
+<A HREF="upgrade.htm#1008824">"About upgrading from Discoverer Version 9.0.2 to Discoverer Version 9.0.4"</a>
+</P>
+<A NAME="1009578"></A>
+<P CLASS="BP">
+<A HREF="upgrade.htm#1009169">"Upgrade step 1: Back up the Version 5 EUL"</a>
+</P>
+<A NAME="1009579"></A>
+<P CLASS="BP">
+<A HREF="upgrade.htm#1009166">"Upgrade step 2: Upgrade the Version 5 EUL"</a>
+</P>
+<A NAME="1009580"></A>
+<P CLASS="BP">
+<A HREF="upgrade.htm#1008895">"Upgrade step 3: Migrate users to Discoverer Version 9.0.4"</a>
+</P>
+<A NAME="1009581"></A>
+<P CLASS="BP">
+<A HREF="upgrade.htm#1008895">"Upgrade step 3: Migrate users to Discoverer Version 9.0.4"</a>
+</P>
+<A NAME="1008815"></A>
+<P CLASS="BP">
+<A HREF="upgrade.htm#1009148">"Upgrade step 4: Remove Discoverer Version 9.0.2 products from client machines"</a>
+</P>
+
+<A NAME="1008824"></A>
+<!--TOC=h2-"1008824"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About upgrading from Discoverer Version 9.0.2 to Discoverer Version 9.0.4</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1008820"></A>
+<P CLASS="BP">
+To use Discoverer Version 9.0.4, Discoverer users must have access to a Discoverer Version 5 End User Layer (EUL). 
+</P>
+<A NAME="1008832"></A>
+<P CLASS="BP">
+If users have been using Discoverer Version 9.0.2 successfully, they already have access to a Version 5 End User Layer. However, depending on the Discoverer Version 9.0.2 patches that have been applied, the existing Version 5 EUL might need upgrading to Version 5.0.2.
+</P>
+<A NAME="1009611"></A>
+<P CLASS="BP">
+For each EUL that needs upgrading, follow the upgrade steps below:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009615"></A><A HREF="upgrade.htm#1009169">"Upgrade step 1: Back up the Version 5 EUL"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009619"></A><A HREF="upgrade.htm#1009166">"Upgrade step 2: Upgrade the Version 5 EUL"</a>
+<P>
+</UL>
+<A NAME="1009624"></A>
+<P CLASS="BP">
+When you are satisfied that any Version 5 EULs that need upgrading have been upgraded, follow the upgrade step below:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009628"></A><A HREF="upgrade.htm#1008895">"Upgrade step 3: Migrate users to Discoverer Version 9.0.4"</a>
+<P>
+</UL>
+<A NAME="1009633"></A>
+<P CLASS="BP">
+When you have upgraded all users, follow the upgrade step below:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009637"></A><A HREF="upgrade.htm#1009148">"Upgrade step 4: Remove Discoverer Version 9.0.2 products from client machines"</a>
+<P>
+</UL>
+
+<A NAME="1009169"></A>
+<!--TOC=h2-"1009169"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Upgrade step 1: Back up the Version 5 EUL</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1010590"></A>
+<P CLASS="BP">
+Depending on the version of Oracle Discoverer you are upgrading from, you might need to back up the EUL as follows:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010606"></A>If you know that you upgrading from Oracle Discoverer Version 9.0.2.53 (or later), you do not need to upgrade the EUL and you can go straight to <A HREF="upgrade.htm#1008895">"Upgrade step 3: Migrate users to Discoverer Version 9.0.4"</a>.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010556"></A>If you know that you are upgrading from Oracle Discoverer Version 9.0.2.52 (or earlier), follow the instructions in this step to back up the EUL. You can then upgrade the EUL by following the instructions in <A HREF="upgrade.htm#1009166">"Upgrade step 2: Upgrade the Version 5 EUL"</a>.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010626"></A>If you are not sure of the version of Oracle Discoverer you are upgrading from, go straight to <A HREF="upgrade.htm#1009166">"Upgrade step 2: Upgrade the Version 5 EUL"</a>. If Discoverer Administrator detects that you are upgrading from 9.0.2.52 (or earlier), you will be prompted to confirm that you have backed up the EUL. Return to this step and follow the instructions to back up the EUL.
+<P>
+</UL>
+<A NAME="1010630"></A>
+<P CLASS="BP">
+If you do need to upgrade the EUL, you must first back up the EUL tables by exporting the EUL owner using the standard database export utility. 
+</P>
+<A NAME="1009171"></A>
+<P CLASS="BP">
+How to export the EUL owner will depend on:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009172"></A>the version of the Oracle client software installed on your machine
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009173"></A>the version of the Oracle database on which the EUL resides
+<P>
+</UL>
+<A NAME="1009174"></A>
+<P CLASS="BP">
+We recommend that the version of the Oracle database and the version of the Oracle database client software installed on your machine are the same. If the versions are not the same (e.g. if the EUL is on an Oracle8<EM CLASS="Italic">i</EM> database and Oracle9<EM CLASS="Italic">i</EM> client software is installed on your machine), you might not be able to follow the instructions below. If you are unable to export the EUL, contact your database administrator and ask them to export the EUL for you.
+</P>
+<A NAME="1009175"></A>
+<P CLASS="BP">
+To back up a Version 5 EUL (assuming the EUL resides on an Oracle9<EM CLASS="Italic">i</EM> database and you are using a machine on which you have installed Oracle<EM CLASS="Italic"> </EM>Developer Server), follow the steps described in <A HREF="maintain.htm#1008613">Chapter&nbsp;3, "How to export an EUL using the standard database export utility"</a>.
+</P>
+<A NAME="1009179"></A>
+<P CLASS="BP">
+Having backed up the EUL, you are now ready to upgrade it.
+</P>
+
+<A NAME="1009166"></A>
+<!--TOC=h2-"1009166"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Upgrade step 2: Upgrade the Version 5 EUL</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1010150"></A>
+<P CLASS="BP">
+To upgrade an EUL, you simply open the EUL in the latest version of Discoverer Administrator by following the instructions below.
+</P>
+<A NAME="1010640"></A>
+<P CLASS="BP">
+Note that after you have upgraded the EUL, users of Discoverer Version 9.0.2.52 (or earlier) will not be able to use the upgraded EUL.
+</P>
+<A NAME="1008913"></A>
+<P CLASS="BP">
+To upgrade a Version 5 EUL to the latest version:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1008914"></A>From the Windows Start menu, choose Programs | Oracle Developer Suite - &lt;HOME_NAME&gt; | Discoverer Administrator to display the Connect to Oracle<EM CLASS="Italic"> </EM>Discoverer Administrator dialog. 
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1008915"></A>Enter the database user name and password of the owner of the EUL that you want to upgrade.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1008916"></A>Click OK.
+<P>
+ 
+
+<A NAME="1009135"></A>
+<P CLASS="BP1">
+The EUL Upgrade dialog is displayed.
+</P>
+
+<A NAME="1008996"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 23-6 &#32;EUL Upgrade dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1009000">
+
+
+<img src="eulup2.gif" ALT="Text description of eulup2.gif follows.">
+<A HREF="img_text/eulup2.htm"><br>Text description of the illustration eulup2.gif</A>
+
+
+</A>
+ 
+<A NAME="1009128"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Notes: </STRONG>
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1009465"></A>If you have not already exported the EUL, click Cancel and export the EUL (for more information, see <A HREF="upgrade.htm#1009169">"Upgrade step 1: Back up the Version 5 EUL"</a>).
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1009468"></A>If the EUL Upgrade dialog is not displayed, the Version 5 EUL has already been upgraded. You do not need to upgrade the EUL again, so go straight to <A HREF="upgrade.htm#1008895">"Upgrade step 3: Migrate users to Discoverer Version 9.0.4"</a>.
+<P>
+</UL>
+</OL>
+<A NAME="1011083"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1009007"></A>Select the <STRONG CLASS="Bold">Yes, I have completed a database export</STRONG> check box to confirm that you have exported the EUL.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1009008"></A>Click Upgrade to upgrade the Version 5 EUL.
+<P>
+ 
+
+<A NAME="1009009"></A>
+<P CLASS="BP1">
+The EUL Upgrade progress bar displays the status of the upgrade. 
+</P>
+
+<A NAME="1010268"></A>
+<P CLASS="BP1">
+Any messages that are output during the upgrade process are displayed in the End User Layer Upgrade Log dialog. For more information about messages that refer to invalid characters in identifiers, see <A HREF="upgrade.htm#1011158">"Notes about upgrading identifiers containing invalid characters"</a>.
+</P>
+
+<A NAME="1009018"></A>
+<P CLASS="BP1">
+The Load Wizard is displayed.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1009019"></A>Click Cancel to close the Load Wizard.
+<P>
+ 
+
+<A NAME="1009020"></A>
+<P CLASS="BP1">
+The EUL upgrade is complete. You can use this EUL to connect to the database using Discoverer Administrator Version 9.0.4. 
+</P>
+</OL>
+
+<A NAME="1008895"></A>
+<!--TOC=h2-"1008895"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Upgrade step 3: Migrate users to Discoverer Version 9.0.4</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1008843"></A>
+<P CLASS="BP">
+Having upgraded Version 5 EULs (if necessary), you can migrate Discoverer users to Discoverer Version 9.0.4 as follows:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009521"></A>If you upgraded EULs (i.e. because the EUL version number was less than 5.0.2), users will have to migrate to Discoverer Version 9.0.2.53 (or later) or Discoverer Version 9.0.4 (recommended) to access the upgraded EUL. Users of Discoverer Version 9.0.2.52 (or earlier) will not be able to use the upgraded EUL.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010108"></A>If you did not have to upgrade EULs (i.e. because the EUL version number was already 5.0.2 or greater), users can access the EUL using either Version 9.0.2.53 (or later) or Version 9.0.4 (recommended).
+<P>
+</UL>
+<A NAME="1008845"></A>
+<P CLASS="BP">
+How to migrate Discoverer users to Discoverer Version 9.0.4 will depend on the Discoverer tools they use.
+</P>
+<A NAME="1008846"></A>
+<P CLASS="BP">
+To migrate Discoverer Plus and Discoverer Viewer users
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1008847"></A>Install Oracle<EM CLASS="Italic"> </EM>Application Server Discoverer.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1008848"></A>Follow the instructions in <EM CLASS="Italic">Oracle Application Server 10g Upgrading to 10g (9.0.4) </EM>to upgrade the Discoverer components on the middle tier
+<P>
+ 
+</OL>
+<A NAME="1008849"></A>
+<P CLASS="BP">
+To migrate Discoverer Desktop users:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1008850"></A>Install Discoverer Desktop on client machines using the Discoverer Desktop CD supplied with Oracle Developer Suite.
+<P>
+
+<A NAME="1008851"></A>
+<P CLASS="BP1">
+The Oracle Installer automatically installs Discoverer Desktop Version 9.0.4 in a separate directory from Discoverer Version 9.0.2.
+</P>
+</OL>
+
+<A NAME="1008852"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+<A NAME="1008853"></A>
+<P CLASS="BP">
+When a user logs into Discoverer Version 9.0.4 for the first time (i.e. using Discoverer Plus, Discoverer Desktop, or Discoverer Viewer), Discoverer searches for any Version 5 EULs that the user has access to, as follows:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008854"></A>If a valid EUL is found, the user can connect and can start work in Discoverer Version 9.0.4.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008855"></A>If no valid EUL is found, Discoverer alerts the user that they cannot connect to the database. At this point, the user must contact their Discoverer manager because it is likely that an EUL has not yet been upgraded. Note that the user can still use Discoverer Version 9.0.2 against a non-upgraded EUL.
+<P>
+</UL>
+<A NAME="1008856"></A>
+<P CLASS="BP">
+After Discoverer Version 9.0.4 is installed and a connection to the database has been established successfully through a Version 5 EUL, you can remove Discoverer Version 9.0.2 products (i.e. Discoverer Desktop Edition, Discoverer Administration Edition) from client machines.
+</P>
+
+<A NAME="1009148"></A>
+<!--TOC=h2-"1009148"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Upgrade step 4: Remove Discoverer Version 9.0.2 products from client machines</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1009149"></A>
+<P CLASS="BP">
+When you and your users have connected successfully to Version 5 EULs using Discoverer Version 9.0.4, you can remove Discoverer Version 9.0.2 products (i.e. Discoverer Administration Edition, Discoverer Desktop Edition) from client machines.
+</P>
+<A NAME="1009150"></A>
+<P CLASS="BP">
+To remove Discoverer Version 9.0.2 products from client machines:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1009151"></A>Insert the CD from which you installed Discoverer Version 9.0.2 products into your computer. 
+<P>
+
+<A NAME="1009152"></A>
+<P CLASS="BP1">
+The Oracle Installer starts automatically. If the Installer does not start automatically, access the CD-ROM with Windows Explorer and run setup.exe from the CD root directory.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1009153"></A>Use the Oracle Installer dialogs to remove Discoverer Version 9.0.2 products.
+<P>
+ 
+
+<A NAME="1009154"></A>
+<P CLASS="BP1">
+Note that any workbooks created in Discoverer Version 9.0.2 and saved in the &lt;ORACLE_HOME&gt;\discoverer902 directory will not be deleted.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1009155"></A>(optional) To retain workbooks from the &lt;ORACLE_HOME&gt;\discoverer902 directory for future use:
+<P>
+ 
+
+<OL CLASS="LA2" TYPE="a">
+
+<LI CLASS="LA2" TYPE="a" VALUE="1"><A NAME="1009156"></A>Move any Discoverer Version 9.0.2 workbooks from the &lt;ORACLE_HOME&gt;\discoverer902 directory to a new directory for use with Discoverer Version 9.0.4.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1009157"></A>Delete the \discoverer902 directory.
+<P>
+</OL>
+</OL>
+
+<A NAME="1009701"></A>
+<!--TOC=h1-"1009701"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Notes about upgrading to Discoverer Version 9.0.4</FONT></H2>
+
+
+<!--/TOC=h1-->
+
+<A NAME="1009702"></A>
+<!--TOC=h2-"1009702"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Notes about upgrading Oracle Applications EULs</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1009703"></A>
+<P CLASS="BP">
+When upgrading an Oracle Applications EUL, be aware that the MAXEXTENTS storage property of the EUL tables might have been increased to a value greater than the MAXEXTENTS storage property of the tablespace in which the EUL was created. If this situation exists, any attempt to upgrade the EUL will fail (e.g. with an ORA01631 error) because:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009704"></A>the upgrade process uses the original EUL tablespace's MAXEXTENTS value when creating the new EUL tables
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009705"></A>the new EUL tables will therefore not be large enough to contain the data from the original EUL tables
+<P>
+</UL>
+<A NAME="1009706"></A>
+<P CLASS="BP">
+If the MAXEXTENTS value of the EUL tables is greater than the MAXEXTENTS value of the EUL's tablespace, ask your database administrator to increase the MAXEXTENTS value of the original EUL's tablespace before attempting to upgrade the EUL. The new EUL tablespace and the new EUL tables will be created with the larger MAXEXTENTS value.
+</P>
+
+<A NAME="1009709"></A>
+<!--TOC=h2-"1009709"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Notes about upgrading EULs that contain analytic functions</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1009710"></A>
+<P CLASS="BP">
+When you upgrade a Discoverer Release 4.1 EUL to a Discoverer Version 5 EUL, new Oracle9<EM CLASS="Italic">i</EM> analytic functions are added to EUL tables.
+</P>
+<A NAME="1009711"></A>
+<P CLASS="BP">
+Where existing user-defined functions have the same name (or the same unique identifier) as the new functions, Discoverer does the following:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009712"></A>renames the existing user-defined function
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009713"></A>displays a log message at the end of the upgrade process
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009714"></A>gives you the option to save the messages to a log file
+<P>
+</UL>
+<A NAME="1009715"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> Discoverer's internal reference system ensures that Discoverer end users can still open workbooks that contain renamed user-defined functions.
+</P>
+
+<A NAME="1008818"></A>
+<!--TOC=h2-"1008818"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Notes about upgrading the Video Stores tutorial</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1009869"></A>
+<P CLASS="BP">
+The Video Stores tutorials are specific to particular Discoverer releases. 
+</P>
+<A NAME="1010794"></A>
+<P CLASS="BP">
+When you upgrade to a new version of Discoverer, we therefore recommend that you re-install the Video Stores tutorial using the appropriate version of Discoverer Administrator instead of upgrading the tutorial.
+</P>
+
+<A NAME="1010180"></A>
+<!--TOC=h2-"1010180"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Notes about upgrading scheduled workbooks</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1010185"></A>
+<P CLASS="BP">
+When you upgrade a Release 3.1 EUL to a Release 4.1 EUL, you have to run a separate executable (called dis4sch.exe) to upgrade scheduled workbooks (for more information, see the Discoverer 4.1 Release Notes).
+</P>
+<A NAME="1010298"></A>
+<P CLASS="BP">
+When you upgrade a Release 4.1 EUL to a Version 5 EUL, scheduled workbooks are automatically upgraded. However, scheduled workbook results are not copied to the Version 5 EUL. The results for an upgraded scheduled workbook will only be available after the scheduled workbook has next run.
+</P>
+
+<A NAME="1010349"></A>
+<!--TOC=h2-"1010349"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Notes about upgrading workbooks saved in .dis files</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1010354"></A>
+<P CLASS="BP">
+If Discoverer Desktop users save workbooks to the filesystem in .dis files, the .dis files have to be upgraded before they can be used with the latest version of Discoverer.
+</P>
+<A NAME="1010355"></A>
+<P CLASS="BP">
+To upgrade the .dis files, users simply open the .dis files in the latest version of Discoverer and save the files back to the filesystem, or to the database (to open them in Discoverer Plus and Discoverer Viewer). Note that when a .dis file has been upgraded, users of earlier versions of Discoverer Desktop will not be able to open the file.
+</P>
+
+<A NAME="1010350"></A>
+<!--TOC=h2-"1010350"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Notes about upgrading Discoverer systems that use the EUL Gateway</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1010369"></A>
+<P CLASS="BP">
+A Discoverer system might use the EUL Gateway to populate EULs with metadata from a source other than the database's on-line dictionary (e.g. from Oracle Designer). 
+</P>
+<A NAME="1010395"></A>
+<P CLASS="BP">
+If you upgrade such a system, you will have to re-install and re-configure the EUL Gateway after the upgrade process is complete. For more information about installing and configuring the EUL Gateway, see the eulgatew.doc document located in the &lt;ORACLE_HOME&gt;\discoverer\kits directory.
+</P>
+
+<A NAME="1010367"></A>
+<!--TOC=h2-"1010367"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Notes about upgrading summary folders containing SET operators</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1011184"></A>
+<P CLASS="BP">
+When you upgrade a Release 3.1 EUL to a Release 4.1 EUL on an Oracle 8.1.7 (or later) Enterprise Edition database, be aware that summary folders based on SET operators (e.g. UNION, UNION ALL, MINUS, INTERSECT) might be invalidated.
+</P>
+<A NAME="1011185"></A>
+<P CLASS="BP">
+During the upgrade process, summary folders are converted to materialized views. However, the Oracle 8.1.7 (or later) Enterprise Edition database imposes restrictions on the use of SET operators (e.g. UNION, UNION ALL, MINUS, INTERSECT) in materialized views.
+</P>
+<A NAME="1011194"></A>
+<P CLASS="BP">
+Note that the restrictions on the use of  SET operators in materialized views have  been removed in Oracle 9.2 (or later) databases.
+</P>
+
+<A NAME="1011158"></A>
+<!--TOC=h2-"1011158"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Notes about upgrading identifiers containing invalid characters</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1010720"></A>
+<P CLASS="BP">
+In a future release of Discoverer, there will be a change to the valid characters that can be used in identifiers and some characters will be de-supported (for more information, see <A HREF="maintain.htm#1008899">"What are identifiers?"</a>).
+</P>
+<A NAME="1010749"></A>
+<P CLASS="BP">
+If you upgrade an EUL that has identifiers containing invalid characters, messages will be displayed indicating the affected identifiers. Please modify any identifiers that use the invalid characters so that the identifiers can be used in future releases of Discoverer.
+</P>
+<A NAME="1010658"></A>
+<P CLASS="BP">
+
+</P>
+
+
+
+
+
+
+<!-- Start Footer -->
+</DIV>
+
+<DIV CLASS="OUTD">
+<HR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+<TD VALIGN="BOTTOM" WIDTH="33%">
+<TABLE CELLSPACING="0" CELLPADDING="0">
+<TR>
+<TD ALIGN="CENTER"><A HREF="rdb_supp.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+
+<TD ALIGN="CENTER"><A HREF="referenc.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+    
+</TR>
+</TABLE>
+</TD>
+<TD ALIGN="CENTER" WIDTH="34%">
+<A HREF="./html/cpyr.htm"><IMG SRC="./gifs/oracle.gif" ALT="Oracle" BORDER="0"><BR>
+<FONT SIZE="-2">Copyright &copy 2003 Oracle Corporation.</FONT></A>
+<BR>
+<FONT SIZE="-2">All Rights Reserved.</FONT>
+</TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="33%"> 
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="144">
+<TR>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+  
+</DIV>
+
+</BODY>
+</HTML>
+

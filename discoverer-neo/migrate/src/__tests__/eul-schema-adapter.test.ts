@@ -42,13 +42,13 @@ describe('createEulSchemaAdapter', () => {
   describe('table name resolution', () => {
     it('prefixes base names per version', () => {
       const cases = [
-        ['EUL5', 'EUL5_BA'],
-        ['EUL4', 'EUL4_BA'],
-        ['EUL3', 'EUL_BA'],
+        ['EUL5', 'EUL5_BAS'],
+        ['EUL4', 'EUL4_BAS'],
+        ['EUL3', 'EUL_BAS'],
       ] as const;
       for (const [version, expected] of cases) {
         const adapter = createEulSchemaAdapter(infoFor(version));
-        expect(adapter.getTableName('BA')).toBe(expected);
+        expect(adapter.getTableName('BAS')).toBe(expected);
       }
     });
 
@@ -64,42 +64,66 @@ describe('createEulSchemaAdapter', () => {
     });
 
     it('reports table presence from the detected table list', () => {
-      const adapter = createEulSchemaAdapter(infoFor('EUL4', ['EUL4_BA', 'EUL4_OBJS']));
-      expect(adapter.hasTable('BA')).toBe(true);
+      const adapter = createEulSchemaAdapter(infoFor('EUL4', ['EUL4_BAS', 'EUL4_OBJS']));
+      expect(adapter.hasTable('BAS')).toBe(true);
       expect(adapter.hasTable('TRANSLATIONS')).toBe(false);
     });
   });
 
   describe('column mappings', () => {
-    it('EUL5 business-area mapping includes the EUL5-only columns as existing', () => {
+    it.each(['EUL4', 'EUL5'] as const)(
+      '%s business-area mapping uses the real BAS columns',
+      (version) => {
+        const adapter = createEulSchemaAdapter(infoFor(version));
+        const names = adapter.getBusinessAreaColumns().map((m) => m.name);
+        expect(names).toEqual([
+          'BA_ID',
+          'BA_NAME',
+          'BA_DESCRIPTION',
+          'BA_CREATED_BY',
+          'BA_CREATED_DATE',
+          'BA_UPDATED_BY',
+          'BA_UPDATED_DATE',
+        ]);
+      },
+    );
+
+    it('folder mapping reads SOBJ_EXT_TABLE / OBJ_EXT_OWNER, not OBJ_TABLE_*', () => {
       const adapter = createEulSchemaAdapter(infoFor('EUL5'));
-      const byName = new Map(adapter.getBusinessAreaColumns().map((m) => [m.name, m]));
-      expect(byName.get('BA_LANGUAGE')?.existsInSource).toBe(true);
-      expect(byName.get('BA_DEVELOPER_KEY')?.existsInSource).toBe(true);
+      const byMapsTo = new Map(adapter.getFolderColumns().map((m) => [m.mapsTo, m.name]));
+      expect(byMapsTo.get('tableName')).toBe('SOBJ_EXT_TABLE');
+      expect(byMapsTo.get('tableOwner')).toBe('OBJ_EXT_OWNER');
+      const names = adapter.getFolderColumns().map((m) => m.name);
+      expect(names).not.toContain('OBJ_TABLE_NAME');
+      expect(names).not.toContain('OBJ_TABLE_OWNER');
     });
 
-    it('EUL4 business-area mapping flags EUL5-only columns with defaults', () => {
-      const adapter = createEulSchemaAdapter(infoFor('EUL4'));
-      const byName = new Map(adapter.getBusinessAreaColumns().map((m) => [m.name, m]));
-      expect(byName.get('BA_LANGUAGE')?.existsInSource).toBe(false);
-      expect(byName.get('BA_LANGUAGE')?.defaultValue).toBe('US');
-      expect(byName.get('BA_NAME')?.existsInSource).toBe(true);
+    it('expression mapping reads the IT_-prefixed item columns', () => {
+      const adapter = createEulSchemaAdapter(infoFor('EUL5'));
+      const byMapsTo = new Map(adapter.getExpressionColumns().map((m) => [m.mapsTo, m.name]));
+      // The folder link and the physical column both live under IT_.
+      expect(byMapsTo.get('folderId')).toBe('IT_OBJ_ID');
+      expect(byMapsTo.get('columnName')).toBe('IT_EXT_COLUMN');
+      expect(byMapsTo.get('formatMask')).toBe('IT_FORMAT_MASK');
+      const names = adapter.getExpressionColumns().map((m) => m.name);
+      expect(names).not.toContain('EXP_COL_NAME');
+      expect(names).not.toContain('OBJ_ID');
     });
 
-    it('EUL4 expression mapping flags all the EUL5-only columns', () => {
-      const adapter = createEulSchemaAdapter(infoFor('EUL4'));
-      const missing = adapter
-        .getExpressionColumns()
-        .filter((m) => !m.existsInSource)
-        .map((m) => m.name)
-        .sort();
-      expect(missing).toEqual([
-        'EXP_DESCRIPTION',
-        'EXP_NULLS_ALLOWED',
-        'EXP_UPDATED_BY',
-        'EXP_UPDATED_DATE',
-        'IT_EXP_ID',
-      ]);
+    it('EUL4 and EUL5 map identical columns for every entity', () => {
+      const four = createEulSchemaAdapter(infoFor('EUL4'));
+      const five = createEulSchemaAdapter(infoFor('EUL5'));
+      const shape = (a: ReturnType<typeof createEulSchemaAdapter>) =>
+        [
+          a.getBusinessAreaColumns(),
+          a.getFolderColumns(),
+          a.getExpressionColumns(),
+          a.getJoinColumns(),
+          a.getHierarchyColumns(),
+          a.getGrantColumns(),
+          a.getUserColumns(),
+        ].map((g) => g.map((m) => m.name));
+      expect(shape(four)).toEqual(shape(five));
     });
 
     it('every missing column carries a default or a fallback column (all versions, all entities)', () => {
@@ -110,9 +134,10 @@ describe('createEulSchemaAdapter', () => {
           ...adapter.getFolderColumns(),
           ...adapter.getExpressionColumns(),
           ...adapter.getJoinColumns(),
-          ...adapter.getJoinComponentColumns(),
+          ...adapter.getBusinessAreaLinkColumns(),
           ...adapter.getHierarchyColumns(),
-          ...adapter.getHierarchyLevelColumns(),
+          ...adapter.getHierarchyNodeColumns(),
+          ...adapter.getHierarchySegmentColumns(),
           ...adapter.getDocumentColumns(),
           ...adapter.getFunctionColumns(),
           ...adapter.getUserColumns(),
@@ -131,294 +156,287 @@ describe('createEulSchemaAdapter', () => {
   });
 
   describe('feature detection', () => {
-    it('EUL5 supports everything', () => {
-      const adapter = createEulSchemaAdapter(infoFor('EUL5'));
-      expect(adapter.supportsMultiLanguage()).toBe(true);
-      expect(adapter.supportsDerivedFolders()).toBe(true);
+    // EUL4 and EUL5 expose the same capabilities — the version difference is
+    // the table prefix, not the feature set (EUL_SCHEMA_GROUND_TRUTH.md §1).
+    it.each(['EUL4', 'EUL5'] as const)('%s exposes the full feature set', (version) => {
+      const adapter = createEulSchemaAdapter(infoFor(version));
       expect(adapter.supportsSummaryFolders()).toBe(true);
-      expect(adapter.hasSeparateHierarchyLevelsTable()).toBe(true);
-      expect(adapter.hasSecurityManagerInExpressions()).toBe(true);
-      expect(adapter.hasRoleBasedGrants()).toBe(true);
+      expect(adapter.hasHierarchyNodeTree()).toBe(true);
+      expect(adapter.hasRoleAwareGrantees()).toBe(true);
     });
 
-    it('EUL4 supports the legacy feature set', () => {
-      const adapter = createEulSchemaAdapter(infoFor('EUL4'));
-      expect(adapter.supportsMultiLanguage()).toBe(false);
-      expect(adapter.supportsDerivedFolders()).toBe(false);
+    it('EUL3 has no summary folders', () => {
+      const adapter = createEulSchemaAdapter(infoFor('EUL3'));
       expect(adapter.supportsSummaryFolders()).toBe(false);
-      expect(adapter.hasSeparateHierarchyLevelsTable()).toBe(true);
-      expect(adapter.hasSecurityManagerInExpressions()).toBe(false);
-      expect(adapter.hasRoleBasedGrants()).toBe(false);
     });
 
-    it('EUL4 role-based grants flip on when *_BA_ROLES was actually detected', () => {
-      const adapter = createEulSchemaAdapter(
-        infoFor('EUL4', ['EUL4_BA', 'EUL4_BA_ROLES']),
-      );
-      expect(adapter.hasRoleBasedGrants()).toBe(true);
+    it('summary-folder support goes off when SUMMARY_OBJS was not detected', () => {
+      const adapter = createEulSchemaAdapter(infoFor('EUL5', ['EUL5_BAS', 'EUL5_OBJS']));
+      expect(adapter.supportsSummaryFolders()).toBe(false);
     });
   });
 
   describe('normalizeRow', () => {
-    it('coerces Y/N to boolean and numeric strings to numbers', () => {
+    it('coerces numeric strings to numbers', () => {
       const adapter = createEulSchemaAdapter(infoFor('EUL5'));
       const row = normalizeRow(
-        { EXP_ID: '42', EXP_NAME: 'X', EXP_TYPE: 'CI', EXP_NULLS_ALLOWED: 'N' },
+        { EXP_ID: '42', EXP_NAME: 'X', EXP_TYPE: 'CO', IT_OBJ_ID: '7' },
         adapter.getExpressionColumns(),
       );
       expect(row.sourceId).toBe(42);
-      expect(row.nullsAllowed).toBe(false);
+      expect(row.folderId).toBe(7);
     });
 
-    it('applies fallback columns for missing EUL4 audit columns', () => {
-      const adapter = createEulSchemaAdapter(infoFor('EUL4'));
-      const created = new Date('2001-01-01T00:00:00Z');
+    it('coerces Y/N to boolean', () => {
+      const adapter = createEulSchemaAdapter(infoFor('EUL5'));
       const row = normalizeRow(
-        { OBJ_ID: 1, OBJ_NAME: 'F', OBJ_TYPE: 'TABLE', OBJ_CREATED_BY: 'BOB', OBJ_CREATED_DATE: created },
+        { EU_ID: 1, EU_USERNAME: 'SALES_ROLE', EU_ROLE_FLAG: 'Y' },
+        adapter.getUserColumns(),
+      );
+      expect(row.isRole).toBe(true);
+    });
+
+    it('fills absent columns with their default', () => {
+      const adapter = createEulSchemaAdapter(infoFor('EUL4'));
+      const row = normalizeRow(
+        { OBJ_ID: 1, OBJ_NAME: 'F', OBJ_TYPE: 'SOBJ' },
         adapter.getFolderColumns(),
       );
-      expect(row.updatedBy).toBe('BOB');
-      expect(row.updatedAt).toEqual(created);
       expect(row.description).toBeNull();
+      expect(row.tableName).toBeNull();
+      expect(row.tableOwner).toBeNull();
     });
   });
 });
 
 describe('unified read functions', () => {
   describe('readBusinessAreas', () => {
-    it('EUL5: returns the full normalized shape', async () => {
+    it('EUL5: returns the normalized shape from the real BAS columns', async () => {
       const { adapter, execute, db } = await adapterFor(eul5Db());
       const areas = await readBusinessAreas(adapter, execute);
 
-      expect(areas).toHaveLength(1);
+      // Two business areas: one shares a folder with the other.
+      expect(areas).toHaveLength(2);
       expect(areas[0]).toMatchObject({
         sourceId: 100,
         name: 'Sales Analysis',
-        language: 'GB',
-        developerKey: 'SALES_BA',
+        description: 'Sales BA',
         createdBy: 'DISCO_ADMIN',
         updatedBy: 'DISCO_ADMIN2',
       });
-      const baSql = db.executed.find((sql) => sql.includes('EUL5_BA') && sql.includes('BA_NAME'));
-      expect(baSql).toContain('BA_LANGUAGE');
-      expect(baSql).toContain('EUL5_US.EUL5_BA');
+      const baSql = db.executed.find((sql) => sql.includes('EUL5_BAS') && sql.includes('BA_NAME'));
+      expect(baSql).toContain('EUL5_US.EUL5_BAS');
+      // Columns that do not exist on BAS must never reach the SQL.
+      expect(baSql).not.toContain('BA_LANGUAGE');
+      expect(baSql).not.toContain('BA_DEVELOPER_KEY');
     });
 
-    it('EUL4: never selects EUL5-only columns and fills defaults', async () => {
+    it('EUL4: identical shape under the EUL4_ prefix', async () => {
       const { adapter, execute, db } = await adapterFor(eul4Db());
       const areas = await readBusinessAreas(adapter, execute);
 
       expect(areas).toHaveLength(1);
-      expect(areas[0]).toMatchObject({
-        sourceId: 10,
-        name: 'Finance',
-        language: 'US', // default — column doesn't exist in EUL4
-        developerKey: null,
-      });
-      const baSql = db.executed.find((sql) => sql.includes('EUL4_BA') && sql.includes('BA_NAME'));
-      expect(baSql).toBeDefined();
-      expect(baSql).not.toContain('BA_LANGUAGE');
-      expect(baSql).not.toContain('BA_DEVELOPER_KEY');
+      expect(areas[0]).toMatchObject({ sourceId: 10, name: 'Finance' });
+      expect(
+        db.executed.find((sql) => sql.includes('EUL4_BAS') && sql.includes('BA_NAME')),
+      ).toBeDefined();
     });
   });
 
   describe('readFolders', () => {
-    it('EUL5: maps folder metadata including SUMMARY folders', async () => {
-      const { adapter, execute } = await adapterFor(eul5Db());
+    it('EUL5: normalizes SOBJ/COBJ and resolves the BA through BA_OBJ_LINKS', async () => {
+      const { adapter, execute, db } = await adapterFor(eul5Db());
       const folders = await readFolders(adapter, execute);
 
-      expect(folders.map((f) => f.folderType).sort()).toEqual(['SUMMARY', 'TABLE']);
+      expect(folders.map((f) => f.folderType).sort()).toEqual(['COMPLEX', 'TABLE']);
       const table = folders.find((f) => f.folderType === 'TABLE');
       expect(table).toMatchObject({
         sourceId: 200,
-        businessAreaId: 100,
+        businessAreaId: 100, // via BA_OBJ_LINKS, not a BA_ID column on OBJS
         tableName: 'AP_INVOICES_ALL',
         tableOwner: 'APPS',
       });
+
+      const objSql = db.executed.find((sql) => sql.includes('EUL5_OBJS'));
+      expect(objSql).toContain('SOBJ_EXT_TABLE');
+      expect(objSql).toContain('OBJ_EXT_OWNER');
+      expect(objSql).not.toContain('OBJ_TABLE_NAME');
+      expect(db.executed.some((sql) => sql.includes('EUL5_BA_OBJ_LINKS'))).toBe(true);
     });
 
-    it('EUL4: audit columns fall back to created values', async () => {
+    it('leaves businessAreaId null when the folder has no BA link', async () => {
+      const db = eul5Db();
+      db.tables.EUL5_BA_OBJ_LINKS = [];
+      const { adapter, execute } = await adapterFor(db);
+      const folders = await readFolders(adapter, execute);
+      expect(folders.every((f) => f.businessAreaId === null)).toBe(true);
+    });
+
+    it('EUL4: same normalization under the EUL4_ prefix', async () => {
       const { adapter, execute } = await adapterFor(eul4Db());
       const folders = await readFolders(adapter, execute);
 
       expect(folders).toHaveLength(1);
-      expect(folders[0]?.updatedBy).toBe('D4ADMIN');
-      expect(folders[0]?.updatedAt).toEqual(folders[0]?.createdAt);
-      expect(folders[0]?.description).toBeNull();
+      expect(folders[0]).toMatchObject({
+        folderType: 'TABLE',
+        businessAreaId: 10,
+        tableName: 'GL_BALANCES_V',
+      });
     });
   });
 
   describe('readItems', () => {
-    it('EUL5: reads CI/CU by default, excluding SM rows, and coerces booleans', async () => {
+    it('EUL5: reads CO (database items) as well as CI — not CI alone', async () => {
       const { adapter, execute } = await adapterFor(eul5Db());
       const items = await readItems(adapter, execute);
 
-      expect(items.map((i) => i.expType).sort()).toEqual(['CI', 'CU']);
-      const ci = items.find((i) => i.expType === 'CI');
-      expect(ci).toMatchObject({
-        sourceId: 300,
-        folderId: 200,
-        columnName: 'INVOICE_AMOUNT',
-        aggregation: 'SUM',
-        nullsAllowed: false, // 'N' coerced
+      // The pre-rewrite default was ['CI','CU'], which skipped every CO row —
+      // i.e. every real column-backed item in the EUL.
+      expect(items.map((i) => i.expType).sort()).toEqual(['CI', 'CO', 'CO']);
+      const dbItem = items.find((i) => i.sourceId === 300);
+      expect(dbItem).toMatchObject({
+        folderId: 200, // from IT_OBJ_ID
+        columnName: 'INVOICE_AMOUNT', // from IT_EXT_COLUMN
+        dataType: 'NUMBER',
+        formatMask: '999,999.00', // from IT_FORMAT_MASK
+        expType: 'CO',
       });
-      const cu = items.find((i) => i.expType === 'CU');
-      expect(cu?.formula).toBe('INVOICE_AMOUNT * 1.2');
-      expect(cu?.nullsAllowed).toBe(true);
     });
 
-    it('EUL5: expTypes option reaches SM security-manager rows', async () => {
+    it('EUL5: expTypes option narrows the read', async () => {
       const { adapter, execute } = await adapterFor(eul5Db());
-      const sm = await readItems(adapter, execute, { expTypes: ['SM'] });
-      expect(sm).toHaveLength(1);
-      expect(sm[0]?.formula).toBe("REGION = 'EMEA'");
+      const created = await readItems(adapter, execute, { expTypes: ['CI'] });
+      expect(created).toHaveLength(1);
+      expect(created[0]?.name).toBe('Amount With Tax');
     });
 
-    it('EUL4: missing columns come back as defaults', async () => {
+    it('never selects columns that do not exist on EXPRESSIONS', async () => {
       const { adapter, execute, db } = await adapterFor(eul4Db());
       const items = await readItems(adapter, execute);
 
       expect(items).toHaveLength(2);
-      for (const item of items) {
-        expect(item.nullsAllowed).toBe(true); // default
-        expect(item.parentItemId).toBeNull();
-        expect(item.description).toBeNull();
-        expect(item.updatedBy).toBe(item.createdBy); // fallback column
-      }
       const itemSql = db.executed.find((sql) => sql.includes('EUL4_EXPRESSIONS'));
-      expect(itemSql).not.toContain('IT_EXP_ID');
-      expect(itemSql).not.toContain('EXP_NULLS_ALLOWED');
+      for (const fabricated of [
+        'EXP_COL_NAME',
+        'EXP_FORMAT_MASK',
+        'EXP_AGGR_FUNC',
+        'EXP_SEQUENCE',
+        'EXP_NULLS_ALLOWED',
+        'EXP_FORMULA',
+      ]) {
+        expect(itemSql).not.toContain(fabricated);
+      }
     });
   });
 
   describe('readJoins', () => {
-    it('EUL5: groups components under their join', async () => {
-      const { adapter, execute } = await adapterFor(eul5Db());
+    it('EUL5: reads KEY_CONS as a folder-to-folder join', async () => {
+      const { adapter, execute, db } = await adapterFor(eul5Db());
       const joins = await readJoins(adapter, execute);
 
       expect(joins).toHaveLength(1);
-      expect(joins[0]?.joinType).toBe('LEFT');
-      expect(joins[0]?.components).toEqual([
-        { masterItemId: 300, detailItemId: 301, operator: '=' },
-        { masterItemId: 300, detailItemId: 302, operator: '=' },
-      ]);
+      expect(joins[0]).toMatchObject({
+        sourceId: 400,
+        masterFolderId: 200,
+        detailFolderId: 201,
+        description: 'Invoices to Summary',
+      });
+      // Joins bind folders; item-level keys are unconfirmed and stay empty.
+      expect(joins[0]?.components).toEqual([]);
+      // And it must actually query KEY_CONS, not a fabricated JOINS table.
+      expect(db.executed.some((sql) => sql.includes('EUL5_KEY_CONS'))).toBe(true);
+      expect(db.executed.some((sql) => /EUL5_JOINS|EUL5_JOI_COMP/.test(sql))).toBe(false);
     });
 
-    it("EUL4: normalizes the legacy OUTER join type to LEFT", async () => {
+    it('falls back to a row-index source id when KEY_ID is absent', async () => {
+      const db = eul5Db();
+      // Drop KEY_ID so probeColumns reports it missing, as a real EUL might.
+      db.tables.EUL5_KEY_CONS = (db.tables.EUL5_KEY_CONS ?? []).map((row) => {
+        const { KEY_ID: _drop, ...rest } = row;
+        return rest;
+      });
+      const { adapter, execute } = await adapterFor(db);
+      const joins = await readJoins(adapter, execute);
+
+      expect(joins).toHaveLength(1);
+      expect(joins[0]?.sourceId).toBe(0);
+      expect(joins[0]?.masterFolderId).toBe(200);
+    });
+
+    it('EUL4: reads the same shape under the EUL4_ prefix', async () => {
       const { adapter, execute } = await adapterFor(eul4Db());
       const joins = await readJoins(adapter, execute);
 
       expect(joins).toHaveLength(1);
-      expect(joins[0]?.joinType).toBe('LEFT');
-      expect(joins[0]?.description).toBeNull();
-      expect(joins[0]?.components).toHaveLength(1);
+      expect(joins[0]?.masterFolderId).toBe(20);
+      expect(joins[0]?.joinType).toBe('INNER');
     });
   });
 
   describe('readHierarchies', () => {
-    it('EUL4: attaches levels from the separate HIER_LEVELS table', async () => {
+    it('EUL5: derives depth by walking the HI_SEGMENTS tree', async () => {
+      const { adapter, execute } = await adapterFor(eul5Db());
+      const hierarchies = await readHierarchies(adapter, execute);
+
+      expect(hierarchies).toHaveLength(1);
+      // Fixture tree: 510 (root) → 511 → 512.
+      expect(hierarchies[0]?.nodes.map((n) => [n.sourceId, n.depth])).toEqual([
+        [510, 1],
+        [511, 2],
+        [512, 3],
+      ]);
+      expect(hierarchies[0]?.nodes.map((n) => n.parentNodeId)).toEqual([null, 510, 511]);
+    });
+
+    it('marks nodes unreachable from a root with a null depth instead of dropping them', async () => {
+      const db = eul5Db();
+      // 512's edge now points at a node that is not in this hierarchy, so the
+      // walk from the root can never reach it.
+      db.tables.EUL5_HI_SEGMENTS = [
+        { IHS_HI_ID: 500, IHS_HN_ID_PARENT: 510, IHS_HN_ID_CHILD: 511 },
+        { IHS_HI_ID: 500, IHS_HN_ID_PARENT: 999, IHS_HN_ID_CHILD: 512 },
+      ];
+      const { adapter, execute } = await adapterFor(db);
+      const hierarchies = await readHierarchies(adapter, execute);
+
+      const nodes = hierarchies[0]?.nodes ?? [];
+      expect(nodes).toHaveLength(3); // nothing silently lost
+      expect(nodes.find((n) => n.sourceId === 512)?.depth).toBeNull();
+    });
+
+    it('does not hang on a cyclic segment tree', async () => {
+      const db = eul5Db();
+      db.tables.EUL5_HI_SEGMENTS = [
+        { IHS_HI_ID: 500, IHS_HN_ID_PARENT: 510, IHS_HN_ID_CHILD: 511 },
+        { IHS_HI_ID: 500, IHS_HN_ID_PARENT: 511, IHS_HN_ID_CHILD: 510 },
+      ];
+      const { adapter, execute } = await adapterFor(db);
+      const hierarchies = await readHierarchies(adapter, execute);
+      expect(hierarchies[0]?.nodes).toHaveLength(3);
+    });
+
+    it('EUL4: every node is a root when HI_SEGMENTS is empty', async () => {
       const { adapter, execute } = await adapterFor(eul4Db());
       const hierarchies = await readHierarchies(adapter, execute);
 
       expect(hierarchies).toHaveLength(1);
-      expect(hierarchies[0]?.levels).toEqual([
-        {
-          sourceId: 51,
-          hierarchyId: 50,
-          itemId: 30,
-          name: 'Company',
-          levelNumber: 1,
-        },
+      expect(hierarchies[0]?.nodes).toEqual([
+        expect.objectContaining({ sourceId: 51, hierarchyId: 50, depth: 1, parentNodeId: null }),
       ]);
     });
 
-    it('EUL5: uses HIER_LEVELS when populated', async () => {
-      const { adapter, execute } = await adapterFor(eul5Db());
-      const hierarchies = await readHierarchies(adapter, execute);
-      expect(hierarchies[0]?.levels.map((l) => l.name)).toEqual(['Year', 'Month']);
-    });
-
-    it('EUL5: falls back to IT_EXP_ID expressions when HIER_LEVELS is empty', async () => {
+    it('survives a missing HI_SEGMENTS table entirely', async () => {
       const db = eul5Db();
-      db.tables.EUL5_HIER_LEVELS = [];
-      db.tables.EUL5_EXPRESSIONS = [
-        ...(db.tables.EUL5_EXPRESSIONS ?? []),
-        {
-          EXP_ID: 900,
-          OBJ_ID: 200,
-          EXP_NAME: 'Quarter Level',
-          EXP_TYPE: 'HI',
-          EXP_SEQUENCE: 2,
-          IT_EXP_ID: 301,
-          EXP_CREATED_BY: 'DISCO_ADMIN',
-          EXP_CREATED_DATE: new Date('2010-03-15T10:00:00Z'),
-        },
-      ];
-      const { adapter, execute } = await adapterFor(db);
-      const hierarchies = await readHierarchies(adapter, execute);
-
-      // Single hierarchy → fallback levels can be attributed to it.
-      expect(hierarchies[0]?.levels).toEqual([
-        {
-          sourceId: 900,
-          hierarchyId: 500,
-          itemId: 301,
-          name: 'Quarter Level',
-          levelNumber: 2,
-        },
-      ]);
-    });
-
-    it('EUL5: fallback levels stay unattributed with several hierarchies', async () => {
-      const db = eul5Db();
-      db.tables.EUL5_HIER_LEVELS = [];
-      db.tables.EUL5_HIERARCHIES = [
-        ...(db.tables.EUL5_HIERARCHIES ?? []),
-        {
-          HIER_ID: 501,
-          BA_ID: 100,
-          HIER_NAME: 'Geo Hierarchy',
-          HIER_DESCRIPTION: null,
-          HIER_CREATED_BY: 'DISCO_ADMIN',
-          HIER_CREATED_DATE: new Date('2010-03-15T10:00:00Z'),
-          HIER_UPDATED_BY: 'DISCO_ADMIN',
-          HIER_UPDATED_DATE: new Date('2010-03-15T10:00:00Z'),
-        },
-      ];
-      db.tables.EUL5_EXPRESSIONS = [
-        ...(db.tables.EUL5_EXPRESSIONS ?? []),
-        {
-          EXP_ID: 901,
-          OBJ_ID: 200,
-          EXP_NAME: 'Orphan Level',
-          EXP_TYPE: 'HI',
-          EXP_SEQUENCE: 1,
-          IT_EXP_ID: 300,
-          EXP_CREATED_BY: 'DISCO_ADMIN',
-          EXP_CREATED_DATE: new Date('2010-03-15T10:00:00Z'),
-        },
-      ];
-      const { adapter, execute } = await adapterFor(db);
-      const hierarchies = await readHierarchies(adapter, execute);
-
-      expect(hierarchies).toHaveLength(2);
-      for (const h of hierarchies) {
-        expect(h.levels).toEqual([]);
-      }
-    });
-
-    it('survives a missing HIER_LEVELS table entirely', async () => {
-      const db = eul4Db();
-      delete db.tables.EUL4_HIER_LEVELS;
+      delete db.tables.EUL5_HI_SEGMENTS;
       const { adapter, execute } = await adapterFor(db);
       const hierarchies = await readHierarchies(adapter, execute);
       expect(hierarchies).toHaveLength(1);
-      expect(hierarchies[0]?.levels).toEqual([]);
+      expect(hierarchies[0]?.nodes.every((n) => n.depth === 1)).toBe(true);
     });
   });
 
   describe('readWorkbooks', () => {
-    it('EUL5: returns owner and developer key', async () => {
+    it('EUL5: resolves the owner through DOC_EU_ID → EUL_USERS', async () => {
       const { adapter, execute } = await adapterFor(eul5Db());
       const workbooks = await readWorkbooks(adapter, execute);
 
@@ -428,57 +446,99 @@ describe('unified read functions', () => {
         name: 'Monthly Sales',
         owner: 'JSMITH',
         developerKey: 'MONTHLY_SALES',
+        contentType: 'application/vnd.oracle-disco.wb',
       });
-      expect(workbooks[0]?.content).toContain('<workbook>');
+      // The body comes from DOC_DOCUMENT, fetched separately from the metadata.
+      expect(Buffer.isBuffer(workbooks[0]?.content)).toBe(true);
+      expect(workbooks[0]?.contentLength).toBe((workbooks[0]?.content as Buffer).length);
     });
 
-    it('EUL4: workbook owner falls back to the creator', async () => {
+    it('EUL4: falls back to DOC_CREATED_BY when DOC_EU_ID is absent', async () => {
       const { adapter, execute } = await adapterFor(eul4Db());
       const workbooks = await readWorkbooks(adapter, execute);
 
-      expect(workbooks[0]?.owner).toBe('ACLARK'); // DOC_CREATED_BY fallback
+      expect(workbooks[0]?.owner).toBe('ACLARK');
       expect(workbooks[0]?.developerKey).toBeNull();
-      expect(workbooks[0]?.content).toBe('<workbook/>');
+      expect(Buffer.isBuffer(workbooks[0]?.content)).toBe(true);
+    });
+
+    it('skips the body read entirely when includeContent is false', async () => {
+      const { adapter, execute, db } = await adapterFor(eul5Db());
+      const workbooks = await readWorkbooks(adapter, execute, { includeContent: false });
+      expect(workbooks[0]?.content).toBeNull();
+      expect(db.executed.some((sql) => sql.includes('DOC_DOCUMENT'))).toBe(false);
+    });
+
+    it('never selects a body column that does not exist', async () => {
+      const db = eul5Db();
+      db.tables.EUL5_DOCUMENTS = db.tables.EUL5_DOCUMENTS!.map((row) => {
+        const { DOC_DOCUMENT: _omitted, ...rest } = row;
+        return rest;
+      });
+      const execute = mockExecutor(db);
+      const info = await detectEulVersionFromExecutor(execute);
+      await readWorkbooks(createEulSchemaAdapter(info), execute);
+      expect(db.executed.some((sql) => sql.includes('DOC_DOCUMENT'))).toBe(false);
+      expect(db.executed.some((sql) => sql.includes('DOC_WORKBOOK_OWNER'))).toBe(false);
     });
   });
 
   describe('readUsers / readGrants', () => {
-    it('derives distinct users from ELEM_ACCESS grantees', async () => {
+    it('reads the EUL_USERS directory, flagging roles', async () => {
       const { adapter, execute } = await adapterFor(eul5Db());
       const users = await readUsers(adapter, execute);
 
       expect(users).toEqual([
-        { username: 'JSMITH', source: 'ELEM_ACCESS' },
-        { username: 'MJONES', source: 'ELEM_ACCESS' },
+        { sourceId: 900, username: 'JSMITH', isRole: false, source: 'EUL_USERS' },
+        { sourceId: 901, username: 'MJONES', isRole: false, source: 'EUL_USERS' },
+        { sourceId: 902, username: 'SALES_ROLE', isRole: true, source: 'EUL_USERS' },
       ]);
     });
 
-    it('maps grants with a derived BUSINESS_AREA/FOLDER level', async () => {
-      const { adapter, execute } = await adapterFor(eul5Db());
+    it('resolves the grantee through AP_EU_ID → EUL_USERS.EU_ID', async () => {
+      const { adapter, execute, db } = await adapterFor(eul5Db());
       const grants = await readGrants(adapter, execute);
 
       expect(grants).toHaveLength(3);
-      const baGrant = grants.find((g) => g.sourceId === 800);
-      expect(baGrant).toMatchObject({
-        grantee: 'JSMITH',
+      expect(grants.find((g) => g.sourceId === 800)).toMatchObject({
+        grantee: 'JSMITH', // resolved via the join, not a column on ACCESS_PRIVS
         businessAreaId: 100,
         folderId: null,
         level: 'BUSINESS_AREA',
+        privCode: 1006,
       });
-      const folderGrant = grants.find((g) => g.sourceId === 801);
-      expect(folderGrant).toMatchObject({
+      expect(grants.find((g) => g.sourceId === 801)).toMatchObject({
         grantee: 'MJONES',
-        businessAreaId: null,
         folderId: 200,
         level: 'FOLDER',
       });
+      // A role grantee is carried through as such.
+      expect(grants.find((g) => g.sourceId === 802)).toMatchObject({
+        grantee: 'SALES_ROLE',
+        granteeIsRole: true,
+      });
+      expect(db.executed.some((sql) => sql.includes('EUL5_ACCESS_PRIVS'))).toBe(true);
+      expect(db.executed.some((sql) => sql.includes('ELEM_ACCESS'))).toBe(false);
+    });
+
+    it('degrades to an EUL-wide grant when no target column exists', async () => {
+      const db = eul5Db();
+      // A source whose ACCESS_PRIVS carries no BA/folder/doc target columns.
+      db.tables.EUL5_ACCESS_PRIVS = [
+        { AP_EU_ID: 900, GP_APP_ID: 1006, AP_CREATED_DATE: new Date('2010-03-15T10:00:00Z') },
+      ];
+      const { adapter, execute } = await adapterFor(db);
+      const grants = await readGrants(adapter, execute);
+
+      expect(grants).toHaveLength(1);
+      expect(grants[0]).toMatchObject({ grantee: 'JSMITH', level: 'EUL' });
     });
 
     it('reads EUL4 grants with the same shape', async () => {
       const { adapter, execute } = await adapterFor(eul4Db());
       const grants = await readGrants(adapter, execute);
       expect(grants).toHaveLength(1);
-      expect(grants[0]?.level).toBe('BUSINESS_AREA');
+      expect(grants[0]).toMatchObject({ grantee: 'ACLARK', level: 'BUSINESS_AREA' });
     });
   });
 
@@ -502,7 +562,7 @@ describe('unified read functions', () => {
     it('wraps unexpected Oracle failures in EulReadError', async () => {
       const db = eul5Db();
       const { adapter } = await adapterFor(db);
-      delete db.tables.EUL5_BA; // now ORA-00942s on read
+      delete db.tables.EUL5_BAS; // now ORA-00942s on read
       await expect(readBusinessAreas(adapter, mockExecutor(db))).rejects.toThrow(EulReadError);
     });
   });
@@ -515,7 +575,7 @@ describe('unified read functions', () => {
       const areas = await readBusinessAreas(adapter, execute);
       expect(areas[0]?.name).toBe('Sales Analysis');
       const items = await readItems(adapter, execute);
-      expect(items.map((i) => i.sourceId).sort()).toEqual([300, 301]);
+      expect(items.map((i) => i.sourceId).sort()).toEqual([300, 301, 302]);
     });
 
     it('preferVersion: EUL4 reads the EUL4 half of the same schema', async () => {
@@ -525,8 +585,7 @@ describe('unified read functions', () => {
       const adapter = createEulSchemaAdapter(info);
 
       const areas = await readBusinessAreas(adapter, execute);
-      expect(areas[0]?.name).toBe('Finance');
-      expect(areas[0]?.language).toBe('US'); // EUL4 default, not the EUL5 'GB'
+      expect(areas[0]?.name).toBe('Finance'); // the EUL4 half, not EUL5's
     });
   });
 });

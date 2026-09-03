@@ -36,6 +36,41 @@
       "when": 1784555715637,
       "tag": "0004_left_puppet_master",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1787252538284,
+      "tag": "0005_wide_satana",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1787584384314,
+      "tag": "0006_breezy_triathlon",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1787598556248,
+      "tag": "0007_closed_sugar_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1787667525192,
+      "tag": "0008_bind_safe_parameter_names",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1787866643565,
+      "tag": "0009_worksheet_layout_model",
+      "breakpoints": true
     }
   ]
 }

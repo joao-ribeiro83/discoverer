@@ -48,6 +48,38 @@ After execution completes, you see:
 - **Executed By** — Your username
 - **Executed At** — Timestamp
 
+## Group Breaks and Totals
+
+A map migrated from Discoverer draws the way the original worksheet did.
+
+**Group breaks.** A column marked *group and break* is shown once per group:
+the value appears on the first row and is left blank on the rows that repeat
+it. The column header carries a **Group** badge.
+
+**Subtotals.** Where the map defines them, a subtotal line closes each group,
+labelled the way the original author wrote it — `Total for EMEA`.
+
+**Grand totals.** A bold line at the foot of the results.
+
+Totals are computed over **every row the filters match**, not over the rows
+currently loaded. Loading more rows does not change them.
+
+**Sorting or filtering the grid pauses this.** Breaks and subtotals only make
+sense in the order the query returned. Click a column header to sort and the
+results become a plain list; clear the sort to get the layout back. The footer
+tells you when the layout is paused.
+
+## Crosstabs
+
+A crosstab map puts one set of values down the side, another across the top,
+and the measures in between.
+
+Maps migrated from Discoverer arrive **as tables**, even when the original was
+a crosstab. Discoverer never recorded which columns went across the top, so
+nothing can recover it. Open the map in the builder, open a column and set
+*Crosstab edge* to *Across the top* to get the pivot back. See
+[Building Maps](building-maps.md).
+
 ## Pagination
 
 For large result sets:
@@ -133,6 +165,15 @@ If you see "Connection failed":
 - The data source is temporarily unavailable
 - Try again in a few moments
 - Contact your administrator if persistent
+
+### Worksheet Settings That Could Not Be Applied
+
+A yellow note above the results lists anything the map asked for that this run
+could not carry — a total whose Discoverer function has no SQL equivalent, or a
+sort on a column the report does not show.
+
+The rows themselves are correct. Fix the setting in the map builder, or see
+[Migration Troubleshooting](../migration/troubleshooting.md#worksheet-settings-that-could-not-be-applied).
 
 ## What's Next?
 

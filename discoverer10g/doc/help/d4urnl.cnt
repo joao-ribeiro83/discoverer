@@ -1,0 +1,251 @@
+:Base d4urnl.hlp>main
+:Title Helptekst bij Oracle Discoverer Plus
+1 Inleiding tot Oracle Discoverer
+2 Info over zoekvragen en werkboeken=CON_ABOUT_QUERIES>main
+2 Info over tabellen en matrices=CON_ABOUT_TANDC>main
+2 Info over totalen=CON_ABOUT_TOTALS>main
+2 Info over percentages=CON_ABOUT_PERCENTAGES>main
+2 Info over geplande werkboeken=CON_ABOUT_SCHEDULED>main
+2 Leren werken met Oracle Discoverer
+3 Leren werken met Oracle Discoverer=CON_LEARN_OD>main
+1 Stapsgewijze procedures
+2 Oracle Discoverer starten en sluiten
+3 Oracle Discoverer starten=To_start_Oracle_Discoverer>main
+3 Het dialoogvenster Verbinden voor Oracle Applicaties gebruikers configureren=HIDD_OPTIONS_CONNECTION>main
+3 Verbinding met een database tot stand brengen=To_connect_to_a_database>main
+3 Oracle Discoverer afsluiten=To_exit_Oracle_Discoverer>main
+2 Werken met werkboeken
+3 Nieuwe werkboeken aanmaken=To_create_a_new_workbook>main
+3 Opgeslagen werkboeken openen=To_open_a_saved_workbook>main
+3 Werkboeken opslaan=To_save_a_workbook>main
+3 Werkboeken sluiten=To_close_a_workbook>main
+3 Werkboeken uit de database verwijderen=To_delete_a_workbook_from_the_database>main
+3 Nieuwe bladen aan werkboeken toevoegen=To_add_a_new_sheet_to_a_workbook>main
+3 Bladen bewerken=To_edit_a_sheet>main
+3 Bladen als een tabel dupliceren=To_duplicate_a_sheet_as_a_table>main
+3 Bladen als een matrix dupliceren=To_duplicate_a_sheet_as_a_crosstab>main
+3 Bladen benoemen=To_name_a_sheet>main
+3 Bladnamen bewerken=To_edit_the_name_of_a_sheet>main
+3 Bladen uit werkboeken verwijderen=To_delete_a_sheet_from_a_workbook>main
+3 Werkboeken delen met andere gebruikers=To_share_a_workbook_with_other_users>main
+3 SQL-code voor het huidige blad weergeven=To_view_the_SQL_code_for_the_current_sheet>main
+3 Eigenschappen van een geselecteerd item weergeven=To_view_the_properties_of_a_selected_item>main
+3 Eigenschappen van het huidige werkboek weergeven=To_view_the_properties_of_the_current_workbook>main
+3 Grafiek voor het huidige blad aanmaken=To_show_data_in_a_sheet_as_a_graph>main
+3 Grafieken weergeven=To_Hide_or_Show_a_Graph>main
+3 Grafieken verbergen=To_Hide_or_Show_a_Graph>main
+2 Gegevens toevoegen en verwijderen
+3 Items toevoegen aan bladen=To_add_an_item_to_a_sheet>main
+3 Items uit bladen verwijderen=To_delete_an_item_from_a_sheet>main
+3 Weergegeven waarden voor een item wijzigen=To_change_displayed_values_for_an_item>main
+3 Drillen
+4 Omhoog drillen=To_drill_up>main
+4 Omlaag drillen=To_drill_down>main
+4 Drillen naar een gerelateerd item op een ander blad=To_drill_to_a_related_item_in_another_sheet>main
+4 Drillen naar gerelateerde gegevens in een andere toepassing=To_drill_to_related_information_in_another_application>main
+4 Items samenvouwen=To_collapse_an_item>main
+3 Een zoekopdracht met voorwaarden verder aanpassen 
+4 Voorwaarden definiëren=To_define_a_condition>main
+4 Voorwaarden bewerken=To_apply_a_condition>main
+4 Berekeningen toevoegen aan een bestaande voorwaarde=To_add_a_calculation_to_an_existing_condition>main
+4 Voorwaarden met een berekening aanmaken=To_create_a_condition_that_includes_a_calculation>main
+4 Voorwaarden verwijderen=To_delete_a_condition>main
+3 Berekeningen gebruiken
+4 Berekeningen aanmaken=To_create_a_calculation>main
+4 Berekeningen bewerken=To_edit_a_calculation>main
+3 Met totalen de resultaten van een zoekopdracht samenvatten
+4 Totalen aanmaken=To_create_a_total>main
+4 Totalen bewerken=To_edit_a_total>main
+2 Gegevens en kopteksten manipuleren
+3 Items van de ene naar de andere as verplaatsen=To_move_an_item_from_one_axis_to_another>main
+3 Pagina-items aanmaken=To_create_a_page_item>main
+3 Grafische balken weergeven in cellen=To_show_graphic_bars_in_cells>main
+3 Gegevens sorteren
+4 Tabellen sorteren=To_sort_a_table>main
+4 Matrices sorteren=To_sort_a_crosstab>main
+2 Opgeven hoe zoekopdrachten door Oracle Discoverer worden uitgevoerd
+3 Zoekvragen incrementeel uitvoeren=To_run_queries_incrementally>main
+3 Incrementele instellingen opheffen en alle rijen in een zoekvraag terugbrengen=To_override_an_incremental_setting_and_return_all_rows_in_a_query>main
+3 Aantal rijen opgeven dat maximaal door een zoekvraag moet worden opgehaald=To_specify_the_maximum_number_of_rows_returned_in_a_query>main
+3 Voorkeuren voor de database-cache instellen=To_set_preferences_for_the_database_cache>main
+3 Voorkeuren instellen voor bladen met de matrix-indeling=To_set_preferences_for_crosstab_layout_sheets>main
+3 Voorkeuren instellen voor bladen met de tabel-indeling=To_set_preferences_for_table_layout_sheets>main
+2 Opmaken
+3 Gegevens op een blad opmaken=To_format_data_in_a_sheet>main
+3 Kopteksten op een blad opmaken=To_format_headings_in_a_sheet>main
+3 Getallen opmaken=To_format_numbers>main
+3 Titels van bladen opmaken=To_format_the_title_of_a_sheet>main
+3 Kolombreedten wijzigen=To_change_a_column_width>main
+3 Titels aan bladen toevoegen=To_add_a_title_to_a_sheet>main
+3 Titels van bladen bewerken=To_edit_the_title_of_a_sheet>main
+3 Achtergronden toevoegen aan bladen=To_add_a_background_to_a_sheet>main
+3 Achtergronden uit bladen verwijderen=To_remove_a_background_from_a_sheet>main
+3 Met uitzonderingen gegevens selecteren
+4 Uitzonderingen aanmaken=To_create_an_exception>main
+4 Uitzonderingen bewerken=To_edit_an_exception>main
+4 Uitzonderingen verwijderen=To_delete_an_exception>main
+3 Gegevens met een grafiek weergeven
+4 Gegevens op bladen als een grafiek weergeven=To_show_data_in_a_sheet_as_a_graph>main
+4 Stijl van grafieken wijzigen=To_change_the_style_of_a_graph>main
+4 3D-weergave van grafieken wijzigen=To_manipulate_the_three_dimensional_view_of_a_graph>main
+4 Titels toevoegen aan grafieken=To_add_titles_to_a_graph>main
+4 Titels in grafieken bewerken=To_edit_titles_in_a_graph>main
+4 Titels uit grafieken verwijderen=To_delete_titles_from_a_graph>main
+4 Grafieken exporteren naar andere toepassingen=To_export_a_graph_to_another_application>main
+2 Afdrukken
+3 Werkboeken afdrukken=To_print_a_workbook>main
+3 Bladen afdrukken=To_print_a_sheet>main
+3 Aslabels afdrukken=To_print_axis_labels>main
+3 Pagina-einden toevoegen=To_add_page_breaks>main
+3 Afdrukvolgorde van pagina's instellen=To_set_the_printing_order_of_pages>main
+3 Pagina-indeling instellen=To_set_up_the_page_layout>main
+3 Afdrukvoorbeelden weergeven=To_preview_the_printout>main
+3 Kop- en voetteksten toevoegen
+4 Voetteksten toevoegen=To_add_a_footer>main
+4 Voetteksten op maat aanmaken=To_create_a_custom_footer>main
+4 Kopteksten toevoegen=To_add_a_header>main
+4 Kopteksten op maat aanmaken=To_create_a_custom_header>main
+2 Oracle Discoverer bij andere applicaties gebruiken
+3 Gegevens exporteren en in een andere bestandsindeling opslaan=To_export_data_and_save_it_in_another_file_format>main
+3 Zoekvragen in een bestand in een andere toepassing insluiten=To_embed_a_query_in_a_file_in_another_application>main
+1 Woordenlijst
+2 Woordenlijst=DCM_GLOSSARY>gloss
+1 Referentie voor de gebruikersinterface
+2 Wizards, dialoogvensters en informatievensters
+3 Het tabblad Uitlijning=HIDD_FORMAT_ALIGN>main
+3 Het tabblad Achtergrondkleur=HIDD_FORMAT_COLOR>main
+3 Het tabblad Cache=HIDD_OPTIONS_CACHE>main
+3 Het dialoogvenster Berekeningen=HIDD_DCMCALCULATIONS>main
+3 Het dialoogvenster Berekening: optellen weer=HIDD_CALC_ADD>main
+3 Het dialoogvenster Berekening: delen weer=HIDD_CALC_DIV>main
+3 Het dialoogvenster Berekening: dialoogvenster Vermenigvuldigen=HIDD_CALC_MULT>main
+3 Het dialoogvenster Berekening: Het dialoogvenster Percentage=HIDD_CALC_PERCENT>main
+3 Het dialoogvenster Berekening: aftrekken weer=HIDD_CALC_SUB>main
+3 Het dialoogvenster Voorwaarden=HIDD_DCMCONDITIONS>main
+3 Het dialoogvenster Verbinden met Oracle Discoverer=HIDD_CONNECT>main
+3 Het tabblad Matrix=HIDD_OPTIONS_MATRIX>main
+3 Het dialoogvenster Werkboek uit database verwijderen=HIDD_DELETE_DB>main
+3 Het dialoogvenster Drillen=HIDD_DRILL_WIZARD>main
+3 Het dialoogvenster Drilopties=HIDD_DRILL_OPTIONS>main
+3 Het dialoogvenster Berekening bewerken=HIDD_CALC_EDIT>main
+3 Het dialoogvenster Parameter bewerken=HIDD_PARAM_EDIT>main
+3 Het tabblad Uitzondering=HIDD_FORMAT_EXCEPTION_NEW>main
+3 Het dialoogvenster Uitzonderingen=HIDD_EXCEPTION>main
+3 Het dialoogvenster Exporteren=HIDD_EXPORT_NAME>main
+3 Het dialoogvenster Bestandseigenschappen=HIDD_FILEPROP>main
+3 Het tabblad Lettertype=HIDD_FORMAT_FONT>main
+3 Het dialoogvenster Indeling opmaken=HIDD_WIZARD_LAYOUT>main
+3 Het tabblad Opmaak=HIDD_OPTIONS_FORMAT>main
+3 Het tabblad Koptekst/voettekst=HIDD_SETUP_HEADER>main
+3 Het informatievenster Itemklembord=HIDD_DCMCLIPBOARD>main
+3 Het dialoogvenster Itemeigenschappen=HIDD_ITEMPROP>main
+3 Het dialoogvenster Indeling=HIDD_WIZARD_START>main
+3 Het tabblad Marges=HIDD_SETUP_MARGIN>main
+3 Het dialoogvenster Nieuwe parameter=HIDD_PARAM_NEW>main
+3 Het dialoogvenster Werkboek openen=HIDD_OPEN>main
+3 Het dialoogvenster Werkboek openen uit database=HIDD_OPEN_DB>main
+3 Overzicht van het dialoogvenster Opties=HIDD_WIZARD_OPTIONS>main
+3 Een overzicht van het dialoogvenster Pagina-instelling=HIDD_WIZARD_PREVIEW>main
+3 Het dialoogvenster Parameters=HIDD_PARAMETERS>main
+3 De Parameter-wizard=HIDD_PARAMETERS_RUNTIME>main
+3 Het dialoogvenster Werkboek opslaan=HIDD_SAVE>main
+3 Het dialoogvenster Werkboek opslaan in database=HIDD_SAVE_DB>main
+3 Het tabblad Blad=HIDD_SETUP_SHEET>main
+3 Het dialoogvenster Matrix sorteren=HIDD_SORT_CROSSTAB>main
+3 Het dialoogvenster Tabel sorteren=HIDD_SORT_TABLE>main
+3 Het dialoogvenster SQL-controle=HIDD_DCMSQL>main
+3 Het tabblad Tabel=HIDD_OPTIONS_TABLE>main
+3 Het tabblad Tekst/getal=HIDD_FORMAT_MASK>main
+3 Het dialoogvenster Titel - tabblad Bitmap=HIDD_TITLE_BMP>main
+3 Het dialoogvenster Titel - tabblad Tekst=HIDD_TITLE_TEXT>main
+3 Het dialoogvenster Totalen=HIDD_SUMMARIES>main
+3 Het dialoogvenster Totaal (voor matrices)=HIDD_TOTAL_EDIT_CROSSTAB>main
+3 Het dialoogvenster Totaal (voor tabellen)=HIDD_TOTAL_EDIT_TABLE>main
+3 Het tabblad Gebruiker > Werkboek=HIDD_GRANT_USERTOBOOK>main
+3 Het dialoogvenster Waarden=HIDD_DCMLIST>main
+3 Het dialoogvenster Werkboek in ander database-account=HIDD_CONNECT_IO>main
+3 Het tabblad Werkboek > Gebruiker=HIDD_GRANT_BOOKTOUSER>main
+1 Het menu Bestand
+2 De opdracht Nieuw=HID_FILE_NEW>main
+2 De opdracht Openen=HID_FILE_OPEN>main
+2 De opdracht Sluiten=HID_FILE_CLOSE>main
+2 De opdracht Opslaan=HID_FILE_SAVE>main
+2 De opdracht Opslaan als=HID_FILE_SAVE_AS>main
+2 De opdracht Planning=HID_FILE_SCHEDULE
+2 De opdracht Pagina-instelling=HID_FILE_PAGE_SETUP
+2 De opdracht Afdrukvoorbeeld=HID_FILE_PRINT_PREVIEW>main
+2 De opdracht Afdrukken=HID_FILE_PRINT>main
+2 De opdracht SQL importeren=HID_FILE_IMPORT>main
+2 De opdracht Exporteren=HID_FILE_EXPORT>main
+2 De opdracht Werkboeken beheren=Manage_Workbooks_command>main
+2 De opdracht Verbinden met database=HID_FILE_CONNECT>main
+2 De opdracht Afsluiten=HID_APP_EXIT>main
+1 Het menu Bewerken
+2 De opdracht Ongedaan maken/Opnieuw=HID_EDIT_UNDO>main
+2 De opdracht Herhalen=HID_EDIT_REPEAT>main
+2 De opdracht Knippen=HID_EDIT_CUT>main
+2 De opdracht Kopiëren=HID_EDIT_COPY>main
+2 De opdracht Item plakken=HID_EDIT_PASTE>main
+2 De opdracht Item verwijderen=HID_EDIT_DELETEITEM>main
+2 De opdracht Alles selecteren=HID_EDIT_SELECTALL>main
+2 De opdracht Zoeken=HID_TOOLS_FIND>main
+2 De opdracht Itemeigenschappen=HID_EDIT_ITEMPROPERTIES>main
+1 Het menu Beeld
+2 De opdracht Werkbalk=HID_VIEW_TOOLBAR>main
+2 De opdracht Opmaakbalk=HID_TOOLBAR_FORMAT>main
+2 De opdracht Analysebalk=HID_TOOLBAR_ANALYSIS>main
+2 De opdracht Statusbalk=HID_VIEW_STATUS_BAR>main
+2 De opdracht Pagina-items=View_Page_Items
+2 De opdracht Itemklembord=HID_VIEW_CLIPBOARD>main
+2 De opdracht SQL-controle=HID_VIEW_SQL>main
+1 Het menu Blad
+2 De opdracht Nieuw blad=HID_SHEET_NEW>main
+2 De opdracht Blad bewerken=HID_SHEET_MODIFY>main
+2 De opdracht Dupliceren als tabel=HID_DUPLICATE_TABLE>main
+2 De opdracht Dupliceren als matrix=HID_DUPLICATE_CROSSTAB>main
+2 De opdracht Bladnaam wijzigen=HID_SHEET_RENAME>main
+2 De opdracht Blad verwijderen=HID_SHEET_DELETE>main
+2 De opdracht Titel bewerken=HID_SHEET_TITLE>main
+2 De opdracht Drillen=HID_SHEET_DRILLDOWN>main
+2 De opdracht Samenvouwen=HID_SHEET_ROLLUP>main
+2 De opdracht Parameterwaarden bewerken=HID_SHEET_MODPARAMS>main
+2 De opdracht Blad vernieuwen=HIDD_Sheet_Refresh
+2 De opdracht Alle rijen ophalen=HID_SHEET_FETCHALL>main
+2 De opdracht Alle rijen tellen=HID_SHEET_COUNTALL>main
+1 Het menu Opmaak
+2 De opdracht Gegevens=HID_FORMAT_DATA>main
+2 De opdracht Kopteksten=HID_FORMAT_HEADINGS>main
+2 De opdracht Uitzonderingen=HID_FORMAT_EXCEPTIONS>main
+2 De opdracht Kolombreedte=HID_COLUMN_WIDTH>main
+2 De opdracht Autom. kolombreedte=HID_COLUMN_AUTOFIT>main
+2 De opdracht Bladtitel=HID_FORMAT_SHEETTITLE>main
+2 De opdracht Achtergrond instellen=HID_FORMAT_SHEETBKGND>main
+2 De opdracht Achtergrond wissen=HID_FORMAT_SHEETCLEAR>main
+1 Het menu Extra
+2 De opdracht Voorwaarden=HID_TOOLS_CONDITIONS>main
+2 De opdracht Sorteren=HID_TOOLS_SORT>main
+2 De opdracht Totalen=HID_TOOLS_TOTALS>main
+2 De opdracht Percentages=HIDD_PERCENTAGES
+2 De opdracht Berekeningen=HID_TOOLS_CALCULATIONS>main
+2 De opdracht Parameters=HID_TOOLS_PARAMS>main
+2 De opdracht Opties=HID_TOOLS_OPTIONS>main
+1 Het menu Grafiek
+2 De opdracht Nieuwe grafiek=New_Graph_command>main
+2 De opdracht Weergeven=HID_MENU_VIEW_GRAPH>main
+2 De opdracht Afdrukken=Print_command_graph
+2 De opdracht Naar Klembord kopiëren=Copy_to_clipboard_command_graph>main
+2 De opdracht Legenda=Legend_command>main
+2 De opdracht X-labels=X_Labels_command>main
+2 De opdracht Statusbalk=Status_bar_command_graph>main
+2 De opdracht Schaal=HID_GRAPH_SCALE>main
+2 De opdracht 3D-weergave=HID_GRAPH_3D>main
+1 Het menu Venster
+2 De opdracht Pictogrammen schikken=HID_WINDOW_ARRANGE>main
+2 De opdracht Trapsgewijs=HID_WINDOW_CASCADE>main
+2 De opdracht Onder elkaar=HID_WINDOW_TILE_HORZ>main
+2 De opdracht Naast elkaar=HID_WINDOW_TILE_VERT>main
+1 Het menu Help
+2 De opdracht Helponderwerpen=HID_HELP_INDEX>main
+2 De opdracht Help gebruiken=HID_HELP_USING>main
+2 De opdracht Handleidingen=HID_HELP_MANUALS>main
+2 De opdracht Info=HID_APP_ABOUT>main

@@ -26,12 +26,13 @@ describe('detectEulVersion', () => {
 
       expect(info.version).toBe('EUL5');
       expect(info.prefix).toBe('EUL5_');
+      // Read from EUL5_VERSIONS.VER_RELEASE — there is no EUL5_EUL table.
       expect(info.schemaVersion).toBe('5.1.0.0.0');
-      expect(info.discovererVersion).toBe('10.1.2.48.18'); // from EU_DISC_VERSION
+      expect(info.discovererVersion).toBe('10.1.2/11.1.1');
       expect(info.owner).toBe(EUL5_OWNER);
       expect(info.supported).toBe(true);
-      expect(info.tableNames).toContain('EUL5_BA');
-      expect(info.tableNames).toContain('EUL5_TRANSLATIONS');
+      expect(info.tableNames).toContain('EUL5_BAS');
+      expect(info.tableNames).toContain('EUL5_ACCESS_PRIVS');
     });
 
     it('is also reachable through the EulSource wrapper', async () => {
@@ -40,23 +41,21 @@ describe('detectEulVersion', () => {
       expect(info.version).toBe('EUL5');
     });
 
-    it('derives the Discoverer release from EU_VERSION when EU_DISC_VERSION is absent', async () => {
+    it('derives the Discoverer release from VER_RELEASE', async () => {
       const db = eul5Db();
-      db.tables.EUL5_EUL = [
-        { EU_ID: 1, EU_NAME: 'X', EU_VERSION: '5.1.1.0.0', EU_DISC_VERSION: null },
-      ];
+      db.tables.EUL5_VERSIONS = [{ VER_RELEASE: '5.0.2.0.0' }];
       const info = await detectEulVersionFromExecutor(mockExecutor(db));
-      expect(info.discovererVersion).toBe('10.1.2/11.1.1');
+      expect(info.discovererVersion).toBe('9.0.2.53/9.0.4');
     });
 
-    it('warns when no EUL5-only marker tables exist', async () => {
+    it('warns when tables EUL5 retired appear under the EUL5_ prefix', async () => {
+      // The EUL4/EUL5 inventories are otherwise identical, so a half-upgraded
+      // schema is the only table-presence signal there is.
       const db = eul5Db();
-      db.catalog = db.catalog.filter(
-        (row) => !['EUL5_LOCK', 'EUL5_TRANSLATIONS', 'EUL5_QPP_QUERY'].includes(row.tableName),
-      );
+      db.catalog = [...db.catalog, { owner: EUL5_OWNER, tableName: 'EUL5_NAMED_ELEMS' }];
       const info = await detectEulVersionFromExecutor(mockExecutor(db));
       expect(info.version).toBe('EUL5');
-      expect(info.warnings.join('\n')).toMatch(/EUL5-only tables/);
+      expect(info.warnings.join('\n')).toMatch(/retired in EUL5/);
     });
 
     it('warns about missing core tables', async () => {
@@ -66,9 +65,9 @@ describe('detectEulVersion', () => {
       expect(info.warnings.join('\n')).toMatch(/EUL5_DOCUMENTS/);
     });
 
-    it('warns when EU_VERSION contradicts the table prefix', async () => {
+    it('warns when VER_RELEASE contradicts the table prefix', async () => {
       const db = eul5Db();
-      db.tables.EUL5_EUL = [{ EU_ID: 1, EU_VERSION: '4.1.8.0.0' }];
+      db.tables.EUL5_VERSIONS = [{ VER_RELEASE: '4.1.8.0.0' }];
       const info = await detectEulVersionFromExecutor(mockExecutor(db));
       expect(info.version).toBe('EUL5'); // prefix stays authoritative
       expect(info.warnings.join('\n')).toMatch(/does not match/);
@@ -86,8 +85,8 @@ describe('detectEulVersion', () => {
       expect(info.discovererVersion).toBe('4.1.x');
       expect(info.owner).toBe(EUL4_OWNER);
       expect(info.supported).toBe(true);
-      expect(info.tableNames).toContain('EUL4_BA');
-      expect(info.tableNames).not.toContain('EUL5_BA');
+      expect(info.tableNames).toContain('EUL4_BAS');
+      expect(info.tableNames).not.toContain('EUL5_BAS');
     });
   });
 
@@ -116,7 +115,7 @@ describe('detectEulVersion', () => {
 
     it('throws when only non-BA EUL-ish tables exist', async () => {
       const db = eul5Db();
-      db.catalog = catalogFor(EUL5_OWNER, ['EUL5_OPTIONS', 'EUL5_EUL']);
+      db.catalog = catalogFor(EUL5_OWNER, ['EUL5_OBJS', 'EUL5_VERSIONS']);
       await expect(detectEulVersionFromExecutor(mockExecutor(db))).rejects.toThrow(
         /No EUL schema detected/,
       );
@@ -131,8 +130,8 @@ describe('detectEulVersion', () => {
       expect(info.version).toBe('EUL5');
       expect(info.warnings.join('\n')).toMatch(/Mixed EUL schema/);
       // Only EUL5 tables are reported for the chosen version.
-      expect(info.tableNames).toContain('EUL5_BA');
-      expect(info.tableNames).not.toContain('EUL4_BA');
+      expect(info.tableNames).toContain('EUL5_BAS');
+      expect(info.tableNames).not.toContain('EUL4_BAS');
     });
 
     it('honours preferVersion: EUL4 on a mixed schema', async () => {
@@ -157,10 +156,10 @@ describe('detectEulVersion', () => {
     });
   });
 
-  describe('EUL identity table edge cases', () => {
-    it('handles a missing EUL*_EUL table (ORA-00942)', async () => {
+  describe('VERSIONS table edge cases', () => {
+    it('handles a missing EUL*_VERSIONS table (ORA-00942)', async () => {
       const db = eul5Db();
-      delete db.tables.EUL5_EUL;
+      delete db.tables.EUL5_VERSIONS;
       const info = await detectEulVersionFromExecutor(mockExecutor(db));
 
       expect(info.version).toBe('EUL5');
@@ -169,25 +168,25 @@ describe('detectEulVersion', () => {
       expect(info.warnings.join('\n')).toMatch(/not found or not readable/);
     });
 
-    it('handles an empty EUL*_EUL table', async () => {
+    it('handles an empty EUL*_VERSIONS table', async () => {
       const db = eul5Db();
-      db.tables.EUL5_EUL = [];
+      db.tables.EUL5_VERSIONS = [];
       const info = await detectEulVersionFromExecutor(mockExecutor(db));
 
       expect(info.schemaVersion).toBe('unknown');
       expect(info.warnings.join('\n')).toMatch(/is empty/);
     });
 
-    it('uses the first row and warns when EUL*_EUL has several rows', async () => {
+    it('uses the first row and warns when EUL*_VERSIONS has several rows', async () => {
       const db = eul5Db();
-      db.tables.EUL5_EUL = [
-        { EU_ID: 1, EU_VERSION: '5.1.0.0.0', EU_DISC_VERSION: '11.1.1.7.0' },
-        { EU_ID: 2, EU_VERSION: '5.0.2.0.0', EU_DISC_VERSION: '9.0.4.0.0' },
+      db.tables.EUL5_VERSIONS = [
+        { VER_RELEASE: '5.1.0.0.0' },
+        { VER_RELEASE: '5.0.2.0.0' },
       ];
       const info = await detectEulVersionFromExecutor(mockExecutor(db));
 
       expect(info.schemaVersion).toBe('5.1.0.0.0');
-      expect(info.discovererVersion).toBe('11.1.1.7.0');
+      expect(info.discovererVersion).toBe('10.1.2/11.1.1');
       expect(info.warnings.join('\n')).toMatch(/2 rows/);
     });
   });
@@ -195,7 +194,7 @@ describe('detectEulVersion', () => {
   describe('schema owner resolution', () => {
     it('prefers the connected user when several schemas hold EUL tables', async () => {
       const db = eul5Db();
-      db.catalog = [...db.catalog, ...catalogFor('OTHER_EUL', ['EUL5_BA', 'EUL5_EUL'])];
+      db.catalog = [...db.catalog, ...catalogFor('OTHER_EUL', ['EUL5_BAS', 'EUL5_VERSIONS'])];
       db.currentUser = EUL5_OWNER;
       const info = await detectEulVersionFromExecutor(mockExecutor(db));
       expect(info.owner).toBe(EUL5_OWNER);
@@ -204,7 +203,7 @@ describe('detectEulVersion', () => {
 
     it('warns and picks deterministically when the connected user owns nothing', async () => {
       const db = eul5Db();
-      db.catalog = [...db.catalog, ...catalogFor('AAA_EUL', ['EUL5_BA', 'EUL5_EUL'])];
+      db.catalog = [...db.catalog, ...catalogFor('AAA_EUL', ['EUL5_BAS', 'EUL5_VERSIONS'])];
       db.currentUser = 'SOMEONE_ELSE';
       const info = await detectEulVersionFromExecutor(mockExecutor(db));
       expect(info.owner).toBe('AAA_EUL'); // alphabetical
@@ -213,8 +212,8 @@ describe('detectEulVersion', () => {
 
     it('honours an explicit schemaOwner', async () => {
       const db = eul5Db();
-      db.catalog = [...db.catalog, ...catalogFor('OTHER_EUL', ['EUL4_BA', 'EUL4_EUL'])];
-      db.tables.EUL4_EUL = [{ EU_ID: 1, EU_VERSION: '4.1.8.0.0' }];
+      db.catalog = [...db.catalog, ...catalogFor('OTHER_EUL', ['EUL4_BAS', 'EUL4_VERSIONS'])];
+      db.tables.EUL4_VERSIONS = [{ VER_RELEASE: '4.1.8.0.0' }];
       const info = await detectEulVersionFromExecutor(mockExecutor(db), {
         schemaOwner: 'other_eul',
       });

@@ -16,5 +16,15 @@
       "high-contrast": "Alto contraste"
     }
   },
+  "palette": {
+    "title": "Paleta de cores",
+    "description": "Escolha as cores de destaque utilizadas em toda a interface.",
+    "unavailableHighContrast": "Não disponível enquanto o Alto contraste estiver selecionado — esse modo usa as suas próprias cores fixas por acessibilidade.",
+    "label": "Paleta",
+    "options": {
+      "default": "Clássica",
+      "navy": "Azul-marinho"
+    }
+  },
   "saved": "Preferências guardadas"
 }

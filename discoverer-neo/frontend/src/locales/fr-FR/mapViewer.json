@@ -43,7 +43,12 @@
     "filterAriaLabel": "Filtrer {{column}}",
     "rowCount_one": "{{formattedCount}} ligne",
     "rowCount_other": "{{formattedCount}} lignes",
-    "filteredFrom": "(filtré sur {{total}})"
+    "filteredFrom": "(filtré sur {{total}})",
+    "subtotalFor": "Total pour {{value}}",
+    "grandTotal": "Total général",
+    "groupBreakBadge": "Groupe",
+    "groupBreakHint": "Les lignes sont groupées par cette colonne. Les valeurs répétées restent vides et un sous-total ferme chaque groupe.",
+    "worksheetLayoutPaused": "Trier ou filtrer suspend les ruptures de groupe et les totaux."
   },
   "execution": {
     "nothingToLoadMore": "Rien de plus à charger pour le moment.",
@@ -76,7 +81,9 @@
     "notAllRowsLoaded": "Toutes les lignes ne sont pas chargées.",
     "runFullResultTooltip": "Exécuter la requête complète en arrière-plan (jusqu'à 100 000 lignes)",
     "runningStatus": "Exécution… ({{status}})",
-    "runFullResult": "Exécuter le résultat complet"
+    "runFullResult": "Exécuter le résultat complet",
+    "worksheetWarningsTitle_one": "{{count}} paramètre de la feuille n'a pas pu être appliqué",
+    "worksheetWarningsTitle_other": "{{count}} paramètres de la feuille n'ont pas pu être appliqués"
   },
   "parameters": {
     "title": "Paramètres d'exécution",
@@ -91,5 +98,9 @@
     "exportQueuedDescription": "Cela peut prendre un moment pour les grands ensembles de résultats.",
     "downloadFailedTitle": "Échec du téléchargement",
     "exportJobFailedFallback": "La tâche d'exportation a échoué."
+  },
+  "crosstab": {
+    "noColumnEdge": "Ce tableau croisé n'a pas encore de colonnes en haut ; il est donc affiché sous forme de tableau. Discoverer n'enregistre pas quelles colonnes figuraient en haut — ouvrez une colonne et définissez son bord de tableau croisé sur « En haut ».",
+    "tooLarge": "Ce tableau croisé ferait {{rows}} x {{columns}}, au-delà de la limite de {{max}} cellules. Filtrez le rapport ou groupez sur moins de valeurs."
   }
 }

@@ -1,0 +1,1234 @@
+
+<!DOCTYPE html public "-//w3c//dtd html 3.2 transitional//en.us">
+<HTML lang="en.us">
+<HEAD>
+
+<META NAME="Generator" CONTENT="Quadralay WebWorks Publisher 5.0.4">
+<META NAME="Page" CONTENT="DefaultSingle">
+<META NAME="Title" CONTENT="Scheduling workbooks">
+<meta http-equiv="Content-Type" content="text/html;  charset=iso-8859-1">
+
+<TITLE>Scheduling workbooks</TITLE>
+	   
+<LINK REL="home" HREF="../../library.htm" TITLE="Library">
+<LINK REL="toc" HREF="toc.htm" TITLE="Contents">
+<LINK REL="index" HREF="bookix.htm" TITLE="Index">
+<LINK REL="copyright" HREF="./html/cpyr.htm" TITLE="Copyright">
+<LINK REL="up" HREF="toc.htm" TITLE="Up">
+<LINK REL="next" HREF="item_cla.htm" TITLE="Next">
+<LINK REL="previous" HREF="privileg.htm" TITLE="Previous">
+
+
+</HEAD>
+       
+<BODY BGCOLOR="#ffffff">
+
+<A NAME="top"></A>
+
+
+
+
+<A HREF="#BEGIN">Skip Headers</A><BR><BR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+ 
+<TD ALIGN="LEFT" VALIGN="TOP"><FONT COLOR="#330099" FACE="Helvetica, Arial, sans-serif"><STRONG>Oracle Discoverer Administrator Administration Guide (Online Help)<BR>10<i>g</i> (9.0.4)</STRONG><BR>Part Number B10270-01</FONT></TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="144">
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+
+
+
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<HR>
+<P>
+<A HREF="privileg.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+
+<A HREF="item_cla.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+    
+
+
+<A NAME="BEGIN"></A>
+
+
+
+<DIV CLASS="IND">
+<!-- End Header -->
+
+
+
+
+
+
+
+<A NAME="1656"></A>
+<!--TOC=Title-"1656"-->
+<H1 CLASS="Title"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099">7<BR>Scheduling workbooks</FONT></H1>
+
+<!--/TOC=Title-->
+
+<A NAME="1007803"></A>
+<!--TOC=h1-"1007803"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Scheduling workbooks</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1007806"></A>
+<P CLASS="BP">
+This chapter explains how to enable users to schedule workbooks and contains the following topics:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007817"></A><A HREF="schedule.htm#594142">"What are workbooks and scheduled workbooks?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010517"></A><A HREF="schedule.htm#1010120">"Why schedule workbooks?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010523"></A><A HREF="schedule.htm#1009308">"What happens when an end user schedules a workbook?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010524"></A><A HREF="schedule.htm#1010678">"What Oracle database features support workbook scheduling?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010552"></A><A HREF="schedule.htm#1009815">"Where to store the results of scheduled workbooks?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010525"></A><A HREF="schedule.htm#1010638">"What are the prerequisites for scheduling workbooks?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010518"></A><A HREF="schedule.htm#1008729">"How to confirm that the DBMS_JOB package is installed"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010555"></A><A HREF="schedule.htm#1011949">"How to specify the owner of the tables containing scheduled workbooks results"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010556"></A><A HREF="schedule.htm#1008719">"How to control the frequency that the server checks for new scheduled jobs"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010557"></A><A HREF="schedule.htm#1009891">"How to view and manage scheduled workbooks"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010519"></A><A HREF="schedule.htm#1010095">"About scheduled workbooks and compatibility between the current version of Discoverer and previous releases"</a>
+<P>
+</UL>
+
+<A NAME="594142"></A>
+<!--TOC=h1-"594142"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are workbooks and scheduled workbooks?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1007801"></A>
+<P CLASS="BP">
+A workbook is a collection of Discoverer worksheets. Workbooks are essentially documents containing query definitions. Discoverer end users can store their workbooks centrally in the database. In Discoverer Desktop, users can also store workbooks on their own PC or on a network file server.
+</P>
+<A NAME="1008715"></A>
+<P CLASS="BP">
+A scheduled workbook is a workbook that has been set by the user to run automatically at a particular date, time, and frequency. Scheduled workbooks are placed on a process queue on the database server. End users can schedule workbooks using Discoverer Plus and Desktop. As the Discoverer manager, you can use Discoverer Administrator to monitor and maintain scheduled workbooks.
+</P>
+<A NAME="1010584"></A>
+<P CLASS="BP">
+Note the following:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010586"></A>Users can run workbooks in the background using the Discoverer command line options (Desktop only). Such workbooks are not scheduled workbooks.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010587"></A>Scheduled workbooks, scheduling information and the results of scheduled workbooks are not exported when you export a business area.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010652"></A>If the objects of the EUL used by a scheduled workbook changed between the time when the workbook is scheduled and the time when the result set is displayed, the scheduled workbook's status is set to indicate that the EUL has changed.
+<P>
+</UL>
+
+<A NAME="1010120"></A>
+<!--TOC=h1-"1010120"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Why schedule workbooks?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1010151"></A>
+<P CLASS="BP">
+From a Discoverer end user's point of view, the ability to schedule workbooks is useful for:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010121"></A>reports that take a long time to run
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010122"></A>reports that have to run at regular intervals
+<P>
+</UL>
+<A NAME="1010126"></A>
+<P CLASS="BP">
+For example, a Discoverer end user might want to run a report that they know will take a long time to complete. The user can schedule the report to run overnight and have the results ready to view the next morning.
+</P>
+<A NAME="1009254"></A>
+<P CLASS="BP">
+From a Discoverer manager's point of view, workbook scheduling is useful to prevent long-running queries from adversely affecting system performance. You can force users to schedule workbooks (either all workbooks, or only those workbooks that will exceed a predicted time that you specify), and you can further specify the time periods that scheduled workbooks are permitted to run.
+</P>
+
+<A NAME="1009308"></A>
+<!--TOC=h1-"1009308"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What happens when an end user schedules a workbook?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1009309"></A>
+<P CLASS="BP">
+The table below shows what happens when an end user schedules a workbook in Discoverer Plus.
+</P>
+   
+<A NAME="1013441">
+<P>
+<TABLE CLASS="RuleInformalWide" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1012150"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Sequence</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1012152"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Action</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1012154"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Notes</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1012156"></A>
+<P CLASS="TB">
+1.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012158"></A>
+<P CLASS="TB">
+User selects worksheet (or worksheets) to include in scheduled workbook&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012160"></A>
+<P CLASS="TB">
+N/A&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1012162"></A>
+<P CLASS="TB">
+2.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012164"></A>
+<P CLASS="TB">
+User specifies date, time, and frequency at which scheduled workbook is to run&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012166"></A>
+<P CLASS="TB">
+N/A&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1012168"></A>
+<P CLASS="TB">
+3.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012173"></A>
+<P CLASS="TB">
+Discoverer Plus confirms that scheduling the workbook does not exceed user's limit on number of scheduled workbooks&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012175"></A>
+<P CLASS="TB">
+The limit on the number of scheduled workbooks restricts the number of scheduled workbooks that can be maintained at any one time. As the Discoverer manager, you specify this limit on the <A HREF="adpswt01.htm#1005113">"Privileges dialog: Scheduled Workbooks tab"</a>. If the user exceeds their limit, Discoverer Plus displays a message and the workbook is not scheduled.
+<A NAME="1012182"></A>
+<P CLASS="TB">
+The job_queue_processes value controls the maximum number of jobs that can be run at any one time on the server. For more information, see <A HREF="schedule.htm#1010678">"What Oracle database features support workbook scheduling?"</a>.
+<A NAME="1012186"></A>
+<P CLASS="TB">
+Setting a limit on the number of scheduled workbooks is not the same as the job_queue_processes value in the Oracle initialization file.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1012188"></A>
+<P CLASS="TB">
+4.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012190"></A>
+<P CLASS="TB">
+Discoverer adds scheduled workbook to DBMS_JOB within Oracle database kernel&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012192"></A>
+<P CLASS="TB">
+N/A&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1012194"></A>
+<P CLASS="TB">
+5.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012196"></A>
+<P CLASS="TB">
+Periodically, the job queue process is activated and the next job in the queue is run&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012198"></A>
+<P CLASS="TB">
+The scheduled workbook is processed entirely on the server. You use the job_queue_interval value (desupported in Oracle9<EM CLASS="Italic">i</EM> (and later) Enterprise Edition databases) in the Oracle database initialization file to specify the length of time that the job queue process is inactive. For more information, see <A HREF="schedule.htm#1008719">"How to control the frequency that the server checks for new scheduled jobs"</a>.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1012203"></A>
+<P CLASS="TB">
+6.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012205"></A>
+<P CLASS="TB">
+A database table is created and populated with the output or result set of the scheduled workbook&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012207"></A>
+<P CLASS="TB">
+The result set is stored under the schema specified by the Discoverer manager. For more information, see <A HREF="schedule.htm#1009815">"Where to store the results of scheduled workbooks?"</a>.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1012212"></A>
+<P CLASS="TB">
+7.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012214"></A>
+<P CLASS="TB">
+User can view scheduled workbook&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012216"></A>
+<P CLASS="TB">
+N/A&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1012218"></A>
+<P CLASS="TB">
+8.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012220"></A>
+<P CLASS="TB">
+User can delete result set when no longer required - at which point the table is dropped&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012222"></A>
+<P CLASS="TB">
+As the Discoverer manager, you can specify how long the results of a user's scheduled workbook can remain in the database before being automatically deleted (see <A HREF="adpswt01.htm#1005113">"Privileges dialog: Scheduled Workbooks tab"</a>).&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+</A>
+   
+<A NAME="1010678"></A>
+<!--TOC=h1-"1010678"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What Oracle database features support workbook scheduling?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1009258"></A>
+<P CLASS="BP">
+Discoverer takes advantage of native scheduling functionality in the Oracle database to schedule workbooks. Specifically, Discoverer makes use of the DBMS_JOB package. 
+</P>
+<A NAME="1010204"></A>
+<P CLASS="BP">
+You control the processing of the DBMS_JOB package using the following parameters in the Oracle database initialization file (the INIT&lt;SID&gt;.ORA file).
+</P>
+   
+<A NAME="1013457"> 
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010289"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Parameter in INIT&lt;SID&gt;.ORA</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010291"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Use to:</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010293"></A>
+<P CLASS="TB">
+job_queue_processes&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010295"></A>
+<P CLASS="TB">
+Use this parameter to specify the maximum number of concurrent processing requests that can be used to process DBMS_JOB. The default value is zero, which means processing requests will not be created. If you want to have ten processing requests to be handled simultaneously, set this parameter to 10.
+<A NAME="1010296"></A>
+<P CLASS="TB">
+If any other applications use DBMS_JOB, set this parameter to at least 2. 
+<A NAME="1010297"></A>
+<P CLASS="TB">
+<STRONG CLASS="Bold">Hint</STRONG>: You need more than one job queue process because a job that fails (for any reason) might continue to be re-submitted and prevent any other jobs in the queue from being submitted. &nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010299"></A>
+<P CLASS="TB">
+job_queue_interval&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010301"></A>
+<P CLASS="TB">
+Use this parameter to specify the time frequency (in seconds) after which job processes are started to process pending jobs. The default is 60 seconds, which means that every 60 seconds the job processes start to serve processing requests. What you set this parameter to depends on how frequently you want the process to start up and serve the requests that have been made. Oracle recommends that you set this parameter to at least 600 seconds (i.e. 10 minutes). Note that this parameter also affects the Discoverer summary management feature (for more information about summary folders, see <A HREF="managing.htm#1009688">Chapter&nbsp;13, "Managing summary folders"</a>). 
+<A NAME="1013134"></A>
+<P CLASS="TB">
+<STRONG CLASS="Bold">Note:</STRONG> The job_queue_interval parameter is desupported in Oracle9i (and later) Enterprise Edition databases. In Oracle9i Enterprise Edition databases, job queue processes are dynamically spawned by a coordinator job queue (CJQ0) background process. The coordinator periodically selects jobs that are ready to run from the jobs shown in the dba_jobs view.&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   <A NAME="1010190"></A>
+<P CLASS="BP">
+For more information about setting the parameters in the INIT&lt;SID&gt;.ORA file, see <A HREF="schedule.htm#1008719">"How to control the frequency that the server checks for new scheduled jobs"</a>.
+</P>
+<A NAME="1010308"></A>
+<P CLASS="BP">
+Note that workbook scheduling is only available when running against an Oracle database because both DBMS_JOB and the INIT&lt;SID&gt;.ORA file are only available with Oracle databases.
+</P>
+
+<A NAME="1009815"></A>
+<!--TOC=h1-"1009815"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Where to store the results of scheduled workbooks?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1009847"></A>
+<P CLASS="BP">
+Discoverer stores the results of scheduled workbooks in database tables. Before an end user can schedule a workbook, you must decide which database user (schema) is to own those tables. You have two choices as described in the table below:
+</P>
+   
+<A NAME="1010634">
+<P>
+<TABLE CLASS="RuleInformalWide" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010613"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG><STRONG CLASS="Bold">Owner</STRONG></STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010615"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Notes</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010617"></A>
+<P CLASS="TB">
+the schema running the scheduled workbook&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010619"></A>
+<P CLASS="TB">
+The advantage of specifying the result set storage in the end user's schema is that a database limit can be specified on the maximum amount of data an end user can store in the database. If the result set is stored under the end user's schema, you keep control over the maximum amount of space one individual end user can fill with result sets. If the end user creates a scheduled workbook that fills the space, only that end user's schema is affected.
+<A NAME="1011875"></A>
+<P CLASS="TB">
+A disadvantage is that it increases the maintenance overhead.
+<A NAME="1011765"></A>
+<P CLASS="TB">
+<STRONG CLASS="Bold">Note:</STRONG> Since Oracle Applications users often share the same secure database account, they are advised to create a scheduled workbook results schema to store the results of scheduled workbooks.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010626"></A>
+<P CLASS="TB">
+scheduled workbook results schema&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010628"></A>
+<P CLASS="TB">
+The advantage of specifying the result set storage in a scheduled workbook results schema is that it is generally easier to manage than using multiple database user schemas. Also each end user does not need to set up additional database privileges to run scheduled workbooks.
+<A NAME="1010629"></A>
+<P CLASS="TB">
+The disadvantage is that space quota is shared and so could be exhausted by a single end user. 
+<A NAME="1012828"></A>
+<P CLASS="TB">
+<STRONG CLASS="Bold">Note:</STRONG> Oracle Applications users must use the Oracle Applications APPS database user as the scheduled workbook results schema (for more information, see <A HREF="privileg.htm#1004627">"How to set scheduled workbook limits"</a>). Since the APPS database user is already the default schema for Oracle Applications users, there is no need to run the SQL script (i.e. batchusr.sql) to create a scheduled workbook results schema.&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+</A>
+   <A NAME="1010635"></A>
+<P CLASS="BP">
+For more information about how to specify where the results of scheduled workbooks are stored, see <A HREF="schedule.htm#1011949">"How to specify the owner of the tables containing scheduled workbooks results"</a>.
+</P>
+
+<A NAME="1010638"></A>
+<!--TOC=h1-"1010638"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are the prerequisites for scheduling workbooks?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005503"></A>
+<P CLASS="BP">
+Before an end user can schedule a workbook, you must:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008721"></A>configure the database to enable the scheduled workbooks feature by:
+<P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1009088"></A>confirming that the DBMS_JOB package is already installed on the database and installing the package if it is not already installed (for more information, see <A HREF="schedule.htm#1008729">"How to confirm that the DBMS_JOB package is installed"</a>)
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1009089"></A>specifying the database user that will own the tables containing the results of scheduled workbooks (for more information, see <A HREF="schedule.htm#1011949">"How to specify the owner of the tables containing scheduled workbooks results"</a>)
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1009090"></A>setting the frequency of scheduled workbook processing (for more information, see <A HREF="schedule.htm#1008719">"How to control the frequency that the server checks for new scheduled jobs"</a>)
+<P>
+</UL>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008723"></A>grant the Schedule Workbooks privilege to the database user (for more information, see <A HREF="privileg.htm#1004624">Chapter&nbsp;6, "How to specify the tasks a user or role (responsibility) can perform"</a>)
+<P>
+</UL>
+
+<A NAME="1008729"></A>
+<!--TOC=h1-"1008729"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to confirm that the DBMS_JOB package is installed</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1008746"></A>
+<P CLASS="BP">
+Before an end user can schedule a workbook, the DBMS_JOB package must have already been installed on the database. If the DBMS_JOB package has not yet been installed, you must install it.
+</P>
+<A NAME="1008780"></A>
+<P CLASS="BP">
+To confirm that the DBMS_JOB package is installed:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1013366"></A>Start SQL*Plus (if it is not already running) and connect as the database administrator.
+<P>
+
+<A NAME="1013367"></A>
+<P CLASS="BP1">
+For example, if SQL*Plus is already running, you might type the following at the command prompt:
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1013368"></A>SQL&gt; CONNECT dba_user/dba_pw@database;
+<A NAME="1013369"></A>
+</PRE>
+   
+<A NAME="1013370"></A>
+<P CLASS="BP1">
+Where <CODE>dba_user</CODE> is the database administrator and dba_pw is the database administrator password.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1013371"></A>Type the following at the command prompt:
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1008750"></A>SQL&gt; select * from all_objects where object_name='DBMS_JOB' and object_type 
+= 'PACKAGE'; 
+<A NAME="1008751"></A>
+</PRE>
+    
+
+<A NAME="1008752"></A>
+<P CLASS="BP1">
+If the above statement returns one or more rows, the DBMS_JOB package is already installed on the database.
+</P>
+
+<A NAME="1008778"></A>
+<P CLASS="BP1">
+If the above statement returns no rows, the DBMS_JOB package has not yet been installed. You must install the DBMS_JOB package before users can schedule workbooks.
+</P>
+</OL>
+<A NAME="1013253"></A>
+<P CLASS="BP">
+To install the DBMS_JOB package if it is not yet installed, for Oracle9<EM CLASS="Italic">i</EM> databases:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1013378"></A>Start SQL*Plus (if it is not already running) and connect as the SYS user, or a user to which the sysdba privilege has been granted.
+<P>
+
+<A NAME="1013379"></A>
+<P CLASS="BP1">
+For example, if SQL*Plus is already running, you might type the following at the command prompt:
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1013380"></A>SQL&gt; CONNECT sys/sys_pw@database AS SYSDBA;
+<A NAME="1013381"></A>
+</PRE>
+   
+<A NAME="1013382"></A>
+<P CLASS="BP1">
+Where sys is the SYS user and sys_pw is the SYS user password.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1013383"></A>Type the following at the command prompt: 
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1012389"></A>SQL&gt; start &lt;ORACLE_HOME&gt;/rdbms/admin/dbmsjob.sql;
+<A NAME="1012390"></A>
+</PRE>
+   
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1012391"></A>Type the following at the command prompt: 
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1012392"></A>SQL&gt; start &lt;ORACLE_HOME&gt;/rdbms/admin/prvtjob.plb;
+<A NAME="1012393"></A>
+</PRE>
+    
+</OL>
+<A NAME="1012383"></A>
+<P CLASS="BP">
+To install the DBMS_JOB package if it is not yet installed, for Oracle databases earlier than Oracle9<EM CLASS="Italic">i</EM>:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1012355"></A>Choose Run from the Windows Start menu (on the database machine).
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1008754"></A>Type one of the following at the command prompt to start the appropriate version of the DBA utility:
+<P>
+ 
+<A NAME="1013479">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010822"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Version of Oracle:</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010824"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Type the following:</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010830"></A>
+<P CLASS="TB">
+Oracle 8.0 and above&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010832"></A>
+<P CLASS="TB">
+<CODE>SVRMGRL</CODE>&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010834"></A>
+<P CLASS="TB">
+Oracle8<EM CLASS="Italic">i</EM> Personal Edition&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010836"></A>
+<P CLASS="TB">
+<CODE>SVRMGR</CODE>&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+ 
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1008759"></A>Log on to the DBA utility as the database administrator.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1008809"></A>Type the following at the command prompt:
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1008760"></A>SVRMGRL&gt; connect internal
+<A NAME="1008761"></A>
+</PRE>
+   
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1008762"></A>Type the following at the command prompt: 
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1008763"></A>SVRMGRL&gt; start &lt;ORACLE_HOME&gt;/rdbms/admin/dbmsjob.sql;
+<A NAME="1008764"></A>
+</PRE>
+   
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1008818"></A>Type the following at the command prompt: 
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1008815"></A>SVRMGRL&gt; start &lt;ORACLE_HOME&gt;/rdbms/admin/prvtjob.plb;
+<A NAME="1008765"></A>
+</PRE>
+    
+</OL>
+
+<A NAME="1008826"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009112"></A>In some operating systems, the RDBMS directory is suffixed with the version number (e.g. RDBMS73).
+<P>
+</UL>
+
+<A NAME="1011949"></A>
+<!--TOC=h1-"1011949"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to specify the owner of the tables containing scheduled workbooks results</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1011950"></A>
+<P CLASS="BP">
+The results of scheduled workbooks are stored in database tables. Discoverer's default behavior is to store scheduled workbooks in the EUL owners schema. Before an end user schedules a workbook, you must decide which database user is to own those tables. You have two choices:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008838"></A>the database user running the scheduled workbook
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008839"></A>a scheduled workbook results schema
+<P>
+</UL>
+<A NAME="1008842"></A>
+<P CLASS="BP">
+For more information about these two choices, see <A HREF="schedule.htm#1009815">"Where to store the results of scheduled workbooks?"</a>
+</P>
+<A NAME="1008847"></A>
+<P CLASS="BP">
+Regardless of the choice you make, the database user that will own the tables containing scheduled workbook results must have certain database privileges.
+</P>
+
+<A NAME="1010713"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Specify that the database user scheduling a workbook is to own the database tables containing the results of that workbook</FONT></H4>
+<A NAME="1011309"></A>
+<P CLASS="BP">
+To specify a database user to own the database tables containing the results of that workbook:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1013390"></A>Start SQL*Plus (if it is not already running) and connect as the database administrator.
+<P>
+
+<A NAME="1013391"></A>
+<P CLASS="BP1">
+For example, if SQL*Plus is already running, you might type the following at the command prompt:
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1013392"></A>SQL&gt; CONNECT dba_user/dba_pw@database;
+<A NAME="1013393"></A>
+</PRE>
+   
+<A NAME="1013394"></A>
+<P CLASS="BP1">
+Where <CODE>dba_user</CODE> is the database administrator and dba_pw is the database administrator password.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1013395"></A>Type the following at the command prompt:
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1008869"></A>SQL&gt; grant CREATE PROCEDURE to &lt;user name&gt;;
+<A NAME="1008870"></A>SQL&gt; grant CREATE TABLE to &lt;user name&gt;;
+<A NAME="1008919"></A>SQL&gt; grant CREATE VIEW to &lt;user name&gt;;
+<A NAME="1008872"></A>
+</PRE>
+    
+
+<A NAME="1008873"></A>
+<P CLASS="BP1">
+where &lt;user name&gt; is the name of the database user that is to schedule workbooks. 
+</P>
+
+<A NAME="1009087"></A>
+<P CLASS="BP1">
+Note that you must grant these privileges directly to the database user and not to a database role.
+</P>
+</OL>
+
+<A NAME="1009014"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Use a script to specify a scheduled workbook results schema to own the scheduled workbook results tables (i.e. not the database user scheduling the workbook)</FONT></H4>
+<A NAME="1011652"></A>
+<P CLASS="BP">
+To specify a scheduled workbook results schema to own the results tables of scheduled workbooks:
+</P>
+<A NAME="1012811"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> Oracle Applications users should not use this script, but instead use the existing Oracle Applications APPS user (for more information, see <A HREF="privileg.htm#1004627">"How to set scheduled workbook limits"</a>).
+</P>
+<A NAME="1011657"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> You must know the user name and password of the EUL owner in order to run the script batchusr.sql.
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1013402"></A>Start SQL*Plus (if it is not already running) and connect as the database administrator.
+<P>
+
+<A NAME="1013403"></A>
+<P CLASS="BP1">
+For example, if SQL*Plus is already running, you might type the following at the command prompt:
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1013404"></A>SQL&gt; CONNECT dba_user/dba_pw@database;
+<A NAME="1013405"></A>
+</PRE>
+   
+<A NAME="1013406"></A>
+<P CLASS="BP1">
+Where <CODE>dba_user</CODE> is the database administrator and dba_pw is the database administrator password.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1013407"></A>Type the following at the command prompt:
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1009026"></A>SQL&gt; start&lt;ORACLE_HOME&gt;\discoverer\util\batchusr.sql;
+<A NAME="1009027"></A>
+</PRE>
+   
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1008980"></A>Enter the user name, password and database connection details for the scheduled workbook results schema being created by the script batchusr.sql.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1008988"></A>(optional) Change the tablespace settings for the scheduled workbook results schema.
+<P>
+ 
+
+<A NAME="1011404"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> Ask your database administrator if you are unsure about these settings.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1011150"></A>Enter the EUL owner user name for the EUL that the scheduled workbook results schema will have access to.
+<P>
+ 
+
+<A NAME="1011534"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> The script creates a scheduled workbook results schema and grants the following database privileges:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1011536"></A>CREATE PROCEDURE
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1011538"></A>CREATE TABLE
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1011540"></A>CREATE VIEW
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1011542"></A>SELECT ANY TABLE
+<P>
+</UL>
+
+<A NAME="1011543"></A>
+<P CLASS="BP1">
+The scheduled workbook results schema created by the batchusr.sql script is granted the SELECT ANY TABLE database privilege to enable access to the underlying data needed for workbook scheduling. Without this grant, this database user's access to the underlying data might be limited.
+</P>
+
+<A NAME="1012315"></A>
+<P CLASS="BP1">
+If you do not want the scheduled workbook results schema to have the SELECT ANY TABLE database privilege on the underlying data, you must revoke the privilege manually.
+</P>
+</OL>
+<A NAME="1012464"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1011553"></A>Connect to Discoverer Administrator as the EUL owner that you used in the previous step (when running the script batchusr.sql).
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1011602"></A>In Discoverer Administrator select Tools | Privileges and display the <A HREF="adpswt01.htm#1005113">"Privileges dialog: Scheduled Workbooks tab"</a>.
+<P>
+ 
+
+<A NAME="1011559"></A>
+<P CLASS="BP1">
+You must use Discoverer Administrator to choose the database user that will own the scheduled workbook result tables created in the database.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="8"><A NAME="1011588"></A>Use the<STRONG CLASS="Bold"> Show scheduling limits for user</STRONG> drop down list to select the EUL owner.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="9"><A NAME="1011621"></A>Use the <STRONG CLASS="Bold">Select the user to own the results created in the database:</STRONG> drop down list to select the scheduled workbook results schema that you created in the script batchusr.sql.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="10"><A NAME="1011622"></A>Click OK.
+<P>
+ 
+
+<A NAME="1011625"></A>
+<P CLASS="BP1">
+You have used the script batchusr.sql to create a scheduled workbook results schema and then used the Privileges dialog to select the scheduled workbook results schema to be used for the EUL owner.
+</P>
+
+<A NAME="1012436"></A>
+<P CLASS="BP1">
+For more information about scheduled workbook privileges, see <A HREF="privileg.htm#1004627">Chapter&nbsp;6, "How to set scheduled workbook limits"</a>.
+</P>
+</OL>
+
+<A NAME="1011436"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif"><STRONG CLASS="Bold">Notes</STRONG></FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011446"></A>The scheduled workbook results schema created by the script batchusr.sql can only have access to one EUL.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009001"></A>Be aware that a Discoverer end user could run a scheduled workbook that fills the available result set space. Other database users would not be able to run scheduled workbooks until it is cleared.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009002"></A>The scheduled workbook results schema created by the batchusr.sql script will not be able to directly schedule a workbook using Discoverer Plus.
+<P>
+</UL>
+
+<A NAME="1008719"></A>
+<!--TOC=h1-"1008719"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to control the frequency that the server checks for new scheduled jobs</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1013149"></A>
+<P CLASS="BP">
+You use the following two parameters in the INIT&lt;SID&gt;.ORA file to control scheduled workbook processing:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009126"></A>job_queue_processes
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1013109"></A>job_queue_interval (desupported in Oracle9<EM CLASS="Italic">i</EM> (and later) Enterprise Edition databases)
+<P>
+</UL>
+<A NAME="1013110"></A>
+<P CLASS="BP">
+For more information about these parameters, see <A HREF="schedule.htm#1010678">"What Oracle database features support workbook scheduling?"</a>.
+</P>
+<A NAME="1013114"></A>
+<P CLASS="BP">
+To control the frequency of scheduled workbook processing:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1013111"></A>Locate the INIT&lt;SID&gt;.ORA file. 
+<P>
+
+<A NAME="1009128"></A>
+<P CLASS="BP1">
+The INIT&lt;SID&gt;.ORA file is held in &lt;ORACLE_HOME&gt;\database. The default name of the file is INITORCL.ORA, where ORCL is the &lt;SID&gt; name.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1009130"></A>Add the following two lines to the INIT&lt;SID&gt;.ORA file:
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1009194"></A>job_queue_processes = &lt;a_value&gt;
+<A NAME="1009195"></A>job_queue_interval = &lt;a_value_in_seconds&gt;
+<A NAME="1009131"></A>
+</PRE>
+    
+
+<A NAME="1009192"></A>
+<P CLASS="BP1">
+where:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1010726"></A>&lt;a_value&gt; is the number of concurrent processing requests that can be used to process DBMS_JOB (if other applications use DBMS_JOB, we recommend you set this parameter to at least 2)
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1010731"></A>&lt;a_value_in_seconds&gt; is the time frequency (in seconds) after which job processes are started to process pending jobs (we recommend you set this parameter to at least 600 seconds)
+<P>
+</UL>
+
+<A NAME="1010725"></A>
+<P CLASS="BP1">
+For example, you might add the following two lines to the INIT&lt;SID&gt;.ORA file:
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1009132"></A>job_queue_processes = 2
+<A NAME="1009133"></A>job_queue_interval = 600
+<A NAME="1013082"></A>
+</PRE>
+   </OL>
+
+<A NAME="1013083"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1013084"></A>Discoverer's summary management feature and workbook scheduling feature both use the Oracle database's native scheduling capability. The values you specify for job_queue_processes and job_queue_interval will affect both features. The database must be stopped and re-started for these changes to take effect.
+<P>
+</UL>
+
+<A NAME="1009891"></A>
+<!--TOC=h1-"1009891"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to view and manage scheduled workbooks</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1009892"></A>
+<P CLASS="BP">
+As the Discoverer manager, you will want to monitor the status of currently scheduled workbooks, as well as:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009893"></A>view error messages for scheduled workbooks that have not run successfully
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009894"></A>delete scheduled workbook results from the database
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009895"></A>remove scheduled workbooks from the process queue
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009896"></A>edit scheduled workbook settings
+<P>
+</UL>
+<A NAME="1011752"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> If you have an Oracle Applications mode EUL you must login as the EUL owner to view and manage scheduled workbooks.
+</P>
+<A NAME="1011750"></A>
+<P CLASS="BP">
+To view and manage a scheduled workbook:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1009900"></A>Choose Tools | Manage Scheduled Workbooks to display the <A HREF="admswb01.htm#1005113">"Manage Scheduled Workbooks dialog"</a>.
+<P>
+
+<A NAME="1009902"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 7-1 &#32;Manage Scheduled Workbooks dialog</EM></FONT></H4>
+  
+<BR><A NAME="1009906">
+
+
+<img src="schwbm.gif" ALT="Text description of schwbm.gif follows.">
+<A HREF="img_text/schwbm.htm"><br>Text description of the illustration schwbm.gif</A>
+
+
+</A>
+  
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1009908"></A>Select the user or role whose scheduled workbooks you want to display in the list from the <STRONG CLASS="Bold">Show workbooks for</STRONG> drop down list.
+<P>
+ 
+
+<A NAME="1009911"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Hints</STRONG>: You can:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1010032"></A>show all scheduled workbooks by selecting <STRONG CLASS="Bold">All Users</STRONG> from the drop down list
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1010034"></A>sort the list using different columns by clicking the appropriate column heading
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1010033"></A>see a description (where one exists) of the currently selected scheduled workbook in the <STRONG CLASS="Bold">Description</STRONG> field.
+<P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1010029"></A>(optional) To view an error message for a scheduled workbook that has not run successfully, select the scheduled workbook and click View Error.
+<P>
+ 
+
+<A NAME="1010010"></A>
+<P CLASS="BP1">
+The View Error button is only enabled for scheduled workbooks when the status is set to indicate that an error occurred while running the query.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1010774"></A>(optional) To prevent a scheduled workbook from running by removing it from the process queue:
+<P>
+ 
+
+<OL CLASS="LA2" TYPE="a">
+
+<LI CLASS="LA2" TYPE="a" VALUE="1"><A NAME="1010775"></A>Select the scheduled workbook.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1010776"></A>Click Unschedule.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1010777"></A>Click Yes to confirm that you want to remove the scheduled workbook.
+<P>
+</OL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1009996"></A>(optional) To delete the results of a scheduled workbook from the database (i.e. after the scheduled workbook has run), select the scheduled workbook and click Delete.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1010001"></A>(optional) To edit a scheduled workbook scheduling information, select the workbook and click Edit... to display the Schedule Workbook dialog and:
+<P>
+ 
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1010028"></A>use the <A HREF="adswst01.htm#1006150">"Schedule Workbook dialog: Schedule tab"</a> to view the sheets included in the scheduled workbook, set the schedule time and repeat interval.
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1010965"></A>use the <A HREF="adswgt01.htm#1005113">"Schedule Workbook dialog: General tab"</a> to view the name of the scheduled workbook, view and edit the description, choose whether to save just the latest results and set the interval after which results will automatically be deleted.
+<P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1009999"></A>(optional) To see the effect of the changes you have made in the <A HREF="admswb01.htm#1005113">"Manage Scheduled Workbooks dialog"</a>, click Refresh.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="8"><A NAME="1010054"></A>Click Close to close the Manage Scheduled Workbooks dialog.
+<P>
+ 
+</OL>
+
+<A NAME="1010055"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010794"></A>The Delete button only appears when you select a scheduled workbook that has run.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010792"></A>If a scheduled workbook uses EUL objects that have changed between the time when the workbook is scheduled and the time when the result set is displayed, the scheduled workbook's status is set to EUL has changed.
+<P>
+</UL>
+
+<A NAME="1010095"></A>
+<!--TOC=h1-"1010095"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About scheduled workbooks and compatibility between the current version of Discoverer and previous releases</FONT></H2>
+
+
+<!--/TOC=h1-->
+
+<A NAME="1011093"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">New version of batch PL/SQL package is installed into user's schema</FONT></H4>
+<A NAME="1011317"></A>
+<P CLASS="BP">
+When you carry out an EUL upgrade to this version of Discoverer, a new version of the batch PL/SQL package is installed into the user's schema alongside the existing package. Preserving the existing PL/SQL package prevents any existing scheduled workbook batch jobs from being destroyed. Function names in the new batch PL/SQL package however, remain the same as the existing batch PL/SQL package.
+</P>
+
+<A NAME="1010097"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Run script to specify that a scheduled workbook results schema is to own the results tables</FONT></H4>
+<A NAME="1011321"></A>
+<P CLASS="BP">
+When you upgrade the EUL to this version of Discoverer and the following conditions are true:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011333"></A>the database user that schedules a workbook does not own the database tables containing the workbook results
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011337"></A>you want a different database user (a scheduled workbook results schema) to own the database tables containing the workbook results
+<P>
+</UL>
+<A NAME="1011338"></A>
+<P CLASS="BP">
+In this case you must install the new version of the batch PL/SQL package (EUL5_BATCH_USER) using the SQL script batchusr.sql. The script is located in the &lt;ORACLE_HOME&gt;\discoverer\util directory. The new version of the batch PL/SQL package can be installed into the scheduled workbook results schema (i.e. the user's schema that owns the tables containing the workbook results). For more information, see <A HREF="schedule.htm#1009014">"Use a script to specify a scheduled workbook results schema to own the scheduled workbook results tables (i.e. not the database user scheduling the workbook)"</a>.
+</P>
+<A NAME="1010914"></A>
+<P CLASS="BP">
+
+</P>
+
+
+
+
+
+
+<!-- Start Footer -->
+</DIV>
+
+<DIV CLASS="OUTD">
+<HR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+<TD VALIGN="BOTTOM" WIDTH="33%">
+<TABLE CELLSPACING="0" CELLPADDING="0">
+<TR>
+<TD ALIGN="CENTER"><A HREF="privileg.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+
+<TD ALIGN="CENTER"><A HREF="item_cla.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+    
+</TR>
+</TABLE>
+</TD>
+<TD ALIGN="CENTER" WIDTH="34%">
+<A HREF="./html/cpyr.htm"><IMG SRC="./gifs/oracle.gif" ALT="Oracle" BORDER="0"><BR>
+<FONT SIZE="-2">Copyright &copy 2003 Oracle Corporation.</FONT></A>
+<BR>
+<FONT SIZE="-2">All Rights Reserved.</FONT>
+</TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="33%"> 
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="144">
+<TR>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+  
+</DIV>
+
+</BODY>
+</HTML>
+

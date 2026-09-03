@@ -88,6 +88,29 @@ As pastas e os itens são criados automaticamente com os tipos e os mapeamentos 
 | **JOIN** | Resultado pré-associado de várias tabelas |
 | **SUMMARY** | Tabela de resumo pré-agregada |
 
+### Partilhar uma Pasta entre Áreas de Negócio
+
+Uma pasta pertence a uma área de negócio **proprietária**, mas pode ser
+*partilhada* com outras — tal como o Oracle Discoverer permite que uma pasta
+apareça em várias áreas de negócio ao mesmo tempo. Uma dimensão de data ou de
+organização partilhada é o caso habitual.
+
+1. Painel de Administração → **Pastas**
+2. Clique no ícone de **partilha** na linha da pasta
+3. Escolha uma área de negócio em **Partilhar com** e clique em **Partilhar**
+
+A pasta passa a aparecer em ambas as áreas. Em qualquer área que não seja a
+proprietária, surge com um distintivo **Partilhada**, para que ninguém a edite
+julgando que a alteração é local — as edições aplicam-se em todo o lado.
+
+Para deixar de partilhar, abra o mesmo diálogo e remova o distintivo dessa área.
+A área de negócio **proprietária** não pode ser removida; para mover uma pasta,
+recrie-a no destino.
+
+> **Migração do Discoverer:** todas as associações `BA_OBJ_LINKS` são
+> preservadas. Uma pasta que pertencia a três áreas de negócio mantém as três —
+> uma como proprietária e duas como partilhas.
+
 ### Editar Pasta
 
 1. Clique na pasta → **Editar**
@@ -117,7 +140,9 @@ Um **Item** é uma coluna ou atributo de uma Pasta. Os itens são o que os utili
    - **Nome de Apresentação** — Etiqueta legível (assume por predefinição o nome)
    - **Nome da Coluna** — Coluna real da base de dados
    - **Descrição** — Texto de ajuda para os utilizadores
-   - **Tipo** — CI (personalizado), CU (utilizador), CO (calculado), etc.
+   - **Tipo** — ver a tabela abaixo. **CO** (Item de Base de Dados) é a escolha
+     habitual: um item associado a uma coluna real. **CI** é um item *criado* —
+     um cálculo.
    - **É Chave** — Caixa de verificação se se tratar de uma chave primária/estrangeira
    - **Está Oculto** — Caixa de verificação para excluir do construtor de mapas
    - **É Obrigatório** — Caixa de verificação se tiver de ser sempre incluído

@@ -5,7 +5,7 @@ import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
 import type { ColumnDef } from '@tanstack/react-table'
-import { Plus, Pencil, Trash2, Wand2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, Wand2, Share2 } from 'lucide-react'
 import { apiClient, getErrorMessage } from '@/lib/api'
 import type { DataSource, Folder, IntrospectedTable } from '@/lib/types'
 import { useToast } from '@/hooks/use-toast'
@@ -13,6 +13,7 @@ import { AdminPageWrapper } from '@/components/admin/AdminPageWrapper'
 import { DataTable } from '@/components/admin/DataTable'
 import { CreateEditDialog } from '@/components/admin/CreateEditDialog'
 import { DeleteConfirmDialog } from '@/components/admin/DeleteConfirmDialog'
+import { FolderSharingDialog } from '@/components/admin/FolderSharingDialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -50,6 +51,7 @@ export function FoldersPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<Folder | null>(null)
   const [deleting, setDeleting] = useState<Folder | null>(null)
+  const [sharing, setSharing] = useState<Folder | null>(null)
   const [discovered, setDiscovered] = useState<IntrospectedTable[]>([])
 
   const { data: businessAreas } = useQuery({
@@ -155,7 +157,23 @@ export function FoldersPage() {
   })
 
   const columns: ColumnDef<Folder>[] = [
-    { accessorKey: 'name', header: t('common:labels.name') },
+    {
+      accessorKey: 'name',
+      header: t('common:labels.name'),
+      cell: ({ row }) => (
+        <span className="flex items-center gap-2">
+          {row.original.name}
+          {/* A shared folder is owned by another business area — say so, so
+              nobody edits it expecting the change to be local. */}
+          {row.original.isShared ? (
+            <Badge variant="secondary" title={t('admin:folders.sharedTooltip')}>
+              <Share2 className="mr-1 h-3 w-3" />
+              {t('admin:folders.sharedBadge')}
+            </Badge>
+          ) : null}
+        </span>
+      ),
+    },
     { accessorKey: 'folderType', header: t('common:labels.type'), cell: ({ row }) => <Badge variant="outline">{row.original.folderType}</Badge> },
     { accessorKey: 'tableName', header: t('admin:folders.columns.tableName'), cell: ({ row }) => row.original.tableName || '—' },
     { accessorKey: 'dataSourceName', header: t('admin:folders.columns.dataSource'), cell: ({ row }) => row.original.dataSourceName || '—' },
@@ -164,6 +182,14 @@ export function FoldersPage() {
       header: '',
       cell: ({ row }) => (
         <div className="flex justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setSharing(row.original)}
+            title={t('admin:folders.manageSharing')}
+          >
+            <Share2 className="h-4 w-4" />
+          </Button>
           <Button variant="ghost" size="icon" onClick={() => openEdit(row.original)} title={t('common:actions.edit')}>
             <Pencil className="h-4 w-4" />
           </Button>
@@ -318,6 +344,14 @@ export function FoldersPage() {
           itemLabel={t('admin:folders.entityLabel')}
           onConfirm={() => deleteMutation.mutate(deleting.id)}
           isPending={deleteMutation.isPending}
+        />
+      )}
+
+      {sharing && (
+        <FolderSharingDialog
+          folder={sharing}
+          businessAreas={businessAreas ?? []}
+          onClose={() => setSharing(null)}
         />
       )}
     </AdminPageWrapper>

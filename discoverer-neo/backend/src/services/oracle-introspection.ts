@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { dataSources, type DataSource } from '../db/schema.js';
 import { decrypt } from '../lib/encryption.js';
+import { importOracleDb } from './oracle-driver.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -27,6 +28,14 @@ export interface IntrospectedTable {
 
 const CACHE_PREFIX = 'oracle:introspection:';
 const CACHE_TTL_SECONDS = 300; // 5 minutes
+
+/**
+ * node-oracledb's OUT_FORMAT_OBJECT constant. Hard-coded so this service stays
+ * driver-agnostic (and unit-testable without the native module); the value is
+ * a stable part of the oracledb public API. See map-execution.service.ts,
+ * which follows the same convention.
+ */
+const OUT_FORMAT_OBJECT = 4002;
 
 function cacheKey(dataSourceId: string): string {
   return `${CACHE_PREFIX}${dataSourceId}`;
@@ -68,7 +77,7 @@ export async function invalidateCache(
 async function getOracleConnection(ds: DataSource) {
   let oracledb: typeof import('oracledb');
   try {
-    oracledb = await import('oracledb');
+    oracledb = await importOracleDb();
   } catch {
     throw new Error('Oracle driver (oracledb) is not installed');
   }
@@ -143,7 +152,7 @@ async function fetchAllTables(conn: any): Promise<IntrospectedTable[]> {
   const tableResult = await conn.execute(
     `SELECT TABLE_NAME, OWNER FROM ALL_TABLES WHERE OWNER = :owner ORDER BY TABLE_NAME`,
     { owner: (conn as any).user?.toUpperCase() ?? '' },
-    { outFormat: 2 }, // OBJECT format
+    { outFormat: OUT_FORMAT_OBJECT },
   );
 
   const tables: IntrospectedTable[] = [];
@@ -158,8 +167,8 @@ async function fetchAllTables(conn: any): Promise<IntrospectedTable[]> {
        FROM ALL_TAB_COLUMNS
        WHERE TABLE_NAME = :tableName AND OWNER = :owner
        ORDER BY COLUMN_ID`,
-      { tableName, tableOwner },
-      { outFormat: 2 },
+      { tableName, owner: tableOwner },
+      { outFormat: OUT_FORMAT_OBJECT },
     );
 
     const columns: IntrospectedColumn[] = (colResult.rows as Array<{

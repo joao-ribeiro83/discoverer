@@ -7,7 +7,8 @@
     "detectVersion": "Détecter la version",
     "analyze": "Analyser",
     "runDryRun": "Lancer une simulation",
-    "runMigration": "Lancer la migration"
+    "runMigration": "Lancer la migration",
+    "reimportMaps": "Réimporter les cartes"
   },
   "source": {
     "title": "Source",
@@ -22,7 +23,8 @@
     "forceEul4": "Forcer EUL4",
     "forceEul5": "Forcer EUL5",
     "dryRunLabel": "Simulation (valider sans écrire)",
-    "liveMigrationWarning": "Une migration réelle écrit dans cette base de données Discoverer Neo. Lancez d'abord une simulation et examinez le rapport ci-dessous."
+    "liveMigrationWarning": "Une migration réelle écrit dans cette base de données Discoverer Neo. Lancez d'abord une simulation et examinez le rapport ci-dessous.",
+    "reimportMapsHelp": "La réimportation des cartes reconstruit uniquement les cartes d'une base déjà migrée, à partir des classeurs de l'EUL. Elle remplace toutes les cartes du domaine d'activité « Migrated Workbooks » — les modifications apportées depuis la migration initiale sont perdues — et ne touche ni aux utilisateurs, ni aux dossiers, ni aux éléments, ni aux octrois d'accès. Lancez d'abord une simulation."
   },
   "detected": {
     "title": "Source détectée",
@@ -51,7 +53,17 @@
       "orphanedObjects": "Objets orphelins"
     },
     "blockers": "Bloqueurs",
-    "warningsCount": "Avertissements ({{count}})"
+    "warningsCount": "Avertissements ({{count}})",
+    "fidelity": {
+      "title": "Couverture de la mise en page des feuilles",
+      "totalWorksheets": "Feuilles",
+      "layoutDecoded": "Mise en page décodée",
+      "crosstabs": "Tableaux croisés",
+      "withSorts": "Avec tri",
+      "withTotals": "Avec totaux",
+      "withForcedJoins": "Avec jointures forcées",
+      "selectDistinct": "Select distinct"
+    }
   },
   "job": {
     "dryRunLabel": "Simulation",
@@ -63,6 +75,7 @@
     "rowsInserted": "Lignes insérées",
     "tableColumn": "Table",
     "rowsColumn": "Lignes",
+    "targetBlockedTitle": "La base de données cible est déjà migrée",
     "summary": "Résumé",
     "sourceIntegrity": "Intégrité de la source : {{status}} ({{errorCount}} erreur(s), {{warningCount}} avertissement(s)). {{skippedCount}} objet(s) ignoré(s). Durée : {{duration}} s.",
     "valid": "valide",
@@ -70,12 +83,14 @@
     "reconciliation": "Rapprochement post-migration : {{status}}",
     "rowCountsMatch": "les nombres de lignes correspondent",
     "mismatch": "NON-CONCORDANCE",
-    "syntheticBusinessAreasNotice": "Un domaine d'activité « Migrated Workbooks » a été créé pour héberger les cartes issues des classeurs ; la disposition de leurs feuilles de calcul doit être reconstruite manuellement.",
+    "syntheticBusinessAreasNotice": "Un domaine d'activité « Migrated Workbooks » a été créé pour héberger les cartes migrées depuis les classeurs. Vérifiez chaque carte et déplacez-la dans le domaine d'activité auquel elle appartient.",
     "migratedAccountsNotice": "Les comptes d'utilisateur migrés ne peuvent pas se connecter tant qu'un administrateur n'a pas défini de mot de passe.",
     "versionSpecificNotes": "Notes spécifiques à la version ({{count}})",
     "logTitle": "Journal de la migration",
     "droppedLogsNotice": "({{count}} ligne(s) antérieure(s) tronquée(s))",
-    "noLogEntries": "Aucune entrée de journal pour le moment."
+    "noLogEntries": "Aucune entrée de journal pour le moment.",
+    "mapsReimportSummary": "Remplacé {{replaced}} carte(s) à partir de {{workbooks}} classeur(s) contenant {{worksheets}} feuille(s), en {{duration}}s.",
+    "mapsReimportUnresolved": "Impossible de migrer {{columns}} colonne(s) et {{conditions}} condition(s). Voir le journal ci-dessus."
   },
   "tables": {
     "users": "Utilisateurs",
@@ -88,7 +103,17 @@
     "custom_functions": "Fonctions personnalisées",
     "maps": "Cartes",
     "map_items": "Colonnes de carte",
-    "user_business_area_grants": "Octrois d'accès"
+    "user_business_area_grants": "Octrois d'accès",
+    "map_conditions": "Conditions de carte",
+    "map_parameters": "Paramètres de carte",
+    "map_calculated_fields": "Champs calculés de carte",
+    "map_layouts": "Mises en page de carte",
+    "map_totals": "Totaux et pourcentages de carte",
+    "map_page_setup": "Mise en page de carte",
+    "map_conditional_formats": "Formats conditionnels de carte",
+    "folder_business_areas": "Partages de dossiers",
+    "workbooks": "Classeurs lus",
+    "worksheets": "Feuilles lues"
   },
   "toasts": {
     "detectedTitle": "{{version}} détecté",
@@ -107,6 +132,7 @@
     "migratedFrom": "Migré depuis {{source}}.",
     "theSource": "la source",
     "migrationFailed": "Échec de la migration",
-    "seeLogBelow": "Consultez le journal ci-dessous."
+    "seeLogBelow": "Consultez le journal ci-dessous.",
+    "mapReimportStarted": "Réimportation des cartes démarrée"
   }
 }

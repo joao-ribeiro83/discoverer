@@ -1,0 +1,289 @@
+
+<!DOCTYPE html public "-//w3c//dtd html 3.2 transitional//en.us">
+<HTML lang="en.us">
+<HEAD>
+
+<META NAME="Generator" CONTENT="Quadralay WebWorks Publisher 5.0.4">
+<META NAME="Page" CONTENT="DefaultSingle">
+<META NAME="Title" CONTENT="">
+<meta http-equiv="Content-Type" content="text/html;  charset=iso-8859-1">
+
+<Title>Reference topic </Title>
+	   
+<LINK REL="home" HREF="../../library.htm" TITLE="Library">
+<LINK REL="toc" HREF="toc.htm" TITLE="Contents">
+<LINK REL="index" HREF="bookix.htm" TITLE="Index">
+<LINK REL="copyright" HREF="./html/cpyr.htm" TITLE="Copyright">
+<LINK REL="up" HREF="toc.htm" TITLE="Up">
+<LINK REL="next" HREF="adasmr01.htm" TITLE="Next">
+<LINK REL="previous" HREF="adasmq02.htm" TITLE="Previous">
+
+
+</HEAD>
+       
+<BODY BGCOLOR="#ffffff">
+
+<A NAME="top"></A>
+
+
+
+
+<A HREF="#BEGIN">Skip Headers</A><BR><BR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+ 
+<TD ALIGN="LEFT" VALIGN="TOP"><FONT COLOR="#330099" FACE="Helvetica, Arial, sans-serif"><STRONG>Oracle Discoverer Administrator Administration Guide (Online Help)<BR>10<i>g</i> (9.0.4)</STRONG><BR>Part Number B10270-01</FONT></TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="144">
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+
+
+
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<HR>
+<P>
+<A HREF="adasmq02.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+
+<A HREF="adasmr01.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+    
+
+
+<A NAME="BEGIN"></A>
+
+
+
+<DIV CLASS="IND">
+<!-- End Header -->
+
+
+
+
+
+
+
+<A NAME="1005113"></A>
+<!--TOC=h1-"1005113"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Summary Wizard (ASM): Not Analyzed dialog</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005770"></A>
+<P CLASS="BP">
+Use this dialog to specify how you deal with folders that cannot be analyzed. For example, when you do not have analyze privileges on a particular database.
+</P>
+<A NAME="1006381"></A>
+<P CLASS="BP">
+This dialog is also displayed as:
+</P>
+
+<UL>
+
+<A NAME="1006383"></A>
+<P CLASS="BP1">
+Not Analyzed dialog
+</P>
+</UL>
+<A NAME="1005936"></A>
+<P CLASS="BP">
+For more information, see:
+</P>
+<A NAME="1005940"></A>
+<P CLASS="BP">
+<A HREF="managing.htm#1009688">"Managing summary folders"</a>
+</P>
+
+<A NAME="1005812"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">_ out of _ folders could not be analyzed. Would you like those folders to be excluded from the automatic summary creation?</FONT></H4>
+
+<A NAME="1005781"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Yes </FONT></H4>
+<A NAME="1005791"></A>
+<P CLASS="BP">
+Use this button to exclude folders that could not be analyzed.
+</P>
+
+<A NAME="1005782"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">No </FONT></H4>
+<A NAME="1005795"></A>
+<P CLASS="BP">
+Use this button to include folders that could not be analyzed.
+</P>
+
+<A NAME="1005926"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Help </FONT></H4>
+<A NAME="1005927"></A>
+<P CLASS="BP">
+Use this button to get more information about the folders that could not be analyzed.
+</P>
+
+<A NAME="1005686"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005822"></A>You do not have ANALYZE privileges for a given object/table
+<P>
+
+<A NAME="1005687"></A>
+<P CLASS="BP1">
+In order to ANALYZE a table, you need one of the following:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005688"></A>to be the owner of that table
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005689"></A>to have general ANALYZE privileges for the database (e.g. via `grant ANALYZE any to me')
+<P>
+</UL>
+
+<A NAME="1005690"></A>
+<P CLASS="BP1">
+Where one of the underlying tables that make up a folder does not fit the above rules, that folder will not be analyzed. This means that if one or more tables within a folder cannot be analyzed then the whole folder is treated as if it cannot be analyzed.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005692"></A>When a folder is Invalid
+<P>
+
+<A NAME="1005693"></A>
+<P CLASS="BP1">
+How you fix this depends on why a folder is marked as invalid.
+</P>
+
+<A NAME="1005694"></A>
+<P CLASS="BP1">
+To display the error message associated with an invalid folder go to View | Validate Folders. 
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005696"></A>You are trying to ANALYZE over a DB-Link
+<P>
+
+<A NAME="1005697"></A>
+<P CLASS="BP1">
+If a folder refers to a table that resides on a database accessed over a DB-Link then ANALYZE will fail. This operation is not supported in the Oracle Server.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005699"></A>When Discoverer cannot determine or access the full list of tables that constitute a folder.
+<P>
+
+<A NAME="1005700"></A>
+<P CLASS="BP1">
+A Discoverer folder can contain more than one underlying database table and/or view. Getting a full set of the underlying tables might be impossible. For example:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005701"></A>Where a view is based upon another view and the ASM user has access to the top level view, but not to the referenced view underneath. 
+<P>
+</UL>
+
+<A NAME="1005745"></A>
+<P CLASS="BP1">
+This makes it impossible for the ASM user to see which database tables are actually used to make that view.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005704"></A>When folders do not fully resolve to tables
+<P>
+
+<A NAME="1005705"></A>
+<P CLASS="BP1">
+This should only really apply to the server dynamic tables (e.g. the V$ tables, and many DBA_tables). Not all these views and tables resolve to physical tables; some of them are stored in memory, thus they cannot be analyzed.
+</P>
+
+<A NAME="1005706"></A>
+<P CLASS="BP1">
+For example:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005707"></A>V$_LOCKS
+<P>
+</UL>
+
+<A NAME="1005708"></A>
+<P CLASS="BP1">
+Although you can run queries on this kind of table/view, in practice it makes sense not to have summaries built on them as the summarized data would soon be out of date.
+</P>
+</UL>
+
+
+
+
+
+
+<!-- Start Footer -->
+</DIV>
+
+<DIV CLASS="OUTD">
+<HR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+<TD VALIGN="BOTTOM" WIDTH="33%">
+<TABLE CELLSPACING="0" CELLPADDING="0">
+<TR>
+<TD ALIGN="CENTER"><A HREF="adasmq02.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+
+<TD ALIGN="CENTER"><A HREF="adasmr01.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+    
+</TR>
+</TABLE>
+</TD>
+<TD ALIGN="CENTER" WIDTH="34%">
+<A HREF="./html/cpyr.htm"><IMG SRC="./gifs/oracle.gif" ALT="Oracle" BORDER="0"><BR>
+<FONT SIZE="-2">Copyright &copy 2003 Oracle Corporation.</FONT></A>
+<BR>
+<FONT SIZE="-2">All Rights Reserved.</FONT>
+</TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="33%"> 
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="144">
+<TR>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+  
+</DIV>
+
+</BODY>
+</HTML>
+

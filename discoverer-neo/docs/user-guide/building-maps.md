@@ -163,6 +163,39 @@ Parameter names must:
 - Contain only letters, digits, and underscores
 - Example good names: `start_date`, `region_code`, `customer_id`
 
+### Group and Break
+
+Tick **Group and break** on a column to hide its repeated values and start a
+new subtotal each time it changes. Group columns are always sorted before every
+other column — a break only groups if nothing sorts outside it.
+
+### Placement and Crosstab Edge
+
+**Placement** says what a column is for:
+
+- **Group by (axis)** — a column the report groups on. It is never aggregated,
+  even if the underlying item has a default aggregation.
+- **Measure** — a value to aggregate.
+- **Page item** — filters the whole sheet; not drawn in the grid.
+
+**Crosstab edge** applies to a `CROSSTAB` map: set one column to *Across the
+top* to pivot the report. Maps migrated from Discoverer have no edge recorded —
+Discoverer had no such field — so a migrated crosstab shows as a table until
+you set one.
+
+### Query-Only Columns
+
+Tick **Query only, do not show** to keep a column out of the results while the
+query still asks for it. Use it when a filter, a sort or a total needs a column
+the reader should not see.
+
+### Column Formats
+
+**Format mask** uses Oracle's notation (`999,999.00`, `$9,999.00`,
+`DD-MON-YYYY`). It is read for its meaning — grouped thousands, two decimals,
+day-month-year — and then rendered in each reader's own language, so the same
+map reads correctly for everyone.
+
 ## What's Next?
 
 - **[Executing Maps](executing-maps.md)** — Run your map and view results

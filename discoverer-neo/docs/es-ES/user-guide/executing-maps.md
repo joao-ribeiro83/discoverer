@@ -48,6 +48,39 @@ Una vez completada la ejecución, verá:
 - **Ejecutado por** — Su nombre de usuario
 - **Ejecutado el** — Marca de tiempo
 
+## Cortes de grupo y totales
+
+Un mapa migrado desde Discoverer se muestra como lo dibujaba la hoja original.
+
+**Cortes de grupo.** Una columna marcada como *agrupar y cortar* se muestra una
+vez por grupo: el valor aparece en la primera fila y se deja en blanco en las
+filas que lo repiten. La cabecera de la columna lleva la etiqueta **Grupo**.
+
+**Subtotales.** Cuando el mapa los define, una línea de subtotal cierra cada
+grupo, con el rótulo que escribió el autor original — `Total de EMEA`.
+
+**Totales generales.** Una línea en negrita al pie de los resultados.
+
+Los totales se calculan sobre **todas las filas que abarcan los filtros**, no
+sobre las filas cargadas en ese momento. Cargar más filas no los cambia.
+
+**Ordenar o filtrar la cuadrícula suspende esto.** Los cortes y los subtotales
+solo tienen sentido en el orden que devolvió la consulta. Si pulsa una cabecera
+para ordenar, los resultados pasan a ser una lista simple; borre la ordenación
+para recuperar la disposición. El pie indica cuándo está suspendida.
+
+## Tablas cruzadas
+
+Una tabla cruzada pone un conjunto de valores en el lateral, otro en la parte
+superior y las medidas en medio.
+
+Los mapas migrados desde Discoverer llegan **como tablas**, aunque el original
+fuera una tabla cruzada. Discoverer nunca registró qué columnas iban arriba, así
+que nada puede recuperarlo. Abra el mapa en el generador, abra una columna y
+defina el *Borde de la tabla cruzada* como *En la parte superior* para
+recuperar el cruce. Consulte
+[Creación de mapas](building-maps.md).
+
 ## Paginación
 
 Para conjuntos de resultados grandes:
@@ -133,6 +166,17 @@ Si aparece «Error de conexión»:
 - El origen de datos no está disponible temporalmente
 - Vuelva a intentarlo en unos instantes
 - Póngase en contacto con su administrador si el problema persiste
+
+### Ajustes de la hoja que no se han podido aplicar
+
+Una nota amarilla encima de los resultados enumera todo lo que el mapa pedía y
+esta ejecución no ha podido cumplir — un total cuya función de Discoverer no
+tiene equivalente en SQL, o una ordenación por una columna que el informe no
+muestra.
+
+Las filas en sí son correctas. Corrija el ajuste en el generador de mapas o
+consulte
+[Resolución de problemas de la migración](../migration/troubleshooting.md#worksheet-settings-that-could-not-be-applied).
 
 ## ¿Qué sigue?
 

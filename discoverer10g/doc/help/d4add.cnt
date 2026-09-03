@@ -1,0 +1,242 @@
+:Base d4add.hlp
+:Title Hilfe zu Oracle Discoverer
+1 Einführung in Oracle Discoverer
+2 Einführung in Oracle Discoverer=CON_INTRO_OD>main
+1 Menübefehle
+2 Datei
+3 Neu=reffilnew>main
+3 Öffnen=reffilopen>main
+3 Schließen=reffilclos>main
+3 Importieren=Import>main
+3 Exportieren=reffilexp>main
+3 Anmelden=reffilcon>main
+3 Aktualisieren=Refresh>main
+3 Beenden=reffilexit>main
+2 Bearbeiten
+3 Rückgängig=refediundo>main
+3 Ausschneiden=refedicut>main
+3 Kopieren=refedicopy>main
+3 Einfügen=refedipast>main
+3 Löschen=refedidele>main
+3 Attribute=refediprop>main
+3 Bearbeiten <Objekt>=refediobj>main
+2 Ansicht
+3 Symbolleiste=refvietoolbar>main
+3 Statusleiste=refviestatus>main
+3 Task-Liste=refvietask>main
+3 Ordner validieren=refvievalidate>main
+3 Task-Liste von Discoverer Administration=IDD_CHECKLIST>main
+2 Einfügen
+3 Geschäftsbereich
+4 Geschäftsbereich | Neu=d30bafnew>main
+4 Geschäftsbereich | Aus Datenbank=d30bafdb>main
+4 Lade-Assistent (Geschäftsbereich)
+5 Lade-Assistent=HIDD_EULGATEWAY_INTRO>main
+5 Lade-Assistent: Schritt 2=HIDD_EULGATEWAY_CHOOSE>main
+5 Optionen für Online-Dictionary=HIDD_EULGATEWAY_SERVER_OPTIONS>main
+5 Lade-Assistent: Schritt 3=HIDD_EULGATEWAY_IMPORT>main
+5 Lade-Assistent: Schritt 4=HIDD_EULGATEWAY_OPTIONS>main
+5 Lade-Assistent: Schritt 5=HIDD_EULGATEWAY_NAME>main
+5 Geschäftsbereich öffnen=HIDD_LOADWIZARD_OPEN>main
+5 Platzhalter verwenden=Wildcard_Characters>main
+3 Ordner
+4 Neuer Ordner
+5 Ordner | Neu=Folder_New>main
+4 Aus Datenbank
+5 Ordner | Aus Datenbank=Folder_From_Database>main
+4 Benutzerdefinierte Ordner
+5 Über benutzerdefinierte Ordner=Custom_Folder>main
+5 Ordner | Benutzerdefiniert=Folder_Custom>main
+5 Eigenschaften Benutzerdefinierter Ordner=Editing_the_SQL_Statement>main
+5 Dialogfeld Benutzerdefinierten Ordner bearbeiten=HIDD_CUSTOM_FOLDER>main
+5 Dialogfeld Benutzerdefinierter Ordner=Custom_Folder_dialog_box>main
+5 Benutzerdefinierte Ordner und SQL-Anweisungen=Custom_Folders_and_SQL_Statements>main
+5 Beispiel für die SQL-Syntax: Synonyme=SQL_Syntax_Example_Synonyms>main
+5 Beispiel für die SQL-Syntax: Mengenoperator=SQL_Syntax_Example_Set_Operator>main
+5 Beispiel für die SQL-Syntax: fremde Datenbanken=SQL_Syntax_Example: Non-Oracle Databases>main
+5 Beispiel für die SQL-Syntax: Unterabfrage in einer Ordnerdefinition=SQL_Syntax_Example_Sub_query_in_a_Folder_Definition>main
+5 Beispiel für die SQL-Syntax: Optimizer-Hinweis=SQL_Syntax_Example_Optimizer_Hint>main
+5 Beispiel für die SQL-Syntax: CONNECT BY-Klausel=SQL_Syntax_Example_CONNECT_BY_Clauses>main
+5 Spaltenausdrücke=Column_Expressions>main
+3 Element
+4 Element=Item>main
+4 Berechnung bearbeiten=HIDD_CALC_EDIT>main
+4 Element erstellen
+5 Neues Element (Ordner wählen)=HIDD_CHOOSEOBJECT_FORITEM>main
+5 Neues Element=New_Item_dialog>main
+3 Bedingung
+4 Bedingung=Condition>main
+4 Neue Bedingungen
+5 Neue Bedingung (Ordner wählen)=HIDD_CHOOSEOBJECT_FORCOND>main
+5 Neue Bedingungen=HIDD_COND_SIMPLE>main
+5 Neue Bedingung (Erweitert)=HIDD_COND_COMPLEX>main
+3 Join
+4 Join=Join>main
+4 Neuer Join
+5 Ordner auswählen (Element, Bedingung, Join)=HIDD_CHOOSEOBJECT>main
+5 Neuer Join (Ordner wählen)=HIDD_CHOOSEOBJECT_FORJOIN>main
+5 Neuer Join=HIDD_JOIN_EDIT_SIMPLE>main
+5 Neuer Multi-Element-Join=HIDD_JOIN_EDIT>main
+5 Join-Optionen=HIDD_JOIN_OPTIONS>main
+3 Hierarchie
+4 Hierarchie=Hierarchy>main
+4 Hierarchie-Assistent
+5 Hierarchie-Art auswählen=HIDD_DCAHIERARCHY_SELECT>main
+5 Elemente auswählen=HIDD_DCAHIERARCHY_ITEM_SELECT>main
+5 Hierarchiename=HIDD_DCAHIERARCHY_NAME>main
+5 Datumshierarchie-Format=HIDD_DATEHIERARCHY_SELECT>main
+5 Dialogfeld Neues Datumsformat=HIDD_NEWFORMAT>main
+5 Elemente, die Datumshierarchie verwenden=HIDD_DATEHIERARCHY_SELITEMS>main
+3 Zusammenfassung
+4 Zusammenfassung=refinssum>main
+4 Zusammenfassungs-Assistent
+5 ASM oder manuelles Erstellen von Zusammenfassungsordner wählen=HIDD_SUM_WIZARD_MAIN>main
+5 ASM: Ordner analysieren=HIDD_ASM_WIZARD_ANALYZE>main
+5 ASM: Nicht analysiert=HIDD_ASM_MB_YES_NO_HELP>main
+5 ASM: Platz zuweisen=HIDD_ASM_WIZARD_CREATE>main
+5 ASM: Empfohlene Zusammenfassungen=HIDD_ASM_RECOMMENDED_SUMMARIES>main
+5 ASM: Optionen - Analysieren=HIDD_ASM_OPTIONS_ANALYZE>main
+5 ASM: Optionen - Ordner=HIDD_ASM_OPTIONS_FOLDERS>main
+5 ASM: Optionen - Benutzer abfragen=HIDD_ASM_OPTIONS_QUSER>main
+5 ASM: Optionen - Abfrage-Verwendung=HIDD_ASM_OPTIONS_QUSAGE>main
+5 ASM: Optionen Löschen=HIDD_ASM_OPTIONS_DELETION>main
+5 Manuelles Erstellen von Zusammenfassungen: Schritt 2, Methode für manuelles Erstellen von Zusammenfassung wählen=HIDD_SUM_WIZARD_START>main
+5 Manuelles Erstellen von Zusammenfassungen: Schritt 3, Elemente in der EBE verwenden=HIDD_SUM_WIZARD_CHOOSE>main
+5 Manuelles Erstellen von Zusammenfassungen: Schritt 3, Abfragestatistiken verwenden=HIDD_SUM_WIZARD_STATS_NEW>main
+5 Manuelles Erstellen von Zusammenfassungen: Schritt 4, Kombinationen auswählen=HIDD_SUM_WIZARD_COMBO>main
+5 Manuelles Erstellen von Zusammenfassungen: Aktualisierung von Zusammenfassungsordner verwalten=Summary_Wizard_Manage_refresh_of_summary_folder>main
+5 Zusammenfassungs-Assistent: Letzter Schritt=HIDD_SUM_WIZARD_FINAL>main
+5 Manuelles Erstellen von Zusammenfassungen: Schritt 3, Externe Tabellen verwenden=HIDD_SUM_WIZARD_EXTERNAL>main
+5 Tabelle oder Ansicht auswählen=Choose_Table_or_View_Dialog>main
+5 Attribute für Datenbankspeicher - Register Attribute=HIDD_SUM_DBPROP>main
+5 Attribute für Datenbankspeicher - Register Zuordnungen=HIDD_SUM_DBMAPPING>main
+5 Attribute für Datenbankspeicher - Register Tablespaces=HIDD_SUM_DBTABLESPACE>main
+5 Attribute für Datenbankspeicher - Register 8i-Attribute=HIDD_SUM_DBPROP8I>main
+5 Zusammenfassungsstatus=Summary_Status>main
+5 Zuordnungstipp=Mapping_Tip>main
+3 Elementklasse
+4 Elementklasse=refitmcls>main
+4 Assistent Elementklasse
+5 Attribute wählen=HIDD_DOMAINWIZARD_TYPE>main
+5 Element auswählen (Werteliste)=HIDD_DOMAINWIZARD_ITEM_VALUE>main
+5 Element auswählen (Alternative Sortierung)=HIDD_DOMAINWIZARD_ITEM_SEQUENCE>main
+5 Elemente, die diese Elementklasse verwenden=HIDD_DOMAINWIZARD_SELITEMS>main
+5 Name und Beschreibung eingeben=HIDD_DOMAINWIZARD_NAME>main
+2 Optionen im Menü Werkzeuge
+3 Sicherheit
+4 Sicherheit=Security>main
+4 Geschäftsbereiche -> Register Benutzer=HIDD_GRANT_AREATOUSER>main
+4 Benutzer -> Register Geschäftsbereiche=HIDD_GRANT_USERTOAREA>main
+3 Zugriffsrechte
+4 Zugriffsrechte=Privileges>main
+4 Register Berechtigungen=HIDD_PRIV_PRIVS>main
+4 Register Benutzer/Rolle (Responsibility)=HIDD_PRIV_USER>main
+4 Register Abfrage-Governor=HIDD_PRIV_GOV>main
+4 Register Geplante Arbeitsmappen=HIDD_PRIV_SCHED>main
+4 Standard-Berechtigungen=Default_Privileges>main
+4 Repository-Benutzer=Repository_Users>main
+3 Ordner verwalten
+4 Ordner verwalten=Manage_Folders>main
+4 Dialogfeld Geschäftsbereich -> Ordner=HIDD_GRANT_AREATOFOLDER>main
+4 Dialogfeld Ordner -> Geschäftsbereich=HIDD_GRANT_FOLDERTOAREA>main
+3 PL/SQL-Funktionen
+4 PL/SQL-Funktionen registrieren=d30regplsql>main
+4 PL/SQL-Funktionen: Register Funktionen=HIDD_PLSQL_FUNCTIONS>main
+4 PL/SQL-Argumente: Register Argumente=HIDD_PLSQL_ARGUMENTS>main
+3 Zusammenfassungen aktualisieren
+4 Zusammenfassungen aktualisieren=Summary_Refresh_Sets>main
+4 Dialogfeld Zusammenfassungen aktualisieren=HIDD_SUM_REFRESHMGR>main
+3 Geplante Arbeitsmappen verwalten
+4 Geplante Arbeitsmappen verwalten=Manage_Scheduled_Workbooks>main
+4 Dialogfeld Geplante Arbeitsmappen verwalten=HIDD_SCHEDULE_ADMIN>main
+3 EBE-Manager
+4 EBE-Manager=EUL_Manager>main
+4 Dialogfeld EBE-Manager=HIDD_EUL_MANAGER>main
+4 EBE erstellen
+5 Assistent EBE erstellen: Schritt 1=HIDD_CREATE_EUL_PAGE1>main
+5 Assistent EBE erstellen: Schritt 2=HIDD_CREATE_EUL_PAGE2>main
+4 EBE löschen
+5 EBE löschen=HIDD_DELETE_EUL>main
+4 Lernprogramm installieren/deinstallieren
+5 Assistent Lernprogramm installieren/deinstallieren: Schritt 1=HIDD_INSTALL_TUTORIAL_PAGE1>main
+5 Assistent Lernprogramm installieren/deinstallieren: Schritt 2=HIDD_INSTALL_TUTORIAL_PAGE2>main
+5 Assistent Lernprogramm installieren: Schritt 3=HIDD_INSTALL_TUTORIAL_PAGE3>main
+3 Optionen
+4 Optionen (Verbindung und Standard-EBE)=Options>main
+4 Optionen - Register Verbindung=HIDD_OPTIONS_CONNECTION>main
+4 Optionen - Register Standard-EBE=Options_dialog_Default_EUL_tab>main
+2 Fenster
+3 Neues Fenster=New_Window>main
+3 Überlappend=Cascade>main
+3 Untereinander=Tile_Horizontal>main
+3 Nebeneinander=Tile_Vertical>main
+3 Symbole anordnen=Arrange_Icons>main
+3 Alle schließen=Close_All>main
+2 Hilfe
+3 Hilfethemen=Help_Topics>main
+3 Hilfe verwenden=Using_Help>main
+3 Handbücher=Manuals>main
+3 Datenbankinformationen=HIDD_Database_Info>main
+1 Discoverer-Arbeitsbereich
+2 Register Arbeitsbereich
+3 Register Daten=HIDD_TEMPLATEPAGE>main
+3 Register Hierarchie=HIDD_HIERARCHYTAB>main
+3 Register Elementklassen=HIDD_DOMAINTAB>main
+3 Register Zusammenfassungen=HIDD_SUMMARYTAB>main
+1 Konzeptionelle Information
+2 Über Discoverer=About Discoverer>main
+2 Über den Arbeitsbereich=refedi>main
+2 Über Geschäftsbereiche=m20tabtba>main
+2 Über Ordner=m20tabfldr>main
+2 Über Bedingungen=m20tabtcnd>main
+2 Über Joins=m20tabjoin>main
+2 Über Hierarchien=abhierar>main
+2 Über Elementklassen=m20tabtitm>main
+2 Über Bezeichner=About_Identifiers>main
+2 Über Zusammenfassungen=m20tabtsum>main
+2 Über Sicherheit=a20tabtsec>main
+2 Über geplante Arbeitsmappen=About_Scheduled_Workbooks>main
+2 Über die EBE=m20tabteul>main
+1 Wie kann man?
+2 Geschäftsbereich erstellen=Create_a_business_area>main
+2 Neue EBE erstellen=Create_a_new_EUL>main
+2 EBE löschen=Delete_an_EUL>main
+2 Elementhierarchie erstellen=Create_an_item_hierarchy>main
+2 Werteliste erstellen=Create_a_list_of_values>main
+2 Vorhandenen Geschäftsbereich öffnen=Open_an_existing_business_area>main
+2 Geschäftsbereich exportieren=Export_a_business_area>main
+2 Aktualisieren eines Geschäftsbereichs=Refresh_a_business_area>main
+2 EBE-Elemente importieren=Import>main
+2 Berechtigungen für die aktuelle EBE festlegen=Set_privileges_for_the_current_EUL>main
+1 Endbenutzerebene (EBE)
+2 EBE-Upgrade=EUL_Upgrade>main
+2 Fehler beim EBE-Upgrade=EUL_Upgrade_Error>main
+2 Aktualisieren-Assistent=HIDD_EUL_REFRESH_INTRO>main
+2 Dialogfeld Endbenutzerebene aktualisieren=HIDD_EUL_REFRESH_CHANGES>main
+2 EBE importieren
+3 Importieren (EBE)=Import
+3 EBE importieren Schritt 1=HIDD_IMPORTEXPORT_WIZ_CHOOSE>main
+3 EBE importieren Schritt 2=HIDD_IMPORTEXPORT_WIZ_OPTIONS>main
+3 EBE importieren Schritt 3=HIDD_IMPORTEXPORT_WIZ_LOG>main
+1 Attribute
+2 Bezeichner wird geändert (Warnung)=Changing_Identifier_Warning_dialog>main
+2 Geschäftsbereichsattribute=busiprops>main
+2 Fenster Ordnerattribute=foldprops>main
+2 Elementattribute=itemprops>main
+2 Bedingungsattribute=condprops>main
+2 Join-Attribute=joinprops>main
+2 Zusammenfassungs-Attribute=summprops>main
+1 Diverse Dialogfelder
+2 Geschäftsbereich exportieren=HIDD_EUL_EXPORT>main
+2 Dialogfeld Anmelden=HIDD_CONNECT>main
+2 Dialogfeld Reponsibilities=Responsibilities_Dialog>main
+2 Geschäftsbereich löschen - Bestätigung=HIDD_CONFIRMDELETE_AREA>main
+2 Dialogfeld Ordner löschen- Bestätigung=HIDD_CONFIRMDELETE_CATEGORY>main
+2 Dialogfeld Endbenutzerebene löschen - Bestätigung=HIDD_CONFIRMDELETE>main
+2 Dialogfeld Auswirkung=HIDD_DEPENDENCY>main
+2 Dialogfeld Tabelle oder Ansicht auswählen=HIDD_CHOOSESERVER>main
+2 Dialogfeld Datenbank auswählen=HIDD_CHOOSE_DIALOG>main
+2 Dialogfeld PL/SQL-Funktionen importieren=OBSELETE>main
+2 Dialogfeld Benutzerattribute=HIDD_QUERY_GOVERNOR>main
+1 Glossar
+2 Glossar zu Oracle Discoverer=DCM_GLOSSARY>glossary

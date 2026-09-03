@@ -104,16 +104,53 @@ User loses access immediately.
 4. Select new level
 5. Change takes effect immediately
 
+## Database Roles
+
+Users imported from Oracle Discoverer are not all people. Discoverer grants
+privileges to Oracle **roles** (`CONNECT`, `RESOURCE`, a reporting role) as
+readily as to individuals, and the migration brings both across.
+
+A role appears in the Users list with a **Role** badge and behaves differently:
+
+| | Person | Database role |
+| --- | --- | --- |
+| Can sign in | Yes | **No — ever** |
+| Holds business-area grants | Yes | Yes |
+| Has a password | Yes | None. No password can match it. |
+
+Roles are kept because they carry the grants your Discoverer security was built
+on. They cannot be turned into logins — assign real users the equivalent
+permissions instead, then retire the role.
+
 ## Password Management
 
-### Initial Passwords
+### Imported users and temporary passwords
 
-New users receive initial passwords. Best practice:
+Discoverer stores usernames but never passwords, so nothing can be carried
+across. Instead, a migration **generates a unique temporary password for every
+imported person** and writes them all to a file for you to distribute.
 
-1. Set temporary password (e.g., "TempPassword123!")
-2. Instruct user to change on first login
-3. User logs in, clicks **Profile** → **Change Password**
-4. Enters new password
+1. Run the migration (see [Migrating users and passwords](../migration/user-credentials.md)).
+2. Collect `credentials/credentials-<run-id>.csv` from the server host.
+3. Give each person their own password over a channel you trust.
+4. **Delete the file.** Nothing deletes it for you.
+
+Each account must change that password before it can do anything else — this is
+enforced by the server, not merely suggested by the interface.
+
+### Creating a user by hand
+
+When you add a user through Admin Panel → **Users**, you set their first
+password directly. Tell them to change it after signing in, from
+**Settings → Change Password**.
+
+### What "must change password" means
+
+While an account is waiting to change its password, it can reach only the
+change-password screen. Every other page and API call is refused. Signing in
+succeeds, but the application is unavailable until the password is rotated.
+
+You can see who is still pending in the Users list.
 
 ### Password Reset
 
@@ -125,13 +162,15 @@ If user forgets password (as admin):
 4. Send to user (via email or out-of-band)
 5. User changes password on first login
 
-### Force Password Change
+### Requiring a password change
 
-To require user password change:
+Accounts created by a migration are flagged automatically — you do not need to
+do anything. There is no manual checkbox: the flag is set when an account is
+provisioned with a temporary password and cleared the moment the user chooses
+their own.
 
-1. Click user → **Edit**
-2. Check **Force Password Change on Login**
-3. Save
+To force a rotation on an existing account, reset its password; the reset puts
+the account back into the same "must change" state.
 
 User will be prompted to change password next login.
 

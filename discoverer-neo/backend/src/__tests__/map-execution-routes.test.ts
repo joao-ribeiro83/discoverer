@@ -199,6 +199,8 @@ beforeAll(async () => {
   await db.insert(mapParameters).values({
     mapId: execMapId,
     name: 'p_region',
+    // Already an identifier, so the prompt and the bind name coincide here.
+    bindName: 'p_region',
     paramType: 'STRING',
     isRequired: true,
   });

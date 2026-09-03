@@ -43,7 +43,12 @@
     "filterAriaLabel": "Filtrar {{column}}",
     "rowCount_one": "{{formattedCount}} fila",
     "rowCount_other": "{{formattedCount}} filas",
-    "filteredFrom": "(filtrado de {{total}})"
+    "filteredFrom": "(filtrado de {{total}})",
+    "subtotalFor": "Total de {{value}}",
+    "grandTotal": "Total general",
+    "groupBreakBadge": "Grupo",
+    "groupBreakHint": "Las filas se agrupan por esta columna. Los valores repetidos se dejan en blanco y un subtotal cierra cada grupo.",
+    "worksheetLayoutPaused": "Ordenar o filtrar suspende los cortes de grupo y los totales."
   },
   "execution": {
     "nothingToLoadMore": "No hay nada más que cargar.",
@@ -76,7 +81,9 @@
     "notAllRowsLoaded": "No se han cargado todas las filas.",
     "runFullResultTooltip": "Ejecutar la consulta completa en segundo plano (hasta 100.000 filas)",
     "runningStatus": "Ejecutando… ({{status}})",
-    "runFullResult": "Ejecutar resultado completo"
+    "runFullResult": "Ejecutar resultado completo",
+    "worksheetWarningsTitle_one": "No se ha podido aplicar {{count}} ajuste de la hoja",
+    "worksheetWarningsTitle_other": "No se han podido aplicar {{count}} ajustes de la hoja"
   },
   "parameters": {
     "title": "Parámetros de ejecución",
@@ -91,5 +98,9 @@
     "exportQueuedDescription": "Esto puede tardar un momento con conjuntos de resultados grandes.",
     "downloadFailedTitle": "Error en la descarga",
     "exportJobFailedFallback": "El trabajo de exportación ha fallado."
+  },
+  "crosstab": {
+    "noColumnEdge": "Esta tabla cruzada aún no tiene columnas en la parte superior, por lo que se muestra como tabla. Discoverer no registra qué columnas iban arriba: abra una columna y defina su borde de tabla cruzada como «En la parte superior».",
+    "tooLarge": "Esta tabla cruzada sería de {{rows}} x {{columns}}, por encima del límite de {{max}} celdas. Filtre el informe o agrupe por menos valores."
   }
 }

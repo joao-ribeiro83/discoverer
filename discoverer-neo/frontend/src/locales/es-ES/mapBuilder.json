@@ -87,7 +87,23 @@
       "percent": "Porcentaje (12,3 %)",
       "dateDmy": "Fecha (DD-MON-YYYY)",
       "dateYmd": "Fecha (YYYY-MM-DD)"
-    }
+    },
+    "axisType": "Colocación",
+    "axisTypes": {
+      "AXIS": "Agrupar por (eje)",
+      "MEASURE": "Medida",
+      "PAGE": "Elemento de página"
+    },
+    "axisEdge": "Borde de la tabla cruzada",
+    "axisEdges": {
+      "ROW": "En el lateral",
+      "COLUMN": "En la parte superior"
+    },
+    "axisEdgeHint": "Solo lo usan las tablas cruzadas. Las hojas migradas no tienen ningún borde registrado.",
+    "sortGroup": "Agrupar y cortar",
+    "sortGroupHint": "Ocultar los valores repetidos y empezar un subtotal nuevo cada vez que cambie esta columna.",
+    "isHidden": "Solo consulta, no mostrar",
+    "isHiddenHint": "La consulta sigue pidiendo esta columna, para que un filtro, una ordenación o un total puedan usarla."
   },
   "sortDirections": {
     "asc": "Ascendente",

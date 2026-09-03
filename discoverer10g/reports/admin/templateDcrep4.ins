@@ -1,0 +1,91 @@
+/* Copyright (c) Oracle Corporation 1996.  All Rights Reserved */
+
+/*****************************************************************************
+  NAME
+    dcrep4.ins - V3 installation script for Oracle Report 6.0 API for Discoverer3.1
+
+  DESCRIPTION
+    This script installs Windows Oracle Report 6.0 API for Discoverer3.1
+
+  MODIFIED      MM/DD/YY        REASON
+   pgupta    11/07/97   created.
+*****************************************************************************/
+
+{
+    if (doit)
+    {
+        /*****************************
+        Set the VRF-INS script ratchet
+        ******************************/
+        ins_ratchet = "6.0.0.0.1";
+
+        execute("%installer_home%%dir_separator%%operating_system%.ins");
+
+        permit_retry_operations  = TRUE;
+        permit_ignore_operations = TRUE;
+        permit_process_operations= TRUE;
+
+        /******************
+        Install the product
+        *******************/
+        ui_product(instantiate(display_product_label));
+
+        ui_action(instantiate(install_files));
+        copy(deinst);
+
+       ui_action(instantiate(install_files));
+        copy(msg);
+        copy(res,nls_abbreviation);
+
+        /******************/
+
+        permit_retry_operations = FALSE;
+
+          /*******************
+         Install dependencies
+        ********************/
+        EXECUTE_SCRIPT = "INSTALL_DEPENDENCIES";
+        execute("%installer_home%%dir_separator%disr3ins.usr");
+        /*******************/
+
+        /***********************************/
+        permit_retry_operations = TRUE;
+
+        /*********************************
+        Register and Reference the product
+        and remove delold
+        **********************************/
+        EXECUTE_SCRIPT = "REGISTER_REFERENCE_PRODUCT";
+        execute("%installer_home%%dir_separator%disr3ins.usr");
+        /*********************************/
+
+        /*********************
+        Reference dependencies
+        **********************/
+        ui_action(instantiate(reference_dependencies));
+
+        while(not(empty(dependency_list)))
+        {
+            {reference(first(dependency_list), current_product);}
+            ['UNREGISTERED_PRODUCT: continue();]
+
+            dependency_list = rest(dependency_list);
+        }
+        /*********************/
+        permit_retry_operations = FALSE;
+
+        /*************************************
+        Set variable in Registry
+        **************************************/
+        modify("RW60",RW60,ora_config, product_filename(current_product));
+        modify("REPORTS60_PATH", reports60_path_var, ora_config,product_filename(current_product));
+        modify("REPORTS60_TMP", reports60_path_tmp, ora_config,product_filename(current_product));
+        /*********************/
+
+
+    }
+    [
+         'UNREGISTERED_PRODUCT: continue();
+         'CANCEL: signal('FAILURE, instantiate(halt_installation));
+    ]
+}

@@ -17,6 +17,29 @@ Enter your credentials and click **Sign In**.
 
 **First Time?** Contact your administrator to create an account.
 
+## First login with a temporary password
+
+If your account was moved over from Oracle Discoverer, your administrator will
+give you a **temporary password**. It is a random 16-character string, for
+example `ufNnRksjgR7U%M6X`.
+
+1. Sign in with your email address and the temporary password.
+2. You are taken straight to **Change your password** — you cannot skip this.
+   Until you choose a password, the rest of the application is unavailable.
+3. Enter the temporary password once more, then your new password twice.
+4. You land on the dashboard, and your temporary password stops working
+   immediately.
+
+Your new password must be **at least 12 characters** and different from the
+temporary one.
+
+> **Tip:** the temporary password deliberately avoids characters that are easy
+> to confuse — no capital `O` or zero, no lower-case `l` or one. If a character
+> looks ambiguous, it is not one of those.
+
+If you mistype the temporary password the screen says so and nothing changes;
+ask your administrator to reset it if you have lost it.
+
 ## Main Interface
 
 After logging in, you'll see the main dashboard with the following sections:

@@ -5,6 +5,7 @@ import { Check, Loader2 } from 'lucide-react'
 import { apiClient, getErrorMessage } from '@/lib/api'
 import { useLocale } from '@/hooks/useLocale'
 import { useTheme, SUPPORTED_THEMES, isSupportedTheme } from '@/providers/ThemeProvider'
+import { usePalette, SUPPORTED_PALETTES, isSupportedPalette } from '@/providers/PaletteProvider'
 import { LOCALE_LABELS, isSupportedLocale } from '@/i18n'
 import { useToast } from '@/hooks/use-toast'
 import { AdminPageWrapper } from '@/components/admin/AdminPageWrapper'
@@ -25,6 +26,7 @@ export function SettingsPage() {
   const { toast } = useToast()
   const { locale, setLocale, supportedLocales } = useLocale()
   const { theme, setTheme } = useTheme()
+  const { palette, setPalette } = usePalette()
 
   const {
     data: preferences,
@@ -47,13 +49,16 @@ export function SettingsPage() {
     if (isSupportedTheme(preferences.theme) && preferences.theme !== theme) {
       void setTheme(preferences.theme, { persist: false })
     }
-    // Only re-run when the fetched preferences change — locale/theme/setters
-    // are intentionally excluded to avoid re-triggering this sync every time
-    // the user picks a new value below.
+    if (isSupportedPalette(preferences.colorPalette) && preferences.colorPalette !== palette) {
+      void setPalette(preferences.colorPalette, { persist: false })
+    }
+    // Only re-run when the fetched preferences change — locale/theme/palette/
+    // setters are intentionally excluded to avoid re-triggering this sync
+    // every time the user picks a new value below.
   }, [preferences])
 
   const saveMutation = useMutation({
-    mutationFn: () => apiClient.users.updatePreferences({ locale, theme }),
+    mutationFn: () => apiClient.users.updatePreferences({ locale, theme, colorPalette: palette }),
     onSuccess: () => {
       toast({ title: t('settings:saved') })
     },
@@ -140,6 +145,65 @@ export function SettingsPage() {
                 <div className="flex items-center justify-between border-t bg-card px-3 py-2 text-sm font-medium text-card-foreground">
                   <span>{t(`settings:theme.options.${option}`)}</span>
                   {theme === option && <Check className="h-4 w-4 text-primary" />}
+                </div>
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('settings:palette.title')}</CardTitle>
+          <CardDescription>
+            {theme === 'high-contrast'
+              ? t('settings:palette.unavailableHighContrast')
+              : t('settings:palette.description')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Label className="mb-3 block">{t('settings:palette.label')}</Label>
+          <div
+            className={cn(
+              'grid grid-cols-1 gap-4 sm:grid-cols-2',
+              theme === 'high-contrast' && 'pointer-events-none opacity-50'
+            )}
+          >
+            {SUPPORTED_PALETTES.map((option) => (
+              <button
+                key={option}
+                type="button"
+                data-testid={`palette-swatch-${option}`}
+                aria-pressed={palette === option}
+                disabled={theme === 'high-contrast'}
+                onClick={() => void setPalette(option, { persist: false })}
+                className={cn(
+                  'flex flex-col overflow-hidden rounded-lg border-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  palette === option ? 'border-primary' : 'border-transparent hover:border-muted-foreground/30'
+                )}
+              >
+                {/* Scoping data-theme (to the currently active mode) +
+                    data-palette (to this option) previews each palette in
+                    its real colors, combined with the mode the user is
+                    already in. */}
+                <div data-theme={theme} data-palette={option} className="flex">
+                  <div className="w-8 space-y-1.5 bg-sidebar p-2">
+                    <div className="h-1.5 w-full rounded-full bg-sidebar-primary" />
+                    <div className="h-1.5 w-full rounded-full bg-sidebar-accent" />
+                    <div className="h-1.5 w-3/4 rounded-full bg-sidebar-accent" />
+                  </div>
+                  <div className="flex-1 space-y-2 bg-background p-4">
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-3 rounded-full bg-primary" />
+                      <div className="h-2 flex-1 rounded bg-muted" />
+                    </div>
+                    <div className="h-2 w-3/4 rounded bg-muted" />
+                    <div className="mt-2 h-6 w-16 rounded bg-primary" />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between border-t bg-card px-3 py-2 text-sm font-medium text-card-foreground">
+                  <span>{t(`settings:palette.options.${option}`)}</span>
+                  {palette === option && <Check className="h-4 w-4 text-primary" />}
                 </div>
               </button>
             ))}

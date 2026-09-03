@@ -7,7 +7,8 @@
     "detectVersion": "Detect version",
     "analyze": "Analyze",
     "runDryRun": "Run dry run",
-    "runMigration": "Run migration"
+    "runMigration": "Run migration",
+    "reimportMaps": "Re-import maps"
   },
   "source": {
     "title": "Source",
@@ -22,7 +23,8 @@
     "forceEul4": "Force EUL4",
     "forceEul5": "Force EUL5",
     "dryRunLabel": "Dry run (validate without writing)",
-    "liveMigrationWarning": "A live migration writes into this Discoverer Neo database. Run a dry run first and review the report below."
+    "liveMigrationWarning": "A live migration writes into this Discoverer Neo database. Run a dry run first and review the report below.",
+    "reimportMapsHelp": "Re-import maps rebuilds only the maps of a database that has already been migrated, from the workbooks in the EUL. It replaces every map in the \"Migrated Workbooks\" business area — edits made to one since the original migration are lost — and leaves users, folders, items and grants untouched. Run it as a dry run first."
   },
   "detected": {
     "title": "Detected source",
@@ -51,7 +53,17 @@
       "orphanedObjects": "Orphaned objects"
     },
     "blockers": "Blockers",
-    "warningsCount": "Warnings ({{count}})"
+    "warningsCount": "Warnings ({{count}})",
+    "fidelity": {
+      "title": "Worksheet layout coverage",
+      "totalWorksheets": "Worksheets",
+      "layoutDecoded": "Layout decoded",
+      "crosstabs": "Crosstabs",
+      "withSorts": "With sorting",
+      "withTotals": "With totals",
+      "withForcedJoins": "With forced joins",
+      "selectDistinct": "Select distinct"
+    }
   },
   "job": {
     "dryRunLabel": "Dry run",
@@ -63,6 +75,7 @@
     "rowsInserted": "Rows inserted",
     "tableColumn": "Table",
     "rowsColumn": "Rows",
+    "targetBlockedTitle": "Target database already migrated",
     "summary": "Summary",
     "sourceIntegrity": "Source integrity: {{status}} ({{errorCount}} error(s), {{warningCount}} warning(s)). Skipped {{skippedCount}} object(s). Took {{duration}}s.",
     "valid": "valid",
@@ -70,12 +83,14 @@
     "reconciliation": "Post-migration reconciliation: {{status}}",
     "rowCountsMatch": "row counts match",
     "mismatch": "MISMATCH",
-    "syntheticBusinessAreasNotice": "A “Migrated Workbooks” business area was created to host workbook maps; their worksheet layout must be rebuilt manually.",
+    "syntheticBusinessAreasNotice": "A “Migrated Workbooks” business area was created to host the maps migrated from workbooks. Review each map and move it into the business area it belongs to.",
     "migratedAccountsNotice": "Migrated user accounts cannot sign in until an admin sets a password.",
     "versionSpecificNotes": "Version-specific notes ({{count}})",
     "logTitle": "Migration log",
     "droppedLogsNotice": "({{count}} earlier line(s) trimmed)",
-    "noLogEntries": "No log entries yet."
+    "noLogEntries": "No log entries yet.",
+    "mapsReimportSummary": "Replaced {{replaced}} map(s) from {{workbooks}} workbook(s) holding {{worksheets}} worksheet(s), in {{duration}}s.",
+    "mapsReimportUnresolved": "{{columns}} column(s) and {{conditions}} condition(s) could not be migrated. See the log above."
   },
   "tables": {
     "users": "Users",
@@ -88,7 +103,17 @@
     "custom_functions": "Custom functions",
     "maps": "Maps",
     "map_items": "Map columns",
-    "user_business_area_grants": "Grants"
+    "user_business_area_grants": "Grants",
+    "map_conditions": "Map conditions",
+    "map_parameters": "Map parameters",
+    "map_calculated_fields": "Map calculated fields",
+    "map_layouts": "Map layouts",
+    "map_totals": "Map totals and percentages",
+    "map_page_setup": "Map page setup",
+    "map_conditional_formats": "Map conditional formats",
+    "folder_business_areas": "Folder shares",
+    "workbooks": "Workbooks read",
+    "worksheets": "Worksheets read"
   },
   "toasts": {
     "detectedTitle": "Detected {{version}}",
@@ -107,6 +132,7 @@
     "migratedFrom": "Migrated from {{source}}.",
     "theSource": "the source",
     "migrationFailed": "Migration failed",
-    "seeLogBelow": "See the log below."
+    "seeLogBelow": "See the log below.",
+    "mapReimportStarted": "Map re-import started"
   }
 }

@@ -88,6 +88,30 @@ Les dossiers et les éléments sont créés automatiquement avec les types et le
 | **JOIN** | Résultat pré-joint de plusieurs tables |
 | **SUMMARY** | Table de synthèse pré-agrégée |
 
+### Partager un dossier entre domaines d'activité
+
+Un dossier appartient à un domaine d'activité **propriétaire**, mais peut être
+*partagé* avec d'autres — comme Oracle Discoverer permet à un dossier
+d'apparaître dans plusieurs domaines à la fois. Une dimension de date ou
+d'organisation partagée est le cas courant.
+
+1. Panneau d'administration → **Dossiers**
+2. Cliquez sur l'icône de **partage** sur la ligne du dossier
+3. Choisissez un domaine sous **Partager avec** puis cliquez sur **Partager**
+
+Le dossier apparaît désormais dans les deux domaines. Dans tout domaine qui n'en
+est pas propriétaire, il porte un badge **Partagé**, afin que personne ne le
+modifie en croyant que le changement est local — les modifications s'appliquent
+partout.
+
+Pour arrêter le partage, rouvrez la même boîte de dialogue et retirez le badge.
+Le domaine **propriétaire** ne peut pas être retiré ; pour déplacer un dossier,
+recréez-le à destination.
+
+> **Migration depuis Discoverer :** toutes les appartenances `BA_OBJ_LINKS` sont
+> conservées. Un dossier qui appartenait à trois domaines les garde tous les
+> trois — un comme propriétaire et deux comme partages.
+
 ### Modifier un dossier
 
 1. Cliquez sur le dossier → **Modifier**
@@ -117,7 +141,9 @@ Un **élément** est une colonne ou un attribut issu d'un dossier. Les élément
    - **Nom d'affichage** — Libellé convivial (par défaut, le nom)
    - **Nom de colonne** — Colonne réelle de la base de données
    - **Description** — Texte d'aide pour les utilisateurs
-   - **Type** — CI (personnalisé), CU (utilisateur), CO (calculé), etc.
+   - **Type** — voir le tableau ci-dessous. **CO** (Élément de base de données)
+     est le choix habituel : un élément adossé à une colonne réelle. **CI** est
+     un élément *créé* — un calcul.
    - **Est une clé** — Case à cocher s'il s'agit d'une clé primaire/étrangère
    - **Est masqué** — Case à cocher pour exclure du générateur de cartes
    - **Est obligatoire** — Case à cocher s'il doit toujours être inclus

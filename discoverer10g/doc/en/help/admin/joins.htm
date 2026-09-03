@@ -1,0 +1,2825 @@
+
+<!DOCTYPE html public "-//w3c//dtd html 3.2 transitional//en.us">
+<HTML lang="en.us">
+<HEAD>
+
+<META NAME="Generator" CONTENT="Quadralay WebWorks Publisher 5.0.4">
+<META NAME="Page" CONTENT="DefaultSingle">
+<META NAME="Title" CONTENT=" Creating and maintaining joins">
+<meta http-equiv="Content-Type" content="text/html;  charset=iso-8859-1">
+
+<TITLE> Creating and maintaining joins</TITLE>
+	   
+<LINK REL="home" HREF="../../library.htm" TITLE="Library">
+<LINK REL="toc" HREF="toc.htm" TITLE="Contents">
+<LINK REL="index" HREF="bookix.htm" TITLE="Index">
+<LINK REL="copyright" HREF="./html/cpyr.htm" TITLE="Copyright">
+<LINK REL="up" HREF="toc.htm" TITLE="Up">
+<LINK REL="next" HREF="calculat.htm" TITLE="Next">
+<LINK REL="previous" HREF="item_cla.htm" TITLE="Previous">
+
+
+</HEAD>
+       
+<BODY BGCOLOR="#ffffff">
+
+<A NAME="top"></A>
+
+
+
+
+<A HREF="#BEGIN">Skip Headers</A><BR><BR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+ 
+<TD ALIGN="LEFT" VALIGN="TOP"><FONT COLOR="#330099" FACE="Helvetica, Arial, sans-serif"><STRONG>Oracle Discoverer Administrator Administration Guide (Online Help)<BR>10<i>g</i> (9.0.4)</STRONG><BR>Part Number B10270-01</FONT></TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="144">
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+
+
+
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<HR>
+<P>
+<A HREF="item_cla.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+
+<A HREF="calculat.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+    
+
+
+<A NAME="BEGIN"></A>
+
+
+
+<DIV CLASS="IND">
+<!-- End Header -->
+
+
+
+
+
+
+
+<A NAME="1007936"></A>
+<!--TOC=Title-"1007936"-->
+<H1 CLASS="Title"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099">9<BR> Creating and maintaining joins</FONT></H1>
+
+<!--/TOC=Title-->
+
+<A NAME="1004596"></A>
+<!--TOC=h1-"1004596"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Creating and maintaining joins</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1006456"></A>
+<P CLASS="BP">
+This chapter explains how to implement joins using Discoverer Administrator, and contains the following topics:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006372"></A><A HREF="joins.htm#1006440">"What are joins?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007409"></A><A HREF="joins.htm#1013552">"What are single item joins?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1019367"></A><A HREF="joins.htm#1016102">"What are multi-item joins?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1015571"></A><A HREF="joins.htm#1004642">"About joining more than two folders"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1019376"></A><A HREF="joins.htm#1014954">"What are non-equi-joins?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007417"></A><A HREF="joins.htm#1014436">"What are one-to-many joins, one-to-one joins, and many-to-many joins?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014509"></A><A HREF="joins.htm#1014367">"About joining two folders using more than one join"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1021620"></A><A HREF="joins.htm#1021602">"What effect do joins have on query results and query performance?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014513"></A><A HREF="joins.htm#1013760">"Examples of how joins can affect query results from complex folders"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1015718"></A><A HREF="joins.htm#1018234">"What are outer joins?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1013647"></A><A HREF="joins.htm#1011027">"How to create joins"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006396"></A><A HREF="joins.htm#1005766">"How to view or edit joins"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006434"></A><A HREF="joins.htm#1004603">"How to delete a join"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006438"></A><A HREF="joins.htm#1004604">"What are fan traps, and how does Discoverer handle them?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1020948"></A><A HREF="joins.htm#1020600">"Example of a fan trap"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006443"></A><A HREF="joins.htm#1004605">"What to do if you set up a fan trap inside a complex folder"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010300"></A><A HREF="joins.htm#1009945">"What to do if you have a data type mismatch in a join"</a>
+<P>
+</UL>
+
+<A NAME="1006440"></A>
+<!--TOC=h1-"1006440"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are joins?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004624"></A>
+<P CLASS="BP">
+In Discoverer, a join relates two folders using one or more matching items. In the database, a join relates two tables using matching columns.
+</P>
+<A NAME="1021128"></A>
+<P CLASS="BP">
+For example, consider the two tables DEPT and EMP.
+</P>
+
+<A NAME="1021171"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 9-1 &#32;EMP and DEPT tables</EM></FONT></H4>
+   
+<BR><A NAME="1021205">
+
+
+<img src="joinsi0.gif" ALT="Text description of joinsi0.gif follows.">
+<A HREF="img_text/joinsi0.htm"><br>Text description of the illustration joinsi0.gif</A>
+
+
+</A>
+   <A NAME="1021206"></A>
+<P CLASS="BP">
+Every department in the DEPT table has a department name and a department number. Every employee in the EMP table has a name and belongs to a department (which is identified by its department number).
+</P>
+<A NAME="1021135"></A>
+<P CLASS="BP">
+To see the name of an employee and the name of the department in which they work, you must extract information from both tables. However, before you can extract information from both tables in the same query, a join must exist between the tables.
+</P>
+<A NAME="1021143"></A>
+<P CLASS="BP">
+To define a join, you typically specify one column in one table that matches a column in the other table. In the case of the DEPT and EMP tables, the DEPTNO column in the DEPT table matches the DEPTNO column in the EMP table. In other words, the values in the DEPTNO column in the DEPT table have matching values in the DEPTNO column in the EMP table.
+</P>
+
+<A NAME="1021190"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 9-2 &#32;EMP and DEPT tables joined using the DEPTNO column</EM></FONT></H4>
+   
+<BR><A NAME="1021194">
+
+
+<img src="joinsi1.gif" ALT="Text description of joinsi1.gif follows.">
+<A HREF="img_text/joinsi1.htm"><br>Text description of the illustration joinsi1.gif</A>
+
+
+</A>
+   <A NAME="1021165"></A>
+<P CLASS="BP">
+A join typically comprises a master table and a detail table. The master table has one row for which there are many rows in the detail table. In the example above, the DEPT table is the master table and the EMP table is the detail table because each department can have many employees.
+</P>
+<A NAME="1021249"></A>
+<P CLASS="BP">
+The matching column in the detail table is often referred to as the foreign key column.
+</P>
+<A NAME="1021210"></A>
+<P CLASS="BP">
+When you create a join using Discoverer Administrator, you specify a join condition that identifies the item in the master folder and the matching item in the detail folder. It is important to make sure you:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1021211"></A>Define the join with the correct folder as the master. If a query uses two or more folders and you define the incorrect folder as the master, you might get misleading or incorrect results (for more information, see <A HREF="joins.htm#1004604">"What are fan traps, and how does Discoverer handle them?"</a>).  
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1021215"></A>Choose the correct join option details. These details also determine whether summary folders can be used to speed up queries (for more information, see <A HREF="joins.htm#1021602">"What effect do joins have on query results and query performance?"</a>).
+<P>
+</UL>
+<A NAME="1021147"></A>
+<P CLASS="BP">
+Having defined a join between two folders:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1021239"></A>Discoverer end users can include items from both folders in the same worksheet in Discoverer Plus (and Discoverer Desktop)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1021240"></A>you can create complex folders and hierarchies in Discoverer Administrator that contain items from both folders
+<P>
+</UL>
+
+<A NAME="1013552"></A>
+<!--TOC=h1-"1013552"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are single item joins?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005960"></A>
+<P CLASS="BP">
+In Discoverer, a single item join relates two folders by specifying an item that is common to both folders in a join condition. A join condition is the combination of two join items related by a join operator. Typically, the join operator is the equals (=) sign and the join is therefore referred to as an equi-join (for more information about alternative join operators, see <A HREF="joins.htm#1014954">"What are non-equi-joins?"</a>).
+</P>
+<A NAME="1021635"></A>
+<P CLASS="BP">
+For example, the schema below uses the common column DEPTNO to join the DEPT and EMP tables.
+</P>
+
+<A NAME="1021636"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 9-3 &#32;Example of two tables joined using a single item join</EM></FONT></H4>
+   
+<BR><A NAME="1021640">
+
+
+<img src="joinsi1.gif" ALT="Text description of joinsi1.gif follows.">
+<A HREF="img_text/joinsi1.htm"><br>Text description of the illustration joinsi1.gif</A>
+
+
+</A>
+   <A NAME="1015777"></A>
+<P CLASS="BP">
+Every department in the DEPT table has a department name and a department number. Every employee in the EMP table has a name and belongs to a department (which is identified by its department number). To see the name of an employee and the name of the department in which they work, you need information from both the EMP table and the DEPT table.
+</P>
+<A NAME="1020956"></A>
+<P CLASS="BP">
+Imagine that a Discoverer end user wants to see the name of every employee and the name of the department in which they work, as follows:
+</P>
+   
+<A NAME="1023328">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1015789"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>DNAME</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1015791"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>ENAME</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1015793"></A>
+<P CLASS="TB">
+ACCOUNTS&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1015795"></A>
+<P CLASS="TB">
+CLARK&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1015797"></A>
+<P CLASS="TB">
+ACCOUNTS&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1015799"></A>
+<P CLASS="TB">
+MILLER&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1015801"></A>
+<P CLASS="TB">
+RESEARCH&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1015803"></A>
+<P CLASS="TB">
+ADAMS&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1015805"></A>
+<P CLASS="TB">
+RESEARCH&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1015807"></A>
+<P CLASS="TB">
+FORD&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1015836"></A>
+<P CLASS="TB">
+SALES&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1015838"></A>
+<P CLASS="TB">
+JAMES&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   <A NAME="1015784"></A>
+<P CLASS="BP">
+In other words, DEPT.DNAME and EMP.ENAME.
+</P>
+<A NAME="1015850"></A>
+<P CLASS="BP">
+The following SQL statement would achieve the required result:
+</P>
+    
+<PRE CLASS="CE">
+<A NAME="1015851"></A>select dname, ename
+<A NAME="1015865"></A>from dept, emp
+<A NAME="1015866"></A>where
+<A NAME="1015867"></A>dept.deptno=emp.deptno
+<A NAME="1015868"></A>
+</PRE>    <A NAME="1015852"></A>
+<P CLASS="BP">
+To enable the Discoverer end user to see the required result, you can do either of the following:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1019472"></A>You can create a custom folder containing the above SQL statement (for more information, see <A HREF="folders.htm#1004602">"How to create custom folders"</a>).
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1015873"></A>You can create a join with one join condition (i.e. a single item join) between DEPT.DEPTNO and EMP.DEPTNO (for more information, see <A HREF="joins.htm#1011027">"How to create joins"</a>). 
+<P>
+
+<A NAME="1015874"></A>
+<P CLASS="BP1">
+Having defined the join:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1015896"></A>In Discoverer Administrator you can create a complex folder, then drag DNAME from DEPT and ENAME from EMP into the complex folder (for more information, see <A HREF="folders.htm#1004601">"How to create complex folders"</a>).
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1015900"></A>The Discoverer end user can use the complex folder. Alternatively, the end user can select DNAME from DEPT and ENAME from EMP.
+<P>
+</UL>
+</UL>
+
+<A NAME="1016102"></A>
+<!--TOC=h1-"1016102"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are multi-item joins?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1016103"></A>
+<P CLASS="BP">
+In Discoverer, a multi-item join relates two folders using more than one join condition, such that the join becomes true when all of the join conditions are met (for more information about join conditions, see <A HREF="joins.htm#1013552">"What are single item joins?"</a>).
+</P>
+<A NAME="1016107"></A>
+<P CLASS="BP">
+For example, the schema below uses a combination of COUNTRY_CODE and PRODUCT_CODE to uniquely identify products.
+</P>
+
+<A NAME="1016109"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 9-4 &#32;Example of two tables joined using a multi-item join</EM></FONT></H4>
+   
+<BR><A NAME="1014743">
+
+
+<img src="joinmid.gif" ALT="Text description of joinmid.gif follows.">
+<A HREF="img_text/joinmid.htm"><br>Text description of the illustration joinmid.gif</A>
+
+
+</A>
+   <A NAME="1014781"></A>
+<P CLASS="BP">
+Every product in the VIDEO_PRODUCTS table has a description and is uniquely identified by the combination of a country code and a product code (note that product codes are only unique within each country code). Every sale in the VIDEO_SALES table is of a particular product (which is identified by its country code and product code). To see the value of a sale and a description of the product that was sold, you need information from both the VIDEO_SALES table and the VIDEO_PRODUCTS table.
+</P>
+<A NAME="1020967"></A>
+<P CLASS="BP">
+Imagine that a Discoverer end user wants to see the value of each sale and a description of the product that was sold, as follows:
+</P>
+   
+<A NAME="1023332">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1014854"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Description</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1014856"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Value</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1014858"></A>
+<P CLASS="TB">
+UK GAME RENTAL&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014860"></A>
+<P CLASS="TB">
+10&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1014862"></A>
+<P CLASS="TB">
+US VIDEO RENTAL&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014864"></A>
+<P CLASS="TB">
+19&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1014866"></A>
+<P CLASS="TB">
+FR VIDEO SALES&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014868"></A>
+<P CLASS="TB">
+25&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1014870"></A>
+<P CLASS="TB">
+FR GAME RENTAL&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014872"></A>
+<P CLASS="TB">
+8&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   <A NAME="1014773"></A>
+<P CLASS="BP">
+In other words, VIDEO_PRODUCTS.DESCRIPTION and VIDEO_SALES.VALUE.
+</P>
+<A NAME="1015870"></A>
+<P CLASS="BP">
+The following SQL statement would achieve the required result:
+</P>
+    
+<PRE CLASS="CE">
+<A NAME="1014813"></A>select description, value
+<A NAME="1014817"></A>from video_products, video_sales
+<A NAME="1014818"></A>where
+<A NAME="1014819"></A>video_products.country_code=video_sales.country_code
+<A NAME="1014820"></A>and
+<A NAME="1014821"></A>video_products.product_code=video_sales.product_code
+<A NAME="1014822"></A>
+</PRE>    <A NAME="1015998"></A>
+<P CLASS="BP">
+To enable the Discoverer end user to see the required result, you can do either of the following:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014903"></A>You can create a custom folder containing the above SQL statement (for more information, see <A HREF="folders.htm#1004602">"How to create custom folders"</a>).
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014906"></A>You can create a join with two join conditions (i.e. a multi-item join) between VIDEO_PRODUCTS.COUNTRY_CODE and VIDEO_SALES.COUNTRY_CODE, and between VIDEO_PRODUCTS.PRODUCT_CODE and VIDEO_SALES.PRODUCT_CODE (for more information, see <A HREF="joins.htm#1011027">"How to create joins"</a>).
+<P>
+
+<A NAME="1014932"></A>
+<P CLASS="BP1">
+Having defined the multi-item join:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1014936"></A>In Discoverer Administrator you can create a complex folder, then drag DESCRIPTION from VIDEO_PRODUCTS and VALUE from VIDEO_SALES into the complex folder (for more information, see <A HREF="folders.htm#1004601">"How to create complex folders"</a>).
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1014943"></A>The Discoverer end user can use the complex folder. Alternatively, the end user can select DESCRIPTION from VIDEO_PRODUCTS and VALUE from VIDEO_SALES.
+<P>
+</UL>
+</UL>
+<A NAME="1021458"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> A join that uses more than one column in each table to uniquely identify a row is also referred to as a composite join key.
+</P>
+
+<A NAME="1004642"></A>
+<!--TOC=h1-"1004642"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About joining more than two folders</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1014957"></A>
+<P CLASS="BP">
+To join more than two folders in Discoverer, you must define a separate join between each of the folders you want to join.
+</P>
+<A NAME="1016011"></A>
+<P CLASS="BP">
+For example, the schema below uses two joins to relate three tables. One join relates the VIDEO_SALES_ORDERS table with the SALES_ORDER_LINE_ITEMS table and the other join relates the VIDEO_PRODUCTS table with the SALES_ORDER_LINE_ITEMS table.
+</P>
+
+<A NAME="1014994"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 9-5 &#32;Example of three tables joined using two joins</EM></FONT></H4>
+   
+<BR><A NAME="1014998">
+
+
+<img src="joinmit.gif" ALT="Text description of joinmit.gif follows.">
+<A HREF="img_text/joinmit.htm"><br>Text description of the illustration joinmit.gif</A>
+
+
+</A>
+   <A NAME="1021005"></A>
+<P CLASS="BP">
+Every sales order in the VIDEO_SALES_ORDERS table is for a particular customer (and is uniquely identified by a sales id). As shown in the SALES_ORDER_LINE_ITEMS table, every sales order comprises one or more line items and each line item is for a particular product. Every product in the VIDEO_PRODUCTS table has a description (and is uniquely identified by a product id).
+</P>
+<A NAME="1021006"></A>
+<P CLASS="BP">
+Imagine that a Discoverer end user wants to see the customer's name and a description of what they have been buying, as follows.
+</P>
+   
+<A NAME="1023336">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1015048"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Customer name</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1015050"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Product description</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1015052"></A>
+<P CLASS="TB">
+TURNER&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1015054"></A>
+<P CLASS="TB">
+TOY STORY&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1015056"></A>
+<P CLASS="TB">
+TURNER&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1015106"></A>
+<P CLASS="TB">
+TOY STORY&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1015060"></A>
+<P CLASS="TB">
+JONES&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1015062"></A>
+<P CLASS="TB">
+STARGATE&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1015064"></A>
+<P CLASS="TB">
+JONES&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1015066"></A>
+<P CLASS="TB">
+POPCORN&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1015127"></A>
+<P CLASS="TB">
+JONES&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1015129"></A>
+<P CLASS="TB">
+TRUE LIES&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1015123"></A>
+<P CLASS="TB">
+SMITH&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1015125"></A>
+<P CLASS="TB">
+POPCORN&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1015119"></A>
+<P CLASS="TB">
+SMITH&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1015121"></A>
+<P CLASS="TB">
+TOY STORY&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1015140"></A>
+<P CLASS="TB">
+ADAMS&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1015142"></A>
+<P CLASS="TB">
+STARGATE&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   <A NAME="1015068"></A>
+<P CLASS="BP">
+In other words, VIDEO_SALES_ORDERS.CUST_NAME and VIDEO_PRODUCTS.PROD_DESC.
+</P>
+<A NAME="1015069"></A>
+<P CLASS="BP">
+The following SQL statement would achieve the required result:
+</P>
+    
+<PRE CLASS="CE">
+<A NAME="1015070"></A>select cust_name, prod_desc
+<A NAME="1015181"></A>from video_sales_orders, sales_order_line_items, video_products
+<A NAME="1015184"></A>where
+<A NAME="1015185"></A>video_sales_orders.sales_id=sales_order_line_items.sales_id
+<A NAME="1015194"></A>and
+<A NAME="1015195"></A>sales_order_line_items.prod_id=video_products.prod_id
+<A NAME="1015206"></A>
+</PRE>    <A NAME="1015208"></A>
+<P CLASS="BP">
+To enable the Discoverer end user to see the required result, you can do either of the following:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1015223"></A>You can create a custom folder containing the above SQL statement (for more information, see <A HREF="folders.htm#1004602">"How to create custom folders"</a>).
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1015227"></A>You cannot use the Discoverer Administrator Join Wizard to create a single join that joins more than two tables. Instead, you must create two separate joins, one between VIDEO_SALES_ORDERS and SALES_ORDER_LINE_ITEMS, and a second between SALES_ORDER_LINE_ITEMS and VIDEO_PRODUCTS (for more information, see <A HREF="joins.htm#1011027">"How to create joins"</a>). 
+<P>
+
+<A NAME="1019636"></A>
+<P CLASS="BP1">
+Having defined two separate joins:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1015253"></A>In Discoverer Administrator you can create a complex folder, then drag CUST_NAME from VIDEO_SALES_ORDERS, one item from  SALES_ORDER_LINE_ITEMS, and PROD_DESC from VIDEO_PRODUCTS into the complex folder. Having selected the item from SALES_ORDER_LINE_ITEMS, you can subsequently remove the item to get the two item folder you want (for more information, see <A HREF="folders.htm#1004601">"How to create complex folders"</a>).
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1015255"></A>The Discoverer end user can use the complex folder. Alternatively, the end user can select CUST_NAME from VIDEO_SALES_ORDERS, one item from SALES_ORDER_LINE_ITEMS, and PROD_DESC from VIDEO_PRODUCTS. Having selected the item from SALES_ORDER_LINE_ITEMS, the end user can subsequently remove the item to get the two column worksheet they want.
+<P>
+</UL>
+</UL>
+
+<A NAME="1014954"></A>
+<!--TOC=h1-"1014954"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are non-equi-joins?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1016151"></A>
+<P CLASS="BP">
+In Discoverer, a non-equi-join enables you to join two folders where there is no direct correspondence between columns in the tables. A non-equi-join relates two folders using one or more join conditions that use non-equi-join operators.
+</P>
+<A NAME="1016121"></A>
+<P CLASS="BP">
+For example, the schema below uses a non-equi-join to join the EMP and SALGRADE tables because there are no matching columns in the two tables.
+</P>
+
+<A NAME="1016125"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 9-6 &#32;Example of two tables joined using a non-equi-join</EM></FONT></H4>
+   
+<BR><A NAME="1016129">
+
+
+<img src="joinoeq.gif" ALT="Text description of joinoeq.gif follows.">
+<A HREF="img_text/joinoeq.htm"><br>Text description of the illustration joinoeq.gif</A>
+
+
+</A>
+   <A NAME="1016130"></A>
+<P CLASS="BP">
+An employee's grade depends on their salary. Employees earning between 700 and 1200 are in grade 1, those earning between 1201 and 1400 are in grade 2, and so on. 
+</P>
+<A NAME="1016181"></A>
+<P CLASS="BP">
+Imagine that a Discoverer end user wants to see the grade of each employee, as follows:
+</P>
+   
+<A NAME="1023340">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1016184"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>ENAME</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1016186"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>GRADE</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1016188"></A>
+<P CLASS="TB">
+KING&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1016190"></A>
+<P CLASS="TB">
+5&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1016192"></A>
+<P CLASS="TB">
+BLAKE&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1016194"></A>
+<P CLASS="TB">
+4&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1016196"></A>
+<P CLASS="TB">
+CLARK&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1016198"></A>
+<P CLASS="TB">
+4&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1016200"></A>
+<P CLASS="TB">
+JONES&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1016202"></A>
+<P CLASS="TB">
+4&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1016204"></A>
+<P CLASS="TB">
+MARTIN&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1016206"></A>
+<P CLASS="TB">
+2&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1016208"></A>
+<P CLASS="TB">
+ALLEN&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1016210"></A>
+<P CLASS="TB">
+3&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1016212"></A>
+<P CLASS="TB">
+TURNER&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1016214"></A>
+<P CLASS="TB">
+3&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1016216"></A>
+<P CLASS="TB">
+JAMES&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1016218"></A>
+<P CLASS="TB">
+1&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   <A NAME="1016219"></A>
+<P CLASS="BP">
+In other words, EMP.ENAME and SALGRADE.GRADE.
+</P>
+<A NAME="1016220"></A>
+<P CLASS="BP">
+The following SQL statement would achieve the required result:
+</P>
+    
+<PRE CLASS="CE">
+<A NAME="1016221"></A>select ename, grade
+<A NAME="1016222"></A>from emp, salgrade
+<A NAME="1016223"></A>where
+<A NAME="1016224"></A>emp.sal&gt;=salgrade.losal
+<A NAME="1016225"></A>and
+<A NAME="1016226"></A>emp.sal&lt;=salgrade.hisal
+<A NAME="1016227"></A>
+</PRE>    <A NAME="1016228"></A>
+<P CLASS="BP">
+To enable the Discoverer end user to see the required result, you can do either of the following:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1016230"></A>You can create a custom folder containing the above SQL statement (for more information, see <A HREF="folders.htm#1004602">"How to create custom folders"</a>).
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1016326"></A>You can create a join with two non-equi-join conditions, one between EMP.SAL and SALGRADE.LOSAL and the other between EMP.SAL and SALGRADE.HISAL (for more information, see <A HREF="joins.htm#1011027">"How to create joins"</a>).
+<P>
+
+<A NAME="1016330"></A>
+<P CLASS="BP1">
+Having defined the join:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1016331"></A>In Discoverer Administrator you can create a complex folder, then drag SAL from EMP and GRADE from SALGRADE into the complex folder (for more information, see <A HREF="folders.htm#1004601">"How to create complex folders"</a>).
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1016335"></A>The Discoverer end user can use the complex folder. Alternatively, the end user can select ENAME from EMP and GRADE from SALGRADE.
+<P>
+</UL>
+</UL>
+
+<A NAME="1014436"></A>
+<!--TOC=h1-"1014436"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are one-to-many joins, one-to-one joins, and many-to-many joins?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1019640"></A>
+<P CLASS="BP">
+One-to-many joins are the most common type of join. With a one-to-many join, one row in the master folder is joined to multiple rows in the detail folder.
+</P>
+<A NAME="1021536"></A>
+<P CLASS="BP">
+One-to-one joins are joins between two folders where both items used in the join are primary keys. Therefore only one row in one folder will join to only one (or no) rows in the other folder. There is no real master and detail in this case, because each row in the master table can correspond to no more than one row in the detail table. Occasionally, one-to-one joins are a valid construct. Discoverer enables you to specify that a join is a one-to-one join.
+</P>
+<A NAME="1021543"></A>
+<P CLASS="BP">
+It is possible to query a master folder with multiple detail folders, provided that all but one of the detail folders are joined with one-to-one joins. If more than two detail folders are joined to the master folder using one-to-many joins (also known as a fan trap schema), a row in the master folder might join to many rows in the detail tables, resulting in a Cartesian product. Fan trap schemas are resolved in Discoverer to prevent them returning unexpected results. For more information, see <A HREF="joins.htm#1004604">"What are fan traps, and how does Discoverer handle them?"</a>.
+</P>
+<A NAME="1019644"></A>
+<P CLASS="BP">
+Many-to-many joins are not supported directly in Discoverer (or in any relational system). However, many-to-many joins can always be reworked and transformed into multiple one-to-many joins. Very occasionally, a many-to-many join is a valid construct.
+</P>
+
+<A NAME="1014367"></A>
+<!--TOC=h1-"1014367"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About joining two folders using more than one join</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1021603"></A>
+<P CLASS="BP">
+You might want to join two folders using more than one joinwhen creating a complex folder. For example, you might create a number of complex folders that contain the same items, but each complex folder uses one or more joins. Each one of these joins can be defined using different join options.
+</P>
+<A NAME="1021785"></A>
+<P CLASS="BP">
+The following table illustrates how you can join two folders (e.g. emp and dept) using four different joins. You can choose one or more of these joins when adding items to complex folders.
+</P>
+   
+<A NAME="1023344">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1021818"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Complex folder<br>name</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1021820"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Master folder join<br>item</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1021890"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Join operator</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1021880"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Detail<br>folder join<br>item</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1021838"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Join options used for the join</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1021965"></A>
+<P CLASS="TB">
+Complex1&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1021967"></A>
+<P CLASS="TB">
+emp.deptno&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1021969"></A>
+<P CLASS="TB">
+=&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1021971"></A>
+<P CLASS="TB">
+dept.deptno&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1021973"></A>
+<P CLASS="TB">
+No options selected&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1021822"></A>
+<P CLASS="TB">
+Complex2&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1021824"></A>
+<P CLASS="TB">
+emp.deptno&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1021892"></A>
+<P CLASS="TB">
+=&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1021882"></A>
+<P CLASS="TB">
+dept.deptno&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1021840"></A>
+<P CLASS="TB">
+Detail foreign key can have null values&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1021851"></A>
+<P CLASS="TB">
+Complex3&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1021900"></A>
+<P CLASS="TB">
+emp.deptno&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1021894"></A>
+<P CLASS="TB">
+=&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1021884"></A>
+<P CLASS="TB">
+dept.deptno&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1021842"></A>
+<P CLASS="TB">
+One-to-one relationship&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1021860"></A>
+<P CLASS="TB">
+Complex4&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1021904"></A>
+<P CLASS="TB">
+emp.deptno&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1021896"></A>
+<P CLASS="TB">
+=&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1021886"></A>
+<P CLASS="TB">
+dept.deptno&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1021844"></A>
+<P CLASS="TB">
+Outer join on detail folder&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   <A NAME="1021774"></A>
+<P CLASS="BP">
+When you create a complex folder and drag items from two folders that have more than one join between the two folders, Discoverer Administrator displays the Choose Joins dialog where you can choose one or more joins to use. 
+</P>
+
+<A NAME="1021933"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 9-7 &#32;Choose Join dialog</EM></FONT></H4>
+   
+<BR><A NAME="1023466">
+
+
+<img src="fdrchj1.gif" ALT="Text description of fdrchj1.gif follows.">
+<A HREF="img_text/fdrchj1.htm"><br>Text description of the illustration fdrchj1.gif</A>
+
+
+</A>
+   <A NAME="1021938"></A>
+<P CLASS="BP">
+For more information, see <A HREF="folders.htm#1004601">"How to create complex folders"</a>.
+</P>
+<A NAME="1021709"></A>
+<P CLASS="BP">
+When Discoverer Plus or Discoverer Desktop users create worksheets using items from multiple folders, if end users choose items from two folders joined using more than one join, Discoverer does one of the following:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1021667"></A>Discoverer uses all of the available joins
+<P>
+
+<A NAME="1021693"></A>
+<P CLASS="BP1">
+This occurs if you select the <STRONG CLASS="Bold">Disable multiple join path detection</STRONG> option in Discoverer Plus or Discoverer Desktop.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1021676"></A>Discoverer displays the Join Folders dialog enabling you to select one or more joins
+<P>
+
+<A NAME="1021704"></A>
+<P CLASS="BP1">
+This occurs if you clear the <STRONG CLASS="Bold">Disable multiple join path detection</STRONG> option in Discoverer Plus or Discoverer Desktop.
+</P>
+</UL>
+<A NAME="1021666"></A>
+<P CLASS="BP">
+For more information, see the <EM CLASS="Italic">Oracle Application Server Discoverer Plus User's Guide.</EM>
+</P>
+
+<A NAME="1021602"></A>
+<!--TOC=h1-"1021602"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What effect do joins have on query results and query performance?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1014383"></A>
+<P CLASS="BP">
+In some circumstances, you will always want Discoverer to use a join when querying a master folder and a detail folder. For example:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1019649"></A>you might want a query to return values from both the master folder and the detail folder
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1019651"></A>you might want a query to return only those rows from the detail folder that have matching values in the master folder
+<P>
+</UL>
+<A NAME="1019650"></A>
+<P CLASS="BP">
+Resolving joins is relatively time-consuming, so returning results from such a query might be relatively slow.
+</P>
+<A NAME="1013755"></A>
+<P CLASS="BP">
+In other circumstances, it will not be necessary for Discoverer to query the master folder as well as the detail folder. For example:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1013756"></A>if you know that values in the detail folder always have corresponding values in the master folder
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1013757"></A>if you know that you will always want the query to return all of the detailed values from the detail folder regardless of whether values exist in the master folder
+<P>
+</UL>
+<A NAME="1013758"></A>
+<P CLASS="BP">
+If you set the appropriate option to indicate that Discoverer does not need to query the master folder, query performance will improve. However, be aware that not querying the master table might give you unexpected results. If you are not sure whether to include the master folder, see <A HREF="joins.htm#1013760">"Examples of how joins can affect query results from complex folders"</a>.
+</P>
+<A NAME="1019675"></A>
+<P CLASS="BP">
+If you combine two or more folders in a complex folder (i.e. using a join), Discoverer can improve query performance by detecting and removing joins that are not required (a process known as join trimming). If the SQLJoinTrim Discoverer registry setting is enabled (i.e. if it is set to the default value of 1), Discoverer will remove joins from a query when both of the following conditions are met:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1019676"></A>if Discoverer can return the requested rows without using the join
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1019677"></A>if you select the <STRONG CLASS="Bold">Detail item values always exist in master folder</STRONG> option for the join (for more information, see <A HREF="joins.htm#1013760">"Examples of how joins can affect query results from complex folders"</a>)
+<P>
+</UL>
+<A NAME="1023282"></A>
+<P CLASS="BP">
+For more information about Discoverer registry settings, see <A HREF="registry.htm#1006376">"What are Discoverer registry settings?"</a>.
+</P>
+<A NAME="1021508"></A>
+<P CLASS="BP">
+Discoverer will never use a summary folder to satisfy a query that uses a join with the <STRONG CLASS="Bold">Detail item values might not exist in master folder</STRONG> option selected (for more information, see the <A HREF="adjopt01.htm#1005113">"Join Wizard: Step 2 dialog"</a>).
+</P>
+
+<A NAME="1013760"></A>
+<!--TOC=h1-"1013760"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Examples of how joins can affect query results from complex folders</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1020310"></A>
+<P CLASS="BP">
+The examples below assume that you have used Discoverer Administrator to create a complex folder called Emp_and_Dept. The complex folder is based on the DEPT and EMP tables with the join condition DEPT.DEPTNO=EMP.DEPTNO.
+</P>
+<A NAME="1020301"></A>
+<P CLASS="BP">
+Consider the following two scenarios:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1019685"></A><STRONG CLASS="Bold">Scenario One</STRONG>
+<P>
+
+<A NAME="1019770"></A>
+<P CLASS="BP1">
+In Scenario One, employees in the EMP table must always belong to one of the departments in the DEPT table:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1019690"></A>the DEPT table contains rows for department 10 (Accounts), department 20 (Research), and department 30 (Sales)
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1019701"></A>the EMP table contains rows for Clark (an employee of department 10), Smith (an employee of department 20), and Allen (an employee of department 30)
+<P>
+
+<A NAME="1019728"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 9-8 &#32;Scenario One: An example of a schema where the rows returned do not depend on whether the master folder is included in the query</EM></FONT></H4>
+ 
+<BR><A NAME="1019732">
+
+
+<img src="joind3.gif" ALT="Text description of joind3.gif follows.">
+<A HREF="img_text/joind3.htm"><br>Text description of the illustration joind3.gif</A>
+
+
+</A>
+ </UL>
+
+<A NAME="1019796"></A>
+<P CLASS="BP1">
+This scenario illustrates a schema in which a query on ENAME produces the same results, regardless of whether you include the master folder in the query.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1019689"></A><STRONG CLASS="Bold">Scenario Two</STRONG>
+<P>
+
+<A NAME="1019776"></A>
+<P CLASS="BP1">
+In Scenario Two, employees in the EMP table need not belong to a department in the DEPT table, as follows:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1013762"></A>the DEPT table contains rows for department 10 (Accounts) and department 20 (Research)
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1015615"></A>the EMP table contains rows for Clark (an employee of department 10), Smith (an employee of department 20), and Allen (a former employee of department 30, which no longer exists)
+<P>
+
+<A NAME="1019753"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 9-9 &#32;Scenario Two: An example of a schema where the rows returned depend on whether the master folder is included in the query</EM></FONT></H4>
+ 
+<BR><A NAME="1019757">
+
+
+<img src="joind2.gif" ALT="Text description of joind2.gif follows.">
+<A HREF="img_text/joind2.htm"><br>Text description of the illustration joind2.gif</A>
+
+
+</A>
+ </UL>
+
+<A NAME="1019805"></A>
+<P CLASS="BP1">
+This scenario illustrates a schema in which a query on ENAME might produce different results, depending on whether you include the master folder in the query.
+</P>
+</UL>
+
+<A NAME="1013768"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Example 1: Excluding the master folder always possible</FONT></H4>
+<A NAME="1013769"></A>
+<P CLASS="BP">
+You will want to exclude the master folder from a query when including the master folder will either make no difference to the results, or when including the master folder will not return the required results.
+</P>
+<A NAME="1023203"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> Excluding the master folder from a query (that uses only items from a complex folder), means that Discoverer Plus or Discoverer Desktop does not use the join between the master and detail folder. Discoverer does not use the join when you select query items from a complex folder (when creating a worksheet in Discoverer Plus or Discoverer Desktop), and the query items come only from the detail folder (e.g. EMP).
+</P>
+<A NAME="1019841"></A>
+<P CLASS="BP">
+Imagine that a Discoverer end user wants to see the name of all the employees in the EMP table by selecting the ENAME item from the Emp_and_Dept complex folder.
+</P>
+<A NAME="1020072"></A>
+<P CLASS="BP">
+In Scenario One, the required results are as follows:
+</P>
+   
+<A NAME="1023348">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1020065"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>ENAME</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1020067"></A>
+<P CLASS="TB">
+CLARK&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1020069"></A>
+<P CLASS="TB">
+SMITH&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1020071"></A>
+<P CLASS="TB">
+ALLEN&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   <A NAME="1020058"></A>
+<P CLASS="BP">
+Including the master folder in the query will make no difference to the results because all of the employees will be returned by the query. To improve query performance, you can specify that Discoverer does not query the master folder by selecting the  <STRONG CLASS="Bold">Detail items always exist in the master folder</STRONG> option in the <A HREF="adjopt01.htm#1005113">"Join Wizard: Step 2 dialog"</a>. Providing that the SQLJoinTrim Discoverer registry setting is also enabled, Discoverer will not query the master folder (for more information, see <A HREF="registry.htm#1006376">"What are Discoverer registry settings?"</a>).
+</P>
+<A NAME="1020091"></A>
+<P CLASS="BP">
+In Scenario Two, the required results are as follows:
+</P>
+   
+<A NAME="1023352">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1020084"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>ENAME</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1020086"></A>
+<P CLASS="TB">
+CLARK&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1020088"></A>
+<P CLASS="TB">
+SMITH&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1020090"></A>
+<P CLASS="TB">
+ALLEN&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   <A NAME="1020079"></A>
+<P CLASS="BP">
+Including the master folder in the query will only return those employees with department numbers that match department numbers in the DEPT table. But the Discoverer end user wants to see all employees in the EMP table. To return all the employees in the EMP table, you can specify that Discoverer does not query the master folder by selecting the  <STRONG CLASS="Bold">Detail items always exist in the master folder</STRONG> option in the <A HREF="adjopt01.htm#1005113">"Join Wizard: Step 2 dialog"</a>. Providing that the SQLJoinTrim Discoverer registry setting is also enabled, Discoverer will not query the master folder (for more information, see <A HREF="registry.htm#1006376">"What are Discoverer registry settings?"</a>).
+</P>
+
+<A NAME="1019905"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Example 2: Excluding the master folder might be possible</FONT></H4>
+<A NAME="1019933"></A>
+<P CLASS="BP">
+You will want to include the master folder in a query when excluding the master folder will not return the required results from the detail table.
+</P>
+<A NAME="1023211"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> Including the master folder in a query (that uses only items from a complex folder), means that Discoverer Plus or Discoverer Desktop uses the join between the master and detail folder. Discoverer uses a join when you select query items from a complex folder (when creating a worksheet in Discoverer Plus or Discoverer Desktop), and the query items come from either the master or the detail folder (e.g. DEPT and EMP respectively).
+</P>
+<A NAME="1021023"></A>
+<P CLASS="BP">
+Imagine that a Discoverer end user wants to see the current employees in the EMP table by selecting the ENAME item from the Emp_and_Dept complex folder. Any employees that belong to departments that are not in the DEPT table are not current employees, and are therefore not required. 
+</P>
+<A NAME="1020127"></A>
+<P CLASS="BP">
+In Scenario One, the required results are as follows:
+</P>
+   
+<A NAME="1023359">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1020120"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>ENAME</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1020122"></A>
+<P CLASS="TB">
+CLARK&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1020124"></A>
+<P CLASS="TB">
+SMITH&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1020126"></A>
+<P CLASS="TB">
+ALLEN&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   <A NAME="1020101"></A>
+<P CLASS="BP">
+Including the master folder in the query will make no difference to the results because all of the employees belong to a department. To improve query performance, you can specify that Discoverer does not query the master folder by selecting the  <STRONG CLASS="Bold">Detail item values always exist in the master folder</STRONG> option in the <A HREF="adjopt01.htm#1005113">"Join Wizard: Step 2 dialog"</a>. Providing that the SQLJoinTrim Discoverer registry setting is also enabled, Discoverer will not query the master folder (for more information, see <A HREF="registry.htm#1006376">"What are Discoverer registry settings?"</a>).
+</P>
+<A NAME="1020049"></A>
+<P CLASS="BP">
+In Scenario Two, the required results are as follows:
+</P>
+   
+<A NAME="1023363">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1020107"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>ENAME</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1020109"></A>
+<P CLASS="TB">
+CLARK&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1020111"></A>
+<P CLASS="TB">
+SMITH&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   <A NAME="1020103"></A>
+<P CLASS="BP">
+Including the master folder in the query will only return those employees with department numbers that match department numbers in the DEPT table, which is exactly what the Discoverer end user wants. You can specify that Discoverer always queries the master folder by selecting the <STRONG CLASS="Bold">Detail item values might not exist in the master folder</STRONG> option in the <A HREF="adjopt01.htm#1005113">"Join Wizard: Step 2 dialog"</a>.
+</P>
+
+<A NAME="1020167"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Example 3: Excluding the master folder never possible</FONT></H4>
+<A NAME="1020155"></A>
+<P CLASS="BP">
+You will always want to include the master folder in a query if you want the results to contain information from both the master folder and the detail folder.
+</P>
+<A NAME="1023270"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> Including the master folder in a query (that uses only items from a complex folder), means that Discoverer Plus or Discoverer Desktop uses the join between the master and detail folder. Discoverer uses a join when you select query items from a complex folder (when creating a worksheet in Discoverer Plus or Discoverer Desktop), and the query items come from either the master folder or the detail folder or from both folders (e.g. DEPT and EMP).
+</P>
+<A NAME="1021031"></A>
+<P CLASS="BP">
+Imagine that a Discoverer end user wants to see employees and the departments to which those employees belong by selecting the ENAME item and the DNAME item from the Emp_and_Dept complex folder.
+</P>
+<A NAME="1020232"></A>
+<P CLASS="BP">
+In Scenario One, the required results are as follows:
+</P>
+   
+<A NAME="1023367">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1020221"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>ENAME</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1020223"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>DNAME</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1020225"></A>
+<P CLASS="TB">
+CLARK&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1020227"></A>
+<P CLASS="TB">
+ACCOUNTS&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1020229"></A>
+<P CLASS="TB">
+SMITH&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1020231"></A>
+<P CLASS="TB">
+RESEARCH&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1020236"></A>
+<P CLASS="TB">
+ALLEN&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1020238"></A>
+<P CLASS="TB">
+SALES&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   <A NAME="1020210"></A>
+<P CLASS="BP">
+Including the master folder in the query is essential to return the names of the departments. Discoverer will include the master folder in the query even if you have selected the <STRONG CLASS="Bold">Detail item values always exist in the master folder</STRONG> option in the <A HREF="adjopt01.htm#1005113">"Join Wizard: Step 2 dialog"</a>.
+</P>
+<A NAME="1020262"></A>
+<P CLASS="BP">
+In Scenario Two, the required results are as follows:
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1020251"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>ENAME</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1020253"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>DNAME</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1020255"></A>
+<P CLASS="TB">
+CLARK&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1020257"></A>
+<P CLASS="TB">
+ACCOUNTS&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1020259"></A>
+<P CLASS="TB">
+SMITH&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1020261"></A>
+<P CLASS="TB">
+RESEARCH&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</P>
+<A NAME="1020281"></A>
+<P CLASS="BP">
+Including the master folder in the query is essential to return the names of the departments. Discoverer will include the master folder in the query even if you have selected the <STRONG CLASS="Bold">Detail item values always exist in the master folder</STRONG> option in the <A HREF="adjopt01.htm#1005113">"Join Wizard: Step 2 dialog"</a>.
+</P>
+<A NAME="1020279"></A>
+<P CLASS="BP">
+Note that Allen will only be returned (with a null value for the department name) if you select the <STRONG CLASS="Bold">Outer join on master</STRONG> option in the <A HREF="adjopt01.htm#1005113">"Join Wizard: Step 2 dialog"</a> (for more information, see <A HREF="joins.htm#1018234">"What are outer joins?"</a>).
+</P>
+
+<A NAME="1018234"></A>
+<!--TOC=h1-"1018234"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are outer joins?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1015593"></A>
+<P CLASS="BP">
+Outer joins are SQL constructs that enable you to return rows from one table when there are no matching rows in a table to which it is joined. 
+</P>
+<A NAME="1021042"></A>
+<P CLASS="BP">
+Consider the following scenario:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1015601"></A>the master table DEPT contains rows for department 10 (ACCOUNTS), department 20 (RESEARCH) and department 40 (OPERATIONS)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1015605"></A>the detail table EMP contains rows for Clark (department 10), Smith (department 20) and Allen (a former employee of department 30, which no longer exists)
+<P>
+
+<A NAME="1015606"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 9-10 &#32;Master and detail tables DEPT and EMP, where the rows returned are determined by the position of the outer join construct in the query</EM></FONT></H4>
+  
+<BR><A NAME="1015624">
+
+
+<img src="joind1.gif" ALT="Text description of joind1.gif follows.">
+<A HREF="img_text/joind1.htm"><br>Text description of the illustration joind1.gif</A>
+
+
+</A>
+  </UL>
+<A NAME="1015708"></A>
+<P CLASS="BP">
+The following examples use the schema in the above figure to illustrate how the position of the outer join determines the rows returned from a query.
+</P>
+
+<A NAME="1018901"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Example 1 - Outer join placed on the master table</FONT></H4>
+<A NAME="1018908"></A>
+<P CLASS="BP">
+Imagine that a Discoverer end user wants to see all employee records, even when an employee does not belong to a department. The required results are as follows:
+</P>
+   
+<A NAME="1023371">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1018918"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>DNAME</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1018920"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>ENAME</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1018922"></A>
+<P CLASS="TB">
+ACCOUNTS&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1018962"></A>
+<P CLASS="TB">
+CLARK&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1018926"></A>
+<P CLASS="TB">
+RESEARCH&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1018964"></A>
+<P CLASS="TB">
+SMITH&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1018966"></A>
+<P CLASS="TB">
+&lt;NULL&gt;&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1018968"></A>
+<P CLASS="TB">
+ALLEN&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   <A NAME="1018931"></A>
+<P CLASS="BP">
+The following SQL statement would achieve the required result:
+</P>
+    
+<PRE CLASS="CE">
+<A NAME="1018932"></A>select dname, ename
+<A NAME="1018933"></A>from dept, emp
+<A NAME="1018934"></A>where
+<A NAME="1018935"></A>dept.deptno(+)=emp.deptno
+<A NAME="1018936"></A>
+</PRE>    <A NAME="1019100"></A>
+<P CLASS="BP">
+When the outer join is placed on the master table, the database returns each detail row for which there is no matching master row (as well as all matching detail and master rows). In the SQL statement, the plus (+) symbol signifies the outer join.
+</P>
+<A NAME="1018937"></A>
+<P CLASS="BP">
+To enable the Discoverer end user to see the required result, you can do either of the following:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1018993"></A>You can create a custom folder containing the above SQL statement (for more information, see <A HREF="folders.htm#1004602">"How to create custom folders"</a>).
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1019008"></A>You can create a join with a single join condition between DEPT.DEPTNO and EMP.DEPTNO and select both the <STRONG CLASS="Bold">Detail items might not exist in the master folder</STRONG> option and the <STRONG CLASS="Bold">Outer join on master</STRONG> option in the <A HREF="adjopt01.htm#1005113">"Join Wizard: Step 2 dialog"</a> (for more information about creating joins, see <A HREF="joins.htm#1011027">"How to create joins"</a>).
+<P>
+
+<A NAME="1019012"></A>
+<P CLASS="BP1">
+Having defined the join:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1019013"></A>In Discoverer Administrator you can create a complex folder, then drag DNAME from DEPT and ENAME from EMP into the complex folder (for more information, see <A HREF="folders.htm#1004601">"How to create complex folders"</a>).
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1019017"></A>The Discoverer end user can use the complex folder. Alternatively, the end user can select DNAME from DEPT and ENAME from EMP.
+<P>
+</UL>
+</UL>
+
+<A NAME="1019108"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Example 2 - Outer join placed on the detail table</FONT></H4>
+<A NAME="1019109"></A>
+<P CLASS="BP">
+Imagine that a Discoverer end user wants to see all department records even when a department does not have any employees. The required results are as follows:
+</P>
+   
+<A NAME="1023375">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1019112"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>DNAME</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1019114"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>ENAME</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1019116"></A>
+<P CLASS="TB">
+ACCOUNTS&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1019118"></A>
+<P CLASS="TB">
+CLARK&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1019120"></A>
+<P CLASS="TB">
+RESEARCH&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1019122"></A>
+<P CLASS="TB">
+SMITH&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1019124"></A>
+<P CLASS="TB">
+OPERATIONS&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1019126"></A>
+<P CLASS="TB">
+&lt;NULL&gt;&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   <A NAME="1019128"></A>
+<P CLASS="BP">
+The following SQL statement would achieve the required result:
+</P>
+    
+<PRE CLASS="CE">
+<A NAME="1019129"></A>select dname, ename
+<A NAME="1019130"></A>from dept, emp
+<A NAME="1019131"></A>where
+<A NAME="1019132"></A>dept.deptno=emp.deptno(+)
+<A NAME="1019133"></A>
+</PRE>    <A NAME="1019134"></A>
+<P CLASS="BP">
+When the outer join is placed on the detail table, the database returns each master row for which there is no matching detail row (as well as all matching master and detail rows). In the SQL statement, the plus (+) symbol signifies the outer join.
+</P>
+<A NAME="1019135"></A>
+<P CLASS="BP">
+To enable the Discoverer end user to see the required result, you can do either of the following:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1019137"></A>You can create a custom folder containing the above SQL statement (for more information, see <A HREF="folders.htm#1004602">"How to create custom folders"</a>).
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1019141"></A>You can create a join with a single join condition between DEPT.DEPTNO and EMP.DEPTNO and select <STRONG CLASS="Bold">Outer join on detail</STRONG> in the <A HREF="adjopt01.htm#1005113">"Join Wizard: Step 2 dialog"</a> (for more information about creating joins, see <A HREF="joins.htm#1011027">"How to create joins"</a>).
+<P>
+
+<A NAME="1019148"></A>
+<P CLASS="BP1">
+Having defined the join:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1019149"></A>In Discoverer Administrator you can create a complex folder, then drag DNAME from DEPT and ENAME from EMP into the complex folder (for more information, see <A HREF="folders.htm#1004601">"How to create complex folders"</a>).
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1019153"></A>The Discoverer end user can use the complex folder. Alternatively, the end user can select DNAME from DEPT and ENAME from EMP.
+<P>
+</UL>
+</UL>
+
+<A NAME="1011027"></A>
+<!--TOC=h1-"1011027"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to create joins</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1013831"></A>
+<P CLASS="BP">
+You create a join to enable end users to include items from different folders in the same worksheet.
+</P>
+<A NAME="1005304"></A>
+<P CLASS="BP">
+To create a join:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005384"></A>Display the <A HREF="addtab01.htm#1005113">"Workarea: Data tab"</a> and select the item in the master folder that will match an item in the detail folder.
+<P>
+
+<A NAME="1023145"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Hint:</STRONG> For more information about which is the master and detail folder, see <A HREF="joins.htm#1006440">"What are joins?"</a>.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1007525"></A>Choose Insert | Join to display the <A HREF="adnmij01.htm#1005113">"Join Wizard: Step 1 dialog"</a>.
+<P>
+ 
+
+<A NAME="1012380"></A>
+<P CLASS="BP1">
+The master item is displayed in the <STRONG CLASS="Bold">Master Items</STRONG> field.
+</P>
+
+<A NAME="1004677"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 9-11 &#32;Join Wizard: Step 1 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1005368">
+
+
+<img src="joinmi1.gif" ALT="Text description of joinmi1.gif follows.">
+<A HREF="img_text/joinmi1.htm"><br>Text description of the illustration joinmi1.gif</A>
+
+
+</A>
+ 
+<A NAME="1013848"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Hint:</STRONG> If you want to change the folder and item in the <STRONG CLASS="Bold">Master Items</STRONG> field, choose the <STRONG CLASS="Bold">More items</STRONG> option at the bottom of the drop down list.
+</P>
+</OL>
+<A NAME="1019408"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005580"></A>Click the <STRONG CLASS="Bold">Operator</STRONG> down arrow and select a join operator from the drop down list to specify the join type.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1005537"></A>Click the <STRONG CLASS="Bold">Detail Items</STRONG> down arrow to display the <A HREF="adnjco01.htm#1006310">"New Join dialog"</a>.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1005572"></A>Select the folder and the detail item for the join. 
+<P>
+ 
+
+<A NAME="1006996"></A>
+<P CLASS="BP1">
+You can choose a detail item from a folder in the same business area or in any other open business area.
+</P>
+
+<A NAME="1019240"></A>
+<P CLASS="BP1">
+By specifying a master item, a detail item, and a join operator, you have created a join condition. Joins that have only one join condition are referred to as single-item joins (for more information, see <A HREF="joins.htm#1013552">"What are single item joins?"</a>).
+</P>
+
+<A NAME="1019235"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Hint:</STRONG> If you want to change the folder and item in the <STRONG CLASS="Bold">Detail Items</STRONG> field, choose the <STRONG CLASS="Bold">More items</STRONG> option at the bottom of the drop down list.
+</P>
+
+<A NAME="1021317"></A>
+<P CLASS="BP1">
+In some circumstances, you will need to create more than one join condition (for more information, see <A HREF="joins.htm#1016102">"What are multi-item joins?"</a>).
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1005497"></A>(optional) To create a multi-item join:
+<P>
+ 
+
+<OL CLASS="LA2" TYPE="a">
+
+<LI CLASS="LA2" TYPE="a" VALUE="1"><A NAME="1013868"></A>Click Add to display a new row for a new join condition.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1012248"></A>Use the drop down lists for <STRONG CLASS="Bold">Master Items</STRONG> and <STRONG CLASS="Bold">Detail Items</STRONG> to select a new pair of items from the same master and detail folders as the previous join condition.
+<P>
+
+<A NAME="1012249"></A>
+<P CLASS="BP2">
+<STRONG CLASS="Bold">Note:</STRONG> If you specify a master or detail item from a folder that was not included in the previous join condition, the previous join condition is removed.
+</P>
+ 
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1012250"></A>Add new join conditions until you have specified all the matching items in the master folder and the detail folder.
+<P>
+</OL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1012251"></A>Click Next to display the <A HREF="adjopt01.htm#1005113">"Join Wizard: Step 2 dialog"</a>.
+<P>
+
+<A NAME="1012289"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 9-12 &#32; Join Wizard: Step 2 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1012294">
+
+
+<img src="joinmi2.gif" ALT="Text description of joinmi2.gif follows.">
+<A HREF="img_text/joinmi2.htm"><br>Text description of the illustration joinmi2.gif</A>
+
+
+</A>
+ </OL>
+ 
+<A NAME="1012295"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="8"><A NAME="1012276"></A>Select the join details for this join as follows:
+<P>
+ 
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1021340"></A><STRONG CLASS="Bold">Detail item values always exist in the master folder (Typical)</STRONG>
+<P>
+
+<A NAME="1013286"></A>
+<P CLASS="BP2">
+Select this radio button to improve query performance (for more information, see <A HREF="joins.htm#1021602">"What effect do joins have on query results and query performance?"</a>).
+</P>
+ 
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1013287"></A><STRONG CLASS="Bold">Detail item values might not exist in the master folder</STRONG>
+<P>
+
+<A NAME="1013290"></A>
+<P CLASS="BP2">
+Select this radio button if you cannot be sure that all the values in the detail folder have matching values in the master folder. Note that selecting this option might return unexpected results (for more information, see <A HREF="joins.htm#1021602">"What effect do joins have on query results and query performance?"</a>).
+</P>
+ 
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="9"><A NAME="1012315"></A>(optional) Select any of the following options for this join, as required:
+<P>
+ 
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1013919"></A><STRONG CLASS="Bold">Outer join on detail</STRONG>
+<P>
+
+<A NAME="1014008"></A>
+<P CLASS="BP2">
+Select this check box to display master rows that have no corresponding detail items, as well as all matching master and detail rows.
+</P>
+ 
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1013923"></A><STRONG CLASS="Bold">Outer join on master</STRONG>
+<P>
+
+<A NAME="1014036"></A>
+<P CLASS="BP2">
+Select this check box to display detail rows that have no corresponding master, as well as all matching detail and master rows. This check box is only available if the <STRONG CLASS="Bold">Detail item values might not exist in the master folder</STRONG> option is selected.
+</P>
+ 
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1013974"></A><STRONG CLASS="Bold">One to one relationship between master and detail</STRONG>
+<P>
+
+<A NAME="1014045"></A>
+<P CLASS="BP2">
+Select this check box to specify that there is a one to one relationship between master and detail tables.
+</P>
+
+<A NAME="1014058"></A>
+<P CLASS="BP2">
+<STRONG CLASS="Bold">Note:</STRONG> Clear this check box if you are creating an outer join.
+</P>
+ 
+</UL>
+
+<A NAME="1019301"></A>
+<P CLASS="BP1">
+For more information about the above options, see:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1021074"></A><A HREF="joins.htm#1018234">"What are outer joins?"</a>
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1021075"></A><A HREF="joins.htm#1014436">"What are one-to-many joins, one-to-one joins, and many-to-many joins?"</a>
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1021076"></A><A HREF="adjopt01.htm#1005113">"Join Wizard: Step 2 dialog"</a>
+<P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="10"><A NAME="1013306"></A>Click Finish to save the changes and close the dialog.
+<P>
+ 
+ 
+<A NAME="1005588"></A>
+<P CLASS="BP">
+Discoverer Administrator creates the join between the two folders. The join icon is shown below both folders in the Workarea.
+</P>
+
+<A NAME="1006526"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007018"></A>To include a function or a literal (e.g. text string, number, date) in a join, create a calculated item that includes the function or literal you want to use. You can then create a join and specify the item in the join.
+<P>
+</UL>
+
+<A NAME="1005766"></A>
+<!--TOC=h1-"1005766"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to view or edit joins</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005795"></A>
+<P CLASS="BP">
+You can view or edit a join using either or both of the following methods:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014077"></A>using the <A HREF="adnmij01.htm#1006756">"Edit Join dialog: Items tab"</a> and <A HREF="adjopt01.htm#1007621">"Edit Join dialog: Options tab"</a> to:
+<P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1014138"></A>view and edit join items
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1014142"></A>add and remove join items
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1014143"></A>edit the join name and description
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1014148"></A>view and edit join options
+<P>
+</UL>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014078"></A>using the <A HREF="adjpro01.htm#1005113">"Join Properties dialog"</a> to:
+<P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1014149"></A>view and edit join properties for one or more joins
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1014160"></A>view dependent objects for one or more joins
+<P>
+</UL>
+</UL>
+<A NAME="1007188"></A>
+<P CLASS="BP">
+Both methods are described below.
+</P>
+<A NAME="1019313"></A>
+<P CLASS="BP">
+To edit a join using the Edit Join dialog:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1006539"></A>Select a join on the <A HREF="addtab01.htm#1005113">"Workarea: Data tab"</a> and choose Edit | Edit... to display the <A HREF="adnmij01.htm#1006756">"Edit Join dialog: Items tab"</a>.
+<P>
+
+<A NAME="1006543"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 9-13 &#32;Edit Join dialog: Items tab</EM></FONT></H4>
+  
+<BR><A NAME="1012407">
+
+
+<img src="joined1.gif" ALT="Text description of joined1.gif follows.">
+<A HREF="img_text/joined1.htm"><br>Text description of the illustration joined1.gif</A>
+
+
+</A>
+  <A NAME="1012408"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1013657"></A>Edit the join name, description, and join conditions as required.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1014226"></A>Display the <A HREF="adjopt01.htm#1007621">"Edit Join dialog: Options tab"</a>.
+<P>
+
+<A NAME="1013693"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 9-14 &#32; Edit Join dialog: Options tab</EM></FONT></H4>
+ 
+<BR><A NAME="1013697">
+
+
+<img src="joined2.gif" ALT="Text description of joined2.gif follows.">
+<A HREF="img_text/joined2.htm"><br>Text description of the illustration joined2.gif</A>
+
+
+</A>
+ </OL>
+ 
+<A NAME="1013698"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1006252"></A>Edit the join options as required.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1013717"></A>Click OK to save any changes you have made and close the dialog.
+<P>
+ 
+</OL>
+<A NAME="1014175"></A>
+<P CLASS="BP">
+To view or edit join properties using the Join Properties dialog:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1014179"></A>Select a join on the <A HREF="addtab01.htm#1005113">"Workarea: Data tab"</a> and choose Edit | Properties to display the <A HREF="adjpro01.htm#1005113">"Join Properties dialog"</a>.
+<P>
+
+<A NAME="1014183"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 9-15 &#32;Join Properties dialog: General tab</EM></FONT></H4>
+  
+<BR><A NAME="1014187">
+
+
+<img src="joinpgn.gif" ALT="Text description of joinpgn.gif follows.">
+<A HREF="img_text/joinpgn.htm"><br>Text description of the illustration joinpgn.gif</A>
+
+
+</A>
+  
+<A NAME="1020425"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Hint</STRONG>: You can select more than one join at a time by holding down the Ctrl key and clicking another join. All properties that are common to each selected join are displayed. If the value of a property is not common to all of the selected joins, the Value field is blank.
+</P>
+</OL>
+<A NAME="1023322"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1014191"></A>Make changes as required.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1014192"></A>Click OK to save any changes you have made and close the Join Properties dialog.
+<P>
+ 
+</OL>
+
+<A NAME="1004603"></A>
+<!--TOC=h1-"1004603"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to delete a join</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004948"></A>
+<P CLASS="BP">
+You might delete a join when it is no longer required. For example, you might want to prevent end users creating a worksheet that contains items from two previously joined folders.
+</P>
+<A NAME="1019318"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note: </STRONG>When you delete a join, other EUL objects (e.g. complex folders) that use the join might also be affected. It is recommended that you export the EUL before you attempt to delete a join.
+</P>
+<A NAME="1007206"></A>
+<P CLASS="BP">
+To delete a join:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1014238"></A>Select a join on the <A HREF="addtab01.htm#1005113">"Workarea: Data tab"</a> and choose Edit | Delete to display the <A HREF="adcdel01.htm#1005113">"Confirm Delete dialog"</a>.
+<P>
+
+<A NAME="1014309"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Hint:</STRONG> You can select more than one join at a time by holding down the Ctrl key and clicking another join.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1014310"></A>(optional) To see the objects that might be affected by deleting this join:
+<P>
+ 
+
+<OL CLASS="LA2" TYPE="a">
+
+<LI CLASS="LA2" TYPE="a" VALUE="1"><A NAME="1014314"></A>Click Impact to display the <A HREF="adimpa01.htm#1005691">"Impact dialog"</a>.
+<P>
+
+<A NAME="1014266"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 9-16 &#32;Impact dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1014270">
+
+
+<img src="impactb.gif" ALT="Text description of impactb.gif follows.">
+<A HREF="img_text/impactb.htm"><br>Text description of the illustration impactb.gif</A>
+
+
+</A>
+ 
+<A NAME="1019453"></A>
+<P CLASS="BP2">
+The Impact dialog enables you to review the other EUL objects that might be affected when you delete a join.
+</P>
+
+<A NAME="1021496"></A>
+<P CLASS="BP2">
+<STRONG CLASS="Bold">Note:</STRONG> The Impact dialog does not show the impact on workbooks saved to the file system (i.e. in .dis files).
+</P>
+ 
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1006728"></A>(optional) Select a row in the Impact dialog to view text at the bottom of the list, indicating what affect the current action will have on the EUL object.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1007768"></A>Click Close to close the Impact dialog when you have finished reviewing the impact of deleting the join.
+<P>
+</OL>
+</OL>
+<A NAME="1010388"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1004968"></A>Click Yes if you still want to delete the selected join(s).
+<P>
+ 
+</OL>
+
+<A NAME="1004604"></A>
+<!--TOC=h1-"1004604"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are fan traps, and how does Discoverer handle them?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004992"></A>
+<P CLASS="BP">
+A fan trap is a group of joined database tables that might return unexpected results. The most common manifestation of a fan trap occurs when a master table is joined to two or more detail tables independently. 
+</P>
+
+<A NAME="1020742"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 9-17 &#32;A simple fan trap schema</EM></FONT></H4>
+   
+<BR><A NAME="1023456">
+
+
+<img src="joinftxa.gif" ALT="Text description of joinftxa.gif follows.">
+<A HREF="img_text/joinftxa.htm"><br>Text description of the illustration joinftxa.gif</A>
+
+
+</A>
+   <A NAME="1020678"></A>
+<P CLASS="BP">
+Although this construction is relationally correct, you are likely to return incorrect results if you use a straightforward SQL statement to aggregate data points. 
+</P>
+<A NAME="1020609"></A>
+<P CLASS="BP">
+However, if you use Discoverer to aggregate the data points, Discoverer will never return incorrect results. Every query that Discoverer generates is interrogated for potential fan traps. If a fan trap is detected, Discoverer can usually rewrite the query using inline views to ensure the aggregation is done at the correct level. Discoverer creates an inline view for each master-detail aggregation, and then combines the results of the outer query.
+</P>
+<A NAME="1020762"></A>
+<P CLASS="BP">
+For an example of how Discoverer will return correct results when a straightforward SQL statement will return incorrect results, see <A HREF="joins.htm#1020600">"Example of a fan trap"</a>.
+</P>
+<A NAME="1020647"></A>
+<P CLASS="BP">
+In some circumstances, Discoverer will detect a query that involves an unresolvable fan trap schema, as follows:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1020661"></A>if the detail folders use different keys from the master for the join
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1020662"></A>if there is a direct join relationship between the detail folders (thereby creating an ambiguous circular relationship)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1020663"></A>if non-aggregated values are chosen from more than one of the detail folders
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1020664"></A>if more than one detail folder has a separate join relationship to a different master folder
+<P>
+</UL>
+<A NAME="1020656"></A>
+<P CLASS="BP">
+In the above circumstances, Discoverer disallows the query and displays an error message.
+</P>
+<A NAME="1020715"></A>
+<P CLASS="BP">
+In addition, Discoverer controls which columns can be totalled. If a worksheet displays values of items from both the master folder and the detail folder, Discoverer will not total the values together. Instead, Discoverer will display a null to prevent incorrect or unexpected results.
+</P>
+<A NAME="1020637"></A>
+<P CLASS="BP">
+For more information about enabling or disabling fan trap detection in Discoverer, see the <EM CLASS="Italic">Oracle Application Server Discoverer Plus User's Guide</EM>.
+</P>
+
+<A NAME="1020600"></A>
+<!--TOC=h1-"1020600"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Example of a fan trap</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1020700"></A>
+<P CLASS="BP">
+Consider an example fan trap schema that includes a master folder (ACCOUNT) and two detail folders (SALES and BUDGET), as shown below: 
+</P>
+
+<A NAME="1004997"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 9-18 &#32;Example of a fan trap schema</EM></FONT></H4>
+   
+<BR><A NAME="1023462">
+
+
+<img src="joinftx.gif" ALT="Text description of joinftx.gif follows.">
+<A HREF="img_text/joinftx.htm"><br>Text description of the illustration joinftx.gif</A>
+
+
+</A>
+   <A NAME="1020463"></A>
+<P CLASS="BP">
+Every account can have several sales figures and several budget figures for each period.
+</P>
+<A NAME="1020705"></A>
+<P CLASS="BP">
+Imagine that a Discoverer end user wants to answer the question, "What is the total sales and total budget by account?". The aggregates (SUM) from the two detail tables come from the same master table (ACCOUNT). 
+</P>
+<A NAME="1020450"></A>
+<P CLASS="BP">
+This relatively simply query will produce:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1020469"></A>correct results if you use Discoverer (provided fan trap detection is enabled)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1020495"></A>incorrect results if you use a straightforward SQL statement
+<P>
+</UL>
+
+<A NAME="1020479"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Producing correct results using Discoverer</FONT></H4>
+<A NAME="1020480"></A>
+<P CLASS="BP">
+To answer the question, "What is the total sales and total budget by account?", Discoverer:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1020771"></A>selects the name of the account (from ACCOUNT.NAME)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1020772"></A>calculates the sum of SALES (from SALES.SALES)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1020773"></A>calculates the sum of BUDGET (from BUDGET.BUDGET)
+<P>
+</UL>
+<A NAME="1020774"></A>
+<P CLASS="BP">
+Discoverer returns correct results, as shown below:
+</P>
+
+<A NAME="1007281"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 9-19 &#32;Correct results returned by Discoverer
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1005160"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Account</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1005162"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Sales</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1005164"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Budget</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1005166"></A>
+<P CLASS="TB">
+Account 1&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1005168"></A>
+<P CLASS="TB">
+400&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1005170"></A>
+<P CLASS="TB">
+400&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1005172"></A>
+<P CLASS="TB">
+Account 2&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1005174"></A>
+<P CLASS="TB">
+130&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1005176"></A>
+<P CLASS="TB">
+100&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1005178"></A>
+<P CLASS="TB">
+Account 3&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1005180"></A>
+<P CLASS="TB">
+200&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1005182"></A>
+<P CLASS="TB">
+750&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1005184"></A>
+<P CLASS="TB">
+Account 4&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1005186"></A>
+<P CLASS="TB">
+300&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1005188"></A>
+<P CLASS="TB">
+200&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+</EM></FONT></H4>
+<A NAME="1020508"></A>
+<P CLASS="BP">
+Discoverer interrogates the query, detects a fan trap, and rewrites the query to ensure the aggregation is done at the correct level. Discoverer rewrites the query using inline views, one for each master-detail aggregation, and then combines the results of the outer query.
+</P>
+<A NAME="1020509"></A>
+<P CLASS="BP">
+The following example shows the SQL that Discoverer uses to return the correct results:
+</P>
+    
+<PRE CLASS="CE">
+<A NAME="1020510"></A>SELECT inACC as Name, SUM(inSalesSum) as SALES_SUM, ,SUM(inBudgetSum) as BUDGET_
+_SUM, 
+<A NAME="1020511"></A>FROM 
+
+<PRE CLASS="CE1">
+<A NAME="1020512"></A>(SELECT masterID AS OutMasterIDSales, SUM(SalesDetailsSales) AS inSalesSum
+<A NAME="1020513"></A>FROM
+<A NAME="1020514"></A>(SELECT ID AS masterID, NAME AS masterName FROM ACCOUNT) INLineAccount,
+<A NAME="1020515"></A>(SELECT ID AS SalesDetailId, ACCID AS SalesDetailAccID, SALES AS 
+SalesDetailsSales FROM SALES )INLineSales
+</PRE>
+<A NAME="1020516"></A>WHERE(masterID = SalesDetailAccID(+))
+<A NAME="1020517"></A>GROUP BY masterID) inner1,
+<A NAME="1020518"></A>(SELECT masterID AS OutMasterIDBudget, SUM(BudgetDetailBudget) AS inBudgetSum, 
+masterName AS inACC
+<A NAME="1020519"></A>FROM
+
+<PRE CLASS="CE1">
+<A NAME="1020520"></A>(SELECT ID AS masterID, NAME AS masterName FROM ACCOUNT) INLineAccount,
+<A NAME="1020521"></A>(SELECT ID AS BudgetDetailId, ACCID AS BudgetDetailAccID, BUDGET AS 
+BudgetDetailsSales FROM BUDGET )INLineBudget
+</PRE>
+<A NAME="1020522"></A>WHERE(masterID = BudgetDetailAccID(+))
+<A NAME="1020523"></A>GROUP BY masterName, masterID ) inner2
+<A NAME="1020524"></A>WHERE ((OutMasterIDBudget = OutMasterIDSales))
+<A NAME="1020525"></A>GROUP BY inACC
+<A NAME="1020526"></A>
+</PRE></PRE>   <A NAME="1020527"></A>
+<P CLASS="BP">
+The result is correct because each sale and each budget is summed individually (one for each master-detail aggregation) and is then combined with a join based on the master key(s).
+</P>
+
+<A NAME="1020485"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Producing incorrect results using a straightforward SQL statement</FONT></H4>
+<A NAME="1020486"></A>
+<P CLASS="BP">
+To answer the question, "What is the total sales and total budget by account?", you might consider using a staightforward SQL statement such as the following:
+</P>
+    
+<PRE CLASS="CE">
+<A NAME="1020547"></A>SELECT Account.Name, SUM(sales), SUM(budget) 
+<A NAME="1020548"></A>FROM 
+<A NAME="1020549"></A>Account, Sales, Budget
+<A NAME="1020550"></A>Where 
+<A NAME="1020551"></A>Account.id=Sales.accid
+<A NAME="1020552"></A>AND
+<A NAME="1020553"></A>Account.id=Budget.accid
+<A NAME="1020554"></A>GROUP BY
+<A NAME="1020555"></A>Account.Name
+<A NAME="1020556"></A>
+</PRE>    <A NAME="1020540"></A>
+<P CLASS="BP">
+This straightforward SQL statement returns incorrect results, as shown below:
+</P>
+
+<A NAME="1007288"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 9-20 &#32;Incorrect results returned by a straightforward SQL statement 
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1007237"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG><STRONG CLASS="Bold">Account</STRONG></STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1007239"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Sales</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1007241"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Budget</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1007243"></A>
+<P CLASS="TB">
+Account 1&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007245"></A>
+<P CLASS="TB">
+800&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007247"></A>
+<P CLASS="TB">
+1200&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1007249"></A>
+<P CLASS="TB">
+Account 2&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007251"></A>
+<P CLASS="TB">
+130&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007253"></A>
+<P CLASS="TB">
+200&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1007255"></A>
+<P CLASS="TB">
+Account 3&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007257"></A>
+<P CLASS="TB">
+600&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007259"></A>
+<P CLASS="TB">
+750&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1007261"></A>
+<P CLASS="TB">
+Account 4&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007263"></A>
+<P CLASS="TB">
+600&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007265"></A>
+<P CLASS="TB">
+600&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+</EM></FONT></H4>
+<A NAME="1007233"></A>
+<P CLASS="BP">
+Although the results are relationally correct, they are obviously wrong. For example, the results indicate that the total sales figure for Account 1 is 800 but you can see from the SALES table that the total sales figure for Account 1 is 400 (i.e. 100+100+200).
+</P>
+<A NAME="1020576"></A>
+<P CLASS="BP">
+The incorrect results are based on a single query in which the tables are first joined together in a temporary table, and then the aggregation is performed. However, this approach causes the aggregates to be summed (incorrectly) multiple times.
+</P>
+
+<A NAME="1004605"></A>
+<!--TOC=h1-"1004605"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What to do if you set up a fan trap inside a complex folder</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1019340"></A>
+<P CLASS="BP">
+Discoverer warns about fan trap join configurations in complex folders by displaying a message indicating that an invalid join configuration exists. To make sure that Discoverer returns correct results for complex folders, you can edit the Formula property of the detail item and explicitly specify the aggregate formula.
+</P>
+<A NAME="1020795"></A>
+<P CLASS="BP">
+For example, you might set the Formula property of a Sales item in a complex folder, from Sales Fact.Sales to SUM(Sales Facts.Sales),  as shown below:
+</P>
+
+<A NAME="1005217"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 9-21 &#32;Example of an aggregate formula specified for an item in a complex folder</EM></FONT></H4>
+   
+<BR><A NAME="1006338">
+
+
+<img src="joinftf.gif" ALT="Text description of joinftf.gif follows.">
+<A HREF="img_text/joinftf.htm"><br>Text description of the illustration joinftf.gif</A>
+
+
+</A>
+   
+<A NAME="1009945"></A>
+<!--TOC=h1-"1009945"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What to do if you have a data type mismatch in a join</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1009946"></A>
+<P CLASS="BP">
+Discoverer does not allow joins between items of different data types (e.g. varchar, numeric, or date). However, if you have upgraded from a previous version of Discoverer, an existing join might already exist between mismatched data types. If a join exists between two items with mismatched data types, Discoverer runs the query but displays an error message and does not complete the query. Discoverer also displays an error message if you try to edit a join that contains items that have mismatched data types.
+</P>
+<A NAME="1009876"></A>
+<P CLASS="BP">
+You can create a join between two items that have mismatched data types by following the steps below:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009930"></A>create a new item based on the first mismatched item and use conversion functions (e.g. to_char(), to_date(), to_number()) to make the new item's data type compatible with the second item
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009938"></A>create a join between the new item and the second item
+<P>
+</UL>
+<A NAME="1020812"></A>
+<P CLASS="BP">
+For more information, see <A HREF="joins.htm#1010038">"Example of how to create a join between two items that have mismatched data types"</a>.
+</P>
+
+<A NAME="1010038"></A>
+<!--TOC=h2-"1010038"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Example of how to create a join between two items that have mismatched data types</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1020862"></A>
+<P CLASS="BP">
+In this example, you want to create a join between the Calendar Date folder and the Store and Sales Detail folder, using:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1020863"></A>the Day of Week item from the Calendar Date folder
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1020864"></A>the Transaction Date item from the Store and Sales Detail folder
+<P>
+</UL>
+<A NAME="1020854"></A>
+<P CLASS="BP">
+These two items have mismatched data types, as follows:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1020842"></A>the Day of Week item's data type is varchar
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1020843"></A>the Transaction Date item's data type is date
+<P>
+</UL>
+<A NAME="1020841"></A>
+<P CLASS="BP">
+To create a join between the two folders using these two items, you must perform the following steps:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010178"></A><A HREF="joins.htm#1010182">"Step 1: Create a new item that converts the Day of Week item from a varchar to a date data type"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010180"></A><A HREF="joins.htm#1010161">"Step 2: Create a join using the new item"</a>
+<P>
+</UL>
+
+<A NAME="1010182"></A>
+<!--TOC=h3-"1010182"-->
+<H4 CLASS="H3"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Step 1: Create a new item that converts the Day of Week item from a varchar to a date data type</FONT></H4>
+<!--/TOC=h3-->
+<A NAME="1010153"></A>
+<P CLASS="BP">
+The first step is to create a new item that converts the Day of Week item from varchar to a date data type as follows:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1009898"></A>Select the Calendar Date folder from the Video Store Tutorial business area.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1009902"></A>Choose Insert | Item to display the <A HREF="adnite01.htm#1005113">"New Item dialog"</a>.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1009908"></A>Type <CODE>New Day of Week</CODE> in the <STRONG CLASS="Bold">Item Name</STRONG> field.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1020911"></A>Select the <STRONG CLASS="Bold">Functions</STRONG> radio button to display the function folders.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1009909"></A>Click the + symbol next to the <STRONG CLASS="Bold">Conversion</STRONG> folder to display the conversion functions.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1009912"></A>Select the TO_DATE function and click PASTE&gt;&gt; to paste the TO_DATE function into the <STRONG CLASS="Bold">Calculation</STRONG> field for the new item.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1009992"></A>Replace the text in the <STRONG CLASS="Bold">Calculation</STRONG> field between the brackets of the TO_DATE function with the following text:
+<P>
+ 
+
+<A NAME="1010132"></A>
+<P CLASS="BP1">
+<CODE>Day of Week,Day</CODE>
+</P>
+
+<A NAME="1009986"></A>
+<P CLASS="BP1">
+The <STRONG CLASS="Bold">Calculation</STRONG> field now displays the following text:
+</P>
+
+<A NAME="1010096"></A>
+<P CLASS="BP1">
+<CODE>TO_DATE(Day of Week,Day)</CODE>
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="8"><A NAME="1010101"></A>Click OK to create the new item.
+<P>
+ 
+</OL>
+<A NAME="1010012"></A>
+<P CLASS="BP">
+You have now created a new item that is based on the Day of Week (varchar) item and that has been converted to a date data type.
+</P>
+
+<A NAME="1010161"></A>
+<!--TOC=h3-"1010161"-->
+<H4 CLASS="H3"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Step 2: Create a join using the new item</FONT></H4>
+<!--/TOC=h3-->
+<A NAME="1010136"></A>
+<P CLASS="BP">
+Having created a new calculated item of the correct data type, the next step is to join the new item to the Transaction Date item from the Store and Sales Details folder, as follows:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1010013"></A>Select the New Day of Week item from the Calendar Date folder.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1010018"></A>Choose Insert | Join to display the <A HREF="adnmij01.htm#1005113">"Join Wizard: Step 1 dialog"</a>.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1010023"></A>Click the Detail Items drop down list to display the <A HREF="adnjco01.htm#1006310">"New Join dialog"</a>.
+<P>
+ 
+
+<A NAME="1010361"></A>
+<P CLASS="BP1">
+The New Join dialog enables you to select the detail folder and item for the new join.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1010236"></A>Click the + symbol next to the Store and Sales Details folder to expand the folder's items.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1010108"></A>Select the Transaction Date item and click OK to close the New Join dialog.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1020899"></A>Click Next to display the <A HREF="adjopt01.htm#1005113">"Join Wizard: Step 2 dialog"</a>.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1010143"></A>Click Finish to accept the default join options and close the Join Wizard: Step 2 dialog.
+<P>
+ 
+
+<A NAME="1009987"></A>
+<P CLASS="BP1">
+Discoverer is able to join the Calendar Date folder with the Store and Sales Details folder using the New Day of Week item and the Transaction Date item because both items have the same data type.
+</P>
+
+<A NAME="1020909"></A>
+<P CLASS="BP1">
+
+</P>
+</OL>
+
+
+
+
+
+
+<!-- Start Footer -->
+</DIV>
+
+<DIV CLASS="OUTD">
+<HR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+<TD VALIGN="BOTTOM" WIDTH="33%">
+<TABLE CELLSPACING="0" CELLPADDING="0">
+<TR>
+<TD ALIGN="CENTER"><A HREF="item_cla.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+
+<TD ALIGN="CENTER"><A HREF="calculat.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+    
+</TR>
+</TABLE>
+</TD>
+<TD ALIGN="CENTER" WIDTH="34%">
+<A HREF="./html/cpyr.htm"><IMG SRC="./gifs/oracle.gif" ALT="Oracle" BORDER="0"><BR>
+<FONT SIZE="-2">Copyright &copy 2003 Oracle Corporation.</FONT></A>
+<BR>
+<FONT SIZE="-2">All Rights Reserved.</FONT>
+</TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="33%"> 
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="144">
+<TR>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+  
+</DIV>
+
+</BODY>
+</HTML>
+

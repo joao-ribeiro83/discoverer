@@ -8,3 +8,4 @@
 
 export * from './mock-eul.js';
 export * from './fake-writer.js';
+export * from './workbook-fixture.js';

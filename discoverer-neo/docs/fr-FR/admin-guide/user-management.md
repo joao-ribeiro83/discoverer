@@ -106,14 +106,36 @@ L'utilisateur perd son accès immédiatement.
 
 ## Gestion des mots de passe
 
-### Mots de passe initiaux
+### Utilisateurs importés et mots de passe temporaires
 
-Les nouveaux utilisateurs reçoivent des mots de passe initiaux. Bonne pratique :
+Discoverer stocke les noms d'utilisateur mais jamais les mots de passe : rien ne
+peut donc être repris. À la place, la migration **génère un mot de passe
+temporaire unique pour chaque personne importée** et les écrit tous dans un
+fichier que vous distribuez.
 
-1. Définissez un mot de passe temporaire (p. ex. « TempPassword123! »)
-2. Demandez à l'utilisateur de le changer à la première connexion
-3. L'utilisateur se connecte, clique sur **Profil** → **Changer le mot de passe**
-4. Saisit un nouveau mot de passe
+1. Lancez la migration (voir [Utilisateurs et mots de passe migrés](../../migration/user-credentials.md)).
+2. Récupérez `credentials/credentials-<id-execution>.csv` sur le serveur.
+3. Remettez à chacun son mot de passe par un canal de confiance.
+4. **Supprimez le fichier.** Rien ne le supprime à votre place.
+
+Chaque compte doit changer ce mot de passe avant de pouvoir faire quoi que ce
+soit d'autre — c'est imposé par le serveur, et pas seulement suggéré par
+l'interface.
+
+### Créer un utilisateur manuellement
+
+Lorsque vous ajoutez un utilisateur via Panneau d'administration →
+**Utilisateurs**, vous définissez directement son premier mot de passe.
+Demandez-lui de le changer après connexion, depuis **Paramètres → Changer le mot
+de passe**.
+
+### Ce que signifie « doit changer son mot de passe »
+
+Tant qu'un compte attend le changement, il ne peut atteindre que l'écran de
+changement. Toutes les autres pages et tous les appels d'API sont refusés. La
+connexion réussit, mais l'application reste indisponible jusqu'au changement.
+
+La liste des Utilisateurs indique qui est encore en attente.
 
 ### Réinitialisation du mot de passe
 
@@ -125,15 +147,34 @@ Si un utilisateur oublie son mot de passe (en tant qu'administrateur) :
 4. Transmettez-le à l'utilisateur (par e-mail ou hors bande)
 5. L'utilisateur change son mot de passe à la première connexion
 
-### Forcer le changement de mot de passe
+### Exiger un changement de mot de passe
 
-Pour exiger le changement de mot de passe d'un utilisateur :
+Les comptes créés par une migration sont marqués automatiquement — vous n'avez
+rien à faire. Il n'y a pas de case à cocher : l'indicateur est posé lorsque le
+compte reçoit un mot de passe temporaire et retiré dès que l'utilisateur choisit
+le sien.
 
-1. Cliquez sur l'utilisateur → **Modifier**
-2. Cochez **Forcer le changement de mot de passe à la connexion**
-3. Enregistrez
+Pour forcer une rotation sur un compte existant, réinitialisez son mot de passe ;
+la réinitialisation replace le compte dans le même état.
 
-L'utilisateur sera invité à changer son mot de passe à la prochaine connexion.
+## Rôles de base de données
+
+Les utilisateurs importés d'Oracle Discoverer ne sont pas tous des personnes.
+Discoverer accorde des privilèges à des **rôles** Oracle (`CONNECT`, `RESOURCE`)
+aussi bien qu'à des individus, et la migration reprend les deux.
+
+Un rôle apparaît dans la liste des Utilisateurs avec un badge **Rôle** :
+
+| | Personne | Rôle de base de données |
+| --- | --- | --- |
+| Peut se connecter | Oui | **Non — jamais** |
+| Détient des autorisations | Oui | Oui |
+| Possède un mot de passe | Oui | Aucun. Aucun mot de passe ne correspond. |
+
+Les rôles sont conservés car ils portent les autorisations sur lesquelles votre
+sécurité Discoverer reposait. Ils ne peuvent pas devenir des comptes de
+connexion — attribuez les autorisations équivalentes à de vrais utilisateurs,
+puis retirez le rôle.
 
 ## Préférences utilisateur
 

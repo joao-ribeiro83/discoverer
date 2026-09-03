@@ -58,6 +58,7 @@ export function MapBuilderPage() {
 
   const mapId = useMapBuilderStore((s) => s.mapId)
   const mapName = useMapBuilderStore((s) => s.name)
+  const mapType = useMapBuilderStore((s) => s.mapType)
   const builderParameters = useMapBuilderStore((s) => s.parameters)
   const exportCtl = useMapExport(mapId, mapName, lastParameters)
 
@@ -366,6 +367,7 @@ export function MapBuilderPage() {
                 <ExecutionPanel
                   mapId={mapId}
                   mapName={mapName}
+                  mapType={mapType}
                   result={result}
                   parameters={lastParameters}
                   isRunning={runMutation.isPending}

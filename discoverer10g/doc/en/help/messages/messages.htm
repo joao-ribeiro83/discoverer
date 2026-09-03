@@ -1,0 +1,2376 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML lang="en.us">
+
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html;CHARSET=iso-8859-1">
+<META NAME="Page" CONTENT="DefaultSingle">
+<META NAME="Title" CONTENT="Discoverer error messages">
+<LINK REL="home" HREF="../../library.htm" TITLE="Library">
+<LINK REL="copyright" HREF="./html/cpyr.htm" TITLE="Copyright">
+<META NAME="GENERATOR" Content="Visual Page 2.0 for Windows">
+<TITLE>Error Messages</TITLE>
+<link href="#topten">
+</HEAD>
+
+<BODY BGCOLOR="white">
+
+<P><A NAME="top"></A> 
+<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%">
+	<TR>
+		<TD ALIGN="LEFT" VALIGN="TOP">
+			<P><B><FONT COLOR="#330099" FACE="Helvetica, Arial, sans-serif">Oracle Discoverer Administrator error messages</FONT></B>
+		</TD>
+		<TD WIDTH="144" ALIGN="RIGHT" VALIGN="BOTTOM">
+			<DIV ALIGN="RIGHT">
+			<P>
+			<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%">
+				<TR>
+					<TD WIDTH="25%" ALIGN="CENTER" VALIGN="TOP">&nbsp;</TD>
+					<TD WIDTH="25%" ALIGN="CENTER" VALIGN="TOP">
+						<P ALIGN="CENTER"><A HREF="../../library.htm"><IMG SRC="gifs/prodicon.gif" WIDTH="30" HEIGHT="30" ALIGN="BOTTOM"
+						ALT="Discoverer documentation library" BORDER="0"><BR>
+						<FONT SIZE="1">Library</FONT></A>
+					</TD>
+				</TR>
+			</TABLE>
+
+</DIV>
+		</TD>
+	</TR>
+</TABLE>
+
+<HR ALIGN="CENTER">
+<p></P>
+<P>
+
+<DIV CLASS="IND">
+<!-- End Header -->
+	<P><A NAME="1005435"></A> <!--TOC=h1-"1005435"-->
+	<H2 CLASS="H1"><FONT COLOR="#330099" FACE="Arial, Helvetica, sans-serif">About Error Messages</FONT></H2>
+<!--/TOC=h1-->
+	<P><A NAME="1005438"></A></P>
+	<P CLASS="BP">This file lists the errors that may be encountered when using Discoverer. For each error, there is
+	a probable cause and a suggested corrective action.</P>
+	<P><A NAME="1005442"></A></P>
+	
+  <P CLASS="BP">Many errors listed in this file are client errors produced by 
+    Discoverer Administrator. You may also encounter server or database errors 
+    produced by the Oracle database itself. These errors will be received from 
+    the database (e.g. when an error condition exists in the database) and not 
+    in Discoverer Administrator. They are identified by the prefix &quot;ORA-<EM><SPAN CLASS="Italic">num:</SPAN></EM>&quot;. 
+    To see a list of the top ten most common Oracle database error messages encountered 
+    in Discoverer, see section <a href="#topten">Top ten most common Oracle database 
+    messages</a>. For a complete description of all Oracle database error messages, 
+    see <EM><SPAN CLASS="Italic">Oracle9i Database Error Messages.</SPAN></EM></P>
+	<P><A NAME="1005449"></A></P>
+	<P CLASS="BP">Because Discoverer Administrator is part of a client/server system, some errors that may be displayed
+	will not pertain to Discoverer Administrator (which is the client). The cause of the error in this case is often
+	incidental to the current operation you are attempting. For example, there may be a problem with the network, the
+	server, SQL*Net, or with the Oracle database. In these instances, use the normal troubleshooting procedures to
+	determine that the network, server, and Oracle database are operating normally before proceeding.</P>
+	<P><A NAME="1005457"></A> <!--TOC=h1-"1005457"-->
+	<H2 CLASS="H1"><FONT COLOR="#330099" FACE="Arial, Helvetica, sans-serif">Discoverer Administrator Errors</FONT></H2>
+<!--/TOC=h1-->
+	<DL CLASS="M">
+		<DT CLASS="M"><A NAME="1005460"></A></DT>
+		<P><STRONG>A database role exists which conflicts with this username</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005461"></A>
+		<P><STRONG>Cause: </STRONG>An attempt was made to use a database user that has the same name as an existing database
+		role. Roles and users cannot conflict.</P>
+		<DD CLASS="MH2"><A NAME="1005462"></A>
+		<P><STRONG>Action: </STRONG>Log onto the database using a <EM><SPAN CLASS="Italic">user ID</SPAN></EM> that is
+		not the same as a role.</P>
+		<DT CLASS="M"><A NAME="1005463"></A></DT>
+		<P><STRONG>A detail folder must be selected</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005464"></A>
+		<P><STRONG>Cause: </STRONG>You have attempted to create a join that does not have a detail folder selected.</P>
+		<DD CLASS="MH2"><A NAME="1005465"></A>
+		<P><STRONG>Action: </STRONG>Select a detail folder and item on the right side of the equation and retry.</P>
+		<DT CLASS="M"><A NAME="1005466"></A></DT>
+		<P><STRONG>A join must contain at least one predicate</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005467"></A>
+		<P><STRONG>Cause: </STRONG>An error occurred when attempting to create or edit a join. The error is probably incidental
+		to the current operation and beyond the scope of Discoverer Administrator. There may be a problem with the network,
+		the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005471"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005472"></A></DT>
+		<P><STRONG>A master folder must be selected</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005473"></A>
+		<P><STRONG>Cause: </STRONG>You have attempted to create a join that does not have a master folder selected.</P>
+		<DD CLASS="MH2"><A NAME="1005474"></A>
+		<P><STRONG>Action: </STRONG>Select a master folder and item on the left side of the equation and retry.</P>
+		<DT CLASS="M"><A NAME="1005475"></A></DT>
+		<P><STRONG>Alternative Sort Items must come from the same folder as the LOV Item</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005476"></A>
+		<P><STRONG>Cause: </STRONG>When specifying the item to sort by, it must be in the same folder as the item that
+		you used to identify the list of values for this item class. This is so that the folder can be joined into the
+		query at run time in order to correctly sort your data using the alternative sort item.</P>
+		<DD CLASS="MH2"><A NAME="1005477"></A>
+		<P><STRONG>Action: </STRONG>Choose an item to sort by from the same folder as the item you used to identify the
+		list of values for this item class and retry.</P>
+		<DT CLASS="M"><A NAME="1005478"></A></DT>
+		<P><STRONG>Ambiguous joins detected</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005479"></A>
+		<P><STRONG>Cause: </STRONG>You are creating a condition between two folders that have more than one join between
+		them. Discoverer Administrator does not know which join to use for the condition.</P>
+		<DD CLASS="MH2"><A NAME="1005485"></A>
+		<P><STRONG>Action: </STRONG>Discoverer Administrator displays a dialog box which lists all of the joins between
+		the folders. Select one join.</P>
+		<DT CLASS="M"><A NAME="1005488"></A></DT>
+		<P><STRONG>An error occurred. Please refer to the release notes</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005489"></A>
+		<P><STRONG>Cause: </STRONG>An error has occurred which has not been documented in this manual.</P>
+		<DD CLASS="MH2"><A NAME="1005492"></A>
+		<P><STRONG>Action: </STRONG>See the release notes supplied with Discoverer Administrator and take the appropriate
+		action.</P>
+		<DT CLASS="M"><A NAME="1005495"></A></DT>
+		<P><STRONG>Another condition named [<EM><SPAN CLASS="Italic">condition-name</SPAN></EM>] already exists. Please
+		type in a different name</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005496"></A>
+		<P><STRONG>Cause: </STRONG>You have entered a condition name that already exists in the folder.</P>
+		<DD CLASS="MH2"><A NAME="1005497"></A>
+		<P><STRONG>Action: </STRONG>Re-enter a unique condition name and retry. Each condition name in the folder must
+		be unique.</P>
+		<DT CLASS="M"><A NAME="1005499"></A></DT>
+		<P><STRONG>Another join named <EM><SPAN CLASS="Italic">join-name</SPAN></EM> already exists. Please enter a different
+		name.</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005500"></A>
+		<P><STRONG>Cause: </STRONG>You have entered a name for a join which already exists.</P>
+		<DD CLASS="MH2"><A NAME="1005501"></A>
+		<P><STRONG>Action: </STRONG>Re-enter a unique name and retry. The name for a join must be unique to the End User
+		Layer.</P>
+		<DT CLASS="M"><A NAME="1005503"></A></DT>
+		<P><STRONG>Argument must be named</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005504"></A>
+		<P><STRONG>Cause: </STRONG>You have attempted to specify an argument without a name during the creation or editing
+		of a PL/SQL function.</P>
+		<DD CLASS="MH2"><A NAME="1005505"></A>
+		<P><STRONG>Action: </STRONG>Enter a valid argument name in the name field and retry. Each argument in a PL/SQL
+		function must be named.</P>
+		<DT CLASS="M"><A NAME="1005506"></A></DT>
+		<P><STRONG>Argument name is too long</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005507"></A>
+		<P><STRONG>Cause: </STRONG>You have entered an argument name which is longer than the maximum allowed length.</P>
+		<DD CLASS="MH2"><A NAME="1005508"></A>
+		<P><STRONG>Action: </STRONG>Re-enter an argument name which is no longer than the maximum length allowed for an
+		argument name in the database you are connected to. The maximum length of an argument name may vary with Oracle
+		versions. See the <EM><SPAN CLASS="Italic">Oracle SQL Language Reference Manual</SPAN></EM> for package name conventions.</P>
+		<DT CLASS="M"><A NAME="1005509"></A></DT>
+		<P><STRONG>Business area must be named</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005510"></A>
+		<P><STRONG>Cause: </STRONG>You have attempted to create or edit a business area without entering a name.</P>
+		<DD CLASS="MH2"><A NAME="1005511"></A>
+		<P><STRONG>Action: </STRONG>Enter a unique name in the name field and retry. Each business area must be named.</P>
+		<DT CLASS="M"><A NAME="1005512"></A></DT>
+		<P><STRONG>Changing Identifier</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005513"></A>
+		<P><STRONG>Cause: </STRONG>An attempt was made to click into the Identifier field.</P>
+		<DD CLASS="MH2"><A NAME="1005514"></A>
+		<P><STRONG>Action: </STRONG>Click <STRONG><SPAN CLASS="Bold">Help</SPAN></STRONG> for further information before
+		attempting to make any changes. <BR>
+		Select the <STRONG><SPAN CLASS="Bold">Don't show this warning again during this session</SPAN></STRONG> to not
+		display this error message again during the current session.<BR>
+		Click <STRONG><SPAN CLASS="Bold">Yes</SPAN></STRONG> to proceed with the change in this Identifier.<BR>
+		Click <STRONG><SPAN CLASS="Bold">No</SPAN></STRONG> to abandon the attempt to alter this Identifier.</P>
+		<DT CLASS="M"><A NAME="1005516"></A></DT>
+		<P><STRONG>Column data type does not match item data type</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005517"></A>
+		<P><STRONG>Cause: </STRONG>An attempt was made to use a database column for an item that has a different data type.
+		This message is sometimes a warning and sometimes prevents the attempted action, where such a mismatch would be
+		invalid. This depends on the operation attempted.</P>
+		<DD CLASS="MH2"><A NAME="1005518"></A>
+		<P><STRONG>Action: </STRONG>Change the data type of the item, perhaps by modifying the formula with a function
+		such as TO_CHAR, TO_DATE or TO_NUMBER, or by creating a derived item of the appropriate type, or use a different
+		database column.</P>
+		<DT CLASS="M"><A NAME="1005520"></A></DT>
+		<P><STRONG>Column is not large enough</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005521"></A>
+		<P><STRONG>Cause: </STRONG>An attempt was made to use a database column that is not as large as the item.</P>
+		<DD CLASS="MH2"><A NAME="1005522"></A>
+		<P><STRONG>Action: </STRONG>Increase the size of the database column, or reduce the size of the item (for example,
+		by using a function such as SUBSTR).</P>
+		<DT CLASS="M"><A NAME="1005524"></A></DT>
+		<P><STRONG>Combinations are not fully mapped</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005525"></A>
+		<P><STRONG>Cause: </STRONG>The combination of all the items in a query that use the summary have not been mapped
+		to existing table columns, or you have accidentally deleted combination maps if you have chosen to automatically
+		generate summary tables.</P>
+		<DD CLASS="MH2"><A NAME="1005526"></A>
+		<P><STRONG>Action: </STRONG>Map each item in the query to existing table columns and retry.</P>
+		<DT CLASS="M"><A NAME="1005528"></A></DT>
+		<P><STRONG>Combinations are not uniquely mapped</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005529"></A>
+		<P><STRONG>Cause: </STRONG>When you are creating or editing an external summary, you have assigned a column to
+		an item that has been previously been assigned to another item.</P>
+		<DD CLASS="MH2"><A NAME="1005530"></A>
+		<P><STRONG>Action: </STRONG>Re-assign an unused column to the item and retry.</P>
+		<DT CLASS="M"><A NAME="1005531"></A></DT>
+		<P><STRONG>Condition is not complete</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005532"></A>
+		<P><STRONG>Cause: </STRONG>You have entered a condition which is not complete or does not follow the correct syntax.</P>
+		<DD CLASS="MH2"><A NAME="1005533"></A>
+		<P><STRONG>Action: </STRONG>Re-enter the condition following proper syntax. For example, you may not have entered
+		matching quotes or you may not have entered a value to the right of the operator.</P>
+		<DT CLASS="M"><A NAME="1005535"></A></DT>
+		<P><STRONG>Condition is not valid</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005536"></A>
+		<P><STRONG>Cause: </STRONG>You have entered a condition which does not follow the correct syntax.</P>
+		<DD CLASS="MH2"><A NAME="1005537"></A>
+		<P><STRONG>Action: </STRONG>Re-enter the condition following proper syntax. For example, you may not have entered
+		matching quotes or you may not have entered a value to the right of the operator.</P>
+		<DT CLASS="M"><A NAME="1005539"></A></DT>
+		<P><STRONG>Condition mixes different levels of aggregation</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005540"></A>
+		<P><STRONG>Cause: </STRONG>You have created a condition which attempts to compare an aggregated measure with a
+		non-aggregated measure. For example, in the condition AVG(SAL) &gt; COMM if SAL is non-aggregated and COMM is aggregated,
+		the condition mixes different levels of aggregation.</P>
+		<DD CLASS="MH2"><A NAME="1005541"></A>
+		<P><STRONG>Action: </STRONG>You must compare group functions, such as SUM(Salary), with other group functions,
+		or compare non-group functions with other non-group calculations. You cannot mix group functions with non-group
+		functions in a calculation or condition. Modify the condition and retry.</P>
+		<DT CLASS="M"><A NAME="1005542"></A></DT>
+		<P><STRONG>Condition must be named</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005543"></A>
+		<P><STRONG>Cause: </STRONG>You have attempted to create or edit a condition without entering a name.</P>
+		<DD CLASS="MH2"><A NAME="1005544"></A>
+		<P><STRONG>Action: </STRONG>Enter a unique condition name in the name field and retry. Each condition must be named.</P>
+		<DT CLASS="M"><A NAME="1005545"></A></DT>
+		<P><STRONG>Connected to a database that does not support this functionality</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005546"></A>
+		<P><STRONG>Cause: </STRONG>The database or version of the database that you are connected to does not support the
+		functionality required to complete the operation attempted.</P>
+		<DD CLASS="MH2"><A NAME="1005547"></A>
+		<P><STRONG>Action: </STRONG>Upgrade your database to a later version to use this functionality. Ask your systems
+		administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005548"></A></DT>
+		<P><STRONG>Could not create new condition</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005549"></A>
+		<P><STRONG>Cause: </STRONG>The condition has been entered correctly; however, an error was detected when attempting
+		to save the new condition in the End User Layer. The error is probably incidental to the current operation and
+		beyond the scope of Discoverer Administrator. There may be a problem with the network, the server, SQL*Net, or
+		the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005553"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005554"></A></DT>
+		<P><STRONG>Could not create new join</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005555"></A>
+		<P><STRONG>Cause: </STRONG>An error occurred when attempting to save the join you have just created, but the join
+		has been validated. The error is probably incidental to the current operation and beyond the scope of Discoverer
+		Administrator. There may be a problem with the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005559"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005560"></A></DT>
+		<P><STRONG>Could not modify condition</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005561"></A>
+		<P><STRONG>Cause: </STRONG>The condition has been edited correctly; however, an error was detected when attempting
+		to save the modified condition in the End User Layer. The error is probably incidental to the current operation
+		and beyond the scope of Discoverer Administrator. There may be a problem with the network, the server, SQL*Net,
+		or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005565"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005566"></A></DT>
+		<P><STRONG>Could not modify join</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005567"></A>
+		<P><STRONG>Cause: </STRONG>An error occurred when attempting to save a modified join in the End User Layer. The
+		join is valid; however, it cannot be saved. The error is probably incidental to the current operation and beyond
+		the scope of Discoverer Administrator. There may be a problem with the network, the server, SQL*Net, or the Oracle
+		database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005571"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005572"></A></DT>
+		<P><STRONG>Cyclic Hierarchy - This hierarchy node, or its items are already used in the hierarchy</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005574"></A>
+		<P><STRONG>Cause: </STRONG>You attempted to add an item into a hierarchy twice.</P>
+		<DD CLASS="MH2"><A NAME="1005575"></A>
+		<P><STRONG>Action: </STRONG>Do not add an item to a hierarchy twice.</P>
+		<DT CLASS="M"><A NAME="1005577"></A></DT>
+		<P><STRONG>Data type not valid for summaries</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005578"></A>
+		<P><STRONG>Cause: </STRONG>You cannot use an item of this data type in a summary.</P>
+		<DD CLASS="MH2"><A NAME="1005579"></A>
+		<P><STRONG>Action: </STRONG>Use a different item or change the data type of the item.</P>
+		<DT CLASS="M"><A NAME="1005580"></A></DT>
+		<P><STRONG>Database Error</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005581"></A>
+		<P><STRONG>Cause: </STRONG>A database error has occurred.</P>
+		<DD CLASS="MH2"><A NAME="1005582"></A>
+		<P><STRONG>Action: </STRONG>Note the database error number and the message and ask your systems administrator or
+		Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005583"></A></DT>
+		<P><STRONG>Database timed_statistics parameter is set to FALSE</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005584"></A>
+		<P><STRONG>Cause: </STRONG>Timed_statistics is a parameter in the database init.ora configuration file that affects
+		the ability of Discoverer to perform Query Performance Prediction.</P>
+		<DD CLASS="MH2"><A NAME="1005585"></A>
+		<P><STRONG>Action: </STRONG>Determine if the database server has timed statistics turned on. To turn on timed statistics,
+		execute the following query in SQL*Plus:</P>
+		<PRE CLASS="CE2"><A NAME="1005586"></A><CODE>select value
+</CODE><A NAME="1005587"></A><CODE>from   v$parameter
+</CODE><A NAME="1005588"></A><CODE>where name = &quot;timed_statistics&quot;;
+</CODE><A NAME="1005589"></A>
+</PRE>
+		<A NAME="1005590"></A>
+		<P CLASS="BP1">The query should return the value TRUE. If it returns FALSE, change the init.ora parameter timed_statistics
+		to TRUE, shutdown, and restart the server.</P>
+		<DT CLASS="M"><A NAME="1005591"></A></DT>
+		<P><STRONG>Date hierarchy must be named</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005592"></A>
+		<P><STRONG>Cause: </STRONG>You have attempted to create or edit a date hierarchy without entering a name. Each
+		date hierarchy must be named.</P>
+		<DD CLASS="MH2"><A NAME="1005593"></A>
+		<P><STRONG>Action: </STRONG>Enter a unique name in the name field and retry.</P>
+		<DT CLASS="M"><A NAME="1005594"></A></DT>
+		<P><STRONG>Description is too long. Max length is <EM><SPAN CLASS="Italic">num</SPAN></EM> bytes</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005595"></A>
+		<P><STRONG>Cause: </STRONG>You have entered a description which is longer than the maximum allowed length. The
+		maximum length of a description is 240 bytes.</P>
+		<DD CLASS="MH2"><A NAME="1005597"></A>
+		<P><STRONG>Action: </STRONG>Re-enter a description which is 240 bytes long or less.</P>
+		<DT CLASS="M"><A NAME="1005594"></A></DT>
+		<P><STRONG>Discoverer does not support direct ODBC connections. Please refer to the product documentation for details
+		of how to use Heterogeneous Services to access data stored in non-Oracle databases</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005595"></A>
+		<P><STRONG>Cause: </STRONG>You have tried to use a direct connection to an ODBC data source.</P>
+		<DD CLASS="MH2"><A NAME="1005597"></A>
+		<P><STRONG>Action: </STRONG>Refer to the <I>Oracle Discoverer Administrator Administration Guide</I> to find
+		out how to use Heterogeneous Services to access data stored in non-Oracle databases.</P>
+		<DT CLASS="M"><A NAME="1005594"></A></DT>
+		<P><STRONG>Discoverer does not support direct connections to Heterogeneous Data Sources.</STRONG></P>
+		<DD><STRONG></STRONG>
+		<P><A NAME="1005595"></A></P>
+		<DD CLASS="MH1">
+		<P><STRONG>Cause: </STRONG>You have tried to use a direct connection to a Heterogeneous Data Source.</P>
+		<DD CLASS="MH2"><A NAME="1005597"></A>
+		<P><STRONG>Action: </STRONG>Refer to the <I>Oracle Discoverer Administrator Administration Guide</I> to find
+		out how to use Heterogeneous Services to access data stored in non-Oracle databases.</P>
+		<DT CLASS="M"><A NAME="1005599"></A></DT>
+		<P><STRONG>Oracle Designer not available</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005600"></A>
+		<P><STRONG>Cause: </STRONG>There are no accessible Oracle Designer database repository tables.</P>
+		<DD CLASS="MH2"><A NAME="1005601"></A>
+		<P><STRONG>Action: </STRONG>Check that Oracle Designer is installed on the database you are using. Set up the <EM><SPAN
+		CLASS="Italic">user ID</SPAN></EM> you are using as an Oracle Designer user and retry. If you are still unable
+		to access the Oracle Designer database repository tables, check that the <EM><SPAN CLASS="Italic">user ID</SPAN></EM>
+		you are logged in as has SELECT access to the Oracle Designer tables, and that they have valid synonyms that point
+		to the Oracle Designer tables and retry.</P>
+		<DT CLASS="M"><A NAME="1005602"></A></DT>
+		<P><STRONG>Duplicate business area name</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005603"></A>
+		<P><STRONG>Cause: </STRONG>You have attempted to create a business area with the same name as one that already
+		exists. Choose a different name, or rename the existing one.</P>
+		<DD CLASS="MH2"><A NAME="1005604"></A>
+		<P><STRONG>Action: </STRONG>Business areas in an End User Layer must be named uniquely.</P>
+		<DT CLASS="M"><A NAME="1005606"></A></DT>
+		<P><STRONG>Duplicate Server database link, owner and object name</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005607"></A>
+		<P><STRONG>Cause: </STRONG>You have attempted to use a duplicate database link, owner, and object name. Database
+		links, owner, and object names must be unique.</P>
+		<DD CLASS="MH2"><A NAME="1005608"></A>
+		<P><STRONG>Action: </STRONG>Choose a different name.</P>
+		<DT CLASS="M"><A NAME="1005610"></A></DT>
+		<P><STRONG>Duplicate summary table name and owner</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005611"></A>
+		<P><STRONG>Cause: </STRONG>You have attempted to use a duplicate summary table name and owner. Summary table and
+		owner names must be unique.</P>
+		<DD CLASS="MH2"><A NAME="1005612"></A>
+		<P><STRONG>Action: </STRONG>Choose a different name.</P>
+		<DT CLASS="M"><A NAME="1005613"></A></DT>
+		<P><STRONG>End User Layer tables version <EM><SPAN CLASS="Italic">n</SPAN></EM> requires End User Layer DLL of
+		at least version <EM><SPAN CLASS="Italic">n</SPAN></EM></STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005614"></A>
+		<P><STRONG>Cause: </STRONG>You are attempting to connect to a database that has a set of End User Layer database
+		tables that are incompatible with the version of Discoverer Administrator that you are using.</P>
+		<DD CLASS="MH2"><A NAME="1005618"></A>
+		<P><STRONG>Action: </STRONG>Upgrade the End User Layer tables, install the latest release of Discoverer or connect
+		to a different database.</P>
+		<DT CLASS="M"><A NAME="1005619"></A></DT>
+		<P><STRONG>End User Layer transaction found object changed in the database</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005622"></A>
+		<P><STRONG>Cause: </STRONG>Another Discoverer Administrator user has changed the End User Layer object you are
+		modifying.</P>
+		<DD CLASS="MH2"><A NAME="1005626"></A>
+		<P><STRONG>Action: </STRONG>Exit from Discoverer Administrator, reconnect, and retry.</P>
+		<DT CLASS="M"><A NAME="1005628"></A></DT>
+		<P><STRONG>Error adding combination</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005629"></A>
+		<P><STRONG>Cause: </STRONG>An error was detected when attempting to add a new combination when you are creating
+		or editing a summary. The error is probably incidental to the current operation and beyond the scope of Discoverer
+		Administrator. There may be a problem with the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005633"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005634"></A></DT>
+		<P><STRONG>Error adding summary table</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005635"></A>
+		<P><STRONG>Cause: </STRONG>An error was detected when attempting to create a summary table used by a summary folder.
+		The error is probably incidental to the current operation and beyond the scope of Discoverer Administrator. There
+		may be a problem with the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005639"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005640"></A></DT>
+		<P><STRONG>Error applying date template to this item</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005641"></A>
+		<P><STRONG>Cause: </STRONG>An error was detected when attempting to use the date template with this item. The error
+		is probably incidental to the current operation and beyond the scope of Discoverer Administrator. There may be
+		a problem with the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005645"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005646"></A></DT>
+		<P><STRONG>Error checking combination</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005647"></A>
+		<P><STRONG>Cause: </STRONG>An error was detected when attempting to set combinations when you are creating or editing
+		a summary. The error is probably incidental to the current operation and beyond the scope of Discoverer Administrator.
+		There may be a problem with the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005651"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005653"></A></DT>
+		<P><STRONG>Error creating business area</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005654"></A>
+		<P><STRONG>Cause: </STRONG>An error occurred when attempting to create a business area. The error is probably incidental
+		to the current operation and beyond the scope of Discoverer Administrator. There may be a problem with the network,
+		the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005658"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005660"></A></DT>
+		<P><STRONG>Error creating new business area</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005661"></A>
+		<P><STRONG>Cause: </STRONG>An error occurred when attempting to create a new business area. The error is probably
+		incidental to the current operation and beyond the scope of Discoverer Administrator. There may be a problem with
+		the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005665"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005667"></A></DT>
+		<P><STRONG>Error creating new condition</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005668"></A>
+		<P><STRONG>Cause: </STRONG>An error occurred when attempting to create a condition. The error is probably incidental
+		to the current operation and beyond the scope of Discoverer Administrator. There may be a problem with the network,
+		the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005672"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005674"></A></DT>
+		<P><STRONG>Error creating new folder</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005675"></A>
+		<P><STRONG>Cause: </STRONG>An error occurred when attempting to create a new folder. The error is probably incidental
+		to the current operation and beyond the scope of Discoverer Administrator. There may be a problem with the network,
+		the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005679"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005681"></A></DT>
+		<P><STRONG>Error creating new function</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005682"></A>
+		<P><STRONG>Cause: </STRONG>An error occurred when attempting to create a new PL/SQL function. The error is probably
+		incidental to the current operation and beyond the scope of Discoverer Administrator. There may be a problem with
+		the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005686"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005687"></A></DT>
+		<P><STRONG>Error creating new function argument</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005688"></A>
+		<P><STRONG>Cause: </STRONG>An error occurred when specifying an argument during the creation or editing of a PL/SQL
+		function. The error is probably incidental to the current operation and beyond the scope of Discoverer Administrator.
+		There may be a problem with the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005692"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005694"></A></DT>
+		<P><STRONG>Error creating new item</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005695"></A>
+		<P><STRONG>Cause: </STRONG>An error occurred when attempting to create an item. The error is probably incidental
+		to the current operation and beyond the scope of Discoverer Administrator. There may be a problem with the network,
+		the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005699"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005701"></A></DT>
+		<P><STRONG>Error creating new join</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005704"></A>
+		<P><STRONG>Cause: </STRONG>Discoverer Administrator was unable to save the join you have just created. However,
+		the join has been validated. The error is probably incidental to the current operation and beyond the scope of
+		Discoverer Administrator. There may be a problem with the network, the server, SQL*Net, or the Oracle database
+		itself.</P>
+		<DD CLASS="MH2"><A NAME="1005709"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005711"></A></DT>
+		<P><STRONG>Error creating summary</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005712"></A>
+		<P><STRONG>Cause: </STRONG>An error was detected when attempting to create a summary. The error is probably incidental
+		to the current operation and beyond the scope of Discoverer Administrator. There may be a problem with the network,
+		the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005716"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005717"></A></DT>
+		<P><STRONG>Error creating summary refresh set</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005718"></A>
+		<P><STRONG>Cause: </STRONG>An error was detected when creating the summary refresh set. The error is probably incidental
+		to the current operation and beyond the scope of Discoverer Administrator. There may be a problem with the network,
+		the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005722"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005724"></A></DT>
+		<P><STRONG>Error creating summary set</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005725"></A>
+		<P><STRONG>Cause: </STRONG>An error was detected when attempting to create a new summary. The error is probably
+		incidental to the current operation and beyond the scope of Discoverer Administrator. There may be a problem with
+		the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005729"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005730"></A></DT>
+		<P><STRONG>Error exporting End User Layer objects</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005731"></A>
+		<P><STRONG>Cause: </STRONG>An error occurred when attempting to export the End User Layer. The error is probably
+		incidental to the current operation and beyond the scope of Discoverer Administrator. There may be a problem with
+		the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005735"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005736"></A></DT>
+		<P><STRONG>Error deleting function argument</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005737"></A>
+		<P><STRONG>Cause: </STRONG>An error occurred when deleting an argument during the creation or editing of a PL/SQL
+		function. The error is probably incidental to the current operation and beyond the scope of Discoverer Administrator.
+		There may be a problem with the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005741"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005742"></A></DT>
+		<P><STRONG>Error deleting registered function</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005743"></A>
+		<P><STRONG>Cause: </STRONG>An error occurred when attempting to delete a PL/SQL function. The error is probably
+		incidental to the current operation and beyond the scope of Discoverer Administrator. There may be a problem with
+		the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005747"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005749"></A></DT>
+		<P><STRONG>Error found parsing SQL statement</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005750"></A>
+		<P><STRONG>Cause: </STRONG>An unspecified error was detected when parsing an SQL statement. There may be an error
+		in the SQL statement, or the SQL is of a type of query which is not currently supported by the Discoverer import
+		parser. See the Release Notes for more information.</P>
+		<DD CLASS="MH2"><A NAME="1005751"></A>
+		<P><STRONG>Action: </STRONG>Check the SQL statement for errors. Correct the error and retry. See the <EM><SPAN
+		CLASS="Italic">Oracle SQL Language Reference Manual</SPAN></EM> for SQL syntax conventions.</P>
+		<DT CLASS="M"><A NAME="1005752"></A></DT>
+		<P><STRONG>Error granting admin option</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005753"></A>
+		<P><STRONG>Cause: </STRONG>An error was detected when attempting to make security modifications in the Security
+		dialog with the Admin option checked. The error is probably incidental to the current operation and beyond the
+		scope of Discoverer Administrator. There may be a problem with the network, the server, SQL*Net, or the Oracle
+		database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005757"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005758"></A></DT>
+		<P><STRONG>Error granting privileges</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005759"></A>
+		<P><STRONG>Cause: </STRONG>An error was detected when attempting to grant or revoke a user's privilege. The error
+		is probably incidental to the current operation and beyond the scope of Discoverer Administrator. There may be
+		a problem with the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005763"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005764"></A></DT>
+		<P><STRONG>Error granting/revoking business area</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005765"></A>
+		<P><STRONG>Cause: </STRONG>An error occurred when attempting to grant or revoke business area privileges to a user
+		or role. The error is probably incidental to the current operation and beyond the scope of Discoverer Administrator.
+		There may be a problem with the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005769"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005770"></A></DT>
+		<P><STRONG>Error importing End User Layer objects</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005771"></A>
+		<P><STRONG>Cause: </STRONG>An error occurred when attempting to import an End User Layer. The error is probably
+		incidental to the current operation and beyond the scope of the Discoverer Administrator. There may be a problem
+		with the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005775"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005777"></A></DT>
+		<P><STRONG>Error in condition description</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005778"></A>
+		<P><STRONG>Cause: </STRONG>You may have entered an invalid character.</P>
+		<DD CLASS="MH2"><A NAME="1005779"></A>
+		<P><STRONG>Action: </STRONG>You may have entered a character that is not acceptable. Re-enter and retry.</P>
+		<DT CLASS="M"><A NAME="1005780"></A></DT>
+		<P><STRONG>Error in condition name</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005781"></A>
+		<P><STRONG>Cause: </STRONG>You may have entered an invalid character.</P>
+		<DD CLASS="MH2"><A NAME="1005782"></A>
+		<P><STRONG>Action: </STRONG>You may have entered a character that is not acceptable. Re-enter and retry.</P>
+		<DT CLASS="M"><A NAME="1005783"></A></DT>
+		<P><STRONG>Error in database</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005786"></A>
+		<P><STRONG>Cause: </STRONG>Discoverer Administrator has detected an error associated with the Oracle database;
+		however, the specific error cannot be determined. The error is probably incidental to the current operation and
+		beyond the scope of Discoverer Administrator. There may be a problem with the network, the server, SQL*Net, or
+		the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005791"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005793"></A></DT>
+		<P><STRONG>Error in End User Layer import file - InvalidClass</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005794"></A>
+		<P><STRONG>Cause: </STRONG>The End User Layer import file is corrupted or is not a valid import file.</P>
+		<DD CLASS="MH2"><A NAME="1005795"></A>
+		<P><STRONG>Action: </STRONG>Export the business area into an new file and import it again. Retry the operation
+		that failed.</P>
+		<DT CLASS="M"><A NAME="1005796"></A></DT>
+		<P><STRONG>Error in End User Layer import file - NoTypeFound</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005797"></A>
+		<P><STRONG>Cause: </STRONG>The End User Layer import file is corrupted or is not a valid import file.</P>
+		<DD CLASS="MH2"><A NAME="1005798"></A>
+		<P><STRONG>Action: </STRONG>Export the business area into an new file and import it again. Retry the operation
+		that failed.</P>
+		<DT CLASS="M"><A NAME="1005800"></A></DT>
+		<P><STRONG>Error in End User Layer import file - ParseError</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005801"></A>
+		<P><STRONG>Cause: </STRONG>The End User Layer import file is corrupted or is not a valid import file.</P>
+		<DD CLASS="MH2"><A NAME="1005802"></A>
+		<P><STRONG>Action: </STRONG>Export the business area into an new file and import it again. Retry the operation
+		that failed.</P>
+		<DT CLASS="M"><A NAME="1005803"></A></DT>
+		<P><STRONG>Error in formula</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005804"></A>
+		<P><STRONG>Cause: </STRONG>The formula you have entered does not follow the SQL expression syntax.</P>
+		<DD CLASS="MH2"><A NAME="1005805"></A>
+		<P><STRONG>Action: </STRONG>Re-enter the formula following SQL syntax conventions. See the <EM><SPAN CLASS="Italic">Oracle
+		SQL Language Reference Manual</SPAN></EM> for a description.</P>
+		<DT CLASS="M"><A NAME="1005807"></A></DT>
+		<P><STRONG>Error in formula - ambiguous or duplicate item names</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005808"></A>
+		<P><STRONG>Cause: </STRONG>The formula contains unqualified item names which appear in multiple folders.</P>
+		<DD CLASS="MH2"><A NAME="1005809"></A>
+		<P><STRONG>Action: </STRONG>Qualify item names with the folder name (for example, <EM><SPAN CLASS="Italic">Employee</SPAN></EM>.Name).</P>
+		<DT CLASS="M"><A NAME="1005811"></A></DT>
+		<P><STRONG>Error in formula - circular recursive expression detected</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005812"></A>
+		<P><STRONG>Cause: </STRONG>The formula contains a reference to an item whose formula references this formula.</P>
+		<DD CLASS="MH2"><A NAME="1005813"></A>
+		<P><STRONG>Action: </STRONG>Modify the formula to remove the circular reference and retry.</P>
+		<DT CLASS="M"><A NAME="1005815"></A></DT>
+		<P><STRONG>Error in formula - invalid item name or unrecognized item</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005816"></A>
+		<P><STRONG>Cause: </STRONG>The formula contains some text that is not recognized as an item name.</P>
+		<DD CLASS="MH2"><A NAME="1005817"></A>
+		<P><STRONG>Action: </STRONG>Change the item name to a valid item name and retry.</P>
+		<DT CLASS="M"><A NAME="1005818"></A></DT>
+		<P><STRONG>Error in formula - item is not in scope of the folders available for this formula</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005819"></A>
+		<P><STRONG>Cause: </STRONG>The formula contains an item that is not in the folders that this formula can reference.
+		In Discoverer Administrator you can create derived items in complex folders that reference items in either the
+		component folders or the complex folder itself. In simple folders you can only reference items in the folder itself.</P>
+		<DD CLASS="MH2"><A NAME="1005823"></A>
+		<P><STRONG>Action: </STRONG>Correct the item name and retry.</P>
+		<DT CLASS="M"><A NAME="1005824"></A></DT>
+		<P><STRONG>Error in formula - mismatched ( ) (parentheses)</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005826"></A>
+		<P><STRONG>Cause: </STRONG>There are mismatched parentheses in the formula.</P>
+		<DD CLASS="MH2"><A NAME="1005827"></A>
+		<P><STRONG>Action: </STRONG>Edit the formula for matching parentheses and retry.</P>
+		<DT CLASS="M"><A NAME="1005829"></A></DT>
+		<P><STRONG>Error in formula - Nested aggregate functions are not allowed</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005830"></A>
+		<P><STRONG>Cause: </STRONG>Discoverer does not directly support the use of nested aggregates, such as AVG(SUM(SAL)).</P>
+		<DD CLASS="MH2"><A NAME="1005831"></A>
+		<P><STRONG>Action: </STRONG>Remove the nested aggregate. You can achieve the same result shown in the example by
+		using the first aggregate SUM(SAL) called, for example, SumOfSalary, and then creating a new folder. Drag over
+		the items you need (excluding the aggregate), and create a new item with the formula <BR>
+		AVG(SumOfSalary).</P>
+		<DT CLASS="M"><A NAME="1005833"></A></DT>
+		<P><STRONG>Error in formula - uncategorized error</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005834"></A>
+		<P><STRONG>Cause: </STRONG>An unspecified error was found in the formula.</P>
+		<DD CLASS="MH2"><A NAME="1005835"></A>
+		<P><STRONG>Action: </STRONG>Check the formula and correct the error. See the <EM><SPAN CLASS="Italic">Oracle SQL
+		Language Reference Manual</SPAN></EM> for formula syntax conventions.</P>
+		<DT CLASS="M"><A NAME="1005837"></A></DT>
+		<P><STRONG>Error in formula - unexpected end of formula</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005838"></A>
+		<P><STRONG>Cause: </STRONG>The formula is unfinished, possibly ending in an operator or function name.</P>
+		<DD CLASS="MH2"><A NAME="1005839"></A>
+		<P><STRONG>Action: </STRONG>Check the end of the formula and correct the error. See the <EM><SPAN CLASS="Italic">Oracle
+		SQL Language Reference Manual</SPAN></EM> for formula syntax conventions.</P>
+		<DT CLASS="M"><A NAME="1005841"></A></DT>
+		<P><STRONG>Error in Formula - unknown function name</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005842"></A>
+		<P><STRONG>Cause: </STRONG>The formula contains a function that is not registered in the End User Layer.</P>
+		<DD CLASS="MH2"><A NAME="1005843"></A>
+		<P><STRONG>Action: </STRONG>Check the formula to determine if the function name is wrong and correct it. If the
+		function named in the formula is the correct function, then choose <STRONG><SPAN CLASS="Bold">Register PL/SQL Function</SPAN></STRONG>
+		in the <STRONG><SPAN CLASS="Bold">Tools</SPAN></STRONG> menu to register the function in the End User Layer. Retry
+		the formula with the registered function name.</P>
+		<DT CLASS="M"><A NAME="1005844"></A></DT>
+		<P><STRONG>Error in join description</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005845"></A>
+		<P><STRONG>Cause: </STRONG>You may have entered an invalid character.</P>
+		<DD CLASS="MH2"><A NAME="1005846"></A>
+		<P><STRONG>Action: </STRONG>You may have entered a character that is not acceptable. Re-enter and retry.</P>
+		<DT CLASS="M"><A NAME="1005847"></A></DT>
+		<P><STRONG>Error in join name</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005848"></A>
+		<P><STRONG>Cause: </STRONG>You may have entered an invalid character.</P>
+		<DD CLASS="MH2"><A NAME="1005849"></A>
+		<P><STRONG>Action: </STRONG>You may have entered a character that is not acceptable. Re-enter and retry.</P>
+		<DT CLASS="M"><A NAME="1005850"></A></DT>
+		<P><STRONG>Error loading database link</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005851"></A>
+		<P><STRONG>Cause: </STRONG>An error occurred when attempting to retrieve all of the database links to obtain a
+		list of users for that database. The error is probably incidental to the current operation and beyond the scope
+		of Discoverer Administrator. There may be a problem with the network, the server, SQL*Net, or the Oracle database
+		itself.</P>
+		<DD CLASS="MH2"><A NAME="1005855"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005857"></A></DT>
+		<P><STRONG>Error loading Oracle Designer application</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005858"></A>
+		<P><STRONG>Cause: </STRONG>An error was detected when attempting to import information from Oracle Designer. The
+		error is probably incidental to the current operation and beyond the scope of Discoverer Administrator. There may
+		be a problem with the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005862"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005864"></A></DT>
+		<P><STRONG>Error loading users for database link</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005865"></A>
+		<P><STRONG>Cause: </STRONG>An error occurred when attempting to obtain a list of users for database link you have
+		selected. The error is probably incidental to the current operation and beyond the scope of Discoverer Administrator.
+		There may be a problem with the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005869"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005870"></A></DT>
+		<P><STRONG>Error mapping column</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005871"></A>
+		<P><STRONG>Cause: </STRONG>An error occurred when attempting to map an item in the summary table to an existing
+		column in the database. The error is probably incidental to the current operation and beyond the scope of Discoverer
+		Administrator. There may be a problem with the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005875"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005876"></A></DT>
+		<P><STRONG>Error modifying function argument</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005877"></A>
+		<P><STRONG>Cause: </STRONG>An error occurred when changing an argument during the editing of a PL/SQL function.
+		The error is probably incidental to the current operation and beyond the scope of Discoverer Administrator. There
+		may be a problem with the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005881"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005882"></A></DT>
+		<P><STRONG>Error modifying item class</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005883"></A>
+		<P><STRONG>Cause: </STRONG>An error occurred when attempting to modify an item class. The error is probably incidental
+		to the current operation and beyond the scope of Discoverer Administrator. There may be a problem with the network,
+		the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005887"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005888"></A></DT>
+		<P><STRONG>Error modifying join</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005889"></A>
+		<P><STRONG>Cause: </STRONG>An error occurred when attempting to save a join that you have modified. However, the
+		join itself has been validated. The error is probably incidental to the current operation and beyond the scope
+		of Discoverer Administrator. There may be a problem with the network, the server, SQL*Net, or the Oracle database
+		itself.</P>
+		<DD CLASS="MH2"><A NAME="1005893"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005894"></A></DT>
+		<P><STRONG>Error modifying PL/SQL functions</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005895"></A>
+		<P><STRONG>Cause: </STRONG>An error occurred when attempting to modify a PL/SQL function. The error is probably
+		incidental to the current operation and beyond the scope of Discoverer Administrator. There may be a problem with
+		the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005899"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005900"></A></DT>
+		<P><STRONG>Error refreshing the definition of End User Layer</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005901"></A>
+		<P><STRONG>Cause: </STRONG>An error occurred when attempting to refresh the End User Layer. The error is probably
+		incidental to the current operation and beyond the scope of Discoverer Administrator. There may be a problem with
+		the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005905"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005906"></A></DT>
+		<P><STRONG>Error registering PL/SQL functions</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005907"></A>
+		<P><STRONG>Cause: </STRONG>An error occurred when attempting to register a PL/SQL function. The error is probably
+		incidental to the current operation and beyond the scope of Discoverer Administrator. There may be a problem with
+		the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005911"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005912"></A></DT>
+		<P><STRONG>Error setting business area property</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005913"></A>
+		<P><STRONG>Cause: </STRONG>An error was detected when attempting to set a business area property. The error is
+		probably incidental to the current operation and beyond the scope of Discoverer Administrator. There may be a problem
+		with the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005917"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005919"></A></DT>
+		<P><STRONG>Error setting case storage of item</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005920"></A>
+		<P><STRONG>Cause: </STRONG>An error was detected when attempting to set the case storage attribute for this item.
+		The error is probably incidental to the current operation and beyond the scope of Discoverer Administrator. There
+		may be a problem with the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005924"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005925"></A></DT>
+		<P><STRONG>Error setting condition property</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005926"></A>
+		<P><STRONG>Cause: </STRONG>An error was detected when attempting to set a condition property. The error is probably
+		incidental to the current operation and beyond the scope of Discoverer Administrator. There may be a problem with
+		the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005930"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005931"></A></DT>
+		<P><STRONG>Error setting content type of item</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005932"></A>
+		<P><STRONG>Cause: </STRONG>An error was detected when attempting to set the content type attribute for this item.The
+		error is probably incidental to the current operation and beyond the scope of Discoverer Administrator. There may
+		be a problem with the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005936"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005937"></A></DT>
+		<P><STRONG>Error setting default placement of item</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005938"></A>
+		<P><STRONG>Cause: </STRONG>An error was detected when attempting to set the default placement (top, left, right,
+		page) attribute for this item. The error is probably incidental to the current operation and beyond the scope of
+		Discoverer Administrator. There may be a problem with the network, the server, SQL*Net, or the Oracle database
+		itself.</P>
+		<DD CLASS="MH2"><A NAME="1005942"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005943"></A></DT>
+		<P><STRONG>Error setting default width of item</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005944"></A>
+		<P><STRONG>Cause: </STRONG>An error was detected when attempting to set the default width attribute for this item.
+		The error is probably incidental to the current operation and beyond the scope of Discoverer Administrator. There
+		may be a problem with the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005948"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005949"></A></DT>
+		<P><STRONG>Error setting display case of item</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005950"></A>
+		<P><STRONG>Cause: </STRONG>An error was detected when attempting to set the display case attribute for this item.
+		The error is probably incidental to the current operation and beyond the scope of Discoverer Administrator. There
+		may be a problem with the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005954"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005955"></A></DT>
+		<P><STRONG>Error setting folder property</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005956"></A>
+		<P><STRONG>Cause: </STRONG>An error was detected when attempting to set a folder property. The error is probably
+		incidental to the current operation and beyond the scope of Discoverer Administrator. There may be a problem with
+		the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005960"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005961"></A></DT>
+		<P><STRONG>Error setting heading style of item</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005962"></A>
+		<P><STRONG>Cause: </STRONG>An error was detected when attempting to set the heading style attribute for this item.</P>
+		<DD CLASS="MH2"><A NAME="1005963"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005964"></A></DT>
+		<P><STRONG>Error setting item property</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005965"></A>
+		<P><STRONG>Cause: </STRONG>An error was detected when attempting to set an item property.</P>
+		<DD CLASS="MH2"><A NAME="1005966"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005967"></A></DT>
+		<P><STRONG>Error setting join property</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005968"></A>
+		<P><STRONG>Cause: </STRONG>An error was detected when attempting to set a join property. The error is probably
+		incidental to the current operation and beyond the scope of Discoverer Administrator. There may be a problem with
+		the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005972"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005973"></A></DT>
+		<P><STRONG>Error setting maximum characters fetched for item</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005974"></A>
+		<P><STRONG>Cause: </STRONG>An error was detected when attempting to set the maximum character fetch value for this
+		item.The error is probably incidental to the current operation and beyond the scope of Discoverer Administrator.
+		There may be a problem with the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005978"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005979"></A></DT>
+		<P><STRONG>Error setting name</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005980"></A>
+		<P><STRONG>Cause: </STRONG>An error was detected when attempting to set a name property. The error is probably
+		incidental to the current operation and beyond the scope of Discoverer Administrator. There may be a problem with
+		the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005984"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005985"></A></DT>
+		<P><STRONG>Error setting show null as <EM><SPAN CLASS="Italic">character</SPAN></EM> of item</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005986"></A>
+		<P><STRONG>Cause: </STRONG>An error was detected when attempting to set the show null as attribute for this item.
+		The error is probably incidental to the current operation and beyond the scope of Discoverer Administrator. There
+		may be a problem with the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005990"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005991"></A></DT>
+		<P><STRONG>Error setting show/hidden of item</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005992"></A>
+		<P><STRONG>Cause: </STRONG>An error was detected when attempting to set the Visible to User attribute for this
+		item. The error is probably incidental to the current operation and beyond the scope of Discoverer Administrator.
+		There may be a problem with the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1005996"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1005998"></A></DT>
+		<P><STRONG>Error setting style of item</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1005999"></A>
+		<P><STRONG>Cause: </STRONG>An error was detected when attempting to set the style attribute for this item. The
+		error is probably incidental to the current operation and beyond the scope of Discoverer Administrator. There may
+		be a problem with the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1006003"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1006004"></A></DT>
+		<P><STRONG>EUL File Invalid, DQ4Admin.dll needs updating, please check in the README file for further information.</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006005"></A>
+		<P><STRONG>Cause: </STRONG>You attempted to import an End User Layer export file produced by an older version of
+		Data Query where the file format is not compatible with Discoverer.</P>
+		<DD CLASS="MH2"><A NAME="1006006"></A>
+		<P><STRONG>Action: </STRONG>Check the release notes to see how to upgrade your release of Data Query. This normally
+		requires replacing a DLL. Produce the export file again.</P>
+		<DT CLASS="M"><A NAME="1006008"></A></DT>
+		<P><STRONG>EUL_PLAN_TABLE not accessible</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006009"></A>
+		<P><STRONG>Cause: </STRONG>You do not have write access to one of the End User Layer database tables.</P>
+		<DD CLASS="MH2"><A NAME="1006010"></A>
+		<P><STRONG>Action: </STRONG>Check the log files created when the End User Layer database tables were installed,
+		rebuild the End User Layer tables, or grant explicit access on the table EUL_PLAN_TABLE.</P>
+		<DT CLASS="M"><A NAME="1006012"></A></DT>
+		<P><STRONG>EUL_PLAN_TABLE not modifiable</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006013"></A>
+		<P><STRONG>Cause: </STRONG>You do not have access to one of the End User Layer database tables.</P>
+		<DD CLASS="MH2"><A NAME="1006014"></A>
+		<P><STRONG>Action: </STRONG>Check the log files created when the End User Layer database tables were installed,
+		rebuild the End User Layer tables, or grant explicit access on the table EUL_PLAN_TABLE.</P>
+		<DT CLASS="M"><A NAME="1006016"></A></DT>
+		<P><STRONG>EUL_QPP_STATISTICS not accessible</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006017"></A>
+		<P><STRONG>Cause: </STRONG>You do not have write access to one of the End User Layer database tables.</P>
+		<DD CLASS="MH2"><A NAME="1006018"></A>
+		<P><STRONG>Action: </STRONG>Check the log files created when the End User Layer database tables were installed,
+		rebuild the End User Layer tables, or grant explicit access on the table EUL_QPP_STATISTICS.</P>
+		<DT CLASS="M"><A NAME="1006020"></A></DT>
+		<P><STRONG>EUL_QPP_STATISTICS not modifiable</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006021"></A>
+		<P><STRONG>Cause: </STRONG>You do not have access to one of the End User Layer database tables.</P>
+		<DD CLASS="MH2"><A NAME="1006022"></A>
+		<P><STRONG>Action: </STRONG>Check the log files created when the End User Layer database tables were installed,
+		rebuild the End User Layer tables, or grant explicit access on the table EUL_QPP_STATISTICS.</P>
+		<DT CLASS="M"><A NAME="1006024"></A></DT>
+		<P><STRONG>Failed to add filter to folder</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006025"></A>
+		<P><STRONG>Cause: </STRONG>An error occurred creating a condition on a folder.</P>
+		<DD CLASS="MH2"><A NAME="1006026"></A>
+		<P><STRONG>Action: </STRONG>Check the expression used in the condition, correct any errors and retry. If the error
+		occurs again, save your work and exit from Discoverer Administrator. Launch Discoverer Administrator again and
+		retry.</P>
+		<DT CLASS="M"><A NAME="1006034"></A></DT>
+		<P><STRONG>Failed to connect to database</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006035"></A>
+		<P><STRONG>Cause: </STRONG>You did not supply a valid user name, password or database in the login dialog.</P>
+		<DD CLASS="MH2"><A NAME="1006036"></A>
+		<P><STRONG>Action: </STRONG>Correct the user name, password and database and retry connecting to the database.
+		Ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1006038"></A></DT>
+		<P><STRONG>Failed to open file</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006039"></A>
+		<P><STRONG>Cause: </STRONG>Unable to open a specified file. The file may be unreachable on the network or have
+		the wrong properties.</P>
+		<DD CLASS="MH2"><A NAME="1006042"></A>
+		<P><STRONG>Action: </STRONG>Verify that you have access to the file from your computer independent of Discoverer
+		Administrator. Check network connections and file access permissions or ask your systems administrator or Oracle
+		representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1006045"></A></DT>
+		<P><STRONG>Failed to write to output file</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006046"></A>
+		<P><STRONG>Cause: </STRONG>Unable to write to a specified file. You may not be able to access the file on the network,
+		or file access properties may be set incorrectly.</P>
+		<DD CLASS="MH2"><A NAME="1006049"></A>
+		<P><STRONG>Action: </STRONG>Verify that you have write access to the file from your computer independent of Discoverer
+		Administrator. Check network connections and file access permission or ask your systems administrator or Oracle
+		representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1006052"></A></DT>
+		<P><STRONG>Floating point numbers not allowed here</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006053"></A>
+		<P><STRONG>Cause: </STRONG>You attempted to use a floating-point number where an integer is required.</P>
+		<DD CLASS="MH2"><A NAME="1006054"></A>
+		<P><STRONG>Action: </STRONG>Change the number to an integer and retry.</P>
+		<DT CLASS="M"><A NAME="1006055"></A></DT>
+		<P><STRONG>Folder [name] not imported - already exists in business area</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006056"></A>
+		<P><STRONG>Cause: </STRONG>The End User Layer import failed because a folder in the import file already exists
+		in the End User Layer.</P>
+		<DD CLASS="MH2"><A NAME="1006057"></A>
+		<P><STRONG>Action: </STRONG>Rename the folder or choose one of the import options to have the renaming performed
+		automatically when you import the business area.</P>
+		<DT CLASS="M"><A NAME="1006058"></A></DT>
+		<P><STRONG>Folder [name] referenced in the export was not found in this End User Layer</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006059"></A>
+		<P><STRONG>Cause: </STRONG>A folder was referenced in the End User Layer import file that does not exist in the
+		End User Layer.</P>
+		<DD CLASS="MH2"><A NAME="1006060"></A>
+		<P><STRONG>Action: </STRONG>Include this folder when you export the business area or import the folder separately.</P>
+		<DT CLASS="M"><A NAME="1006061"></A></DT>
+		<P><STRONG>Folder [name] was not loaded because it's related folders have not been created during this import</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006062"></A>
+		<P><STRONG>Cause: </STRONG>A folder was referenced in the End User Layer import file that does not exist in the
+		End User Layer.</P>
+		<DD CLASS="MH2"><A NAME="1006063"></A>
+		<P><STRONG>Action: </STRONG>Include this folder when you export the business area, or import the folder separately.</P>
+		<DT CLASS="M"><A NAME="1006065"></A></DT>
+		<P><STRONG>Folder [name] was not loaded because of a missing dependency</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006066"></A>
+		<P><STRONG>Cause: </STRONG>A folder was referenced in the End User Layer import file that has dependencies on other
+		objects that are not in the End User Layer.</P>
+		<DD CLASS="MH2"><A NAME="1006067"></A>
+		<P><STRONG>Action: </STRONG>Include the dependencies required when you export the business area.</P>
+		<DT CLASS="M"><A NAME="1006069"></A></DT>
+		<P><STRONG>Folder [name] was not loaded due to name clash</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006070"></A>
+		<P><STRONG>Cause: </STRONG>The End User Layer import failed because a folder in the import file already exists
+		in the End User Layer.</P>
+		<DD CLASS="MH2"><A NAME="1006071"></A>
+		<P><STRONG>Action: </STRONG>Rename the folder or choose one of the import options to have the renaming performed
+		automatically when you import the business area.</P>
+		<DT CLASS="M"><A NAME="1006072"></A></DT>
+		<P><STRONG>Folder must be named</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006073"></A>
+		<P><STRONG>Cause: </STRONG>You have attempted to create or edit a folder without entering a name.</P>
+		<DD CLASS="MH2"><A NAME="1006074"></A>
+		<P><STRONG>Action: </STRONG>Enter a unique name in the name field and retry. Each folder must be uniquely named.</P>
+		<DT CLASS="M"><A NAME="1006076"></A></DT>
+		<P><STRONG>Format mask is too long. Max length is <EM><SPAN CLASS="Italic">num</SPAN></EM> bytes</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006077"></A>
+		<P><STRONG>Cause: </STRONG>You have entered a format mask which is longer than the maximum (100 bytes).</P>
+		<DD CLASS="MH2"><A NAME="1006078"></A>
+		<P><STRONG>Action: </STRONG>Re-enter a format mask which is 100 bytes or less. See the <EM><SPAN CLASS="Italic">Oracle
+		SQL Language Reference Manual</SPAN></EM> for a description of the format mask definition.</P>
+		<DT CLASS="M"><A NAME="1006080"></A></DT>
+		<P><STRONG>Formula is too long. Max length is <EM><SPAN CLASS="Italic">num</SPAN></EM> bytes</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006081"></A>
+		<P><STRONG>Cause: </STRONG>You have entered a formula which is longer than the maximum (2,000 bytes).</P>
+		<DD CLASS="MH2"><A NAME="1006082"></A>
+		<P><STRONG>Action: </STRONG>Re-enter a formula which is 2,000 bytes or less.</P>
+		<DT CLASS="M"><A NAME="1006084"></A></DT>
+		<P><STRONG>Function display name is too long</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006085"></A>
+		<P><STRONG>Cause: </STRONG>You have entered a name for the PL/SQL function which is longer than the maximum (100
+		bytes).</P>
+		<DD CLASS="MH2"><A NAME="1006086"></A>
+		<P><STRONG>Action: </STRONG>Re-enter a name which is 100 bytes or less.</P>
+		<DT CLASS="M"><A NAME="1006088"></A></DT>
+		<P><STRONG>Function is invalid</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006089"></A>
+		<P><STRONG>Cause: </STRONG>You are attempting to register a PL/SQL function in a condition which is invalid.</P>
+		<DD CLASS="MH2"><A NAME="1006090"></A>
+		<P><STRONG>Action: </STRONG>Enter a valid function and retry.</P>
+		<DT CLASS="M"><A NAME="1006091"></A></DT>
+		<P><STRONG>Function is used in one or more items or filters. Deletion not allowed.</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006092"></A>
+		<P><STRONG>Cause: </STRONG>This function is referenced in the formula of other items or conditions.</P>
+		<DD CLASS="MH2"><A NAME="1006093"></A>
+		<P><STRONG>Action: </STRONG>Delete the items and conditions that use this function or edit them to remove the reference
+		to the function and retry.</P>
+		<DT CLASS="M"><A NAME="1006095"></A></DT>
+		<P><STRONG>Function must have a display name</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006096"></A>
+		<P><STRONG>Cause: </STRONG>You have attempted to create or edit a PL/SQL function without a name.</P>
+		<DD CLASS="MH2"><A NAME="1006097"></A>
+		<P><STRONG>Action: </STRONG>Enter a name in the name field and retry. Each PL/SQL function must be uniquely named.</P>
+		<DT CLASS="M"><A NAME="1006098"></A></DT>
+		<P><STRONG>Function name is too long</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006099"></A>
+		<P><STRONG>Cause: </STRONG>You have entered a function name which is longer than the maximum allowed length.</P>
+		<DD CLASS="MH2"><A NAME="1006100"></A>
+		<P><STRONG>Action: </STRONG>Re-enter a function name which is no longer than the maximum length allowed for function
+		name in the Oracle database you are connected to. The maximum length of function name may vary with Oracle versions.
+		See the <EM><SPAN CLASS="Italic">Oracle SQL Language Reference Manual</SPAN></EM> for package name conventions.</P>
+		<DT CLASS="M"><A NAME="1006102"></A></DT>
+		<P><STRONG>Function name must be specified</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006103"></A>
+		<P><STRONG>Cause: </STRONG>You have attempted to create or edit a PL/SQL function without a function name.</P>
+		<DD CLASS="MH2"><A NAME="1006104"></A>
+		<P><STRONG>Action: </STRONG>Enter a valid function name in the name field and retry. Each PL/SQL function must
+		have a valid name. See the <EM><SPAN CLASS="Italic">Oracle SQL Language Reference Manual</SPAN></EM> for function
+		name conventions.</P>
+		<DT CLASS="M"><A NAME="1006105"></A></DT>
+		<P><STRONG>Heading is too long. Max length is <EM><SPAN CLASS="Italic">num</SPAN></EM> bytes</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006106"></A>
+		<P><STRONG>Cause: </STRONG>You have entered a heading which is longer than the maximum (240 bytes).</P>
+		<DD CLASS="MH2"><A NAME="1006107"></A>
+		<P><STRONG>Action: </STRONG>Re-enter a heading which is 240 bytes or less.</P>
+		<DT CLASS="M"><A NAME="1006108"></A></DT>
+		<P><STRONG>Identifier must be unique</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006109"></A>
+		<P><STRONG>Cause: </STRONG>Changes made to an Identifier mean that it is no longer unique in the current EUL.</P>
+		<DD CLASS="MH2"><A NAME="1006110"></A>
+		<P><STRONG>Action: </STRONG>Re-enter the Identifier details ensuring that it is unique in the current EUL.</P>
+		<DT CLASS="M"><A NAME="1006113"></A></DT>
+		<P><STRONG>Inconsistent or invalid data types used in arithmetic operation</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006114"></A>
+		<P><STRONG>Cause: </STRONG>The data types of items used in this formula or condition are mismatched.</P>
+		<DD CLASS="MH2"><A NAME="1006115"></A>
+		<P><STRONG>Action: </STRONG>Check the formula to correct the error or change the data type of the items by using
+		TO_CHAR, TO_DATE or TO_NUMBER functions.</P>
+		<DT CLASS="M"><A NAME="1006117"></A></DT>
+		<P><STRONG>Insufficient End User Layer privilege to change summaries</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006118"></A>
+		<P><STRONG>Cause: </STRONG>You do not have the privilege required to edit summaries in the End User Layer.</P>
+		<DD CLASS="MH2"><A NAME="1006119"></A>
+		<P><STRONG>Action: </STRONG>Ask your system administrator to grant you the Create Summaries privilege using <STRONG><SPAN
+		CLASS="Bold">Privileges</SPAN></STRONG> in the <STRONG><SPAN CLASS="Bold">Tools</SPAN></STRONG> menu in Discoverer
+		Administrator.</P>
+		<DT CLASS="M"><A NAME="1006123"></A></DT>
+		<P><STRONG>Insufficient privilege for attempted operation</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006124"></A>
+		<P><STRONG>Cause: </STRONG>You do not have the End User Layer privilege required to perform the requested operation.
+		You also get this message if you have insufficient database privileges.</P>
+		<DD CLASS="MH2"><A NAME="1006125"></A>
+		<P><STRONG>Action: </STRONG>Ask your system administrator to grant you the relevant privileges using <STRONG><SPAN
+		CLASS="Bold">Privileges</SPAN></STRONG> in the <STRONG><SPAN CLASS="Bold">Tools</SPAN></STRONG> menu in Discoverer
+		Administrator or to grant you the relevant database privileges.</P>
+		<DT CLASS="M"><A NAME="1006130"></A></DT>
+		<P><STRONG>Insufficient privilege to run Discoverer</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006131"></A>
+		<P><STRONG>Cause: </STRONG>You do not have the privilege required to use the Discoverer.</P>
+		<DD CLASS="MH2"><A NAME="1006132"></A>
+		<P><STRONG>Action: </STRONG>Ask your system administrator to grant you the Administration privilege using <STRONG><SPAN
+		CLASS="Bold">Privileges</SPAN></STRONG> in the <STRONG><SPAN CLASS="Bold">Tools</SPAN></STRONG> menu in Discoverer
+		Administrator.</P>
+		<DT CLASS="M"><A NAME="1006136"></A></DT>
+		<P><STRONG>Insufficient server privilege to change summaries</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006137"></A>
+		<P><STRONG>Cause: </STRONG>You do not have the database privileges required to create or edit summaries in the
+		server.</P>
+		<DD CLASS="MH2"><A NAME="1006138"></A>
+		<P><STRONG>Action: </STRONG>Ask your system administrator to grant you the server 'Create Table' privilege using
+		SQL*Plus and to ensure that you have quota and privileges to be able to create tables in a tablespace. See the
+		Oracle Database Administration documentation for more details.</P>
+		<DT CLASS="M"><A NAME="1006140"></A></DT>
+		<P><STRONG>Internal EUL Error: DataError = Invalid function type</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006141"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006142"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006143"></A></DT>
+		<P><STRONG>Internal EUL Error: ExportIdAlreadyExists - Object has already reserved this id</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006144"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006145"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006146"></A></DT>
+		<P><STRONG>Internal EUL Error: ExportInvalidCType</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006147"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006148"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006149"></A></DT>
+		<P><STRONG>Internal EUL Error: ExprInvNumArgs - Invalid number of arguments for expression node</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006150"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006151"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006152"></A></DT>
+		<P><STRONG>Internal EUL Error: ExprParseBracketErr - No bracket found in canonical formula</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006153"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006154"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006155"></A></DT>
+		<P><STRONG>Internal EUL Error: ExprParseNodeType - Invalid type in canonical formula</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006156"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006157"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006158"></A></DT>
+		<P><STRONG>Internal EUL Error: Failed to get summary status from the server</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006159"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006160"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006161"></A></DT>
+		<P><STRONG>Internal EUL Error: HierarchyNodeNotConnected - the nodes in hierarchy are not the same as those in
+		the segments</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006162"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006163"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006164"></A></DT>
+		<P><STRONG>Internal EUL Error: HierarchyNodeNotConnected - this hierarchy node is not connected</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006165"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006166"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006167"></A></DT>
+		<P><STRONG>Internal EUL Error: HierarchySegNotConnected - the segments in hierarchy are not the same as those in
+		the nodes</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006168"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006169"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006170"></A></DT>
+		<P><STRONG>Internal EUL Error: InvalidConstructOpt - Invalid handle constructor option</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006171"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006172"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006173"></A></DT>
+		<P><STRONG>Internal EUL Error: InvalidDQ4Query - error importing DQ4 query</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006174"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006175"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006176"></A></DT>
+		<P><STRONG>Internal EUL Error: InvalidDrillOption - Invalid drill option requested</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006177"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006178"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006179"></A></DT>
+		<P><STRONG>Internal EUL Error: InvalidId - Failed to find EUL element by id</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006180"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006181"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006182"></A></DT>
+		<P><STRONG>Internal EUL Error: InvalidItem - Item is not valid in this context</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006183"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006184"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006185"></A></DT>
+		<P><STRONG>Internal EUL Error: InvalidNode - Invalid Hierarchy Node</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006186"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006187"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006188"></A></DT>
+		<P><STRONG>Internal EUL Error: InvalidRefreshSetType - Invalid summary refresh set type</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006189"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have succeeded correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006190"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006191"></A></DT>
+		<P><STRONG>Internal EUL Error: InvalidRollupOnQR - Rollup item is not in the Query Request</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006192"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006193"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006194"></A></DT>
+		<P><STRONG>Internal EUL Error: InvalidSegInHierarchy - Invalid segment found in hierarchy</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006195"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006196"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006197"></A></DT>
+		<P><STRONG>Internal EUL Error: InvalidString - String or string length is not valid</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006198"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006199"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006200"></A></DT>
+		<P><STRONG>Internal EUL Error: InvalidStringLength - String length is not valid</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006201"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006202"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006203"></A></DT>
+		<P><STRONG>Internal EUL Error: InvalidSummaryTableDef - The specified server table is invalid</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006204"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006205"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006206"></A></DT>
+		<P><STRONG>Internal EUL Error: ItemNotInNode - The item to be removed is not in this hierarchy node</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006207"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006208"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006209"></A></DT>
+		<P><STRONG>Internal EUL Error: ItemNotInServerObject - Column specified does not exist</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006210"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006211"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006212"></A></DT>
+		<P><STRONG>Internal EUL Error: LXInitializationFailure- lxlinit failed to allocate memory</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006213"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006214"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006215"></A></DT>
+		<P><STRONG>Internal EUL Error: MapInsertFailed - insert failed in PrivateAddObjectToMap</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006216"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006217"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006218"></A></DT>
+		<P><STRONG>Internal EUL Error: NoTransaction - there is no current transaction</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006219"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006220"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006221"></A></DT>
+		<P><STRONG>Internal EUL Error: NotSimpleFilter - complex element found in simple filter</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006222"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006223"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006224"></A></DT>
+		<P><STRONG>Internal EUL Error: ObjectNotFound - Can't find EUL element</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006225"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006226"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006227"></A></DT>
+		<P><STRONG>Internal EUL Error: PrivilegeNotFound - No privilege record found for this user</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006228"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006229"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006230"></A></DT>
+		<P><STRONG>Internal EUL Error: RollupValueMismatch - filter does not contain rollup value</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006231"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006232"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006233"></A></DT>
+		<P><STRONG>Internal EUL Error: TokenStreamError - Error tokenizing input stream</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006234"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006235"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006236"></A></DT>
+		<P><STRONG>Internal EUL Error: TransError - Unexpected transaction error</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006237"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006238"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006239"></A></DT>
+		<P><STRONG>Internal EUL Error: UniqueKeyViolation - internal id is used by another EUL element</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006240"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006241"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006242"></A></DT>
+		<P><STRONG>Internal EUL Error: ValidateFailure - data integrity error during transaction</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006243"></A>
+		<P><STRONG>Cause: </STRONG>An internal error has occurred in Discoverer. You might be able to continue working,
+		but the current operation may not have been performed correctly.</P>
+		<DD CLASS="MH2"><A NAME="1006244"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006246"></A></DT>
+		<P><STRONG>Invalid argument name</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006247"></A>
+		<P><STRONG>Cause: </STRONG>You have attempted to enter an argument without a valid name.</P>
+		<DD CLASS="MH2"><A NAME="1006248"></A>
+		<P><STRONG>Action: </STRONG>Enter a name for the argument which conforms to the argument naming convention. See
+		the <EM><SPAN CLASS="Italic">Oracle SQL Language Reference Manual</SPAN></EM> for argument name conventions.</P>
+		<DT CLASS="M"><A NAME="1006249"></A></DT>
+		<P><STRONG>Invalid character used in identifier</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006250"></A>
+		<P><STRONG>Cause: </STRONG>You have attempted to use one or more invalid characters in an identifier.</P>
+		<DD CLASS="MH2"><A NAME="1006251"></A>
+		<P><STRONG>Action: </STRONG>Either remove the invalid character or replace with any of the following valid characters:
+		a-z, A-Z, 0-9, -_!~*'()</P>
+		<DT CLASS="M"><A NAME="1006252"></A></DT>
+		<P><STRONG>Invalid Combination of Joins involving Outer Joins</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006253"></A>
+		<P><STRONG>Cause: </STRONG>An attempt was made to join folders using a combination of outer joins that is not supported
+		in the database you are connected to. You cannot outer join the same folder to more than one other folder at the
+		same time.</P>
+		<DD CLASS="MH2"><A NAME="1006254"></A>
+		<P><STRONG>Action: </STRONG>Create a complex folder that joins two of the folders with one outer join, then join
+		this to the third folder.</P>
+		<DT CLASS="M"><A NAME="1006256"></A></DT>
+		<P><STRONG>Invalid data type</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006257"></A>
+		<P><STRONG>Cause: </STRONG>An error occurred when specifying the data type of an argument during the creation or
+		editing of a PL/SQL function. The error is probably incidental to the current operation and beyond the scope of
+		Discoverer Administrator. There may be a problem with the network, the server, SQL*Net, or the Oracle database
+		itself.</P>
+		<DD CLASS="MH2"><A NAME="1006261"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1006263"></A></DT>
+		<P><STRONG>Invalid database link</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006264"></A>
+		<P><STRONG>Cause: </STRONG>You have entered an invalid database link.</P>
+		<DD CLASS="MH2"><A NAME="1006265"></A>
+		<P><STRONG>Action: </STRONG>Enter a valid database link and retry.</P>
+		<DT CLASS="M"><A NAME="1006267"></A></DT>
+		<P><STRONG>Invalid date display format</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006268"></A>
+		<P><STRONG>Cause: </STRONG>The date format used is invalid.</P>
+		<DD CLASS="MH2"><A NAME="1006269"></A>
+		<P><STRONG>Action: </STRONG>Edit the date format to conform to the proper format. See the <EM><SPAN CLASS="Italic">Oracle
+		SQL Language Reference Manual</SPAN></EM> for information on valid date formats.</P>
+		<DT CLASS="M"><A NAME="1006271"></A></DT>
+		<P><STRONG>Invalid date format</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006272"></A>
+		<P><STRONG>Cause: </STRONG>You have entered a date which does not comply with Oracle's date format.</P>
+		<DD CLASS="MH2"><A NAME="1006273"></A>
+		<P><STRONG>Action: </STRONG>Re-enter a date. See the <EM><SPAN CLASS="Italic">Oracle SQL Language Reference Manual</SPAN></EM>
+		for a description of the date format.</P>
+		<DT CLASS="M"><A NAME="1006275"></A></DT>
+		<P><STRONG>Invalid date/time entered</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006276"></A>
+		<P><STRONG>Cause: </STRONG>You have entered an invalid date or time to use when refreshing the summary.</P>
+		<DD CLASS="MH2"><A NAME="1006277"></A>
+		<P><STRONG>Action: </STRONG>Re-enter a date or time which complies with the date format MM/DD/YY and the time format
+		HH:MM.</P>
+		<DT CLASS="M"><A NAME="1006278"></A></DT>
+		<P><STRONG>Invalid description</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006279"></A>
+		<P><STRONG>Cause: </STRONG>You may have entered an invalid character in the description.</P>
+		<DD CLASS="MH2"><A NAME="1006280"></A>
+		<P><STRONG>Action: </STRONG>Remove the invalid character(s) and retry. For information, see the <EM><SPAN CLASS="Italic">Oracle
+		SQL Language Reference Manual</SPAN></EM>.</P>
+		<DT CLASS="M"><A NAME="1006281"></A></DT>
+		<P><STRONG>Invalid display name</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006282"></A>
+		<P><STRONG>Cause: </STRONG>You may have entered an invalid character as the display name.</P>
+		<DD CLASS="MH2"><A NAME="1006283"></A>
+		<P><STRONG>Action: </STRONG>Remove the invalid character(s) and retry. For information, see the <EM><SPAN CLASS="Italic">Oracle
+		SQL Language Reference Manual</SPAN></EM>.</P>
+		<DT CLASS="M"><A NAME="1006285"></A></DT>
+		<P><STRONG>Invalid End User Layer import file</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006286"></A>
+		<P><STRONG>Cause: </STRONG>The End User Layer export file that you are trying to import is corrupt or is not valid.</P>
+		<DD CLASS="MH2"><A NAME="1006287"></A>
+		<P><STRONG>Action: </STRONG>Recreate the export file and try importing it again.</P>
+		<DT CLASS="M"><A NAME="1006289"></A></DT>
+		<P><STRONG>Invalid Format Mask</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006290"></A>
+		<P><STRONG>Cause: </STRONG>The date, number, or character format used is invalid.</P>
+		<DD CLASS="MH2"><A NAME="1006291"></A>
+		<P><STRONG>Action: </STRONG>Edit the format to comply with the proper format. See the <EM><SPAN CLASS="Italic">Oracle
+		SQL Language Reference Manual</SPAN></EM> for information on valid formats.</P>
+		<DT CLASS="M"><A NAME="1006293"></A></DT>
+		<P><STRONG>Invalid formula</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006294"></A>
+		<P><STRONG>Cause: </STRONG>You may have entered a formula which violates the syntax.</P>
+		<DD CLASS="MH2"><A NAME="1006295"></A>
+		<P><STRONG>Action: </STRONG>Follow the syntax found in the <EM><SPAN CLASS="Italic">Oracle SQL Language Reference
+		Manual</SPAN></EM>. Re-enter and retry.</P>
+		<DT CLASS="M"><A NAME="1006297"></A></DT>
+		<P><STRONG>Invalid formula or filter</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006298"></A>
+		<P><STRONG>Cause: </STRONG>An unspecified error was found in the formula or filter.</P>
+		<DD CLASS="MH2"><A NAME="1006299"></A>
+		<P><STRONG>Action: </STRONG>Correct the error in the formula or filter and retry.</P>
+		<DT CLASS="M"><A NAME="1006301"></A></DT>
+		<P><STRONG>Invalid Function</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006302"></A>
+		<P><STRONG>Cause: </STRONG>The formula contains a function that is not registered in the End User Layer.</P>
+		<DD CLASS="MH2"><A NAME="1006303"></A>
+		<P><STRONG>Action: </STRONG>Check the formula to determine if the function name is wrong and correct it. If the
+		function named in the formula is the correct function, then choose <STRONG><SPAN CLASS="Bold">Register PL/SQL Function</SPAN></STRONG>
+		in the <STRONG><SPAN CLASS="Bold">Tools</SPAN></STRONG> menu to register the function in the End User Layer. Retry
+		the formula with the registered function name.</P>
+		<DT CLASS="M"><A NAME="1006304"></A></DT>
+		<P><STRONG>Invalid function name</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006305"></A>
+		<P><STRONG>Cause: </STRONG>You have attempted to enter a PL/SQL function without a valid name.</P>
+		<DD CLASS="MH2"><A NAME="1006306"></A>
+		<P><STRONG>Action: </STRONG>Enter a name for the function which conforms to the function naming convention. See
+		the <EM><SPAN CLASS="Italic">Oracle SQL Language Reference Manual</SPAN></EM> for function name conventions.</P>
+		<DT CLASS="M"><A NAME="1006307"></A></DT>
+		<P><STRONG>Invalid function owner</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006308"></A>
+		<P><STRONG>Cause: </STRONG>You have entered a <EM><SPAN CLASS="Italic">user ID</SPAN></EM> as the PL/SQL function
+		owner which does not exist in the database. Each PL/SQL function must be owned by a valid <EM><SPAN CLASS="Italic">user</SPAN></EM>.</P>
+		<DD CLASS="MH2"><A NAME="1006309"></A>
+		<P><STRONG>Action: </STRONG>Enter a valid <EM><SPAN CLASS="Italic">user ID</SPAN></EM> in the owner field and retry.</P>
+		<DT CLASS="M"><A NAME="1006310"></A></DT>
+		<P><STRONG>Invalid heading</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006311"></A>
+		<P><STRONG>Cause: </STRONG>You may have entered an invalid character.</P>
+		<DD CLASS="MH2"><A NAME="1006312"></A>
+		<P><STRONG>Action: </STRONG>Remove the invalid character(s) and retry. For information, see the <EM><SPAN CLASS="Italic">Oracle
+		SQL Language Reference Manual</SPAN></EM>.</P>
+		<DT CLASS="M"><A NAME="1006314"></A></DT>
+		<P><STRONG>Invalid join configuration - includes a master with two separately joined detail folders</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006315"></A>
+		<P><STRONG>Cause: </STRONG>You have attempted to join a master folder with two detail folders at the same time.
+		This would result in a Cartesian product being generated which would give potentially confusing or incorrect results
+		from the database. This combination of joins is not allowed within Discoverer.</P>
+		<DD CLASS="MH2"><A NAME="1006316"></A>
+		<P><STRONG>Action: </STRONG>Construct the join so that the folder specified as the master actually contains the
+		master key and the folders specified as detail actually contain the detail keys. If the join you are creating is
+		necessary, create a complex folder to hide one of the joins. This is normally only the case where the relationship
+		between the folders is one-to-one, and there is no actual master folder.</P>
+		<DT CLASS="M"><A NAME="1006317"></A></DT>
+		<P><STRONG>Invalid name</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006318"></A>
+		<P><STRONG>Cause: </STRONG>You may have entered an invalid character.</P>
+		<DD CLASS="MH2"><A NAME="1006319"></A>
+		<P><STRONG>Action: </STRONG>Remove the invalid character(s) and retry. For information, see the <EM><SPAN CLASS="Italic">Oracle
+		SQL Language Reference Manual</SPAN></EM>.</P>
+		<DT CLASS="M"><A NAME="1006320"></A></DT>
+		<P><STRONG>Invalid number</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006321"></A>
+		<P><STRONG>Cause: </STRONG>The number you have entered is invalid.</P>
+		<DD CLASS="MH2"><A NAME="1006322"></A>
+		<P><STRONG>Action: </STRONG>Enter a valid number and retry.</P>
+		<DT CLASS="M"><A NAME="1006324"></A></DT>
+		<P><STRONG>Invalid number format</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006325"></A>
+		<P><STRONG>Cause: </STRONG>You have entered a format mask which does not comply with the format mask syntax.</P>
+		<A NAME="1006326"></A>
+		<P CLASS="BP1"><STRONG><SPAN CLASS="Bold">Action:</SPAN></STRONG> Select a valid format mask from the drop-down
+		list in the Item Properties sheet.</P>
+		<DT CLASS="M"><A NAME="1006328"></A></DT>
+		<P><STRONG>Invalid operator in formula</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006329"></A>
+		<P><STRONG>Cause: </STRONG>A symbol was found in the formula that is the position of an operator, but is not a
+		valid operator. Valid operators are +, -, * / and ||.</P>
+		<DD CLASS="MH2"><A NAME="1006330"></A>
+		<P><STRONG>Action: </STRONG>Change the operator to one of the valid operators and retry.</P>
+		<DT CLASS="M"><A NAME="1006332"></A></DT>
+		<P><STRONG>Invalid return type</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006333"></A>
+		<P><STRONG>Cause: </STRONG>An error occurred when specifying a return type in a PL/SQL function. The error is probably
+		incidental to the current operation and beyond the scope of Discoverer Administrator. There may be a problem with
+		the network, the server, SQL*Net, or the Oracle database itself.</P>
+		<DD CLASS="MH2"><A NAME="1006337"></A>
+		<P><STRONG>Action: </STRONG>Retry or ask your systems administrator or Oracle representative for assistance.</P>
+		<DT CLASS="M"><A NAME="1006338"></A></DT>
+		<P><STRONG>Item class must be named</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006339"></A>
+		<P><STRONG>Cause: </STRONG>You have attempted to create or edit an item class without entering a name.</P>
+		<DD CLASS="MH2"><A NAME="1006340"></A>
+		<P><STRONG>Action: </STRONG>Enter a name in the name field and retry. Each item class must be uniquely named.</P>
+		<DT CLASS="M"><A NAME="1006341"></A></DT>
+		<P><STRONG>Item hierarchy must be named</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006342"></A>
+		<P><STRONG>Cause: </STRONG>You have attempted to create or edit an item hierarchy without entering a name.</P>
+		<DD CLASS="MH2"><A NAME="1006343"></A>
+		<P><STRONG>Action: </STRONG>Enter a name in the name field and retry. Each item hierarchy must be uniquely named.</P>
+		<DT CLASS="M"><A NAME="1006344"></A></DT>
+		<P><STRONG>Item is used in one or more summaries. Deletion not allowed.</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006345"></A>
+		<P><STRONG>Cause: </STRONG>An attempt was made to delete an item or folder which contains items that are used in
+		one or more summaries.</P>
+		<DD CLASS="MH2"><A NAME="1006346"></A>
+		<P><STRONG>Action: </STRONG>Delete the summary folder using the item and retry.</P>
+		<DT CLASS="M"><A NAME="1006347"></A></DT>
+		<P><STRONG>Item must be named</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006348"></A>
+		<P><STRONG>Cause: </STRONG>You have attempted to create or edit an item without entering a name.</P>
+		<DD CLASS="MH2"><A NAME="1006349"></A>
+		<P><STRONG>Action: </STRONG>Enter a name in the name field and retry. Each item must be uniquely named.</P>
+		<DT CLASS="M"><A NAME="1006350"></A></DT>
+		<P><STRONG>Item [old name] referenced in the export was not found in this End User Layer</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006351"></A>
+		<P><STRONG>Cause: </STRONG>An item in the End User Layer export file was not found in the End User Layer during
+		import.</P>
+		<DD CLASS="MH2"><A NAME="1006352"></A>
+		<P><STRONG>Action: </STRONG>Include the item in the export file and import the EUL again or define the item in
+		the End User Layer.</P>
+		<DT CLASS="M"><A NAME="1006353"></A></DT>
+		<P><STRONG>Item [old name] was not loaded because of a missing dependency</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006354"></A>
+		<P><STRONG>Cause: </STRONG>An item was referenced in the End User Layer import file that does not exist in the
+		End User Layer.</P>
+		<DD CLASS="MH2"><A NAME="1006355"></A>
+		<P><STRONG>Action: </STRONG>Include this item when you export the business area or import the item separately.</P>
+		<DT CLASS="M"><A NAME="1006357"></A></DT>
+		<P><STRONG>Item [old name] was not loaded due to name clash</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006358"></A>
+		<P><STRONG>Cause: </STRONG>The End User Layer import failed because an item in the import file already exists in
+		the End User Layer.</P>
+		<DD CLASS="MH2"><A NAME="1006359"></A>
+		<P><STRONG>Action: </STRONG>Rename the item or choose the import option to rename items and folders automatically.</P>
+		<DT CLASS="M"><A NAME="1006360"></A></DT>
+		<P><STRONG>Join fan trap detected</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006361"></A>
+		<P><STRONG>Cause: </STRONG>You are creating a complex folder and attempting to place an item in the folder which
+		would create a master-detail join that will produce an invalid result set.</P>
+		<DD CLASS="MH2"><A NAME="1006362"></A>
+		<P><STRONG>Action: </STRONG>Select another item to place in the complex folder and retry.</P>
+		<DT CLASS="M"><A NAME="1006363"></A></DT>
+		<P><STRONG>Join is used in one or more summaries. Deletion not allowed.</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006364"></A>
+		<P><STRONG>Cause: </STRONG>An attempt was made to delete a join that is used in one or more summaries.</P>
+		<DD CLASS="MH2"><A NAME="1006365"></A>
+		<P><STRONG>Action: </STRONG>Delete the summary folder using the join and retry.</P>
+		<DT CLASS="M"><A NAME="1006366"></A></DT>
+		<P><STRONG>Join must be named</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006367"></A>
+		<P><STRONG>Cause: </STRONG>You have attempted to create or edit a join without entering a name.</P>
+		<DD CLASS="MH2"><A NAME="1006368"></A>
+		<P><STRONG>Action: </STRONG>Enter a name in the name field and retry. Each join must be uniquely named.</P>
+		<DT CLASS="M"><A NAME="1006369"></A></DT>
+		<P><STRONG>Join [old name] referenced in the export was not found in this End User Layer</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006370"></A>
+		<P><STRONG>Cause: </STRONG>A join in the End User Layer export file was not found in the End User Layer during
+		import.</P>
+		<DD CLASS="MH2"><A NAME="1006371"></A>
+		<P><STRONG>Action: </STRONG>Include the joined folders in the export file and import the file again or define the
+		join in the End User Layer.</P>
+		<DT CLASS="M"><A NAME="1006372"></A></DT>
+		<P><STRONG>Join [old name] was not loaded because of a missing dependency</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006373"></A>
+		<P><STRONG>Cause: </STRONG>A join was referenced in the End User Layer import file that does not exist in the End
+		User Layer.</P>
+		<DD CLASS="MH2"><A NAME="1006374"></A>
+		<P><STRONG>Action: </STRONG>Include this join when you export the business area and retry.</P>
+		<DT CLASS="M"><A NAME="1006375"></A></DT>
+		<P><STRONG>Join [old name] was not loaded due to name clash</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006376"></A>
+		<P><STRONG>Cause: </STRONG>The End User Layer import failed because a join in the import file already exists in
+		the End User Layer.</P>
+		<DD CLASS="MH2"><A NAME="1006377"></A>
+		<P><STRONG>Action: </STRONG>Rename the join or choose the import option to rename items and folders automatically.</P>
+		<DT CLASS="M"><A NAME="1006379"></A></DT>
+		<P><STRONG>Message text not found for this error</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006380"></A>
+		<P><STRONG>Cause: </STRONG>An error occurred for which there is no message.</P>
+		<DD CLASS="MH2"><A NAME="1006381"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006383"></A></DT>
+		<P><STRONG>Missing parameter value</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006384"></A>
+		<P><STRONG>Cause: </STRONG>A parameter was found that has no associated value.</P>
+		<DD CLASS="MH2"><A NAME="1006385"></A>
+		<P><STRONG>Action: </STRONG>Make sure that all referenced parameters have values entered and retry.</P>
+		<DT CLASS="M"><A NAME="1006387"></A></DT>
+		<P><STRONG>Name is too long. Max length is <EM><SPAN CLASS="Italic">num</SPAN></EM> bytes</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006388"></A>
+		<P><STRONG>Cause: </STRONG>You have entered a name which is longer than the maximum (100 bytes).</P>
+		<DD CLASS="MH2"><A NAME="1006389"></A>
+		<P><STRONG>Action: </STRONG>Re-enter a name which is 100 bytes or less.</P>
+		<DT CLASS="M"><A NAME="1006390"></A></DT>
+		<P><STRONG>Name must be unique</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006391"></A>
+		<P><STRONG>Cause: </STRONG>You have entered a name for a business area, folder, or item that already exists.</P>
+		<DD CLASS="MH2"><A NAME="1006392"></A>
+		<P><STRONG>Action: </STRONG>Re-enter a unique name and retry. The name for a business area or folder must be unique
+		to the End User Layer. The name for a calculation or item must be unique to the folder it is located in.</P>
+		<DT CLASS="M"><A NAME="1006394"></A></DT>
+		<P><STRONG>New item is in a different folder to other items in the hierarchy</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006395"></A>
+		<P><STRONG>Cause: </STRONG>Attempt was made to add an item into a hierarchy node which already contains an item
+		from another folder.</P>
+		<DD CLASS="MH2"><A NAME="1006396"></A>
+		<P><STRONG>Action: </STRONG>Use an item in the same folder as the existing item and retry.</P>
+		<DT CLASS="M"><A NAME="1006397"></A></DT>
+		<P><STRONG>No joins detected. Join relationships must exist</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006398"></A>
+		<P><STRONG>Cause: </STRONG>You are creating an item hierarchy and linking items from different folders which do
+		not have joins between them. Alternatively, you are placing items into a complex folder from different simple folders
+		that do not have joins between them.</P>
+		<DD CLASS="MH2"><A NAME="1006399"></A>
+		<P><STRONG>Action: </STRONG>Create joins between the folders that contain items you want to link in an item hierarchy
+		or place in the same complex folder and retry.</P>
+		<DT CLASS="M"><A NAME="1006400"></A></DT>
+		<P><STRONG>No joins detected between these objects: <EM><SPAN CLASS="Italic">foldera, folderb</SPAN></EM>.</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006401"></A>
+		<P><STRONG>Cause: </STRONG>You are creating an item hierarchy and linking items from different folders which do
+		not have joins between them. Alternatively, you are placing items into a complex folder from different simple folders
+		that do not have joins between them.</P>
+		<DD CLASS="MH2"><A NAME="1006402"></A>
+		<P><STRONG>Action: </STRONG>Create joins between the folders that contain items you want to link in an item hierarchy
+		or place in the same complex folder and retry.</P>
+		<DT CLASS="M"><A NAME="1006403"></A></DT>
+		<P><STRONG>No joins found where required</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006404"></A>
+		<P><STRONG>Cause: </STRONG>An operation was attempted where a join is required to another folder, and no join was
+		found.</P>
+		<DD CLASS="MH2"><A NAME="1006405"></A>
+		<P><STRONG>Action: </STRONG>Determining which joins are required to support the operation you are performing and
+		enter the joins first.</P>
+		<DT CLASS="M"><A NAME="1006407"></A></DT>
+		<P><STRONG>No table specified for this summary combination</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006408"></A>
+		<P><STRONG>Cause: </STRONG>An attempt was made to create a summary combination with no database table specified.</P>
+		<DD CLASS="MH2"><A NAME="1006409"></A>
+		<P><STRONG>Action: </STRONG>Enter a table name in the Summary Combination dialog and retry.</P>
+		<DT CLASS="M"><A NAME="1006411"></A></DT>
+		<P><STRONG>Null can only be used with Is Null or Is Not Null Comparisons</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006412"></A>
+		<P><STRONG>Cause: </STRONG>An attempt was made to use a null value in a condition with an operator other than IS
+		NULL or IS NOT NULL.</P>
+		<DD CLASS="MH2"><A NAME="1006413"></A>
+		<P><STRONG>Action: </STRONG>Use IS NULL or IS NOT NULL to refer to null values in conditions.</P>
+		<DT CLASS="M"><A NAME="1006415"></A></DT>
+		<P><STRONG>Number cannot be greater than n</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006416"></A>
+		<P><STRONG>Cause: </STRONG>A number was entered that is greater than the maximum allowed.</P>
+		<DD CLASS="MH2"><A NAME="1006417"></A>
+		<P><STRONG>Action: </STRONG>Enter a smaller number and retry.</P>
+		<DT CLASS="M"><A NAME="1006418"></A></DT>
+		<P><STRONG>Number cannot be less than n</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006419"></A>
+		<P><STRONG>Cause: </STRONG>A number was entered that is less than the minimum allowed.</P>
+		<DD CLASS="MH2"><A NAME="1006420"></A>
+		<P><STRONG>Action: </STRONG>Enter a larger number and retry.</P>
+		<DT CLASS="M"><A NAME="1006421"></A></DT>
+		<P><STRONG>Number outside maximum range</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006422"></A>
+		<P><STRONG>Cause: </STRONG>A number was entered that is greater than the maximum allowed.</P>
+		<DD CLASS="MH2"><A NAME="1006423"></A>
+		<P><STRONG>Action: </STRONG>Enter a smaller number and retry.</P>
+		<DT CLASS="M"><A NAME="1006424"></A></DT>
+		<P><STRONG>One or more items are mapped to the same column</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006425"></A>
+		<P><STRONG>Cause: </STRONG>When mapping columns in the Summary Wizard, you can only use one column to map to one
+		item.</P>
+		<DD CLASS="MH2"><A NAME="1006426"></A>
+		<P><STRONG>Action: </STRONG>Map the item to another column or change the summary definition.</P>
+		<DT CLASS="M"><A NAME="1006427"></A></DT>
+		<P><STRONG>One or more items is not mapped to a column</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006428"></A>
+		<P><STRONG>Cause: </STRONG>When mapping columns in the Summary Wizard, you must map all the items.</P>
+		<DD CLASS="MH2"><A NAME="1006429"></A>
+		<P><STRONG>Action: </STRONG>Map all items in the summary or change the summary definition and retry.</P>
+		<DT CLASS="M"><A NAME="1006430"></A></DT>
+		<P><STRONG>Only folders with an OWNER attribute may be summarized</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006431"></A>
+		<P><STRONG>Cause: </STRONG>You cannot use folder items in a summary (pre 8.1.6 databases only) that do not have
+		an Owner attribute set.</P>
+		<DD CLASS="MH2"><A NAME="1006432"></A>
+		<P><STRONG>Action: </STRONG>Click on the <STRONG><SPAN CLASS="Bold">Data tab</SPAN></STRONG>, select the appropriate
+		Folder, view the Properties for the Folder and update the Owner value.</P>
+		<DT CLASS="M"><A NAME="1006437"></A></DT>
+		<P><STRONG>Only the Owner of an Internal Summary may refresh the data.</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006438"></A>
+		<P><STRONG>Cause: </STRONG>You cannot refresh a summary created by a different <EM><SPAN CLASS="Italic">user</SPAN></EM>.</P>
+		<DD CLASS="MH2"><A NAME="1006439"></A>
+		<P><STRONG>Action: </STRONG>Log on as the owner of the summary in order to refresh the data.</P>
+		<DT CLASS="M"><A NAME="1006441"></A></DT>
+		<P><STRONG>ORA-num:</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006444"></A>
+		<P><STRONG>Cause: </STRONG>Discoverer Administrator is displaying an error that has been found by the Oracle database.</P>
+		<DD CLASS="MH2"><A NAME="1006446"></A>
+		<P><STRONG>Action: </STRONG>Take appropriate action for Oracle error number. See <EM><SPAN CLASS="Italic">Oracle
+		SQL Language Reference Manual</SPAN></EM>.</P>
+		<DT CLASS="M"><A NAME="1006448"></A></DT>
+		<P><STRONG>Owner name is too long</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006449"></A>
+		<P><STRONG>Cause: </STRONG>You have entered a <EM><SPAN CLASS="Italic">name</SPAN></EM> which is longer than the
+		maximum allowed length.</P>
+		<DD CLASS="MH2"><A NAME="1006450"></A>
+		<P><STRONG>Action: </STRONG>Re-enter a <EM><SPAN CLASS="Italic">name</SPAN></EM> which is no longer than the maximum
+		length allowed for in the Oracle database you are connected to. The maximum length may vary with Oracle versions.
+		See the <EM><SPAN CLASS="Italic">Oracle SQL Language Reference Manual</SPAN></EM> for owner name conventions.</P>
+		<DT CLASS="M"><A NAME="1006452"></A></DT>
+		<P><STRONG>Owner of function must be specified</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006453"></A>
+		<P><STRONG>Cause: </STRONG>You have attempted to create or edit a PL/SQL function without a valid <EM><SPAN CLASS="Italic">user
+		ID</SPAN></EM>.</P>
+		<DD CLASS="MH2"><A NAME="1006454"></A>
+		<P><STRONG>Action: </STRONG>Enter a valid <EM><SPAN CLASS="Italic">user ID</SPAN></EM> in the owner field and retry.
+		Each PL/SQL function must be owned by a valid <EM><SPAN CLASS="Italic">user</SPAN></EM>.</P>
+		<DT CLASS="M"><A NAME="1006456"></A></DT>
+		<P><STRONG>Package name is invalid</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006457"></A>
+		<P><STRONG>Cause: </STRONG>You have attempted to create or edit a PL/SQL function without a valid package name.</P>
+		<DD CLASS="MH2"><A NAME="1006458"></A>
+		<P><STRONG>Action: </STRONG>Enter a package name which conforms to the package naming convention. See the <EM><SPAN
+		CLASS="Italic">Oracle SQL Language Reference Manual</SPAN></EM> for package name conventions.</P>
+		<DT CLASS="M"><A NAME="1006459"></A></DT>
+		<P><STRONG>Package name is too long</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006460"></A>
+		<P><STRONG>Cause: </STRONG>You have entered a package name which is longer than the maximum allowed length.</P>
+		<DD CLASS="MH2"><A NAME="1006461"></A>
+		<P><STRONG>Action: </STRONG>Re-enter a package name which is no longer than the maximum length allowed for package
+		name in the Oracle database you are connected to. The maximum length of package name may vary with Oracle versions.
+		See the <EM><SPAN CLASS="Italic">Oracle SQL Language Reference Manual</SPAN></EM> for package name conventions.</P>
+		<DT CLASS="M"><A NAME="1006462"></A></DT>
+		<P><STRONG>Performing EUL Upgrade...</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006463"></A>
+		<P><STRONG>Cause: </STRONG>Your EUL tables use an older version of Discoverer. The tables and metadata definitions
+		are now being automatically upgraded in order to use this latest version of the software.</P>
+		<DD CLASS="MH2"><A NAME="1006464"></A>
+		<P><STRONG>Action: </STRONG>Do <EM><SPAN CLASS="Italic">not</SPAN></EM> interrupt this process. Wait until the
+		message has been dismissed before continuing with Discoverer. If you have a large EUL with many folders, this can
+		take a few minutes.</P>
+		<DT CLASS="M"><A NAME="1006466"></A></DT>
+		<P><STRONG>Server package DBMS_JOB has not been installed or is not available</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006467"></A>
+		<P><STRONG>Cause: </STRONG>You cannot use the Summary Management feature of Discoverer because the DBMS_JOB package
+		is not installed on the server.</P>
+		<DD CLASS="MH2"><A NAME="1006468"></A>
+		<P><STRONG>Action: </STRONG>See the Release Notes for information on installing the DBMS_JOB package.</P>
+		<DT CLASS="M"><A NAME="1006469"></A></DT>
+		<P><STRONG>Space estimate unavailable</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006470"></A>
+		<P><STRONG>Cause: </STRONG>The system was unable to estimate the space required for this summary.</P>
+		<DD CLASS="MH2"><A NAME="1006471"></A>
+		<P><STRONG>Action: </STRONG>Set up an item class for each item in a summary in order to be able calculate a space
+		estimate and retry.</P>
+		<DT CLASS="M"><A NAME="1006472"></A></DT>
+		<P><STRONG>Summary must be named</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006473"></A>
+		<P><STRONG>Cause: </STRONG>You have attempted to create or edit a summary without entering a name.</P>
+		<DD CLASS="MH2"><A NAME="1006474"></A>
+		<P><STRONG>Action: </STRONG>Enter a unique name in the name field and retry. Each summary must be named.</P>
+		<DT CLASS="M"><A NAME="1006475"></A></DT>
+		<P><STRONG>Summary refresh 'job_queue_interval' parameter is n seconds</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006476"></A>
+		<P><STRONG>Cause: </STRONG>The init.ora parameter job_queue_interval is set to the specified value. This period
+		determines how often DBMS_JOB processes summary refresh operations. You cannot refresh summaries at an interval
+		less than that specified by job_queue_interval.</P>
+		<DD CLASS="MH2"><A NAME="1006477"></A>
+		<P><STRONG>Action: </STRONG>This message is informational only. You may want to make job_queue_interval smaller
+		to accommodate more frequent summary refresh operations.</P>
+		<DT CLASS="M"><A NAME="1006479"></A></DT>
+		<P><STRONG>SYS.V$SESSION not accessible</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006480"></A>
+		<P><STRONG>Cause: </STRONG>Query performance prediction feature requires that you have access to this SYS owned
+		object.</P>
+		<DD CLASS="MH2"><A NAME="1006484"></A>
+		<P><STRONG>Action: </STRONG>See the Discoverer Administration Guide to find out how to get access to this object.</P>
+		<DT CLASS="M"><A NAME="1006485"></A></DT>
+		<P><STRONG>SYS.V$SESSTAT not accessible</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006486"></A>
+		<P><STRONG>Cause: </STRONG>Query performance prediction feature requires that you have access to this SYS owned
+		object.</P>
+		<DD CLASS="MH2"><A NAME="1006490"></A>
+		<P><STRONG>Action: </STRONG>See the Discoverer Administration Guide to find out how to get access to this object.</P>
+		<DT CLASS="M"><A NAME="1006492"></A></DT>
+		<P><STRONG>The detail folder must be different than the master folder</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006493"></A>
+		<P><STRONG>Cause: </STRONG>You have selected the same folder on both sides of the join.</P>
+		<DD CLASS="MH2"><A NAME="1006494"></A>
+		<P><STRONG>Action: </STRONG>You must select items from different folders. A Join condition which tests for Items
+		in the same Folder is not allowed.</P>
+		<DT CLASS="M"><A NAME="1006496"></A></DT>
+		<P><STRONG>The End User Layer table EUL_VERSIONS is invalid</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006497"></A>
+		<P><STRONG>Cause: </STRONG>The End User Layer tables have been modified in an unsupported way.</P>
+		<DD CLASS="MH2"><A NAME="1006498"></A>
+		<P><STRONG>Action: </STRONG>Contact your system administrator for assistance.</P>
+		<DT CLASS="M"><A NAME="1006500"></A></DT>
+		<P><STRONG>The folder for this item class is either not accessible or is Invalid</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006501"></A>
+		<P><STRONG>Cause: </STRONG>An attempt was made to use an item class where the folder required is not currently
+		accessible to the logged on user.</P>
+		<DD CLASS="MH2"><A NAME="1006502"></A>
+		<P><STRONG>Action: </STRONG>Check database permissions on the tables used by folders in the item class and that
+		the folders are in accessible business areas.</P>
+		<DT CLASS="M"><A NAME="1006505"></A></DT>
+		<P><STRONG>The join attributes are not valid</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006506"></A>
+		<P><STRONG>Cause: </STRONG>During the creation or editing of a join, one of the attributes of the join is null
+		and has not been set.</P>
+		<DD CLASS="MH2"><A NAME="1006507"></A>
+		<P><STRONG>Action: </STRONG>Enter an attribute on each side of the join and retry.</P>
+		<DT CLASS="M"><A NAME="1006509"></A></DT>
+		<P><STRONG>There are multiple join paths between these folders</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006510"></A>
+		<P><STRONG>Cause: </STRONG>More than one join exists between the folders, creating multiple ways of joining them.
+		This ambiguous situation must be resolved before the query can be executed.</P>
+		<DD CLASS="MH2"><A NAME="1006511"></A>
+		<P><STRONG>Action: </STRONG>Delete the joins which you do not want to use and retry.</P>
+		<DT CLASS="M"><A NAME="1006513"></A></DT>
+		<P><STRONG>There are no items in this hierarchy node</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006514"></A>
+		<P><STRONG>Cause: </STRONG>An attempt was made to remove the last item from a hierarchy node.</P>
+		<DD CLASS="MH2"><A NAME="1006515"></A>
+		<P><STRONG>Action: </STRONG>If you want to remove the hierarchy node, delete it.</P>
+		<DT CLASS="M"><A NAME="1006517"></A></DT>
+		<P><STRONG>There is no accessible Oracle Designer repository</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006518"></A>
+		<P><STRONG>Cause: </STRONG>You do not have access to an Oracle Designer repository in the database.</P>
+		<DD CLASS="MH2"><A NAME="1006519"></A>
+		<P><STRONG>Action: </STRONG>Determine that Oracle Designer is installed on this database, and verify in Oracle
+		Designer that this <EM><SPAN CLASS="Italic">user </SPAN></EM>has been granted access to, or owns one or more applications.
+		Finally, determine that the user has a set of synonyms which point to the Oracle Designer repository tables.</P>
+		<DT CLASS="M"><A NAME="1006520"></A></DT>
+		<P><STRONG>This folder is used in summaries. An owner value must be specified.</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006521"></A>
+		<P><STRONG>Cause: </STRONG>You cannot delete the details in the Folder Properties Owner field (pre 8.1.6 databases
+		only) where a summary uses that Folder.</P>
+		<DD CLASS="MH2"><A NAME="1006522"></A>
+		<P><STRONG>Action: </STRONG>Either alter or remove the summary that uses the Folder so that the summary no longer
+		uses the Folder.</P>
+		<DT CLASS="M"><A NAME="1006523"></A></DT>
+		<P><STRONG>This foreign key defines a self-join</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006524"></A>
+		<P><STRONG>Cause: </STRONG>The current version of Discoverer does not support self joins.</P>
+		<DD CLASS="MH2"><A NAME="1006525"></A>
+		<P><STRONG>Action: </STRONG>Load the database table twice, creating two Folders and join the Folders together.
+		The folders should be renamed to reflect their status in the join (for example, Manager and Employee).</P>
+		<DT CLASS="M"><A NAME="1006526"></A></DT>
+		<P><STRONG>This item hierarchy node has multiple parents</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006528"></A>
+		<P><STRONG>Cause: </STRONG>The current release of Discoverer does not support multi-parent <BR>
+		hierarchies.</P>
+		<DD CLASS="MH2"><A NAME="1006529"></A>
+		<P><STRONG>Action: </STRONG>Define a separate hierarchy that connects to the same items to define the alternative
+		parent and retry.</P>
+		<DT CLASS="M"><A NAME="1006530"></A></DT>
+		<P><STRONG>This item is already included in the summary</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006531"></A>
+		<P><STRONG>Cause: </STRONG>An attempt was made to include an item in a summary twice.</P>
+		<DD CLASS="MH2"><A NAME="1006532"></A>
+		<P><STRONG>Action: </STRONG>Use items only once in each summary.</P>
+		<DT CLASS="M"><A NAME="1006534"></A></DT>
+		<P><STRONG>This item is already used in this hierarchy</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006535"></A>
+		<P><STRONG>Cause: </STRONG>An attempt was made to include an item in a hierarchy twice.</P>
+		<DD CLASS="MH2"><A NAME="1006536"></A>
+		<P><STRONG>Action: </STRONG>Use items only once in each hierarchy.</P>
+		<DT CLASS="M"><A NAME="1006537"></A></DT>
+		<P><STRONG>This item is contained in a hierarchy and cannot be hidden</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006538"></A>
+		<P><STRONG>Cause: </STRONG>You cannot hide items used in item hierarchies.</P>
+		<DD CLASS="MH2"><A NAME="1006539"></A>
+		<P><STRONG>Action: </STRONG>Remove the item from the hierarchy.</P>
+		<DT CLASS="M"><A NAME="1006541"></A></DT>
+		<P><STRONG>This item is not a date data type</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006542"></A>
+		<P><STRONG>Cause: </STRONG>An attempt was made to use an item where only an item with the data type of DATE is
+		expected.</P>
+		<DD CLASS="MH2"><A NAME="1006543"></A>
+		<P><STRONG>Action: </STRONG>Use the item's Properties sheet to determine its data type and either change the item
+		being used, or convert the item to a DATE data type by using the TO_DATE function in a calculation.</P>
+		<DT CLASS="M"><A NAME="1006544"></A></DT>
+		<P><STRONG>This item is used in a hierarchy and cannot be hidden</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006545"></A>
+		<P><STRONG>Cause: </STRONG>You cannot hide items used in item hierarchies.</P>
+		<DD CLASS="MH2"><A NAME="1006546"></A>
+		<P><STRONG>Action: </STRONG>Remove the item from the hierarchy.</P>
+		<DT CLASS="M"><A NAME="1006548"></A></DT>
+		<P><STRONG>This operation requires DBMS_JOB package to be configured. Please notify your DBA.</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006549"></A>
+		<P><STRONG>Cause: </STRONG>You cannot use the Summary Management feature of Discoverer because the DBMS_JOB package
+		is not installed on the server.</P>
+		<DD CLASS="MH2"><A NAME="1006550"></A>
+		<P><STRONG>Action: </STRONG>See the release notes for information on installing the DBMS_JOB package.</P>
+		<DT CLASS="M"><A NAME="1006551"></A></DT>
+		<P><STRONG>This operation will cause some summaries to be disabled</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006552"></A>
+		<P><STRONG>Cause: </STRONG>An attempt was made to edit a join, a formula, or a folder that will cause the result
+		set of the owning folder to change. As a result, all summaries that use items in this folder will be set to invalid.</P>
+		<DD CLASS="MH2"><A NAME="1006553"></A>
+		<P><STRONG>Action: </STRONG>Display the Refresh dialog and refresh the summary folders. This will cause new summary
+		data to be generated and the summaries will be made valid again. If the summaries are based on external summary
+		tables, display the Edit Summary dialog and set the summary to be valid, once you have ensured that your summary
+		data still matches the definition of the folder.</P>
+		<DT CLASS="M"><A NAME="1006555"></A></DT>
+		<P><STRONG>This user does not have access to user profiles</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006556"></A>
+		<P><STRONG>Cause: </STRONG>An attempt was made to set the user profile by a <EM><SPAN CLASS="Italic">user </SPAN></EM>who
+		does not have the ALTER USER database privilege.</P>
+		<DD CLASS="MH2"><A NAME="1006557"></A>
+		<P><STRONG>Action: </STRONG>Use SQL*Plus to grant the ALTER USER privilege to the <EM><SPAN CLASS="Italic">user</SPAN></EM>.</P>
+		<DT CLASS="M"><A NAME="1006559"></A></DT>
+		<P><STRONG>This user does not have sufficient privileges to create a procedure</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006560"></A>
+		<P><STRONG>Cause: </STRONG>In order to use the Summary Management feature of Discoverer you must have the CREATE
+		PROCEDURE database privilege.</P>
+		<DD CLASS="MH2"><A NAME="1006561"></A>
+		<P><STRONG>Action: </STRONG>Use SQL*Plus to grant the CREATE PROCEDURE privilege to the <EM><SPAN CLASS="Italic">user</SPAN></EM>.</P>
+		<DT CLASS="M"><A NAME="1006563"></A></DT>
+		<P><STRONG>This user does not have sufficient privileges to create a table</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006564"></A>
+		<P><STRONG>Cause: </STRONG>You do not have the database privileges required to create or edit summaries in the
+		server.</P>
+		<DD CLASS="MH2"><A NAME="1006565"></A>
+		<P><STRONG>Action: </STRONG>Ask your system administrator to grant you the CREATE TABLE privilege using SQL*Plus
+		and to ensure that you have quota and privileges to be able to create tables in a tablespace. See the <EM><SPAN
+		CLASS="Italic">Oracle Database Administration</SPAN></EM> documentation for more details.</P>
+		<DT CLASS="M"><A NAME="1006568"></A></DT>
+		<P><STRONG>This user does not have sufficient privileges to create a view</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006569"></A>
+		<P><STRONG>Cause: </STRONG>You do not have the database privileges required to create or edit summaries in the
+		server.</P>
+		<DD CLASS="MH2"><A NAME="1006570"></A>
+		<P><STRONG>Action: </STRONG>Ask your system administrator to grant you the CREATE VIEW privilege using SQL*Plus
+		and to ensure that you have quota and privileges to be able to create tables in a tablespace. See the <EM><SPAN
+		CLASS="Italic">Oracle Database Administration</SPAN></EM> documentation for more details.</P>
+		<DT CLASS="M"><A NAME="1006571"></A></DT>
+		<P><STRONG>This user does not have sufficient privileges to delete from specified table</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006572"></A>
+		<P><STRONG>Cause: </STRONG>You do not have the database privileges required to create or refresh summaries in the
+		server.</P>
+		<DD CLASS="MH2"><A NAME="1006573"></A>
+		<P><STRONG>Action: </STRONG>You must have SELECT, INSERT, UPDATE, and DELETE privileges on the server summary table.</P>
+		<DT CLASS="M"><A NAME="1006574"></A></DT>
+		<P><STRONG>This user does not have sufficient privileges to insert into specified table</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006575"></A>
+		<P><STRONG>Cause: </STRONG>You do not have the database privileges required to create or refresh summaries in the
+		server.</P>
+		<DD CLASS="MH2"><A NAME="1006576"></A>
+		<P><STRONG>Action: </STRONG>You must have SELECT, INSERT, UPDATE, and DELETE privileges on the server summary table.</P>
+		<DT CLASS="M"><A NAME="1006577"></A></DT>
+		<P><STRONG>This user does not have sufficient privileges to select from specified table</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006578"></A>
+		<P><STRONG>Cause: </STRONG>You do not have the database privileges required to create or refresh summaries in the
+		server.</P>
+		<DD CLASS="MH2"><A NAME="1006579"></A>
+		<P><STRONG>Action: </STRONG>You must have SELECT, INSERT, UPDATE, and DELETE privileges on the server summary table.</P>
+		<DT CLASS="M"><A NAME="1006580"></A></DT>
+		<P><STRONG>This user does not have sufficient privileges to update specified table</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006581"></A>
+		<P><STRONG>Cause: </STRONG>You do not have the database privileges required to create or refresh summaries in the
+		server.</P>
+		<DD CLASS="MH2"><A NAME="1006582"></A>
+		<P><STRONG>Action: </STRONG>You must have SELECT, INSERT, UPDATE, and DELETE privileges on the server summary table.</P>
+		<DT CLASS="M"><A NAME="1006583"></A></DT>
+		<P><STRONG>This user is unable to create a procedure in current schema</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006584"></A>
+		<P><STRONG>Cause: </STRONG>You do not have the database privileges required to create or edit summaries in the
+		server.</P>
+		<DD CLASS="MH2"><A NAME="1006585"></A>
+		<P><STRONG>Action: </STRONG>Ask your system administrator to grant you the privileges and quotas necessary to create
+		a procedure in the schema you are using.</P>
+		<DT CLASS="M"><A NAME="1006586"></A></DT>
+		<P><STRONG>This user is unable to create a table in current schema</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006587"></A>
+		<P><STRONG>Cause: </STRONG>You do not have the database privileges required to create or edit summaries in the
+		server.</P>
+		<DD CLASS="MH2"><A NAME="1006588"></A>
+		<P><STRONG>Action: </STRONG>Ask your system administrator to grant you the privileges and quotas necessary to create
+		a table in the schema you are using.</P>
+		<DT CLASS="M"><A NAME="1006589"></A></DT>
+		<P><STRONG>This user is unable to create a view in current schema</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006590"></A>
+		<P><STRONG>Cause: </STRONG>You do not have the database privileges required to create or edit summaries in the
+		server.</P>
+		<DD CLASS="MH2"><A NAME="1006591"></A>
+		<P><STRONG>Action: </STRONG>Ask your system administrator to grant you the privileges and quotas necessary to create
+		a table in the schema you are using.</P>
+		<DT CLASS="M"><A NAME="1006593"></A></DT>
+		<P><STRONG>Unable to find error text for this exception</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006594"></A>
+		<P><STRONG>Cause: </STRONG>An error occurred for which there is no message.</P>
+		<DD CLASS="MH2"><A NAME="1006595"></A>
+		<P><STRONG>Action: </STRONG>Note the information and error numbers displayed, and the actions immediately preceding
+		this error, then contact your customer support representative.</P>
+		<DT CLASS="M"><A NAME="1006597"></A></DT>
+		<P><STRONG>Unable to load invalid database view</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006598"></A>
+		<P><STRONG>Cause: </STRONG>An attempt was made to load a view in the server which is marked as invalid. This may
+		be because tables used in the view no longer exist, or synonyms used are invalid.</P>
+		<DD CLASS="MH2"><A NAME="1006599"></A>
+		<P><STRONG>Action: </STRONG>Check the view definition in the server and make sure it is valid and retry.</P>
+		<DT CLASS="M"><A NAME="1006601"></A></DT>
+		<P><STRONG>Unable to obtain lock in End User Layer transaction - element is already locked</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006602"></A>
+		<P><STRONG>Cause: </STRONG>Someone else is changing the End User Layer object you are modifying.</P>
+		<DD CLASS="MH2"><A NAME="1006603"></A>
+		<P><STRONG>Action: </STRONG>Wait for a while, then try the transaction again. If the error is still reported, exit
+		from Discoverer, reconnect, and repeat the transaction.</P>
+		<DT CLASS="M"><A NAME="1006605"></A></DT>
+		<P><STRONG>Unable to resolve synonym which spans multiple database links</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006606"></A>
+		<P><STRONG>Cause: </STRONG>At attempt was made to translate a synonym when loading a table across a database link,
+		where the synonym points to a further database link.</P>
+		<DD CLASS="MH2"><A NAME="1006607"></A>
+		<P><STRONG>Action: </STRONG>Load the object directly from the database link in which the object is physically stored.</P>
+		<DT CLASS="M"><A NAME="1006608"></A></DT>
+		<P><STRONG>Unknown error (in summary creation)</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006609"></A>
+		<P><STRONG>Cause: </STRONG>An unspecified error occurred when creating a summary.</P>
+		<DD CLASS="MH2"><A NAME="1006610"></A>
+		<P><STRONG>Action: </STRONG>Record the steps and actions taken immediately before this error was reported and contact
+		your customer support representative with the details.</P>
+		<DT CLASS="M"><A NAME="1006612"></A></DT>
+		<P><STRONG>Unknown Version</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006613"></A>
+		<P><STRONG>Cause: </STRONG>When you have displayed the About Discoverer dialog, no valid version number is found.
+		The application has either been installed incorrectly or may be corrupted.</P>
+		<DD CLASS="MH2"><A NAME="1006614"></A>
+		<P><STRONG>Action: </STRONG>Reinstall the Discoverer software, or ask your systems administrator or Oracle representative
+		for assistance.</P>
+		<DT CLASS="M"><A NAME="1006616"></A></DT>
+		<P><STRONG>Unrecognized token found in import file - name =</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006617"></A>
+		<P><STRONG>Cause: </STRONG>The End User Layer import file is corrupted or is not a valid import file.</P>
+		<DD CLASS="MH2"><A NAME="1006618"></A>
+		<P><STRONG>Action: </STRONG>Export the business area into a new file and import it again.</P>
+		<DT CLASS="M"><A NAME="1006620"></A></DT>
+		<P><STRONG>Unsupported date arithmetic requested</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006621"></A>
+		<P><STRONG>Cause: </STRONG>An attempt was made to use DATE type items in a formula in an invalid combination. Typically
+		this is caused by trying by add, subtract, multiply, or divide two dates.</P>
+		<DD CLASS="MH2"><A NAME="1006622"></A>
+		<P><STRONG>Action: </STRONG>See the <EM><SPAN CLASS="Italic">Oracle SQL Language Reference Manual</SPAN></EM> for
+		information on date arithmetic syntax.</P>
+		<DT CLASS="M"><A NAME="1006623"></A></DT>
+		<P><STRONG>User-defined PL/SQL function import not available - requires Oracle 7.3 and access to ALL_ARGUMENTS
+		database view</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006625"></A>
+		<P><STRONG>Cause: </STRONG>Although you can define PL/SQL functions and arguments in <BR>
+		Discoverer using any version of Oracle 7, only version 7.3 and above supports the facility that enables Discoverer
+		to automatically find the function name and arguments.</P>
+		<DD CLASS="MH2"><A NAME="1006626"></A>
+		<P><STRONG>Action: </STRONG>Type in the function name and arguments directly, checking that they are the correct
+		ones and retry.</P>
+		<DT CLASS="M"><A NAME="1006627"></A></DT>
+		<P><STRONG>User specified summary tables can only contain a single summary</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006628"></A>
+		<P><STRONG>Cause: </STRONG>An attempt was made to map the same external summary table to multiple summary combinations.</P>
+		<DD CLASS="MH2"><A NAME="1006629"></A>
+		<P><STRONG>Action: </STRONG>Use a different summary table for each summary combination.</P>
+		<DT CLASS="M"><A NAME="1006631"></A></DT>
+		<P><STRONG>Version number of DCE.DLL is not compatible with version number of the EUL tables</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006632"></A>
+		<P><STRONG>Cause: </STRONG>You are attempting to connect to a database that has an incompatible set of End User
+		Layer database tables.</P>
+		<DD CLASS="MH2"><A NAME="1006633"></A>
+		<P><STRONG>Action: </STRONG>Upgrade the End User Layer tables, install the latest release of Discoverer or connect
+		to a different database.</P>
+		<DT CLASS="M"><A NAME="1006635"></A></DT>
+		<P><STRONG>You do not have access to any business areas</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006636"></A>
+		<P><STRONG>Cause: </STRONG>This user has access to an End User Layer, but has not been granted access to any business
+		areas.</P>
+		<DD CLASS="MH2"><A NAME="1006639"></A>
+		<P><STRONG>Action: </STRONG>Use the Security dialog in Discoverer Administrator to grant access to business areas.
+		The user will also require Oracle SELECT access to any database tables used in the business areas.</P>
+		<DT CLASS="M"><A NAME="1006642"></A></DT>
+		<P><STRONG>You do not have access to any End User Layer tables</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006643"></A>
+		<P><STRONG>Cause: </STRONG>There are no End User Layer tables set up or this user does not have access to them.</P>
+		<DD CLASS="MH2"><A NAME="1006644"></A>
+		<P><STRONG>Action: </STRONG>See the release notes for information on setting up the End User Layer tables.</P>
+		<DT CLASS="M"><A NAME="1006646"></A></DT>
+		<P><STRONG>You do not have access to this business area</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006647"></A>
+		<P><STRONG>Cause: </STRONG>This user has access to an End User Layer, but has not been granted access to this business
+		area.</P>
+		<DD CLASS="MH2"><A NAME="1006650"></A>
+		<P><STRONG>Action: </STRONG>Use the Security dialog in Discoverer Administrator to grant access to business areas.
+		The user will also require Oracle SELECT access to any database tables used in the business areas.</P>
+		<DT CLASS="M"><A NAME="1006652"></A></DT>
+		<P><STRONG>You have connected to an Applications EUL but the required Applications tables cannot be found. Check
+		your value of FNDNAM</STRONG></P>
+		<DD CLASS="MH1"><A NAME="1006654"></A>
+		<P><STRONG>Cause: </STRONG>The value of the FNDNAM variable may not have been set.</P>
+		<DD CLASS="MH2"><A NAME="1006655"></A>
+		<P><STRONG>Action: </STRONG>The value can be set via the <STRONG><SPAN CLASS="Bold">Tools | Options | Connection
+		tab</SPAN></STRONG> or on the command line or the registry.</P>
+		<DD CLASS="MH1"><A NAME="1006656"></A>
+		<P><STRONG>Cause: </STRONG>An unsupported version of Oracle Applications is being used.</P>
+		<DD CLASS="MH2"><A NAME="1006657"></A>
+		<P><STRONG>Action: </STRONG>The Applications security features will only work with Oracle Applications releases
+		10.7 and 11.0 and 11i.</P>
+		<DD CLASS="MH1"><A NAME="1006658"></A>
+		<P><STRONG>Cause: </STRONG>The EUL owner has insufficient privileges.</P>
+		<DD CLASS="MH2"><A NAME="1006659"></A>
+		<P><STRONG>Action: </STRONG>The EUL owner needs to have SELECT privileges on the following Applications tables.
+		Connect to the database using the account specified in the FNDNAM variable and execute the following statements.</P>
+		<PRE CLASS="CE1"><A NAME="1006660"></A>
+
+grant select on FND_USER to &amp;EULOWNER 
+
+grant select on FND_APPLICATION to &amp;EULOWNER 
+
+grant select on FND_USER_RESPONSIBILITY to &amp;EULOWNER 
+
+grant select on FND_RESPONSIBILITY_VL to &amp;EULOWNER 
+
+grant select on FND_ORACLE_USERID to &amp;EULOWNER 
+
+grant select on FND_DATA_GROUP_UNITS to &amp;EULOWNER
+</PRE>
+	</DL>
+	
+  <h2><font face="Arial, Helvetica, sans-serif" color="#330099"><a name="topten"></a>Top 
+    ten most common Oracle database error messages</font></h2>
+  <h3>ORA-00000 normal, successful completion </h3>
+  Cause: An operation has completed normally, having met no exceptions. 
+  <p>Action: No action required.</p>
+  <h3></h3>
+  <h3>ORA-00001 unique constraint (string.string) violated </h3>
+  <p>Cause: An UPDATE or INSERT statement attempted to insert a duplicate key. 
+  </p>
+  <p>Action: Either remove the unique restriction or do not insert the key.<br>
+  </p>
+  <h3>ORA-00017 session requested to set trace event</h3>
+  <p>Cause: The current session was requested to set a trace event by another 
+    session.</p>
+  <p>Action: This is used internally; no action is required.<br>
+  </p>
+  <h3>ORA-01002 fetch out of sequence</h3>
+  <p>Cause: In a host language program, a FETCH call was issued out of sequence. 
+    A successful parse-and-execute call must be issued before a fetch. This can 
+    occur if an attempt was made to FETCH from an active set after all records 
+    have been fetched. This may be caused by fetching from a SELECT FOR UPDATE 
+    cursor after a commit. A PL/SQL cursor loop implicitly does fetches and may 
+    also cause this error. </p>
+  <p>Action: Parse and execute a SQL statement before attempting to fetch the 
+    data. </p>
+  <h3></h3>
+  <h3>ORA-00942 table or view does not exist </h3>
+  <p>Cause: The table or view entered does not exist, a synonym that is not allowed 
+    here was used, or a view was referenced where a table is required. Existing 
+    user tables and views can be listed by querying the data dictionary. Certain 
+    privileges may be required to access the table. If an application returned 
+    this message, the table the application tried to access does not exist in 
+    the database, or the application does not have access to it. </p>
+  <p>Action: Check each of the following: </p>
+  <p>the spelling of the table or view name. </p>
+  <p>that a view is not specified where a table is required. </p>
+  <p>that an existing table or view name exists. </p>
+  <p>Contact the database administrator if the table needs to be created or if 
+    user or application privileges are required to access the table. </p>
+  <p>Also, if attempting to access a table or view in another schema, make certain 
+    the correct schema is referenced and that access to the object is granted.</p>
+  <h3>ORA-00904 invalid column name</h3>
+  <p>Cause: The column name entered is either missing or invalid. </p>
+  <p>Action: Enter a valid column name. A valid column name must begin with a 
+    letter, be less than or equal to 30 characters, and consist of only alphanumeric 
+    characters and the special characters $, _, and #. If it contains other characters, 
+    it must be enclosed in double quotation marks. It may not be a reserved word. 
+  </p>
+  <h3></h3>
+  <h3>ORA-03113 end-of-file on communication channel</h3>
+  <p>Cause: An unexpected end-of-file was processed on the communication channel. 
+    The problem could not be handled by the Net8 two-task software. This message 
+    could occur if the shadow two-task process associated with a Net8 connect 
+    has terminated abnormally, or if there is a physical failure of the interprocess 
+    communication vehicle, that is, the network or server machine went down. </p>
+  <p>In addition, this message could occur when any of the following statements/commands 
+    have been issued: </p>
+  <p>ALTER SYSTEM KILL SESSION ... IMMEDIATE </p>
+  <p>ALTER SYSTEM DISCONNECT SESSION ... IMMEDIATE </p>
+  <p>SHUTDOWN ABORT/IMMEDIATE/TRANSACTIONAL </p>
+  <p>Action: If this message occurs during a connection attempt, check the setup 
+    files for the appropriate Net8 driver and confirm Net8 software is correctly 
+    installed on the server. If the message occurs after a connection is well 
+    established, and the error is not due to a physical failure, check if a trace 
+    file was generated on the server at failure time. Existence of a trace file 
+    may suggest an Oracle internal error that requires the assistance of Oracle 
+    Support Services. <br>
+  </p>
+  <h2>ORA-12154</h2>
+  <p>Refer to <i>Oracle9i Database Error Messages</i> for the latest description 
+    and action. </p>
+  <h2>ORA-12547</h2>
+  <p>Refer to <i>Oracle9i Database Error Messages</i> for the latest description 
+    and action. </p>
+  <h3>ORA-12705 invalid or unknown NLS parameter value specified</h3>
+  <p>Cause: There are two possible causes: Either an attempt was made to issue 
+    an ALTER SESSION statement with an invalid NLS parameter or value; or the 
+    NLS_LANG environment variable contains an invalid language, territory, or 
+    character set.</p>
+  <p>Action: Check the syntax of the ALTER SESSION statement and the NLS parameter, 
+    correct the syntax and retry the statement, or specify correct values in the 
+    NLS_LANG environment variable.</p>
+  <p></p>
+  <p></p>
+  <P>&nbsp;</P>
+  <P>&nbsp;</P>
+	<P>
+	<P><A NAME="1006662"></A></P>
+	<P>
+	<P><A NAME="1005114"></A></P>
+	
+  <P> 
+    <!-- Start Footer -->
+  <h2>&nbsp;</h2>
+  <p></p>
+  <p>&nbsp; </p>
+  <h2>&nbsp;</h2>
+</DIV>
+
+
+<DIV CLASS="OUTD">
+	<P>
+<HR ALIGN="CENTER">
+
+	<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%">
+		<TR>
+			<TD WIDTH="33%" VALIGN="BOTTOM">
+				<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0">
+					<TR>
+					</TR>
+				</TABLE>
+			</TD>
+			<TD WIDTH="34%" ALIGN="CENTER">
+				<P ALIGN="CENTER"><A HREF="html/cpyr.htm"><IMG SRC="gifs/oracle.gif" WIDTH="144" HEIGHT="18" ALIGN="BOTTOM" ALT="Oracle"
+				BORDER="0"><BR>
+				<FONT SIZE="1">Copyright &copy; 2003 Oracle Corporation.</FONT></A> <BR>
+				<FONT SIZE="1">All Rights Reserved.</FONT>
+			</TD>
+			<TD WIDTH="33%" ALIGN="RIGHT" VALIGN="BOTTOM">
+				<DIV ALIGN="RIGHT">
+				<P>
+				<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="144">
+					<TR>
+						<TD WIDTH="25%" ALIGN="CENTER" VALIGN="TOP">&nbsp;</TD>
+						<TD WIDTH="25%" ALIGN="CENTER" VALIGN="TOP">
+							<P ALIGN="CENTER"><A HREF="../../library.htm"><IMG SRC="gifs/prodicon.gif" WIDTH="30" HEIGHT="30" ALIGN="BOTTOM"
+							ALT="Discoverer documentation library" BORDER="0"><BR>
+							<FONT SIZE="1">Library</FONT></A>
+						</TD>
+					</TR>
+				</TABLE>
+
+</DIV>
+			</TD>
+		</TR>
+	</TABLE>
+
+</DIV>
+
+
+</BODY>
+
+</HTML>

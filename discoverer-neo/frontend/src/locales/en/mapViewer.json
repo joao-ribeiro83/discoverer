@@ -43,7 +43,12 @@
     "filterAriaLabel": "Filter {{column}}",
     "rowCount_one": "{{formattedCount}} row",
     "rowCount_other": "{{formattedCount}} rows",
-    "filteredFrom": "(filtered from {{total}})"
+    "filteredFrom": "(filtered from {{total}})",
+    "subtotalFor": "Total for {{value}}",
+    "grandTotal": "Grand total",
+    "groupBreakBadge": "Group",
+    "groupBreakHint": "Rows are grouped by this column. Repeated values are left blank and a subtotal closes each group.",
+    "worksheetLayoutPaused": "Sorting or filtering pauses group breaks and totals."
   },
   "execution": {
     "nothingToLoadMore": "Nothing to load more of yet.",
@@ -76,7 +81,9 @@
     "notAllRowsLoaded": "Not all rows are loaded.",
     "runFullResultTooltip": "Run the full query in the background (up to 100,000 rows)",
     "runningStatus": "Running… ({{status}})",
-    "runFullResult": "Run full result"
+    "runFullResult": "Run full result",
+    "worksheetWarningsTitle_one": "{{count}} worksheet setting could not be applied",
+    "worksheetWarningsTitle_other": "{{count}} worksheet settings could not be applied"
   },
   "parameters": {
     "title": "Run parameters",
@@ -91,5 +98,9 @@
     "exportQueuedDescription": "This may take a moment for large result sets.",
     "downloadFailedTitle": "Download failed",
     "exportJobFailedFallback": "The export job failed."
+  },
+  "crosstab": {
+    "noColumnEdge": "This crosstab has no column edge yet, so it is shown as a table. Discoverer does not record which columns went across the top — open a column and set its crosstab edge to \"Across the top\".",
+    "tooLarge": "This crosstab would be {{rows}} x {{columns}}, over the {{max}} cell limit. Filter the report or group on fewer values."
   }
 }

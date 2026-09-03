@@ -283,6 +283,9 @@ interface ConditionSpec {
 }
 interface ParamSpec {
   name: string;
+  /** Defaults to `name` — most fixtures here use prompts that are already
+   * bind-safe. Set it to exercise the two being different. */
+  bindName?: string;
   paramType?: string;
   defaultValue?: string | null;
   isRequired?: boolean;
@@ -343,6 +346,7 @@ async function createTestMap(config: CreateMapConfig): Promise<string> {
       config.parameters.map((spec) => ({
         mapId: map.id,
         name: spec.name,
+        bindName: spec.bindName ?? spec.name,
         paramType: spec.paramType ?? 'STRING',
         defaultValue: spec.defaultValue ?? null,
         isRequired: spec.isRequired ?? false,
@@ -628,6 +632,68 @@ describe('Scenario 5: parameter execution', () => {
     // The driver received the bind value.
     const driverBinds = execute.mock.calls[0]![1] as Record<string, unknown>;
     expect(driverBinds.p_region).toBe('EMEA');
+  });
+
+  // The whole point of `bind_name`. Before it, a map migrated from Discoverer
+  // bound the prompt verbatim and threw at SQL generation — 2805 of the 4481
+  // parameter conditions on the migrated EUL could not run at all.
+  it('runs a map whose prompt could never be a bind variable', async () => {
+    const mapId = await createTestMap({
+      items: [{ item: fx.region }],
+      conditions: [
+        {
+          item: fx.region,
+          operator: '=',
+          conditionType: 'PARAMETER',
+          // Stored against the bind name, which is what the migrator writes.
+          paramName: 'UNID_ECON_MICA',
+        },
+      ],
+      parameters: [
+        { name: 'Unid.Económica', bindName: 'UNID_ECON_MICA', paramType: 'STRING' },
+      ],
+    });
+
+    // The caller supplies the value under the prompt — that is the key the
+    // run-time dialog and a saved schedule both hold.
+    const { sql, binds, execute } = await executeTestMap(
+      mapId,
+      { 'Unid.Económica': 'EMEA' },
+      { rows: [{ REGION: 'EMEA' }] },
+    );
+
+    assertSqlContains(sql, 'f1."REGION" = :UNID_ECON_MICA');
+    expect(sql).not.toContain('Económica');
+    expect(binds.UNID_ECON_MICA).toBe('EMEA');
+    const driverBinds = execute.mock.calls[0]![1] as Record<string, unknown>;
+    expect(driverBinds.UNID_ECON_MICA).toBe('EMEA');
+  });
+
+  it('refuses to run when a prompt-named required parameter is missing', async () => {
+    const mapId = await createTestMap({
+      items: [{ item: fx.region }],
+      conditions: [
+        {
+          item: fx.region,
+          operator: '=',
+          conditionType: 'PARAMETER',
+          paramName: 'UNID_ECON_MICA',
+        },
+      ],
+      parameters: [
+        {
+          name: 'Unid.Económica',
+          bindName: 'UNID_ECON_MICA',
+          paramType: 'STRING',
+          isRequired: true,
+        },
+      ],
+    });
+
+    // Named by its prompt, because that is what a person has to go and fill in.
+    await expect(
+      executeTestMap(mapId, {}, { rows: [] }),
+    ).rejects.toThrow(/Unid\.Económica/);
   });
 });
 

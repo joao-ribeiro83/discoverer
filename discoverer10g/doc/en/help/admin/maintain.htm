@@ -1,0 +1,2354 @@
+
+<!DOCTYPE html public "-//w3c//dtd html 3.2 transitional//en.us">
+<HTML lang="en.us">
+<HEAD>
+
+<META NAME="Generator" CONTENT="Quadralay WebWorks Publisher 5.0.4">
+<META NAME="Page" CONTENT="DefaultSingle">
+<META NAME="Title" CONTENT="Creating and maintaining End User Layers">
+<meta http-equiv="Content-Type" content="text/html;  charset=iso-8859-1">
+
+<TITLE>Creating and maintaining End User Layers</TITLE>
+	   
+<LINK REL="home" HREF="../../library.htm" TITLE="Library">
+<LINK REL="toc" HREF="toc.htm" TITLE="Contents">
+<LINK REL="index" HREF="bookix.htm" TITLE="Index">
+<LINK REL="copyright" HREF="./html/cpyr.htm" TITLE="Copyright">
+<LINK REL="up" HREF="toc.htm" TITLE="Up">
+<LINK REL="next" HREF="business.htm" TITLE="Next">
+<LINK REL="previous" HREF="getting_.htm" TITLE="Previous">
+
+
+</HEAD>
+       
+<BODY BGCOLOR="#ffffff">
+
+<A NAME="top"></A>
+
+
+
+
+<A HREF="#BEGIN">Skip Headers</A><BR><BR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+ 
+<TD ALIGN="LEFT" VALIGN="TOP"><FONT COLOR="#330099" FACE="Helvetica, Arial, sans-serif"><STRONG>Oracle Discoverer Administrator Administration Guide (Online Help)<BR>10<i>g</i> (9.0.4)</STRONG><BR>Part Number B10270-01</FONT></TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="144">
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+
+
+
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<HR>
+<P>
+<A HREF="getting_.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+
+<A HREF="business.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+    
+
+
+<A NAME="BEGIN"></A>
+
+
+
+<DIV CLASS="IND">
+<!-- End Header -->
+
+
+
+
+
+
+
+<A NAME="1656"></A>
+<!--TOC=Title-"1656"-->
+<H1 CLASS="Title"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099">3<BR>Creating and maintaining End User Layers</FONT></H1>
+
+<!--/TOC=Title-->
+
+<A NAME="1005496"></A>
+<!--TOC=h1-"1005496"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Creating and maintaining End User Layers</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005499"></A>
+<P CLASS="BP">
+This chapter explains how you create and maintain End User Layers using Discoverer Administrator, and contains the following topics:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005516"></A><A HREF="maintain.htm#1004598">"What is an End User Layer?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005527"></A><A HREF="maintain.htm#1006262">"What are End User Layer owners?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005540"></A><A HREF="maintain.htm#1005097">"What privileges do you need to create an End User Layer in an Oracle database?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005548"></A><A HREF="maintain.htm#1005152">"What privileges do you need to create an End User Layer in a non-Oracle database?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008021"></A><A HREF="maintain.htm#1005491">"What privileges do you need to maintain an End User Layer?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005557"></A><A HREF="maintain.htm#1007001">"What is the EUL Gateway?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005566"></A><A HREF="maintain.htm#1004687">"How to create an End User Layer for an existing database user"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005574"></A><A HREF="maintain.htm#1004749">"How to create an End User Layer in a new database user"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005582"></A><A HREF="maintain.htm#1004815">"How to delete an End User Layer"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006980"></A><A HREF="maintain.htm#1004856">"How to view or change the default End User Layer"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005590"></A><A HREF="maintain.htm#1009549">"About copying EULs and EUL objects by exporting and importing"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008859"></A><A HREF="maintain.htm#1008392">"Which export/import method to use"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007220"></A><A HREF="maintain.htm#1008721">"How to export the entire EUL using the Export Wizard"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007224"></A><A HREF="maintain.htm#1007796">"How to export selected business areas using the Export Wizard"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007228"></A><A HREF="maintain.htm#1007837">"How to export selected EUL objects using the Export Wizard"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008868"></A><A HREF="maintain.htm#1008579">"How to export End User Layer objects (to import to another database) using the Discoverer command line interface"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009130"></A><A HREF="maintain.htm#1008990">"How to import End User Layer objects to a database (after export from another database) using the Discoverer command line interface"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008876"></A><A HREF="maintain.htm#1008613">"How to export an EUL using the standard database export utility"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011697"></A><A HREF="maintain.htm#1008633">"How to import an EUL using the standard database import utility"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011701"></A><A HREF="maintain.htm#1011931">"How to import EUL objects from a file using the Import Wizard"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011705"></A><A HREF="maintain.htm#1009382">"Notes about EUL creation and maintenance"</a>
+<P>
+</UL>
+
+<A NAME="1004598"></A>
+<!--TOC=h1-"1004598"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What is an End User Layer?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005687"></A>
+<P CLASS="BP">
+The End User Layer (EUL) is the metadata (i.e. data about the actual data in a database) that is simple and easy for Discoverer end users to understand. You use Discoverer Administrator to create, customize, and maintain this view for your users so they can easily access data in Discoverer. You must have access to at least one EUL in order to use Discoverer. Access is granted using the Privileges dialog, described in <A HREF="privileg.htm#1006184">Chapter&nbsp;6, "Controlling access to information"</a>.
+</P>
+
+<A NAME="1005703"></A>
+<!--TOC=h2-"1005703"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Why is the End User Layer useful?</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1006310"></A>
+<P CLASS="BP">
+The EUL insulates Discoverer end users from the complexity usually associated with databases. It provides an intuitive, business-focused view of the database using terms that Discoverer end users are familiar with and can easily understand. This enables Discoverer end users to focus on business issues instead of data access issues.
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006391"></A>What does the EUL contain?
+<P>
+
+<A NAME="1006392"></A>
+<P CLASS="BP1">
+The EUL contains the metadata that defines one or more business areas. A business area is a conceptual grouping of tables and/or views that apply to a user's specific data requirements. Business areas can be set up to reflect the needs of the user or group of users accessing the EUL.
+</P>
+
+<A NAME="1006667"></A>
+<P CLASS="BP1">
+For example, an accounting department might have an accounting business area that represents data about budgets and finance, while project leaders in an engineering department might have a business area specifically for projects requiring budget information. Although some of the columns may be the same, the exact combination of tables and views for each department may be different.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006404"></A>Discoverer creates the EUL tables
+<P>
+
+<A NAME="1006405"></A>
+<P CLASS="BP1">
+The EUL Manager dialog enables you to create or delete, the set of tables that make up an EUL.
+</P>
+
+<A NAME="1006376"></A>
+<P CLASS="BP1">
+When a Discoverer manager defines folders and items in a business area using Discoverer Administrator, Discoverer generates the appropriate SQL statements (that define the selections from a table, view, or column) and stores them in the EUL tables. When a Discoverer end user executes a query (in Discoverer Plus or Discoverer Viewer), Discoverer generates the corresponding SQL statement and sends it to the database, which in turn returns the results to display in Discoverer. The Discoverer end user does not have to understand any SQL to access, analyze, and retrieve data. It is all handled by Discoverer.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006256"></A>Discoverer exports/imports EUL objects
+<P>
+
+<A NAME="1005419"></A>
+<P CLASS="BP1">
+You can export EUL objects (e.g. business areas, workbooks, folders, items) from one database and import them into another database. For example, you might want to move EUL objects when transitioning from a development environment to a production environment. 
+</P>
+
+<A NAME="1006450"></A>
+<P CLASS="BP1">
+You can import and export EULs and EUL objects in the following ways:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005871"></A>using the Discoverer Export Wizard and Import Wizard
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005421"></A>using the Discoverer command line interface
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1012113"></A>using the standard database export/import commands
+<P>
+</UL>
+
+<A NAME="1012114"></A>
+<P CLASS="BP1">
+For more information, see <A HREF="maintain.htm#1008392">"Which export/import method to use"</a>.
+</P>
+</UL>
+<A NAME="1004628"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> The EUL preserves the database's data integrity. Nothing that you or the Discoverer end user does with Discoverer affects the application data in the database; Discoverer only affects the metadata held in the EUL. There are however, certain PL/SQL functions that can affect the data in the database (for more information, see your database administrator).
+</P>
+
+<A NAME="1006262"></A>
+<!--TOC=h1-"1006262"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are End User Layer owners?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1006263"></A>
+<P CLASS="BP">
+An End User Layer (EUL) owner is the database user that an EUL is created for.
+</P>
+<A NAME="1006264"></A>
+<P CLASS="BP">
+A database user can only own one EUL. If you are connected to your own EUL and you attempt to create a new one, Discoverer Administrator prompts you to delete your existing EUL. If you create a EUL for a database user that already owns an EUL, Discoverer Administrator prompts you to delete the existing EUL before creating the new one. 
+</P>
+<A NAME="1004632"></A>
+<P CLASS="BP">
+The EUL owner maintains and modifies their own EUL and can grant access to the EUL to other users. Depending on the privileges given to the other users, those users can use and make changes to the EUL.
+</P>
+<A NAME="1005233"></A>
+<P CLASS="BP">
+When you create an EUL, you specify who has access to it, as follows:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005213"></A>every user in the database (PUBLIC access)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005214"></A>only the EUL owner (PRIVATE access)
+<P>
+</UL>
+<A NAME="1011988"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> It is recommended that you specify PRIVATE access, where security is an issue. You can subsequently define business area access and privileges for users and roles as required.
+</P>
+<A NAME="1005217"></A>
+<P CLASS="BP">
+To change access to an existing EUL, you must be logged in as the owner of the EUL or as a user who has the following Discoverer task privileges:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005222"></A>Administrator
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005223"></A>Set Privileges
+<P>
+</UL>
+<A NAME="1005224"></A>
+<P CLASS="BP">
+For more information, see <A HREF="privileg.htm#1006184">Chapter&nbsp;6, "Controlling access to information"</a>.
+</P>
+
+<A NAME="1005097"></A>
+<!--TOC=h1-"1005097"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What privileges do you need to create an End User Layer in an Oracle database?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005101"></A>
+<P CLASS="BP">
+To create an End User Layer in an Oracle database, the database user that the EUL is being created in must have the following database privileges:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004660"></A>CREATE SESSION
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004661"></A>CREATE TABLE
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004662"></A>CREATE VIEW
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004663"></A>CREATE SEQUENCE
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004664"></A>CREATE PROCEDURE
+<P>
+</UL>
+<A NAME="1004665"></A>
+<P CLASS="BP">
+The database user must also have the following specified:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005134"></A>a default tablespace (this must not be a temporary tablespace) 
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005139"></A>a quota set in the default tablespace (recommended minimum is 3MB)
+<P>
+
+<A NAME="1007200"></A>
+<P CLASS="BP1">
+For more information about the default tablespace, see <A HREF="adcewi02.htm#1005113">"Create EUL Wizard: Step 2 dialog"</a>.
+</P>
+</UL>
+<A NAME="1004666"></A>
+<P CLASS="BP">
+If you are running Discoverer against an Oracle 8.1.7 or later Enterprise Edition database, the database user requires further privileges to make use of Discoverer's manual summary management and Automated Summary Management (ASM) functionality. For more information, see:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006620"></A><A HREF="managing.htm#1004994">Chapter&nbsp;13, "What are the prerequisites for creating summary folders with ASM?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006626"></A><A HREF="creating.htm#1005182">Chapter&nbsp;14, "What are the prerequisites for creating summary folders manually in Discoverer?"</a> 
+<P>
+</UL>
+<A NAME="1006605"></A>
+<P CLASS="BP">
+The EUL Manager dialog enables you to:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005116"></A>create an EUL for an existing Oracle database user, provided that database user meets the above conditions
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005117"></A>create an EUL for a new Oracle database user, provided you (the user creating the new user) have the following database privileges:
+<P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005120"></A>CREATE SESSION
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1011368"></A>CREATE USER
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005121"></A>GRANT ANY PRIVILEGE
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1011349"></A>ALTER USER
+<P>
+</UL>
+
+<A NAME="1005115"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> The above privileges are all you need to create a new EUL for a new database user. You can connect to Discoverer Administrator as a database user with only these privileges and create a new EUL in a new database user.
+</P>
+</UL>
+<A NAME="1011369"></A>
+<P CLASS="BP">
+If you create an EUL for a new Oracle database user, Discoverer grants the necessary privileges and sets the default tablespace and quota.
+</P>
+
+<A NAME="1005152"></A>
+<!--TOC=h1-"1005152"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What privileges do you need to create an End User Layer in a non-Oracle database?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005157"></A>
+<P CLASS="BP">
+To create an End User Layer for a non-Oracle database user, the database user must have the following database privileges:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004674"></A>CREATE SESSION (use your database's equivalent for this Oracle term)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004675"></A>CREATE TABLE
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004676"></A>CREATE VIEW
+<P>
+</UL>
+<A NAME="1004680"></A>
+<P CLASS="BP">
+Discoverer Administrator does not enable you to create new users for non-Oracle databases. 
+</P>
+
+<A NAME="1005491"></A>
+<!--TOC=h1-"1005491"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What privileges do you need to maintain an End User Layer?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1007002"></A>
+<P CLASS="BP">
+You can maintain EULs in Discoverer Administrator if your database user has the Administration privilege.
+</P>
+<A NAME="1007009"></A>
+<P CLASS="BP">
+To apply the Administration privilege to a database user, see <A HREF="privileg.htm#1004625">Chapter&nbsp;6, "How to specify a user or role (responsibility) to perform a specific task"</a>.
+</P>
+
+<A NAME="1007001"></A>
+<!--TOC=h1-"1007001"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What is the EUL Gateway?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005712"></A>
+<P CLASS="BP">
+The EUL Gateway provides a way for Discoverer to populate an EUL with metadata from another source, such as Oracle Designer. The EUL Gateway allows metadata defined in another tool or application to be loaded directly into the EUL.
+</P>
+<A NAME="1005727"></A>
+<P CLASS="BP">
+To set up an EUL Gateway see the document eulgatew.doc located in the &lt;ORACLE_HOME&gt;\discoverer\kits directory.
+</P>
+<A NAME="1005741"></A>
+<P CLASS="BP">
+For information about loading a business area from the EUL Gateway see <A HREF="business.htm#1006126">Chapter&nbsp;4, "How to create a business area using the Load Wizard"</a>.
+</P>
+
+<A NAME="1004687"></A>
+<!--TOC=h1-"1004687"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to create an End User Layer for an existing database user</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1006275"></A>
+<P CLASS="BP">
+To create an EUL for an existing database user:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1004700"></A>Choose Tools | EUL Manager to display the <A HREF="ademan01.htm#1005113">"EUL Manager dialog"</a>.
+<P>
+
+<A NAME="1004707"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 3-1 &#32;EUL Manager dialog</EM></FONT></H4>
+  
+<BR><A NAME="1005601">
+
+
+<img src="eulmgr.gif" ALT="Text description of eulmgr.gif follows.">
+<A HREF="img_text/eulmgr.htm"><br>Text description of the illustration eulmgr.gif</A>
+
+
+</A>
+  
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1004712"></A>Click Create an EUL to display the <A HREF="adcewi01.htm#1005113">"Create EUL Wizard dialog"</a>.
+<P>
+
+<A NAME="1004718"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 3-2 &#32;Create EUL Wizard Step 1 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1004722">
+
+
+<img src="eulwiz.gif" ALT="Text description of eulwiz.gif follows.">
+<A HREF="img_text/eulwiz.htm"><br>Text description of the illustration eulwiz.gif</A>
+
+
+</A>
+ 
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005259"></A>Select the <STRONG CLASS="Bold">Select an existing user</STRONG> radio button.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1005257"></A>Select or clear the <STRONG CLASS="Bold">Grant EUL access to PUBLIC</STRONG> check box as required:
+<P>
+ 
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1004725"></A>select this check box to enable all users in the current database to access the new EUL
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1004726"></A>clear this check box to enable only the EUL owner to view data through the new EUL
+<P>
+</UL>
+
+<A NAME="1011665"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note</STRONG>: It is recommended that you clear this check box where security might be an issue.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1004727"></A>Select or clear the <STRONG CLASS="Bold">New EUL is for use by Oracle Applications users ONLY</STRONG> check box as required:
+<P>
+ 
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1004728"></A>select this check box to restrict the new EUL to Oracle Applications users only (for more information about Applications Mode EULs, see <A HREF="oracle_a.htm#1004678">Chapter&nbsp;16, "Using Discoverer with Oracle Applications"</a>)
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1004732"></A>clear this check box to create a standard EUL
+<P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1004733"></A>Select the database user that you want to own the new EUL from the <STRONG CLASS="Bold">User</STRONG> drop down list.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1004734"></A>If you specified a database user other than the current user to be the EUL owner, you need to specify the database user's password.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="8"><A NAME="1004735"></A>Click Finish.
+<P>
+ 
+
+<A NAME="1004739"></A>
+<P CLASS="BP1">
+Discoverer Administrator displays the Creating EUL progress bar and creates a new EUL for the specified database user. 
+</P>
+
+<A NAME="1005325"></A>
+<P CLASS="BP1">
+When the new EUL has been created, Discoverer gives you the option to install the Discoverer tutorial in the new EUL. For more information, see the <EM CLASS="Italic">Oracle Discoverer Administrator Tutorial</EM>.
+</P>
+</OL>
+
+<A NAME="1004749"></A>
+<!--TOC=h1-"1004749"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to create an End User Layer in a new database user</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004753"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> This feature is not available with non-Oracle databases. If you are using a non-Oracle database, ask your database administrator to create the necessary user IDs on the database.
+</P>
+<A NAME="1009317"></A>
+<P CLASS="BP">
+For more information about the privileges required to create an EUL in a new database user, see <A HREF="maintain.htm#1005097">"What privileges do you need to create an End User Layer in an Oracle database?"</a>.
+</P>
+<A NAME="1006276"></A>
+<P CLASS="BP">
+To create an EUL in a new database user:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1004754"></A>Choose Tools | EUL Manager to display the <A HREF="ademan01.htm#1005113">"EUL Manager dialog"</a>.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1004758"></A>Click Create an EUL to display the <A HREF="adcewi01.htm#1005113">"Create EUL Wizard dialog"</a>.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1004761"></A>Select the <STRONG CLASS="Bold">Create a new user</STRONG> radio button.
+<P>
+ 
+
+<A NAME="1005292"></A>
+<P CLASS="BP1">
+If the <STRONG CLASS="Bold">Create a new user </STRONG>radio button is unavailable, contact your database administrator to grant the CREATE USER privilege.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1005296"></A>Select or clear the <STRONG CLASS="Bold">Grant EUL access to PUBLIC</STRONG> check box as follows:
+<P>
+ 
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005297"></A>select this check box to enable all users in the current database to access the new EUL
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005298"></A>clear this check box to enable only the EUL owner to view data through the new EUL 
+<P>
+</UL>
+
+<A NAME="1011679"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note</STRONG>: It is recommended that you clear this check box where security might be an issue.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1005299"></A>Select or clear the <STRONG CLASS="Bold">New EUL is for use by Oracle Applications users ONLY</STRONG> check box as follows:
+<P>
+ 
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005300"></A>select the check box to restrict the new EUL to Oracle Applications users only (for more information about Applications Mode EULs, see <A HREF="oracle_a.htm#1004672">Chapter&nbsp;16, "What are Oracle Applications?"</a>)
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1006918"></A>clear the check box to create a standard EUL
+<P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1006919"></A>Specify a name for the new database user in the <STRONG CLASS="Bold">User</STRONG> field.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1006920"></A>Specify a password for the new database user in the <STRONG CLASS="Bold">Password</STRONG> field.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="8"><A NAME="1004781"></A>Specify the new database user's password again in the <STRONG CLASS="Bold">Confirm Password</STRONG> field.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="9"><A NAME="1004782"></A>Click Next to display the <A HREF="adcewi02.htm#1005113">"Create EUL Wizard: Step 2 dialog"</a>.
+<P>
+
+<A NAME="1004787"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 3-3 &#32;Create EUL Wizard Step 2 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1004791">
+
+
+<img src="eulwztb.gif" ALT="Text description of eulwztb.gif follows.">
+<A HREF="img_text/eulwztb.htm"><br>Text description of the illustration eulwztb.gif</A>
+
+
+</A>
+ 
+<LI CLASS="LN1" TYPE="1" VALUE="10"><A NAME="1004793"></A>Specify the default and temporary tablespaces for the new database user.
+<P>
+ 
+
+<A NAME="1006493"></A>
+<P CLASS="BP1">
+If you are unsure which to choose, see your database administrator. For more information, see the <A HREF="adcewi02.htm#1005113">"Create EUL Wizard: Step 2 dialog"</a>.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="11"><A NAME="1004794"></A>Click Finish.
+<P>
+ 
+
+<A NAME="1004798"></A>
+<P CLASS="BP1">
+Discoverer Administrator displays the Creating EUL progress bar and creates a new database user and new EUL in that database user.
+</P>
+
+<A NAME="1005319"></A>
+<P CLASS="BP1">
+When the new database user and EUL have been created, Discoverer gives you the option to install the Discoverer tutorial in the new EUL. For more information, see the <EM CLASS="Italic">Oracle Discoverer Administrator Tutorial</EM>.
+</P>
+</OL>
+
+<A NAME="1004815"></A>
+<!--TOC=h1-"1004815"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to delete an End User Layer</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1006500"></A>
+<P CLASS="BP">
+You might want to delete an EUL for a number of reasons. For example, it might be an old or a test EUL.
+</P>
+<A NAME="1004817"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> You must connect as the owner of the EUL that you want to delete.
+</P>
+<A NAME="1006279"></A>
+<P CLASS="BP">
+To delete an EUL:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1004818"></A>Choose File | Connect to display the <A HREF="adcdia01.htm#1005113">"Connect dialog"</a>.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1004822"></A>Specify the username, password, and connect string for the owner of the EUL that you want to delete, and click Connect to display the <A HREF="adlwiz01.htm#1005113">"Load Wizard: Step 1 dialog"</a>.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1004824"></A>Click Cancel to close the Load Wizard.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1004825"></A>Choose Tools | EUL Manager.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1004826"></A>Click Delete an EUL to display the <A HREF="addeul01.htm#1005113">"Delete EUL dialog"</a>.
+<P>
+ 
+
+<A NAME="1005460"></A>
+<P CLASS="BP1">
+Discoverer prompts you to confirm that you want to delete the current EUL.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1004828"></A>Make sure that the EUL specified in the <STRONG CLASS="Bold">EUL</STRONG> field is the one you want to delete and click OK.
+<P>
+ 
+
+<A NAME="1004830"></A>
+<P CLASS="BP1">
+If the EUL name displayed is incorrect, go back to Step 2 and use the correct connect string to connect as the EUL owner. 
+</P>
+
+<A NAME="1004834"></A>
+<P CLASS="BP1">
+When you click OK, Discoverer prompts you to confirm that you want to delete all EUL tables, all EUL information and workbooks in the database and all summary data and information. 
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1004836"></A>Click Yes to continue.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="8"><A NAME="1005487"></A>Click OK to delete the EUL.
+<P>
+ 
+
+<A NAME="1006513"></A>
+<P CLASS="BP1">
+Discoverer deletes the EUL objects for the current database user.
+</P>
+</OL>
+
+<A NAME="1004856"></A>
+<!--TOC=h1-"1004856"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to view or change the default End User Layer</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1006941"></A>
+<P CLASS="BP">
+You can view or change which EUL is the default EUL for the current database user (i.e. the EUL used when the current database user connects to Discoverer Administrator).
+</P>
+<A NAME="1006944"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> You can only select an alternative EUL if the database user has access to more than one EUL.
+</P>
+<A NAME="1006945"></A>
+<P CLASS="BP">
+To view or change the default EUL:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1006949"></A>Choose Tools | Options | Default EUL tab to display the <A HREF="adodeu01.htm#1005113">"Options dialog: Default EUL tab"</a>.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1009546"></A>(optional) Click the EUL that you want to use next time you connect as the current database user and click OK.
+<P>
+ 
+</OL>
+
+<A NAME="1009549"></A>
+<!--TOC=h1-"1009549"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About copying EULs and EUL objects by exporting and importing</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1009550"></A>
+<P CLASS="BP">
+Typically, you will want to:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009407"></A>backup or archive EULs
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009408"></A>distribute EULs to other locations
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009409"></A>copy business areas between EULs (for more information, see <A HREF="business.htm#1004617">Chapter&nbsp;4, "How to copy business areas between EULs"</a>)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009410"></A>copy EUL objects (e.g. business areas, folders, hierarchies, calculations) from one EUL to another
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009411"></A>apply patches to a production environment
+<P>
+</UL>
+<A NAME="1009644"></A>
+<P CLASS="BP">
+There are a number of different ways to copy EULs and EUL objects, depending on whether you want to:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009645"></A>copy specified EUL objects into another EUL
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009646"></A>copy an entire EUL and recreate it as a new EUL
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009647"></A>copy the database user that is the EUL owner
+<P>
+</UL>
+<A NAME="1009654"></A>
+<P CLASS="BP">
+In all these cases, you perform an export operation followed by an import operation. For more information, see <A HREF="maintain.htm#1008392">"Which export/import method to use"</a>.
+</P>
+<A NAME="1009571"></A>
+<P CLASS="BP">
+If you use Discoverer Administrator to export EULs or EUL objects, you will create a Discoverer EUL export file (with an .EEX suffix). Having created an .EEX file, you can then use Discoverer Administrator to import the .EEX file.
+</P>
+<A NAME="1009582"></A>
+<P CLASS="BP">
+Note that you can import .EEX files:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009576"></A>that have been exported from Discoverer Release 3.1 and earlier
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009577"></A>that have been exported from Discoverer Release 4.1 and later (these EUL export files are in XML format, although they have an .EEX extension)
+<P>
+</UL>
+
+<A NAME="1008392"></A>
+<!--TOC=h1-"1008392"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Which export/import method to use</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1008436"></A>
+<P CLASS="BP">
+To copy EUL objects between EULs you first export the EUL objects to a file, then import them into a new EUL or new database. 
+</P>
+<A NAME="1009412"></A>
+<P CLASS="BP">
+You copy EUL objects between EULs using
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009451"></A>the Discoverer Export Wizard and Import Wizard (for more information, see <A HREF="maintain.htm#1008406">"About using the Discoverer Export Wizard and Import Wizard"</a>)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009453"></A>the Discoverer command line interface (for more information, see <A HREF="maintain.htm#1008472">"About using the Discoverer command line interface to export/import EUL objects"</a>)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009454"></A>the standard database export/import commands (for more information, see <A HREF="maintain.htm#1008448">"About using the standard database export/import commands to export/import EUL owners"</a>)
+<P>
+</UL>
+
+<A NAME="1008406"></A>
+<!--TOC=h2-"1008406"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About using the Discoverer Export Wizard and Import Wizard</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1008791"></A>
+<P CLASS="BP">
+You use the Discoverer Export Wizard to export EUL objects to an EUL export file (with a suffix .EEX). Having exported the objects, you can then import the .EEX file using the Discoverer Import Wizard.
+</P>
+<A NAME="1008792"></A>
+<P CLASS="BP">
+The EUL objects that you export (to an .EEX file) include business areas, folders, item hierarchies, date hierarchies, item classes, workbook definitions (created in Discoverer Desktop and Discoverer Plus), PL/SQL function registration information, summary folders, and the automated summary management (ASM) policy.
+</P>
+<A NAME="1008932"></A>
+<P CLASS="BP">
+Refer to the following topics to find out how to export or import EUL objects using the Discoverer user interface:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008758"></A><A HREF="maintain.htm#1008721">"How to export the entire EUL using the Export Wizard"</a>
+<P>
+
+<A NAME="1011409"></A>
+<P CLASS="BP1">
+Use this option to export an entire EUL to a file when you want to copy objects from the EUL into a new EUL or to create a backup.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008411"></A><A HREF="maintain.htm#1007796">"How to export selected business areas using the Export Wizard"</a>
+<P>
+
+<A NAME="1011418"></A>
+<P CLASS="BP1">
+Use this option when you want to use the export file to update an existing EUL with selected business areas.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008419"></A><A HREF="maintain.htm#1007837">"How to export selected EUL objects using the Export Wizard"</a>
+<P>
+
+<A NAME="1011425"></A>
+<P CLASS="BP1">
+Use this option when you want to use the export file to update an existing EUL with selected EUL objects. For example, when applying a minor change to a production business area.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008462"></A><A HREF="maintain.htm#1011931">"How to import EUL objects from a file using the Import Wizard"</a>
+<P>
+
+<A NAME="1010025"></A>
+<P CLASS="BP1">
+Use this option to import EUL objects (e.g. business areas, folders, hierarchies, calculations) from one EUL in order to re-use them in another EUL. 
+</P>
+</UL>
+<A NAME="1011447"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> The Export Wizard does <EM CLASS="Italic">not</EM> export the database, EUL tables, or database objects referenced by the EUL. To export these objects, you must follow the steps in <A HREF="maintain.htm#1008613">"How to export an EUL using the standard database export utility"</a>.
+</P>
+
+<A NAME="1008472"></A>
+<!--TOC=h2-"1008472"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About using the Discoverer command line interface to export/import EUL objects</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1008687"></A>
+<P CLASS="BP">
+You use the Discoverer command line interface to export/import EUL objects without using the Discoverer user interface. For more information about the Discoverer command line inteface, see <A HREF="command_.htm#1018918">Chapter&nbsp;21, "What is the Oracle Discoverer command line interface?"</a>.
+</P>
+<A NAME="1008936"></A>
+<P CLASS="BP">
+Refer to the following topics to find out how to  export and import EUL objects  using the Discoverer command line interface:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008786"></A><A HREF="maintain.htm#1008579">"How to export End User Layer objects (to import to another database) using the Discoverer command line interface"</a>
+<P>
+
+<A NAME="1009086"></A>
+<P CLASS="BP1">
+Use this option to copy EUL objects from one database to another by exporting them to a Discoverer export file (.EEX) and then importing the .EEX file to another database using the command line interface. 
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011435"></A><A HREF="maintain.htm#1008990">"How to import End User Layer objects to a database (after export from another database) using the Discoverer command line interface"</a>
+<P>
+
+<A NAME="1009437"></A>
+<P CLASS="BP1">
+Use this option to import EUL objects into a new database. 
+</P>
+</UL>
+<A NAME="1011443"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> The Discoverer command line interface export facility does <EM CLASS="Italic">not</EM> export the database, EUL tables, or database objects referenced by the EUL definitions. To export these objects, you must follow the steps in <A HREF="maintain.htm#1008613">"How to export an EUL using the standard database export utility"</a>.
+</P>
+
+<A NAME="1008448"></A>
+<!--TOC=h2-"1008448"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About using the standard database export/import commands to export/import EUL owners</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1008700"></A>
+<P CLASS="BP">
+You use standard database export/import commands to export/import the database, EUL tables, and database objects referenced by the EUL definitions.
+</P>
+<A NAME="1008832"></A>
+<P CLASS="BP">
+Use the following tasks to export/import EUL objects between databases:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008836"></A><A HREF="maintain.htm#1008613">"How to export an EUL using the standard database export utility"</a>
+<P>
+
+<A NAME="1011470"></A>
+<P CLASS="BP1">
+Use this option to export an entire EUL to a file when you want to copy objects from the EUL into a new EUL or to create a backup.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008840"></A><A HREF="maintain.htm#1008633">"How to import an EUL using the standard database import utility"</a>
+<P>
+
+<A NAME="1011483"></A>
+<P CLASS="BP1">
+Use this option to import the EUL business areas, EUL tables and saved workbooks from a database dump file (.DMP) into a new EUL owner on the new database.
+</P>
+</UL>
+<A NAME="1008841"></A>
+<P CLASS="BP">
+How you export or import an EUL depends on:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008842"></A>the version of the Oracle client software installed on your machine
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008843"></A>the version of the Oracle database  on which the EUL resides
+<P>
+</UL>
+<A NAME="1009591"></A>
+<P CLASS="BP">
+We recommend that the version of the Oracle database and the version of the Oracle database client software installed on your machine are the same. If the versions are not the same (e.g. if the EUL is on an Oracle8<EM CLASS="Italic">i</EM> database and Oracle9<EM CLASS="Italic">i</EM> client software is installed on your machine), you might not be able to follow the instructions below. If you are unable to export the EUL, contact your database administrator and ask them to export the EUL for you.
+</P>
+
+<A NAME="1008721"></A>
+<!--TOC=h1-"1008721"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to export the entire EUL using the Export Wizard</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1007752"></A>
+<P CLASS="BP">
+Use this option to export an entire EUL to a file when you want to copy objects from the EUL into a new EUL or to create a backup.
+</P>
+<A NAME="1007753"></A>
+<P CLASS="BP">
+To export the entire EUL using the Export Wizard:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1007757"></A>Choose File | Export to display the <A HREF="adews101.htm#1005113">"Export Wizard Step 1 dialog"</a>.
+<P>
+
+<A NAME="1007758"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 3-4 &#32;Export Wizard: Step 1 dialog</EM></FONT></H4>
+  
+<BR><A NAME="1007762">
+
+
+<img src="exwz1eul.gif" ALT="Text description of exwz1eul.gif follows.">
+<A HREF="img_text/exwz1eul.htm"><br>Text description of the illustration exwz1eul.gif</A>
+
+
+</A>
+  
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1007763"></A>Select the <STRONG CLASS="Bold">The entire End User Layer</STRONG> radio button and click Next to display the <A HREF="adewfs01.htm#1006671">"Export Wizard: Step 2 dialog"</a>.
+<P>
+
+<A NAME="1007767"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 3-5 &#32;Export Wizard: Step 2 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1007771">
+
+
+<img src="exwz2eul.gif" ALT="Text description of exwz2eul.gif follows.">
+<A HREF="img_text/exwz2eul.htm"><br>Text description of the illustration exwz2eul.gif</A>
+
+
+</A>
+  
+
+<A NAME="1007772"></A>
+<P CLASS="BP1">
+You use the above dialog to specify a name and location for the export file.
+</P>
+</OL>
+<A NAME="1007773"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1007774"></A>Click Browse to display the Save As dialog.
+<P>
+ 
+
+<A NAME="1007775"></A>
+<P CLASS="BP1">
+This enables you to browse for a location to save the EUL export file.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1007776"></A>Enter a suitable name for the exported EUL.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1007777"></A>(optional) Select the <STRONG CLASS="Bold">Generate XML for exported workbooks</STRONG> check box to save any workbook definitions in XML format.
+<P>
+ 
+
+<A NAME="1007778"></A>
+<P CLASS="BP1">
+This enables you to view workbook definitions in an XML browser.
+</P>
+
+<A NAME="1007779"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> The export file (*.EEX) is always in XML format but workbooks by default are saved inside it as a binary to save space and time. Select this check box to save the workbook definitions additionally as XML inside the export file.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1007780"></A>(optional) Select the<STRONG CLASS="Bold"> Save export commands to a text file (*.txt)</STRONG> check box to save the export commands that created this export to a text file.
+<P>
+ 
+
+<A NAME="1007781"></A>
+<P CLASS="BP1">
+This creates an additional file containing the commands used to create this export and applies the file extension .txt. This file can then be used in conjunction with the command line interface (for further information about the command line interface, see <A HREF="command_.htm#1004701">Chapter&nbsp;21, "Oracle Discoverer command line interface"</a>).
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1007785"></A>Click Finish to create the export file (and any additional files selected) in the specified location and display the Export Log.
+<P>
+
+<A NAME="1007786"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 3-6 &#32;Export Log dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1007790">
+
+
+<img src="exlog.gif" ALT="Text description of exlog.gif follows.">
+<A HREF="img_text/exlog.htm"><br>Text description of the illustration exlog.gif</A>
+
+
+</A>
+ </OL>
+
+<A NAME="1007791"></A>
+<P CLASS="BP1">
+The Export Log displays information about what has been exported.
+</P>
+ 
+<A NAME="1009998"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="8"><A NAME="1007792"></A>(optional) Click Save to specify a name and location to save the Log file.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="9"><A NAME="1007793"></A>Click Close to finish.
+<P>
+ 
+</OL>
+
+<A NAME="1007796"></A>
+<!--TOC=h1-"1007796"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to export selected business areas using the Export Wizard</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1007797"></A>
+<P CLASS="BP">
+Use this option when you want to use the export file to update an existing EUL with selected business areas.
+</P>
+<A NAME="1007798"></A>
+<P CLASS="BP">
+To export the selected business areas using the Export Wizard:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1007802"></A>Choose File | Export to display the <A HREF="adews101.htm#1005113">"Export Wizard Step 1 dialog"</a>.
+<P>
+
+<A NAME="1007803"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 3-7 &#32;Export Wizard Step 1 dialog</EM></FONT></H4>
+  
+<BR><A NAME="1007807">
+
+
+<img src="exwz1ba.gif" ALT="Text description of exwz1ba.gif follows.">
+<A HREF="img_text/exwz1ba.htm"><br>Text description of the illustration exwz1ba.gif</A>
+
+
+</A>
+  
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1007808"></A>Select the <STRONG CLASS="Bold">Selected business areas</STRONG> radio button and click Next to display the <A HREF="adews201.htm#1006417">"Export Wizard: Step 2 dialog"</a>.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1007812"></A>Move the business areas that you want to export from the Available list to the Selected list. 
+<P>
+ 
+
+<A NAME="1007813"></A>
+<P CLASS="BP1">
+You can select more than one business area at a time by holding down the Ctrl key and clicking another business area.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1007817"></A>Click Next to display the <A HREF="adewfs01.htm#1006673">"Export Wizard: Step 3 dialog"</a>. 
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1007818"></A>Click Browse to display the Save As dialog.
+<P>
+ 
+
+<A NAME="1007819"></A>
+<P CLASS="BP1">
+This enables you to browse for a location to save the business area export file.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1007820"></A>Enter a suitable name for the exported business area.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1007821"></A>(optional) Select the<STRONG CLASS="Bold"> Save export commands as a text file (*.txt)</STRONG> check box to save the export commands that created this export to a text file.
+<P>
+ 
+
+<A NAME="1007822"></A>
+<P CLASS="BP1">
+This creates an additional text file containing the commands used to create this export and applies the file extension .txt. This file can then be used in conjunction with the command line interface (for further information about the command line interface, see <A HREF="command_.htm#1004701">Chapter&nbsp;21, "Oracle Discoverer command line interface"</a>).
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="8"><A NAME="1007826"></A>Click Finish to create the export file (and any additional files selected) in the specified location and display the Export Log.
+<P>
+
+<A NAME="1007827"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 3-8 &#32;Export Log dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1007831">
+
+
+<img src="exlog.gif" ALT="Text description of exlog.gif follows.">
+<A HREF="img_text/exlog.htm"><br>Text description of the illustration exlog.gif</A>
+
+
+</A>
+  
+
+<A NAME="1007832"></A>
+<P CLASS="BP1">
+The Export Log displays information about what has been exported.
+</P>
+</OL>
+<A NAME="1010007"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="9"><A NAME="1007833"></A>(optional) Click Save to specify a name and location to save the Log file.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="10"><A NAME="1007834"></A>Click Close to finish.
+<P>
+ 
+
+<A NAME="1009103"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> If you are copying business areas between EULs, continue with step 2 of the following task, see <A HREF="business.htm#1004617">Chapter&nbsp;4, "How to copy business areas between EULs"</a>.
+</P>
+</OL>
+
+<A NAME="1007837"></A>
+<!--TOC=h1-"1007837"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to export selected EUL objects using the Export Wizard</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1007838"></A>
+<P CLASS="BP">
+Use this option when you want to use the export file to update an existing EUL with selected EUL objects. For example, when applying a minor change to a production business area.
+</P>
+<A NAME="1007839"></A>
+<P CLASS="BP">
+To export the selected objects using the Export Wizard:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1007843"></A>Choose File | Export to display the <A HREF="adews101.htm#1005113">"Export Wizard Step 1 dialog"</a>.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1007844"></A>Select the <STRONG CLASS="Bold">Selected Objects in the End User Layer</STRONG> option and click Next to display the<A HREF="adews202.htm#1006477">"Export Wizard: Step 2 dialog"</a>.
+<P>
+
+<A NAME="1007848"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 3-9 &#32;Export Wizard: Step 2 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1007852">
+
+
+<img src="exwz2com.gif" ALT="Text description of exwz2com.gif follows.">
+<A HREF="img_text/exwz2com.htm"><br>Text description of the illustration exwz2com.gif</A>
+
+
+</A>
+  
+</OL>
+<A NAME="1007853"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1007854"></A>Use the <STRONG CLASS="Bold">Which objects do you want to export?</STRONG> drop down list to display the objects (EUL objects) that you want to export to a file.
+<P>
+ 
+
+<A NAME="1007855"></A>
+<P CLASS="BP1">
+For example, folders, item classes and item hierarchies. 
+</P>
+
+<A NAME="1007856"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> If you select a business area above, Discoverer exports just the definition of the business area and not its folders and items. To export business area folders and items you need to select them explicitly.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1007857"></A>Move the object that you want to export from the <STRONG CLASS="Bold">Available</STRONG> list to the <STRONG CLASS="Bold">Selected</STRONG> list. 
+<P>
+ 
+
+<A NAME="1007858"></A>
+<P CLASS="BP1">
+You can select more than one object at a time by holding down the Ctrl key and clicking another object.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1007862"></A>Click Next to display the <A HREF="adewfs01.htm#1006673">"Export Wizard: Step 3 dialog"</a>. 
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1007863"></A>Click Browse to display the Save As dialog.
+<P>
+ 
+
+<A NAME="1007864"></A>
+<P CLASS="BP1">
+This enables you to browse for a location to save the export file.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1007865"></A>Enter a suitable name for the exported objects.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="8"><A NAME="1007866"></A>(optional) Select the <STRONG CLASS="Bold">Generate XML for exported workbooks</STRONG> check box to save any workbooks in XML format.
+<P>
+ 
+
+<A NAME="1007867"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> The export file (*.EEX) is always in XML format but workbooks by default are saved inside it as a binary to save space and time. Select this check box to save the workbook definitions additionally as XML inside the export file.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="9"><A NAME="1007868"></A>(optional) Select the <STRONG CLASS="Bold">Save export commands as a text file (*.txt)</STRONG> check box to save the export commands that created this export to a text file.
+<P>
+ 
+
+<A NAME="1007869"></A>
+<P CLASS="BP1">
+This creates an additional text file containing the commands used to create this export and applies the extension .txt. This file can then be used in conjunction with the command line interface (for further information about the command line interface, see <A HREF="command_.htm#1004701">Chapter&nbsp;21, "Oracle Discoverer command line interface"</a>).
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="10"><A NAME="1007873"></A>Click Finish to create the export file (and any additional files selected) in the specified location and display the Export Log.
+<P>
+
+<A NAME="1007874"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 3-10 &#32;Export Log dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1007878">
+
+
+<img src="exlog.gif" ALT="Text description of exlog.gif follows.">
+<A HREF="img_text/exlog.htm"><br>Text description of the illustration exlog.gif</A>
+
+
+</A>
+ </OL>
+
+<A NAME="1007879"></A>
+<P CLASS="BP1">
+The Export Log displays information about what has been exported.
+</P>
+ 
+<A NAME="1010021"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="11"><A NAME="1007880"></A>(optional) Click Save to specify a name and location to save the Log file.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="12"><A NAME="1007881"></A>Click Close to finish.
+<P>
+ 
+</OL>
+
+<A NAME="1008579"></A>
+<!--TOC=h1-"1008579"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to export End User Layer objects (to import to another database) using the Discoverer command line interface</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1009033"></A>
+<P CLASS="BP">
+Use this option to copy EUL objects from one database to another by exporting them to a Discoverer export file (.EEX) and then importing the .EEX file to another database using the command line interface. This is the first of two tasks that enable you to copy EUL objects from one database to another. You must complete this export task before you can import the EUL objects into another database.
+</P>
+<A NAME="1008581"></A>
+<P CLASS="BP">
+To export EUL objects from a database using the Discoverer command line interface:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1008582"></A>Use the Discoverer command line interface /export option to export the required EUL objects to a Discoverer export file (.EEX).
+<P>
+
+<A NAME="1008583"></A>
+<P CLASS="BP1">
+For example, to export the Video Store Tutorial business area and two workbooks ("Vistr4 - Video Tutorial Workbook" and "Vidaf4 - Analytic Function Examples") to the vidstr.eex file, you might type the following:
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1008584"></A>D:\orant\bin\dis51adm.exe /connect eulowner/eulowner@orcl.world /export 
+"D:\vidstr.eex" "Video Store Tutorial" /workbook "Vistr4 - Video Tutorial 
+Workbook" /workbook "Vidaf4 - Analytic Function Examples"<br>
+
+</PRE>
+   
+<A NAME="1008585"></A>
+<P CLASS="BP1">
+For more information about exporting EUL objects using the Discoverer command line interface, see <A HREF="command_.htm#1005459">Chapter&nbsp;21, "/export (EUL objects)"</a>.
+</P>
+</OL>
+
+<A NAME="1009071"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif"><STRONG CLASS="Bold">Notes</STRONG></FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010029"></A>To copy the EUL objects to another database, see <A HREF="maintain.htm#1008990">"How to import End User Layer objects to a database (after export from another database) using the Discoverer command line interface"</a>.
+<P>
+</UL>
+
+<A NAME="1008990"></A>
+<!--TOC=h1-"1008990"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to import End User Layer objects to a database (after export from another database) using the Discoverer command line interface</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1008589"></A>
+<P CLASS="BP">
+Use this option to import EUL objects into a new database. Before you can complete this task you must export the EUL objects to a Discoverer export file (.EEX) (for more information, see <A HREF="maintain.htm#1008579">"How to export End User Layer objects (to import to another database) using the Discoverer command line interface"</a>). This is the second of two tasks enabling you to copy EUL objects from one database to another.
+</P>
+<A NAME="1009008"></A>
+<P CLASS="BP">
+To import End User Layer objects into a database using the Discoverer command line interface:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1008590"></A>Use the Discoverer command line interface /import option to import the EUL objects into the new EUL owner on the new database.
+<P>
+
+<A NAME="1008591"></A>
+<P CLASS="BP1">
+For example, to import the vidstr.eex file, created above you might type the following:
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1008592"></A>D:\orant\bin\dis51adm.exe /connect eulowner/eulowner@orcl.world /import 
+"D:\vidstr.eex"<br>
+
+</PRE>
+   
+<A NAME="1008593"></A>
+<P CLASS="BP1">
+For more information about importing EUL objects using the Discoverer command line interface, see <A HREF="command_.htm#1005571">Chapter&nbsp;21, "/import (EUL objects)"</a>.
+</P>
+</OL>
+
+<A NAME="1008613"></A>
+<!--TOC=h1-"1008613"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to export an EUL using the standard database export utility</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1008614"></A>
+<P CLASS="BP">
+Use this option to export all business areas, EUL tables and saved workbooks to a .dmp file.
+</P>
+<A NAME="1008615"></A>
+<P CLASS="BP">
+To export an EUL using the standard database export utility (assuming the EUL resides on an Oracle9<EM CLASS="Italic">i</EM> database and you are using a machine on which you have installed Oracle<EM CLASS="Italic"> </EM>Developer Suite):
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1008616"></A>Display a command line window (e.g. by choosing Command Prompt from the Windows Start menu).
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1008617"></A>Navigate to the location where you want to export the EUL.
+<P>
+ 
+
+<A NAME="1008618"></A>
+<P CLASS="BP1">
+For example, to export the EUL to D:\ORACLE9i and the MS-DOS window currently displays C: , you would:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1008619"></A>type D: and press [Return]
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1008620"></A>type cd \ORACLE9i and press [Return]
+<P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1008621"></A>Type the following command:
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1008622"></A>exp &lt;eulowner&gt;/&lt;password&gt;@&lt;dbname&gt; file=&lt;filename.dmp&gt; owner=&lt;eulowner&gt;
+<A NAME="1008623"></A>
+</PRE>
+    
+
+<A NAME="1008624"></A>
+<P CLASS="BP1">
+For example, to export an EUL owned by a database user hrmgr to a file hreul.dmp, you would type the following: 
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1008625"></A>exp hrmgr/hrpswrd@HRDB file=hreul.dmp owner=hrmgr
+<A NAME="1008626"></A>
+</PRE>
+   
+<A NAME="1008627"></A>
+<P CLASS="BP1">
+The EUL tables (and associated synonyms, views, and other definitions) are exported to the specified .dmp file in the D:\ORACLE9i directory.
+</P>
+
+<A NAME="1008628"></A>
+<P CLASS="BP1">
+When the export is complete, Discoverer displays the following message:
+</P>
+
+<A NAME="1008629"></A>
+<P CLASS="BP1">
+Export terminated successfully without warnings.
+</P>
+</OL>
+<A NAME="1009976"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1008630"></A>Close the command line window.
+<P>
+ 
+</OL>
+<A NAME="1008631"></A>
+<P CLASS="BP">
+Having exported the EUL, you are now ready to import it into a new database user.
+</P>
+
+<A NAME="1008633"></A>
+<!--TOC=h1-"1008633"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to import an EUL using the standard database import utility</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1008634"></A>
+<P CLASS="BP">
+Use this option to import the EUL business areas, EUL tables and saved workbooks from a database dump file (.DMP) into a new EUL owner on the new database.
+</P>
+<A NAME="1008635"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> It is recommended that this database user owns no other tables.
+</P>
+<A NAME="1008636"></A>
+<P CLASS="BP">
+To import an EUL using the standard database import utility (assuming the EUL resides on an Oracle9<EM CLASS="Italic">i</EM> database and you are using a machine on which you have installed Oracle<EM CLASS="Italic"> </EM>Dveloper Suite):
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1008637"></A>Display a command line window (e.g. by choosing Command Prompt from the Windows Start menu).
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1008638"></A>Navigate to the location where you want to import the EUL.
+<P>
+ 
+
+<A NAME="1008639"></A>
+<P CLASS="BP1">
+For example, to import the EUL to D:\ORACLE9i and the MS-DOS window currently displays C: , you would:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1008640"></A>type D: and press [Return]
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1008641"></A>type cd \ORACLE9i and press [Return]
+<P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1008642"></A>Type the following command:
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1008643"></A>imp &lt;eulowner&gt;/&lt;password&gt;@&lt;dbname&gt; file=&lt;filename.dmp&gt; fromuser=&lt;old_eul_
+owner&gt; touser=&lt;new_eul_owner&gt;
+<A NAME="1008644"></A>
+</PRE>
+    
+
+<A NAME="1008645"></A>
+<P CLASS="BP1">
+For example, to import an EUL owned by a database user hrmgr from a file hreul.dmp into a new user hrmgr2, you would type the following: 
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1008646"></A>imp hrmgr2/hrpswrd@HRDB file=hreul.dmp fromuser=hrmgr touser=hrmgr2
+<A NAME="1008647"></A>
+</PRE>
+   
+<A NAME="1008648"></A>
+<P CLASS="BP1">
+The EUL tables (and associated synonyms, views, and other definitions) are imported from the specified .dmp file in the D:\ORACLE9i directory.
+</P>
+
+<A NAME="1008649"></A>
+<P CLASS="BP1">
+When the import is complete, Discoverer displays the following message:
+</P>
+
+<A NAME="1008650"></A>
+<P CLASS="BP1">
+Import terminated successfully without warnings.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1009809"></A>Close the command line window.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1012436"></A>To avoid potential EUL consistency issues, follow the instructions below to run the eul5_id.sql script:
+<P>
+ 
+
+<OL CLASS="LA2" TYPE="a">
+
+<LI CLASS="LA2" TYPE="a" VALUE="1"><A NAME="1012479"></A>Start SQL*Plus (if it is not already running) and connect as the owner of the new EUL.
+<P>
+
+<A NAME="1012437"></A>
+<P CLASS="BP2">
+For example, if SQL*Plus is already running, you might type the following at the command prompt:
+</P>
+  
+<PRE CLASS="CE2">
+<A NAME="1012439"></A>SQL&gt; connect <CODE>hrmgr2</CODE>/<CODE>hrmgr2</CODE>
+<A NAME="1012463"></A>
+</PRE>
+  
+<A NAME="1012440"></A>
+<P CLASS="BP2">
+where hrmgr2 is the EUL owner and hrmgr2 is the EUL owner's password.
+</P>
+ 
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1012441"></A>Run the eul5_id.sql script.
+<P>
+
+<A NAME="1012466"></A>
+<P CLASS="BP2">
+For example, you might type the following at the command prompt:
+</P>
+  
+<PRE CLASS="CE2">
+<A NAME="1012443"></A>SQL&gt; start d:\&lt;ORACLE_ HOME&gt;\discoverer\util\eul5_id.sql
+<A NAME="1012475"></A>
+</PRE>
+  
+<A NAME="1012444"></A>
+<P CLASS="BP2">
+where &lt;ORACLE_HOME&gt; is where Discoverer Administrator is installed.
+</P>
+
+<A NAME="1012445"></A>
+<P CLASS="BP2">
+The eul5_id.sql script gives a new unique refererence number to the new EUL and thereby avoids any potential EUL consistency issues.
+</P>
+ 
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1012428"></A>Exit the SQL*Plus session.
+<P>
+</OL>
+</OL>
+
+<A NAME="1009824"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011927"></A>Information in the EUL identifies the owner of summary tables. When you export an EUL containing summary tables from one database user and import it into a different database user, the second database user will become the owner of the summary tables. Therefore, you will need to update the EUL summary table ownership information.
+<P>
+
+<A NAME="1011928"></A>
+<P CLASS="BP1">
+To update summary table ownership information, run the eulsown.sql script located in the &lt;ORACLE_HOME&gt;\discoverer\util directory. When you run the script, you will be prompted for the name of the previous summary table owner and the name of the new summary table owner.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1012044"></A>Discoverer recognizes EULs using unique reference numbers. However, if you use the database export and import utilities to copy an EUL, the new EUL (including its reference number) will be identical to the original EUL. When EULs have the same reference number, EUL consistency issues can arise if you do both of the following:
+<P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1012048"></A>if you modify objects in both the original EUL and in the new EUL
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1012082"></A>having modified objects in both EULs, if you then attempt to copy objects between the two EULs using the Discoverer Export Wizard and Import Wizard (or the Discoverer /export and /import commands)
+<P>
+</UL>
+
+<A NAME="1012053"></A>
+<P CLASS="BP1">
+To avoid potential EUL consistency issues, run the eul5_id.sql script as the owner of the new EUL. The eul5_id.sql script gives a new refererence number to the new EUL and thereby avoids any potential EUL consistency issues.
+</P>
+</UL>
+
+<A NAME="1011931"></A>
+<!--TOC=h1-"1011931"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to import EUL objects from a file using the Import Wizard</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1009814"></A>
+<P CLASS="BP">
+Use this option to import EUL objects (e.g. business areas, folders, hierarchies, calculations) from one EUL in order to re-use them in another EUL. You use an export file (.EEX) to update an existing EUL with selected EUL objects. For example, when applying a change to a production business area. For more information about exporting EUL objects, see <A HREF="maintain.htm#1009549">"About copying EULs and EUL objects by exporting and importing"</a>.
+</P>
+<A NAME="1007470"></A>
+<P CLASS="BP">
+To import EUL objects from a file using the Import Wizard:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1007474"></A>Choose File | Import to display the <STRONG CLASS="Bold"><A HREF="adiws101.htm#1005113"></STRONG>"Import Wizard: Step 1 dialog"<STRONG CLASS="Bold"></a></STRONG>.
+<P>
+
+<A NAME="1007475"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 3-11 &#32;Import Wizard: Step 1 dialog</EM></FONT></H4>
+  
+<BR><A NAME="1007479">
+
+
+<img src="iw1.gif" ALT="Text description of iw1.gif follows.">
+<A HREF="img_text/iw1.htm"><br>Text description of the illustration iw1.gif</A>
+
+
+</A>
+  
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1007480"></A>Click Add to display the Open dialog.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1007481"></A>Locate and select one or more import files and click Open to return to the <STRONG CLASS="Bold"><A HREF="adiws101.htm#1005113"></STRONG>"Import Wizard: Step 1 dialog"<STRONG CLASS="Bold"></a></STRONG>.
+<P>
+ 
+
+<A NAME="1007485"></A>
+<P CLASS="BP1">
+Selected files appear in the Import File list.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1007489"></A>Click Next to display the <STRONG CLASS="Bold"><A HREF="adiws201.htm#1005113"></STRONG>"Import Wizard: Step 2 dialog"<STRONG CLASS="Bold"></a></STRONG>.
+<P>
+
+<A NAME="1007490"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 3-12 &#32;Import Wizard: Step 2 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1007494">
+
+
+<img src="iw2.gif" ALT="Text description of iw2.gif follows.">
+<A HREF="img_text/iw2.htm"><br>Text description of the illustration iw2.gif</A>
+
+
+</A>
+  
+
+<A NAME="1007495"></A>
+<P CLASS="BP1">
+This dialog enables you to specify how Discoverer Administrator processes matching objects from another EUL. For more information about matching objects from another EUL, see <A HREF="maintain.htm#1008899">"What are identifiers?"</a>. 
+</P>
+</OL>
+<A NAME="1009989"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1007496"></A>Specify what action should occur if two objects match.
+<P>
+ 
+
+<A NAME="1007497"></A>
+<P CLASS="BP1">
+An object means any EUL object, for example, folder, item, calculated item.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1007498"></A>Specify whether to preserve display related properties (only available if the <STRONG CLASS="Bold">Refresh the object</STRONG> radio button is selected).
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1007499"></A>Specify how you would like objects to be matched up.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="8"><A NAME="1007500"></A>Specify whether the current user should take ownership of imported workbooks.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="9"><A NAME="1007504"></A>Click Next to display the <STRONG CLASS="Bold"><A HREF="adiws301.htm#1005113"></STRONG>"Import Wizard: Step 3 dialog,"<STRONG CLASS="Bold"></a></STRONG>.
+<P>
+ 
+
+<A NAME="1007505"></A>
+<P CLASS="BP1">
+This dialog enables you to start the import and monitor its status as each EUL object is processed.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="10"><A NAME="1007506"></A>Click Start to begin the import.
+<P>
+
+<A NAME="1007507"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 3-13 &#32;Import Wizard: Step 3 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1007511">
+
+
+<img src="iw3.gif" ALT="Text description of iw3.gif follows.">
+<A HREF="img_text/iw3.htm"><br>Text description of the illustration iw3.gif</A>
+
+
+</A>
+ </OL>
+
+<A NAME="1011514"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Hint:</STRONG> You can abort the import at any point by clicking Cancel. For example, you might want to abort the import if there are warning messages in the Import Log.
+</P>
+ 
+<A NAME="1011724"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="11"><A NAME="1007512"></A>(optional) After a completed import, click Save log... to save the status information to a text file in a specified location.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="12"><A NAME="1007518"></A>Click Finish to close the <A HREF="adiws301.htm#1005113">"Import Wizard: Step 3 dialog,"</a>.
+<P>
+ 
+</OL>
+
+<A NAME="1007519"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007520"></A>If you perform a complete import, the Data tab in the Workarea is updated to reflect the EUL objects imported, according to the match options that you have chosen.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007521"></A>During the import of an EEX file where Discoverer Administrator cannot find joined folders a warning message is displayed in the Import Log dialog (for more information about exporting EUL objects and joins see <A HREF="command_.htm#1005459">Chapter&nbsp;21, "/export (EUL objects)"</a>.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009361"></A>If you import EUL objects that include analytic functions, note that certain restrictions apply. For more information, see <A HREF="maintain.htm#1007527">"What are the EUL data migration scenarios with analytic functions?"</a>.
+<P>
+</UL>
+
+<A NAME="1009382"></A>
+<!--TOC=h1-"1009382"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Notes about EUL creation and maintenance</FONT></H2>
+
+
+<!--/TOC=h1-->
+
+<A NAME="1008899"></A>
+<!--TOC=h2-"1008899"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are identifiers?</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1008900"></A>
+<P CLASS="BP">
+Identifiers are unique names that Discoverer Administrator uses to identify unique EUL objects (and workbook objects in Discoverer Plus and Discoverer Viewer).
+</P>
+<A NAME="1008904"></A>
+<P CLASS="BP">
+Discoverer Administrator uses identifiers to recognize when an object imported from another EUL refers to the same business object in the EUL you are importing into. This enables customized (or patched) EUL objects to be preserved. For example, a folder named Sales in EUL A may refer to the same folder named Sales Figures in EUL B. Both folders have the same identifier and can therefore be recognized as referring to the same EUL object.
+</P>
+<A NAME="1011538"></A>
+<P CLASS="BP">
+Identifiers are visible in Discoverer Administrator but are hidden from Discoverer Plus users.
+</P>
+<A NAME="1011756"></A>
+<P CLASS="BP">
+Typically, you will never need to alter an identifier. Indeed, changing identifiers is not advisable because it can affect the relationships between EUL objects. However, in some cases you might want to modify identifiers. For example, you might want to modify identifiers:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011758"></A>to comply with strict naming conventions
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011783"></A>to re-create an object with a specific identifier because the object was incorrectly deleted from the EUL and needs to be re-created with the same identifier
+<P>
+</UL>
+<A NAME="1011798"></A>
+<P CLASS="BP">
+In a future release of Discoverer, there will be a change to the valid characters that can be used in identifiers. The following characters will continue to be supported for use in identifiers in future releases of Discoverer: 
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011833"></A>the letters A to Z in upper case
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011834"></A>the letters a to z in lower case
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011835"></A>the numbers 0 to 9
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011836"></A>the underscore character (i.e.  _ )
+<P>
+</UL>
+<A NAME="1011821"></A>
+<P CLASS="BP">
+However, the following characters will be de-supported in future releases of Discoverer:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011858"></A>the exclamation mark (i.e. !)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011859"></A>the tilde symbol (i.e. ~ )
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011860"></A>the asterisk symbol (i.e. * )
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011861"></A>the left and right parentheses characters (i.e. ( and ) )
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011862"></A>the single quotation mark (i.e. ' )
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011863"></A>the hyphen character (i.e. - )
+<P>
+</UL>
+<A NAME="1011853"></A>
+<P CLASS="BP">
+For this release:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011875"></A>if you create an identifier that contains a de-supported character, a warning will appear
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011852"></A>if you import an .eex file that has identifiers that contain de-supported characters, a warning will appear in the import log
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011900"></A>if you upgrade an EUL that has identifiers that contain de-supported characters, messages will be displayed indicating the identifiers that contain the invalid characters
+<P>
+</UL>
+<A NAME="1011880"></A>
+<P CLASS="BP">
+Please modify any identifiers that use the de-supported characters so that the identifiers will be valid in future releases.
+</P>
+<A NAME="1011793"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> To locate the identifier of a workbook or worksheet in Discoverer Plus, see the <EM CLASS="Italic">Oracle Application Server Discoverer Plus User's Guide.</EM>
+</P>
+
+<A NAME="1009661"></A>
+<!--TOC=h2-"1009661"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are the space requirements and storage parameters for a typical EUL?</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1009662"></A>
+<P CLASS="BP">
+The minimum default tablespace of 3MB suggested in the <A HREF="adcewi02.htm#1005113">"Create EUL Wizard: Step 2 dialog"</a> is based upon storage parameters that the EUL specifies when creating database objects for the EUL. If you install the tutorial, the figure of 3MB will be exceeded.
+</P>
+<A NAME="1009774"></A>
+<P CLASS="BP">
+A newly created EUL has the following space requirements:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009668"></A>approximately 2.8MB without tutorial data
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009669"></A>approximately 3.8MB with tutorial data
+<P>
+</UL>
+<A NAME="1009711"></A>
+<P CLASS="BP">
+The amount of space that is actually used will depend on other factors, including the block size specified for the tablespace in which the EUL is created.
+</P>
+<A NAME="1009716"></A>
+<P CLASS="BP">
+As an approximate guide, adding a typical business area to an EUL will increase the size of the EUL by 1MB. The more complicated the business area (e.g. the more summary folders and complex items it contains), the more space the business area will require. 
+</P>
+<A NAME="1009781"></A>
+<P CLASS="BP">
+A default tablespace of 10-20MB will be adequate under normal conditions, but the amount of default tablespace required is determined by the amount of metadata that defines your EUL. Therefore, the default tablespace required could be larger, or smaller than the amount available in the tablespace that you select.
+</P>
+<A NAME="1009709"></A>
+<P CLASS="BP">
+The database table storage parameters for EUL tables are as follows:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009671"></A>EUL5_DOCUMENTS and EUL5_QPP_STATS are created with the following storage parameters:
+<P>
+
+<A NAME="1009676"></A>
+<P CLASS="BP1">
+STORAGE  ( 
+</P>
+
+<A NAME="1009677"></A>
+<P CLASS="BP1">
+    INITIAL  40960 
+</P>
+
+<A NAME="1009678"></A>
+<P CLASS="BP1">
+    NEXT  1024000 
+</P>
+
+<A NAME="1009679"></A>
+<P CLASS="BP1">
+    PCTINCREASE  0 
+</P>
+
+<A NAME="1009674"></A>
+<P CLASS="BP1">
+    )
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009672"></A>all other EUL tables are created with the following storage parameters:
+<P>
+
+<A NAME="1009684"></A>
+<P CLASS="BP1">
+STORAGE  ( 
+</P>
+
+<A NAME="1009685"></A>
+<P CLASS="BP1">
+    INITIAL  40960 
+</P>
+
+<A NAME="1009686"></A>
+<P CLASS="BP1">
+    NEXT  81920 
+</P>
+
+<A NAME="1009687"></A>
+<P CLASS="BP1">
+    PCTINCREASE  0 
+</P>
+
+<A NAME="1009673"></A>
+<P CLASS="BP1">
+    )
+</P>
+</UL>
+<A NAME="1009693"></A>
+<P CLASS="BP">
+The database index storage parameters for EUL indexes are as follows:
+</P>
+
+<UL>
+
+<A NAME="1009696"></A>
+<P CLASS="BP1">
+STORAGE  ( 
+</P>
+
+<A NAME="1009697"></A>
+<P CLASS="BP1">
+    INITIAL  4096
+</P>
+
+<A NAME="1009698"></A>
+<P CLASS="BP1">
+    NEXT  8192
+</P>
+
+<A NAME="1009699"></A>
+<P CLASS="BP1">
+    PCTINCREASE  0 
+</P>
+
+<A NAME="1009700"></A>
+<P CLASS="BP1">
+    )
+</P>
+</UL>
+<A NAME="1009763"></A>
+<P CLASS="BP">
+There are two factors that might cause the EUL to use up more space:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009764"></A>block size
+<P>
+
+<A NAME="1009765"></A>
+<P CLASS="BP1">
+Discoverer specifies an initial extent of 4096 for indexes, but the server will always allocate a minimum of two blocks for any segment. Therefore, if the block size is greater than 2k the indexes will take up more space than Discoverer calculates.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009766"></A>tablespace minimum extent setting
+<P>
+
+<A NAME="1009767"></A>
+<P CLASS="BP1">
+When a tablespace is created it is possible to specify the minimum extent for any extent created. This minimum size overrides the initial extent size if it is greater and therefore causes the EUL objects to use up more space than Discoverer calculates.
+</P>
+</UL>
+
+<A NAME="1007527"></A>
+<!--TOC=h2-"1007527"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are the EUL data migration scenarios with analytic functions?</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1007528"></A>
+<P CLASS="BP">
+When you migrate EUL data using Discoverer Administrator's import and export facilities, you need to be aware of the following restrictions that relate to analytic functions (for more information about analytic functions, see the <EM CLASS="Italic">Oracle Application Server Discoverer Plus User's Guide</EM>):
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007529"></A>If you import a custom folder containing an analytic function into an EUL on an Oracle database earlier than version 8.1.6, the custom folder SQL is imported and stored in the EUL, but no items are created.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007530"></A>Items or filters that contain analytic functions are not imported into an Oracle database earlier than version 8.1.6. These exceptions are reported in the Import Log (for more information, see <A HREF="maintain.htm#1011931">"How to import EUL objects from a file using the Import Wizard"</a>). 
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007534"></A>Where complex folders contain analytic functions not supported by the database version, Discoverer filters out the analytic functions.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007535"></A>If you downgrade a database from an Oracle 8.1.6 database to an earlier database version you can see analytic functions <EM CLASS="Italic">grayed out</EM>, but you cannot edit them (except to delete).
+<P>
+</UL>
+<A NAME="1007257"></A>
+<P CLASS="BP">
+Note that there are also issues to be aware of when upgrading EULs that contain analytic functions from one Discoverer release to another (e.g. when upgrading to Discoverer Version 9.0.4). For more information, see <A HREF="upgrade.htm#1009709">"Notes about upgrading EULs that contain analytic functions"</a>.
+</P>
+
+<A NAME="1012103"></A>
+<!--TOC=h2-"1012103"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What is a suggested workflow for initial EUL development and ongoing maintenance?</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1012130"></A>
+<P CLASS="BP">
+There are typically three steps in the EUL creation and maintenance lifecycle:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1012131"></A><A HREF="maintain.htm#1012135">"Step 1: Prototype and design a new EUL in a development environment"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1012132"></A><A HREF="maintain.htm#1012142">"Step 2: Move the new EUL from a development environment to a production environment"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1012133"></A><A HREF="maintain.htm#1012148">"Step 3: Modify the EUL to meet new requirements"</a>
+<P>
+</UL>
+
+<A NAME="1012135"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Step 1: Prototype and design a new EUL in a development environment</FONT></H4>
+<A NAME="1012136"></A>
+<P CLASS="BP">
+As the Discoverer manager, you will usually want to create the first-cut of a new EUL in a development environment rather than on the production database. To enable you to do this, the development environment must contain the same data tables that are to be used on the production database.
+</P>
+<A NAME="1012138"></A>
+<P CLASS="BP">
+Creating the EUL in a development environment enables you to develop business area design without compromising the performance of production systems.
+</P>
+<A NAME="1012140"></A>
+<P CLASS="BP">
+Having created business areas, folders, and items, you can create prototype workbooks. Get these prototypes reviewed by end user representatives in the development environment. When you have agreed on the workbook definitions, save them to the development environment database.
+</P>
+
+<A NAME="1012142"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Step 2: Move the new EUL from a development environment to a production environment</FONT></H4>
+<A NAME="1012143"></A>
+<P CLASS="BP">
+When you and the end user representatives are satisfied with the EUL, you are ready to move the EUL from the development environment to the production database. 
+</P>
+<A NAME="1012184"></A>
+<P CLASS="BP">
+The first time you move the EUL from the development environment to the production database, we recommend you use the database export/import tools. Take a database export of the EUL schema from the development database and import the EUL schema into the production database
+</P>
+<A NAME="1012189"></A>
+<P CLASS="BP">
+When you have imported the EUL to the production database, run the eul5_id.sql script to give the new EUL a unique reference number.
+</P>
+<A NAME="1012544"></A>
+<P CLASS="BP">
+Having run the eul5_id.sql script, you can grant the entire Discoverer end user community access to the EUL.
+</P>
+
+<A NAME="1012148"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Step 3: Modify the EUL to meet new requirements</FONT></H4>
+<A NAME="1012149"></A>
+<P CLASS="BP">
+Having rolled out the EUL to the organization, typically you will start receiving requests to modify the EUL definitions. 
+</P>
+<A NAME="1012193"></A>
+<P CLASS="BP">
+If you want to make changes to the EUL, we recommend you make them in the development environment and then use Discoverer's export and import tools to move the changes to the production environment. Note that any updates made to the production environment might be lost.
+</P>
+<A NAME="1012203"></A>
+<P CLASS="BP">
+Although the above is the recommended way to maintain the EUL, updates might have been made in the production environment that you do not want to lose. If this is the case, follow the steps below:
+</P>
+<OL>
+
+<OL CLASS="LN2" TYPE="1">
+
+<LI CLASS="LN2" TYPE="1" VALUE="1"><A NAME="1012559"></A>Use Discoverer's export and import tools to move the updates from the production environment to the development environment.
+<P>
+
+<A NAME="1012560"></A>
+<P CLASS="BP2">
+<STRONG CLASS="Bold">Note:</STRONG> Changes made in the production environment from this point on might be lost. We therefore recommend no such changes are made.
+</P>
+ 
+
+<LI CLASS="LN2" TYPE="1" VALUE="2"><A NAME="1012561"></A>Make the necessary changes in the development environment.
+<P>
+
+<LI CLASS="LN2" TYPE="1" VALUE="3"><A NAME="1012562"></A>Use Discoverer's export and import tools to move the changes back to the production environment.
+<P>
+
+<A NAME="1012563"></A>
+<P CLASS="BP2">
+<STRONG CLASS="Bold">Note:</STRONG> Changes can now be made in the production environment again.
+</P>
+ 
+</OL>
+</OL>
+<A NAME="1012108"></A>
+<P CLASS="BP">
+
+</P>
+
+
+
+
+
+
+<!-- Start Footer -->
+</DIV>
+
+<DIV CLASS="OUTD">
+<HR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+<TD VALIGN="BOTTOM" WIDTH="33%">
+<TABLE CELLSPACING="0" CELLPADDING="0">
+<TR>
+<TD ALIGN="CENTER"><A HREF="getting_.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+
+<TD ALIGN="CENTER"><A HREF="business.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+    
+</TR>
+</TABLE>
+</TD>
+<TD ALIGN="CENTER" WIDTH="34%">
+<A HREF="./html/cpyr.htm"><IMG SRC="./gifs/oracle.gif" ALT="Oracle" BORDER="0"><BR>
+<FONT SIZE="-2">Copyright &copy 2003 Oracle Corporation.</FONT></A>
+<BR>
+<FONT SIZE="-2">All Rights Reserved.</FONT>
+</TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="33%"> 
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="144">
+<TR>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+  
+</DIV>
+
+</BODY>
+</HTML>
+

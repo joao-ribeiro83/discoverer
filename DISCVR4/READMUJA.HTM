@@ -1,0 +1,112 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+   <meta name="Author" content="Development Services">
+   <meta name="GENERATOR" content="Mozilla/4.73 [ja] (WinNT; U) [Netscape]">
+   <title>Discoverer Readme File</title>
+</head>
+<body>
+<b><font face="Times New Roman,Times"><font size=+2>Oracle
+Discoverer</font><sup><font size=-2>TM</font></sup><font size=+2> Desktop
+Edition</font></font></b>
+<br><b><font size=+1>Release 4.1.36 for Microsoft Windows 95/98/2000/NT
+リリース・ノート</font></b>
+<br><b><font size=-1>(c) Copyright Oracle Corporation, 2001</font></b>
+<p><b><font size=-1>2001年2月15日</font></b>
+<br><b><font size=-1>Release 4.1.36</font></b>
+<p><font size=-1>このリリース・ノートでは、Oracle Discoverer Desktop Edition
+リリース 4.1.36 for Windows 95/98/2000/NT に関する最新の製品情報とインストールに関する情報を提供します。このパッチはOracle
+Discoverer Desktop Edition リリース 4.1.33f に対して適用できます。</font>
+<br>&nbsp;
+<p><b><font size=+1>目次</font></b>
+<p><font size=-1>1&nbsp;&nbsp;&nbsp; End User Layer の更新</font>
+<br><font size=-1>2&nbsp;&nbsp;&nbsp; スケジュールされているワークブックの移行</font>
+<br><font size=-1>3&nbsp;&nbsp;&nbsp; 既知の問題と回避策</font>
+<br><font size=-1>4&nbsp;&nbsp;&nbsp; リリース4.1.36で修正された問題</font>
+<br><font size=-1>5&nbsp;&nbsp;&nbsp; リリース4.1.33fで修正された問題</font>
+<br>&nbsp;
+<br>&nbsp;
+<p><b><font size=+1>1. End User Layer の更新</font></b>
+<p><font size=-1>このバージョンのDiscoverer Desktop Edition (4.1.36)は、Discoverer
+Administration Edition 4.1.36で作成または更新されたEULにのみ接続することができます。</font>
+<br>&nbsp;
+<p><b><font size=+1>2. スケジュールされているワークブックの移行</font></b>
+<p><font size=-1>注意：スケジュールはバッチ処理として設定されています。移行できるのはバッチ処理の部分であり、結果セットの移行はできません。</font>
+<p><font size=-1>End User Layerを Discoverer 3.1から Discoverer 4.1 のものに更新すると、Discoverer
+3.1 でスケジュールしていたワークブックはDiscoverer4.1ではスケジュールされません。このワークブックのスケジュール情報を移行するには、別の処理が必要です。この移行処理は古いDiscoverer3.1のEnd
+User Layerを削除する前に行なわなければなりません。</font>
+<br><font size=-1>移行は次の２段階の処理で行ないます。</font>
+<p><b><u><font size=-1>2.1 バッチスケジュールの更新</font></u></b>
+<p><font size=-1>注意 - このステップでは、Oracle DiscovererAdministration
+Edition 4.1.36 と共にインストールされるファイルを使用します。</font>
+<p><font size=-1>これを行なうには、&lt;Oracle Home>\discvr4フォルダ（例：c:\orant\DISCVR4）にある
+'dis4sch.exe'&nbsp; を実行します。</font>
+<p><font size=-1>コマンドラインから次のパラメータを使用して起動します。</font>
+<br><font size=-1>EUL_Schema_Username/EUL_Schema password@database_Connect
+_String&nbsp; c:\Log_file_name</font>
+<p><font size=-1>例：</font>
+<br><font size=-1>c:\dis4sch myeul/myeul_password@mydbase c:\DiscvrSched.log</font>
+<p><font size=-1>次のようなメッセージが表示されます。</font>
+<p><font size=-1>> Connecting to EUL...</font>
+<br><font size=-1>> Migrating Schedule workbook metadata...</font>
+<br><font size=-1>> Schedule workbooks metadata migrated successfully.</font>
+<p><font size=-1>エラーについてはログファイルを参照してください。(この場合
+c:\DiscvrSched.log)</font>
+<br><font size=-1>第一段階はこれで終了です。すべてのスケジュール情報は移行されました。</font>
+<br>&nbsp;
+<p><b><u><font size=-1>2.2 スケジュールされたワークブックを有効にする</font></u></b>
+<p><font size=-1>この時点では、ワークブックのスケジュール詳細は移行されましたが有効にはなっていません。ワークブックをスケジュールしている各ユーザーは次の手順を実行する必要があります。</font>
+<p><font size=-1>Discoverer 4.1 Desktop Edition にログオンします。</font>
+<br><font size=-1>「キャンセル」をクリックしてワークブックウィザードを閉じます。</font>
+<br><font size=-1>「ファイル」→「ワークブックの管理」→「スケジュールマネージャ」を選択します。</font>
+<br><font size=-1>Discoverer 4.1 Desktop Edition が、自動的にスケジュールされたワークブックを有効にします。</font>
+<br><font size=-1>処理が終了するまで待ってください。ユーザーによってスケジュールされたワークブックの数により時間がかかります。</font>
+<br><font size=-1>もし再スケジュールに失敗したワークブックがあった場合(例えばワークブック数の制限に達したり、EUL上にアイテムが見つからなかったり)、ワークブックを再度スケジュールしてくださいというメッセージがリストに表示されます。</font>
+<p><font size=-1>移行作業はこれで完了です。</font>
+<p><b><font size=+1>3. 既知の問題と回避策</font></b>
+<p><font size=-1>ここに、既知の問題点および回避策がある場合はその回避策をリストします。</font>
+<p><b><u><font size=-1>3.1 Discoverer Desktop Edition を Windows 95 上で実行できない</font></u></b>
+<p><font size=-1>Windows 95 のユーザーは、Winsock 2.0 をMicrosoftのウェブサイトからダウンロードする必要があります。</font>
+<br><font size=-1><a href="http://www.microsoft.com/windows95/downloads/contents/WUAdminTools/S_WUNetworkingTools/W95Sockets2/Default.asp">Windows
+Socket 2 Update</a></font>
+<p><font size=-1>上記Winsock 2.0 のインストール後、ダイヤルアップネットワーク1.3アップグレードを適用します。</font>
+<br><font size=-1><a href="http://www.asia.microsoft.com/japan/windows/dun1_3/">ダイヤルアップネットワーク1.3アップグレード</a></font>
+<p><font size=-1>Windows 98 には関係がありませんのでご注意ください。</font>
+<br>&nbsp;
+<p><b><u><font size=-1>3.2 Required Support Files (RSF) の更新</font></u></b>
+<p><font size=-1>Discoverer は RSF 8.0.6.0.0 をインストールしますが、次の問題を解決するためにはRSFを
+8.0.6.1.1 以降に更新する必要があります。</font>
+<p><font size=-1>1040536&nbsp; NLS: ZHT16MSWIN950 character set conversion
+causes errors.</font>
+<br><font size=-1>&nbsp;&nbsp;&nbsp; Discoverer サーバーは、ZHT16MSWIN950キャラクタセットのデータベースに接続できない。</font>
+<br><font size=-1>729977&nbsp; NLS: "Date format not recognized" error
+occurs using date format mask</font>
+<br><font size=-1>&nbsp;&nbsp;&nbsp; 英語以外の言語を使用している場合、日付型のデータでエラーがでる場合がある。
+"データ書式が理解できませんでした(Data format not recognized)"とエラーが表示され、値リストが返されない。</font>
+<br><font size=-1>770803&nbsp; NLS: Linguistic sort causes unexpected results</font>
+<br><font size=-1>&nbsp;&nbsp;&nbsp; 句読点を含むデータが格納されている場合、ソート結果で正しくない結果が返される場合がある。</font>
+<br>&nbsp;
+<p><b><font size=+1>4. リリース4.1.36で修正された問題</font></b>
+<p><font size=-1>1039038&nbsp; Options set in Discoverer User Edition impacting
+on administration tasks</font>
+<br><font size=-1>1089898&nbsp; Discoverer Plus - printed fonts not same
+size/style as fonts displyed in report</font>
+<br><font size=-1>1249761&nbsp; Default aggregate created even when option
+unchecked in wizard</font>
+<br><font size=-1>1395507&nbsp; Unable to open workbook against Apps mode
+EUL after modifying target field in shortcut</font>
+<br><font size=-1>1531329&nbsp; Issue with workbook that has a grand total
+at the right and a datapoint with null values</font>
+<br><font size=-1>586993&nbsp; Fantrap totals row should be displayed in
+table with appropriate 'non-aggregable' message</font>
+<br><font size=-1>1587513&nbsp; ORA-30353 when creating summary tables
+with default date hierarchy items in Oracle 8.1.7</font>
+<p><b><font size=+1>5. リリース4.1.33fで修正された問題</font></b>
+<p><font size=-1>856891&nbsp;&nbsp; Error when running qstats31.dis after
+creating summary tables</font>
+<br><font size=-1>1371136 NLS: Description format none and standard is
+not translated correctly in German</font>
+<br><font size=-1>1395284 Numeric overflow error with qstats31.dis</font>
+</body>
+</html>

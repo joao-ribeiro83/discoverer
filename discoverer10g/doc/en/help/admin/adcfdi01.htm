@@ -1,0 +1,224 @@
+
+<!DOCTYPE html public "-//w3c//dtd html 3.2 transitional//en.us">
+<HTML lang="en.us">
+<HEAD>
+
+<META NAME="Generator" CONTENT="Quadralay WebWorks Publisher 5.0.4">
+<META NAME="Page" CONTENT="DefaultSingle">
+<META NAME="Title" CONTENT="">
+<meta http-equiv="Content-Type" content="text/html;  charset=iso-8859-1">
+
+<Title>Reference topic </Title>
+	   
+<LINK REL="home" HREF="../../library.htm" TITLE="Library">
+<LINK REL="toc" HREF="toc.htm" TITLE="Contents">
+<LINK REL="index" HREF="bookix.htm" TITLE="Index">
+<LINK REL="copyright" HREF="./html/cpyr.htm" TITLE="Copyright">
+<LINK REL="up" HREF="toc.htm" TITLE="Up">
+<LINK REL="next" HREF="adcfpr01.htm" TITLE="Next">
+<LINK REL="previous" HREF="adcaew01.htm" TITLE="Previous">
+
+
+</HEAD>
+       
+<BODY BGCOLOR="#ffffff">
+
+<A NAME="top"></A>
+
+
+
+
+<A HREF="#BEGIN">Skip Headers</A><BR><BR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+ 
+<TD ALIGN="LEFT" VALIGN="TOP"><FONT COLOR="#330099" FACE="Helvetica, Arial, sans-serif"><STRONG>Oracle Discoverer Administrator Administration Guide (Online Help)<BR>10<i>g</i> (9.0.4)</STRONG><BR>Part Number B10270-01</FONT></TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="144">
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+
+
+
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<HR>
+<P>
+<A HREF="adcaew01.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+
+<A HREF="adcfpr01.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+    
+
+
+<A NAME="BEGIN"></A>
+
+
+
+<DIV CLASS="IND">
+<!-- End Header -->
+
+
+
+
+
+
+
+<A NAME="1005113"></A>
+<!--TOC=h1-"1005113"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Custom Folder dialog</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005682"></A>
+<P CLASS="BP">
+Use this dialog to create custom folders. You do this by entering a SQL select statement. Like other folders, custom folders require joins in order for their data to relate to other data in the business area. 
+</P>
+<A NAME="1005839"></A>
+<P CLASS="BP">
+For more information, see:
+</P>
+<A NAME="1005843"></A>
+<P CLASS="BP">
+<A HREF="folders.htm#1004597">"What are custom folders?"</a>
+</P>
+<A NAME="1006522"></A>
+<P CLASS="BP">
+<A HREF="folders.htm#1004602">"How to create custom folders"</a>
+</P>
+
+<A NAME="1005684"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Enter the SQL to define the custom folder</FONT></H4>
+<A NAME="1005685"></A>
+<P CLASS="BP">
+Use this field to enter the SQL statement that will define the folder. For example: 
+</P>
+
+<UL>
+
+<A NAME="1005758"></A>
+<P CLASS="BP1">
+<CODE>SELECT ENAME, JOB, SAL FROM EMP@ORCL</CODE>
+</P>
+</UL>
+<A NAME="1006584"></A>
+<P CLASS="BP">
+The Discoverer Administrator then creates items for each of the select list items. In Discoverer Plus, end users can use custom folders to build queries in exactly the same way as for other folders.
+</P>
+<A NAME="1006585"></A>
+<P CLASS="BP">
+You can enter up to 2 billion characters in this field.
+</P>
+
+<A NAME="1006555"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Name </FONT></H4>
+<A NAME="1005720"></A>
+<P CLASS="BP">
+Use this field to enter a name for the folder.
+</P>
+
+<A NAME="1005689"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Validate SQL</FONT></H4>
+<A NAME="1005724"></A>
+<P CLASS="BP">
+Use this button to validate the SQL statement at any time before saving it. An invalid SQL statement prompts an error message. 
+</P>
+
+<A NAME="1005691"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">OK</FONT></H4>
+<A NAME="1005728"></A>
+<P CLASS="BP">
+Use this button to validate the SQL statement and save the custom folder. 
+</P>
+
+<A NAME="1005693"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes </FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005736"></A>Discoverer allows you to save the custom folder even if the SQL is invalid. This allows for situations where the SQL needs to be inserted into the EUL before the actual database objects are created or made available. However, users will not be able to query it until the SQL is corrected.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005695"></A>If the SQL is invalid and you wish to correct it, select the custom folder in the Data tab and right-click to access its Properties dialog. Double-click on the Custom SQL field to display the Custom Folder dialog.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006498"></A>The maximum length of the SQL statement you can enter in this field depends on the operating system and/or hardware specification of your machine.
+<P>
+</UL>
+
+
+
+
+
+
+<!-- Start Footer -->
+</DIV>
+
+<DIV CLASS="OUTD">
+<HR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+<TD VALIGN="BOTTOM" WIDTH="33%">
+<TABLE CELLSPACING="0" CELLPADDING="0">
+<TR>
+<TD ALIGN="CENTER"><A HREF="adcaew01.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+
+<TD ALIGN="CENTER"><A HREF="adcfpr01.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+    
+</TR>
+</TABLE>
+</TD>
+<TD ALIGN="CENTER" WIDTH="34%">
+<A HREF="./html/cpyr.htm"><IMG SRC="./gifs/oracle.gif" ALT="Oracle" BORDER="0"><BR>
+<FONT SIZE="-2">Copyright &copy 2003 Oracle Corporation.</FONT></A>
+<BR>
+<FONT SIZE="-2">All Rights Reserved.</FONT>
+</TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="33%"> 
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="144">
+<TR>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+  
+</DIV>
+
+</BODY>
+</HTML>
+

@@ -1,0 +1,495 @@
+
+<!DOCTYPE html public "-//w3c//dtd html 3.2 transitional//en.us">
+<HTML lang="en.us">
+<HEAD>
+
+<META NAME="Generator" CONTENT="Quadralay WebWorks Publisher 5.0.4">
+<META NAME="Page" CONTENT="DefaultSingle">
+<META NAME="Title" CONTENT="Using SQL files and trace files  ">
+<meta http-equiv="Content-Type" content="text/html;  charset=iso-8859-1">
+
+<TITLE>Using SQL files and trace files  </TITLE>
+	   
+<LINK REL="home" HREF="../../library.htm" TITLE="Library">
+<LINK REL="toc" HREF="toc.htm" TITLE="Contents">
+<LINK REL="index" HREF="bookix.htm" TITLE="Index">
+<LINK REL="copyright" HREF="./html/cpyr.htm" TITLE="Copyright">
+<LINK REL="up" HREF="toc.htm" TITLE="Up">
+<LINK REL="next" HREF="glossary.htm" TITLE="Next">
+<LINK REL="previous" HREF="adstab01.htm" TITLE="Previous">
+
+
+</HEAD>
+       
+<BODY BGCOLOR="#ffffff">
+
+<A NAME="top"></A>
+
+
+
+
+<A HREF="#BEGIN">Skip Headers</A><BR><BR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+ 
+<TD ALIGN="LEFT" VALIGN="TOP"><FONT COLOR="#330099" FACE="Helvetica, Arial, sans-serif"><STRONG>Oracle Discoverer Administrator Administration Guide (Online Help)<BR>10<i>g</i> (9.0.4)</STRONG><BR>Part Number B10270-01</FONT></TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="144">
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+
+
+
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<HR>
+<P>
+<A HREF="adstab01.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+
+<A HREF="glossary.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+    
+
+
+<A NAME="BEGIN"></A>
+
+
+
+<DIV CLASS="IND">
+<!-- End Header -->
+
+
+
+
+
+
+
+<A NAME="1004903"></A>
+<!--TOC=Title-"1004903"-->
+<H1 CLASS="Title"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099">25<BR>Using SQL files and trace files  </FONT></H1>
+
+<!--/TOC=Title-->
+
+<A NAME="1005581"></A>
+<!--TOC=h1-"1005581"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Using SQL files and trace files</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1011214"></A>
+<P CLASS="BP">
+This chapter provides reference information about files that are used by Discoverer and includes the following topics:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1012331"></A><A HREF="file_lis.htm#1011213">"List of SQL files supplied with Discoverer"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1013444"></A><A HREF="file_lis.htm#1013411">"Working with Oracle Support to resolve Discoverer issues"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1012338"></A><A HREF="file_lis.htm#1011740">"How to create trace files to diagnose Discoverer problems"</a>
+<P>
+</UL>
+
+<A NAME="1011213"></A>
+<!--TOC=h1-"1011213"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> List of SQL files supplied with Discoverer</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1011248"></A>
+<P CLASS="BP">
+A number of SQL files are installed with Oracle Discoverer Administrator and enable you to carry out specific database configuration tasks. The table below lists the SQL files and describes their functions.
+</P>
+<A NAME="1012308"></A>
+<P CLASS="BP">
+The following files are located in the &lt;ORACLE_HOME&gt;\discoverer\util directory unless otherwise stated:
+</P>
+   
+<A NAME="1013476"> 
+<P>
+<TABLE CLASS="RuleInformalWide" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1011389"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG><STRONG CLASS="Bold">File name</STRONG></STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1011391"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Description</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011393"></A>
+<P CLASS="TB">
+batchusr.sql &nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011398"></A>
+<P CLASS="TB">
+Sets up a scheduled workbook results schema (for more information, see <A HREF="schedule.htm#1011949">"How to specify the owner of the tables containing scheduled workbooks results"</a>).&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011965"></A>
+<P CLASS="TB">
+dbmsjob.sql &nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011744"></A>
+<P CLASS="TB">
+The interface for the Oracle DBMS JOB queue (for more information, see <A HREF="schedule.htm#1008729">"How to confirm that the DBMS_JOB package is installed"</a>).
+<A NAME="1012168"></A>
+<P CLASS="TB">
+The dbmsjob.sql file is not installed with the database in the &lt;ORACLE_HOME&gt;\rdbms\admin directory.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011415"></A>
+<P CLASS="TB">
+eul31del.sql &nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011419"></A>
+<P CLASS="TB">
+Removes all Discoverer version 3.1 EUL objects that are no longer required with this version.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011421"></A>
+<P CLASS="TB">
+eul4.sql &nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011428"></A>
+<P CLASS="TB">
+Creates the functions required by the eul4.eex business area and workbooks (for more information, see <A HREF="eul_stat.htm#1004767">"How to install the standard EUL status workbooks"</a>).&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011768"></A>
+<P CLASS="TB">
+eul4del.sql &nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011766"></A>
+<P CLASS="TB">
+Clears all 4.1 EUL objects (for more information, see <A HREF="upgrade.htm#1006370">"Upgrade step 5: Remove the Release 4.1 EULs"</a>).&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011753"></A>
+<P CLASS="TB">
+eul5.sql &nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011755"></A>
+<P CLASS="TB">
+Creates the functions required by the eul5.eex business area and its workbooks (for more information, see <A HREF="eul_stat.htm#1004767">"How to install the standard EUL status workbooks"</a>).&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011431"></A>
+<P CLASS="TB">
+eul5_apps.sql &nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011436"></A>
+<P CLASS="TB">
+Creates the functions required by the eul5.eex business area and its workbooks when using an Oracle Applications EUL (for more information, see <A HREF="eul_stat.htm#1004796">"How to install Oracle Applications EUL status workbooks"</a>).
+<A NAME="1012379"></A>
+<P CLASS="TB">
+<STRONG CLASS="Bold">Note:</STRONG> You use this script only with Oracle Applications EULs. &nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1012981"></A>
+<P CLASS="TB">
+eul5_id.sql&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012983"></A>
+<P CLASS="TB">
+Changes the reference number of an EUL. Use this script when you have used the database export and import utilities to copy an EUL and you want to:
+<UL CLASS="TLB">
+
+<LI CLASS="TLB" TYPE="DISC"><A NAME="1013005"></A>modify objects in both the original EUL and the new EUL
+<P>
+
+<LI CLASS="TLB" TYPE="DISC"><A NAME="1013003"></A>having modified objects in both EULs, you then want to copy objects between the two EULs using the Discoverer Export Wizard and Import Wizard (or the Discoverer /export and /import commands)
+<P>
+</UL>
+<A NAME="1013019"></A>
+<P CLASS="TB">
+Run the eul5_id.sql script to give a new reference number to the new EUL and thereby prevent any uniqueness conflicts in the above scenario (for more information, see <A HREF="maintain.htm#1008633">"How to import an EUL using the standard database import utility"</a>).&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011438"></A>
+<P CLASS="TB">
+eulasm.sql &nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011857"></A>
+<P CLASS="TB">
+Grants the privileges required for summary folder management (and ASM) in Discoverer Administrator version 4.1 and later (for more information, see <A HREF="managing.htm#1005292">"How to use SQL*Plus and the eulasm.sql script to grant the privileges required to create summary folders"</a>).&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011446"></A>
+<P CLASS="TB">
+eulgwreg.sql &nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011850"></A>
+<P CLASS="TB">
+Contains a template EUL gateway registration script that you use when setting up EUL gateway metadata.
+<A NAME="1012463"></A>
+<P CLASS="TB">
+For more information, see egwspec.doc and eulgatew.doc located in the &lt;ORACLE_HOME&gt;\discoverer\kits directory.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011609"></A>
+<P CLASS="TB">
+eulgwtbl.sql &nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011889"></A>
+<P CLASS="TB">
+Contains the template CREATE TABLE SQL statements that you use when setting up EUL gateway metadata.
+<A NAME="1012466"></A>
+<P CLASS="TB">
+For more information, see egwspec.doc and eulgatew.doc located in the &lt;ORACLE_HOME&gt;\discoverer\kits directory.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011680"></A>
+<P CLASS="TB">
+eulgwvue.sql &nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011864"></A>
+<P CLASS="TB">
+Contains the template CREATE VIEW SQL statements that you use when setting up EUL gateway metadata.
+<A NAME="1012238"></A>
+<P CLASS="TB">
+<STRONG CLASS="Bold">Note:</STRONG> If you execute this script without modifcation, it will not create a valid gateway. You must modify the SQL statement to correctly map the view columns to the metadata, in order to transfer information through the gateway.
+<A NAME="1012475"></A>
+<P CLASS="TB">
+For more information, see egwspec.doc and eulgatew.doc located in the &lt;ORACLE_HOME&gt;\discoverer\kits directory.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011676"></A>
+<P CLASS="TB">
+eulsown.sql &nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011796"></A>
+<P CLASS="TB">
+Modifies summary folder ownership information that you might need if you export the EUL using the database export utility and import it into a different database user (for more information, see <A HREF="maintain.htm#1008613">"How to export an EUL using the standard database export utility"</a>). This script prompts you for the owner name of the summary folders in the source EUL, and for the owner name of the new summary folder in the target EUL (for more information, see <A HREF="maintain.htm#1008633">"How to import an EUL using the standard database import utility"</a>).&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011672"></A>
+<P CLASS="TB">
+eulstdel.sql &nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011674"></A>
+<P CLASS="TB">
+Deletes query prediction statistics older than a specified age (for more information, see <A HREF="query_pr.htm#1004905">"How to delete old query prediction statistics"</a>).&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011668"></A>
+<P CLASS="TB">
+eulsuqpp.sql &nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011670"></A>
+<P CLASS="TB">
+Grants the necessary database privileges to enable query performance prediction (QPP) (for more information, see <A HREF="query_pr.htm#1004891">"How to use query prediction with secure views"</a>).&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011712"></A>
+<P CLASS="TB">
+gwdrop.sql &nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011714"></A>
+<P CLASS="TB">
+Enables you to delete an EUL gateway.
+<A NAME="1012826"></A>
+<P CLASS="TB">
+For more information, see egwspec.doc and eulgatew.doc located in the &lt;ORACLE_HOME&gt;\discoverer\kits directory.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011708"></A>
+<P CLASS="TB">
+gwgrant.sql &nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011710"></A>
+<P CLASS="TB">
+Enables you to grant access to EUL gateways.
+<A NAME="1012833"></A>
+<P CLASS="TB">
+For more information, see egwspec.doc and eulgatew.doc located in the &lt;ORACLE_HOME&gt;\discoverer\kits directory.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011786"></A>
+<P CLASS="TB">
+lineage.sql&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011788"></A>
+<P CLASS="TB">
+You must run this script before using the lineage.eex business area and its workbook (for more information, see <A HREF="portal.htm#1024792">"Using Discoverer with Oracle Warehouse Builder"</a>).&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+</A>
+   
+<A NAME="1013411"></A>
+<!--TOC=h1-"1013411"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Working with Oracle Support to resolve Discoverer issues</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1013412"></A>
+<P CLASS="BP">
+If you work with Oracle Support to resolve a Discoverer issue, you will typically be asked for the following information:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1013413"></A>the version of Discoverer
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1013414"></A>the Discoverer tool that was being used when the problem occurred (i.e. Discoverer Administrator, Discoverer Plus, Discoverer Viewer, Discoverer Desktop)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1013415"></A>exact details of the actions the user performed in Discoverer prior to the problem occurring
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1013416"></A>what the Discoverer user saw on the screenwhen the problem occurred
+<P>
+</UL>
+<A NAME="1013417"></A>
+<P CLASS="BP">
+In addition, Oracle Support might ask you to provide a trace file (for more information, see <A HREF="file_lis.htm#1011740">"How to create trace files to diagnose Discoverer problems"</a>).
+</P>
+
+<A NAME="1011740"></A>
+<!--TOC=h1-"1011740"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to create trace files to diagnose Discoverer problems</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1012390"></A>
+<P CLASS="BP">
+Sometimes you might encounter a problem with Discoverer and be unable to identify the cause of the problem (e.g. a generic error message might not provide sufficient information). To provide more information about Discoverer problems, you can generate two types of trace file:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1013044"></A>an EUL trace file, which records low-level interactions between Discoverer and the EUL 
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1013047"></A>a server trace file, which records the SQL statements sent to the database server
+<P>
+</UL>
+<A NAME="1013319"></A>
+<P CLASS="BP">
+You can either use trace files yourself to diagnose the cause of the problem, or use trace files when working with Oracle Support.
+</P>
+<A NAME="1013332"></A>
+<P CLASS="BP">
+To create an EUL trace file and/or a server trace file containing information relevant to the problem you are trying to resolve:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1013053"></A>Start with Discoverer functioning as normal.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1013313"></A>Specify the trace file you want to create, as follows:
+<P>
+ 
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1013336"></A>to create an EUL trace file, use the DebugFile Discoverer registry setting to specify the name of the file to generate
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1013349"></A>to create a server trace file, set the SqlTrace Discoverer registry setting to 1
+<P>
+</UL>
+
+<A NAME="1013337"></A>
+<P CLASS="BP1">
+For more information about Discoverer registry settings, see <A HREF="registry.htm#1006376">"What are Discoverer registry settings?"</a>.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1013384"></A>If you want to create an EUL trace file, use the DiagLevel Discoverer registry key to specify the level of diagnostic information written to the file.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1013314"></A>Perform the actions in Discoverer that cause the problem.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1013316"></A>Restore the DebugFile and/or SqlTrace Discoverer registry settings to their default values to prevent unnecessary information being written to the trace files.
+<P>
+ 
+</OL>
+
+
+
+
+
+
+<!-- Start Footer -->
+</DIV>
+
+<DIV CLASS="OUTD">
+<HR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+<TD VALIGN="BOTTOM" WIDTH="33%">
+<TABLE CELLSPACING="0" CELLPADDING="0">
+<TR>
+<TD ALIGN="CENTER"><A HREF="adstab01.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+
+<TD ALIGN="CENTER"><A HREF="glossary.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+    
+</TR>
+</TABLE>
+</TD>
+<TD ALIGN="CENTER" WIDTH="34%">
+<A HREF="./html/cpyr.htm"><IMG SRC="./gifs/oracle.gif" ALT="Oracle" BORDER="0"><BR>
+<FONT SIZE="-2">Copyright &copy 2003 Oracle Corporation.</FONT></A>
+<BR>
+<FONT SIZE="-2">All Rights Reserved.</FONT>
+</TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="33%"> 
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="144">
+<TR>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+  
+</DIV>
+
+</BODY>
+</HTML>
+

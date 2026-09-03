@@ -27,6 +27,10 @@ import { readEulSchema } from './eul-reader.js';
 import type { EulSource } from './oracle-client.js';
 import type { MigrationWriter } from './migration-writer.js';
 import {
+  buildMapConditionRows,
+  buildMapLayoutRow,
+  buildMapPageSetupRow,
+  buildMapTotalRow,
   transformBusinessArea,
   transformCustomFunction,
   transformFolder,
@@ -43,6 +47,8 @@ import {
   type TransformWarning,
 } from './transformers/index.js';
 import type { EulVersion, EulVersionInfo } from '../types/eul-versions.js';
+import type { CredentialSink, ProvisionedCredential } from './temporary-password.js';
+import { generateTemporaryPassword } from './temporary-password.js';
 import type { TargetTable } from '../db/schema.js';
 
 // ---------------------------------------------------------------------------
@@ -54,6 +60,25 @@ export interface MigrationRunnerDeps {
   genId: () => string;
   /** Clock (injectable for deterministic tests). */
   now: () => Date;
+  /**
+   * Hashes a temporary password for a provisioned account.
+   *
+   * Injected rather than imported so this package keeps no crypto dependency
+   * and tests stay fast. When absent, migrated accounts are created
+   * login-disabled — the safe default, since silently falling back to a
+   * guessable or empty credential on a real account would be worse than
+   * requiring an admin reset.
+   */
+  hashPassword?: (plaintext: string) => Promise<string>;
+  /**
+   * Receives the plaintext temporary passwords so they can be handed to the
+   * people who need them.
+   *
+   * Called ONCE, and only when rows are actually written (never on a dry run).
+   * Plaintext deliberately does not travel on `MigrationResult`, which is
+   * serialized into API responses and the durable migration log.
+   */
+  emitCredentials?: CredentialSink;
 }
 
 export interface MigrationEvent {
@@ -104,6 +129,20 @@ export interface MigrationValidationResult {
   issues: string[];
 }
 
+/**
+ * Outcome of the target-side check that runs before anything is read or
+ * written. A Discoverer Neo database can hold exactly one migration: the
+ * migrator mints a service account with a fixed address, and every migrated
+ * user gets a synthesized `@migrated.local` email, so a second run collides on
+ * `users_email_unique` the moment it writes its first row.
+ */
+export interface TargetPreflight {
+  /** True when the target already holds a migration (blocks a real run). */
+  alreadyMigrated: boolean;
+  /** Operator-facing explanation, set only when `alreadyMigrated`. */
+  message: string | null;
+}
+
 export interface MigrationResult {
   runId: string | null;
   dryRun: boolean;
@@ -121,6 +160,12 @@ export interface MigrationResult {
   /** Synthetic objects the runner created (e.g. the workbook-host BA, users). */
   syntheticBusinessAreas: number;
   migrationUserEmail: string;
+  /**
+   * Target-side check. A real run throws when this is blocked; a dry run
+   * completes and reports it, so "the dry run passed" can never mean "the real
+   * run will succeed" when the target is already migrated.
+   */
+  preflight: TargetPreflight;
   durationMs: number;
 }
 
@@ -133,6 +178,7 @@ export const TARGET_TABLE_ORDER: readonly TargetTable[] = [
   'users',
   'business_areas',
   'folders',
+  'folder_business_areas',
   'items',
   'joins',
   'hierarchies',
@@ -140,6 +186,13 @@ export const TARGET_TABLE_ORDER: readonly TargetTable[] = [
   'custom_functions',
   'maps',
   'map_items',
+  'map_conditions',
+  'map_parameters',
+  'map_calculated_fields',
+  'map_layouts',
+  'map_totals',
+  'map_page_setup',
+  'map_conditional_formats',
   'user_business_area_grants',
 ];
 
@@ -147,6 +200,7 @@ const EMPTY_COUNTS = (): TableCounts => ({
   users: 0,
   business_areas: 0,
   folders: 0,
+  folder_business_areas: 0,
   items: 0,
   joins: 0,
   hierarchies: 0,
@@ -154,6 +208,13 @@ const EMPTY_COUNTS = (): TableCounts => ({
   custom_functions: 0,
   maps: 0,
   map_items: 0,
+  map_conditions: 0,
+  map_parameters: 0,
+  map_calculated_fields: 0,
+  map_layouts: 0,
+  map_totals: 0,
+  map_page_setup: 0,
+  map_conditional_formats: 0,
   user_business_area_grants: 0,
 });
 
@@ -204,20 +265,33 @@ function findPgErrorFields(err: unknown): PgErrorFields {
 const MAX_FAILURE_MESSAGE = 400;
 
 /**
- * Turn a driver-level write failure into something an operator can act on.
+ * Strip a driver-level write failure down to something safe to log.
  *
  * Drizzle's message embeds the failing statement *and every bound parameter*
  * ("params: …"), which would put migrated row values — user names, emails,
- * password hashes — into the durable `migration_log`. Those are stripped here;
- * the log gets the statement shape and the Postgres diagnostic, nothing more.
+ * password hashes, whole report titles — into the durable `migration_log` and
+ * onto the operator's terminal. Those are cut here; callers get the statement
+ * shape and nothing else.
+ *
+ * Exported on its own because the maps-only re-import needs exactly this half
+ * and none of `describeWriteFailure`'s advice below, which is specific to a
+ * full run.
+ */
+export function sanitizeWriteFailure(err: unknown): string {
+  const raw = err instanceof Error ? err.message : String(err);
+  const withoutParams = raw.split(/\r?\nparams:/)[0] ?? raw;
+  return withoutParams.length > MAX_FAILURE_MESSAGE
+    ? `${withoutParams.slice(0, MAX_FAILURE_MESSAGE)}…`
+    : withoutParams;
+}
+
+/**
+ * Turn a driver-level write failure into something an operator can act on: the
+ * sanitized message plus what a *full migration* should do about it.
  */
 export function describeWriteFailure(err: unknown): string {
   const raw = err instanceof Error ? err.message : String(err);
-  const withoutParams = raw.split(/\r?\nparams:/)[0] ?? raw;
-  const message =
-    withoutParams.length > MAX_FAILURE_MESSAGE
-      ? `${withoutParams.slice(0, MAX_FAILURE_MESSAGE)}…`
-      : withoutParams;
+  const message = sanitizeWriteFailure(err);
 
   const pg = findPgErrorFields(err);
   const isUniqueViolation = pg.code === '23505' || /duplicate key value/i.test(raw);
@@ -235,12 +309,40 @@ export function describeWriteFailure(err: unknown): string {
   return `${message}. ${rolledBack}`;
 }
 
+/**
+ * Explain a blocked target. Says what was found and what to do about it —
+ * re-running over an existing migration would duplicate every business area,
+ * folder and item even if the unique constraint let it through.
+ */
+export function describeAlreadyMigrated(email: string): string {
+  return (
+    `The target database already contains a migration: its service account ` +
+    `"${email}" is present. Discoverer Neo holds one migration per database — ` +
+    `running a second one over it would duplicate every business area, folder ` +
+    `and item, so it is refused. Migrate into a fresh database, or clear the ` +
+    `previous migration first.`
+  );
+}
+
 /** Case-insensitive username key. */
 function ukey(username: string): string {
   return username.trim().toUpperCase();
 }
 
 /** Make `name` unique within `used`, suffixing " (2)", " (3)", … as needed. */
+/**
+ * Key for the (folder, item) name index the workbook bodies resolve against.
+ *
+ * Case-insensitive and whitespace-normalized: the workbook stores the label as
+ * it was when the report was saved, and an EUL edit since then may differ only
+ * in casing or spacing. Matching on that would drop a column for a cosmetic
+ * difference.
+ */
+function itemLabelKey(folderName: string, itemName: string): string {
+  const norm = (s: string): string => s.trim().replace(/\s+/g, ' ').toLowerCase();
+  return `${norm(folderName)}\u0000${norm(itemName)}`;
+}
+
 function uniquify(name: string, used: Set<string>): string {
   if (!used.has(name.toLowerCase())) {
     used.add(name.toLowerCase());
@@ -286,6 +388,10 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
   const deps: MigrationRunnerDeps = {
     genId: options.deps?.genId ?? (() => randomUUID()),
     now: options.deps?.now ?? (() => new Date()),
+    // Optional: absent hashPassword means accounts stay login-disabled, which
+    // is the safe default rather than a silently weak credential.
+    hashPassword: options.deps?.hashPassword,
+    emitCredentials: options.deps?.emitCredentials,
   };
   const dryRun = options.dryRun === true;
   const runId = dryRun ? null : deps.genId();
@@ -314,9 +420,35 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     for (const w of ws) warnings.push(w);
   };
 
-  // --- 0. schema + read -----------------------------------------------------
+  // --- 0. schema + target preflight -----------------------------------------
   if (!dryRun) await writer.ensureSchema();
 
+  // Identify the service account before anything else: it is both the owner of
+  // every migrated map and the marker of a target that has already been
+  // migrated.
+  const migrationEmail = options.migrationUser?.email ?? `migration@${MIGRATED_EMAIL_DOMAIN}`;
+  const migrationName = options.migrationUser?.name ?? 'Migration Service';
+
+  // Read the target's addresses up front. Two jobs: detect a target that has
+  // already been migrated, and seed the collision set so a synthesized email
+  // can never land on an address the database already holds.
+  const usedEmails = new Set<string>(await writer.existingUserEmails());
+  const alreadyMigrated = usedEmails.has(migrationEmail.toLowerCase());
+  const preflight: TargetPreflight = {
+    alreadyMigrated,
+    message: alreadyMigrated ? describeAlreadyMigrated(migrationEmail) : null,
+  };
+
+  if (preflight.message !== null) {
+    await emit('ERROR', 'preflight', preflight.message);
+    // A real run stops here rather than reading the whole EUL, transforming it
+    // and hashing a password per account, only to be rejected by the first
+    // INSERT. A dry run carries on and reports it: its whole job is to tell an
+    // operator whether the real run would work.
+    if (!dryRun) throw new MigrationRunError(preflight.message);
+  }
+
+  // --- 0b. read -------------------------------------------------------------
   const readOptions: ReadEulOptions = { ...options.readOptions };
   if (options.version && options.version !== 'auto') {
     readOptions.preferVersion = options.version;
@@ -349,12 +481,9 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
   const itemFolderUuid = new Map<number, string>(); // item sourceId → its folder UUID
   const hierarchyIdBySource = new Map<number, string>();
 
-  const usedEmails = new Set<string>();
   const usedBaNames = new Set<string>();
 
   // --- 1. users -------------------------------------------------------------
-  const migrationEmail = options.migrationUser?.email ?? `migration@${MIGRATED_EMAIL_DOMAIN}`;
-  const migrationName = options.migrationUser?.name ?? 'Migration Service';
   const migrationUserId = deps.genId();
   usedEmails.add(migrationEmail.toLowerCase());
 
@@ -362,13 +491,21 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     {
       id: migrationUserId,
       email: migrationEmail,
+      // The service account exists only for created_by attribution and map
+      // ownership. Nobody signs in as it, so it gets no credential and has
+      // nothing to rotate.
       passwordHash: MIGRATED_USER_PASSWORD_HASH,
+      isRole: false,
+      mustChangePassword: false,
       name: migrationName,
       role: 'USER',
       createdAt: deps.now(),
       updatedAt: deps.now(),
     },
   ];
+
+  /** Plaintext temp passwords. Handed to the sink; never returned or logged. */
+  const provisioned: ProvisionedCredential[] = [];
 
   for (const eulUser of eul.data.users) {
     const t = transformUser(eulUser, version.version);
@@ -383,10 +520,24 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     usedEmails.add(email.toLowerCase());
     const id = deps.genId();
     userIdByUsername.set(key, id);
+
+    // Provision a temporary credential for real people. Roles never get one —
+    // they exist to hold grants, not to be signed into.
+    let passwordHash = t.passwordHash;
+    let mustChangePassword = false;
+    if (!t.isRole && deps.hashPassword) {
+      const temporaryPassword = generateTemporaryPassword();
+      passwordHash = await deps.hashPassword(temporaryPassword);
+      mustChangePassword = true;
+      provisioned.push({ username: t.username, email, temporaryPassword });
+    }
+
     userRows.push({
       id,
       email,
-      passwordHash: t.passwordHash,
+      passwordHash,
+      isRole: t.isRole,
+      mustChangePassword,
       name: t.name,
       role: t.role,
       createdAt: deps.now(),
@@ -394,7 +545,13 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     });
   }
   planned.users = userRows.length;
-  await emit('INFO', 'users', `Migrated users are login-disabled until an admin resets their password.`);
+  await emit(
+    'INFO',
+    'users',
+    provisioned.length > 0
+      ? `${provisioned.length} account(s) provisioned with a temporary password, each forced to change it at first login.`
+      : 'Migrated users are login-disabled until an admin resets their password.',
+  );
 
   const resolveUser = (username: string | null): string | null =>
     username ? (userIdByUsername.get(ukey(username)) ?? null) : null;
@@ -427,7 +584,9 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     baRows.push({
       id: workbookBaId,
       name: uniquify('Migrated Workbooks', usedBaNames),
-      description: 'Auto-created to host maps migrated from Discoverer workbooks. Rebuild their layout manually.',
+      description:
+        'Auto-created to host the maps migrated from Discoverer workbooks. ' +
+        'Discoverer workbooks belong to no business area, so their worksheets land here.',
       createdBy: migrationUserId,
       updatedBy: migrationUserId,
       createdAt: deps.now(),
@@ -468,6 +627,37 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     });
   }
   planned.folders = folderRows.length;
+
+  // A folder shared across business areas (EUL BA_OBJ_LINKS is many-to-many)
+  // keeps its owning area on folders.business_area_id; the rest are recorded
+  // here so the folder is reachable from every area it belonged to.
+  const folderShareRows: Record<string, unknown>[] = [];
+  for (const eulFolder of eul.data.folders) {
+    const folderId = folderIdBySource.get(eulFolder.sourceId);
+    const owning = folderBaSource.get(eulFolder.sourceId);
+    if (!folderId) continue;
+    for (const baSourceId of eulFolder.sharedBusinessAreaIds) {
+      if (baSourceId === owning) continue;
+      const baId = baIdBySource.get(baSourceId);
+      if (!baId) {
+        skipped.push({
+          table: 'folder_business_areas',
+          sourceId: eulFolder.sourceId,
+          reason: `shared business area ${baSourceId} was not migrated`,
+        });
+        continue;
+      }
+      folderShareRows.push({ folderId, businessAreaId: baId, createdAt: deps.now() });
+    }
+  }
+  planned.folder_business_areas = folderShareRows.length;
+  if (folderShareRows.length > 0) {
+    await emit(
+      'INFO',
+      'folders',
+      `${folderShareRows.length} folder/business-area share(s) preserved from BA_OBJ_LINKS.`,
+    );
+  }
 
   // --- 4. items (plain/calculated CI-CU + conditions CO) --------------------
   const transformedItems = [...eul.data.items, ...eul.data.conditions].map((it) =>
@@ -551,47 +741,72 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     );
   }
 
-  // --- 5. joins (one Neo row per component) ---------------------------------
+  // --- 5. joins --------------------------------------------------------------
+  // A EUL join (KEY_CONS) binds two FOLDERS; item-level keys are optional.
+  // Neo's joins table matches that shape, so the folders drive the row and the
+  // items only fill in when the source actually carried them.
   const joinRows: Record<string, unknown>[] = [];
+  // A workbook's `0x0118` join reference (§7.8.9) names this same EUL join id,
+  // so a worksheet's `Join Usage` resolves against this index once it is
+  // built — a join that failed to migrate (folder(s) not migrated, skipped
+  // below) simply has no entry, and the workbook reference stays unresolved.
+  // An array because a join with item-level components explodes into one row
+  // per component; today `readJoins` never populates components, so it is
+  // always a singleton, but the reference is kept plural rather than assume
+  // that stays true.
+  const joinIdsBySourceId = new Map<number, string[]>();
   for (const eulJoin of eul.data.joins) {
     const t = transformJoin(eulJoin, version.version);
     collect(t.warnings);
-    if (t.components.length === 0) {
-      skipped.push({ table: 'joins', sourceId: t.sourceId, reason: 'no components' });
+
+    const leftFolderId =
+      t.leftFolderSourceId !== null ? folderIdBySource.get(t.leftFolderSourceId) : undefined;
+    const rightFolderId =
+      t.rightFolderSourceId !== null ? folderIdBySource.get(t.rightFolderSourceId) : undefined;
+    if (!leftFolderId || !rightFolderId) {
+      skipped.push({
+        table: 'joins',
+        sourceId: t.sourceId,
+        reason: 'join folder(s) not migrated',
+      });
       continue;
     }
-    // An EUL join can carry several component item-pairs; Neo models a single
-    // pair per row, so each resolvable component becomes its own join row.
+
     const emitted: Array<Record<string, unknown>> = [];
-    t.components.forEach((comp, idx) => {
-      const leftItemId = itemIdBySource.get(comp.leftItemSourceId);
-      const rightItemId = itemIdBySource.get(comp.rightItemSourceId);
-      const leftFolderId = itemFolderUuid.get(comp.leftItemSourceId);
-      const rightFolderId = itemFolderUuid.get(comp.rightItemSourceId);
-      if (!leftFolderId || !rightFolderId) {
-        warnings.push({
-          code: 'JOIN_COMPONENT_UNRESOLVED',
-          message: `Join "${t.name}" component ${idx + 1} references item(s) whose folder was not migrated; component dropped.`,
-          sourceId: t.sourceId,
-        });
-        return;
-      }
+    if (t.components.length === 0) {
+      // Folder-level join with no item keys — the common case.
       emitted.push({
         id: deps.genId(),
         name: t.name,
         leftFolderId,
         rightFolderId,
-        leftItemId: leftItemId ?? null,
-        rightItemId: rightItemId ?? null,
+        leftItemId: null,
+        rightItemId: null,
         joinType: t.joinType,
         isActive: t.isActive,
         createdAt: t.createdAt ?? deps.now(),
       });
-    });
-
-    if (emitted.length === 0) {
-      skipped.push({ table: 'joins', sourceId: t.sourceId, reason: 'no component resolved to migrated folders' });
-      continue;
+    } else {
+      // Neo models a single item pair per row, so each component becomes one.
+      t.components.forEach((comp) => {
+        emitted.push({
+          id: deps.genId(),
+          name: t.name,
+          leftFolderId,
+          rightFolderId,
+          leftItemId:
+            comp.leftItemSourceId !== null
+              ? (itemIdBySource.get(comp.leftItemSourceId) ?? null)
+              : null,
+          rightItemId:
+            comp.rightItemSourceId !== null
+              ? (itemIdBySource.get(comp.rightItemSourceId) ?? null)
+              : null,
+          joinType: t.joinType,
+          isActive: t.isActive,
+          createdAt: t.createdAt ?? deps.now(),
+        });
+      });
     }
     // Only disambiguate when this join actually produced more than one row —
     // suffixing a lone row with "(#1)" would imply siblings that don't exist.
@@ -600,6 +815,10 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
         row.name = `${t.name} (#${idx + 1})`;
       });
     }
+    joinIdsBySourceId.set(
+      t.sourceId,
+      emitted.map((row) => row.id as string),
+    );
     joinRows.push(...emitted);
   }
   planned.joins = joinRows.length;
@@ -627,18 +846,35 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
       createdAt: t.createdAt ?? deps.now(),
       updatedAt: t.updatedAt ?? deps.now(),
     });
+    // Levels are a TREE (EUL: HI_SEGMENTS), so every node gets a UUID first and
+    // the parent link is resolved in a second pass — a child can precede its
+    // parent in read order.
+    const levelIdBySource = new Map<number, string>();
+    for (const lvl of t.levels) levelIdBySource.set(lvl.sourceId, deps.genId());
+
     for (const lvl of t.levels) {
       const itemId = lvl.itemSourceId !== null ? itemIdBySource.get(lvl.itemSourceId) : undefined;
-      if (!itemId) {
-        skipped.push({ table: 'hierarchy_levels', sourceId: lvl.sourceId, reason: 'level item not migrated' });
-        continue;
+      if (lvl.itemSourceId !== null && !itemId) {
+        // The node names an item that was not migrated — keep the level so the
+        // drill path stays intact, but say the item is missing.
+        warnings.push({
+          code: 'HIER_LEVEL_ITEM_UNRESOLVED',
+          message: `Hierarchy level "${lvl.levelName}" references item ${lvl.itemSourceId}, which was not migrated; the level was kept without an item.`,
+          sourceId: lvl.sourceId,
+        });
       }
       levelRows.push({
-        id: deps.genId(),
+        id: levelIdBySource.get(lvl.sourceId),
         hierarchyId: id,
         levelName: lvl.levelName,
-        itemId,
+        // Nullable in Neo: a level with no resolvable item is still a real
+        // step in the drill path and must not disappear.
+        itemId: itemId ?? null,
         levelNumber: lvl.levelNumber,
+        parentLevelId:
+          lvl.parentSourceId !== null
+            ? (levelIdBySource.get(lvl.parentSourceId) ?? null)
+            : null,
       });
     }
   }
@@ -662,41 +898,307 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
   }
   planned.custom_functions = functionRows.length;
 
-  // --- 8. maps (from workbooks) + map_items ---------------------------------
+  // --- 8. maps (from workbook worksheets) + items/conditions/params/calcs ---
+  //
+  // A workbook column names its item by EUL EXP_ID, which `itemIdBySource`
+  // already resolves. The (folder name, item name) index built here is the
+  // fallback for the rare column that records no id — see `TransformedMapItem`.
+  const folderNameById = new Map<string, string>();
+  for (const row of folderRows) {
+    folderNameById.set(row.id as string, row.name as string);
+  }
+  const itemIdByLabel = new Map<string, string>();
+  for (const row of itemRows) {
+    const folderName = folderNameById.get(row.folderId as string);
+    if (folderName === undefined) continue;
+    const key = itemLabelKey(folderName, row.name as string);
+    // First writer wins: duplicate labels within a folder are possible in a
+    // hand-edited EUL, and picking the first keeps the mapping deterministic.
+    if (!itemIdByLabel.has(key)) itemIdByLabel.set(key, row.id as string);
+  }
+
   const mapRows: Record<string, unknown>[] = [];
   const mapItemRows: Record<string, unknown>[] = [];
+  const mapConditionRows: Record<string, unknown>[] = [];
+  const mapParameterRows: Record<string, unknown>[] = [];
+  const mapCalculatedFieldRows: Record<string, unknown>[] = [];
+  const mapTotalRows: Record<string, unknown>[] = [];
+  const mapPageSetupRows: Record<string, unknown>[] = [];
+  const mapLayoutRows: Record<string, unknown>[] = [];
+  const usedMapNames = new Set<string>();
+  let unresolvedMapItems = 0;
+  let unresolvedMapConditions = 0;
+  /** Join usage (§7.8.9) naming a EUL join that did not migrate. */
+  let unresolvedMapJoins = 0;
+  /** Totals dropped because the column they aggregate did not migrate. */
+  let unresolvedMapTotals = 0;
+  let migratedWorksheets = 0;
+
   for (const eulWb of eul.data.workbooks) {
-    const t = transformWorkbook(eulWb, version.version);
-    collect(t.warnings);
-    if (!workbookBaId) continue; // unreachable (set when workbooks exist), defensive
-    const mapId = deps.genId();
-    const owner = resolveUser(t.ownerUsername) ?? migrationUserId;
-    mapRows.push({
-      id: mapId,
-      name: t.name,
-      description: t.description,
-      mapType: t.mapType satisfies NeoMapType,
-      businessAreaId: workbookBaId,
-      createdBy: owner,
-      isPublic: t.isPublic,
-      isActive: true,
-      createdAt: t.createdAt ?? deps.now(),
-      updatedAt: t.updatedAt ?? deps.now(),
-    });
-    t.items.forEach((mi, idx) => {
-      const itemId = mi.itemSourceId !== null ? itemIdBySource.get(mi.itemSourceId) : undefined;
-      if (!itemId) return;
-      mapItemRows.push({
-        id: deps.genId(),
-        mapId,
-        itemId,
-        displayOrder: mi.displayOrder ?? idx,
-        displayName: mi.displayName,
+    const worksheetMaps = transformWorkbook(eulWb, version.version);
+    migratedWorksheets += eulWb.document.worksheets.length;
+
+    for (const t of worksheetMaps) {
+      collect(t.warnings);
+      if (!workbookBaId) continue; // unreachable (set when workbooks exist), defensive
+      const mapId = deps.genId();
+      const owner = resolveUser(t.ownerUsername) ?? migrationUserId;
+      mapRows.push({
+        id: mapId,
+        // Two worksheets in different workbooks can share a name; Neo has no
+        // unique index on maps.name, but a duplicate is unusable in a picker,
+        // so names are disambiguated the same way business-area names are.
+        name: uniquify(t.name, usedMapNames),
+        description: t.description,
+        mapType: t.mapType satisfies NeoMapType,
+        businessAreaId: workbookBaId,
+        createdBy: owner,
+        isPublic: t.isPublic,
+        isActive: true,
+        selectDistinct: t.selectDistinct,
+        createdAt: t.createdAt ?? deps.now(),
+        updatedAt: t.updatedAt ?? deps.now(),
       });
-    });
+
+      // `map_totals` points at `map_items` / `map_calculated_fields` rows, not
+      // at EUL items, so the ids have to be captured as those rows are pushed.
+      // A column whose item did not resolve never enters this index, and the
+      // total that names it is dropped below rather than left dangling.
+      const mapItemIdByOrder = new Map<number, string>();
+      const calculatedFieldIdByOrder = new Map<number, string>();
+
+      for (const mi of t.items) {
+        // A calculation column has no EUL item behind it — it is carried by
+        // the map's calculated fields instead, so it is not an unresolved
+        // reference and must not be counted as one.
+        if (mi.isCalculation) continue;
+        // EXP_ID first — it is exact, and survives a rename in the EUL. The
+        // label pair is the fallback for a column that records no id.
+        const itemId =
+          (mi.itemSourceId !== null ? itemIdBySource.get(mi.itemSourceId) : undefined) ??
+          (mi.folderLabel !== null && mi.itemLabel !== null
+            ? itemIdByLabel.get(itemLabelKey(mi.folderLabel, mi.itemLabel))
+            : undefined);
+        if (!itemId) {
+          unresolvedMapItems += 1;
+          skipped.push({
+            table: 'map_items',
+            sourceId: t.sourceId,
+            reason: `${mi.isHidden ? 'query item' : 'column'} ` +
+              `"${mi.folderLabel ?? '?'}.${mi.itemLabel ?? '?'}" is not a migrated item`,
+          });
+          continue;
+        }
+        const mapItemId = deps.genId();
+        mapItemIdByOrder.set(mi.displayOrder, mapItemId);
+        mapItemRows.push({
+          id: mapItemId,
+          mapId,
+          itemId,
+          displayOrder: mi.displayOrder,
+          displayName: mi.displayName,
+          formatMask: mi.formatMask,
+          axisType: mi.axisType,
+          axisOrder: mi.axisOrder,
+          isHidden: mi.isHidden,
+          // Sorting (§7.8.6). `sort_rank` stays null: `d4wkdmp` never prints
+          // `DCBImportedItemSort::GetRank`, so nothing confirms a value for it.
+          sortDirection: mi.sortDirection,
+          sortOrder: mi.sortOrder,
+          sortGroup: mi.sortGroup,
+          // Item format (§7.8.8). `alignment` is always null — see `TransformedMapItem`.
+          columnWidth: mi.columnWidth,
+          dataType: mi.dataType,
+          headingFormatMask: mi.headingFormatMask,
+          alignment: mi.alignment,
+          wordWrap: mi.wordWrap,
+          sourceElementId: mi.sourceElementId,
+          sourceAttrs: mi.sourceAttrs,
+        });
+      }
+
+      // A condition Neo cannot express never reaches here — `transformWorkbook`
+      // drops it with a warning. What is left can still fail to resolve to a
+      // migrated item, and then the whole source condition goes, not part of it.
+      const conditionRows = buildMapConditionRows(
+        t.conditions,
+        mapId,
+        (cond) =>
+          (cond.itemSourceId !== null ? itemIdBySource.get(cond.itemSourceId) : undefined) ??
+          (cond.folderLabel !== null && cond.itemLabel !== null
+            ? itemIdByLabel.get(itemLabelKey(cond.folderLabel, cond.itemLabel))
+            : undefined),
+        deps.genId,
+      );
+      mapConditionRows.push(...conditionRows.rows);
+      for (const { reason } of conditionRows.skipped) {
+        unresolvedMapConditions += 1;
+        skipped.push({ table: 'map_conditions', sourceId: t.sourceId, reason });
+      }
+
+      // Neo has no unique index on (map_id, name) for parameters, but a
+      // workbook can define the same prompt twice; deduping keeps the map's
+      // parameter list usable. (It does have one on (map_id, bind_name), and a
+      // repeated prompt shares its bind name — so writing both rows would fail
+      // the insert outright, not merely look untidy.)
+      const seenParameters = new Set<string>();
+      for (const parameter of t.parameters) {
+        const key = parameter.name.toLowerCase();
+        if (seenParameters.has(key)) continue;
+        seenParameters.add(key);
+        mapParameterRows.push({
+          id: deps.genId(),
+          mapId,
+          name: parameter.name,
+          bindName: parameter.bindName,
+          paramType: parameter.paramType,
+          defaultValue: parameter.defaultValue,
+          isRequired: parameter.isRequired,
+        });
+      }
+
+      for (const calc of t.calculatedFields) {
+        if (calc.formula === '') continue;
+        const calculatedFieldId = deps.genId();
+        calculatedFieldIdByOrder.set(calc.displayOrder, calculatedFieldId);
+        mapCalculatedFieldRows.push({
+          id: calculatedFieldId,
+          mapId,
+          name: calc.name,
+          formula: calc.formula,
+          displayOrder: calc.displayOrder,
+          axisType: calc.axisType,
+          isHidden: calc.isHidden,
+        });
+      }
+
+      // Totals (§7.8.7). Written after the two tables they reference, from the
+      // ids captured above — identical here and in `map-reimport.ts`.
+      for (const total of t.totals) {
+        const row = buildMapTotalRow(
+          total,
+          mapId,
+          deps.genId(),
+          mapItemIdByOrder,
+          calculatedFieldIdByOrder,
+        );
+        if (row === null) {
+          unresolvedMapTotals += 1;
+          skipped.push({
+            table: 'map_totals',
+            sourceId: t.sourceId,
+            reason:
+              `total ${JSON.stringify(total.label ?? '')} aggregates a column that did ` +
+              'not migrate',
+          });
+          continue;
+        }
+        mapTotalRows.push(row);
+      }
+
+      // Page setup (§7.8.12) — one row per map, all carrying the workbook's
+      // single page-setup element; identical here and in `map-reimport.ts`.
+      if (t.pageSetup !== null) {
+        mapPageSetupRows.push(buildMapPageSetupRow(t.pageSetup, mapId, deps.genId()));
+      }
+
+      // Join usage (§7.8.9) — no `map_joins` table exists, so a worksheet's
+      // forced joins are recorded as `map_layouts.source_attrs`, the one
+      // column W3 added with nowhere better for them to live. Each join
+      // reference is resolved against the joins this same run just migrated;
+      // one that named a join that did not migrate keeps its raw fields with
+      // `joinIds: null` rather than being dropped.
+      const joinAttrs = t.joins.map((join) => {
+        const joinIds =
+          join.eulJoinSourceId !== null
+            ? (joinIdsBySourceId.get(join.eulJoinSourceId) ?? null)
+            : null;
+        if (joinIds === null) unresolvedMapJoins += 1;
+        return {
+          sourceElementId: join.sourceElementId,
+          eulJoinSourceId: join.eulJoinSourceId,
+          identifier: join.identifier,
+          name: join.name,
+          owningFolderIdentifier: join.owningFolderIdentifier,
+          owningFolderName: join.owningFolderName,
+          joinIds,
+        };
+      });
+      // One row per map, not one per map that forced a join: the worksheet's
+      // index, GUID and printed title live here and nowhere else.
+      mapLayoutRows.push(buildMapLayoutRow(t.layout, joinAttrs, mapId, deps.genId()));
+    }
   }
   planned.maps = mapRows.length;
   planned.map_items = mapItemRows.length;
+  planned.map_conditions = mapConditionRows.length;
+  planned.map_parameters = mapParameterRows.length;
+  planned.map_calculated_fields = mapCalculatedFieldRows.length;
+  planned.map_totals = mapTotalRows.length;
+  planned.map_page_setup = mapPageSetupRows.length;
+  planned.map_layouts = mapLayoutRows.length;
+
+  if (unresolvedMapJoins > 0) {
+    await emit(
+      'WARN',
+      'maps',
+      `${unresolvedMapJoins} worksheet join reference(s) named a EUL join that did not ` +
+        'migrate; recorded in map_layouts.source_attrs with no resolved join id.',
+    );
+  }
+
+  if (eul.data.workbooks.length > 0) {
+    await emit(
+      'INFO',
+      'maps',
+      `${eul.data.workbooks.length} workbook(s) holding ${migratedWorksheets} worksheet(s) ` +
+        `migrated as ${mapRows.length} map(s) with ${mapItemRows.length} column(s), ` +
+        `${mapConditionRows.length} condition(s), ${mapParameterRows.length} parameter(s), ` +
+        `${mapCalculatedFieldRows.length} calculated field(s) and ` +
+        `${mapTotalRows.length} total(s).`,
+    );
+  }
+  if (unresolvedMapTotals > 0) {
+    await emit(
+      'WARN',
+      'maps',
+      `${unresolvedMapTotals} total(s) were not migrated because the column they ` +
+        'aggregate did not migrate.',
+    );
+  }
+  if (unresolvedMapItems > 0) {
+    await emit(
+      'WARN',
+      'maps',
+      `${unresolvedMapItems} worksheet item(s) referenced an item that is not in the EUL ` +
+        'any more (the workbook outlived the item) and were dropped from their map; the ' +
+        'skipped list says which were displayed columns and which the query named without ' +
+        'displaying.',
+    );
+  }
+  if (unresolvedMapConditions > 0) {
+    await emit(
+      'WARN',
+      'maps',
+      `${unresolvedMapConditions} worksheet condition(s) filter an item that is not in the EUL ` +
+        'any more and were not migrated; their text is in the skipped list.',
+    );
+  }
+  // Conditions Neo's filter model cannot hold at all are reported by
+  // `transformWorkbook` — one warning each, naming the reason — rather than
+  // counted here, so a reviewer sees which filter is missing, not just how
+  // many.
+  const inexpressibleConditions = warnings.filter(
+    (warning) => warning.code === 'CONDITION_OPERATOR_UNMAPPED',
+  ).length;
+  if (inexpressibleConditions > 0) {
+    await emit(
+      'WARN',
+      'maps',
+      `${inexpressibleConditions} worksheet condition(s) could not be expressed as a Neo ` +
+        'filter and were not migrated; each is reported with its own reason.',
+    );
+  }
 
   // --- 9. grants ------------------------------------------------------------
   const grantRows: Record<string, unknown>[] = [];
@@ -742,6 +1244,7 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     ['users', userRows],
     ['business_areas', baRows],
     ['folders', folderRows],
+    ['folder_business_areas', folderShareRows],
     ['items', itemRows],
     ['joins', joinRows],
     ['hierarchies', hierarchyRows],
@@ -749,6 +1252,12 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     ['custom_functions', functionRows],
     ['maps', mapRows],
     ['map_items', mapItemRows],
+    ['map_conditions', mapConditionRows],
+    ['map_parameters', mapParameterRows],
+    ['map_calculated_fields', mapCalculatedFieldRows],
+    ['map_layouts', mapLayoutRows],
+    ['map_totals', mapTotalRows],
+    ['map_page_setup', mapPageSetupRows],
     ['user_business_area_grants', grantRows],
   ];
 
@@ -780,6 +1289,24 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
       throw new MigrationRunError(detail, err);
     }
 
+    // Hand over the temporary passwords only now: the rows are committed, so
+    // every credential in this file corresponds to an account that exists. A
+    // failure here must not fail the migration — the data is already written —
+    // but it MUST be loud, because nobody can log in without these.
+    if (provisioned.length > 0 && deps.emitCredentials) {
+      try {
+        await deps.emitCredentials(provisioned);
+      } catch (err) {
+        await emit(
+          'ERROR',
+          'users',
+          `Migration succeeded but the credentials file could not be written: ` +
+            `${err instanceof Error ? err.message : String(err)}. ` +
+            `The temporary passwords are now unrecoverable — reset them from the Users page.`,
+        );
+      }
+    }
+
     validation = await validateMigration(writer, plan.map(([table]) => ({
       table,
       baseline: baseline[table],
@@ -805,6 +1332,7 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     validation,
     syntheticBusinessAreas,
     migrationUserEmail: migrationEmail,
+    preflight,
     durationMs: Date.now() - startedAt,
   };
 }

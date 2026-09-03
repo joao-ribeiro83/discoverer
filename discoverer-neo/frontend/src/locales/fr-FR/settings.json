@@ -16,5 +16,15 @@
       "high-contrast": "Contraste élevé"
     }
   },
+  "palette": {
+    "title": "Palette de couleurs",
+    "description": "Choisissez les couleurs d'accent utilisées dans toute l'interface.",
+    "unavailableHighContrast": "Indisponible tant que Contraste élevé est sélectionné — ce mode utilise ses propres couleurs fixes pour l'accessibilité.",
+    "label": "Palette",
+    "options": {
+      "default": "Classique",
+      "navy": "Bleu marine"
+    }
+  },
   "saved": "Préférences enregistrées"
 }

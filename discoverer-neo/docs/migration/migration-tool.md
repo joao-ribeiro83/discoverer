@@ -34,10 +34,16 @@ Folders: 45
 Items: 230
 Joins: 12
 Hierarchies: 8
-Workbooks: 23
+Workbooks: 23 (41 worksheets)
 Calculations: 15
 Issues: 0
 ```
+
+The worksheet count matters more than the workbook count: each worksheet
+becomes one Discoverer Neo map. The report also warns about workbooks whose
+body could not be decoded (they migrate as empty maps) and about
+multi-worksheet workbooks whose conditions cannot be attributed to a single
+worksheet.
 
 **Flags:**
 - `--json` — Output as JSON for scripting
@@ -89,29 +95,80 @@ dn-migrate export \
 
 **Use case:** Offline review, backup, or staged import.
 
-### import
+### run
 
-Import EUL metadata into Discoverer Neo.
+Migrate the EUL into a Discoverer Neo Postgres database.
 
 ```bash
-dn-migrate import \
-  --target 'postgres://user:pass@localhost:5432/discoverer_neo' \
-  --input eul-export.json \
-  --backend-url http://localhost:3000 \
-  --admin-email admin@example.com \
-  --admin-password secret
+dn-migrate run   --connection '{"host":"oracle.example.com","user":"EUL5_US","password":"secret"}'   --target 'postgres://user:pass@localhost:5432/discoverer_neo'
 ```
 
 **Flags:**
-- `--target` — Postgres connection URL (required)
-- `--input` — JSON export file (required)
-- `--backend-url` — Neo backend URL (required)
-- `--admin-email` — Admin email for API auth (required)
-- `--admin-password` — Admin password (required)
-- `--skip-existing` — Skip if business area already exists
-- `--dry-run` — Simulate import without writing
+- `--target` — target Postgres: connection URL, JSON config file, or inline JSON (required)
+- `--dry-run` — run the whole pipeline and report, writing nothing
+- `--version` — override EUL auto-detection: `auto` (default), `eul4`, `eul5`
+- `--schema-owner` — schema owning the EUL tables
 
-**Use case:** Perform actual migration to Neo.
+**Use case:** Perform the actual migration into Neo.
+
+> **One migration per database.** The run mints a `migration@migrated.local`
+> service account and gives every migrated Oracle user a synthesized
+> `@migrated.local` address, so a second run into the same database would
+> collide on `users_email_unique` — and, if it could not, would duplicate every
+> business area, folder and item. The runner checks the target before it reads
+> anything and refuses with *"target database already contains a migration"*; a
+> dry run makes the same check and reports it instead of a clean plan. To
+> migrate again, reset the target first — see
+> [Troubleshooting](troubleshooting.md#target-database-already-contains-a-migration).
+
+### Re-importing just the maps
+
+There is one exception to *one migration per database*: the **maps**. If a
+database was migrated by a version of this tool that could not read the
+workbook body, its maps have no columns, conditions or parameters — and a full
+re-run cannot fix that, because it is refused.
+
+The re-import rebuilds only the maps. It reads the EUL's workbooks, deletes the
+maps in the migration's host business area (**Migrated Workbooks**), and writes
+them again — resolving every column against the items already in the database.
+Users, business areas, folders, items and grants are not touched.
+
+It runs through the API rather than the CLI, because it needs the same
+registered data source and decrypted credentials a migration uses:
+
+```bash
+# Preview: reports what would be replaced and rebuilt, writes nothing.
+curl -X POST http://localhost:3000/api/migration/reimport-maps \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d '{"dataSourceId":"<uuid>","dryRun":true}'
+
+# Then, for real:
+curl -X POST http://localhost:3000/api/migration/reimport-maps \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d '{"dataSourceId":"<uuid>"}'
+```
+
+Both return a job; poll `GET /api/migration/jobs/:jobId` for progress, logs and
+the result.
+
+Or run it from the backend container, which streams the log as it goes and
+needs no admin session — the practical choice for a large EUL:
+
+```bash
+docker compose exec backend npx tsx src/scripts/reimport-maps.ts <dataSourceId>
+```
+
+It defaults to a dry run; add `--live` to perform the replacement.
+
+> **Destructive for migrated maps.** Every map in *Migrated Workbooks* is
+> deleted and rebuilt, along with its columns, conditions, parameters,
+> calculated fields, shares, schedules and export jobs. Any edit made to a
+> migrated map since the original run is lost. Maps in other business areas —
+> including any you built yourself — are never touched. Run with
+> `"dryRun": true` first, and back the database up.
+
+The whole operation runs in one transaction: if any part fails, the old maps
+are still there.
 
 ## Connection Configuration
 
@@ -350,6 +407,15 @@ LOG_LEVEL=debug dn-migrate validate --connection ...
 ```
 
 See [Troubleshooting Guide](troubleshooting.md) for more.
+
+## Migrated user accounts
+
+The migration provisions a temporary password for every imported person, forces
+a change at first login, and writes the passwords to a file on the server host
+for you to distribute.
+
+See **[Migrated Users & Passwords](user-credentials.md)** — it covers the file's
+location, how it is protected, and what you must do with it.
 
 ## What's Next?
 

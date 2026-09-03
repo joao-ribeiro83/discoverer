@@ -16,7 +16,7 @@ import type {
   EulSchemaAdapter,
   EulVersionInfo,
 } from '../types/eul-versions.js';
-import { FOLDER_TYPES_BY_VERSION } from '../types/eul-versions.js';
+import { NORMALIZED_FOLDER_TYPES } from '../types/eul-versions.js';
 
 // ---------------------------------------------------------------------------
 // Report shape
@@ -82,6 +82,32 @@ export interface WorkbookUsageSummary {
   topWorkbooks: WorkbookUsageStat[];
 }
 
+/**
+ * Coverage of the worksheet-fidelity model (crosstab layout, axis, sort,
+ * totals, item format, forced joins — see `EUL_SCHEMA_GROUND_TRUTH.md` §7)
+ * across every worksheet in the source, computed before a migration writes
+ * anything. `layoutUndecoded` worksheets migrate as a flat column list: no
+ * axis, sort, totals or per-item format, same as before that model existed.
+ */
+export interface WorksheetFidelitySummary {
+  /** Worksheets across every workbook with a readable, decoded body. */
+  totalWorksheets: number;
+  /** Worksheets whose layout model decoded. */
+  layoutDecoded: number;
+  /** Worksheets with no decodable layout model. */
+  layoutUndecoded: number;
+  /** Worksheets drawn as a crosstab rather than a table. */
+  crosstabs: number;
+  /** Worksheets carrying at least one column or group/break sort. */
+  withSorts: number;
+  /** Worksheets defining at least one total/summary row. */
+  withTotals: number;
+  /** Worksheets whose query forces a specific join. */
+  withForcedJoins: number;
+  /** Worksheets that are `SELECT DISTINCT`. */
+  selectDistinct: number;
+}
+
 export interface MigrationEstimate {
   totalObjects: number;
   estimatedMinutes: number;
@@ -108,6 +134,7 @@ export interface AssessmentReport {
   folderTypeBreakdown: Record<string, number>;
   orphans: OrphanReport;
   workbookUsage: WorkbookUsageSummary;
+  worksheetFidelity: WorksheetFidelitySummary;
   complexity: ComplexityAssessment;
   warnings: MigrationWarning[];
   estimate: MigrationEstimate;
@@ -123,7 +150,8 @@ function countByType(data: EulFullData): EulObjectCounts {
     businessAreas: data.businessAreas.length,
     folders: data.folders.length,
     items: data.items.length,
-    calculatedItems: data.items.filter((i) => i.expType === 'CU').length,
+    // CI = created item (a calculation). CO is the plain database item.
+    calculatedItems: data.items.filter((i) => i.expType === 'CI').length,
     conditions: data.conditions.length,
     securityConditions: data.securityConditions.length,
     joins: data.joins.length,
@@ -163,12 +191,21 @@ export function findOrphans(data: EulFullData): OrphanReport {
           : `item references folder ${item.folderId}, which does not exist`,
     }));
 
+  // A join binds two FOLDERS; item-level components are optional, so a
+  // component-less join is not an orphan. A join missing a folder — or
+  // pointing at one that was never read — is.
   const joinsWithoutComponents: OrphanRef[] = data.joins
-    .filter((join) => join.components.length === 0)
+    .filter(
+      (join) =>
+        join.masterFolderId === null ||
+        join.detailFolderId === null ||
+        !folderIds.has(join.masterFolderId) ||
+        !folderIds.has(join.detailFolderId),
+    )
     .map((join) => ({
       sourceId: join.sourceId,
       name: join.name,
-      reason: 'join has no join components (no item pairs)',
+      reason: 'join is missing a folder on one or both sides',
     }));
 
   const hierarchiesWithoutBusinessArea: OrphanRef[] = data.hierarchies
@@ -220,6 +257,20 @@ function summarizeWorkbookUsage(data: EulFullData): WorkbookUsageSummary {
     workbooksWithUsage: usage.filter((u) => u.executionCount > 0).length,
     totalExecutions: usage.reduce((sum, u) => sum + u.executionCount, 0),
     topWorkbooks: usage.slice(0, TOP_WORKBOOKS),
+  };
+}
+
+export function summarizeWorksheetFidelity(data: EulFullData): WorksheetFidelitySummary {
+  const worksheets = data.workbooks.flatMap((wb) => wb.document.worksheets);
+  return {
+    totalWorksheets: worksheets.length,
+    layoutDecoded: worksheets.filter((ws) => ws.layoutDecoded).length,
+    layoutUndecoded: worksheets.filter((ws) => !ws.layoutDecoded).length,
+    crosstabs: worksheets.filter((ws) => ws.viewType === 'CROSSTAB').length,
+    withSorts: worksheets.filter((ws) => ws.sorts.length > 0).length,
+    withTotals: worksheets.filter((ws) => ws.totals.length > 0).length,
+    withForcedJoins: worksheets.filter((ws) => ws.joins.length > 0).length,
+    selectDistinct: worksheets.filter((ws) => ws.selectDistinct === true).length,
   };
 }
 
@@ -287,7 +338,7 @@ export function assessComplexity(data: EulFullData): ComplexityAssessment {
 /** EUL5-only columns an EUL4/EUL3 read backfills with defaults or fallbacks. */
 function defaultedColumns(adapter: EulSchemaAdapter): string[] {
   const groups: Array<[string, ColumnMapping[]]> = [
-    ['BA', adapter.getBusinessAreaColumns()],
+    ['BAS', adapter.getBusinessAreaColumns()],
     ['OBJS', adapter.getFolderColumns()],
     ['EXPRESSIONS', adapter.getExpressionColumns()],
     ['JOINS', adapter.getJoinColumns()],
@@ -339,9 +390,9 @@ export function collectWarnings(eul: EulReadResult, orphans: OrphanReport): Migr
     }
   }
 
-  // Folder types that shouldn't exist for the source version (DERIVED/SUMMARY
-  // are EUL5 concepts; seeing them in an EUL4/EUL3 source is anomalous).
-  const legalTypes = new Set(FOLDER_TYPES_BY_VERSION[version.version]);
+  // Folder types are compared AFTER normalization (SOBJ→TABLE, COBJ→COMPLEX),
+  // so anything else is a raw OBJ_TYPE this reader has not seen before.
+  const legalTypes = new Set(NORMALIZED_FOLDER_TYPES);
   const unexpectedTypes = new Map<string, number>();
   for (const folder of data.folders) {
     if (!legalTypes.has(folder.folderType)) {
@@ -353,8 +404,8 @@ export function collectWarnings(eul: EulReadResult, orphans: OrphanReport): Migr
       severity: 'warning',
       code: 'UNEXPECTED_FOLDER_TYPE',
       message:
-        `${count} folder(s) have type "${type}", which is not a documented ${version.version} ` +
-        `folder type. Review these folders before migrating.`,
+        `${count} folder(s) have OBJ_TYPE "${type}", which is neither SOBJ nor COBJ. ` +
+        `Review these folders before migrating.`,
     });
   }
 
@@ -390,15 +441,60 @@ export function collectWarnings(eul: EulReadResult, orphans: OrphanReport): Migr
     });
   }
 
-  // Workbooks whose DOC_CONTENT could not be parsed as XML.
+  // Worksheets whose layout model (crosstab, axis, sort, totals, per-item
+  // format, forced joins) did not decode. Distinct from WORKBOOK_PARSE below:
+  // these worksheets still migrate their columns, just as a flat list with
+  // none of that detail — an operator needs to know how many before starting.
+  const fidelity = summarizeWorksheetFidelity(data);
+  if (fidelity.layoutUndecoded > 0) {
+    warnings.push({
+      severity: 'info',
+      code: 'WORKSHEET_LAYOUT_COVERAGE',
+      message:
+        `${fidelity.layoutUndecoded} of ${fidelity.totalWorksheets} worksheet(s) have no ` +
+        'decodable layout model. They will migrate as a flat column list with no axis, sort, ' +
+        'totals or per-item format — review them after migrating.',
+    });
+  }
+
+  // Workbooks whose body could not be decoded into worksheets. These migrate
+  // as empty maps, so an operator needs to know how many before starting.
   const unparsable = data.workbooks.filter((wb) => wb.content !== null && !wb.info.parsed);
   if (unparsable.length > 0) {
     warnings.push({
       severity: 'warning',
       code: 'WORKBOOK_PARSE',
       message:
-        `${unparsable.length} workbook(s) have DOC_CONTENT that could not be parsed as XML ` +
-        '(they may use an older binary format). Their layout will need manual review.',
+        `${unparsable.length} workbook(s) have a DOC_DOCUMENT body that could not be decoded ` +
+        'into worksheets. They migrate as empty maps and their layout needs manual review.',
+    });
+  }
+
+  // Workbooks with no body at all — nothing to migrate but the metadata.
+  const bodyless = data.workbooks.filter((wb) => wb.content === null);
+  if (bodyless.length > 0) {
+    warnings.push({
+      severity: 'warning',
+      code: 'WORKBOOK_NO_BODY',
+      message:
+        `${bodyless.length} workbook(s) have no readable body in DOCUMENTS ` +
+        '(the content column is absent or empty), so only their names migrate.',
+    });
+  }
+
+  // Conditions live on the workbook, not the worksheet, so a multi-worksheet
+  // workbook cannot say which of its worksheets used which condition.
+  const ambiguous = data.workbooks.filter(
+    (wb) => wb.document.conditionsAreWorkbookWide && wb.document.conditions.length > 0,
+  );
+  if (ambiguous.length > 0) {
+    warnings.push({
+      severity: 'info',
+      code: 'WORKBOOK_CONDITIONS_SHARED',
+      message:
+        `${ambiguous.length} multi-worksheet workbook(s) carry conditions Discoverer stores ` +
+        'per workbook rather than per worksheet. Every condition is attached to every map ' +
+        'the workbook produces; review each map and remove the ones it did not use.',
     });
   }
 
@@ -545,6 +641,7 @@ export function generateAssessmentReport(eul: EulReadResult): AssessmentReport {
     folderTypeBreakdown: folderTypeBreakdown(data),
     orphans,
     workbookUsage: summarizeWorkbookUsage(data),
+    worksheetFidelity: summarizeWorksheetFidelity(data),
     complexity,
     warnings,
     estimate,
@@ -620,48 +717,57 @@ export function validateEulData(eul: EulReadResult): ValidationResult {
     });
   }
 
-  // Broken joins: no components, or components referencing missing items.
-  const emptyJoins: number[] = [];
+  // Broken joins. A join binds two FOLDERS; item-level components are
+  // optional, so a component-less join is normal. What breaks a join is a
+  // missing folder on either side, or a component pointing at a missing item.
+  const folderlessJoins: number[] = [];
   const brokenJoins: number[] = [];
   for (const join of data.joins) {
-    if (join.components.length === 0) {
-      emptyJoins.push(join.sourceId);
+    if (join.masterFolderId === null || join.detailFolderId === null) {
+      folderlessJoins.push(join.sourceId);
       continue;
     }
-    const broken = join.components.some(
-      (c) => !itemIds.has(c.masterItemId) || !itemIds.has(c.detailItemId),
-    );
-    if (broken) brokenJoins.push(join.sourceId);
+    if (
+      !folderIds.has(join.masterFolderId) ||
+      !folderIds.has(join.detailFolderId) ||
+      join.components.some(
+        (c) =>
+          (c.masterItemId !== null && !itemIds.has(c.masterItemId)) ||
+          (c.detailItemId !== null && !itemIds.has(c.detailItemId)),
+      )
+    ) {
+      brokenJoins.push(join.sourceId);
+    }
   }
-  if (emptyJoins.length > 0) {
+  if (folderlessJoins.length > 0) {
     issues.push({
       severity: 'warning',
-      code: 'JOIN_NO_COMPONENTS',
-      message: `${emptyJoins.length} join(s) have no join components.`,
-      objectIds: emptyJoins,
+      code: 'JOIN_NO_FOLDERS',
+      message: `${folderlessJoins.length} join(s) are missing a folder on one or both sides.`,
+      objectIds: folderlessJoins,
     });
   }
   if (brokenJoins.length > 0) {
     issues.push({
       severity: 'error',
       code: 'JOIN_BROKEN_REF',
-      message: `${brokenJoins.length} join(s) reference item(s) that do not exist.`,
+      message: `${brokenJoins.length} join(s) reference folder(s) or item(s) that do not exist.`,
       objectIds: brokenJoins,
     });
   }
 
-  // Hierarchy levels referencing missing items.
+  // Hierarchy nodes referencing missing items.
   const brokenLevels: number[] = [];
   for (const hierarchy of data.hierarchies) {
-    for (const level of hierarchy.levels) {
-      if (level.itemId !== null && !itemIds.has(level.itemId)) brokenLevels.push(level.sourceId);
+    for (const node of hierarchy.nodes) {
+      if (node.itemId !== null && !itemIds.has(node.itemId)) brokenLevels.push(node.sourceId);
     }
   }
   if (brokenLevels.length > 0) {
     issues.push({
       severity: 'warning',
       code: 'HIER_LEVEL_BROKEN_REF',
-      message: `${brokenLevels.length} hierarchy level(s) reference item(s) that do not exist.`,
+      message: `${brokenLevels.length} hierarchy node(s) reference item(s) that do not exist.`,
       objectIds: brokenLevels,
     });
   }
