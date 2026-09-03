@@ -164,6 +164,24 @@ export type {
   SkipRecord,
 } from './services/migration-runner.js';
 
+// --- Post-commit verification (D-070) -------------------------------------
+export {
+  verifyMigration,
+  checkSqlGeneration,
+  summarise,
+  formatVerifyReport,
+} from './services/migration-verify.js';
+export type {
+  VerifyDb,
+  SeamId,
+  SeamStatus,
+  SeamResult,
+  CompileBucket,
+  VerifyHooks,
+  VerifyOptions,
+  VerifyReport,
+} from './services/migration-verify.js';
+
 // --- Workbook body parser -------------------------------------------------
 export {
   parseWorkbookDocument,
