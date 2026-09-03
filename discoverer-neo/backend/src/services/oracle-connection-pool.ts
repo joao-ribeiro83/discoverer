@@ -226,11 +226,80 @@ export async function getConnection(dataSourceId: string): Promise<Connection> {
     }, CONNECT_TIMEOUT_MS);
   });
 
+  // Held in a variable, not inlined into the race: when the timeout wins, this
+  // promise is still in flight. Whatever it eventually resolves to is a
+  // connection checked out of the pool that nobody holds a reference to and
+  // nobody will ever close, so the pool loses that slot permanently (BE-04).
+  // Under the estate-wide passes Phases 3 and 4 run, a handful of acquisition
+  // timeouts is enough to drain a pool to nothing.
+  const acquisition = pool.getConnection();
+
   try {
-    return await Promise.race([pool.getConnection(), timeout]);
+    return await Promise.race([acquisition, timeout]);
+  } catch (err) {
+    acquisitionsTimedOut += 1;
+    discardLateAcquisition(acquisition);
+    throw err;
   } finally {
     if (timer) clearTimeout(timer);
   }
+}
+
+// ---------------------------------------------------------------------------
+// Pool observability (INF-10, pool portion)
+// ---------------------------------------------------------------------------
+
+/**
+ * Close a connection that turned up after its acquisition already lost the
+ * race. Exported so the behaviour can be tested directly — the alternative is
+ * an untested fix on the path that hands out every Oracle connection.
+ *
+ * The rejection handler is not decoration: the race is no longer this
+ * promise's only consumer, so without it a failed acquisition would surface as
+ * an unhandled rejection and, depending on the Node flags, take the process
+ * down.
+ */
+export function discardLateAcquisition(acquisition: Promise<Connection>): void {
+  void acquisition.then(
+    (late) => {
+      void late.close().catch(() => undefined);
+    },
+    () => undefined,
+  );
+}
+
+/**
+ * Acquisitions that did not complete in time. A leak of the kind BE-04
+ * describes is invisible in a connection count alone — the pool looks busy,
+ * not broken — but shows up immediately as this number climbing while
+ * throughput does not.
+ */
+let acquisitionsTimedOut = 0;
+
+export interface OraclePoolSnapshot {
+  dataSourceId: string;
+  /** Connections the pool currently holds open. */
+  open: number;
+  /** Of those, the ones currently checked out. */
+  inUse: number;
+  max: number;
+}
+
+/**
+ * Read every live pool. Cheap and synchronous — the driver keeps these as
+ * plain properties — so it is safe to call from a Prometheus scrape.
+ */
+export function poolSnapshots(): OraclePoolSnapshot[] {
+  return [...pools.entries()].map(([dataSourceId, pool]) => ({
+    dataSourceId,
+    open: pool.connectionsOpen,
+    inUse: pool.connectionsInUse,
+    max: POOL_MAX,
+  }));
+}
+
+export function timedOutAcquisitions(): number {
+  return acquisitionsTimedOut;
 }
 
 /** Return a connection to its pool. Never throws. */

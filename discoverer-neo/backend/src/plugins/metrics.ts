@@ -1,4 +1,6 @@
 import fp from 'fastify-plugin';
+
+import { poolSnapshots, timedOutAcquisitions } from '../services/oracle-connection-pool.js';
 import {
   Registry,
   collectDefaultMetrics,
@@ -114,6 +116,49 @@ const httpErrorsTotal = new Counter({
   labelNames: ['method', 'route'],
   registers: [registry],
 });
+
+// ---------------------------------------------------------------------------
+// Oracle connection pools (INF-10, pool portion)
+//
+// Phases 3 and 4 hold Oracle connections open across the whole estate, and a
+// pool that has quietly lost slots looks exactly like a slow database. These
+// are read on scrape rather than pushed: pool occupancy is a level, not an
+// event, and the driver keeps the numbers as plain properties.
+// ---------------------------------------------------------------------------
+
+const oraclePoolConnections = new Gauge({
+  name: 'oracle_pool_connections',
+  help: 'Oracle pool connections, by data source and state',
+  labelNames: ['data_source_id', 'state'],
+  registers: [registry],
+  collect() {
+    // Data source IDs are UUIDs from our own table, not user input, and a
+    // deployment has a handful of them — no cardinality risk.
+    this.reset();
+    for (const pool of poolSnapshots()) {
+      this.set({ data_source_id: pool.dataSourceId, state: 'open' }, pool.open);
+      this.set({ data_source_id: pool.dataSourceId, state: 'in_use' }, pool.inUse);
+      this.set({ data_source_id: pool.dataSourceId, state: 'max' }, pool.max);
+    }
+  },
+});
+
+const oraclePoolAcquisitionTimeouts = new Gauge({
+  name: 'oracle_pool_acquisition_timeouts_total',
+  help: 'Connection acquisitions that timed out since process start',
+  registers: [registry],
+  collect() {
+    // The signal for a leaked connection: this climbing while throughput does
+    // not. A count of open connections alone cannot distinguish a pool that is
+    // busy from one that has lost its slots.
+    this.set(timedOutAcquisitions());
+  },
+});
+
+// Referenced so the collectors are not dropped as unused; prom-client drives
+// both through the registry.
+void oraclePoolConnections;
+void oraclePoolAcquisitionTimeouts;
 
 export default fp(
   async (fastify) => {

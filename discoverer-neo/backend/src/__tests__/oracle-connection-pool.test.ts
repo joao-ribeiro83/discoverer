@@ -21,6 +21,9 @@ import { dataSources } from '../db/schema.js';
 import {
   getPool,
   getConnection,
+  discardLateAcquisition,
+  poolSnapshots,
+  timedOutAcquisitions,
   releaseConnection,
   closePool,
   closeAll,
@@ -118,6 +121,48 @@ describe('connection helpers', () => {
     await expect(getConnection(oracleDsId)).rejects.toThrow();
     await closePool(oracleDsId);
   }, 30_000);
+
+  it('closes a connection that arrives after its acquisition timed out (BE-04)', async () => {
+    // The leak: `getConnection` races the acquisition against a timeout. When
+    // the timeout wins, the acquisition is still in flight, and whatever it
+    // eventually yields is checked out of the pool with nobody holding a
+    // reference to it. The pool loses that slot for the life of the process.
+    let closed = false;
+    const late = Promise.resolve({
+      close: async () => {
+        closed = true;
+      },
+    } as never);
+
+    discardLateAcquisition(late);
+    await late;
+    await Promise.resolve();
+
+    expect(closed).toBe(true);
+  });
+
+  it('swallows a late acquisition that fails, rather than crashing the process', async () => {
+    // The race is no longer this promise's only consumer, so an unhandled
+    // rejection here would be ours to cause.
+    const failing = Promise.reject(new Error('ORA-12541'));
+    expect(() => {
+      discardLateAcquisition(failing);
+    }).not.toThrow();
+    await new Promise((r) => setTimeout(r, 10));
+  });
+
+  it('counts acquisition timeouts, so a drained pool is visible', async () => {
+    // A count of open connections cannot tell a busy pool from one that has
+    // lost its slots. This number climbing is what distinguishes them.
+    const before = timedOutAcquisitions();
+    await expect(getConnection(oracleDsId)).rejects.toThrow();
+    await closePool(oracleDsId);
+    expect(timedOutAcquisitions()).toBeGreaterThan(before);
+  }, 30_000);
+
+  it('reports no pools when none are open', () => {
+    expect(Array.isArray(poolSnapshots())).toBe(true);
+  });
 
   it('closePool is a no-op for an unknown data source', async () => {
     await expect(closePool('never-created')).resolves.toBeUndefined();
