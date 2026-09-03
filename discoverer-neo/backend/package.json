@@ -24,6 +24,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:seed": "tsx src/db/seed.ts",
+    "verify": "tsx src/scripts/verify-migration.ts",
     "generate-spec": "tsx src/scripts/generate-spec.ts",
     "db:test:setup": "node scripts/setup-test-db.mjs",
     "db:test:reset": "node scripts/setup-test-db.mjs --recreate",
