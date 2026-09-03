@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
-    branches: [main]
+    branches: [master]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -71,7 +71,7 @@ jobs:
         run: npm run db:migrate --workspace @discoverer-neo/backend
 
       - name: Test
-        run: npm test --workspace @discoverer-neo/backend
+        run: npm test --workspace @discoverer-neo/backend -- --coverage
 
   frontend:
     name: Frontend (lint, typecheck, test)
@@ -97,7 +97,7 @@ jobs:
         run: node scripts/i18n-check.mjs pt-PT fr-FR es-ES
 
       - name: Test
-        run: npm test --workspace @discoverer-neo/frontend -- --run
+        run: npm test --workspace @discoverer-neo/frontend -- --run --coverage
 
       - name: Build
         run: npm run build --workspace @discoverer-neo/frontend
@@ -123,4 +123,4 @@ jobs:
         run: npm run typecheck --workspace @discoverer-neo/migrate
 
       - name: Test
-        run: npm test --workspace @discoverer-neo/migrate
+        run: npm test --workspace @discoverer-neo/migrate -- --coverage

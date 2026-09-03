@@ -1,5 +1,7 @@
 # Discoverer Neo
 
+[![CI](https://github.com/joao-ribeiro83/discoverer/actions/workflows/ci.yml/badge.svg)](https://github.com/joao-ribeiro83/discoverer/actions/workflows/ci.yml)
+
 > Modern open-source BI tool — an open-source replacement for Oracle Discoverer.
 
 Discoverer Neo is a full-stack business intelligence and reporting platform designed to

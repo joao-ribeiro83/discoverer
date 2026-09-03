@@ -75,4 +75,11 @@ export default {
   maxWorkers: process.env.JEST_MAX_WORKERS
     ? Number(process.env.JEST_MAX_WORKERS)
     : 1,
+  // ponytail: baseline from the 2026-09-03 measured run (lines 75.38%,
+  // branches 56.1%) — raise as coverage improves, not a target to hit blind.
+  coverageThreshold: {
+    global: {
+      branches: 56,
+    },
+  },
 };
