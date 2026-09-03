@@ -9,8 +9,8 @@ import {
 } from '@jest/globals';
 import type { FastifyInstance } from 'fastify';
 import { eq, sql } from 'drizzle-orm';
-import { buildApp } from '../app.js';
-import { db } from '../db/index.js';
+import { buildApp } from '../../app.js';
+import { db } from '../../db/index.js';
 import {
   users,
   businessAreas,
@@ -27,9 +27,9 @@ import {
   mapLayouts,
   mapPageSetup,
   mapShares,
-} from '../db/schema.js';
-import { hashPassword } from '../lib/password.js';
-import { canAccessMap } from '../services/map.service.js';
+} from '../../db/schema.js';
+import { hashPassword } from '../../lib/password.js';
+import { canAccessMap } from '../../services/map.service.js';
 
 // ---------------------------------------------------------------------------
 // Helpers

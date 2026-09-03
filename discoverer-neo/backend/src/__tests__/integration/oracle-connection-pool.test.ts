@@ -16,8 +16,8 @@ import {
   afterAll,
 } from '@jest/globals';
 import { eq } from 'drizzle-orm';
-import { db } from '../db/index.js';
-import { dataSources } from '../db/schema.js';
+import { db } from '../../db/index.js';
+import { dataSources } from '../../db/schema.js';
 import {
   getPool,
   getConnection,
@@ -29,8 +29,8 @@ import {
   closeAll,
   poolCount,
   OraclePoolError,
-} from '../services/oracle-connection-pool.js';
-import { importOracleDb } from '../services/oracle-driver.js';
+} from '../../services/oracle-connection-pool.js';
+import { importOracleDb } from '../../services/oracle-driver.js';
 
 const ORACLE_DS_NAME = 'pool-test-oracle';
 const PG_DS_NAME = 'pool-test-postgres';
