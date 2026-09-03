@@ -318,6 +318,122 @@ export async function checkFormulaCompileRate(
 }
 
 // ---------------------------------------------------------------------------
+// Seam 3 — referential closure
+// ---------------------------------------------------------------------------
+
+/**
+ * Every reference a map makes must resolve to an item, a folder and a data
+ * source inside that map's own query scope. Foreign keys already stop a
+ * dangling id; what they cannot express is the invariant F-01 broke — that the
+ * things a map points at are reachable together, as one query.
+ *
+ * Note for anyone extending this: `data_sources` holds `password_enc`. Nothing
+ * here selects a column from it beyond `id`, and nothing should.
+ */
+export async function checkReferentialClosure(
+  db: VerifyDb,
+  options: VerifyOptions = {},
+): Promise<SeamResult> {
+  const name = "every map reference resolves inside the map's query scope";
+  const limit = options.sampleLimit ?? 10;
+  const scope = mapScope(options.mapIdPrefix);
+
+  const [counts] = await rows(
+    db,
+    sql`WITH scoped AS (
+          SELECT maps.id FROM maps WHERE maps.is_active AND ${scope}
+        ),
+        refs AS (
+          SELECT s.id AS map_id, mi.item_id FROM scoped s JOIN map_items mi ON mi.map_id = s.id
+          UNION ALL
+          SELECT s.id, mc.item_id FROM scoped s JOIN map_conditions mc ON mc.map_id = s.id
+        )
+        SELECT
+          count(*)::int AS refs,
+          count(*) FILTER (WHERE i.id IS NULL)::int AS unresolved_item,
+          count(*) FILTER (WHERE i.id IS NOT NULL AND f.id IS NULL)::int AS unresolved_folder,
+          count(*) FILTER (WHERE f.id IS NOT NULL AND f.data_source_id IS NULL)::int AS folder_without_data_source,
+          count(*) FILTER (WHERE f.data_source_id IS NOT NULL AND ds.id IS NULL)::int AS unresolved_data_source,
+          count(*) FILTER (WHERE i.is_active IS FALSE)::int AS inactive_item,
+          count(*) FILTER (WHERE f.is_active IS FALSE)::int AS inactive_folder
+        FROM refs r
+        LEFT JOIN items i ON i.id = r.item_id
+        LEFT JOIN folders f ON f.id = i.folder_id
+        LEFT JOIN data_sources ds ON ds.id = f.data_source_id`,
+  );
+
+  // A map whose folders span two data sources cannot be one SQL statement, no
+  // matter how well every individual reference resolves.
+  const [spread] = await rows(
+    db,
+    sql`SELECT count(*)::int AS c FROM (
+          SELECT maps.id
+          FROM maps
+          JOIN map_items mi ON mi.map_id = maps.id
+          JOIN items i ON i.id = mi.item_id
+          JOIN folders f ON f.id = i.folder_id
+          WHERE maps.is_active AND ${scope}
+          GROUP BY maps.id
+          HAVING count(DISTINCT f.data_source_id) > 1
+        ) x`,
+  );
+
+  // A map with no columns is closed over the empty set — technically valid,
+  // and never executable. Counted here so it cannot hide.
+  const [empty] = await rows(
+    db,
+    sql`SELECT count(*)::int AS c FROM maps
+        WHERE maps.is_active AND ${scope}
+          AND NOT EXISTS (SELECT 1 FROM map_items mi WHERE mi.map_id = maps.id)`,
+  );
+
+  // A total pointing at another map's column, or at nothing.
+  const [strayTotals] = await rows(
+    db,
+    sql`SELECT count(*)::int AS c
+        FROM map_totals t
+        JOIN maps ON maps.id = t.map_id
+        LEFT JOIN map_items mi ON mi.id = t.map_item_id
+        WHERE maps.is_active AND ${scope}
+          AND t.map_item_id IS NOT NULL
+          AND (mi.id IS NULL OR mi.map_id <> t.map_id)`,
+  );
+
+  const num = (row: Row | undefined, key: string): number => Number(row?.[key] ?? 0);
+
+  const metrics: Record<string, number> = {
+    references: num(counts, 'refs'),
+    unresolvedItem: num(counts, 'unresolved_item'),
+    unresolvedFolder: num(counts, 'unresolved_folder'),
+    folderWithoutDataSource: num(counts, 'folder_without_data_source'),
+    unresolvedDataSource: num(counts, 'unresolved_data_source'),
+    inactiveItem: num(counts, 'inactive_item'),
+    inactiveFolder: num(counts, 'inactive_folder'),
+    mapsSpanningDataSources: num(spread, 'c'),
+    mapsWithNoColumns: num(empty, 'c'),
+    strayTotals: num(strayTotals, 'c'),
+  };
+
+  const violations = Object.entries(metrics).filter(([key, value]) => key !== 'references' && value > 0);
+  const findings = violations
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([key, value]) => `${value}x ${key}`);
+
+  return {
+    id: 'referential-closure',
+    name,
+    status: violations.length === 0 ? 'PASS' : 'FAIL',
+    metrics,
+    findings,
+    reason:
+      violations.length > 0
+        ? `${violations.length} closure invariant(s) broken across ${metrics.references} reference(s)`
+        : undefined,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Report assembly
 // ---------------------------------------------------------------------------
 
@@ -331,6 +447,7 @@ export async function verifyMigration(
   const seams: SeamResult[] = [
     await checkSqlGeneration(db, options),
     await checkFormulaCompileRate(db, options),
+    await checkReferentialClosure(db, options),
   ];
 
   return summarise(target, seams);

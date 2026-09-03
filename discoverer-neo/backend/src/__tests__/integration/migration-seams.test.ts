@@ -3,6 +3,7 @@ import { inArray, like, sql } from 'drizzle-orm';
 
 import {
   checkFormulaCompileRate,
+  checkReferentialClosure,
   checkSqlGeneration,
   createMigrationWriter,
   createTargetDb,
@@ -264,6 +265,63 @@ describe('Migration seam tests', () => {
       expect(result.status).toBe('SKIPPED');
       // The count is still useful, and still not a pass.
       expect(result.metrics.formulas).toBe(3);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Seam 3 — referential closure
+  // -------------------------------------------------------------------------
+  describe('seam 3: every map reference resolves inside the query scope', () => {
+    it('holds the invariants foreign keys already guarantee', async () => {
+      const result = await checkReferentialClosure(db, { mapIdPrefix: PREFIX });
+
+      expect(result.metrics.references).toBeGreaterThan(0);
+      // These four are FK-backed, so a non-zero here means the constraint is
+      // gone, not that the data drifted. Gated, not pinned.
+      expect(result.metrics.unresolvedItem).toBe(0);
+      expect(result.metrics.unresolvedFolder).toBe(0);
+      expect(result.metrics.unresolvedDataSource).toBe(0);
+      expect(result.metrics.strayTotals).toBe(0);
+      // One map, one data source. A map spanning two cannot be one statement.
+      expect(result.metrics.mapsSpanningDataSources).toBe(0);
+      expect(result.metrics.mapsWithNoColumns).toBe(0);
+    });
+
+    it('reports that the migration writes no data source onto folders', async () => {
+      const result = await checkReferentialClosure(db, { mapIdPrefix: PREFIX });
+      const { references = 0, folderWithoutDataSource = 0 } = result.metrics;
+
+      // Declared baseline, and a real defect: the migration leaves
+      // `folders.data_source_id` null, so `resolveDataSourceId` throws "no data
+      // source configured on its folders" for every map — even one whose SQL
+      // generates cleanly. 211 of 212 folders in the live estate are null.
+      // When the migration starts writing it, this becomes `toBe(0)`.
+      expect(folderWithoutDataSource).toBe(references);
+      expect(result.status).toBe('FAIL');
+    });
+
+    it('detects a map that is closed over nothing', async () => {
+      // Negative control. A map with no columns satisfies every FK and can
+      // never execute, so closure has to count it rather than call it clean.
+      const [ba] = await db.select().from(businessAreas).where(idLike(businessAreas.id)).limit(1);
+      const [owner] = await db.select().from(users).where(idLike(users.id)).limit(1);
+      const emptyMapId = `${PREFIX}777700000001`;
+      await db.insert(maps).values({
+        id: emptyMapId,
+        name: 'seam-test columnless map',
+        mapType: 'TABLE',
+        businessAreaId: ba!.id,
+        createdBy: owner!.id,
+      });
+
+      try {
+        const result = await checkReferentialClosure(db, { mapIdPrefix: PREFIX });
+        expect(result.metrics.mapsWithNoColumns).toBe(1);
+        expect(result.findings.join(' | ')).toContain('mapsWithNoColumns');
+        expect(result.status).toBe('FAIL');
+      } finally {
+        await db.delete(maps).where(inArray(maps.id, [emptyMapId]));
+      }
     });
   });
 });
