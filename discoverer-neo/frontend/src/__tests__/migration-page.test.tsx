@@ -138,7 +138,7 @@ function makeReport(over: Partial<AssessmentReport> = {}): AssessmentReport {
       { severity: 'info', code: 'SECURITY_MANAGER', message: '1 Security Manager condition found.' },
     ],
     estimate: { totalObjects: 9, estimatedMinutes: 12, humanReadable: '~12 min' },
-    readiness: { score: 90, rating: 'ready', blockers: [], notes: [] },
+    readiness: { score: 90, rating: 'source-clean', blockers: [], notes: [], targetVerified: false },
     worksheetFidelity: {
       totalWorksheets: 0,
       layoutDecoded: 0,

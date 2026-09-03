@@ -5,7 +5,7 @@ import {
   estimateMigration,
   findOrphans,
   generateAssessmentReport,
-  scoreReadiness,
+  scoreSourceReadiness,
   validateEulData,
 } from '../services/assessment.js';
 import { parseWorkbookContent, readEulSchema, summarizeWorkbookDocument } from '../services/eul-reader.js';
@@ -278,23 +278,46 @@ describe('estimateMigration', () => {
 });
 
 // ---------------------------------------------------------------------------
-// scoreReadiness
+// scoreSourceReadiness
 // ---------------------------------------------------------------------------
 
-describe('scoreReadiness', () => {
-  it('rates an unsupported version as not-supported with a blocker', () => {
+describe('scoreSourceReadiness', () => {
+  it('rates an unsupported version as source-not-supported with a blocker', () => {
     const e = eul('EUL3', {}, { supported: false });
-    const readiness = scoreReadiness(e, findOrphans(e.data), []);
-    expect(readiness.rating).toBe('not-supported');
+    const readiness = scoreSourceReadiness(e, findOrphans(e.data), []);
+    expect(readiness.rating).toBe('source-not-supported');
     expect(readiness.blockers.length).toBeGreaterThan(0);
     expect(readiness.score).toBeLessThan(50);
   });
 
-  it('rates a clean supported EUL as ready', () => {
+  it('never reports that anything is ready, at any score', () => {
+    // D-071 / F-12, and the point of the whole rename. This function is fed
+    // three source-side arguments and never sees a target, so a rating a
+    // caller could read as "the migration is ready" is a claim it has no
+    // standing to make. It once returned 75 / "ready-with-warnings" / no
+    // blockers over an estate where none of 923 maps could run.
+    const clean = eul('EUL5', { businessAreas: [ba(1)], folders: [folder(10, 1)] });
+    const messy = eul('EUL5', { businessAreas: [ba(1)], items: [item(1, 999)] });
+    const unsupported = eul('EUL3', {}, { supported: false });
+
+    for (const e of [clean, messy, unsupported]) {
+      const readiness = scoreSourceReadiness(e, findOrphans(e.data), []);
+      expect(readiness.rating).not.toBe('ready');
+      expect(readiness.rating).not.toBe('ready-with-warnings');
+      expect(readiness.rating.startsWith('source-')).toBe(true);
+      // Even a perfect source says, on the record, that no target was checked.
+      expect(readiness.targetVerified).toBe(false);
+      expect(readiness.notes.join(' ')).toContain('dn-migrate verify');
+    }
+  });
+
+  it('rates a clean supported EUL as source-clean, scoring the source only', () => {
     const e = eul('EUL5', { businessAreas: [ba(1)], folders: [folder(10, 1)] });
-    const readiness = scoreReadiness(e, findOrphans(e.data), []);
-    expect(readiness.rating).toBe('ready');
+    const readiness = scoreSourceReadiness(e, findOrphans(e.data), []);
+    expect(readiness.rating).toBe('source-clean');
     expect(readiness.score).toBe(100);
+    // 100/100 and still not a statement about the migration.
+    expect(readiness.targetVerified).toBe(false);
   });
 
   it('deducts for warnings and orphans', () => {
@@ -303,7 +326,7 @@ describe('scoreReadiness', () => {
       items: [item(1, 999)], // orphan
     });
     const orphans = findOrphans(e.data);
-    const readiness = scoreReadiness(e, orphans, [
+    const readiness = scoreSourceReadiness(e, orphans, [
       { severity: 'warning', code: 'X', message: 'x' },
     ]);
     expect(readiness.score).toBeLessThan(100);
@@ -327,7 +350,7 @@ describe('generateAssessmentReport', () => {
     // No confirmed EXP_TYPE identifies a security-manager row.
     expect(report.counts.securityConditions).toBe(0);
     expect(report.folderTypeBreakdown).toMatchObject({ TABLE: 1, COMPLEX: 1 });
-    expect(report.readiness.rating).not.toBe('not-supported');
+    expect(report.readiness.rating).not.toBe('source-not-supported');
   });
 
   it('EUL4: no defaulted-column warning — EUL4 and EUL5 share every column', async () => {
@@ -339,11 +362,11 @@ describe('generateAssessmentReport', () => {
     expect(codes).toContain('SECURITY_MODEL');
   });
 
-  it('EUL3: is rated not-supported with an error-level warning', async () => {
+  it('EUL3: is rated source-not-supported with an error-level warning', async () => {
     const report = generateAssessmentReport(await readEulSchema(mockExecutor(eul3Db())));
 
     expect(report.version.version).toBe('EUL3');
-    expect(report.readiness.rating).toBe('not-supported');
+    expect(report.readiness.rating).toBe('source-not-supported');
     expect(report.warnings.some((w) => w.severity === 'error' && w.code === 'EUL3_UNSUPPORTED')).toBe(
       true,
     );

@@ -678,11 +678,16 @@ export interface AssessmentReport {
   complexity: { score: 'simple' | 'medium' | 'complex'; points: number }
   warnings: AssessmentWarning[]
   estimate: { totalObjects: number; estimatedMinutes: number; humanReadable: string }
+  /**
+   * Scores the SOURCE only. No rating here says "ready" — nothing in this
+   * report has seen a target. `dn-migrate verify` is the gate on that.
+   */
   readiness: {
     score: number
-    rating: 'ready' | 'ready-with-warnings' | 'needs-attention' | 'not-supported'
+    rating: 'source-clean' | 'source-minor-issues' | 'source-needs-work' | 'source-not-supported'
     blockers: string[]
     notes: string[]
+    targetVerified: false
   }
   worksheetFidelity: WorksheetFidelitySummary
 }

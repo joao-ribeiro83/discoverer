@@ -297,7 +297,7 @@ export function formatAssessmentReport(report: AssessmentReport): string {
   );
   lines.push('');
 
-  lines.push(`Migration readiness: ${readiness.score}/100 (${readiness.rating})`);
+  lines.push(`Source readiness: ${readiness.score}/100 (${readiness.rating})`);
   for (const blocker of readiness.blockers) lines.push(`  ! ${blocker}`);
   for (const note of readiness.notes) lines.push(`  - ${note}`);
 

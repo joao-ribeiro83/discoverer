@@ -114,18 +114,37 @@ export interface MigrationEstimate {
   humanReadable: string;
 }
 
-export type ReadinessRating =
-  | 'ready'
-  | 'ready-with-warnings'
-  | 'needs-attention'
-  | 'not-supported';
+/**
+ * D-071 / F-12. None of these says "ready", and that is deliberate.
+ *
+ * This score is computed from the SOURCE alone — an EUL read, an orphan report
+ * and a list of transform warnings. It never receives target state, so it
+ * cannot know whether anything migrated, whether a map executes, or whether a
+ * formula compiles. It once returned 75 / "ready-with-warnings" / no blockers
+ * over an estate where none of 923 maps could run, and the defect was not the
+ * arithmetic: the function had no output in scope to inspect.
+ *
+ * The fix is not to teach it about the target. It is to stop it speaking about
+ * one. Every rating names the source, and `dn-migrate verify` is the gate on
+ * whether a migration is usable.
+ */
+export type SourceReadinessRating =
+  | 'source-clean'
+  | 'source-minor-issues'
+  | 'source-needs-work'
+  | 'source-not-supported';
 
-export interface ReadinessScore {
-  /** 0–100. */
+export interface SourceReadinessScore {
+  /** 0–100, describing the SOURCE's fitness for automated migration. */
   score: number;
-  rating: ReadinessRating;
+  rating: SourceReadinessRating;
   blockers: string[];
   notes: string[];
+  /**
+   * Always false here. A pre-check cannot verify a target, and a field that is
+   * structurally constant is cheaper to read than a comment nobody opens.
+   */
+  targetVerified: false;
 }
 
 export interface AssessmentReport {
@@ -138,7 +157,7 @@ export interface AssessmentReport {
   complexity: ComplexityAssessment;
   warnings: MigrationWarning[];
   estimate: MigrationEstimate;
-  readiness: ReadinessScore;
+  readiness: SourceReadinessScore;
 }
 
 // ---------------------------------------------------------------------------
@@ -565,26 +584,37 @@ export function estimateMigration(eul: EulReadResult): MigrationEstimate {
 }
 
 // ---------------------------------------------------------------------------
-// Readiness score
+// Source readiness pre-check
 // ---------------------------------------------------------------------------
 
-export function scoreReadiness(
+/** Carried on every result so no reading of this score can omit it. */
+export const TARGET_UNVERIFIED_NOTE =
+  'This scores the SOURCE only and cannot see a target. Run `dn-migrate verify --target <connection>` after migrating to find out whether the result is usable.';
+
+/**
+ * Score the SOURCE's fitness for automated migration. A pre-check, not a gate.
+ * See `SourceReadinessRating` for why it can never say a migration is ready.
+ */
+export function scoreSourceReadiness(
   eul: EulReadResult,
   orphans: OrphanReport,
   warnings: MigrationWarning[],
-): ReadinessScore {
+): SourceReadinessScore {
   const { version } = eul;
   const blockers: string[] = [];
-  const notes: string[] = [];
+  // Stated on every result, including a perfect one: whatever this score says,
+  // nothing has looked at a target.
+  const notes: string[] = [TARGET_UNVERIFIED_NOTE];
 
   // Unsupported version is a hard blocker.
   if (!version.supported) {
     blockers.push(`EUL version ${version.version} is not supported for automated migration.`);
     return {
       score: 15,
-      rating: 'not-supported',
+      rating: 'source-not-supported',
       blockers,
-      notes: ['Upgrade the EUL to 4.x/5.x, or migrate manually.'],
+      notes: [TARGET_UNVERIFIED_NOTE, 'Upgrade the EUL to 4.x/5.x, or migrate manually.'],
+      targetVerified: false,
     };
   }
 
@@ -612,14 +642,14 @@ export function scoreReadiness(
 
   score = Math.max(0, Math.min(100, Math.round(score)));
 
-  const rating: ReadinessRating =
+  const rating: SourceReadinessRating =
     score >= 80
-      ? 'ready'
+      ? 'source-clean'
       : score >= 50
-        ? 'ready-with-warnings'
-        : 'needs-attention';
+        ? 'source-minor-issues'
+        : 'source-needs-work';
 
-  return { score, rating, blockers, notes };
+  return { score, rating, blockers, notes, targetVerified: false };
 }
 
 // ---------------------------------------------------------------------------
@@ -633,7 +663,7 @@ export function generateAssessmentReport(eul: EulReadResult): AssessmentReport {
   const warnings = collectWarnings(eul, orphans);
   const complexity = assessComplexity(data);
   const estimate = estimateMigration(eul);
-  const readiness = scoreReadiness(eul, orphans, warnings);
+  const readiness = scoreSourceReadiness(eul, orphans, warnings);
 
   return {
     version,
