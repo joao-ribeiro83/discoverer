@@ -760,7 +760,11 @@ export type MigrationJobKind = 'FULL' | 'MAPS'
 export interface MigrationJob {
   id: string
   kind: MigrationJobKind
-  status: 'RUNNING' | 'COMPLETED' | 'FAILED'
+  /**
+   * COMPLETED_WITH_BLOCKERS: the run committed, and something it produced does
+   * not hold. Treat it as done-but-not-ready, never as success.
+   */
+  status: 'RUNNING' | 'COMPLETED' | 'COMPLETED_WITH_BLOCKERS' | 'FAILED'
   dataSourceId: string
   dryRun: boolean
   requestedVersion: 'auto' | 'EUL4' | 'EUL5'

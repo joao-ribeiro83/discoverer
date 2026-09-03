@@ -36,6 +36,8 @@ import type {
   MigrationValidationResult,
 } from './services/migration-runner.js';
 import { runMigration, TARGET_TABLE_ORDER, validateMigration } from './services/migration-runner.js';
+import type { VerifyDb } from './services/migration-verify.js';
+import { formatVerifyReport, verifyMigration } from './services/migration-verify.js';
 
 // ---------------------------------------------------------------------------
 // Injectable dependencies
@@ -552,6 +554,37 @@ export async function commandValidateMigration(
 // Argument parsing + dispatch
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// `verify` — post-commit verification of an already-migrated target (D-070)
+// ---------------------------------------------------------------------------
+
+/**
+ * Read-only, post-commit, and re-runnable. It never re-imports and never opens
+ * a transaction: a rollback over 923 maps would destroy the evidence needed to
+ * debug the failure, and the estate is already migrated in any case.
+ *
+ * Two of the four seams need the SQL generator and the formula parser, which
+ * live in the backend workspace. That workspace depends on this one and not the
+ * reverse, so those seams report SKIPPED here — never PASS — and name the
+ * command that runs them. `npm run verify --workspace @discoverer-neo/backend`
+ * runs all four against the same database.
+ *
+ * Exit code 1 on COMPLETED_WITH_BLOCKERS, so a cutover runbook can gate on it.
+ */
+export async function commandVerify(
+  db: VerifyDb,
+  options: { json: boolean; sampleLimit?: number },
+  io: CliIO,
+): Promise<number> {
+  const report = await verifyMigration(db, { sampleLimit: options.sampleLimit });
+
+  // The report carries the database NAME only. `data_sources` holds
+  // `password_enc`, and nothing here reads a column from it.
+  io.out(options.json ? JSON.stringify(report, null, 2) : formatVerifyReport(report));
+
+  return report.status === 'VERIFIED' ? EXIT_OK : EXIT_ERROR;
+}
+
 function parseArgs(argv: string[]) {
   return yargs(argv)
     .scriptName('dn-migrate')
@@ -596,11 +629,16 @@ function parseArgs(argv: string[]) {
       default: 'auto',
       describe: 'Override EUL auto-detection (run/validate)',
     })
+    .option('samples', {
+      type: 'number',
+      describe: 'Example findings to show per verify seam (default 10)',
+    })
     .command('analyze', 'Detect the EUL version, read it, and print an assessment report')
     .command('export', 'Export the EUL metadata as normalized JSON')
     .command('validate', 'Validate EUL referential integrity (add --target to reconcile a migration)')
     .command('run', 'Migrate the EUL into a Discoverer Neo Postgres database')
-    .demandCommand(1, 'Specify a command: analyze, export, validate, or run')
+    .command('verify', 'Run the four seam checks against an already-migrated --target (D-070)')
+    .demandCommand(1, 'Specify a command: analyze, export, validate, run, or verify')
     .strict()
     .exitProcess(false)
     // Throw parse/validation failures instead of printing to the real console,
@@ -642,6 +680,11 @@ function connectionArgs(parsed: Record<string, unknown>): ConnectionArgs {
   };
 }
 
+/** `--target` as a string, or undefined. Read before the main option block. */
+function targetArgOf(parsed: { target?: unknown }): string | undefined {
+  return typeof parsed.target === 'string' && parsed.target !== '' ? parsed.target : undefined;
+}
+
 function describeError(err: unknown): string {
   if (err instanceof EulDetectionError) return `No EUL detected: ${err.message}`;
   if (err instanceof CliUsageError) return err.message;
@@ -675,6 +718,35 @@ export async function runCli(argv: string[], deps: CliDeps = {}): Promise<number
     deps.writeFile ??
     (async (path: string, content: string) =>
       (await import('node:fs/promises')).writeFile(path, content, 'utf8'));
+
+  // `verify` inspects an already-migrated TARGET. It needs no source at all,
+  // so it must be handled before the source connection is built — asking an
+  // operator for Oracle credentials to read a Postgres database they already
+  // have would be nonsense, and on a decommissioned source, impossible.
+  if (command === 'verify') {
+    let target: ReturnType<typeof createTargetDb>;
+    try {
+      target = createTargetDb(await loadTargetConfig(targetArgOf(parsed), readFile));
+    } catch (err) {
+      io.err(describeError(err));
+      return EXIT_ERROR;
+    }
+    try {
+      return await commandVerify(
+        target.db,
+        {
+          json: parsed.json === true,
+          sampleLimit: typeof parsed.samples === 'number' ? parsed.samples : undefined,
+        },
+        io,
+      );
+    } catch (err) {
+      io.err(describeError(err));
+      return EXIT_ERROR;
+    } finally {
+      await target.close();
+    }
+  }
 
   // Resolve the source: injected (tests) or built from connection details.
   let source: EulSource;

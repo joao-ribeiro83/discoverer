@@ -133,6 +133,8 @@
     "theSource": "the source",
     "migrationFailed": "Migration failed",
     "seeLogBelow": "See the log below.",
-    "mapReimportStarted": "Map re-import started"
+    "mapReimportStarted": "Map re-import started",
+    "migrationBlockers": "Migration finished with blockers",
+    "migrationBlockersBody": "The rows landed, but the run's own reconciliation did not add up. Run dn-migrate verify against the target before using this estate."
   }
 }

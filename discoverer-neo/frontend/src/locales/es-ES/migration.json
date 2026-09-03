@@ -133,6 +133,8 @@
     "theSource": "el origen",
     "migrationFailed": "Error en la migración",
     "seeLogBelow": "Consulte el registro a continuación.",
-    "mapReimportStarted": "Reimportación de mapas iniciada"
+    "mapReimportStarted": "Reimportación de mapas iniciada",
+    "migrationBlockers": "La migracion termino con bloqueos",
+    "migrationBlockersBody": "Las filas se escribieron, pero la reconciliacion de la propia ejecucion no cuadra. Ejecute dn-migrate verify en el destino antes de usar este entorno."
   }
 }

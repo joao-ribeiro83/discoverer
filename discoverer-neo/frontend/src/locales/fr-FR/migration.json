@@ -133,6 +133,8 @@
     "theSource": "la source",
     "migrationFailed": "Échec de la migration",
     "seeLogBelow": "Consultez le journal ci-dessous.",
-    "mapReimportStarted": "Réimportation des cartes démarrée"
+    "mapReimportStarted": "Réimportation des cartes démarrée",
+    "migrationBlockers": "Migration terminee avec des blocages",
+    "migrationBlockersBody": "Les lignes ont ete ecrites, mais la reconciliation de l'execution ne concorde pas. Executez dn-migrate verify sur la cible avant d'utiliser cet environnement."
   }
 }

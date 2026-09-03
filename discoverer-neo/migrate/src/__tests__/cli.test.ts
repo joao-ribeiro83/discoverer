@@ -105,6 +105,19 @@ describe('runCli — export', () => {
   });
 });
 
+describe('runCli — verify', () => {
+  it('requires --target, and never asks for the source', async () => {
+    // `verify` reads an already-migrated Postgres target. Demanding Oracle
+    // credentials for that would be nonsense, and impossible once the source
+    // is decommissioned — so a source is never resolved on this path.
+    const cap = makeIO();
+    const code = await runCli(['verify'], { io: cap.io, source: mockExecutor(eul5Db()) });
+    expect(code).toBe(EXIT_ERROR);
+    expect(cap.errText()).toContain('--target');
+    expect(cap.errText()).not.toContain('EUL');
+  });
+});
+
 describe('runCli — validate', () => {
   it('exits 0 on clean data', async () => {
     const cap = makeIO();

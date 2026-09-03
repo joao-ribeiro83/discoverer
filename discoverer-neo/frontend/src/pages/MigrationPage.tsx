@@ -242,6 +242,16 @@ export function MigrationPage() {
               }),
         })
         if (!job.dryRun) void queryClient.invalidateQueries({ queryKey: ['business-areas'] })
+      } else if (job.status === 'COMPLETED_WITH_BLOCKERS') {
+        // Deliberately not the success toast: the rows landed, but the run's
+        // own reconciliation did not add up. Showing "complete" here is how an
+        // operator ends up trusting an estate that cannot run.
+        toast({
+          title: t('migration:toasts.migrationBlockers'),
+          description: t('migration:toasts.migrationBlockersBody'),
+          variant: 'destructive',
+        })
+        if (!job.dryRun) void queryClient.invalidateQueries({ queryKey: ['business-areas'] })
       } else if (job.status === 'FAILED') {
         toast({
           title: t('migration:toasts.migrationFailed'),
