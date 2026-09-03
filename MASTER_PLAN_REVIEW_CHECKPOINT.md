@@ -416,3 +416,24 @@ now.
   Oracle credentials. `.env.example` is restored; the values are not.
 - **`discoverer-neo/backend/node_modules`** - gone. The suites run off the
   hoisted root `node_modules`; run `npm install` before trusting a clean build.
+
+### Git checkpoint
+
+| Commit | What |
+|---|---|
+| `c863d6c` | Restore the tree after the repository root was deleted; carries Phases 0.3-0.5 forward |
+| `c143dc8` | **Phase 1.1** - all five changes, one commit |
+
+Both pushed to `origin/master`. Full backend suite at `c143dc8`: **46 suites,
+1080 tests, 0 failures** (`npx jest --runInBand`).
+
+Two `.gitignore` rules were restored in `c863d6c`, not added:
+`discoverer-neo/migrate/corpus/*.private.json` (the formula corpus's
+de-anonymisation key, which was staged for commit without it) and
+`discoverer-neo/backups/`.
+
+### Next
+
+`docs/master-plan/prompts/PHASE-01-02-visibility-and-schema.md`, with one thing
+ahead of it: **Phase 0.2 must be redone** before anything depends on credential
+hygiene, and `.env` must be recreated before any live Oracle work.
