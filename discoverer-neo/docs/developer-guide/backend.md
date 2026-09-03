@@ -89,17 +89,35 @@ export async function executeMap(mapId: string, params: Record<string, any>) {
 
 ### Database (`backend/src/db/`)
 
-**schema.ts:** Table definitions using Drizzle
+**schema.ts:** the backend's view of the database — a re-export, not a
+declaration.
+
+The 20 tables shared with the migrator are declared once, in the
+`@discoverer-neo/core` package (`migrate/src/db/schema.ts`). This file
+re-exports them and declares only the 10 runtime-only tables the migrator never
+writes, plus every `relations()` block.
 
 ```typescript
-export const maps = pgTable('maps', {
-  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
-  name: varchar('name', { length: 255 }).notNull(),
-  businessAreaId: uuid('business_area_id').references(() => businessAreas.id),
-  createdBy: uuid('created_by').references(() => users.id),
-  // ...
-});
+// Shared tables and enums — single definition in @discoverer-neo/core.
+export * from '@discoverer-neo/core/db/schema';
 ```
+
+**Do not add a `pgTable` call here for a shared table.** That re-creates the
+drift this arrangement removed;
+`backend/src/__tests__/schema-single-definition.test.ts` fails if you do. See
+[architecture.md](architecture.md) for why.
+
+The package is `@discoverer-neo/core` (the `migrate/` directory). Its subpaths:
+
+| Import | What it is |
+| --- | --- |
+| `@discoverer-neo/core/db/schema` | The shared tables and enums. Free to import anywhere. |
+| `@discoverer-neo/core/migration` | The Oracle EUL migration pipeline. Not request-path code — an ESLint rule restricts it to `migration.service.ts`, `credential-file.service.ts`, scripts and tests. |
+| `@discoverer-neo/core/testing` | EUL fixtures and fake executors for tests. |
+
+`npm run typecheck -w backend` builds core first (`pretypecheck`), so a
+column change in core surfaces as a backend compile error rather than a stale
+`dist/`.
 
 **index.ts:** ORM client
 

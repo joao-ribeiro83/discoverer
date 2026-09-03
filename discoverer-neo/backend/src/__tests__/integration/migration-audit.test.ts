@@ -10,8 +10,8 @@ import {
   TARGET_TABLE_ORDER,
   type MigrationWriter,
   type TargetTable,
-} from '@discoverer-neo/migrate';
-import { eul5Db, mockExecutor } from '@discoverer-neo/migrate/testing';
+} from '@discoverer-neo/core/migration';
+import { eul5Db, mockExecutor } from '@discoverer-neo/core/testing';
 
 import { getApp } from './test-helper.js';
 import { db } from '../../db/index.js';

@@ -5,7 +5,7 @@
  * real driver error is visible.
  */
 import { defaultDeps } from '../services/migration.service.js';
-import { reimportMaps } from '@discoverer-neo/migrate';
+import { reimportMaps } from '@discoverer-neo/core/migration';
 
 async function main(): Promise<void> {
   const dataSourceId = process.argv[2];

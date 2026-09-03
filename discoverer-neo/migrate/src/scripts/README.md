@@ -1,7 +1,7 @@
 # Verification harness for the workbook parser
 
 Dev-only tools. **None of this is imported by the migration** — nothing here
-is exported from `@discoverer-neo/migrate`'s package entry points (`.` /
+is exported from `@discoverer-neo/core/migration`'s package entry points (`.` /
 `./testing`), and it needs things the migration never depends on: a 32-bit
 Windows host and Oracle 8 client (`DISCVR4/d4wkdmp.exe`) for the corpus dump,
 and a live connection to the source EUL for the differ. See

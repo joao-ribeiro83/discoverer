@@ -1,5 +1,5 @@
 /**
- * Test fixtures shipped with the migrate package (`@discoverer-neo/migrate/testing`).
+ * Test fixtures shipped with the migrate package (`@discoverer-neo/core/testing`).
  *
  * These exist so other workspaces — currently the backend's migration-service
  * tests — can drive the migration pipeline hermetically, with a mock Oracle

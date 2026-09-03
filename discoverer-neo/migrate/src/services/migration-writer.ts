@@ -19,16 +19,8 @@ import { eq, sql } from 'drizzle-orm';
 import type { PgInsertValue, PgTable } from 'drizzle-orm/pg-core';
 
 import type { TargetDatabase } from '../db/client.js';
-import {
-  businessAreas,
-  folders,
-  items,
-  maps,
-  MIGRATION_LOG_DDL,
-  migrationLog,
-  TARGET_TABLES,
-  users,
-} from '../db/schema.js';
+import { MIGRATION_LOG_DDL, migrationLog } from '../db/migration-log.js';
+import { businessAreas, folders, items, maps, TARGET_TABLES, users } from '../db/schema.js';
 import type { TargetTable } from '../db/schema.js';
 
 export type MigrationLogLevel = 'INFO' | 'WARN' | 'ERROR';
@@ -168,7 +160,12 @@ class DrizzleMigrationWriter implements MigrationWriter {
       .groupBy(maps.businessAreaId);
 
     const mapCountByBusinessArea: Record<string, number> = {};
-    for (const row of mapCounts) mapCountByBusinessArea[row.businessAreaId] = row.count;
+    // `maps.business_area_id` is advisory and nullable since Phase 1.1 — the
+    // effective folder set is what scopes a map. Maps with no owning area are
+    // simply not counted against one.
+    for (const row of mapCounts) {
+      if (row.businessAreaId !== null) mapCountByBusinessArea[row.businessAreaId] = row.count;
+    }
 
     return {
       users: userRows,

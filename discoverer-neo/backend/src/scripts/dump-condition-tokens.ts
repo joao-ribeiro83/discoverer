@@ -11,7 +11,7 @@
  * Read-only. Writes nothing to either database.
  */
 
-import { parseWorkbookDocument } from '@discoverer-neo/migrate';
+import { parseWorkbookDocument } from '@discoverer-neo/core/migration';
 import { eq } from 'drizzle-orm';
 
 import { db } from '../db/index.js';

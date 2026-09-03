@@ -4,15 +4,15 @@
  * The HTTP layer is exercised against the real app (auth, validation, error
  * mapping). The pipeline itself is exercised at the service level with
  * injected dependencies — a mock Oracle source and an in-memory target, both
- * reused from `@discoverer-neo/migrate/testing` — so no Oracle is needed.
+ * reused from `@discoverer-neo/core/testing` — so no Oracle is needed.
  */
 
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from '@jest/globals';
 import type { FastifyInstance, InjectOptions } from 'fastify';
 import { eq } from 'drizzle-orm';
 
-import { createFakeWriter, eul4Db, eul5Db, mockExecutor } from '@discoverer-neo/migrate/testing';
-import type { EulConnectionConfig } from '@discoverer-neo/migrate';
+import { createFakeWriter, eul4Db, eul5Db, mockExecutor } from '@discoverer-neo/core/testing';
+import type { EulConnectionConfig } from '@discoverer-neo/core/migration';
 
 import { buildApp } from '../app.js';
 import { db } from '../db/index.js';

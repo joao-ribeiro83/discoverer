@@ -37,9 +37,10 @@ export default {
     // Resolve the sibling migrate workspace to its TypeScript source rather
     // than its built ESM output: jest loads node_modules as CJS and would
     // choke on `export *` in migrate/dist. Mapping to source also means tests
-    // don't require a prior `npm run build -w @discoverer-neo/migrate`.
-    '^@discoverer-neo/migrate/testing$': '<rootDir>/../migrate/src/testing/index.ts',
-    '^@discoverer-neo/migrate$': '<rootDir>/../migrate/src/index.ts',
+    // don't require a prior `npm run build -w @discoverer-neo/core`.
+    '^@discoverer-neo/core/db/schema$': '<rootDir>/../migrate/src/db/schema.ts',
+    '^@discoverer-neo/core/testing$': '<rootDir>/../migrate/src/testing/index.ts',
+    '^@discoverer-neo/core/migration$': '<rootDir>/../migrate/src/index.ts',
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
   transform: {
@@ -50,7 +51,7 @@ export default {
         tsconfig: {
           module: 'ESNext',
           // 'bundler' (not the legacy 'node') so package.json "exports"
-          // subpaths resolve — e.g. '@discoverer-neo/migrate/testing'.
+          // subpaths resolve — e.g. '@discoverer-neo/core/testing'.
           moduleResolution: 'bundler',
           verbatimModuleSyntax: false,
           // Resolve the migrate workspace to its TypeScript SOURCE for types
@@ -61,8 +62,9 @@ export default {
           // reads like a broken suite rather than a missing build step.
           baseUrl: '.',
           paths: {
-            '@discoverer-neo/migrate': ['../migrate/src/index.ts'],
-            '@discoverer-neo/migrate/testing': ['../migrate/src/testing/index.ts'],
+            '@discoverer-neo/core/db/schema': ['../migrate/src/db/schema.ts'],
+            '@discoverer-neo/core/migration': ['../migrate/src/index.ts'],
+            '@discoverer-neo/core/testing': ['../migrate/src/testing/index.ts'],
           },
         },
       },
