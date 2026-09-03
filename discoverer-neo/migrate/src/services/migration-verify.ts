@@ -28,6 +28,8 @@
 
 import { sql } from 'drizzle-orm';
 
+import { EXPECTED_LOSS_ALLOWANCES, type ExpectedLossAllowance } from '../verify/expected-loss.js';
+
 /**
  * All four seams are raw SQL, so the verifier asks only for something that can
  * run a statement. That admits both this workspace's `TargetDatabase` and the
@@ -109,6 +111,11 @@ export interface VerifyOptions extends VerifyHooks {
   mapIdPrefix?: string;
   /** Stop seam 1 after this many maps. Unset means the whole estate. */
   maxMaps?: number;
+  /**
+   * Override the declared allowances. Tests pass their own fixture-scoped set;
+   * everything else uses the checked-in declaration.
+   */
+  allowances?: readonly ExpectedLossAllowance[];
 }
 
 // ---------------------------------------------------------------------------
@@ -434,6 +441,82 @@ export async function checkReferentialClosure(
 }
 
 // ---------------------------------------------------------------------------
+// Seam 4 — source <-> target reconciliation
+// ---------------------------------------------------------------------------
+
+/** Table names are interpolated, so refuse anything that is not a bare one. */
+const BARE_IDENTIFIER = /^[a-z_][a-z0-9_]*$/;
+
+/**
+ * Compare the target against the counts a migration of the recorded source is
+ * declared to produce. The losses themselves live in
+ * `verify/expected-loss.ts` — this seam only asks whether reality still matches
+ * what was declared, so a regression can never be mistaken for a known gap.
+ *
+ * Drift fails in BOTH directions. Fewer rows than declared is a regression;
+ * more rows means a phase recovered something and left the declaration stale,
+ * which is how an allowance quietly becomes permanent.
+ */
+export async function checkReconciliation(
+  db: VerifyDb,
+  options: VerifyOptions = {},
+): Promise<SeamResult> {
+  const name = 'target counts match the declared source-to-target expectations';
+  const limit = options.sampleLimit ?? 10;
+  const allowances = options.allowances ?? EXPECTED_LOSS_ALLOWANCES;
+  const prefix = options.mapIdPrefix;
+
+  const findings: string[] = [];
+  let matched = 0;
+  let rowsLost = 0;
+  let unexplained = 0;
+
+  for (const allowance of allowances) {
+    if (!BARE_IDENTIFIER.test(allowance.table)) {
+      throw new Error(`Refusing to count "${allowance.table}": not a bare table name`);
+    }
+    const table = sql.raw(allowance.table);
+    const where =
+      prefix === undefined ? sql`TRUE` : sql`${sql.raw(allowance.table)}.id::text LIKE ${prefix + '%'}`;
+    const [row] = await rows(db, sql`SELECT count(*)::int AS c FROM ${table} WHERE ${where}`);
+    const actual = Number(row?.c ?? 0);
+
+    if (allowance.sourceCount !== null) rowsLost += Math.max(0, allowance.sourceCount - actual);
+    if (!allowance.explained && allowance.sourceCount !== null && allowance.sourceCount !== actual) {
+      unexplained += 1;
+    }
+
+    if (actual === allowance.expectedTarget) {
+      matched += 1;
+    } else if (findings.length < limit) {
+      const direction = actual < allowance.expectedTarget ? 'short by' : 'over by';
+      findings.push(
+        `${allowance.concept}: expected ${allowance.expectedTarget}, found ${actual} - ${direction} ${Math.abs(actual - allowance.expectedTarget)}`,
+      );
+    }
+  }
+
+  const drifted = allowances.length - matched;
+  return {
+    id: 'reconciliation',
+    name,
+    status: drifted === 0 ? 'PASS' : 'FAIL',
+    metrics: {
+      concepts: allowances.length,
+      matched,
+      drifted,
+      rowsLostToAllowances: rowsLost,
+      unexplainedAllowances: unexplained,
+    },
+    findings,
+    reason:
+      drifted > 0
+        ? `${drifted} concept(s) drifted from the declared expectation in verify/expected-loss.ts`
+        : undefined,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Report assembly
 // ---------------------------------------------------------------------------
 
@@ -448,6 +531,7 @@ export async function verifyMigration(
     await checkSqlGeneration(db, options),
     await checkFormulaCompileRate(db, options),
     await checkReferentialClosure(db, options),
+    await checkReconciliation(db, options),
   ];
 
   return summarise(target, seams);
@@ -492,3 +576,6 @@ export function formatVerifyReport(report: VerifyReport): string {
   for (const blocker of report.blockers) lines.push(`  BLOCKER ${blocker}`);
   return lines.join('\n');
 }
+
+export { EXPECTED_LOSS_ALLOWANCES };
+export type { ExpectedLossAllowance };

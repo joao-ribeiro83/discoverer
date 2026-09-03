@@ -3,7 +3,10 @@ import { inArray, like, sql } from 'drizzle-orm';
 
 import {
   checkFormulaCompileRate,
+  checkReconciliation,
   checkReferentialClosure,
+  EXPECTED_LOSS_ALLOWANCES,
+  type ExpectedLossAllowance,
   checkSqlGeneration,
   createMigrationWriter,
   createTargetDb,
@@ -321,6 +324,98 @@ describe('Migration seam tests', () => {
         expect(result.status).toBe('FAIL');
       } finally {
         await db.delete(maps).where(inArray(maps.id, [emptyMapId]));
+      }
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Seam 4 — source <-> target reconciliation
+  // -------------------------------------------------------------------------
+  describe('seam 4: target counts match the declared expectations', () => {
+    // Scoped to this suite's own rows, because the checked-in declaration
+    // counts whole tables and would see the live estate here.
+    const FIXTURE_ALLOWANCES: ExpectedLossAllowance[] = [
+      { concept: 'business areas', table: 'business_areas', sourceCount: 2, expectedTarget: 3,
+        why: 'One real BA plus the synthetic workbook host.', explained: true },
+      { concept: 'folders', table: 'folders', sourceCount: 2, expectedTarget: 2,
+        why: 'Carried across whole.', explained: true },
+      { concept: 'items', table: 'items', sourceCount: 3, expectedTarget: 3,
+        why: 'Carried across whole.', explained: true },
+      { concept: 'hierarchies', table: 'hierarchies', sourceCount: 1, expectedTarget: 1,
+        why: 'The EUL5 fixture carries the business-area column EUL4 lacks.', explained: true },
+    ];
+
+    it('passes when every concept matches its declaration', async () => {
+      const result = await checkReconciliation(db, {
+        mapIdPrefix: PREFIX,
+        allowances: FIXTURE_ALLOWANCES,
+      });
+
+      expect(result.metrics.drifted).toBe(0);
+      expect(result.metrics.matched).toBe(FIXTURE_ALLOWANCES.length);
+      expect(result.status).toBe('PASS');
+    });
+
+    it('fails on drift in either direction, and says which way', async () => {
+      // Negative control. A declaration nobody can fail is a declaration that
+      // records nothing.
+      const short = await checkReconciliation(db, {
+        mapIdPrefix: PREFIX,
+        allowances: [{ ...FIXTURE_ALLOWANCES[1]!, expectedTarget: 99 }],
+      });
+      expect(short.status).toBe('FAIL');
+      expect(short.findings.join(' | ')).toContain('short by 97');
+
+      // Over-by matters too: a phase that recovers rows and leaves the
+      // declaration stale is how an allowance becomes permanent.
+      const over = await checkReconciliation(db, {
+        mapIdPrefix: PREFIX,
+        allowances: [{ ...FIXTURE_ALLOWANCES[1]!, expectedTarget: 0 }],
+      });
+      expect(over.status).toBe('FAIL');
+      expect(over.findings.join(' | ')).toContain('over by 2');
+    });
+
+    it('counts allowances whose cause was never established', async () => {
+      const result = await checkReconciliation(db, {
+        mapIdPrefix: PREFIX,
+        allowances: [
+          { concept: 'grants', table: 'user_business_area_grants', sourceCount: 138,
+            expectedTarget: 0, why: 'cause never established', explained: false },
+        ],
+      });
+      // An unexplained gap must be visible as its own number, or it becomes
+      // indistinguishable from an accepted one.
+      expect(result.metrics.unexplainedAllowances).toBe(1);
+      // 138 declared at source minus the 3 grants this fixture wrote.
+      expect(result.metrics.rowsLostToAllowances).toBe(135);
+    });
+
+    it('refuses to interpolate anything that is not a bare table name', async () => {
+      await expect(
+        checkReconciliation(db, {
+          allowances: [
+            { concept: 'injected', table: 'users; DROP TABLE users', sourceCount: null,
+              expectedTarget: 0, why: 'never', explained: true },
+          ],
+        }),
+      ).rejects.toThrow('not a bare table name');
+    });
+
+    it('keeps the checked-in declaration well formed', async () => {
+      expect(EXPECTED_LOSS_ALLOWANCES.length).toBeGreaterThan(0);
+      for (const a of EXPECTED_LOSS_ALLOWANCES) {
+        expect(a.table).toMatch(/^[a-z_][a-z0-9_]*$/);
+        expect(a.expectedTarget).toBeGreaterThanOrEqual(0);
+        // Every gap carries a stated reason, whether or not it is understood.
+        expect(a.why.length).toBeGreaterThan(10);
+        // A loss of more than 1% of the source names the phase that recovers
+        // it. Below that the rows are genuinely gone (7 unattributable totals),
+        // and inventing a recovery phase for them would be a lie.
+        const lost = a.sourceCount === null ? 0 : a.sourceCount - a.expectedTarget;
+        if (a.sourceCount !== null && lost > a.sourceCount * 0.01) {
+          expect(a.recoveredBy).toBeTruthy();
+        }
       }
     });
   });
