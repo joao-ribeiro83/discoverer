@@ -414,4 +414,39 @@ data · `F-15` `/documentation` 404 (correct path is `/api/docs`, returns 200) �
 `INF-17` backup/restore tooling is real and good · verified-sound SQL security controls
 (bind variables, identifier rejection, unconditional security-predicate bracketing,
 ownership-gated exports with no path traversal, admin-gated migration routes,
+
+---
+
+## Phase 0.1 execution — 2026-09-03
+
+Tree was already committed and pushed by an earlier session (`origin` set,
+`master` clean, `.claude/agents/` and `.claude/skills/` deletion already
+committed). Remaining work for this stage was CI + `CLAUDE.md`.
+
+**Surprise, bigger than the plan described:** CI had never run for a reason
+beyond the documented `main`-vs-`master` branch mismatch. `ci.yml` lived at
+`discoverer-neo/.github/workflows/ci.yml` — GitHub Actions only discovers
+workflows under `<repo-root>/.github/workflows/`, and the true git root is
+`E:/claude/discoverer` (confirmed via `git rev-parse --show-toplevel`), one
+level above `discoverer-neo/`. The file was invisible to GitHub regardless of
+branch name. Moved it to `.github/workflows/ci.yml` at the true root, added
+`defaults.run.working-directory: discoverer-neo` and explicit
+`cache-dependency-path` on each `setup-node` step (cache lookup ignores
+`working-directory`). `docker.yml` has the identical placement bug but was
+left as-is — out of scope for this stage, and its `context: .` assumes
+`discoverer-neo/` as build root, which needs its own look before moving.
+
+Added `--coverage` to all three CI test steps with branch-coverage
+thresholds floored at each workspace's 2026-09-03 measured baseline (backend
+56%, frontend 78%, migrate 71%); installed `@vitest/coverage-v8` for
+frontend, which had no coverage provider. Corrected `CLAUDE.md`, which still
+described `.claude/agents-off/` and `.claude/skills/` as present on disk.
+
+**First real CI run:** https://github.com/joao-ribeiro83/discoverer/actions/runs/33702527123
+Migrate CLI — pass. Frontend — pass. **Backend — fails on lint: 993
+pre-existing errors, 64 warnings**, unrelated to this stage's changes. Too
+large to fix here (out of scope: no source changes beyond the plan's named
+junk-path deletion, which was already gone). User chose to leave it red and
+log it rather than mask it by skipping the lint step. **This is a new,
+unplanned blocker — needs its own stage before Backend can go green.**
 `!migrat` sentinel fails closed)
