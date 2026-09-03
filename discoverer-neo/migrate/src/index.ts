@@ -169,6 +169,7 @@ export {
   verifyMigration,
   checkSqlGeneration,
   checkFormulaCompileRate,
+  checkReferentialClosure,
   summarise,
   formatVerifyReport,
 } from './services/migration-verify.js';
