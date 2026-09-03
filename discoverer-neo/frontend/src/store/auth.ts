@@ -9,6 +9,14 @@ interface User {
   // Present since Session 7.1 — the backend returns these on login and /me.
   locale?: string
   theme?: string
+  // Independent of theme — see PaletteProvider.
+  colorPalette?: string
+  /**
+   * True for an account provisioned with a temporary password. The API refuses
+   * every route except change-password/me/logout until it is cleared, so the
+   * client must route to the change screen rather than the dashboard.
+   */
+  mustChangePassword?: boolean
 }
 
 interface AuthState {
@@ -17,6 +25,8 @@ interface AuthState {
   isAuthenticated: boolean
   hasHydrated: boolean
   login: (user: User, token: string) => void
+  /** Update the cached user, e.g. after clearing mustChangePassword. */
+  setUser: (user: User) => void
   logout: () => void
   setToken: (token: string) => void
   setHasHydrated: (hydrated: boolean) => void
@@ -50,6 +60,9 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       isAuthenticated: false,
       hasHydrated: false,
+      setUser: (user) => {
+        set({ user })
+      },
       login: (user, token) => {
         set({ user, token, isAuthenticated: true })
       },

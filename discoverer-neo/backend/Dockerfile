@@ -104,6 +104,14 @@ COPY --from=build /app/backend/dist ./backend/dist
 # The backend imports @discoverer-neo/migrate, which npm resolves through the
 # workspace symlink at node_modules/@discoverer-neo/migrate -> /app/migrate.
 COPY --from=build /app/migrate/dist ./migrate/dist
+# The Drizzle migrations and their journal. `drizzle-kit migrate` reads these
+# from `out: './drizzle'` at RUNTIME, not at build time, so the image needs the
+# .sql files themselves — without them the documented upgrade step
+# (`docker compose exec backend npm run db:migrate`, docs/deployment/docker.md)
+# fails with "Can't find meta/_journal.json" and the schema silently stays
+# behind the code.
+COPY backend/drizzle ./backend/drizzle
+COPY backend/drizzle.config.ts ./backend/drizzle.config.ts
 
 # Generated export files land here; docker-compose mounts a named volume over
 # it. Created (and owned) up front so the unprivileged appuser can write even

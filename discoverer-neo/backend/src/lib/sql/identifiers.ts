@@ -64,3 +64,53 @@ export function makeColumnAlias(label: string, taken: Set<string>): string {
   taken.add(alias);
   return alias;
 }
+
+/**
+ * Longest bind base name `makeBindName` will produce.
+ *
+ * Oracle caps identifiers — bind variable names included — at 30 characters on
+ * 11g and earlier. `buildWhereClause` appends its own suffixes to a bind base
+ * (`_lo`/`_hi` for BETWEEN, `_0`…`_n` when a LIST expands an IN list), so the
+ * base has to leave room for them: 26 + `_999` still fits in 30.
+ */
+const MAX_BIND_BASE_LENGTH = 26;
+
+/**
+ * Derive a unique, Oracle-safe bind name from a parameter's display label.
+ *
+ * Discoverer let people name a prompt anything they liked, and they did:
+ * `Dt Fim Vigência >=`, `Apólice nº`, `VALOR SUPERIOR A`. None of those can be
+ * a bind variable, so a migrated map that filtered on one could not generate
+ * SQL at all. The display label stays the prompt the user sees
+ * (`map_parameters.name`); this derives the name the SQL actually binds
+ * (`map_parameters.bind_name`), the same way `makeColumnAlias` derives a
+ * column alias from a heading.
+ *
+ * `taken` accumulates the names already handed out **for one map**, so two
+ * prompts that reduce to the same base (`DT Pedido <=` and `DT Pedido >=`
+ * both give `DT_PEDIDO`) stay distinct filters instead of collapsing onto one
+ * bind.
+ */
+export function makeBindName(label: string, taken: Set<string>): string {
+  let base = label
+    .toUpperCase()
+    .replace(/[^A-Z0-9_]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, MAX_BIND_BASE_LENGTH);
+  if (!base) base = 'P';
+  else if (!/^[A-Z]/.test(base)) {
+    base = `P_${base}`.slice(0, MAX_BIND_BASE_LENGTH);
+  }
+
+  let name = base;
+  let n = 2;
+  while (taken.has(name)) {
+    const suffix = `_${n}`;
+    // Truncate the base rather than the suffix: a suffix eaten by the length
+    // cap would hand out the same name forever.
+    name = `${base.slice(0, MAX_BIND_BASE_LENGTH - suffix.length)}${suffix}`;
+    n += 1;
+  }
+  taken.add(name);
+  return name;
+}

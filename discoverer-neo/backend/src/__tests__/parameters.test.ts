@@ -14,6 +14,9 @@ function def(
   overrides: Partial<ParameterDefinition> & { name: string },
 ): ParameterDefinition {
   return {
+    // Most fixtures here use prompts that are already bind-safe, so the two
+    // names coincide. A test about the difference sets both.
+    bindName: overrides.name,
     paramType: 'STRING',
     defaultValue: null,
     isRequired: false,
@@ -180,5 +183,56 @@ describe('resolveParametersForDefinitions', () => {
     expect(() => resolveParametersForDefinitions(defs, {})).toThrow(
       ParameterResolutionError,
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Prompt names vs bind names
+// ---------------------------------------------------------------------------
+
+describe('prompt names and bind names', () => {
+  const vigencia = def({
+    name: 'Dt Fim Vigência >=',
+    bindName: 'DT_FIM_VIG_NCIA',
+    paramType: 'DATE',
+  });
+
+  it('takes a value under the prompt and returns it under the bind name', () => {
+    const { resolved, missing } = resolveParametersForDefinitions([vigencia], {
+      'Dt Fim Vigência >=': '2024-06-30',
+    });
+    expect(resolved).toEqual({ DT_FIM_VIG_NCIA: '2024-06-30' });
+    expect(missing).toEqual([]);
+  });
+
+  it('also accepts the bind name, for a caller that already has one', () => {
+    const { resolved } = resolveParametersForDefinitions([vigencia], {
+      DT_FIM_VIG_NCIA: '2024-06-30',
+    });
+    expect(resolved).toEqual({ DT_FIM_VIG_NCIA: '2024-06-30' });
+  });
+
+  it('prefers the prompt when a caller supplies both', () => {
+    const { resolved } = resolveParametersForDefinitions([vigencia], {
+      'Dt Fim Vigência >=': '2024-06-30',
+      DT_FIM_VIG_NCIA: '1999-01-01',
+    });
+    expect(resolved).toEqual({ DT_FIM_VIG_NCIA: '2024-06-30' });
+  });
+
+  it('files a default under the bind name too', () => {
+    const { resolved } = resolveParametersForDefinitions(
+      [def({ name: 'Apólice nº', bindName: 'AP_LICE_N', defaultValue: 'X' })],
+      {},
+    );
+    expect(resolved).toEqual({ AP_LICE_N: 'X' });
+  });
+
+  it('reports a missing parameter by its prompt — that is what a person looks for', () => {
+    const { missing } = resolveParametersForDefinitions(
+      [def({ name: 'Apólice nº', bindName: 'AP_LICE_N', isRequired: true })],
+      {},
+    );
+    expect(missing).toEqual(['Apólice nº']);
   });
 });

@@ -20,3 +20,11 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Reference dumps produced by DISCVR4/d4wkdmp.exe. Customer report metadata —
+# never commit. Regenerate with the recipe in
+# DISCOVERER_NEO_WORKSHEET_FIDELITY_PLAN.md §2.
+d4dumps/
+
+# Decrypted data-source password, written transiently by the probe scripts.
+*.pw

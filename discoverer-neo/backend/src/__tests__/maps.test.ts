@@ -253,6 +253,153 @@ describe('Map management', () => {
     mapId = data.id;
   });
 
+  // The worksheet placement fields used to be accepted by the service but not
+  // by the route's zod schema, which drops unknown keys silently — so opening a
+  // migrated map in the builder and pressing Save wrote back a column list with
+  // no axis, no hidden items and no group sorts. One edit undid the migration.
+  it('keeps worksheet placement through a create and an update', async () => {
+    const items = [
+      {
+        itemId: itemId1,
+        displayName: 'Region',
+        axisType: 'AXIS',
+        axisEdge: 'COLUMN',
+        axisOrder: 1,
+        sortGroup: true,
+      },
+      { itemId: itemId2, aggFunction: 'SUM', axisType: 'MEASURE', isHidden: true },
+    ];
+    const payload = { ...validMapPayload(), items };
+
+    const created = await app.inject({
+      method: 'POST',
+      url: `/api/business-areas/${baId}/maps`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload,
+    });
+    expect(created.statusCode).toBe(201);
+
+    const byOrder = (data: { items: Record<string, unknown>[] }) =>
+      [...data.items].sort(
+        (a, b) => (a.displayOrder as number) - (b.displayOrder as number),
+      );
+
+    const createdItems = byOrder(created.json().data);
+    expect(createdItems[0]).toMatchObject({
+      axisType: 'AXIS',
+      axisEdge: 'COLUMN',
+      axisOrder: 1,
+      sortGroup: true,
+      isHidden: false,
+    });
+    expect(createdItems[1]).toMatchObject({ axisType: 'MEASURE', isHidden: true });
+
+    // Re-sending what the builder loaded must not quietly strip any of it.
+    const updated = await app.inject({
+      method: 'PUT',
+      url: `/api/maps/${created.json().data.id}`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload: { items },
+    });
+    expect(updated.statusCode).toBe(200);
+    const updatedItems = byOrder(updated.json().data);
+    expect(updatedItems[0]).toMatchObject({
+      axisType: 'AXIS',
+      axisEdge: 'COLUMN',
+      sortGroup: true,
+    });
+    expect(updatedItems[1]).toMatchObject({ isHidden: true });
+  });
+
+  // A prompt named the way Discoverer's authors named them has to survive the
+  // round trip as a prompt, while what the condition stores — and what will end
+  // up after a colon in the generated SQL — is the derived bind name.
+  it('derives a bind name for a prompt that could never be one', async () => {
+    const payload = validMapPayload();
+    payload.parameters = [
+      { name: 'Dt Fim Vigência >=', paramType: 'STRING', isRequired: true },
+    ];
+    payload.conditions = [
+      {
+        itemId: itemId1,
+        operator: '=',
+        conditionType: 'PARAMETER',
+        // Authored by prompt: a UI holding an unsaved parameter has no bind
+        // name to offer yet.
+        paramName: 'Dt Fim Vigência >=',
+      },
+    ];
+
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/business-areas/${baId}/maps`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload,
+    });
+
+    expect(res.statusCode).toBe(201);
+    const { data } = res.json();
+    expect(data.parameters[0].name).toBe('Dt Fim Vigência >=');
+    expect(data.parameters[0].bindName).toBe('DT_FIM_VIG_NCIA');
+    expect(data.conditions[0].paramName).toBe('DT_FIM_VIG_NCIA');
+  });
+
+  it('accepts a condition that names its parameter by bind name', async () => {
+    const payload = validMapPayload();
+    payload.parameters = [
+      { name: 'Apólice nº', paramType: 'STRING', isRequired: false },
+    ];
+    payload.conditions = [
+      {
+        itemId: itemId1,
+        operator: '=',
+        conditionType: 'PARAMETER',
+        paramName: 'AP_LICE_N',
+      },
+    ];
+
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/business-areas/${baId}/maps`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload,
+    });
+
+    expect(res.statusCode).toBe(201);
+    expect(res.json().data.conditions[0].paramName).toBe('AP_LICE_N');
+  });
+
+  it('keeps two prompts that reduce to the same base apart', async () => {
+    const payload = validMapPayload();
+    payload.parameters = [
+      { name: 'Dt Pedido <=', paramType: 'STRING', isRequired: false },
+      { name: 'Dt Pedido >=', paramType: 'STRING', isRequired: false },
+    ];
+    payload.conditions = [
+      {
+        itemId: itemId1,
+        operator: '=',
+        conditionType: 'PARAMETER',
+        paramName: 'Dt Pedido >=',
+      },
+    ];
+
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/business-areas/${baId}/maps`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload,
+    });
+
+    expect(res.statusCode).toBe(201);
+    const { data } = res.json();
+    const binds = data.parameters.map((p: { bindName: string }) => p.bindName);
+    expect(binds).toEqual(['DT_PEDIDO', 'DT_PEDIDO_2']);
+    // The condition follows the prompt it was authored against, not the base
+    // both prompts share.
+    expect(data.conditions[0].paramName).toBe('DT_PEDIDO_2');
+  });
+
   it('rejects a map with no items', async () => {
     const res = await app.inject({
       method: 'POST',
@@ -401,6 +548,111 @@ describe('Map management', () => {
     expect(data.conditions).toHaveLength(1);
     expect(data.parameters).toHaveLength(1);
     expect(data.calculatedFields).toHaveLength(1);
+  });
+
+  // A migrated Discoverer worksheet writes an axis, a position on it, an
+  // item its query names but draws nowhere, and SELECT DISTINCT. A duplicate
+  // that dropped them would turn a hidden item into a visible column.
+  it('duplicates the worksheet layout: axis, position, hidden items and DISTINCT', async () => {
+    const create = await app.inject({
+      method: 'POST',
+      url: `/api/business-areas/${baId}/maps`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload: {
+        name: `Layout Original ${Date.now()}`,
+        mapType: 'CROSSTAB',
+        items: [{ itemId: itemId1, displayOrder: 0 }, { itemId: itemId2, displayOrder: 1 }],
+      },
+    });
+    expect(create.statusCode).toBe(201);
+    const originalId = create.json().data.id as string;
+
+    // The API has no surface for these yet — the migration writes them — so
+    // the fixture sets them the way a migrated map arrives.
+    await db.update(maps).set({ selectDistinct: true }).where(eq(maps.id, originalId));
+    await db
+      .update(mapItems)
+      .set({ axisType: 'AXIS', axisOrder: 0 })
+      .where(eq(mapItems.itemId, itemId1));
+    await db
+      .update(mapItems)
+      .set({ axisType: 'MEASURE', axisOrder: 0, isHidden: true })
+      .where(eq(mapItems.itemId, itemId2));
+
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/maps/${originalId}/duplicate`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload: {},
+    });
+    expect(res.statusCode).toBe(201);
+    const copyId = res.json().data.id as string;
+
+    const [copy] = await db.select().from(maps).where(eq(maps.id, copyId));
+    expect(copy?.mapType).toBe('CROSSTAB');
+    expect(copy?.selectDistinct).toBe(true);
+
+    const copiedItems = await db.select().from(mapItems).where(eq(mapItems.mapId, copyId));
+    expect(
+      copiedItems
+        .sort((a, b) => a.displayOrder - b.displayOrder)
+        .map((i) => [i.axisType, i.axisOrder, i.isHidden]),
+    ).toEqual([
+      ['AXIS', 0, false],
+      ['MEASURE', 0, true],
+    ]);
+  });
+
+  // The copy derives its own bind names, and in a different order than the
+  // original was authored in (`getById` sorts parameters by name). Where two
+  // prompts share a base that is a different assignment, so a condition
+  // carried across by bind name would land on the wrong parameter.
+  it('duplicates a map whose prompts share a bind base without swapping them', async () => {
+    const create = await app.inject({
+      method: 'POST',
+      url: `/api/business-areas/${baId}/maps`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload: {
+        ...validMapPayload(),
+        name: 'Colliding prompts',
+        // Authored in an order that is NOT alphabetical, so the copy's own
+        // derivation runs over them the other way round.
+        parameters: [
+          { name: 'Dt Pedido >=', paramType: 'STRING', isRequired: false },
+          { name: 'Dt Pedido <=', paramType: 'STRING', isRequired: false },
+        ],
+        conditions: [
+          {
+            itemId: itemId1,
+            operator: '=',
+            conditionType: 'PARAMETER',
+            paramName: 'Dt Pedido <=',
+          },
+        ],
+      },
+    });
+    expect(create.statusCode).toBe(201);
+    const original = create.json().data;
+    const originalBind = original.parameters.find(
+      (p: { name: string }) => p.name === 'Dt Pedido <=',
+    ).bindName;
+    expect(original.conditions[0].paramName).toBe(originalBind);
+
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/maps/${original.id}/duplicate`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload: {},
+    });
+    expect(res.statusCode).toBe(201);
+    const copy = res.json().data;
+
+    const copyBind = copy.parameters.find(
+      (p: { name: string }) => p.name === 'Dt Pedido <=',
+    ).bindName;
+    // The condition still filters on "Dt Pedido <=", whatever bind name the
+    // copy gave it.
+    expect(copy.conditions[0].paramName).toBe(copyBind);
   });
 
   it('exports the map definition as XML', async () => {

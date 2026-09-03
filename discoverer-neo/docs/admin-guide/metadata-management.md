@@ -88,6 +88,34 @@ Folders and items are created automatically with appropriate types and column ma
 | **JOIN** | Pre-joined result of multiple tables |
 | **SUMMARY** | Pre-aggregated summary table |
 
+> **Migrating from Discoverer:** an EUL records only *simple* (`SOBJ`) and
+> *complex* (`COBJ`) folders, which import as **TABLE** and **COMPLEX**
+> respectively. The other types are Neo's own and are available when you create
+> folders here.
+
+### Sharing a Folder Across Business Areas
+
+A folder belongs to one **owning** business area, but can be *shared* into
+others — the same way Oracle Discoverer lets one folder appear in several
+business areas at once. A shared date or organisation dimension is the usual
+case.
+
+1. Admin Panel → **Folders**
+2. Click the **share** icon on the folder row
+3. Pick a business area under **Share into** and click **Share**
+
+The folder now appears in both areas. In any area that is not its owner it is
+listed with a **Shared** badge, so nobody edits it expecting the change to be
+local — edits apply everywhere it appears.
+
+To stop sharing, open the same dialog and remove the badge for that area. The
+**owning** business area cannot be removed; to move a folder somewhere else,
+recreate it there.
+
+> **Migrating from Discoverer:** every `BA_OBJ_LINKS` membership is preserved.
+> A folder that belonged to three business areas keeps all three — one as owner
+> and two as shares — and the migration report notes each one it shared.
+
 ### Edit Folder
 
 1. Click folder → **Edit**
@@ -117,7 +145,9 @@ An **Item** is a column or attribute from a Folder. Items are what users select 
    - **Display Name** — User-friendly label (defaults to name)
    - **Column Name** — Actual database column
    - **Description** — Help text for users
-   - **Type** — CI (custom), CU (user), CO (calculated), etc.
+   - **Type** — see the table below. **CO** (Database Item) is the usual
+     choice: an item backed by a real column. **CI** is a *created* item —
+     a calculation.
    - **Is Key** — Checkbox if this is a primary/foreign key
    - **Is Hidden** — Checkbox to exclude from map builder
    - **Is Required** — Checkbox if always must be included
@@ -126,6 +156,26 @@ An **Item** is a column or attribute from a Folder. Items are what users select 
 ### Create Items (From Oracle)
 
 When introspecting a table, items are created automatically for all columns.
+
+### Item Types
+
+Oracle Discoverer stores only two of these; the rest exist for items you author
+in Neo.
+
+| Type | Meaning | Bound to |
+|------|---------|----------|
+| **CO** | **Database Item** — the ordinary case, mapped to a physical column | A column |
+| **CI** | **Created Item** — a calculation, date-hierarchy or complex-folder item | A formula |
+| **CU** | Calculated item authored in Neo | A formula |
+| **JI** | Join item | A join |
+| **HI** | Hierarchy item | A hierarchy |
+| **AG** | Aggregation | A formula |
+| **FU** | Function item | A function |
+
+> **If you know Discoverer:** `CO` and `CI` are easy to transpose. `CO` is the
+> plain column-backed item — the overwhelming majority of an EUL — and `CI` is
+> the created/calculated one. Choosing `CO` shows a **Column Name** field;
+> anything else shows a **Formula** box.
 
 ### Configure Item Display
 

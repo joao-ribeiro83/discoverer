@@ -139,6 +139,7 @@ export type {
   MigrationWriter,
   MigrationLogInput,
   MigrationLogLevel,
+  TargetSnapshot,
 } from './services/migration-writer.js';
 export type { TargetTable } from './db/schema.js';
 
@@ -147,11 +148,13 @@ export {
   runMigration,
   dryRun,
   validateMigration,
+  describeAlreadyMigrated,
   TARGET_TABLE_ORDER,
 } from './services/migration-runner.js';
 export type {
   RunMigrationOptions,
   MigrationResult,
+  TargetPreflight,
   MigrationEvent,
   MigrationValidationResult,
   MigrationRunnerDeps,
@@ -160,6 +163,66 @@ export type {
   TableReconciliation,
   SkipRecord,
 } from './services/migration-runner.js';
+
+// --- Workbook body parser -------------------------------------------------
+export {
+  parseWorkbookDocument,
+  parseConditionTokens,
+  readWorkbookElements,
+  countWorkbookColumns,
+  CONDITION_OPERATORS,
+  CONDITION_COMBINERS,
+  DISCOVERER_WORKBOOK_CONTENT_TYPE,
+} from './services/workbook-parser.js';
+export type {
+  ParsedWorkbookDocument,
+  ParsedWorksheet,
+  WorkbookColumn,
+  WorkbookCondition,
+  WorkbookParameter,
+  WorkbookCalculation,
+  WorkbookContentFormat,
+  ConditionTokenInfo,
+  // The worksheet model — see `EUL_SCHEMA_GROUND_TRUTH.md` §7.8. Nothing in
+  // the migration consumes these yet; they are exported so W3–W7 can.
+  RawElement,
+  WorkbookRecord,
+  WorkbookBlob,
+  WorkbookQueryRequest,
+  WorkbookSort,
+  WorkbookSortLayout,
+  WorkbookTotal,
+  WorkbookJoin,
+  WorkbookEulFilter,
+  WorkbookParameterValue,
+  WorkbookPageSetup,
+  WorkbookAxisType,
+  WorkbookDataType,
+  WorkbookViewType,
+  WorkbookSortDirection,
+} from './services/workbook-parser.js';
+
+// --- Maps-only re-import --------------------------------------------------
+export {
+  reimportMaps,
+  MapReimportError,
+  DEFAULT_HOST_BUSINESS_AREA,
+} from './services/map-reimport.js';
+export type {
+  MapReimportOptions,
+  MapReimportResult,
+  MapReimportCounts,
+} from './services/map-reimport.js';
+
+// --- Provisioned credentials (temporary passwords) -------------------------
+export {
+  generateTemporaryPassword,
+  TEMPORARY_PASSWORD_LENGTH,
+} from './services/temporary-password.js';
+export type {
+  CredentialSink,
+  ProvisionedCredential,
+} from './services/temporary-password.js';
 
 // --- Session 5.4/5.5: CLI -------------------------------------------------
 export {

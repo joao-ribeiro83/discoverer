@@ -1,0 +1,251 @@
+:Base d4urpl.hlp>main
+:Title Oracle Discoverer Plus - system Pomocy bezpoœredniej
+1 Wprowadzenie do programu Oracle Discoverer
+2 Zapytania i skoroszyty=CON_ABOUT_QUERIES>main
+2 Tabele i macierze=CON_ABOUT_TANDC>main
+2 Podsumowania=CON_ABOUT_TOTALS>main
+2 Procenty=CON_ABOUT_PERCENTAGES>main
+2 Planowane skoroszyty=CON_ABOUT_SCHEDULED>main
+2 Nauka korzystania z programu Oracle Discoverer
+3 Nauka korzystania z programu Oracle Discoverer=CON_LEARN_OD>main
+1 Procedury szczegó³owe
+2 Uruchamianie i zamykanie programu Oracle Discoverer
+3 Jak uruchomiæ program Oracle Discoverer=To_start_Oracle_Discoverer>main
+3 Jak skonfigurowaæ okno dialogowe "Po³¹czenie" dla u¿ytkowników systemu Oracle Aplikacje=HIDD_OPTIONS_CONNECTION>main
+3 Jak po³¹czyæ siê z baz¹ danych=To_connect_to_a_database>main
+3 Jak zakoñczyæ pracê programu Oracle Discoverer=To_exit_Oracle_Discoverer>main
+2 Praca ze skoroszytami
+3 Jak utworzyæ nowy skoroszyt=To_create_a_new_workbook>main
+3 Jak otworzyæ zapisany uprzednio skoroszyt=To_open_a_saved_workbook>main
+3 Jak zapisaæ skoroszyt=To_save_a_workbook>main
+3 Jak zamkn¹æ skoroszyt=To_close_a_workbook>main
+3 Jak usun¹æ skoroszyt z bazy danych=To_delete_a_workbook_from_the_database>main
+3 Jak dodaæ do skoroszytu nowy arkusz=To_add_a_new_sheet_to_a_workbook>main
+3 Jak edytowaæ arkusz=To_edit_a_sheet>main
+3 Jak powieliæ arkusz jako tabelê=To_duplicate_a_sheet_as_a_table>main
+3 Jak powieliæ arkusz jako macierz=To_duplicate_a_sheet_as_a_crosstab>main
+3 Jak nadaæ arkuszowi nazwê=To_name_a_sheet>main
+3 Jak zmieniæ nazwê arkusza=To_edit_the_name_of_a_sheet>main
+3 Jak usun¹æ arkusz ze skoroszytu=To_delete_a_sheet_from_a_workbook>main
+3 Jak udostêpniæ skoroszyt innym u¿ytkownikom=To_share_a_workbook_with_other_users>main
+3 Jak wyœwietliæ kod SQL bie¿¹cego arkusza=To_view_the_SQL_code_for_the_current_sheet>main
+3 Jak wyœwietliæ w³aœciwoœci zaznaczonego elementu=To_view_the_properties_of_a_selected_item>main
+3 Jak wyœwietliæ w³aœciwoœci bie¿¹cego skoroszytu=To_view_the_properties_of_the_current_workbook>main
+3 Jak utworzyæ wykres dla bie¿¹cego arkusza=To_show_data_in_a_sheet_as_a_graph>main
+3 Jak wyœwietliæ wykres=To_Hide_or_Show_a_Graph>main
+3 Jak ukryæ wykres=To_Hide_or_Show_a_Graph>main
+2 Dodawanie i usuwanie danych
+3 Jak dodaæ element do arkusza=To_add_an_item_to_a_sheet>main
+3 Jak usun¹æ element z arkusza=To_delete_an_item_from_a_sheet>main
+3 Jak zmieniæ wyœwietlone wartoœci elementu=To_change_displayed_values_for_an_item>main
+3 Dr¹¿enie
+4 Jak dr¹¿yæ w górê=To_drill_up>main
+4 Jak dr¹¿yæ w dó³=To_drill_down>main
+4 Jak dr¹¿yæ do powi¹zanego elementu z innego arkusza=To_drill_to_a_related_item_in_another_sheet>main
+4 Jak dr¹¿yæ do powi¹zanej informacji w innej aplikacji=To_drill_to_related_information_in_another_application>main
+4 Jak zwin¹æ element=To_collapse_an_item>main
+3 U¿ywanie warunków w celu sprecyzowania zapytania
+4 Jak zdefiniowaæ warunek=To_define_a_condition>main
+4 Jak edytowaæ warunek=To_apply_a_condition>main
+4 Jak dodaæ obliczenie do istniej¹cego warunku=To_add_a_calculation_to_an_existing_condition>main
+4 Jak utworzyæ warunek zawieraj¹cy obliczenie=To_create_a_condition_that_includes_a_calculation>main
+4 Jak usun¹æ warunek=To_delete_a_condition>main
+3 Korzystanie z obliczeñ
+4 Jak utworzyæ obliczenie=To_create_a_calculation>main
+4 Jak edytowaæ obliczenie=To_edit_a_calculation>main
+3 U¿ywanie podsumowañ dla wyników zapytañ
+4 Jak utworzyæ podsumowanie=To_create_a_total>main
+4 Jak edytowaæ podsumowanie=To_edit_a_total>main
+2 Operacje na danych i nag³ówkach
+3 Jak przenieœæ element z jednej osi do innej=To_move_an_item_from_one_axis_to_another>main
+3 Jak utworzyæ element stronê=To_create_a_page_item>main
+3 Jak wyœwietliæ w komórkach graficzne s³upki=To_show_graphic_bars_in_cells>main
+3 Sortowanie danych
+4 Jak posortowaæ tabelê=To_sort_a_table>main
+4 Jak posortowaæ macierz=To_sort_a_crosstab>main
+2 Okreœlanie sposobu uruchamiania zapytañ przez program Oracle Discoverer
+3 Jak  przyrostowo uruchamiaæ zapytania=To_run_queries_incrementally>main
+3 Jak zignorowaæ ustawienia przyrostowe i otrzymaæ w wyniku zapytania wszystkie wiersze=To_override_an_incremental_setting_and_return_all_rows_in_a_query>main
+3 Jak ustaliæ maksymaln¹ liczbê wierszy otrzymywanych przy zapytaniu=To_specify_the_maximum_number_of_rows_returned_in_a_query>main
+3 Jak ustaliæ preferencje dotycz¹ce opcji pamiêci podrêcznej dla bazy danych=To_set_preferences_for_the_database_cache>main
+3 Jak ustaliæ preferencje dotycz¹ce arkuszy w uk³adzie macierzy=To_set_preferences_for_crosstab_layout_sheets>main
+3 Jak ustaliæ preferencje dotycz¹ce arkuszy w uk³adzie tabeli=To_set_preferences_for_table_layout_sheets>main
+2 Formatowanie
+3 Jak sformatowaæ dane w arkuszu=To_format_data_in_a_sheet>main
+3 Jak sformatowaæ nag³ówki w arkuszu=To_format_headings_in_a_sheet>main
+3 Jak sformatowaæ liczby=To_format_numbers>main
+3 Jak sformatowaæ tytu³ arkusza=To_format_the_title_of_a_sheet>main
+3 Jak zmieniæ szerokoœæ kolumny=To_change_a_column_width>main
+3 Jak dodaæ tytu³ do arkusza=To_add_a_title_to_a_sheet>main
+3 Jak edytowaæ tytu³ arkusza=To_edit_the_title_of_a_sheet>main
+3 Jak dodaæ t³o do arkusza=To_add_a_background_to_a_sheet>main
+3 Jak usun¹æ t³o z arkusza=To_remove_a_background_from_a_sheet>main
+3 U¿ywanie wyj¹tków w celu wyró¿nienia danych
+4 Jak utworzyæ wyj¹tek=To_create_an_exception>main
+4 Jak edytowaæ wyj¹tek=To_edit_an_exception>main
+4 Jak usun¹æ wyj¹tek=To_delete_an_exception>main
+3 Przedstawianie danych na wykresie
+4 Jak utworzyæ wykres dla bie¿¹cego arkusza=To_show_data_in_a_sheet_as_a_graph>main
+4 Jak zmieniæ styl wykresu=To_change_the_style_of_a_graph>main
+4 Jak modyfikowaæ trójwymiarowy widok wykresu=To_manipulate_the_three_dimensional_view_of_a_graph>main
+4 Jak edytowaæ tytu³y wykresu=To_add_titles_to_a_graph>main
+4 Jak edytowaæ tytu³y wykresu=To_edit_titles_in_a_graph>main
+4 Jak usun¹æ tytu³y z wykresu=To_delete_titles_from_a_graph>main
+4 Jak wyeksportowaæ wykres do innej aplikacji=To_export_a_graph_to_another_application>main
+2 Drukowanie
+3 Jak wydrukowaæ skoroszyt=To_print_a_workbook>main
+3 Jak wydrukowaæ arkusz=To_print_a_sheet>main
+3 Jak wydrukowaæ etykiety osi=To_print_axis_labels>main
+3 Jak wprowadziæ znaczniki ³amania stron=To_add_page_breaks>main
+3 Jak ustawiæ kolejnoœæ drukowania stron=To_set_the_printing_order_of_pages>main
+3 Jak ustaliæ uk³ad strony=To_set_up_the_page_layout>main
+3 Jak wyœwietliæ podgl¹d wydruku=To_preview_the_printout>main
+3 Dodawanie nag³ówków i stopek
+4 Jak dodaæ stopkê=To_add_a_footer>main
+4 Jak utworzyæ niestandardow¹ stopkê=To_create_a_custom_footer>main
+4 Jak dodaæ nag³ówek=To_add_a_header>main
+4 Jak utworzyæ niestandardowy nag³ówek=To_create_a_custom_header>main
+2 U¿ywanie programu Oracle Discoverer z innymi aplikacjami
+3 Jak eksportowaæ dane oraz zapisywaæ je w pliku innego formatu=To_export_data_and_save_it_in_another_file_format>main
+3 Jak osadziæ zapytanie w pliku z innej aplikacji=To_embed_a_query_in_a_file_in_another_application>main
+1 S³ownik
+2 S³ownik=DCM_GLOSSARY>gloss
+1 Interfejs u¿ytkownika
+2 Kreatory, okna dialogowe i pola informacyjne
+3 Wyrównanie, karta=HIDD_FORMAT_ALIGN>main
+3 Kolor t³a, karta=HIDD_FORMAT_COLOR>main
+3 Pamiêæ podrêczna, karta=HIDD_OPTIONS_CACHE>main
+3 Obliczenia, okno dialogowe=HIDD_DCMCALCULATIONS>main
+3 Obliczenia: okno dialogowe "Dodawanie"=HIDD_CALC_ADD>main
+3 Obliczenia: okno dialogowe "Dzielenie"=HIDD_CALC_DIV>main
+3 Obliczenia: okno dialogowe "Mno¿enie"=HIDD_CALC_MULT>main
+3 Obliczenia: okno dialogowe "Procent"=HIDD_CALC_PERCENT>main
+3 Obliczenia: okno dialogowe "Odejmowanie"=HIDD_CALC_SUB>main
+3 Warunki, okno dialogowe=HIDD_DCMCONDITIONS>main
+3 Po³¹czenie z programem Oracle Discoverer, okno dialogowe=HIDD_CONNECT>main
+3 Macierz, karta=HIDD_OPTIONS_MATRIX>main
+3 Usuwanie skoroszytu z bazy danych, okno dialogowe=HIDD_DELETE_DB>main
+3 Dr¹¿enie, okno dialogowe=HIDD_DRILL_WIZARD>main
+3 Opcje dr¹¿enia, okno dialogowe=HIDD_DRILL_OPTIONS>main
+3 Edycja obliczenia, okno dialogowe=HIDD_CALC_EDIT>main
+3 Edycja parametru, okno dialogowe=HIDD_PARAM_EDIT>main
+3 Wyj¹tek, karta=HIDD_FORMAT_EXCEPTION_NEW>main
+3 Wyj¹tki, okno dialogowe=HIDD_EXCEPTION>main
+3 Eksportowanie, okno dialogowe=HIDD_EXPORT_NAME>main
+3 W³aœciwoœci skoroszytu, okno dialogowe=HIDD_FILEPROP>main
+3 Czcionka, karta=HIDD_FORMAT_FONT>main
+3 Formatowanie uk³adu, okno dialogowe=HIDD_WIZARD_LAYOUT>main
+3 Formaty, karta=HIDD_OPTIONS_FORMAT>main
+3 Nag³ówek/Stopka, karta=HIDD_SETUP_HEADER>main
+3 Schowek elementów, okno informacyjne=HIDD_DCMCLIPBOARD>main
+3 W³aœciwoœci elementu, okno dialogowe=HIDD_ITEMPROP>main
+3 Uk³ad, okno dialogowe=HIDD_WIZARD_START>main
+3 Marginesy, karta=HIDD_SETUP_MARGIN>main
+3 Nowy parametr, okno dialogowe=HIDD_PARAM_NEW>main
+3 Otwieranie skoroszytu, okno dialogowe=HIDD_OPEN>main
+3 Otwieranie skoroszytu z bazy danych, okno dialogowe=HIDD_OPEN_DB>main
+3 Opcje, okno dialogowe - opis=HIDD_WIZARD_OPTIONS>main
+3 Ustawienia strony, okno dialogowe - opis=HIDD_WIZARD_PREVIEW>main
+3 Parametry, okno dialogowe=HIDD_PARAMETERS>main
+3 Kreator parametrów=HIDD_PARAMETERS_RUNTIME>main
+3 Zapisywanie skoroszytu, okno dialogowe=HIDD_SAVE>main
+3 Zapisywanie skoroszytu w bazie danych, okno dialogowe=HIDD_SAVE_DB>main
+3 Arkusz, karta=HIDD_SETUP_SHEET>main
+3 Sortowanie macierzy, okno dialogowe=HIDD_SORT_CROSSTAB>main
+3 Sortowanie tabeli, okno dialogowe=HIDD_SORT_TABLE>main
+3 Inspektor SQL-a, okno dialogowe=HIDD_DCMSQL>main
+3 Tabela, karta=HIDD_OPTIONS_TABLE>main
+3 Tekst/Liczba, karta=HIDD_FORMAT_MASK>main
+3 Tytu³, okno dialogowe - karta Mapa bitowa=HIDD_TITLE_BMP>main
+3 Tytu³, okno dialogowe - karta Tekst=HIDD_TITLE_TEXT>main
+3 Podsumowania, okno dialogowe=HIDD_SUMMARIES>main
+3 Podsumowanie, okno dialogowe (dla macierzy)=HIDD_TOTAL_EDIT_CROSSTAB>main
+3 Podsumowanie, okno dialogowe (dla tabel)=HIDD_TOTAL_EDIT_TABLE>main
+3 U¿ytkownik > Skoroszyt, karta=HIDD_GRANT_USERTOBOOK>main
+3 Wartoœci, okno dialogowe=HIDD_DCMLIST>main
+3 Skoroszyt z innego konta bazy danych, okno dialogowe=HIDD_CONNECT_IO>main
+3 Skoroszyt > U¿ytkownik, karta=HIDD_GRANT_BOOKTOUSER>main
+1 Menu Plik
+2 Nowy, polecenie=HID_FILE_NEW>main
+2 Otwórz, polecenie=HID_FILE_OPEN>main
+2 Zamknij, polecenie=HID_FILE_CLOSE>main
+2 Zapisz, polecenie=HID_FILE_SAVE>main
+2 Zapisz jako, polecenie=HID_FILE_SAVE_AS>main
+2 Planuj, polecenie=HID_FILE_SCHEDULE
+2 Ustawienia strony, polecenie=HID_FILE_PAGE_SETUP
+2 Podgl¹d wydruku, polecenie=HID_FILE_PRINT_PREVIEW>main
+2 Drukuj, polecenie=HID_FILE_PRINT>main
+2 Importuj z SQL-a, polecenie=HID_FILE_IMPORT>main
+2 Eksportuj, polecenie=HID_FILE_EXPORT>main
+2 Zarz¹dzanie skoroszytami, polecenie=Manage_Workbooks_command>main
+2 Po³¹cz z baz¹ danych, polecenie=HID_FILE_CONNECT>main
+2 Zakoñcz, polecenie=HID_APP_EXIT>main
+1 Menu Edycja
+2 Cofnij/Ponów, polecenie=HID_EDIT_UNDO>main
+2 Powtórz, polecenie=HID_EDIT_REPEAT>main
+2 Wytnij, polecenie=HID_EDIT_CUT>main
+2 Kopiuj, polecenie=HID_EDIT_COPY>main
+2 Wklej element, polecenie=HID_EDIT_PASTE>main
+2 Usuñ element, polecenie=HID_EDIT_DELETEITEM>main
+2 Zaznacz wszystko, polecenie=HID_EDIT_SELECTALL>main
+2 ZnajdŸ, polecenie=HID_TOOLS_FIND>main
+2 W³aœciwoœci elementu, polecenie=HID_EDIT_ITEMPROPERTIES>main
+1 Menu Widok
+2 Pasek narzêdzi, polecenie=HID_VIEW_TOOLBAR>main
+2 Pasek formatowania, polecenie=HID_TOOLBAR_FORMAT>main
+2 Pasek narzêdzi analizuj¹cych, polecenie=HID_TOOLBAR_ANALYSIS>main
+2 Pasek stanu, polecenie=HID_VIEW_STATUS_BAR>main
+2 Elementy strony=View_Page_Items
+2 Schowek elementów, polecenie=HID_VIEW_CLIPBOARD>main
+2 Inspektor SQL-a, polecenie=HID_VIEW_SQL>main
+1 Menu Arkusz
+2 Nowy arkusz, polecenie=HID_SHEET_NEW>main
+2 Edytuj arkusz, polecenie=HID_SHEET_MODIFY>main
+2 Powiel jako tabelê, polecenie=HID_DUPLICATE_TABLE>main
+2 Powiel jako macierz, polecenie=HID_DUPLICATE_CROSSTAB>main
+2 Zmieñ nazwê arkusza, polecenie=HID_SHEET_RENAME>main
+2 Usuñ arkusz, polecenie=HID_SHEET_DELETE>main
+2 Edytuj tytu³, polecenie=HID_SHEET_TITLE>main
+2 Dr¹¿, polecenie=HID_SHEET_DRILLDOWN>main
+2 Zwiñ, polecenie=HID_SHEET_ROLLUP>main
+2 Edytuj wartoœci parametrów, polecenie=HID_SHEET_MODPARAMS>main
+2 Odœwie¿ arkusz=HIDD_Sheet_Refresh
+2 Wyszukaj wszystkie wiersze, polecenie=HID_SHEET_FETCHALL>main
+2 Zlicz wszystkie wiersze, polecenie=HID_SHEET_COUNTALL>main
+1 Menu Format
+2 Dane, polecenie=HID_FORMAT_DATA>main
+2 Nag³ówki, polecenie=HID_FORMAT_HEADINGS>main
+2 Wyj¹tki, polecenie=HID_FORMAT_EXCEPTIONS>main
+2 Kolumny - Szerokoœæ, polecenie=HID_COLUMN_WIDTH>main
+2 Kolumny - Automatyczny rozmiar, polecenie=HID_COLUMN_AUTOFIT>main
+2 Arkusz - Tytu³, polecenie=HID_FORMAT_SHEETTITLE>main
+2 Arkusz - WprowadŸ t³o, polecenie=HID_FORMAT_SHEETBKGND>main
+2 Usuñ t³o, polecenie=HID_FORMAT_SHEETCLEAR>main
+1 Menu Narzêdzia
+2 Warunki, polecenie=HID_TOOLS_CONDITIONS>main
+2 Sortuj, polecenie=HID_TOOLS_SORT>main
+2 Podsumowania, polecenie=HID_TOOLS_TOTALS>main
+2 Procenty, polecenie=HIDD_PERCENTAGES
+2 Obliczenia, polecenie=HID_TOOLS_CALCULATIONS>main
+2 Parametry, polecenie=HID_TOOLS_PARAMS>main
+2 Opcje, polecenie=HID_TOOLS_OPTIONS>main
+1 Menu Wykres
+2 Nowy wykres, polecenie=New_Graph_command>main
+2 Poka¿, polecenie=HID_MENU_VIEW_GRAPH>main
+2 Drukuj, polecenie=Print_command_graph
+2 Kopiuj do Schowka, polecenie=Copy_to_clipboard_command_graph>main
+2 Legenda, polecenie=Legend_command>main
+2 Etykiety X, polecenie=X_Labels_command>main
+2 Pasek stanu, polecenie=Status_bar_command_graph>main
+2 Skala, polecenie=HID_GRAPH_SCALE>main
+2 Widok 3-W, polecenie=HID_GRAPH_3D>main
+1 Menu Okno
+2 Rozmieœæ ikony, polecenie=HID_WINDOW_ARRANGE>main
+2 Kaskadowo, polecenie=HID_WINDOW_CASCADE>main
+2 S¹siaduj¹co w poziomie, polecenie=HID_WINDOW_TILE_HORZ>main
+2 S¹siaduj¹co w pionie, polecenie=HID_WINDOW_TILE_VERT>main
+1 Menu Pomoc
+2 Tematy Pomocy, polecenie=HID_HELP_INDEX>main
+2 Korzystanie z Pomocy, polecenie=HID_HELP_USING>main
+2 Podrêczniki, polecenie=HID_HELP_MANUALS>main
+2 Discoverer - informacje, polecenie=HID_APP_ABOUT>main

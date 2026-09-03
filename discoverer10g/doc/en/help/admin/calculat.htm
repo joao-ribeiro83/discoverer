@@ -1,0 +1,1369 @@
+
+<!DOCTYPE html public "-//w3c//dtd html 3.2 transitional//en.us">
+<HTML lang="en.us">
+<HEAD>
+
+<META NAME="Generator" CONTENT="Quadralay WebWorks Publisher 5.0.4">
+<META NAME="Page" CONTENT="DefaultSingle">
+<META NAME="Title" CONTENT="Creating and maintaining calculated items">
+<meta http-equiv="Content-Type" content="text/html;  charset=iso-8859-1">
+
+<TITLE>Creating and maintaining calculated items</TITLE>
+	   
+<LINK REL="home" HREF="../../library.htm" TITLE="Library">
+<LINK REL="toc" HREF="toc.htm" TITLE="Contents">
+<LINK REL="index" HREF="bookix.htm" TITLE="Index">
+<LINK REL="copyright" HREF="./html/cpyr.htm" TITLE="Copyright">
+<LINK REL="up" HREF="toc.htm" TITLE="Up">
+<LINK REL="next" HREF="conditio.htm" TITLE="Next">
+<LINK REL="previous" HREF="joins.htm" TITLE="Previous">
+
+
+</HEAD>
+       
+<BODY BGCOLOR="#ffffff">
+
+<A NAME="top"></A>
+
+
+
+
+<A HREF="#BEGIN">Skip Headers</A><BR><BR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+ 
+<TD ALIGN="LEFT" VALIGN="TOP"><FONT COLOR="#330099" FACE="Helvetica, Arial, sans-serif"><STRONG>Oracle Discoverer Administrator Administration Guide (Online Help)<BR>10<i>g</i> (9.0.4)</STRONG><BR>Part Number B10270-01</FONT></TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="144">
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+
+
+
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<HR>
+<P>
+<A HREF="joins.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+
+<A HREF="conditio.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+    
+
+
+<A NAME="BEGIN"></A>
+
+
+
+<DIV CLASS="IND">
+<!-- End Header -->
+
+
+
+
+
+
+
+<A NAME="1656"></A>
+<!--TOC=Title-"1656"-->
+<H1 CLASS="Title"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099">10<BR>Creating and maintaining calculated items</FONT></H1>
+
+<!--/TOC=Title-->
+
+<A NAME="1004594"></A>
+<!--TOC=h1-"1004594"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Creating and maintaining calculated items</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1006698"></A>
+<P CLASS="BP">
+This chapter explains how to create and maintain calculated items using Discoverer Administrator, and contains the following topics:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006708"></A><A HREF="calculat.htm#1006693">"What are calculated items?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006730"></A><A HREF="calculat.htm#1009689">"What are derived items?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006738"></A><A HREF="calculat.htm#1009500">"What are aggregate calculated items?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006746"></A><A HREF="calculat.htm#1007941">"What restrictions apply to aggregate calculated items?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006754"></A><A HREF="calculat.htm#1009547">"What are the differences in behaviour between analytic functions and aggregate calculated items?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006763"></A><A HREF="calculat.htm#1010911">"What are aggregate derived items?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006771"></A><A HREF="calculat.htm#1006658">"Example of an aggregate derived item"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006779"></A><A HREF="calculat.htm#1006186">"How to create calculated items"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006787"></A><A HREF="calculat.htm#1006143">"How to edit calculated item properties"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006796"></A><A HREF="calculat.htm#1004627">"How to edit calculated items"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006805"></A><A HREF="calculat.htm#1004976">"How to delete calculated items"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009982"></A><A HREF="calculat.htm#1010574">"How to create a calculated item that enables end users to drill out from one worksheet to display another worksheet in Discoverer Viewer"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006814"></A><A HREF="calculat.htm#1009842">"Why do you need PL/SQL functions?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006823"></A><A HREF="calculat.htm#1004628">"What are custom PL/SQL functions?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006831"></A><A HREF="calculat.htm#1005053">"About registering custom PL/SQL functions"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006840"></A><A HREF="calculat.htm#1005915">"How to register custom PL/SQL functions automatically"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006849"></A><A HREF="calculat.htm#1004631">"How to register custom PL/SQL functions manually"</a>
+<P>
+</UL>
+
+<A NAME="1006693"></A>
+<!--TOC=h1-"1006693"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are calculated items?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004656"></A>
+<P CLASS="BP">
+Calculated items are items that use a formula to derive data for the item.
+</P>
+<A NAME="1005154"></A>
+<P CLASS="BP">
+Calculated items enable Discoverer end users to apply business calculations to the data. For example, typical business calculations might include:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007251"></A>profit margins
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007258"></A>average revenues per month
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007259"></A>expected sales
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007262"></A>percent of profit by product type
+<P>
+</UL>
+<A NAME="1007265"></A>
+<P CLASS="BP">
+Calculated items (like other items in a folder) can be used in conditions, summary folders, lists of values, joins, and other calculated items.
+</P>
+<A NAME="1009805"></A>
+<P CLASS="BP">
+As the Discoverer manager, you can create calculated items and make them available for inclusion in workbooks.
+</P>
+<A NAME="1007287"></A>
+<P CLASS="BP">
+Creating calculated items provides the following benefits:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007291"></A>Discoverer end users can include a complicated calculation in their worksheets simply by selecting a calculated item
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007292"></A>you can add new items to a folder that do not exist as columns in the underlying database tables
+<P>
+</UL>
+<A NAME="1004657"></A>
+<P CLASS="BP">
+You create calculated items using expressions that can contain:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004658"></A>existing items
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004659"></A>operators
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004660"></A>literals
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004661"></A>functions
+<P>
+</UL>
+<A NAME="1004663"></A>
+<P CLASS="BP">
+There are three types of calculated items:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004665"></A>derived items (for more information, see <A HREF="calculat.htm#1009689">"What are derived items?"</a>)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004666"></A>aggregate calculated items (for more information, see <A HREF="calculat.htm#1009500">"What are aggregate calculated items?"</a>)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004667"></A>aggregate derived items (for more information, see <A HREF="calculat.htm#1010911">"What are aggregate derived items?"</a>)
+<P>
+</UL>
+<A NAME="1004829"></A>
+<P CLASS="BP">
+You can obtain more information about calculated items in Discoverer from the following sources:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004830"></A>for worked examples of calculated items, see the <EM CLASS="Italic">Oracle Application Server Discoverer Plus User's Guide</EM>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004831"></A>for information on function syntax, see the latest <EM CLASS="Italic">Oracle SQL Reference</EM> documentation
+<P>
+</UL>
+
+<A NAME="1009680"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009693"></A>You might want to create a calculation to concatenate two (or more) items. To  concatenate items, insert ||CHR(10)|| between items. For example, to create a new worksheet column containing the Calendar Year item and the Department item, create a calculation as follows:
+<P>
+
+<UL>
+
+
+<A NAME="1009684"></A>
+<P CLASS="BP2">
+Calendar Year||CHR(10)||Department
+</P>
+
+<A NAME="1009685"></A>
+<P CLASS="BP2">
+Worksheets containing this item will display Calendar Year and Department in a single column. For example:
+</P>
+
+<A NAME="1009686"></A>
+<P CLASS="BP2">
+2002 Sales Department
+</P>
+ 
+</UL>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010018"></A>You can create a calculated item (containing an internet address) and use the calculated item in a Discoverer Plus worksheet to enable end users to launch a pre-defined Discoverer Viewer worksheet in a Web browser (for more information, see <A HREF="calculat.htm#1010574">"How to create a calculated item that enables end users to drill out from one worksheet to display another worksheet in Discoverer Viewer"</a>.
+<P>
+</UL>
+
+<A NAME="1009689"></A>
+<!--TOC=h1-"1009689"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are derived items?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004681"></A>
+<P CLASS="BP">
+Derived items are expressions used in calculated items that behave like any other item in a folder. Derived items can be axis items or data points and can be used anywhere that you would use an ordinary item. The value of a derived item remains the same regardless of which other items are included in a workbook.
+</P>
+<A NAME="1004684"></A>
+<P CLASS="BP">
+The following are examples of derived items:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004685"></A><CODE>Sal*12+NVL(Comm,0) - returns annual salary plus commission</CODE>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004686"></A><CODE>Initcap(Ename) - capitalizes the first letter of Ename</CODE>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004687"></A><CODE>1 - returns the value 1</CODE>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004678"></A><CODE>Sysdate-7 - returns today's date minus seven days</CODE>
+<P>
+    
+<PRE CLASS="CE1">
+<A NAME="1005307"></A>
+</PRE>
+    </UL>
+
+<A NAME="1009500"></A>
+<!--TOC=h1-"1009500"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are aggregate calculated items?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1009501"></A>
+<P CLASS="BP">
+Aggregate calculated items are derived items (for more information, see <A HREF="calculat.htm#1009689">"What are derived items?"</a>), to which the GROUP function is applied (e.g. SUM, COUNT, MAX, MIN, AVG, DETAIL). The value of an aggregated calculated item depends on which other items are included in a worksheet.
+</P>
+<A NAME="1009523"></A>
+<P CLASS="BP">
+The following are examples of aggregate calculated items:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004703"></A><CODE>SUM(Sal)*12  - returns the sum of the annual salary</CODE>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004704"></A><CODE>SUM(Comm)/SUM(Sal) - returns the sum of commision divided by the sum of the salary</CODE>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004706"></A><CODE>AVG(Monthly Sales) - returns the average monthly sales</CODE>
+<P>
+    
+<PRE CLASS="CE1">
+<A NAME="1005303"></A>
+</PRE>
+    </UL>
+<A NAME="1004709"></A>
+<P CLASS="BP">
+How the axis items are grouped together affects the number of rows that are aggregated. This is particularly important in the case of calculations that are ratios of two aggregates. 
+</P>
+<A NAME="1007751"></A>
+<P CLASS="BP">
+For example, to calculate a margin, you would use the calculation SUM(Profit)/SUM(Sales) rather than Profit/Sales. Used in a query, the latter would result in SUM(Profit/Sales), which produces a different result from SUM(Profit)/SUM(Sales). The example uses the SUM aggregate, but the same can be applied for any of the other aggregates (e.g. SUM, COUNT, MAX, MIN, AVG, DETAIL).
+</P>
+<A NAME="1007939"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> If you want to compute the sum of a ratio of two data points, always sum the data points before computing the ratio.
+</P>
+
+<A NAME="1007941"></A>
+<!--TOC=h1-"1007941"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What restrictions apply to aggregate calculated items?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1007942"></A>
+<P CLASS="BP">
+When creating aggregate calculated items, note that a number of restrictions apply. Aggregate calculated items:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004720"></A>must have their <STRONG CLASS="Bold">Default Position</STRONG> property set to data point
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004721"></A>must have their <STRONG CLASS="Bold">Default Aggregate</STRONG> property set to detail
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004722"></A>must reference items in the current folder only
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004724"></A>cannot be used in a join
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004726"></A>cannot be used in a mandatory condition 
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004727"></A>cannot be used in a hierarchy
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004728"></A>cannot have an item class
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004729"></A>cannot be dragged into a complex folder
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004732"></A>cannot have further aggregation functions applied to them in Discoverer Plus
+<P>
+</UL>
+<A NAME="1009542"></A>
+<P CLASS="BP">
+Aggregate calculated items do not influence the number of rows of data referenced by the folder they are in. They only influence the generated SQL when selected in worksheets.
+</P>
+
+<A NAME="1009547"></A>
+<!--TOC=h1-"1009547"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are the differences in behaviour between analytic functions and aggregate calculated items?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1009560"></A>
+<P CLASS="BP">
+Analytic functions are advanced mathematical and statistical calculations that you can use to analyse business intelligence data. For example, to answer questions such as:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009561"></A>what are my best selling products?
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009562"></A>how do current sales compare with last year's sales?
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009563"></A>what is the average sales transaction amount in the region with the largest number of sales transactions per year?
+<P>
+</UL>
+<A NAME="1004811"></A>
+<P CLASS="BP">
+Analytic functions behave differently from aggregate calculated items as follows:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004812"></A>analytic functions are aggregated in the database
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004816"></A>because analytic functions are aggregated in the database, and not the memory cache, they have a performance overhead
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004817"></A>analytic functions are only available in Oracle 8.1.7 (or later) Enterprise Edition databases
+<P>
+</UL>
+<A NAME="1004809"></A>
+<P CLASS="BP">
+For more information about:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009471"></A>the restrictions that apply to both analytic functions and aggregate calculated items, see <A HREF="calculat.htm#1007941">"What restrictions apply to aggregate calculated items?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010908"></A>analytic functions, see the <EM CLASS="Italic">Oracle Application Server Discoverer Plus User's Guide.</EM>
+<P>
+</UL>
+
+<A NAME="1010911"></A>
+<!--TOC=h1-"1010911"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are aggregate derived items?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1008074"></A>
+<P CLASS="BP">
+Aggregate derived items are aggregate calculated items in a complex folder that aggregate another aggregate calculated item (in the same complex folder). In other words, an aggregate derived item is simply an aggregate calculated item nested inside another aggregate calculated item.
+</P>
+<A NAME="1008138"></A>
+<P CLASS="BP">
+Aggregate derived items enable you to apply an aggregation (e.g. AVG, SUM, COUNT) to the current level of aggregation to derive additional information.
+</P>
+<A NAME="1008184"></A>
+<P CLASS="BP">
+Aggregate derived items behave in all respects like ordinary derived items. For more information, see:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009571"></A><A HREF="calculat.htm#1009689">"What are derived items?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009583"></A><A HREF="calculat.htm#1006658">"Example of an aggregate derived item"</a>
+<P>
+</UL>
+
+<A NAME="1006658"></A>
+<!--TOC=h1-"1006658"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Example of an aggregate derived item</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1006659"></A>
+<P CLASS="BP">
+This example explains how you can use an aggregate derived item to display the average monthly sales per store over one year, for a video stores chain. The aggregate derived item in this example uses an aggregate calculated item created in the same folder. For more information about aggregate calculated items, see <A HREF="calculat.htm#1009500">"What are aggregate calculated items?"</a>.
+</P>
+<A NAME="1007429"></A>
+<P CLASS="BP">
+This example uses two complex folders, Video Analysis and Monthly Sales Analysis, that are created when you complete the Discoverer Administrator Tutorial exercises (for more information, see the <EM CLASS="Italic">Discoverer Administrator Tutorial</EM>). 
+</P>
+<A NAME="1007371"></A>
+<P CLASS="BP">
+An aggregate derived item is created in the complex folder Monthly Sales Analysis. The Monthly Sales Analysis complex folder is built by dragging the following items from the Video Analysis complex folder (for more information, see the <EM CLASS="Italic">Discoverer Administrator Tutorial</EM>):
+</P>
+<UL>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1006661"></A>Department
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1006662"></A>Region
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1006663"></A>City
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1006664"></A>Store Name
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1006665"></A>Year
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1006666"></A>Quarter
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1006667"></A>Month
+<P>
+</UL>
+</UL>
+<A NAME="1006668"></A>
+<P CLASS="BP">
+The complex folder Monthly Sales Analysis references a row of data for every store, for every month.
+</P>
+<A NAME="1006669"></A>
+<P CLASS="BP">
+An aggregate calculated item (Monthly Sales Per Store) is created in the Monthly Sales Analysis complex folder using the following formula:
+</P>
+
+<UL>
+
+<A NAME="1006674"></A>
+<P CLASS="BP1">
+<CODE>SUM(Video Analysis.Sales)</CODE>
+</P>
+</UL>
+<A NAME="1006676"></A>
+<P CLASS="BP">
+This item shows the total sales for a given store in a given month. 
+</P>
+
+<A NAME="1006677"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 10-1 &#32;Result of query using the aggregate calculated item SUM(Video Analysis.Sales)</EM></FONT></H4>
+   
+<BR><A NAME="1008108">
+
+
+<img src="clcadit1.gif" ALT="Text description of clcadit1.gif follows.">
+<A HREF="img_text/clcadit1.htm"><br>Text description of the illustration clcadit1.gif</A>
+
+
+</A>
+   <A NAME="1008103"></A>
+<P CLASS="BP">
+An aggregate derived calculated item (called Average Monthly Sales per Store), is created in the Monthly Sales Analysis complex folder using the following formula:
+</P>
+
+<UL>
+
+<A NAME="1006679"></A>
+<P CLASS="BP1">
+ AVG(Monthly Sales Per Store)
+</P>
+</UL>
+<A NAME="1008095"></A>
+<P CLASS="BP">
+This item shows the average total sales for a given store in a given month. 
+</P>
+
+<A NAME="1008110"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 10-2 &#32;Result of query using the aggregate derived calculated item AVG(Monthly Sales Per Store)</EM></FONT></H4>
+   
+<BR><A NAME="1008111">
+
+
+<img src="clcadit2.gif" ALT="Text description of clcadit2.gif follows.">
+<A HREF="img_text/clcadit2.htm"><br>Text description of the illustration clcadit2.gif</A>
+
+
+</A>
+   
+<A NAME="1006680"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006681"></A>The Average Monthly Sales per Store item shows the average monthly sales and can be analyzed over region, quarter, year, which is useful to compare trends. This form of nested aggregate is only possible by creating the aggregate item in a new folder. The aggregate item must be created in a new folder because the new folder now represents monthly sales, not the individual sales that were in the original complex folder.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006682"></A>Aggregate derived items cause the SQL created by Discoverer to contain a GROUP BY clause that forces Discoverer end user queries to return one row for each combination of the non-aggregated items, regardless of whether the calculation is used in the query. This reduces the number of rows returned by the folder, because the rows are aggregated at the level of the other items.
+<P>
+</UL>
+
+<A NAME="1006186"></A>
+<!--TOC=h1-"1006186"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to create calculated items</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004837"></A>
+<P CLASS="BP">
+You can create calculated items, derived items, aggregate calculated items and aggregate derived items using this task.
+</P>
+<A NAME="1007454"></A>
+<P CLASS="BP">
+To create a new calculated item:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1004838"></A>Select the folder that you want to contain the new calculated item on the <A HREF="addtab01.htm#1005113">"Workarea: Data tab"</a>.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1004843"></A>Choose Insert | Item... to display the <A HREF="adnite01.htm#1005113">"New Item dialog"</a>.
+<P>
+ 
+
+<A NAME="1005393"></A>
+<P CLASS="BP1">
+This dialog enables you to create a new calculated item and add it to the selected folder.
+</P>
+
+<A NAME="1004857"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note</STRONG>: If you did not select a folder, Discoverer Administrator displays the <A HREF="adnicf01.htm#1006278">"New Item dialog"</a> where you can select a folder to contain your new calculation (you can select any folder from any open business area).
+</P>
+
+<A NAME="1004861"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 10-3 &#32;New Item dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1005432">
+
+
+<img src="clcnitm.gif" ALT="Text description of clcnitm.gif follows.">
+<A HREF="img_text/clcnitm.htm"><br>Text description of the illustration clcnitm.gif</A>
+
+
+</A>
+ </OL>
+<A NAME="1008395"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1004862"></A>Specify a name for the new calculated item.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1009599"></A>Enter the calculation formula in the <STRONG CLASS="Bold">Calculation</STRONG> field.
+<P>
+ 
+
+<A NAME="1009600"></A>
+<P CLASS="BP1">
+If you are familiar with calculation syntax, you type the formula in the <STRONG CLASS="Bold">Calculation</STRONG> field. 
+</P>
+
+<A NAME="1009601"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note</STRONG>: If you type a formula in the <STRONG CLASS="Bold">Calculation</STRONG> field, you must prefix the formula with an equals sign (i.e. =).
+</P>
+
+<A NAME="1009602"></A>
+<P CLASS="BP1">
+If you prefer, you can build the calculation in stages using any of the following methods:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1009603"></A>To add an item from the business area to the calculation, click the <STRONG CLASS="Bold">Items</STRONG> radio button and select an item from the <STRONG CLASS="Bold">Show</STRONG> list, then click Paste to copy the item into the <STRONG CLASS="Bold">Calculation</STRONG> field.
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1009604"></A>To add a function to the calculation, click the <STRONG CLASS="Bold">Functions</STRONG> radio button and select a function from the <STRONG CLASS="Bold">Show</STRONG> list, then click Paste to copy the function into the <STRONG CLASS="Bold">Calculation</STRONG> field. 
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1009606"></A>To include a mathematical operator in the calculation, click the appropriate operator button below the <STRONG CLASS="Bold">Calculation</STRONG> field.
+<P>
+</UL>
+
+<A NAME="1004868"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Hint</STRONG>: Before pasting items in the <STRONG CLASS="Bold">Calculation</STRONG> field, position the cursor in the <STRONG CLASS="Bold">Calculation</STRONG> field to where you want to insert the item.
+</P>
+
+<A NAME="1009617"></A>
+<P CLASS="BP1">
+Note: Calculations follow the standard Oracle calculation syntax. For a full description of this syntax, see the <EM CLASS="Italic">Oracle SQL Language Reference Manual.</EM>
+</P>
+
+<A NAME="1004875"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> Registered custom PL/SQL functions are displayed in the <STRONG CLASS="Bold">Database</STRONG> group. For more information, see <A HREF="calculat.htm#1004628">"What are custom PL/SQL functions?"</a>
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1004885"></A>Click OK when you have finished specifying details in the <STRONG CLASS="Bold">Calculation</STRONG> field.
+<P>
+ 
+
+<A NAME="1004886"></A>
+<P CLASS="BP1">
+If there are no errors in the <STRONG CLASS="Bold">Calculation</STRONG> field, the new item is created. If there are errors in the <STRONG CLASS="Bold">Calculation</STRONG> field, Discoverer Administrator displays the first error and returns you to the New Item dialog so that you can correct the details.
+</P>
+</OL>
+<A NAME="1004835"></A>
+<P CLASS="BP">
+You can now use the new calculated item to create joins or conditions, even new calculations. You can also include the new calculated item in other calculated items.
+</P>
+
+<A NAME="1006143"></A>
+<!--TOC=h1-"1006143"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to edit calculated item properties</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004916"></A>
+<P CLASS="BP">
+To edit calculated item properties see <A HREF="item_cla.htm#1004999">Chapter&nbsp;8, "How to edit item properties"</a> for more information.
+</P>
+
+<A NAME="1004627"></A>
+<!--TOC=h1-"1004627"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to edit calculated items</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004982"></A>
+<P CLASS="BP">
+To edit an existing calculation:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1009646"></A>Select the calculated item on the <A HREF="addtab01.htm#1005113">"Workarea: Data tab"</a> and choose Edit | Edit... to display the <A HREF="adecal01.htm#1005682">"Edit Calculation dialog"</a>.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1009655"></A>Change the calculation as required. 
+<P>
+ 
+
+<A NAME="1009656"></A>
+<P CLASS="BP1">
+For example:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1009657"></A>change the name of the calculation
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1009650"></A>add or remove items, functions, or operators from the calculation text
+<P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1009651"></A>Click OK to save the changes you have made and close the dialog.
+<P>
+ 
+</OL>
+
+<A NAME="1004976"></A>
+<!--TOC=h1-"1004976"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to delete calculated items</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1007532"></A>
+<P CLASS="BP">
+You can delete one or more calculated items. Note that when you delete a calculated item, other EUL objects might be affected if they use the calculated item you want to delete. The Impact dialog enables you to review the other objects that might be affected when you delete a calculated item. 
+</P>
+<A NAME="1005005"></A>
+<P CLASS="BP">
+To delete a calculated item:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005006"></A>On the <A HREF="addtab01.htm#1005113">"Workarea: Data tab"</a> select the calculated item that you want to delete.
+<P>
+
+<A NAME="1008244"></A>
+<P CLASS="BP1">
+You can select more than one item at a time by holding down the Ctrl key and clicking another item.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1008248"></A>Choose Edit | Delete to display the <A HREF="adcdel01.htm#1005113">"Confirm Delete dialog"</a>.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1008249"></A>(optional) To see the objects that might be affected by deleting this item:
+<P>
+ 
+
+<OL CLASS="LA2" TYPE="a">
+
+<LI CLASS="LA2" TYPE="a" VALUE="1"><A NAME="1007113"></A>Click Impact to display the <A HREF="adimpa01.htm#1005691">"Impact dialog"</a>.
+<P>
+
+<A NAME="1007115"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 10-4 &#32;The Impact dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1007119">
+
+
+<img src="impacta.gif" ALT="Text description of impacta.gif follows.">
+<A HREF="img_text/impacta.htm"><br>Text description of the illustration impacta.gif</A>
+
+
+</A>
+ 
+<A NAME="1009795"></A>
+<P CLASS="BP2">
+The Impact dialog enables you to review the other EUL objects that might be affected when you delete an item.
+</P>
+
+<A NAME="1010851"></A>
+<P CLASS="BP2">
+<STRONG CLASS="Bold">Note:</STRONG> The Impact dialog does not show the impact on workbooks saved to the file system (i.e. in .dis files).
+</P>
+ 
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1009783"></A>(optional) Select a row to view text at the bottom of the list, indicating what affect the current action will have on the EUL object.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1007777"></A>When you have finished reviewing the impact of deleting the item, click Close to close the Impact dialog.
+<P>
+</OL>
+</OL>
+<A NAME="1008400"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1010568"></A>Click Yes if you still want to delete the selected items(s).
+<P>
+ 
+</OL>
+
+<A NAME="1010574"></A>
+<!--TOC=h1-"1010574"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to create a calculated item that enables end users to drill out from one worksheet to display another worksheet in Discoverer Viewer</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1009843"></A>
+<P CLASS="BP">
+You might want to create a worksheet that end users can drill out from, to display additional or related information in another worksheet in Discoverer Viewer.
+</P>
+<A NAME="1010589"></A>
+<P CLASS="BP">
+You can create a calculated item in Discoverer Administrator that includes an internet address (a URL), and include the same item in a worksheet. End users can click the item to display a pre-defined Discoverer Viewer worksheet.
+</P>
+<A NAME="1009844"></A>
+<P CLASS="BP">
+To create a calculated item that enables end users to drill out from one worksheet (the source) to display another worksheet (the target) in Discoverer Viewer:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1009845"></A>Create the target worksheet in Discoverer Plus or Discoverer Desktop and save it to the database.
+<P>
+
+<A NAME="1010172"></A>
+<P CLASS="BP1">
+This is the pre-defined worksheet that end users will drill out to, from the source worksheet.
+</P>
+
+<A NAME="1010596"></A>
+<P CLASS="BP1">
+For more information about creating worksheets, see the <EM CLASS="Italic">Oracle Application Server Discoverer Plus User's Guide</EM>.
+</P>
+
+<A NAME="1010592"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> If you want the target worksheet to display context-sensitive information (i.e. information related to the source worksheet row or column that end users drill out from), the target worksheet must use a method of filtering the data (e.g. parameters or page items).
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1009972"></A>Use Discoverer Viewer to display the target worksheet that you created in Step 1.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1009974"></A>Copy the URL of the target worksheet onto the clipboard.
+<P>
+ 
+
+<A NAME="1010487"></A>
+<P CLASS="BP1">
+You will paste the URL of the target worksheet into a new calculated item in Discoverer Administrator, and then modify the formula of the calculated item.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1010493"></A>Display the <A HREF="adnite01.htm#1005113">"New Item dialog"</a> in Discoverer Administrator (see, <A HREF="calculat.htm#1006186">"How to create calculated items"</a>).
+<P>
+ 
+
+<A NAME="1010179"></A>
+<P CLASS="BP1">
+You will use the new calculated item in the source worksheet to drill out to the target worksheet in Discoverer Viewer.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1009973"></A>Paste the URL (that you copied onto the clipboard) into the <STRONG CLASS="Bold">Calculation</STRONG> field of the <A HREF="adnite01.htm#1005113">"New Item dialog"</a>.
+<P>
+ 
+
+<A NAME="1010197"></A>
+<P CLASS="BP1">
+You must now edit the URL in the new calculated item and replace each parameter value with its corresponding EUL item name. The EUL items supply the dynamic value that are used by the parameters in the target worksheet.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1009853"></A>In the <STRONG CLASS="Bold">Calculation</STRONG> field of the <A HREF="adnite01.htm#1005113">"New Item dialog"</a>, enter a single quotation mark (i.e. ') at the beginning and at the end of the URL.
+<P>
+ 
+
+<A NAME="1010600"></A>
+<P CLASS="BP1">
+For example:
+</P>
+
+<A NAME="1010608"></A>
+<P CLASS="BP1">
+'http://mymachine.com/discoverer/viewer?&amp;cn=cf_a208&amp;pg=1&amp;wbk=PARAMETERS&amp;wsk=26&amp;qp_myRegion=CENTRAL'
+</P>
+
+<A NAME="1010607"></A>
+<P CLASS="BP1">
+Using single quotation marks enables Discoverer to treat the text of an URL correctly.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1010502"></A>Edit the formula in the <STRONG CLASS="Bold">Calculation</STRONG> field to replace each parameter value in the URL with its corresponding EUL item name.
+<P>
+ 
+
+<A NAME="1009887"></A>
+<P CLASS="BP1">
+For example, if the target worksheet uses a parameter named myRegion (that represents the EUL item Region), the URL that you paste into the <STRONG CLASS="Bold">Calculation</STRONG> field might appear as follows:
+</P>
+
+<A NAME="1010280"></A>
+<P CLASS="BP1">
+'http://mymachine.com/discoverer/viewer?&amp;cn=cf_a208&amp;pg=1&amp;wbk=PARAMETERS&amp;wsk=26&amp;qp_myRegion=CENTRAL'
+</P>
+
+<A NAME="1010331"></A>
+<P CLASS="BP1">
+To replace part of the URL with a value determined from an EUL item, use the syntax '||&lt;ItemName&gt;||'. For example, in the URL above you might replace the value CENTRAL as follows:
+</P>
+
+<A NAME="1010302"></A>
+<P CLASS="BP1">
+'http://mymachine.com/discoverer/viewer?&amp;cn=cf_a208&amp;pg=1&amp;wbk=PARAMETERS&amp;wsk=26&amp;qp_myRegion='||Region||''
+</P>
+
+<A NAME="1010276"></A>
+<P CLASS="BP1">
+Where Region is the corresponding EUL item that dynamically supplies the value required by the myRegion parameter in the target worksheet.
+</P>
+
+<A NAME="1010640"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> You use single quotation marks and the || operator to correctly build the resulting URL.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="8"><A NAME="1010133"></A>Enter a suitable name for the new calculated item in the <STRONG CLASS="Bold">Name</STRONG> field.
+<P>
+ 
+
+<A NAME="1010461"></A>
+<P CLASS="BP1">
+For example, you could name the new calculated item Drill_to_myRegion.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="9"><A NAME="1010139"></A>Click OK to close the dialog and save your changes.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="10"><A NAME="1010830"></A>In the Workarea: Data tab, highlight the calculated item you just created and choose Edit | Properties.
+<P>
+ 
+
+<A NAME="1010145"></A>
+<P CLASS="BP1">
+Discoverer displays the <A HREF="adipta01.htm#1005113">"Item Properties dialog"</a> for the calculated item you just created.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="11"><A NAME="1009917"></A>Click the <STRONG CLASS="Bold">Content Type</STRONG> attribute and choose FILE from the drop down list.
+<P>
+ 
+
+<A NAME="1009933"></A>
+<P CLASS="BP1">
+The <STRONG CLASS="Bold">Content Type</STRONG> attribute tells Discoverer to launch another application. In this case, Discoverer Plus, Discoverer Desktop or Discoverer Viewer will launch a Web browser to display the target worksheet in Discoverer Viewer.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="12"><A NAME="1009934"></A>Click OK to close the dialog and apply the changes you have made.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="13"><A NAME="1010834"></A>Start a new Discoverer Plus session (or reconnect to Discoverer Desktop).
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="14"><A NAME="1009960"></A>Create a worksheet (the source worksheet) in Discoverer Plus or Desktop and include the Drill_to_myRegion calculated item (that you just created in Discoverer Administrator) in the worksheet.
+<P>
+ 
+
+<A NAME="1009961"></A>
+<P CLASS="BP1">
+For more information about creating worksheets, see the <EM CLASS="Italic">Oracle Application Server Discoverer Plus User's Guide</EM>.
+</P>
+
+<A NAME="1009979"></A>
+<P CLASS="BP1">
+When an end user displays this source worksheet in Discoverer Plus, Discoverer Desktop or Discoverer Viewer, they can click the Drill_to_myRegion calculated item (that you just created) to display the target worksheet in Discoverer Viewer. The context-sensitive value for the EUL item Region is dynamically passed to the target worksheet using the myRegion parameter to display the correct results data.
+</P>
+</OL>
+<A NAME="1010810"></A>
+<P CLASS="BP">
+The example URL used in this task can be broken down into the following components:
+</P>
+   
+<A NAME="1010856">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010783"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG><STRONG CLASS="Bold">Section of internet addres</STRONG></STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010785"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>What the section of the internet address represents</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010787"></A>
+<P CLASS="TB">
+http://mymachine.com/discoverer/viewer?&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010789"></A>
+<P CLASS="TB">
+the internet address (URL) of Discoverer Viewer&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010791"></A>
+<P CLASS="TB">
+&amp;cn=cf_a208&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010793"></A>
+<P CLASS="TB">
+the connection string used to connect to the database&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010795"></A>
+<P CLASS="TB">
+&amp;wbk=PARAMETERS&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010797"></A>
+<P CLASS="TB">
+the workbook identifier&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010799"></A>
+<P CLASS="TB">
+&amp;wsk=26&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010801"></A>
+<P CLASS="TB">
+the worksheet identifier&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010803"></A>
+<P CLASS="TB">
+&amp;qp_myRegion&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010805"></A>
+<P CLASS="TB">
+the parameter myRegion (created in Discoverer Plus or Discoverer Desktop)&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010807"></A>
+<P CLASS="TB">
+=CENTRAL&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010809"></A>
+<P CLASS="TB">
+the value of the target worksheet parameter myRegion (i.e. the CENTRAL region)&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   
+<A NAME="1009842"></A>
+<!--TOC=h1-"1009842"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Why do you need PL/SQL functions?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1006630"></A>
+<P CLASS="BP">
+PL/SQL functions are one of Oracle's procedural extensions to SQL. PL/SQL functions offer access through PL/SQL references in the SQL, to PL/SQL functions that run in the Oracle server. PL/SQL functions enable you to compute values in the database. For more information about PL/SQL functions, see the <EM CLASS="Italic">PL/SQL User's Guide and Reference</EM>.
+</P>
+
+<A NAME="1004628"></A>
+<!--TOC=h1-"1004628"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are custom PL/SQL functions?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005043"></A>
+<P CLASS="BP">
+Custom PL/SQL functions are PL/SQL functions created by the Discoverer manager that are designed to meet additional Discoverer end user requirements (e.g. to provide a complicated calculation). Custom PL/SQL functions supplement the PL/SQL functions provided by Oracle and are available to all database processes.
+</P>
+<A NAME="1005052"></A>
+<P CLASS="BP">
+You create custom PL/SQL functions using SQL*Plus, or a procedural editor. You do not create custom PL/SQL functions directly in Discoverer Administrator. For more information see the <EM CLASS="Italic">SQL*Plus</EM><EM CLASS="Italic"> User's Guide and Reference.</EM>
+</P>
+<A NAME="1005902"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> In Discoverer Plus, folders containing derived items (for more information, see <A HREF="calculat.htm#1009689">"What are derived items?"</a>) that use PL/SQL functions will be visible only to users who have EXECUTE database privileges on those functions.
+</P>
+
+<A NAME="1005053"></A>
+<!--TOC=h1-"1005053"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About registering custom PL/SQL functions</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005873"></A>
+<P CLASS="BP">
+To access custom PL/SQL functions using Discoverer, you must register the functions in the EUL. When you have registered a custom PL/SQL function, it appears in the list of database functions in the <A HREF="adecal01.htm#1005682">"Edit Calculation dialog"</a> and can be used in the same way as the standard Oracle functions.
+</P>
+<A NAME="1005057"></A>
+<P CLASS="BP">
+ You can register custom PL/SQL functions in two ways:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005834"></A>Import automatically, by importing the functions (recommended)
+<P>
+
+<A NAME="1005838"></A>
+<P CLASS="BP1">
+We recommend you register PL/SQL functions by importing automatically (especially if you have many functions to register), because it is easy to make mistakes when manually entering information about functions. When you import functions, all of the information about each function (e.g. names, database links, return types, lists of arguments) is imported. Importing ensures correct information about the function, because the information does not have to be manually entered on a function-by-function basis.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005058"></A>Manually
+<P>
+
+<A NAME="1005842"></A>
+<P CLASS="BP1">
+Manual registration requires that you register each function individually by supplying all of the information about the function.
+</P>
+</UL>
+
+<A NAME="1005915"></A>
+<!--TOC=h1-"1005915"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to register custom PL/SQL functions automatically</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005917"></A>
+<P CLASS="BP">
+To register PL/SQL functions automatically you must import them in the following way:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005919"></A>Choose Tools | Register PL/SQL Functions to display the <A HREF="adpsff01.htm#1005113">"PL/SQL Functions dialog: Functions tab"</a>.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1005925"></A>Click Import to display the <A HREF="adipfu01.htm#1005750">"Import PL/SQL Functions dialog"</a>.
+<P>
+ 
+
+<A NAME="1005968"></A>
+<P CLASS="BP1">
+This dialog enables you to select the PL/SQL functions that you want to import.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005933"></A>Select the functions that you want to import
+<P>
+ 
+
+<A NAME="1005979"></A>
+<P CLASS="BP1">
+You can select more than one function at a time by holding down the Ctrl key and clicking another function.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1005934"></A>Click OK.
+<P>
+ 
+
+<A NAME="1005935"></A>
+<P CLASS="BP1">
+Information about the selected functions is imported automatically. In other words, you do not have to manually enter information or validate the information.
+</P>
+</OL>
+
+<A NAME="1004631"></A>
+<!--TOC=h1-"1004631"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to register custom PL/SQL functions manually</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005073"></A>
+<P CLASS="BP">
+To manually register a PL/SQL function for use in Discoverer:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005075"></A>Choose Tools | Register PL/SQL Functions to display the <A HREF="adpsff01.htm#1005113">"PL/SQL Functions dialog: Functions tab"</a>.
+<P>
+
+<A NAME="1005082"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 10-5 &#32;PL/SQL Functions dialog: Functions tab</EM></FONT></H4>
+  
+<BR><A NAME="1006026">
+
+
+<img src="plsqlfun.gif" ALT="Text description of plsqlfun.gif follows.">
+<A HREF="img_text/plsqlfun.htm"><br>Text description of the illustration plsqlfun.gif</A>
+
+
+</A>
+  
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1005083"></A>Click New and specify the function attributes.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005085"></A>Click Validate to check the validity and accuracy of the information you have entered.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1005087"></A>If the function is invalid, correct the attributes and click Validate again.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1005093"></A>(optional) If the function accepts arguments:
+<P>
+ 
+
+<OL CLASS="LA2" TYPE="a">
+
+<LI CLASS="LA2" TYPE="a" VALUE="1"><A NAME="1007673"></A>Display the <A HREF="adpsfa01.htm#1005113">"PL/SQL Functions dialog: Arguments tab"</a>.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1007677"></A>On the Arguments tab, click New and specify the argument attributes.
+<P>
+
+<A NAME="1005097"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 10-6 &#32;PL/SQL Functions dialog: Arguments tab</EM></FONT></H4>
+
+<BR><A NAME="1006073">
+
+
+<img src="plsqlarg.gif" ALT="Text description of plsqlarg.gif follows.">
+<A HREF="img_text/plsqlarg.htm"><br>Text description of the illustration plsqlarg.gif</A>
+
+
+</A>
+</OL>
+</OL>
+<A NAME="1008404"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1005100"></A>Click OK when you have finished defining the function.
+<P>
+ 
+</OL>
+<A NAME="1005071"></A>
+<P CLASS="BP">
+The custom PL/SQL function is now registered for use in Discoverer.
+</P>
+<A NAME="594142"></A>
+<P CLASS="BP">
+
+</P>
+
+
+
+
+
+
+<!-- Start Footer -->
+</DIV>
+
+<DIV CLASS="OUTD">
+<HR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+<TD VALIGN="BOTTOM" WIDTH="33%">
+<TABLE CELLSPACING="0" CELLPADDING="0">
+<TR>
+<TD ALIGN="CENTER"><A HREF="joins.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+
+<TD ALIGN="CENTER"><A HREF="conditio.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+    
+</TR>
+</TABLE>
+</TD>
+<TD ALIGN="CENTER" WIDTH="34%">
+<A HREF="./html/cpyr.htm"><IMG SRC="./gifs/oracle.gif" ALT="Oracle" BORDER="0"><BR>
+<FONT SIZE="-2">Copyright &copy 2003 Oracle Corporation.</FONT></A>
+<BR>
+<FONT SIZE="-2">All Rights Reserved.</FONT>
+</TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="33%"> 
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="144">
+<TR>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+  
+</DIV>
+
+</BODY>
+</HTML>
+

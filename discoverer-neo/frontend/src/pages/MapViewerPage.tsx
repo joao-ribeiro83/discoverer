@@ -120,6 +120,7 @@ export function MapViewerPage() {
           <ExecutionPanel
             mapId={map.id}
             mapName={map.name}
+            mapType={map.mapType}
             result={result}
             parameters={lastParameters}
             isRunning={runMutation.isPending}

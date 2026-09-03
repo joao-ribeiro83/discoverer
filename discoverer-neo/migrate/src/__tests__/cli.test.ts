@@ -28,7 +28,7 @@ function makeIO() {
 function brokenDb(): MockDb {
   const db = eul5Db();
   db.tables.EUL5_EXPRESSIONS = (db.tables.EUL5_EXPRESSIONS ?? []).map((row, i) =>
-    i === 0 ? { ...row, OBJ_ID: 99999 } : row,
+    i === 0 ? { ...row, IT_OBJ_ID: 99999 } : row,
   );
   return db;
 }
@@ -59,7 +59,7 @@ describe('runCli — analyze', () => {
     expect(code).toBe(EXIT_OK);
     const report = JSON.parse(cap.outText()) as AssessmentReport;
     expect(report.version.version).toBe('EUL5');
-    expect(report.counts.businessAreas).toBe(1);
+    expect(report.counts.businessAreas).toBe(2);
     expect(report.readiness).toBeDefined();
   });
 
@@ -92,8 +92,8 @@ describe('runCli — export', () => {
     expect(written['out.json']).toBeDefined();
     const payload = JSON.parse(written['out.json'] as string) as EulReadResult;
     expect(payload.version.version).toBe('EUL5');
-    expect(payload.data.businessAreas).toHaveLength(1);
-    expect(payload.data.workbooks[0]?.info.worksheetCount).toBe(1);
+    expect(payload.data.businessAreas).toHaveLength(2);
+    expect(payload.data.workbooks[0]?.name).toBe('Monthly Sales');
     expect(cap.outText()).toContain('Exported EUL EUL5 metadata to out.json');
   });
 
@@ -333,7 +333,7 @@ describe('runCli — run', () => {
       inserted: Record<string, number>;
     };
     expect(result.version.version).toBe('EUL5');
-    expect(result.inserted.business_areas).toBe(2);
+    expect(result.inserted.business_areas).toBe(3);
   });
 
   it('--version eul4 overrides auto-detection on a mixed schema', async () => {

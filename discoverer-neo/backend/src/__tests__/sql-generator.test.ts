@@ -8,6 +8,7 @@ import type {
   MapCondition,
   MapItem,
   MapParameter,
+  MapTotal,
 } from '../db/schema.js';
 import type { MapDefinition } from '../types/sql.js';
 import { Parser } from 'node-sql-parser';
@@ -85,6 +86,7 @@ function mkMap(overrides: Partial<Map> = {}): Map {
     createdBy: USER_ID,
     isPublic: false,
     isActive: true,
+    selectDistinct: false,
     createdAt: NOW,
     updatedAt: NOW,
     ...overrides,
@@ -106,6 +108,18 @@ function mkMapItem(
     sortDirection: null,
     sortOrder: null,
     columnWidth: null,
+    axisType: null,
+    axisEdge: null,
+    axisOrder: null,
+    isHidden: false,
+    dataType: null,
+    headingFormatMask: null,
+    alignment: null,
+    wordWrap: null,
+    sortRank: null,
+    sortGroup: false,
+    sourceElementId: null,
+    sourceAttrs: null,
     createdAt: NOW,
     ...overrides,
   };
@@ -137,6 +151,9 @@ function mkParameter(
   return {
     id: uid(),
     mapId: 'unused',
+    // Most fixtures here use names that are already bind-safe, so the prompt
+    // and the bind name coincide. A test about the difference sets both.
+    bindName: overrides.name,
     paramType: 'STRING',
     defaultValue: null,
     isRequired: false,
@@ -152,6 +169,33 @@ function mkCalcField(
     id: uid(),
     mapId: 'unused',
     displayOrder: 0,
+    description: null,
+    dataType: null,
+    axisType: null,
+    formatMask: null,
+    isHidden: false,
+    sourceIdentifier: null,
+    sourceElementId: null,
+    sourceAttrs: null,
+    createdAt: NOW,
+    ...overrides,
+  };
+}
+
+function mkTotal(overrides: Partial<MapTotal> = {}): MapTotal {
+  return {
+    id: uid(),
+    mapId: 'unused',
+    kind: 'TOTAL',
+    mapItemId: null,
+    mapCalculatedFieldId: null,
+    breakMapItemId: null,
+    aggFunction: 'SUM',
+    placement: 'GRAND_TOTAL',
+    label: null,
+    displayOrder: 0,
+    sourceElementId: null,
+    sourceAttrs: null,
     createdAt: NOW,
     ...overrides,
   };
@@ -306,6 +350,131 @@ describe('SQL generator', () => {
       const result = generateSql(def);
       expect(result.columns[0]!.alias).toBe('THE_VALUE');
       expect(result.columns[1]!.alias).toBe('THE_VALUE_2');
+    });
+  });
+
+  describe('hidden map items', () => {
+    // `map_items.is_hidden` records an item the report's query names without
+    // drawing — what a migrated Discoverer worksheet does for an item only a
+    // calculation needs. It is not a column, so it is not in the SELECT list.
+    it('leaves a hidden item out of the SELECT list', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+          {
+            mapItem: mkMapItem(f.amount, { displayOrder: 1, isHidden: true }),
+            item: f.amount,
+            folder: f.sales,
+          },
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(result.columns.map((c) => c.label)).toEqual(['Region']);
+      expect(norm(result.sql)).not.toContain('AMOUNT');
+    });
+
+    it('does not put a hidden item into the GROUP BY either', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+          {
+            mapItem: mkMapItem(f.amount, { displayOrder: 1, aggFunction: 'SUM' }),
+            item: f.amount,
+            folder: f.sales,
+          },
+          {
+            mapItem: mkMapItem(f.orderDate, { displayOrder: 2, isHidden: true }),
+            item: f.orderDate,
+            folder: f.sales,
+          },
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(norm(result.sql)).toContain('GROUP BY');
+      expect(norm(result.sql)).not.toContain('ORDER_DATE');
+    });
+
+    // A Discoverer workbook writes every calculation into every worksheet
+    // section that offers it, so most arrive hidden. Their formula is
+    // Discoverer token text, not SQL, so drawing them does not just add
+    // columns — it makes the map fail to generate at all.
+    it('leaves a hidden calculated field out of the SELECT list', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+        ],
+        calculatedFields: [
+          mkCalcField({ name: 'Shown', formula: 'AMOUNT * 2' }),
+          mkCalcField({
+            name: 'Offered Elsewhere',
+            formula: 'AMOUNT * 3',
+            displayOrder: 1,
+            isHidden: true,
+          }),
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(result.columns.map((c) => c.label)).toEqual(['Region', 'Shown']);
+      expect(norm(result.sql)).not.toContain('* 3');
+    });
+
+    it('does not parse a hidden calculated field at all', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+        ],
+        calculatedFields: [
+          // Discoverer's own token text, which is not SQL and would throw.
+          mkCalcField({
+            name: 'Discoverer Tokens',
+            formula: '@AGG(0x1f) &item ??',
+            isHidden: true,
+          }),
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      expect(() => generateSql(def)).not.toThrow();
+      expect(generateSql(def).columns.map((c) => c.label)).toEqual(['Region']);
+    });
+
+    it('refuses a map whose only calculated field is hidden', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [],
+        calculatedFields: [
+          mkCalcField({ name: 'Hidden', formula: '1', isHidden: true }),
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      expect(() => generateSql(def)).toThrow('The map selects no columns');
+    });
+
+    it('refuses a map whose only items are hidden', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          {
+            mapItem: mkMapItem(f.region, { isHidden: true }),
+            item: f.region,
+            folder: f.sales,
+          },
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      expect(() => generateSql(def)).toThrow('The map selects no columns');
     });
   });
 
@@ -623,6 +792,71 @@ describe('SQL generator', () => {
       expect('p_region' in withoutValue.bindParams).toBe(false);
     });
 
+    // Discoverer let an author call a prompt anything, and a migrated EUL is
+    // full of names Oracle will not accept after a colon. Binding the prompt
+    // verbatim threw, so the map could not run at all; what binds is the
+    // parameter's derived bind name, and the prompt survives only as the label
+    // an error message uses.
+    it('binds a prompt whose name could never be a bind variable', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+        ],
+        conditions: [
+          {
+            condition: mkCondition(f.region, {
+              operator: '=',
+              conditionType: 'PARAMETER',
+              paramName: 'DT_FIM_VIG_NCIA',
+            }),
+            item: f.region,
+            folder: f.sales,
+          },
+        ],
+        parameters: [
+          mkParameter({ name: 'Dt Fim Vigência >=', bindName: 'DT_FIM_VIG_NCIA' }),
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def, {
+        parameterValues: { DT_FIM_VIG_NCIA: '2024-01-01' },
+      });
+      expect(norm(result.sql)).toContain('f1."REGION" = :DT_FIM_VIG_NCIA');
+      expect(result.bindParams.DT_FIM_VIG_NCIA).toBe('2024-01-01');
+      // The prompt itself never reaches the SQL text.
+      expect(result.sql).not.toContain('Vigência');
+    });
+
+    it('names the prompt, not the bind name, when a BETWEEN is under-supplied', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+        ],
+        conditions: [
+          {
+            condition: mkCondition(f.region, {
+              operator: 'BETWEEN',
+              conditionType: 'PARAMETER',
+              paramName: 'DT_FIM_VIG_NCIA',
+            }),
+            item: f.region,
+            folder: f.sales,
+          },
+        ],
+        parameters: [
+          mkParameter({ name: 'Dt Fim Vigência >=', bindName: 'DT_FIM_VIG_NCIA' }),
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      expect(() =>
+        generateSql(def, { parameterValues: { DT_FIM_VIG_NCIA: 'only-one' } }),
+      ).toThrow(/"Dt Fim Vigência >=" must supply two values/);
+    });
+
     it('expands LIST parameters into IN binds', () => {
       const f = salesFixture();
       const def = mkDef({
@@ -847,6 +1081,37 @@ describe('SQL generator', () => {
       expect(norm(result.sql)).toContain('ORDER BY 2 DESC, 1 ASC');
     });
 
+    // A migrated Discoverer worksheet writes an item its query named but no
+    // column drew as `is_hidden`. ORDER BY names SELECT-list positions, so a
+    // hidden item ahead of a sorted one must not shift them.
+    it('numbers ORDER BY positions over the visible columns only', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          {
+            mapItem: mkMapItem(f.orderDate, { displayOrder: 0, isHidden: true }),
+            item: f.orderDate,
+            folder: f.sales,
+          },
+          { mapItem: mkMapItem(f.region, { displayOrder: 1 }), item: f.region, folder: f.sales },
+          {
+            mapItem: mkMapItem(f.amount, {
+              displayOrder: 2,
+              sortDirection: 'DESC',
+              sortOrder: 1,
+            }),
+            item: f.amount,
+            folder: f.sales,
+          },
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      // Amount is the second visible column, not the third item.
+      expect(norm(result.sql)).toContain('ORDER BY 2 DESC');
+    });
+
     it('adds OFFSET/FETCH with bind variables', () => {
       const f = salesFixture();
       const def = mkDef({
@@ -886,6 +1151,145 @@ describe('SQL generator', () => {
         securityPredicates: ["f1.\"REGION\" = 'EMEA'"],
       });
       expect(norm(result.sql)).toContain("AND (f1.\"REGION\" = 'EMEA')");
+    });
+
+    it('renders an OR of two ANDs — the shape a migrated compound produces', () => {
+      // `(region = EMEA AND amount > 0) OR (region = APAC AND amount > 100)`.
+      // The migration writes exactly this: one group per conjunction, the
+      // second group's *first* row carrying the OR that joins the groups and
+      // its later rows carrying the AND that joins inside.
+      const f = salesFixture();
+      const groupA = '11111111-1111-4111-8111-111111111111';
+      const groupB = '22222222-2222-4222-8222-222222222222';
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+        ],
+        conditions: [
+          {
+            condition: mkCondition(f.region, {
+              operator: '=',
+              value: 'EMEA',
+              groupId: groupA,
+              logicOperator: 'AND',
+              displayOrder: 0,
+            }),
+            item: f.region,
+            folder: f.sales,
+          },
+          {
+            condition: mkCondition(f.amount, {
+              operator: '>',
+              value: '0',
+              groupId: groupA,
+              logicOperator: 'AND',
+              displayOrder: 1,
+            }),
+            item: f.amount,
+            folder: f.sales,
+          },
+          {
+            condition: mkCondition(f.region, {
+              operator: '=',
+              value: 'APAC',
+              groupId: groupB,
+              logicOperator: 'OR',
+              displayOrder: 2,
+            }),
+            item: f.region,
+            folder: f.sales,
+          },
+          {
+            condition: mkCondition(f.amount, {
+              operator: '>',
+              value: '100',
+              groupId: groupB,
+              logicOperator: 'AND',
+              displayOrder: 3,
+            }),
+            item: f.amount,
+            folder: f.sales,
+          },
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      // The outer brackets are unconditional once anything is ORed on, rather
+      // than appearing only when a security predicate follows: the shape of
+      // the WHERE clause should not depend on who is running the query.
+      const result = generateSql(def);
+      expect(norm(result.sql)).toContain(
+        'WHERE ((f1."REGION" = :c0 AND f1."AMOUNT" > :c1) ' +
+          'OR (f1."REGION" = :c2 AND f1."AMOUNT" > :c3))',
+      );
+    });
+
+    it('brackets ORed conditions so a security predicate constrains all of them', () => {
+      // `a OR b AND <security>` is `a OR (b AND <security>)` in SQL: every row
+      // matching `a` would come back regardless of the security rule. Migrated
+      // Discoverer conditions can be ORs, so this has to hold.
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+        ],
+        conditions: [
+          {
+            condition: mkCondition(f.region, { operator: '=', value: 'EMEA' }),
+            item: f.region,
+            folder: f.sales,
+          },
+          {
+            condition: mkCondition(f.region, {
+              operator: '=',
+              value: 'APAC',
+              logicOperator: 'OR',
+              displayOrder: 1,
+            }),
+            item: f.region,
+            folder: f.sales,
+          },
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def, {
+        securityPredicates: ['f1."AMOUNT" > 0'],
+      });
+      expect(norm(result.sql)).toContain(
+        'WHERE (f1."REGION" = :c0 OR f1."REGION" = :c1) AND (f1."AMOUNT" > 0)',
+      );
+    });
+
+    it('leaves an all-AND condition block unbracketed', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+        ],
+        conditions: [
+          {
+            condition: mkCondition(f.region, { operator: '=', value: 'EMEA' }),
+            item: f.region,
+            folder: f.sales,
+          },
+          {
+            condition: mkCondition(f.amount, {
+              operator: '>',
+              value: '0',
+              displayOrder: 1,
+            }),
+            item: f.amount,
+            folder: f.sales,
+          },
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def, { securityPredicates: ['1 = 1'] });
+      expect(norm(result.sql)).toContain(
+        'WHERE f1."REGION" = :c0 AND f1."AMOUNT" > :c1 AND (1 = 1)',
+      );
     });
 
     it('rejects predicates containing statement separators', () => {
@@ -1468,6 +1872,747 @@ describe('SQL generator', () => {
 
     it('rejects a trailing garbage token', () => {
       expect(() => compile('AMOUNT +')).toThrow(SqlGenerationError);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Migrated worksheet semantics
+  //
+  // Everything below is a fact a Discoverer worksheet carries that used to be
+  // stored and ignored: SELECT DISTINCT, group/break sorts, sort rank, sorts
+  // on hidden items, and summaries.
+  // -------------------------------------------------------------------------
+
+  describe('SELECT DISTINCT', () => {
+    it('emits DISTINCT when the map asks for it', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        map: mkMap({ selectDistinct: true }),
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(norm(result.sql)).toBe(
+        'SELECT DISTINCT f1."REGION" AS REGION FROM "APP"."SALES" f1',
+      );
+      expect(result.distinct).toBe(true);
+    });
+
+    it('leaves DISTINCT off by default', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(norm(result.sql)).not.toContain('DISTINCT');
+      expect(result.distinct).toBe(false);
+    });
+
+    // ORA-01791: under DISTINCT, ORDER BY may only name selected columns.
+    // Positions are selected columns, so a visible sort survives.
+    it('keeps a visible sort under DISTINCT', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        map: mkMap({ selectDistinct: true }),
+        items: [
+          {
+            mapItem: mkMapItem(f.region, { sortDirection: 'ASC', sortOrder: 1 }),
+            item: f.region,
+            folder: f.sales,
+          },
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(norm(result.sql)).toContain('ORDER BY 1 ASC');
+      expect(result.warnings).toEqual([]);
+    });
+  });
+
+  describe('axis placement and default aggregation', () => {
+    // `items.agg_function` is the EUL item's default aggregation. Discoverer
+    // applies it to measures, not to the columns a worksheet groups by.
+    it('does not aggregate a column the worksheet placed on the axis', () => {
+      const f = salesFixture();
+      const grouping = mkItem(f.sales, {
+        name: 'Region Code',
+        columnName: 'REGION_CODE',
+        aggFunction: 'SUM',
+      });
+      const def = mkDef({
+        items: [
+          {
+            mapItem: mkMapItem(grouping, { axisType: 'AXIS' }),
+            item: grouping,
+            folder: f.sales,
+          },
+        ],
+        formulaItems: [...f.formulaItems, { item: grouping, folder: f.sales }],
+      });
+
+      const result = generateSql(def);
+      expect(norm(result.sql)).toBe(
+        'SELECT f1."REGION_CODE" AS REGION_CODE FROM "APP"."SALES" f1',
+      );
+      expect(result.hasAggregates).toBe(false);
+    });
+
+    it('still aggregates a measure column by the item default', () => {
+      const f = salesFixture();
+      const measure = mkItem(f.sales, {
+        name: 'Net',
+        columnName: 'NET',
+        aggFunction: 'SUM',
+      });
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+          {
+            mapItem: mkMapItem(measure, {
+              displayOrder: 1,
+              axisType: 'MEASURE',
+            }),
+            item: measure,
+            folder: f.sales,
+          },
+        ],
+        formulaItems: [...f.formulaItems, { item: measure, folder: f.sales }],
+      });
+
+      const result = generateSql(def);
+      expect(norm(result.sql)).toContain('SUM(f1."NET") AS NET');
+      expect(norm(result.sql)).toContain('GROUP BY f1."REGION"');
+    });
+
+    // An aggregate chosen on the map item is deliberate and outranks placement.
+    it('honours an explicit aggregate on an axis column', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          {
+            mapItem: mkMapItem(f.amount, {
+              axisType: 'AXIS',
+              aggFunction: 'COUNT',
+            }),
+            item: f.amount,
+            folder: f.sales,
+          },
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      expect(norm(generateSql(def).sql)).toContain('COUNT(f1."AMOUNT")');
+    });
+
+    // Neo-authored maps leave axis_type null and are untouched by the rule.
+    it('applies the item default when no axis is recorded', () => {
+      const f = salesFixture();
+      const measure = mkItem(f.sales, {
+        name: 'Net',
+        columnName: 'NET',
+        aggFunction: 'SUM',
+      });
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(measure), item: measure, folder: f.sales },
+        ],
+        formulaItems: [...f.formulaItems, { item: measure, folder: f.sales }],
+      });
+
+      expect(norm(generateSql(def).sql)).toContain('SUM(f1."NET")');
+    });
+  });
+
+  describe('group/break sorts and sort rank', () => {
+    // `sort_group` is Discoverer's IsABreak. A break only groups if nothing
+    // sorts outside it, so it leads the ORDER BY whatever its position says.
+    it('puts a group sort ahead of a plain sort with a lower position', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          {
+            mapItem: mkMapItem(f.region, {
+              displayOrder: 0,
+              sortDirection: 'ASC',
+              sortOrder: 5,
+              sortGroup: true,
+            }),
+            item: f.region,
+            folder: f.sales,
+          },
+          {
+            mapItem: mkMapItem(f.amount, {
+              displayOrder: 1,
+              sortDirection: 'DESC',
+              sortOrder: 1,
+            }),
+            item: f.amount,
+            folder: f.sales,
+          },
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(norm(result.sql)).toContain('ORDER BY 1 ASC, 2 DESC');
+    });
+
+    it('orders group sorts among themselves by position', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          {
+            mapItem: mkMapItem(f.region, {
+              displayOrder: 0,
+              sortDirection: 'ASC',
+              sortOrder: 2,
+              sortGroup: true,
+            }),
+            item: f.region,
+            folder: f.sales,
+          },
+          {
+            mapItem: mkMapItem(f.custName, {
+              displayOrder: 1,
+              sortDirection: 'ASC',
+              sortOrder: 1,
+              sortGroup: true,
+            }),
+            item: f.custName,
+            folder: f.customers,
+          },
+        ],
+        joins: [f.join],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(norm(result.sql)).toContain('ORDER BY 2 ASC, 1 ASC');
+    });
+
+    // `sort_rank` is an explicit precedence and outranks the list position.
+    it('lets sort rank override sort order', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          {
+            mapItem: mkMapItem(f.region, {
+              displayOrder: 0,
+              sortDirection: 'ASC',
+              sortOrder: 1,
+              sortRank: 9,
+            }),
+            item: f.region,
+            folder: f.sales,
+          },
+          {
+            mapItem: mkMapItem(f.amount, {
+              displayOrder: 1,
+              sortDirection: 'DESC',
+              sortOrder: 2,
+              sortRank: 1,
+            }),
+            item: f.amount,
+            folder: f.sales,
+          },
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(norm(result.sql)).toContain('ORDER BY 2 DESC, 1 ASC');
+    });
+
+    // The break columns are not visible in the SQL text — a renderer needs
+    // them named, so they come back alongside it.
+    it('reports the break columns it grouped on, outermost first', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          {
+            mapItem: mkMapItem(f.region, {
+              displayOrder: 0,
+              sortDirection: 'ASC',
+              sortOrder: 2,
+              sortGroup: true,
+            }),
+            item: f.region,
+            folder: f.sales,
+          },
+          {
+            mapItem: mkMapItem(f.custName, {
+              displayOrder: 1,
+              sortDirection: 'ASC',
+              sortOrder: 1,
+              sortGroup: true,
+            }),
+            item: f.custName,
+            folder: f.customers,
+          },
+          {
+            mapItem: mkMapItem(f.amount, {
+              displayOrder: 2,
+              sortDirection: 'DESC',
+              sortOrder: 3,
+            }),
+            item: f.amount,
+            folder: f.sales,
+          },
+        ],
+        joins: [f.join],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(result.groupBreakAliases).toEqual(['CUSTOMER_NAME', 'REGION']);
+    });
+
+    it('reports no break columns when nothing is a group sort', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          {
+            mapItem: mkMapItem(f.region, { sortDirection: 'ASC', sortOrder: 1 }),
+            item: f.region,
+            folder: f.sales,
+          },
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      expect(generateSql(def).groupBreakAliases).toEqual([]);
+    });
+  });
+
+  describe('sorts on hidden items', () => {
+    // A hidden item has no SELECT-list position, so its sort is emitted as an
+    // expression instead of being silently dropped.
+    it('orders by a hidden item expression', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+          {
+            mapItem: mkMapItem(f.orderDate, {
+              displayOrder: 1,
+              isHidden: true,
+              sortDirection: 'DESC',
+              sortOrder: 1,
+            }),
+            item: f.orderDate,
+            folder: f.sales,
+          },
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(norm(result.sql)).toContain('ORDER BY f1."ORDER_DATE" DESC');
+      expect(result.warnings).toEqual([]);
+    });
+
+    it('joins the folder a hidden sort reaches into', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+          {
+            mapItem: mkMapItem(f.custName, {
+              displayOrder: 1,
+              isHidden: true,
+              sortDirection: 'ASC',
+              sortOrder: 1,
+            }),
+            item: f.custName,
+            folder: f.customers,
+          },
+        ],
+        joins: [f.join],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(norm(result.sql)).toContain('INNER JOIN "APP"."CUSTOMERS" f2');
+      expect(norm(result.sql)).toContain('ORDER BY f2."CUSTOMER_NAME" ASC');
+    });
+
+    it('drops a hidden sort under SELECT DISTINCT and says so', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        map: mkMap({ selectDistinct: true }),
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+          {
+            mapItem: mkMapItem(f.orderDate, {
+              displayOrder: 1,
+              isHidden: true,
+              sortDirection: 'DESC',
+              sortOrder: 1,
+            }),
+            item: f.orderDate,
+            folder: f.sales,
+          },
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(norm(result.sql)).not.toContain('ORDER BY');
+      expect(result.warnings).toHaveLength(1);
+      expect(result.warnings[0]).toContain('Order Date');
+      expect(result.warnings[0]).toContain('SELECT DISTINCT');
+    });
+
+    it('drops a hidden sort in an aggregated query and says so', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+          {
+            mapItem: mkMapItem(f.amount, { displayOrder: 1, aggFunction: 'SUM' }),
+            item: f.amount,
+            folder: f.sales,
+          },
+          {
+            mapItem: mkMapItem(f.orderDate, {
+              displayOrder: 2,
+              isHidden: true,
+              sortDirection: 'DESC',
+              sortOrder: 1,
+            }),
+            item: f.orderDate,
+            folder: f.sales,
+          },
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(norm(result.sql)).not.toContain('ORDER BY');
+      expect(result.warnings).toHaveLength(1);
+      expect(result.warnings[0]).toContain('Order Date');
+    });
+  });
+
+  describe('totals', () => {
+    const parser = new Parser();
+    const expectParsable = (sql: string) => {
+      const substituted = sql.replace(/:[A-Za-z_][A-Za-z0-9_]*/g, '1');
+      expect(() => parser.astify(substituted, { database: 'db2' })).not.toThrow();
+    };
+
+    it('generates no totals query when the map defines none', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(result.totals).toEqual([]);
+      expect(result.warnings).toEqual([]);
+    });
+
+    it('builds a grand total over the base expression, not the drawn column', () => {
+      const f = salesFixture();
+      const amountItem = mkMapItem(f.amount, {
+        displayOrder: 1,
+        aggFunction: 'SUM',
+      });
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+          { mapItem: amountItem, item: f.amount, folder: f.sales },
+        ],
+        totals: [mkTotal({ mapItemId: amountItem.id, aggFunction: 'SUM' })],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(result.totals).toHaveLength(1);
+      const [group] = result.totals;
+      // SUM(f1."AMOUNT"), never SUM(SUM(...)).
+      expect(norm(group!.sql)).toBe(
+        'SELECT SUM(f1."AMOUNT") AS SUM_AMOUNT FROM "APP"."SALES" f1',
+      );
+      expect(group!.breakAlias).toBeNull();
+      expect(group!.totals[0]!.aggFunction).toBe('SUM');
+      expect(group!.totals[0]!.targetAlias).toBe('AMOUNT');
+      expectParsable(group!.sql);
+    });
+
+    it('builds one grouped query per break column', () => {
+      const f = salesFixture();
+      const regionItem = mkMapItem(f.region, { displayOrder: 0 });
+      const amountItem = mkMapItem(f.amount, { displayOrder: 1 });
+      const def = mkDef({
+        items: [
+          { mapItem: regionItem, item: f.region, folder: f.sales },
+          { mapItem: amountItem, item: f.amount, folder: f.sales },
+        ],
+        totals: [
+          mkTotal({
+            mapItemId: amountItem.id,
+            breakMapItemId: regionItem.id,
+            placement: 'AT_CHANGE',
+            aggFunction: 'SUM',
+            label: 'Total for &value',
+          }),
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(result.totals).toHaveLength(1);
+      const [group] = result.totals;
+      expect(norm(group!.sql)).toBe(
+        'SELECT f1."REGION" AS REGION, SUM(f1."AMOUNT") AS SUM_AMOUNT ' +
+          'FROM "APP"."SALES" f1 GROUP BY f1."REGION" ORDER BY 1',
+      );
+      expect(group!.breakAlias).toBe('REGION');
+      expect(group!.breakTargetAlias).toBe('REGION');
+      // The label template keeps Discoverer's own interpolation.
+      expect(group!.totals[0]!.label).toBe('Total for &value');
+      expectParsable(group!.sql);
+    });
+
+    it('separates a grand total from a subtotal, grand total first', () => {
+      const f = salesFixture();
+      const regionItem = mkMapItem(f.region, { displayOrder: 0 });
+      const amountItem = mkMapItem(f.amount, { displayOrder: 1 });
+      const def = mkDef({
+        items: [
+          { mapItem: regionItem, item: f.region, folder: f.sales },
+          { mapItem: amountItem, item: f.amount, folder: f.sales },
+        ],
+        totals: [
+          mkTotal({
+            mapItemId: amountItem.id,
+            breakMapItemId: regionItem.id,
+            placement: 'AT_CHANGE',
+            displayOrder: 1,
+          }),
+          mkTotal({ mapItemId: amountItem.id, placement: 'GRAND_TOTAL' }),
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(result.totals.map((g) => g.breakAlias)).toEqual([null, 'REGION']);
+    });
+
+    it('carries the WHERE binds but not the pagination binds', () => {
+      const f = salesFixture();
+      const amountItem = mkMapItem(f.amount, { displayOrder: 1 });
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+          { mapItem: amountItem, item: f.amount, folder: f.sales },
+        ],
+        conditions: [
+          {
+            condition: mkCondition(f.region, { operator: '=', value: 'EAST' }),
+            item: f.region,
+            folder: f.sales,
+          },
+        ],
+        totals: [mkTotal({ mapItemId: amountItem.id })],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def, { rowLimit: 50 });
+      expect(result.bindParams).toHaveProperty('row_limit', 50);
+      const [group] = result.totals;
+      expect(norm(group!.sql)).toContain('WHERE');
+      expect(norm(group!.sql)).not.toContain('FETCH NEXT');
+      expect(group!.bindParams).not.toHaveProperty('row_limit');
+      expect(Object.keys(group!.bindParams)).toHaveLength(1);
+    });
+
+    it('skips a total whose Discoverer aggregate did not migrate', () => {
+      const f = salesFixture();
+      const amountItem = mkMapItem(f.amount, { displayOrder: 1 });
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+          { mapItem: amountItem, item: f.amount, folder: f.sales },
+        ],
+        totals: [mkTotal({ mapItemId: amountItem.id, aggFunction: null })],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(result.totals).toEqual([]);
+      expect(result.warnings).toHaveLength(1);
+      expect(result.warnings[0]).toContain('did not migrate');
+    });
+
+    it('skips a total pointing at a column the map does not use', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+        ],
+        totals: [
+          mkTotal({ mapItemId: '00000000-0000-4000-8000-999999999999' }),
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(result.totals).toEqual([]);
+      expect(result.warnings[0]).toContain('does not use');
+    });
+
+    // The migration writes AT_CHANGE with a null break only when Discoverer
+    // broke on a workbook calculation, which has no `map_items` row. Folding
+    // it into the grand total would print the all-rows figure where a reader
+    // expects a per-group one.
+    it('skips a subtotal whose break column did not migrate', () => {
+      const f = salesFixture();
+      const amountItem = mkMapItem(f.amount, { displayOrder: 1 });
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+          { mapItem: amountItem, item: f.amount, folder: f.sales },
+        ],
+        totals: [
+          mkTotal({
+            mapItemId: amountItem.id,
+            placement: 'AT_CHANGE',
+            breakMapItemId: null,
+          }),
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(result.totals).toEqual([]);
+      expect(result.warnings).toHaveLength(1);
+      expect(result.warnings[0]).toContain('subtotal was skipped');
+    });
+
+    it('still totals a hidden calculated field a total names', () => {
+      const f = salesFixture();
+      const calc = mkCalcField({
+        name: 'Net',
+        formula: 'AMOUNT * 2',
+        isHidden: true,
+      });
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+        ],
+        calculatedFields: [calc],
+        totals: [mkTotal({ mapCalculatedFieldId: calc.id, aggFunction: 'SUM' })],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      // Not drawn as a column...
+      expect(result.columns.map((c) => c.label)).toEqual(['Region']);
+      // ...but still totalled, with no main-query column to sit under.
+      expect(norm(result.totals[0]!.sql)).toContain('SUM(f1."AMOUNT" * 2)');
+      expect(result.totals[0]!.totals[0]!.targetAlias).toBeUndefined();
+    });
+
+    it('emits a calculation that already aggregates unwrapped', () => {
+      const f = salesFixture();
+      const calc = mkCalcField({
+        name: 'Total Amount',
+        formula: 'SUM(AMOUNT)',
+      });
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+        ],
+        calculatedFields: [calc],
+        totals: [mkTotal({ mapCalculatedFieldId: calc.id, aggFunction: 'SUM' })],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      const [group] = result.totals;
+      expect(norm(group!.sql)).toContain('SUM(f1."AMOUNT") AS TOTAL_TOTAL_AMOUNT');
+      expect(norm(group!.sql)).not.toContain('SUM(SUM(');
+      expect(group!.totals[0]!.aggFunction).toBe('INLINE');
+    });
+
+    it('carries the percentage kind through', () => {
+      const f = salesFixture();
+      const amountItem = mkMapItem(f.amount, { displayOrder: 1 });
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+          { mapItem: amountItem, item: f.amount, folder: f.sales },
+        ],
+        totals: [
+          mkTotal({
+            mapItemId: amountItem.id,
+            kind: 'PERCENTAGE',
+            aggFunction: 'SUM',
+          }),
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(result.totals[0]!.totals[0]!.kind).toBe('PERCENTAGE');
+    });
+
+    it('totals a hidden item the map queries but does not draw', () => {
+      const f = salesFixture();
+      const hiddenAmount = mkMapItem(f.amount, {
+        displayOrder: 1,
+        isHidden: true,
+      });
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+          { mapItem: hiddenAmount, item: f.amount, folder: f.sales },
+        ],
+        totals: [mkTotal({ mapItemId: hiddenAmount.id })],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      const [group] = result.totals;
+      expect(norm(group!.sql)).toContain('SUM(f1."AMOUNT")');
+      // No drawn column to sit under.
+      expect(group!.totals[0]!.targetAlias).toBeUndefined();
+      expect(group!.totals[0]!.targetLabel).toBe('Amount');
+    });
+
+    it('joins the folder a total reaches into', () => {
+      const f = salesFixture();
+      const custItem = mkMapItem(f.custName, {
+        displayOrder: 1,
+        isHidden: true,
+      });
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+          { mapItem: custItem, item: f.custName, folder: f.customers },
+        ],
+        joins: [f.join],
+        totals: [mkTotal({ mapItemId: custItem.id, aggFunction: 'COUNT' })],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      const [group] = result.totals;
+      expect(norm(group!.sql)).toContain('INNER JOIN "APP"."CUSTOMERS" f2');
+      expect(norm(group!.sql)).toContain('COUNT(f2."CUSTOMER_NAME")');
     });
   });
 });

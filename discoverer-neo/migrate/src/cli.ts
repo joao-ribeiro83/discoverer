@@ -341,6 +341,15 @@ export function formatMigrationResult(result: MigrationResult): string {
   lines.push(`${pad('Duration')}${(result.durationMs / 1000).toFixed(2)}s`);
   lines.push('');
 
+  // A dry run reaches here with a blocked target (a real run throws instead),
+  // so lead with it: the counts below would never be written.
+  if (result.preflight.alreadyMigrated) {
+    lines.push('TARGET BLOCKED');
+    lines.push('--------------');
+    lines.push(`  ${result.preflight.message}`);
+    lines.push('');
+  }
+
   const counts = result.dryRun ? result.planned : result.inserted;
   lines.push(result.dryRun ? 'Rows that would be inserted' : 'Rows inserted');
   lines.push('---------------------------');

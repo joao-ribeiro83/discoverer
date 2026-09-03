@@ -48,6 +48,39 @@ Une fois l'exécution terminée, vous voyez :
 - **Exécuté par** — Votre nom d'utilisateur
 - **Exécuté le** — Horodatage
 
+## Ruptures de groupe et totaux
+
+Une carte migrée depuis Discoverer s'affiche comme la feuille d'origine.
+
+**Ruptures de groupe.** Une colonne marquée *grouper et rompre* n'est affichée
+qu'une fois par groupe : la valeur figure sur la première ligne et reste vide
+sur les lignes qui la répètent. L'en-tête de colonne porte le badge **Groupe**.
+
+**Sous-totaux.** Lorsque la carte en définit, une ligne de sous-total ferme
+chaque groupe, avec le libellé écrit par l'auteur d'origine — `Total pour EMEA`.
+
+**Totaux généraux.** Une ligne en gras au bas des résultats.
+
+Les totaux portent sur **toutes les lignes retenues par les filtres**, pas sur
+les lignes actuellement chargées. En charger davantage ne les modifie pas.
+
+**Trier ou filtrer la grille suspend cet affichage.** Les ruptures et les
+sous-totaux n'ont de sens que dans l'ordre renvoyé par la requête. Cliquez sur
+un en-tête pour trier et les résultats deviennent une simple liste ; effacez le
+tri pour retrouver la mise en page. Le pied de page l'indique.
+
+## Tableaux croisés
+
+Un tableau croisé place un ensemble de valeurs sur le côté, un autre en haut,
+et les mesures entre les deux.
+
+Les cartes migrées depuis Discoverer arrivent **sous forme de tableaux**, même
+lorsque l'original était un tableau croisé. Discoverer n'a jamais enregistré
+quelles colonnes figuraient en haut ; rien ne permet de le retrouver. Ouvrez la
+carte dans le générateur, ouvrez une colonne et réglez le *Bord du tableau
+croisé* sur *En haut* pour rétablir le croisement. Voir
+[Créer des cartes](building-maps.md).
+
 ## Pagination
 
 Pour les jeux de résultats volumineux :
@@ -133,6 +166,17 @@ Si le message « Échec de la connexion » s'affiche :
 - La source de données est temporairement indisponible
 - Réessayez dans quelques instants
 - Contactez votre administrateur si le problème persiste
+
+### Paramètres de la feuille non appliqués
+
+Une note jaune au-dessus des résultats énumère tout ce que la carte demandait
+et que cette exécution n'a pas pu assurer — un total dont la fonction
+Discoverer n'a pas d'équivalent SQL, ou un tri sur une colonne que le rapport
+n'affiche pas.
+
+Les lignes elles-mêmes sont correctes. Corrigez le paramètre dans le générateur
+de cartes ou consultez
+[Dépannage de la migration](../migration/troubleshooting.md#worksheet-settings-that-could-not-be-applied).
 
 ## Et ensuite ?
 

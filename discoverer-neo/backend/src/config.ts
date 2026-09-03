@@ -128,6 +128,17 @@ const EnvSchema = z.object({
    */
   SCHEDULE_RESULT_DIR: z.string().optional(),
 
+  /**
+   * Where the migration writes its temporary-password file.
+   *
+   * A dedicated directory, NOT shared with EXPORT_DIR or SCHEDULE_RESULT_DIR:
+   * those are streamed to users by authenticated download routes, and a file
+   * of working credentials must not sit anywhere the app knows how to serve.
+   * Bind-mount it to the host so an operator can collect the file and delete
+   * it; nothing reads it back.
+   */
+  CREDENTIALS_DIR: z.string().default('storage/credentials'),
+
   LOG_LEVEL: z
     .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
     .default('info'),

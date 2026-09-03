@@ -80,6 +80,26 @@
       "updated": "Dossier mis à jour",
       "created": "Dossier créé",
       "deactivated": "Dossier désactivé"
+    },
+    "sharedBadge": "Partagé",
+    "sharedTooltip": "Appartient à un autre domaine d'activité et partagé avec celui-ci",
+    "manageSharing": "Gérer les domaines d'activité",
+    "sharing": {
+      "title": "Domaines d'activité de « {{name}} »",
+      "description": "Un dossier appartient à un domaine d'activité et peut être partagé avec d'autres, comme dans Oracle Discoverer.",
+      "memberOf": "Membre de",
+      "owning": "propriétaire",
+      "owningTooltip": "Le domaine d'activité propriétaire ne peut pas être supprimé",
+      "noShares": "Partagé avec aucun autre domaine d'activité.",
+      "addTo": "Partager avec",
+      "selectPlaceholder": "Sélectionner un domaine d'activité",
+      "noneAvailable": "Aucun autre domaine d'activité disponible",
+      "share": "Partager",
+      "removeShare": "Retirer le partage avec {{name}}",
+      "shared": "Dossier partagé",
+      "unshared": "Partage retiré",
+      "shareFailed": "Impossible de partager le dossier",
+      "unshareFailed": "Impossible de retirer le partage"
     }
   },
   "items": {
@@ -91,9 +111,9 @@
     "entityLabel": "élément",
     "selectFolderPlaceholder": "Sélectionner un dossier",
     "itemTypes": {
-      "ci": "Élément de colonne (CI)",
+      "co": "Élément de base de données (CO)",
+      "ci": "Élément créé (CI)",
       "cu": "Élément calculé (CU)",
-      "co": "Condition (CO)",
       "ji": "Élément de jointure (JI)",
       "hi": "Élément de hiérarchie (HI)",
       "ag": "Agrégation (AG)",

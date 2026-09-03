@@ -1,0 +1,1144 @@
+
+<!DOCTYPE html public "-//w3c//dtd html 3.2 transitional//en.us">
+<HTML lang="en.us">
+<HEAD>
+
+<META NAME="Generator" CONTENT="Quadralay WebWorks Publisher 5.0.4">
+<META NAME="Page" CONTENT="DefaultSingle">
+<META NAME="Title" CONTENT="Controlling access to information">
+<meta http-equiv="Content-Type" content="text/html;  charset=iso-8859-1">
+
+<TITLE>Controlling access to information</TITLE>
+	   
+<LINK REL="home" HREF="../../library.htm" TITLE="Library">
+<LINK REL="toc" HREF="toc.htm" TITLE="Contents">
+<LINK REL="index" HREF="bookix.htm" TITLE="Index">
+<LINK REL="copyright" HREF="./html/cpyr.htm" TITLE="Copyright">
+<LINK REL="up" HREF="toc.htm" TITLE="Up">
+<LINK REL="next" HREF="schedule.htm" TITLE="Next">
+<LINK REL="previous" HREF="folders.htm" TITLE="Previous">
+
+
+</HEAD>
+       
+<BODY BGCOLOR="#ffffff">
+
+<A NAME="top"></A>
+
+
+
+
+<A HREF="#BEGIN">Skip Headers</A><BR><BR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+ 
+<TD ALIGN="LEFT" VALIGN="TOP"><FONT COLOR="#330099" FACE="Helvetica, Arial, sans-serif"><STRONG>Oracle Discoverer Administrator Administration Guide (Online Help)<BR>10<i>g</i> (9.0.4)</STRONG><BR>Part Number B10270-01</FONT></TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="144">
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+
+
+
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<HR>
+<P>
+<A HREF="folders.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+
+<A HREF="schedule.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+    
+
+
+<A NAME="BEGIN"></A>
+
+
+
+<DIV CLASS="IND">
+<!-- End Header -->
+
+
+
+
+
+
+
+<A NAME="1656"></A>
+<!--TOC=Title-"1656"-->
+<H1 CLASS="Title"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099">6<BR>Controlling access to information</FONT></H1>
+
+<!--/TOC=Title-->
+
+<A NAME="1006184"></A>
+<!--TOC=h1-"1006184"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Controlling access to information</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1006185"></A>
+<P CLASS="BP">
+This chapter explains how to control access to information using Discoverer Administrator, and contains the following topics:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006197"></A><A HREF="privileg.htm#1009487">"About Discoverer and security"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006214"></A><A HREF="privileg.htm#1004613">"About Discoverer access permissions"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006223"></A><A HREF="privileg.htm#1004614">"About Discoverer task privileges"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008676"></A><A HREF="privileg.htm#1007486">"How to specify a user or role (responsibility) that can access a business area"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008684"></A><A HREF="privileg.htm#1004621">"How to specify the business areas a user or role (responsibility) can access"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008692"></A><A HREF="privileg.htm#1004624">"How to specify the tasks a user or role (responsibility) can perform"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009217"></A><A HREF="privileg.htm#1004625">"How to specify a user or role (responsibility) to perform a specific task"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008700"></A><A HREF="privileg.htm#1004626">"How to set query retrieval limits"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006277"></A><A HREF="privileg.htm#1004627">"How to set scheduled workbook limits"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009991"></A><A HREF="privileg.htm#1009861">"How to share Discoverer workbooks using a database role"</a>
+<P>
+</UL>
+
+<A NAME="1009487"></A>
+<!--TOC=h1-"1009487"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About Discoverer and security</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1009488"></A>
+<P CLASS="BP">
+As a Discoverer manager, it is your responsibility to control the information that users can access and what they can do with that information. You use Discoverer access permissions and task privileges as follows:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006165"></A>you use Discoverer access permissions to control who can see and use the data in business areas
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006175"></A>you use Discoverer task privileges to control the tasks each user is allowed to perform
+<P>
+</UL>
+<A NAME="1006976"></A>
+<P CLASS="BP">
+You can grant Discoverer access permissions and task privileges to database roles as well as to database users. When you grant access permissions or task privileges to a role, all users with that role have the role's access permissions and task privileges. If you are running Discoverer Administrator in Oracle Applications mode, you grant access permissions or task privileges to Oracle Applications Responsibilities instead of roles. For more information about Oracle Applications mode, see <A HREF="oracle_a.htm#1004597">Chapter&nbsp;16, "What features does Discoverer support for Oracle Applications users?"</a>.
+</P>
+<A NAME="1004759"></A>
+<P CLASS="BP">
+The access permissions and task privileges that you grant in Discoverer Administrator only apply to Discoverer's business areas and not to the underlying database tables. Data access rights to the database tables remain under the control of the database administrator.
+</P>
+<A NAME="1004765"></A>
+<P CLASS="BP">
+Regardless of the access permissions and task privileges that you set in Discoverer Administrator, a Discoverer end user only sees folders if that user has been granted the following database privileges (either directly or through a database role):
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004771"></A>SELECT privilege on all the underlying tables used in the folder
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004773"></A>EXECUTE privilege on any PL/SQL functions used in the folder
+<P>
+</UL>
+<A NAME="1004775"></A>
+<P CLASS="BP">
+You can enable a user to perform administrative tasks (e.g. the creation of folders, calculations, conditions, hierarchies, summaries) in a business area by granting that user Administration privilege on the business area. A user with the Administration privilege on a particular business area can also grant Administration privilege on that business area to other users. Note that although you can devolve business area administration to multiple users, it is often easier to maintain control with a single administrator for each business area.
+</P>
+
+<A NAME="1004613"></A>
+<!--TOC=h1-"1004613"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About Discoverer access permissions</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1006131"></A>
+<P CLASS="BP">
+Discoverer access permissions enable you to control who can see and use the data in business areas.
+</P>
+<A NAME="1006830"></A>
+<P CLASS="BP">
+You control access to business areas in two ways:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006831"></A>by specifying the business areas that a particular user or role can access (for more information, see <A HREF="privileg.htm#1004621">"How to specify the business areas a user or role (responsibility) can access"</a>)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006832"></A>by specifying the users or roles that can access a particular business area (for more information, see <A HREF="privileg.htm#1007486">"How to specify a user or role (responsibility) that can access a business area"</a>)
+<P>
+</UL>
+<A NAME="1006388"></A>
+<P CLASS="BP">
+Before Discoverer end users see folders in a business area, Discoverer confirms that the user has database access to the tables referenced by the folders. If the user does not have access to a table referenced by a folder, Discoverer does not display the folder. You can override this behavior (e.g. to improve performance where access privileges rarely change) by changing the value of the ObjectsAlwaysAccessible registry setting (for more information, see <A HREF="registry.htm#1006372">Chapter&nbsp;20, "Discoverer registry settings"</a>).
+</P>
+
+<A NAME="1004614"></A>
+<!--TOC=h1-"1004614"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About Discoverer task privileges</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1006114"></A>
+<P CLASS="BP">
+Discoverer task privileges enable you to control the tasks each user is allowed to perform.
+</P>
+<A NAME="1006499"></A>
+<P CLASS="BP">
+You use task privileges to specify whether a Discoverer end user is able to:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006540"></A>create new worksheets or edit existing ones (without this option, a user only has the ability to run predefined worksheets)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006543"></A>use item drills, drill to related items, and drill from summary to detail items
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006545"></A>drill out to launch other applications
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006546"></A>grant access to workbooks to other users
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006547"></A>create and edit scheduled workbooks
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006532"></A>save workbooks to the database
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006564"></A>collect query performance statistics
+<P>
+</UL>
+<A NAME="1006423"></A>
+<P CLASS="BP">
+You also use task privileges to specify whether a user of Discoverer Administrator is able to:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006523"></A>edit only the formatting information in an existing business area
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006524"></A>create new business areas and edit existing ones
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006525"></A>create summary tables
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006526"></A>grant and revoke EUL privileges
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006472"></A>maintain the scheduled workbooks of end users
+<P>
+</UL>
+<A NAME="1008712"></A>
+<P CLASS="BP">
+
+</P>
+
+<A NAME="1007486"></A>
+<!--TOC=h1-"1007486"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to specify a user or role (responsibility) that can access a business area</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1008856"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> When Oracle Applications database users are connected, Discoverer displays responsibilities instead of roles.
+</P>
+<A NAME="1004983"></A>
+<P CLASS="BP">
+To specify the users or roles that can access a specific business area:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1004984"></A>Choose Tools | Security and display the <A HREF="adsbau01.htm#1005113">"Security dialog: Business Area - &gt; User tab"</a>.
+<P>
+
+<A NAME="1004996"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 6-1 &#32;Security dialog: Business Area-&gt;User tab</EM></FONT></H4>
+  
+<BR><A NAME="1005063">
+
+
+<img src="secba2us.gif" ALT="Text description of secba2us.gif follows.">
+<A HREF="img_text/secba2us.htm"><br>Text description of the illustration secba2us.gif</A>
+
+
+</A>
+  
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1005000"></A>Select the business area to which you want to grant access from the <STRONG CLASS="Bold">Business area</STRONG> drop down list.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005001"></A>Specify the content of the <STRONG CLASS="Bold">Available users/roles</STRONG> list by selecting the <STRONG CLASS="Bold">Users</STRONG> check box and/or the <STRONG CLASS="Bold">Roles</STRONG> check box as appropriate.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1009272"></A>Move the users or roles that you want to have access to the selected business area from the <STRONG CLASS="Bold">Available users/roles</STRONG> list to the <STRONG CLASS="Bold">Selected users/roles</STRONG> list.
+<P>
+ 
+
+<A NAME="1009273"></A>
+<P CLASS="BP1">
+You can select more than one user or role by pressing the Ctrl key and clicking another user or role.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1005025"></A>For each new user or role you add to the <STRONG CLASS="Bold">Selected users/roles</STRONG> list, follow the instructions below to specify whether they have administration access to the business area:
+<P>
+ 
+
+<OL CLASS="LA2" TYPE="a">
+
+<LI CLASS="LA2" TYPE="a" VALUE="1"><A NAME="1005026"></A>Click the user or role in the <STRONG CLASS="Bold">Selected users/roles</STRONG> list.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1005027"></A>Select or clear the <STRONG CLASS="Bold">Allow Administration</STRONG> check box as required.
+<P>
+</OL>
+
+<A NAME="1005417"></A>
+<P CLASS="BP1">
+The setting of a user's <STRONG CLASS="Bold">Allow Administration</STRONG> privilege controls which administration tasks the user can perform. For more information, see <A HREF="privileg.htm#1004624">"How to specify the tasks a user or role (responsibility) can perform"</a>.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1005033"></A>Click OK to save the changes you have made and close the Security dialog.
+<P>
+ 
+</OL>
+
+<A NAME="1005034"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007061"></A>To remove access to a business area from a user or role, move the user or role from the <STRONG CLASS="Bold">Selected users/roles</STRONG> list to the <STRONG CLASS="Bold">Available users/roles</STRONG> list.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007062"></A>The <STRONG CLASS="Bold">Available users/roles</STRONG> list includes a role called PUBLIC. Select this role to view or edit the default access permissions for users or roles whose permissions you have not yet defined.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007066"></A>If you are running Discoverer Administrator as an Oracle Applications user, the Security dialog shows Oracle Applications Responsibilities instead of roles. For more information about Applications mode, see <A HREF="oracle_a.htm#1004597">Chapter&nbsp;16, "What features does Discoverer support for Oracle Applications users?"</a>.
+<P>
+</UL>
+
+<A NAME="1004621"></A>
+<!--TOC=h1-"1004621"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to specify the business areas a user or role (responsibility) can access</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1008878"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> When Oracle Applications database users are connected, Discoverer displays responsibilities instead of roles.
+</P>
+<A NAME="1005334"></A>
+<P CLASS="BP">
+To specify the business areas that a user or role can access:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1006743"></A>Choose Tools | Security and display the <A HREF="adsuba01.htm#1005113">"Security dialog: Users - &gt; Business Area tab"</a>.
+<P>
+
+<A NAME="1006746"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 6-2 &#32;Security dialog: Users-&gt; Business Area tab</EM></FONT></H4>
+  
+<BR><A NAME="1009309">
+
+
+<img src="secusr2b.gif" ALT="Text description of secusr2b.gif follows.">
+<A HREF="img_text/secusr2b.htm"><br>Text description of the illustration secusr2b.gif</A>
+
+
+</A>
+  
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1009310"></A>Specify the content of the <STRONG CLASS="Bold">User/Role</STRONG> drop down list by selecting the <STRONG CLASS="Bold">Users</STRONG> check box and/or the <STRONG CLASS="Bold">Roles</STRONG> check box as appropriate.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005368"></A>Select the user or role to which you want to grant access from the <STRONG CLASS="Bold">User/Role</STRONG> drop down list.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1004951"></A>Move the business areas that you want the selected user or role to have access to from the <STRONG CLASS="Bold">Available business areas</STRONG> list to the <STRONG CLASS="Bold">Selected business areas</STRONG> list.
+<P>
+ 
+
+<A NAME="1005395"></A>
+<P CLASS="BP1">
+You can select more than one business area by pressing the Ctrl key and clicking another business area.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1004966"></A>For each new business area you add to the <STRONG CLASS="Bold">Selected business areas</STRONG> list, follow the instructions below to specify whether the selected user or role has administration access to the business area:
+<P>
+ 
+
+<OL CLASS="LA2" TYPE="a">
+
+<LI CLASS="LA2" TYPE="a" VALUE="1"><A NAME="1004967"></A>Click the business area in the <STRONG CLASS="Bold">Selected business areas</STRONG> list.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1004968"></A>Select or clear the <STRONG CLASS="Bold">Allow Administration</STRONG> check box as required.
+<P>
+</OL>
+
+<A NAME="1007110"></A>
+<P CLASS="BP1">
+The setting of a user's <STRONG CLASS="Bold">Allow Administration</STRONG> privilege controls which administration tasks the user can perform. For more information, see <A HREF="privileg.htm#1004624">"How to specify the tasks a user or role (responsibility) can perform"</a>.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1005608"></A>Click OK to save the changes you have made and close the Security dialog.
+<P>
+ 
+</OL>
+
+<A NAME="1004932"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007123"></A>To remove access to a business area from a user or role, move the business area from the <STRONG CLASS="Bold">Selected business areas</STRONG> list to the <STRONG CLASS="Bold">Available business areas</STRONG> list.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007074"></A>The <STRONG CLASS="Bold">Users/Roles</STRONG> drop down list includes a role called PUBLIC. Select this role to view or edit the default access permissions for users or roles whose permissions you have not yet defined.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007005"></A>If you are running Discoverer Administrator as an Oracle Applications user, the Security dialog shows Oracle Applications Responsibilities instead of roles. For more information about Applications mode, see <A HREF="oracle_a.htm#1004597">Chapter&nbsp;16, "What features does Discoverer support for Oracle Applications users?"</a>.
+<P>
+</UL>
+
+<A NAME="1004624"></A>
+<!--TOC=h1-"1004624"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to specify the tasks a user or role (responsibility) can perform</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1008882"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> When Oracle Applications database users are connected, Discoverer displays responsibilities instead of roles.
+</P>
+<A NAME="1004788"></A>
+<P CLASS="BP">
+To specify the tasks a user or role can perform:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1004789"></A>Choose Tools | Privileges and display the <A HREF="adppri01.htm#1005113">"Privileges dialog: Privileges tab"</a>.
+<P>
+
+<A NAME="1005492"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 6-3 &#32;Privileges dialog: Privileges tab</EM></FONT></H4>
+  
+<BR><A NAME="1005498">
+
+
+<img src="privlgst.gif" ALT="Text description of privlgst.gif follows.">
+<A HREF="img_text/privlgst.htm"><br>Text description of the illustration privlgst.gif</A>
+
+
+</A>
+  
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1005502"></A>Specify the content of the <STRONG CLASS="Bold">User/Role</STRONG> drop down list by selecting the <STRONG CLASS="Bold">User</STRONG> check box and/or the <STRONG CLASS="Bold">Role</STRONG> check box as appropriate.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005509"></A>Choose the user or role whose task privileges you want to change from the <STRONG CLASS="Bold">User/Role</STRONG> drop down list.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1005505"></A>Grant or revoke specific task privileges for the user or role by selecting or clearing the appropriate check boxes in the <STRONG CLASS="Bold">Administration Privilege</STRONG> list or the <STRONG CLASS="Bold">Desktop and Plus Privilege </STRONG>list.
+<P>
+ 
+
+<A NAME="1009611"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> To grant a privilege, you must first grant the parent rpivilege using the <STRONG CLASS="Bold">Administration Privilege</STRONG> check box or the <STRONG CLASS="Bold">Desktop and Plus Privilege</STRONG> check box. If a user has access to Discoverer Desktop or Discoverer Plus via a responsibility and you clear the <STRONG CLASS="Bold">Desktop and Plus</STRONG> check box, any selected check boxes in the list of privileges will still be active (although they appear grayed out). The total privileges for a user are determined by the combination of responsibility and user privileges. 
+</P>
+
+<A NAME="1009553"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Hint: </STRONG>Click on a privilege in the <STRONG CLASS="Bold">Administration Privilege</STRONG> list or the <STRONG CLASS="Bold">Desktop and Plus Privilege </STRONG>lists to see a brief description of that privilege in the area below the lists.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1004826"></A>Choose an Oracle system profile to apply to the user or role from the <STRONG CLASS="Bold">Apply an Oracle System Profile</STRONG> drop down list (only available if you are using an Oracle database).
+<P>
+ 
+
+<A NAME="1005591"></A>
+<P CLASS="BP1">
+Oracle system profiles are created by the database administrator to control access to database resources.
+</P>
+
+<A NAME="1005602"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> To assign Oracle system profiles within Discoverer Administrator you must have access to the following database views:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005592"></A>DBA_PROFILES
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005593"></A>DBA_USERS
+<P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1005613"></A>Click OK to save the changes you have made and close the Privileges dialog.
+<P>
+ 
+</OL>
+
+<A NAME="1004786"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006596"></A>The changes you have made will take effect when users re-connect to Discoverer.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005531"></A>The drop down list for user/role includes a role called PUBLIC. Select this role to view or edit the default task privileges for users or roles whose privileges you have not yet defined.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005528"></A>If you want to grant Administration privileges to a user or role, you must also grant that user Administration access to the business area. For more information, see <A HREF="privileg.htm#1004625">"How to specify a user or role (responsibility) to perform a specific task"</a>.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007016"></A>If you are running Discoverer Administrator as an Oracle Applications user, the Privileges dialog shows Oracle Applications Responsibilities instead of roles. For more information about Oracle Applications mode, see <A HREF="oracle_a.htm#1004597">Chapter&nbsp;16, "What features does Discoverer support for Oracle Applications users?"</a>.
+<P>
+</UL>
+
+<A NAME="1004625"></A>
+<!--TOC=h1-"1004625"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to specify a user or role (responsibility) to perform a specific task</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1008886"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> When Oracle Applications database users are connected, Discoverer displays responsibilities instead of roles.
+</P>
+<A NAME="1004847"></A>
+<P CLASS="BP">
+To specify the users or roles that can perform a specific task:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005635"></A>Choose Tools | Privileges and display the <A HREF="adpurr01.htm#1005113">"Privileges dialog: User/Role tab"</a>.
+<P>
+
+<A NAME="1006817"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 6-4 &#32;Privileges dialog: User/Role tab</EM></FONT></H4>
+  
+<BR><A NAME="1006823">
+
+
+<img src="usroleta.gif" ALT="Text description of usroleta.gif follows.">
+<A HREF="img_text/usroleta.htm"><br>Text description of the illustration usroleta.gif</A>
+
+
+</A>
+  
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1006808"></A>Select the task privilege that you want to grant to (or revoke from) users or roles from the drop down list.
+<P>
+ 
+
+<A NAME="1005656"></A>
+<P CLASS="BP1">
+When you select a privilege from the drop down list, a brief description of the privilege appears on the lower area of the dialog.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005674"></A>Specify the content of the <STRONG CLASS="Bold">Users/Roles</STRONG> list by selecting the <STRONG CLASS="Bold">Users</STRONG> check box and/or the <STRONG CLASS="Bold">Roles</STRONG> check box as appropriate.
+<P>
+ 
+
+<A NAME="1005680"></A>
+<P CLASS="BP1">
+The content of the <STRONG CLASS="Bold">Users/Roles</STRONG> list is sorted alphabetically. If you include both users and roles, users appear first.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1005682"></A>Grant or revoke privileges for the currently selected task by selecting or clearing the appropriate check boxes in the <STRONG CLASS="Bold">Users/Roles</STRONG> list.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1005704"></A>Click OK to save the changes you have made and close the Privileges dialog.
+<P>
+ 
+</OL>
+
+<A NAME="1004845"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006583"></A>The changes you have made will take effect when users re-connect to Discoverer.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007164"></A>If you want to grant (or deny) administration privileges to a user or role, you must also grant (or deny) that user administration access to the business area. For more information, see <A HREF="privileg.htm#1007486">"How to specify a user or role (responsibility) that can access a business area"</a>.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007171"></A>If you are running Discoverer Administrator as an Oracle Applications user, the Privileges dialog shows Oracle Applications Responsibilities instead of roles. For more information about Oracle Applications mode, see <A HREF="oracle_a.htm#1004597">Chapter&nbsp;16, "What features does Discoverer support for Oracle Applications users?"</a>.
+<P>
+</UL>
+
+<A NAME="1004626"></A>
+<!--TOC=h1-"1004626"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to set query retrieval limits</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004889"></A>
+<P CLASS="BP">
+You can maintain overall system performance by setting query limits for users and roles.
+</P>
+<A NAME="1008890"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> When Oracle Applications database users are connected, Discoverer displays responsibilities instead of roles.
+</P>
+<A NAME="1006901"></A>
+<P CLASS="BP">
+To set query retrieval limits for a user or role:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005715"></A>Choose Tools | Privileges and display the <A HREF="adpqta01.htm#1005113">"Privileges dialog: Query Governor tab"</a>.
+<P>
+
+<A NAME="1004902"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 6-5 &#32;Privileges dialog: Query Governor tab</EM></FONT></H4>
+  
+<BR><A NAME="1005727">
+
+
+<img src="querygov.gif" ALT="Text description of querygov.gif follows.">
+<A HREF="img_text/querygov.htm"><br>Text description of the illustration querygov.gif</A>
+
+
+</A>
+  
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1005751"></A>Specify the content of the <STRONG CLASS="Bold">User/Role</STRONG> drop down list by selecting the <STRONG CLASS="Bold">User</STRONG> check box and/or the <STRONG CLASS="Bold">Role</STRONG> check box as appropriate.
+<P>
+ 
+
+<A NAME="1005757"></A>
+<P CLASS="BP1">
+The <STRONG CLASS="Bold">Role</STRONG> check box is only available if you are using an Oracle database.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005752"></A>Choose the user or role for which you want to specify a query limit from the <STRONG CLASS="Bold">User/Role</STRONG> drop down list.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1004906"></A>Specify the following Query Governor options as required:
+<P>
+ 
+<A NAME="1010359">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1005812"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG><STRONG CLASS="Bold">Option</STRONG></STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1005814"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Use to:</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1005816"></A>
+<P CLASS="TB">
+Warn user if predicted time exceeds:&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1005818"></A>
+<P CLASS="TB">
+issue a warning if the estimated time to perform a query exceeds the limit you specify&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1005820"></A>
+<P CLASS="TB">
+Prevent queries from running longer than:&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1005822"></A>
+<P CLASS="TB">
+stop queries that have been running for longer than the limit you specify&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1005824"></A>
+<P CLASS="TB">
+Limit retrieved data to:&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1005826"></A>
+<P CLASS="TB">
+restrict the number of rows a query can retrieve to the limit you specify&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+ 
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1005800"></A>Click OK to save the changes you have made and close the Privileges dialog.
+<P>
+ 
+</OL>
+
+<A NAME="1004921"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006586"></A>To find out how Discoverer estimates the time a query will take to run and the number of rows the query will retrieve, see <A HREF="query_pr.htm#1004755">Chapter&nbsp;19, "About predicting query performance"</a>.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005868"></A>Where Discoverer estimates that a query will take longer to run than the limit you set, you can specify that the user must run the query as a scheduled workbook using options on the <A HREF="adpswt01.htm#1005113">"Privileges dialog: Scheduled Workbooks tab"</a>.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007042"></A>If you are running Discoverer Administrator as an Oracle Applications user, the Privileges dialog shows Oracle Applications Responsibilities instead of roles. For more information about Oracle Applications mode, see <A HREF="oracle_a.htm#1004597">Chapter&nbsp;16, "What features does Discoverer support for Oracle Applications users?"</a>.
+<P>
+</UL>
+
+<A NAME="1004627"></A>
+<!--TOC=h1-"1004627"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to set scheduled workbook limits</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004646"></A>
+<P CLASS="BP">
+You can control how a Discoverer end user makes use of scheduled workbooks by setting scheduled workbook limits.
+</P>
+<A NAME="1006908"></A>
+<P CLASS="BP">
+To set scheduled workbook limits for a user or role:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1004650"></A>Choose Tools | Privileges and display the <A HREF="adpswt01.htm#1005113">"Privileges dialog: Scheduled Workbooks tab"</a>.
+<P>
+
+<A NAME="1004662"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 6-6 &#32;Privileges dialog: Scheduled Workbooks tab</EM></FONT></H4>
+  
+<BR><A NAME="1004747">
+
+
+<img src="schwbktb.gif" ALT="Text description of schwbktb.gif follows.">
+<A HREF="img_text/schwbktb.htm"><br>Text description of the illustration schwbktb.gif</A>
+
+
+</A>
+  
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1005878"></A>Select the user for which you want to specify scheduled workbook privileges from the <STRONG CLASS="Bold">Show scheduling limits for user</STRONG> drop down list.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1004666"></A>Select the user to own the result tables created in the database (that contain the results of scheduled workbooks).
+<P>
+ 
+
+<A NAME="1009829"></A>
+<P CLASS="BP1">
+The results of scheduled workbooks are stored in database tables. These tables can belong to a different user to the one that originally ran the scheduled workbook.
+</P>
+
+<A NAME="1010110"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> Oracle Applications users must use the Oracle Applications APPS user as the scheduled workbook results schema in which to store workbook results. 
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1005875"></A>Specify when you want to force the user to schedule workbooks as follows:
+<P>
+ 
+<A NAME="1010363">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1005927"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Option</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1005929"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Use to specify that:</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1005931"></A>
+<P CLASS="TB">
+User must always schedule workbooks&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1005933"></A>
+<P CLASS="TB">
+the user must always schedule workbooks&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1005935"></A>
+<P CLASS="TB">
+User is never required to schedule workbooks&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1005937"></A>
+<P CLASS="TB">
+the user is never forced to schedule queries (i.e. the user can choose whether to run queries online or schedule them)&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1005939"></A>
+<P CLASS="TB">
+Schedule only if predicted time exceeds&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1005941"></A>
+<P CLASS="TB">
+the user has to schedule a query that exceeds the predicted time that you specify&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+ 
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1005980"></A>Set the following scheduled workbook options as required:
+<P>
+ 
+<A NAME="1010367">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1005983"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Option</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1005985"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Use to:</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1005987"></A>
+<P CLASS="TB">
+Limit number of scheduled workbooks&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1005989"></A>
+<P CLASS="TB">
+restrict the scheduled workbooks that the user can maintain at one time to the number you specify
+<A NAME="1007148"></A>
+<P CLASS="TB">
+This option enables you to prevent users from submitting so many scheduled workbooks that no other jobs on the DBMS_JOB queue can run.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1005991"></A>
+<P CLASS="TB">
+Expire results&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1005993"></A>
+<P CLASS="TB">
+limit the lifetime of results from the user's scheduled workbooks to the number of days you specify (the results are deleted at the end of the user's Discoverer session)&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1006004"></A>
+<P CLASS="TB">
+Commit size&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1006006"></A>
+<P CLASS="TB">
+limit on the number of rows written to the results table
+<A NAME="1009130"></A>
+<P CLASS="TB">
+For example, if 1000 rows need to be written and the Commit size is 100, 10 writes are performed. 
+<A NAME="1006919"></A>
+<P CLASS="TB">
+Note that on large result sets, you can improve server performance by setting the Commit size higher than the default (although little gain will be achieved by setting the Commit size higher than 1000).&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1005995"></A>
+<P CLASS="TB">
+Restrict the hours during which a workbook may be scheduled&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1005997"></A>
+<P CLASS="TB">
+specify the times between which the user can schedule workbooks to run&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+ 
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1004695"></A>Click OK to save the changes you have made and close the Privileges dialog.
+<P>
+ 
+</OL>
+
+<A NAME="1004609"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006069"></A>You might decide to have a single database user owning the tables containing the results of all users' scheduled workbooks (with the benefit that individual users do not need additional privileges to run scheduled workbooks). Alternatively, you might decide to have a scheduled workbook results schema owning the tables containing the results for each user's scheduled workbooks (with the benefit that space quota is not shared and is therefore less likely to be exhausted than if the tables were owned by a single database user). For more information, see <A HREF="schedule.htm#1009815">Chapter&nbsp;7, "Where to store the results of scheduled workbooks?"</a>.
+<P>
+</UL>
+
+<A NAME="1009861"></A>
+<!--TOC=h1-"1009861"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to share Discoverer workbooks using a database role</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1009865"></A>
+<P CLASS="BP">
+You might want to share Discoverer workbooks in an End User Layer (EUL) using a database role. For example you might only want database users that have been granted the database role of a manager, to access specific Discoverer workbooks. You can determine the database users that can use specific Discoverer workbooks by associating the database users with a database role, and sharing the Discoverer workbooks with the database role as follows:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010000"></A>identify an existing database role or create a new database role
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010006"></A>make sure that the database role can select data from the database tables that will be used by your Discoverer workbooks
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010008"></A>grant the database role to the database users, whose workbooks you want to share with the database role
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010015"></A>identify or create the Discoverer workbooks using a database user that has been granted the database role
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010028"></A>share the Discoverer workbooks with the database role
+<P>
+</UL>
+<A NAME="1010007"></A>
+<P CLASS="BP">
+Each database user that is granted the database role will be able to access workbooks that are shared with that database role.
+</P>
+<A NAME="1009872"></A>
+<P CLASS="BP">
+How to share workbooks using a database role:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1009884"></A>Start SQL*Plus (if it is not already running) and connect as the EUL owner.
+<P>
+
+<A NAME="1010323"></A>
+<P CLASS="BP1">
+For example, if SQL*Plus is already running, you might type the following at the command prompt:
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1010329"></A>SQL&gt; connect jchan/tiger
+<A NAME="1010330"></A>
+</PRE>
+   
+<A NAME="1010331"></A>
+<P CLASS="BP1">
+Where jchan is the EUL owner and tiger is the EUL owner password.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1009880"></A>Create a database role as the EUL owner.
+<P>
+ 
+
+<A NAME="1010354"></A>
+<P CLASS="BP1">
+For example, in SQL*Plus you might enter the following SQL statement:
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1010348"></A>SQL&gt; create role role1;
+<A NAME="1010349"></A>
+</PRE>
+   
+<A NAME="1010350"></A>
+<P CLASS="BP1">
+The above statement creates a database role named role1.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1010310"></A>Grant the SELECT privilege on the appropriate database tables to the database role you just created.
+<P>
+ 
+
+<A NAME="1009971"></A>
+<P CLASS="BP1">
+For example, in SQL*Plus you might enter the following SQL statement:
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1009972"></A>SQL&gt; grant select on product to role1;
+<A NAME="1010039"></A>SQL&gt; grant select on store to role1;
+<A NAME="1010043"></A>SQL&gt; grant select on sales_fact to role1;
+<A NAME="1009973"></A>
+</PRE>
+   
+<A NAME="1009974"></A>
+<P CLASS="BP1">
+The above statement grants the select privilege on the product, store and sales_fact tables to the database role role1.
+</P>
+
+<A NAME="1009912"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> The select privilege must be granted to the role on all the tables that are referenced by items used in Discoverer workbooks.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1009922"></A>Grant the role that you just created to each database user with whom you want to share Discoverer workbooks.
+<P>
+ 
+
+<A NAME="1009923"></A>
+<P CLASS="BP1">
+For example, in SQL*Plus you might enter the following SQL statement:
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1009924"></A>SQL&gt; grant role1 to jchen;
+<A NAME="1009925"></A>
+</PRE>
+   
+<A NAME="1009926"></A>
+<P CLASS="BP1">
+The above statement grants the database role role1 to the database user jchen.
+</P>
+
+<A NAME="1010085"></A>
+<P CLASS="BP1">
+The remaining task steps must be carried out using Discoverer Plus or Discoverer Desktop.
+</P>
+
+<A NAME="1010091"></A>
+<P CLASS="BP1">
+For more information, see the <EM CLASS="Italic">Oracle Application Server Discoverer Plus User's Guide</EM>.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1009910"></A>In Discoverer Plus or Discoverer Desktop, connect as the EUL owner and choose File | Manage Workbooks | Sharing to display the Share Workbooks dialog.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1009944"></A>Select the database role that you previously created (e.g. role1).
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1010068"></A>Move the workbooks you want to share with the database role role1, from the <STRONG CLASS="Bold">Available</STRONG> field to the <STRONG CLASS="Bold">Shared</STRONG> field.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="8"><A NAME="1010075"></A>Click OK to close the dialog and save the changes you made.
+<P>
+ 
+</OL>
+<A NAME="1009946"></A>
+<P CLASS="BP">
+The database users that have been granted the database role will now be able to use any Discoverer workbooks that have been shared with the database role.
+</P>
+<A NAME="1009958"></A>
+<P CLASS="BP">
+
+</P>
+<A NAME="1009959"></A>
+<P CLASS="BP">
+
+</P>
+
+
+
+
+
+
+<!-- Start Footer -->
+</DIV>
+
+<DIV CLASS="OUTD">
+<HR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+<TD VALIGN="BOTTOM" WIDTH="33%">
+<TABLE CELLSPACING="0" CELLPADDING="0">
+<TR>
+<TD ALIGN="CENTER"><A HREF="folders.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+
+<TD ALIGN="CENTER"><A HREF="schedule.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+    
+</TR>
+</TABLE>
+</TD>
+<TD ALIGN="CENTER" WIDTH="34%">
+<A HREF="./html/cpyr.htm"><IMG SRC="./gifs/oracle.gif" ALT="Oracle" BORDER="0"><BR>
+<FONT SIZE="-2">Copyright &copy 2003 Oracle Corporation.</FONT></A>
+<BR>
+<FONT SIZE="-2">All Rights Reserved.</FONT>
+</TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="33%"> 
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="144">
+<TR>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+  
+</DIV>
+
+</BODY>
+</HTML>
+

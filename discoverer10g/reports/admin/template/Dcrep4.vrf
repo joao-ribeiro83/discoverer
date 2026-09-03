@@ -1,0 +1,124 @@
+/* Copyright (c) Oracle Corporation 1996.  All Rights Reserved */
+
+/*****************************************************************************
+  NAME
+    orapi60.vrf - V3 analysis/product configuration script for Oracle
+                 Report 6.0 API 6.0 for Discoverer3.1
+
+  DESCRIPTION
+    This script checks dependencies and environment settings for the
+    installation of Windows Oracle Reports Report 6.0 API 6.0 for Discoverer3.1.
+
+  MODIFIED   MM/DD/YY   REASON
+   pgupta    01/07/98   created
+   nbhonsle  08/99/00   changed the code for version verification for
+                        compatibility with reports 6i
+
+*****************************************************************************/
+
+{
+    SHARED_ORACLE_COMPLIANT = TRUE;
+
+    {doit = execute("%installer_home%%dir_separator%%operating_system%.vrf");}
+    [
+        'UNBOUND_VARIABLE:
+        {
+            required_version = product_version(instver_product);
+            temp             = explode(required_version, ".");
+            required_version = implode(list(first(temp),first(rest(temp)),
+                                            first(rest(rest(temp))),
+                                            first(rest(rest(rest(temp))))), ".");
+            signal('FAILURE, instantiate(nls("instver_too_early1",
+                                                 "The version of the Installer currently running is %%installer_version%%. The installation you have chosen requires version %%required_version%% or later. Please run version %%required_version%% or later in order to perform this installation.")));
+        }
+    ]                                                                   /* This FAILURE will cause 3.0.x.x installer to exit gracefully. */
+
+    /***************
+    START MAIN LOGIC
+    ****************/
+
+/*********************************************************************************/
+/* rvielma has added the following piece of code to fix bugs #948630 and #881012 */
+/*********************************************************************************/
+      current_version = product_version(current_product);
+
+      if (registered(product_name(current_product)))  /***** if the Product is installed ******/
+      {
+       installed_version = registry_version(registration(product_name(current_product)));
+
+
+       /****** Analize Version of installed product ********/
+       if(earlier_version(installed_version, current_version))
+        {
+         doit = TRUE;
+        }
+       else
+        {
+         doit = FALSE;
+        }
+      }
+     else   /****** If the product is not installed, then install it*******/
+      {
+       doit = TRUE;
+      }
+/**********************************************************************************/
+
+    if (doit)
+    {
+
+        /*****************************
+        Set the VRF-INS script ratchet
+        ******************************/
+        vrf_ratchet = "6.0.0.0.1";
+
+        /************************************************
+        Create a label with the product name, and version
+        *************************************************/
+        EXECUTE_SCRIPT = "CREATE_LABEL";
+        execute("%product_home%%dir_separator%disr3vrf.usr");
+       /***********************
+        Create Dependencies List
+        ************************/
+        dependency_list     = list();    /*for referencing*/
+        verify_dependency_list     = list();  /*to verify for installation*/
+        install_dependency_list = list();
+
+
+        /*****************************
+        Initialize total size of files
+        ******************************/
+        total_sum = 0;
+
+       /**************************
+        Determine installation path
+        ***************************/
+        install_variable = "RW60";
+        default_home     = "%oracle_home%%dir_separator%REPORT60";
+
+        RW60 = execute("%product_home%%dir_separator%instloc.usr");
+        /*******************************************************************************
+        1) Add REPORTS60_PATH variable in REGISTRY/CONFIG.ORA if it's not there already.
+        *******************************************************************************/
+        reports60_path_var = "%RW60%%dir_separator%ADMIN%dir_separator%TEMPLATE";
+
+        /*******************************************************************************
+        1) Add REPORTS60_TMP variable in REGISTRY/CONFIG.ORA if it's not there already.
+        *******************************************************************************/
+        reports60_path_tmp = "%RW60%%dir_separator%TMP";
+        /******************
+        Verify Dependencies
+        *******************/
+        EXECUTE_SCRIPT = "VERIFY_DEPENDENCIES";
+        total_sum = total_sum + execute("%product_home%%dir_separator%disr3vrf.usr");
+
+
+        total_sum = total_sum + sum(deinst, msg, res);
+
+        return(total_sum);
+    }
+    else
+    {
+        refresh_map_file = FALSE;
+        return(0);
+    }
+}

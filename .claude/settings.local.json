@@ -381,7 +381,8 @@
       "Bash(FRONTEND_PORT=5174 VITE_BACKEND_URL=http://localhost:3001 npx playwright test i18n-theming.spec.ts -g \"Missing translation\" --reporter=list)",
       "Bash(FRONTEND_PORT=5174 VITE_BACKEND_URL=http://localhost:3001 npx playwright test i18n-theming.spec.ts -g \"Contrast\" --reporter=list)",
       "Bash(FRONTEND_PORT=5174 VITE_BACKEND_URL=http://localhost:3001 npx playwright test i18n-theming.spec.ts -g \"Visual regression\" --reporter=list)",
-      "Bash(FRONTEND_PORT=5174 VITE_BACKEND_URL=http://localhost:3001 npx playwright test --reporter=list)"
+      "Bash(FRONTEND_PORT=5174 VITE_BACKEND_URL=http://localhost:3001 npx playwright test --reporter=list)",
+      "Bash(grep -vE \"\\\\]\\\\\\(\\\\.\\\\./\\\\.\\\\./\\(api|deployment|migration\\)/\")"
     ]
   }
 }

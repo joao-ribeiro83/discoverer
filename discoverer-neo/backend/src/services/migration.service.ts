@@ -29,6 +29,7 @@ import {
   detectEulVersion,
   generateAssessmentReport,
   readEulSchema,
+  reimportMaps,
   runMigration,
   TARGET_TABLE_ORDER,
 } from '@discoverer-neo/migrate';
@@ -37,6 +38,7 @@ import type {
   EulConnectionConfig,
   EulSource,
   EulVersionInfo,
+  MapReimportResult,
   MigrationEvent,
   MigrationResult,
   MigrationWriter,
@@ -47,6 +49,9 @@ import { config } from '../config.js';
 import { db } from '../db/index.js';
 import { dataSources } from '../db/schema.js';
 import { decrypt } from '../lib/encryption.js';
+import { hashPassword } from '../lib/password.js';
+import { writeCredentialFile } from './credential-file.service.js';
+import { verifyOracleClient } from './oracle-connection-pool.js';
 
 // ---------------------------------------------------------------------------
 // Errors
@@ -123,7 +128,20 @@ export async function loadEulConnection(dataSourceId: string): Promise<EulConnec
 export function defaultDeps(): MigrationDeps {
   return {
     loadConnection: loadEulConnection,
-    makeSource: (connection) => createExecutor(connection),
+    // Thick mode is a process-global switch on the oracledb module, and the
+    // migrate package does not set it — it has no access to this backend's
+    // config. Without this, a migration that is the first Oracle operation
+    // after a restart connects in thin mode and fails on any database using a
+    // password verifier thin mode cannot read (NJS-116). `verifyOracleClient`
+    // is idempotent, and the executor is lazy, so this costs one check on the
+    // first statement and nothing after.
+    makeSource: (connection) => {
+      const execute = createExecutor(connection);
+      return async (sql, binds) => {
+        await verifyOracleClient();
+        return execute(sql, binds);
+      };
+    },
     makeTarget: () => {
       const target = createTargetDb({ connectionString: config.DATABASE_URL });
       return { writer: createMigrationWriter(target.db), close: target.close };
@@ -172,8 +190,18 @@ export interface MigrationLogLine {
   at: string;
 }
 
+/**
+ * What a job did.
+ *
+ * `FULL` is the whole EUL → Neo pipeline; `MAPS` re-reads only the workbooks
+ * and rebuilds the migrated maps in place — see `reimportMaps` for why that is
+ * a separate operation rather than a second full run.
+ */
+export type MigrationJobKind = 'FULL' | 'MAPS';
+
 export interface MigrationJob {
   id: string;
+  kind: MigrationJobKind;
   status: MigrationJobStatus;
   dataSourceId: string;
   dryRun: boolean;
@@ -189,6 +217,20 @@ export interface MigrationJob {
   /** Number of log lines dropped from the head once the buffer filled. */
   droppedLogs: number;
   result: MigrationResult | null;
+  /** Set instead of `result` when `kind` is 'MAPS'. */
+  mapsResult: MapReimportResult | null;
+  /**
+   * Set when the run provisioned temporary passwords.
+   *
+   * Carries the file NAME, the account count and a checksum — deliberately not
+   * the directory path and never a password. The file is collected from the
+   * host, not downloaded through this API.
+   */
+  credentialsFile: {
+    fileName: string;
+    accountCount: number;
+    sha256: string;
+  } | null;
   error: string | null;
 }
 
@@ -242,20 +284,14 @@ export interface StartMigrationOptions extends SourceOptions {
   onSettled?: () => void | Promise<void>;
 }
 
-/**
- * Start a migration job. Returns immediately with the job record; poll
- * `getJob(id)` for progress. Only one migration may run at a time.
- */
-export function startMigration(
-  options: StartMigrationOptions,
-  deps: MigrationDeps = defaultDeps(),
+/** Register a RUNNING job of either kind. Shared by both start functions. */
+function createJob(
+  kind: MigrationJobKind,
+  options: { dataSourceId: string; dryRun?: boolean; version?: 'auto' | 'EUL4' | 'EUL5'; startedBy: string },
 ): MigrationJob {
-  if (hasRunningJob()) {
-    throw new MigrationError('A migration is already running; wait for it to finish', 409);
-  }
-
   const job: MigrationJob = {
     id: randomUUID(),
+    kind,
     status: 'RUNNING',
     dataSourceId: options.dataSourceId,
     dryRun: options.dryRun === true,
@@ -269,10 +305,28 @@ export function startMigration(
     logs: [],
     droppedLogs: 0,
     result: null,
+    mapsResult: null,
+    credentialsFile: null,
     error: null,
   };
   jobs.set(job.id, job);
   pruneJobs();
+  return job;
+}
+
+/**
+ * Start a migration job. Returns immediately with the job record; poll
+ * `getJob(id)` for progress. Only one migration may run at a time.
+ */
+export function startMigration(
+  options: StartMigrationOptions,
+  deps: MigrationDeps = defaultDeps(),
+): MigrationJob {
+  if (hasRunningJob()) {
+    throw new MigrationError('A migration is already running; wait for it to finish', 409);
+  }
+
+  const job = createJob('FULL', options);
 
   const append = (line: MigrationLogLine): void => {
     job.logs.push(line);
@@ -320,6 +374,29 @@ export function startMigration(
         version: options.version ?? 'auto',
         dryRun: options.dryRun === true,
         onEvent,
+        deps: {
+          hashPassword,
+          // Receives plaintext temporary passwords and writes the credentials
+          // file. Records only the file NAME on the job — never the directory
+          // and never a password, since the job is returned over the API.
+          emitCredentials: async (credentials) => {
+            const written = await writeCredentialFile(credentials, { runId: job.id });
+            job.credentialsFile = {
+              fileName: written.fileName,
+              accountCount: written.accountCount,
+              sha256: written.sha256,
+            };
+            append({
+              level: 'INFO',
+              phase: 'users',
+              message:
+                `Wrote temporary credentials for ${written.accountCount} account(s) to ` +
+                `${written.fileName}. Deliver them and then DELETE the file — it contains ` +
+                `working passwords.`,
+              at: new Date().toISOString(),
+            });
+          },
+        },
       });
 
       job.result = result;
@@ -348,6 +425,117 @@ export function startMigration(
       }
       // Runs on the failure path too: a migration that died partway through
       // may still have committed rows, so the cache is suspect either way.
+      try {
+        await options.onSettled?.();
+      } catch {
+        // Best-effort — see StartMigrationOptions.onSettled.
+      }
+    }
+  })();
+
+  return job;
+}
+
+// ---------------------------------------------------------------------------
+// Maps-only re-import
+// ---------------------------------------------------------------------------
+
+export interface StartMapReimportOptions extends SourceOptions {
+  dryRun?: boolean;
+  startedBy: string;
+  /** See `StartMigrationOptions.onSettled` — same rationale, same contract. */
+  onSettled?: () => void | Promise<void>;
+}
+
+/**
+ * Rebuild the migrated maps from the EUL's workbooks, in place.
+ *
+ * A Discoverer Neo database accepts exactly one full migration, so a target
+ * whose maps are empty — migrated before the tool could read `DOC_DOCUMENT` —
+ * cannot be fixed by re-running it. This replaces just the maps: it deletes
+ * the ones in the migration's host business area and rebuilds them, resolving
+ * every column against the items already in the database. Users, business
+ * areas, folders, items and grants are not touched.
+ *
+ * Destructive for migrated maps: edits made to one since the original run are
+ * lost. Run with `dryRun` first to see what would be replaced.
+ */
+export function startMapReimport(
+  options: StartMapReimportOptions,
+  deps: MigrationDeps = defaultDeps(),
+): MigrationJob {
+  if (hasRunningJob()) {
+    throw new MigrationError('A migration is already running; wait for it to finish', 409);
+  }
+
+  const job = createJob('MAPS', options);
+
+  const append = (line: MigrationLogLine): void => {
+    job.logs.push(line);
+    if (job.logs.length > MAX_LOG_LINES) {
+      job.logs.shift();
+      job.droppedLogs += 1;
+    }
+  };
+
+  // A re-import has four phases rather than a table-by-table write, so
+  // progress is stepped by phase instead of by tables completed.
+  const PHASE_PROGRESS: Record<string, number> = {
+    preflight: 10,
+    read: 40,
+    plan: 70,
+    write: 90,
+  };
+
+  const onEvent = (event: MigrationEvent): void => {
+    job.currentPhase = event.phase;
+    job.progress = Math.max(job.progress, PHASE_PROGRESS[event.phase] ?? job.progress);
+    append({
+      level: event.level,
+      phase: event.phase,
+      message: event.message,
+      at: new Date().toISOString(),
+    });
+  };
+
+  void (async () => {
+    let target: MigrationTargetHandle | null = null;
+    try {
+      const connection = await deps.loadConnection(options.dataSourceId);
+      const source = deps.makeSource(connection);
+      target = deps.makeTarget();
+
+      const result = await reimportMaps({
+        source,
+        writer: target.writer,
+        readOptions: { schemaOwner: options.schemaOwner },
+        dryRun: options.dryRun === true,
+        onEvent,
+      });
+
+      job.mapsResult = result;
+      job.status = 'COMPLETED';
+      job.progress = 100;
+      job.currentPhase = 'done';
+    } catch (err) {
+      job.status = 'FAILED';
+      job.error = err instanceof Error ? err.message : String(err);
+      job.currentPhase = 'failed';
+      append({
+        level: 'ERROR',
+        phase: 'failed',
+        message: job.error,
+        at: new Date().toISOString(),
+      });
+    } finally {
+      job.finishedAt = new Date().toISOString();
+      if (target) {
+        try {
+          await target.close();
+        } catch {
+          // The pool is being discarded anyway.
+        }
+      }
       try {
         await options.onSettled?.();
       } catch {

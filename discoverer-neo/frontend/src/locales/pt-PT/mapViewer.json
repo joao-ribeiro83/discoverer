@@ -43,7 +43,12 @@
     "filterAriaLabel": "Filtrar {{column}}",
     "rowCount_one": "{{formattedCount}} linha",
     "rowCount_other": "{{formattedCount}} linhas",
-    "filteredFrom": "(filtrado de {{total}})"
+    "filteredFrom": "(filtrado de {{total}})",
+    "subtotalFor": "Total de {{value}}",
+    "grandTotal": "Total geral",
+    "groupBreakBadge": "Grupo",
+    "groupBreakHint": "As linhas são agrupadas por esta coluna. Os valores repetidos ficam em branco e um subtotal fecha cada grupo.",
+    "worksheetLayoutPaused": "Ordenar ou filtrar suspende as quebras de grupo e os totais."
   },
   "execution": {
     "nothingToLoadMore": "Não há mais nada para carregar.",
@@ -76,7 +81,9 @@
     "notAllRowsLoaded": "Nem todas as linhas estão carregadas.",
     "runFullResultTooltip": "Executar a consulta completa em segundo plano (até 100.000 linhas)",
     "runningStatus": "A executar… ({{status}})",
-    "runFullResult": "Executar resultado completo"
+    "runFullResult": "Executar resultado completo",
+    "worksheetWarningsTitle_one": "Não foi possível aplicar {{count}} definição da folha de cálculo",
+    "worksheetWarningsTitle_other": "Não foi possível aplicar {{count}} definições da folha de cálculo"
   },
   "parameters": {
     "title": "Parâmetros de execução",
@@ -91,5 +98,9 @@
     "exportQueuedDescription": "Isto pode demorar um pouco para conjuntos de resultados grandes.",
     "downloadFailedTitle": "Falha na transferência",
     "exportJobFailedFallback": "A tarefa de exportação falhou."
+  },
+  "crosstab": {
+    "noColumnEdge": "Esta tabela cruzada ainda não tem colunas no topo, por isso é apresentada como tabela. O Discoverer não regista que colunas ficavam no topo — abra uma coluna e defina a margem da tabela cruzada como «No topo».",
+    "tooLarge": "Esta tabela cruzada teria {{rows}} x {{columns}}, acima do limite de {{max}} células. Filtre o relatório ou agrupe por menos valores."
   }
 }

@@ -9,6 +9,9 @@ import {
   softDelete,
   importFromOracle,
   validateCustomSql,
+  shareWithBusinessArea,
+  unshareWithBusinessArea,
+  listSharedBusinessAreas,
 } from '../services/folder.service.js';
 import {
   requireBusinessAreaAccess,
@@ -88,6 +91,10 @@ const folderSchema = {
     createdAt: { type: 'string' },
     updatedAt: { type: 'string' },
     dataSourceName: { type: ['string', 'null'] },
+    // Only set when listing by business area: true when the folder is shared
+    // into that area rather than owned by it. Fastify strips properties that
+    // are absent from the response schema, so this has to be declared.
+    isShared: { type: 'boolean' },
   },
 } as const;
 
@@ -448,6 +455,120 @@ export default async function folderRoutes(fastify: FastifyInstance) {
       return reply.code(200).send({
         data: { message: 'Folder deactivated' },
       });
+    },
+  );
+
+  // --- folder sharing (EUL BA_OBJ_LINKS is many-to-many) --------------------
+
+  const shareBodySchema = z.object({ businessAreaId: z.string().uuid() });
+
+  // GET /api/folders/:id/business-areas — areas this folder is shared into
+  fastify.get(
+    '/api/folders/:id/business-areas',
+    {
+      preHandler: [fastify.authenticate, requireFolderAccess('VIEW')],
+      schema: {
+        tags: ['Folders'],
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          required: ['id'],
+          properties: { id: { type: 'string', format: 'uuid' } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const parsed = IdParamSchema.safeParse(request.params);
+      if (!parsed.success) {
+        return reply.code(400).send({ error: 'Invalid folder ID format' });
+      }
+      const shared = await listSharedBusinessAreas(parsed.data.id);
+      return reply.code(200).send({ data: shared });
+    },
+  );
+
+  // POST /api/folders/:id/business-areas — share into another business area
+  fastify.post(
+    '/api/folders/:id/business-areas',
+    {
+      preHandler: [fastify.authenticate, requireFolderAccess('EDIT')],
+      schema: {
+        tags: ['Folders'],
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          required: ['id'],
+          properties: { id: { type: 'string', format: 'uuid' } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const parsed = IdParamSchema.safeParse(request.params);
+      if (!parsed.success) {
+        return reply.code(400).send({ error: 'Invalid folder ID format' });
+      }
+      const body = shareBodySchema.safeParse(request.body);
+      if (!body.success) {
+        return reply.code(400).send({ error: 'A valid businessAreaId is required' });
+      }
+
+      const result = await shareWithBusinessArea(parsed.data.id, body.data.businessAreaId);
+      if (!result.ok) {
+        return reply.code(result.reason === 'Folder not found' ? 404 : 409).send({
+          error: result.reason,
+        });
+      }
+
+      // The target area's folder list just gained a member.
+      await invalidate(
+        fastify.redis,
+        metadataKeys.foldersByBusinessArea(body.data.businessAreaId),
+      );
+      return reply.code(201).send({ data: { message: 'Folder shared' } });
+    },
+  );
+
+  // DELETE /api/folders/:id/business-areas/:baId — remove a share
+  fastify.delete(
+    '/api/folders/:id/business-areas/:baId',
+    {
+      preHandler: [fastify.authenticate, requireFolderAccess('EDIT')],
+      schema: {
+        tags: ['Folders'],
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          required: ['id', 'baId'],
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            baId: { type: 'string', format: 'uuid' },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const parsed = z
+        .object({ id: z.string().uuid(), baId: z.string().uuid() })
+        .safeParse(request.params);
+      if (!parsed.success) {
+        return reply.code(400).send({ error: 'Invalid ID format' });
+      }
+
+      // The owning area is not a share and must not be removable this way —
+      // that would orphan the folder from its NOT NULL business_area_id.
+      const folder = await getById(parsed.data.id);
+      if (folder && folder.businessAreaId === parsed.data.baId) {
+        return reply.code(409).send({
+          error: "This is the folder's owning business area; it cannot be unshared.",
+        });
+      }
+
+      await unshareWithBusinessArea(parsed.data.id, parsed.data.baId);
+      await invalidate(
+        fastify.redis,
+        metadataKeys.foldersByBusinessArea(parsed.data.baId),
+      );
+      return reply.code(200).send({ data: { message: 'Share removed' } });
     },
   );
 

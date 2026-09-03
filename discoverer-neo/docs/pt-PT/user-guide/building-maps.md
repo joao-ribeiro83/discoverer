@@ -163,6 +163,40 @@ Os nomes dos parâmetros têm de:
 - Conter apenas letras, dígitos e sublinhados
 - Exemplos de bons nomes: `start_date`, `region_code`, `customer_id`
 
+### Agrupar e Quebrar
+
+Assinale **Agrupar e quebrar** numa coluna para ocultar os valores repetidos e
+iniciar um novo subtotal sempre que ela mudar. As colunas de grupo são sempre
+ordenadas antes de todas as outras — uma quebra só agrupa se nada ficar
+ordenado fora dela.
+
+### Colocação e Margem da Tabela Cruzada
+
+A **Colocação** indica para que serve a coluna:
+
+- **Agrupar por (eixo)** — uma coluna pela qual o relatório agrupa. Nunca é
+  agregada, mesmo que o item de origem tenha uma agregação predefinida.
+- **Medida** — um valor a agregar.
+- **Item de página** — filtra a folha inteira; não é desenhada na grelha.
+
+A **Margem da tabela cruzada** aplica-se a um mapa `CROSSTAB`: defina uma
+coluna como *No topo* para cruzar o relatório. Os mapas migrados do Discoverer
+não têm margem registada — o Discoverer não tinha esse campo — pelo que uma
+tabela cruzada migrada é apresentada como tabela até a definir.
+
+### Colunas Só de Consulta
+
+Assinale **Só na consulta, não mostrar** para manter uma coluna fora dos
+resultados enquanto a consulta continua a pedi-la. Use-o quando um filtro, uma
+ordenação ou um total precisar de uma coluna que o leitor não deve ver.
+
+### Formatos de Coluna
+
+A **máscara de formato** usa a notação da Oracle (`999,999.00`, `$9,999.00`,
+`DD-MON-YYYY`). É lida pelo seu significado — milhares agrupados, duas casas
+decimais, dia-mês-ano — e depois apresentada na língua de cada leitor, para que
+o mesmo mapa se leia corretamente para todos.
+
 ## O Que Se Segue?
 
 - **[Executar Mapas](executing-maps.md)** — Execute o seu mapa e visualize os resultados

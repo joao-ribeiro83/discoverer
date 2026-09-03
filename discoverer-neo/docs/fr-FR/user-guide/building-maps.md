@@ -163,6 +163,43 @@ Les noms de paramètres doivent :
 - Contenir uniquement des lettres, des chiffres et des traits de soulignement
 - Exemples de noms corrects : `start_date`, `region_code`, `customer_id`
 
+### Grouper et rompre
+
+Cochez **Grouper et rompre** sur une colonne pour masquer ses valeurs répétées
+et commencer un nouveau sous-total à chaque changement. Les colonnes de groupe
+sont toujours triées avant toutes les autres — une rupture ne groupe que si
+rien n'est trié en dehors d'elle.
+
+### Placement et bord du tableau croisé
+
+Le **placement** dit à quoi sert une colonne :
+
+- **Grouper par (axe)** — une colonne sur laquelle le rapport groupe. Elle
+  n'est jamais agrégée, même si l'élément d'origine a une agrégation par
+  défaut.
+- **Mesure** — une valeur à agréger.
+- **Élément de page** — filtre toute la feuille ; non dessinée dans la grille.
+
+Le **bord du tableau croisé** s'applique à une carte `CROSSTAB` : réglez une
+colonne sur *En haut* pour croiser le rapport. Les cartes migrées depuis
+Discoverer n'ont aucun bord enregistré — Discoverer n'avait pas ce champ — donc
+un tableau croisé migré s'affiche comme un tableau tant que vous n'en réglez
+pas un.
+
+### Colonnes réservées à la requête
+
+Cochez **Requête seulement, ne pas afficher** pour garder une colonne hors des
+résultats alors que la requête la demande toujours. Utilisez-le quand un
+filtre, un tri ou un total a besoin d'une colonne que le lecteur ne doit pas
+voir.
+
+### Formats de colonne
+
+Le **masque de format** utilise la notation Oracle (`999,999.00`, `$9,999.00`,
+`DD-MON-YYYY`). Il est lu pour son sens — milliers groupés, deux décimales,
+jour-mois-année — puis rendu dans la langue de chaque lecteur, si bien que la
+même carte se lit correctement pour tout le monde.
+
 ## Et ensuite ?
 
 - **[Exécution de cartes](executing-maps.md)** — Exécuter votre carte et consulter les résultats

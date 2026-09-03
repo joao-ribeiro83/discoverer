@@ -96,6 +96,31 @@ export class GenerationContext {
     );
   }
 
+  /**
+   * `itemExpression`, plus whether *this* item's own expression aggregates.
+   *
+   * `containsAggregate` on the context is cumulative — once any formula in the
+   * run aggregates it stays set — which answers "does the statement need a
+   * GROUP BY" but not "may I wrap this expression in SUM()". A total over a
+   * calculation that already reads `SUM(AMOUNT)` must be emitted unwrapped, so
+   * `totals.ts` asks per item and this narrows the flag to one call.
+   */
+  itemExpressionInfo(
+    item: Item,
+    folder: Folder,
+  ): { sql: string; containsAggregate: boolean } {
+    const before = this.containsAggregate;
+    this.containsAggregate = false;
+    let local = false;
+    try {
+      const sql = this.itemExpression(item, folder);
+      local = this.containsAggregate;
+      return { sql, containsAggregate: local };
+    } finally {
+      this.containsAggregate = before || local;
+    }
+  }
+
   /** Resolver used by formula parsing: item name → SQL expression. */
   resolveFormulaReference(name: string): string | null {
     const entry = this.formulaItemsByName.get(name.toUpperCase());

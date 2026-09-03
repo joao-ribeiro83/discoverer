@@ -2,6 +2,8 @@ import { create } from 'zustand'
 import type {
   ItemType,
   MapType,
+  MapAxisType,
+  MapAxisEdge,
   SortDirection,
   ConditionOperator,
   MapWithDetails,
@@ -77,6 +79,19 @@ export interface MapBuilderItem {
   sortDirection: SortDirection | null
   sortOrder: number | null
   columnWidth: number | null
+  /**
+   * Worksheet placement, carried so an edit does not erase it.
+   *
+   * These arrive on a migrated map and used to be dropped here: the store did
+   * not model them, so loading such a map and pressing Save wrote a column
+   * list with no axis, no hidden items and no group sorts — one edit undid the
+   * migration. Null/false on a column added in Neo, which is the same as
+   * before for everything built here.
+   */
+  axisType: MapAxisType | null
+  axisEdge: MapAxisEdge | null
+  isHidden: boolean
+  sortGroup: boolean
 }
 
 /**
@@ -249,6 +264,10 @@ function mapItemToBuilderItem(
     sortDirection: row.sortDirection,
     sortOrder: row.sortOrder,
     columnWidth: row.columnWidth,
+    axisType: row.axisType,
+    axisEdge: row.axisEdge,
+    isHidden: row.isHidden,
+    sortGroup: row.sortGroup,
   }
 }
 
@@ -264,13 +283,30 @@ function fallbackSource(row: MapItem): MapBuilderItemSource {
   }
 }
 
-function mapConditionToBuilder(row: MapCondition): MapBuilderCondition {
+/**
+ * A stored condition names its parameter by `bindName` (`DT_FIM_VIG_NCIA`);
+ * the builder works in prompts (`Dt Fim Vigência >=`), which is what the panel
+ * shows and what `toInput` sends back. Translating on the way in is what makes
+ * renaming a parameter carry its conditions with it — the payload names the
+ * prompt, and the server re-derives the bind name from whatever the prompt has
+ * become.
+ *
+ * A reference that matches no parameter is left as-is rather than blanked, so
+ * a map that arrived that way still shows what it was pointing at.
+ */
+function mapConditionToBuilder(
+  row: MapCondition,
+  promptByBindName: Map<string, string>,
+): MapBuilderCondition {
   return {
     key: nextConditionKey(),
     itemId: row.itemId,
     operator: row.operator,
     value: row.value,
-    paramName: row.paramName,
+    paramName:
+      row.paramName === null
+        ? null
+        : (promptByBindName.get(row.paramName) ?? row.paramName),
     conditionType: row.conditionType,
     groupId: row.groupId,
     logicOperator: row.logicOperator,
@@ -321,6 +357,10 @@ export const useMapBuilderStore = create<MapBuilderState>((set, get) => ({
       sortDirection: null,
       sortOrder: null,
       columnWidth: null,
+      axisType: null,
+      axisEdge: null,
+      isHidden: false,
+      sortGroup: false,
     }
 
     set({
@@ -499,6 +539,10 @@ export const useMapBuilderStore = create<MapBuilderState>((set, get) => ({
     const orderedCalcFields = [...map.calculatedFields].sort(
       (a, b) => a.displayOrder - b.displayOrder,
     )
+    const promptByBindName = new Map(
+      map.parameters.map((p) => [p.bindName, p.name]),
+    )
+
     set({
       mapId: map.id,
       name: map.name,
@@ -511,7 +555,9 @@ export const useMapBuilderStore = create<MapBuilderState>((set, get) => ({
       ),
       // Reclustered so any non-adjacent groupId membership from the server
       // still renders as one legible box (see `clusterConditions`).
-      conditions: reclusterConditions(orderedConditions.map(mapConditionToBuilder)),
+      conditions: reclusterConditions(
+        orderedConditions.map((row) => mapConditionToBuilder(row, promptByBindName)),
+      ),
       parameters: map.parameters.map(mapParameterToBuilder),
       calculatedFields: orderedCalcFields.map(mapCalculatedFieldToBuilder),
       isDirty: false,
@@ -535,6 +581,10 @@ export const useMapBuilderStore = create<MapBuilderState>((set, get) => ({
       sortDirection: col.sortDirection,
       sortOrder: col.sortOrder,
       columnWidth: col.columnWidth,
+      axisType: col.axisType,
+      axisEdge: col.axisEdge,
+      isHidden: col.isHidden,
+      sortGroup: col.sortGroup,
     }))
 
     const conditions: MapConditionInput[] = state.conditions.map((c, index) => ({

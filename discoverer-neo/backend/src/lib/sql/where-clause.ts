@@ -24,7 +24,13 @@ export interface WhereClauseResult {
  * Grouping semantics: conditions sharing a groupId are parenthesized
  * together; within a group each subsequent condition is joined by its own
  * logicOperator. Groups (and ungrouped conditions) are joined by the
- * logicOperator of their first condition.
+ * logicOperator of their first condition. A group's first row therefore says
+ * how the group joins the previous one, and the rest say how they join inside
+ * it — one column doing two jobs by position.
+ *
+ * Two levels is all of it: there is no nesting below a group. The migration
+ * relies on that being enough (see `migrate/EUL_SCHEMA_GROUND_TRUTH.md` §7.5)
+ * and reports any Discoverer condition that needs more.
  */
 export function buildWhereClause(
   def: MapDefinition,
@@ -32,8 +38,16 @@ export function buildWhereClause(
   options: SqlGenerationOptions = {},
 ): WhereClauseResult {
   const bindParams: Record<string, unknown> = {};
+  // Keyed by bind name: a PARAMETER condition stores its parameter's
+  // `bind_name`, and `options.parameterValues` arrives keyed the same way
+  // (parameter-resolver.ts turns prompt-keyed input into bind-keyed output).
   const paramTypes = new globalThis.Map(
-    def.parameters.map((p) => [p.name, p.paramType]),
+    def.parameters.map((p) => [p.bindName, p.paramType]),
+  );
+  // Bind name → prompt, so an error can name the parameter the way the person
+  // reading it knows it.
+  const paramLabels = new globalThis.Map(
+    def.parameters.map((p) => [p.bindName, p.name]),
   );
   const paramValues = options.parameterValues ?? {};
   let staticBindCounter = 0;
@@ -111,14 +125,20 @@ export function buildWhereClause(
         sql = `${lhs} ${op} ${placeholder(base, isDate)}`;
       }
     } else {
-      // PARAMETER condition
+      // PARAMETER condition. `param_name` holds the parameter's *bind name*,
+      // never the prompt the user sees — the prompt is free text and is
+      // routinely something like `Dt Fim Vigência >=`, which no bind variable
+      // can be called. See `map_parameters.bindName` in db/schema.ts.
       const paramName = condition.paramName;
       if (!paramName) {
         throw new SqlGenerationError(
           `PARAMETER condition on "${item.name}" has no paramName`,
         );
       }
+      // Bind names are derived and uniquified where the row is written, so a
+      // bad one here means something wrote the row bypassing that path.
       validateBindName(paramName);
+      const paramLabel = paramLabels.get(paramName) ?? paramName;
       const paramType = paramTypes.get(paramName);
       const provided = paramValues[paramName];
 
@@ -151,7 +171,7 @@ export function buildWhereClause(
             : String(provided).split(',').map((v) => v.trim());
           if (parts.length !== 2) {
             throw new SqlGenerationError(
-              `Parameter "${paramName}" must supply two values for BETWEEN`,
+              `Parameter "${paramLabel}" must supply two values for BETWEEN`,
             );
           }
           bindParams[lo] = parts[0];
@@ -182,8 +202,9 @@ export function buildWhereClause(
     groups.get(key)!.push(renderCondition(entry));
   }
 
-  const clauses: string[] = [];
+  const conditionClauses: string[] = [];
   let first = true;
+  let joinedByOr = false;
   for (const rendered of groups.values()) {
     let groupSql: string;
     if (rendered.length === 1) {
@@ -193,11 +214,30 @@ export function buildWhereClause(
         .map((r, i) => (i === 0 ? r.sql : `${r.logicOperator} ${r.sql}`))
         .join(' ')})`;
     }
-    clauses.push(
+    if (!first && rendered[0]!.logicOperator === 'OR') joinedByOr = true;
+    conditionClauses.push(
       first ? groupSql : `${rendered[0]!.logicOperator} ${groupSql}`,
     );
     first = false;
   }
+
+  // The map's own conditions become one clause. When any group is ORed onto
+  // the previous one the whole block has to be bracketed before anything is
+  // ANDed after it: `a OR b AND <security>` is `a OR (b AND <security>)` in
+  // SQL, which would return every row matching `a` regardless of the security
+  // predicate.
+  //
+  // The bracketing is unconditional once an OR is present — not conditional on
+  // a security predicate actually following — so the shape of the clause never
+  // depends on who is running the query. An all-AND block needs no brackets
+  // and keeps its existing text, which is the overwhelming majority of maps.
+  const clauses: string[] = [];
+  if (conditionClauses.length > 0) {
+    clauses.push(
+      joinedByOr ? `(${conditionClauses.join('\n  ')})` : conditionClauses.join('\n  '),
+    );
+  }
+  first = clauses.length === 0;
 
   // Row-level security predicates are ANDed in, each in its own parens.
   const securityBinds = options.securityBindParams ?? {};

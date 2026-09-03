@@ -1,6 +1,12 @@
 import { eq, and } from 'drizzle-orm';
 import { db } from '../db/index.js';
-import { folders, items, type Folder, type NewFolder } from '../db/schema.js';
+import {
+  folderBusinessAreas,
+  folders,
+  items,
+  type Folder,
+  type NewFolder,
+} from '../db/schema.js';
 import { introspectSchema, testTableExists, type IntrospectedTable } from './oracle-introspection.js';
 import type { Redis } from 'ioredis';
 
@@ -240,13 +246,23 @@ export async function getById(id: string): Promise<FolderWithDataSource | null> 
   return { ...row, dataSourceName };
 }
 
+/** A folder as seen from one business area: owned there, or shared into it. */
+export type FolderInBusinessArea = Folder & { isShared: boolean };
+
 /**
  * List folders in a business area (active only).
+ *
+ * A folder belongs to its owning business area (`folders.business_area_id`)
+ * AND to any it has been shared into (`folder_business_areas`) — Discoverer
+ * models this as many-to-many via `BA_OBJ_LINKS`, and sharing a common
+ * dimension folder across areas is ordinary practice. Both sides are returned
+ * here so a shared folder is visible everywhere it belongs; `isShared` says
+ * which is which.
  */
 export async function listByBusinessArea(
   businessAreaId: string,
-): Promise<Folder[]> {
-  const rows = await db
+): Promise<FolderInBusinessArea[]> {
+  const owned = await db
     .select()
     .from(folders)
     .where(
@@ -254,10 +270,82 @@ export async function listByBusinessArea(
         eq(folders.businessAreaId, businessAreaId),
         eq(folders.isActive, true),
       ),
-    )
-    .orderBy(folders.displayOrder, folders.name);
+    );
 
+  const shared = await db
+    .select({ folder: folders })
+    .from(folderBusinessAreas)
+    .innerJoin(folders, eq(folders.id, folderBusinessAreas.folderId))
+    .where(
+      and(
+        eq(folderBusinessAreas.businessAreaId, businessAreaId),
+        eq(folders.isActive, true),
+      ),
+    );
+
+  const rows: FolderInBusinessArea[] = [
+    ...owned.map((f) => ({ ...f, isShared: false })),
+    ...shared.map((r) => ({ ...r.folder, isShared: true })),
+  ];
+
+  // Sorted in JS rather than SQL: the two sides are separate queries, and a
+  // UNION would lose the isShared flag without extra plumbing.
+  rows.sort(
+    (a, b) => a.displayOrder - b.displayOrder || a.name.localeCompare(b.name),
+  );
   return rows;
+}
+
+/**
+ * Share an existing folder into an additional business area.
+ *
+ * Rejects the folder's owning area — that membership already exists on
+ * `folders.business_area_id`, and duplicating it would make the folder appear
+ * twice in every listing.
+ */
+export async function shareWithBusinessArea(
+  folderId: string,
+  businessAreaId: string,
+): Promise<{ ok: true } | { ok: false; reason: string }> {
+  const [folder] = await db
+    .select()
+    .from(folders)
+    .where(eq(folders.id, folderId))
+    .limit(1);
+  if (!folder) return { ok: false, reason: 'Folder not found' };
+  if (folder.businessAreaId === businessAreaId) {
+    return { ok: false, reason: 'Folder already belongs to this business area' };
+  }
+
+  await db
+    .insert(folderBusinessAreas)
+    .values({ folderId, businessAreaId })
+    .onConflictDoNothing();
+  return { ok: true };
+}
+
+/** Remove a share. The owning business area cannot be unshared. */
+export async function unshareWithBusinessArea(
+  folderId: string,
+  businessAreaId: string,
+): Promise<void> {
+  await db
+    .delete(folderBusinessAreas)
+    .where(
+      and(
+        eq(folderBusinessAreas.folderId, folderId),
+        eq(folderBusinessAreas.businessAreaId, businessAreaId),
+      ),
+    );
+}
+
+/** Business areas a folder is shared into, excluding its owning one. */
+export async function listSharedBusinessAreas(folderId: string): Promise<string[]> {
+  const rows = await db
+    .select({ businessAreaId: folderBusinessAreas.businessAreaId })
+    .from(folderBusinessAreas)
+    .where(eq(folderBusinessAreas.folderId, folderId));
+  return rows.map((r) => r.businessAreaId);
 }
 
 /**

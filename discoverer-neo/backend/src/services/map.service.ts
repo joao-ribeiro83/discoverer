@@ -18,6 +18,7 @@ import {
   type MapShare,
 } from '../db/schema.js';
 import { userHasPermission } from './business-area.service.js';
+import { makeBindName } from '../lib/sql/identifiers.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -45,6 +46,29 @@ export interface MapItemInput {
   sortDirection?: 'ASC' | 'DESC' | null;
   sortOrder?: number | null;
   columnWidth?: number | null;
+  /** Where the item sits — `AXIS` / `MEASURE` / `PAGE`, and its place there. */
+  axisType?: 'AXIS' | 'MEASURE' | 'PAGE' | null;
+  axisOrder?: number | null;
+  /**
+   * Which edge of a crosstab an `AXIS` column sits on. Discoverer records no
+   * such field, so this is null on every migrated map and is set only when
+   * somebody lays a crosstab out in Neo.
+   */
+  axisEdge?: 'ROW' | 'COLUMN' | null;
+  /**
+   * Group/break sort: suppress repeated values and give a subtotal its
+   * boundary. The SQL generator emits these ahead of every plain sort.
+   */
+  sortGroup?: boolean;
+  /**
+   * The map's query names this item without drawing it as a column.
+   *
+   * The SQL generator leaves such a row out of the SELECT list; it exists so a
+   * migrated Discoverer worksheet records the item its query asked for. Copied
+   * on duplication like every other item field — a copy that quietly turned a
+   * hidden item into a column would not be a copy.
+   */
+  isHidden?: boolean;
 }
 
 export interface MapConditionInput {
@@ -178,6 +202,42 @@ function validateConditionInputs(conditions: MapConditionInput[]): void {
   }
 }
 
+/**
+ * Give a map's parameters their bind names, and resolve what its conditions
+ * point at.
+ *
+ * A parameter is authored by its prompt — free text, and after a Discoverer
+ * migration routinely `Dt Fim Vigência >=`. What goes into the SQL is a bind
+ * name derived from it, and what `map_conditions.param_name` stores is that
+ * bind name. Deriving here rather than accepting one from the client keeps the
+ * two in step: a client cannot name a bind that no parameter owns, and a
+ * renamed prompt re-derives without the caller having to know the rule.
+ *
+ * Conditions may therefore reference a parameter either way — by the prompt (a
+ * UI holding unsaved parameters has nothing else to offer) or by a bind name
+ * already assigned (a saved map being re-saved unchanged). Both resolve.
+ */
+interface BoundParameters {
+  rows: Array<MapParameterInput & { bindName: string }>;
+  /** Bind name for a condition's reference, or undefined if it names nothing. */
+  resolve: (reference: string) => string | undefined;
+}
+
+function bindParameters(parameters: MapParameterInput[]): BoundParameters {
+  const taken = new Set<string>();
+  const byPrompt = new globalThis.Map<string, string>();
+  const rows = parameters.map((p) => {
+    const bindName = makeBindName(p.name, taken);
+    byPrompt.set(p.name, bindName);
+    return { ...p, bindName };
+  });
+  return {
+    rows,
+    resolve: (reference) =>
+      byPrompt.get(reference) ?? (taken.has(reference) ? reference : undefined),
+  };
+}
+
 function validateParameterInputs(
   parameters: MapParameterInput[],
   conditions: MapConditionInput[],
@@ -186,9 +246,13 @@ function validateParameterInputs(
   if (new Set(names).size !== names.length) {
     throw new MapValidationError('Parameter names must be unique');
   }
-  const paramNames = new Set(names);
+  const { resolve } = bindParameters(parameters);
   for (const c of conditions) {
-    if (c.conditionType === 'PARAMETER' && c.paramName && !paramNames.has(c.paramName)) {
+    if (
+      c.conditionType === 'PARAMETER' &&
+      c.paramName &&
+      resolve(c.paramName) === undefined
+    ) {
       throw new MapValidationError(
         `Condition references undefined parameter "${c.paramName}"`,
       );
@@ -217,6 +281,10 @@ async function insertChildren(
   parameters: MapParameter[];
   calculatedFields: MapCalculatedField[];
 }> {
+  // Derived once: the conditions below store bind names, so they have to be
+  // resolved against the very same assignment the parameter rows get.
+  const bound = bindParameters(input.parameters ?? []);
+
   const itemRows = input.items.length
     ? await tx
         .insert(mapItems)
@@ -231,6 +299,11 @@ async function insertChildren(
             sortDirection: i.sortDirection ?? null,
             sortOrder: i.sortOrder ?? null,
             columnWidth: i.columnWidth ?? null,
+            axisType: i.axisType ?? null,
+            axisOrder: i.axisOrder ?? null,
+            axisEdge: i.axisEdge ?? null,
+            isHidden: i.isHidden ?? false,
+            sortGroup: i.sortGroup ?? false,
           })),
         )
         .returning()
@@ -245,7 +318,10 @@ async function insertChildren(
             itemId: c.itemId,
             operator: c.operator,
             value: c.value ?? null,
-            paramName: c.paramName ?? null,
+            // Stored as the parameter's bind name. `validateParameterInputs`
+            // has already refused anything that resolves to nothing, so the
+            // fallback only carries a STATIC condition's stray value through.
+            paramName: c.paramName ? (bound.resolve(c.paramName) ?? c.paramName) : null,
             conditionType: c.conditionType,
             groupId: c.groupId ?? null,
             logicOperator: c.logicOperator ?? 'AND',
@@ -255,13 +331,14 @@ async function insertChildren(
         .returning()
     : [];
 
-  const parameterRows = input.parameters?.length
+  const parameterRows = bound.rows.length
     ? await tx
         .insert(mapParameters)
         .values(
-          input.parameters.map((p) => ({
+          bound.rows.map((p) => ({
             mapId,
             name: p.name,
+            bindName: p.bindName,
             paramType: p.paramType,
             defaultValue: p.defaultValue ?? null,
             isRequired: p.isRequired ?? false,
@@ -523,6 +600,15 @@ export async function duplicate(
   const source = await getById(id);
   if (!source) return null;
 
+  // The copy re-derives its own bind names, and it derives them in the order
+  // `getById` returns parameters (by name) rather than the order the original
+  // was authored in. Where two prompts reduce to the same base that is a
+  // different assignment, so a condition carried over by bind name could land
+  // on the other parameter. Carrying it over by *prompt* is order-independent.
+  const promptByBindName = new globalThis.Map(
+    source.parameters.map((p) => [p.bindName, p.name]),
+  );
+
   return db.transaction(async (tx) => {
     const [copy] = await tx
       .insert(maps)
@@ -533,6 +619,7 @@ export async function duplicate(
         businessAreaId: source.businessAreaId,
         createdBy: newCreatedBy,
         isPublic: false,
+        selectDistinct: source.selectDistinct,
       })
       .returning();
 
@@ -546,12 +633,20 @@ export async function duplicate(
         sortDirection: i.sortDirection,
         sortOrder: i.sortOrder,
         columnWidth: i.columnWidth,
+        axisType: i.axisType,
+        axisOrder: i.axisOrder,
+        axisEdge: i.axisEdge,
+        isHidden: i.isHidden,
+        sortGroup: i.sortGroup,
       })),
       conditions: source.conditions.map((c) => ({
         itemId: c.itemId,
         operator: c.operator as ConditionOperator,
         value: c.value,
-        paramName: c.paramName,
+        paramName:
+          c.paramName === null
+            ? null
+            : (promptByBindName.get(c.paramName) ?? c.paramName),
         conditionType: c.conditionType,
         groupId: c.groupId,
         logicOperator: c.logicOperator,
@@ -629,6 +724,8 @@ export async function exportAsXml(id: string): Promise<string | null> {
       `type="${c.conditionType}"`,
       `logic="${c.logicOperator}"`,
       c.value !== null ? `value="${xmlEscape(c.value)}"` : null,
+      // The parameter's bind name — match it to a <parameter bindName="...">
+      // below to recover the prompt it stands for.
       c.paramName ? `paramName="${xmlEscape(c.paramName)}"` : null,
       c.groupId ? `groupId="${c.groupId}"` : null,
     ]
@@ -642,6 +739,7 @@ export async function exportAsXml(id: string): Promise<string | null> {
   for (const p of map.parameters) {
     const attrs = [
       `name="${xmlEscape(p.name)}"`,
+      `bindName="${xmlEscape(p.bindName)}"`,
       `type="${p.paramType}"`,
       `required="${p.isRequired}"`,
       p.defaultValue !== null ? `default="${xmlEscape(p.defaultValue)}"` : null,

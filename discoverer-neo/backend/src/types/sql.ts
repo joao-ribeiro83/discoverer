@@ -4,6 +4,7 @@ import type {
   MapCondition,
   MapParameter,
   MapCalculatedField,
+  MapTotal,
   Item,
   Folder,
   Join,
@@ -22,6 +23,13 @@ export interface MapDefinition {
   conditions: Array<{ condition: MapCondition; item: Item; folder: Folder }>;
   parameters: MapParameter[];
   calculatedFields: MapCalculatedField[];
+  /**
+   * Totals and percentages the map draws (`map_totals`). Optional because a
+   * map authored before the table existed — and every caller that builds a
+   * definition by hand — simply has none; the generator then emits no totals
+   * queries and behaves exactly as it did before.
+   */
+  totals?: MapTotal[];
   /** All joins available in the business area (with side items/folders). */
   joins: Array<{
     join: Join;
@@ -86,6 +94,24 @@ export interface ColumnFormat {
   formatMask?: string;
   /** The map item's configured column width, if any. */
   columnWidth?: number;
+  /** Data-cell alignment, when the map item states one. */
+  alignment?: 'LEFT' | 'CENTER' | 'RIGHT';
+  /** Wrap long values in the cell, when the map item states it. */
+  wordWrap?: boolean;
+  /** Format mask for the heading, when it carries one of its own. */
+  headingFormatMask?: string;
+  /**
+   * Where the worksheet placed this column — Discoverer's `EDCBAxisType`.
+   * A renderer needs it to lay out a crosstab; the SQL does not use it beyond
+   * declining to apply an item's default aggregation to an `AXIS` column.
+   */
+  axisType?: 'AXIS' | 'MEASURE' | 'PAGE';
+  /**
+   * Which edge of a crosstab an `AXIS` column sits on. Null on everything the
+   * migration produces — Discoverer records no such field — so it is only ever
+   * set by someone building a crosstab in Neo.
+   */
+  axisEdge?: 'ROW' | 'COLUMN';
 }
 
 export interface GeneratedColumn extends ColumnFormat {
@@ -97,11 +123,98 @@ export interface GeneratedColumn extends ColumnFormat {
   isAggregate: boolean;
 }
 
+/**
+ * One total (or percentage) a totals query returns.
+ *
+ * `alias` names it in that query's result set; `targetAlias` names the column
+ * of the *main* query it belongs under, so a renderer can put the number in
+ * the right place without re-reading the map definition. A target the map does
+ * not draw (a hidden item) has no main-query column and leaves `targetAlias`
+ * undefined.
+ */
+export interface GeneratedTotal {
+  /** `map_totals.id`, so a caller can trace a number back to its row. */
+  id: string;
+  kind: 'TOTAL' | 'PERCENTAGE';
+  /** Alias of this value inside the totals query's SELECT list. */
+  alias: string;
+  /** Alias of the column being totalled in the main query, when it is drawn. */
+  targetAlias?: string;
+  /** Display label of the column being totalled. */
+  targetLabel: string;
+  /**
+   * The aggregate applied, or `INLINE` when the target is a calculation that
+   * already aggregates and is therefore emitted unwrapped.
+   */
+  aggFunction: string;
+  /**
+   * Discoverer's label template, `&value` / `&item` interpolation intact. The
+   * renderer substitutes; the generator does not, because the value only
+   * exists once the query has run.
+   */
+  label?: string;
+  displayOrder: number;
+}
+
+/**
+ * One statement that produces a set of totals.
+ *
+ * Totals are a second query rather than a `ROLLUP` bolted onto the first: a
+ * Discoverer worksheet shows detail rows *and* totals, and one grouped
+ * statement cannot return both. Keeping them apart also means the detail query
+ * stays exactly what it was — paginated, ordered, unchanged — while the totals
+ * are computed over the whole filtered set rather than over the fetched page.
+ *
+ * Every totals query carries the main query's FROM and WHERE, and therefore
+ * its bind parameters, minus pagination.
+ */
+export interface GeneratedTotalsQuery {
+  /**
+   * Alias of the break column in this query, or null for the grand-total
+   * query. `AT_CHANGE` totals that break on the same column share one query.
+   */
+  breakAlias: string | null;
+  /** Display label of the break column, when there is one. */
+  breakLabel?: string;
+  /** Alias of the break column in the *main* query, when it is drawn there. */
+  breakTargetAlias?: string;
+  sql: string;
+  /**
+   * The binds this statement needs — the main query's, minus pagination.
+   * Carried per query rather than shared, because Oracle rejects a bind the
+   * statement does not reference and a totals query has no OFFSET/FETCH.
+   */
+  bindParams: Record<string, unknown>;
+  totals: GeneratedTotal[];
+}
+
 export interface GeneratedSql {
   sql: string;
   bindParams: Record<string, unknown>;
   hasAggregates: boolean;
   columns: GeneratedColumn[];
+  /** True when the statement was emitted as `SELECT DISTINCT`. */
+  distinct: boolean;
+  /**
+   * Aliases of the group/break columns, outermost first — the columns the
+   * statement sorts on before anything else, and therefore the ones a renderer
+   * draws a break at each change in. Empty when the map has no group sort.
+   *
+   * Only columns the map draws appear: a break on a hidden item groups the
+   * rows but has no column to print the value in.
+   */
+  groupBreakAliases: string[];
+  /**
+   * Totals statements to run alongside the main query. Empty when the map
+   * defines none. Each takes `bindParams` minus the pagination binds.
+   */
+  totals: GeneratedTotalsQuery[];
+  /**
+   * Map semantics that could not be expressed in this statement — a sort on a
+   * hidden item under `SELECT DISTINCT`, a total whose aggregate did not
+   * migrate. Advisory: the query is still valid and still runs.
+   */
+  warnings: string[];
 }
 
 /**

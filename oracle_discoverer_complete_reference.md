@@ -1,5 +1,21 @@
 # Oracle Discoverer — Complete Technical Reference
 
+> ## ⚠️ §8 (EUL database table schema) IS NOT ACCURATE
+>
+> Verified 2026-08-20 against Oracle's shipped scripts in
+> `discoverer10g/sql/`: the EUL table and column names in §8 — and in the
+> ER diagrams and sample queries that use them — describe a schema that does
+> not exist. `EUL5_BA`, `EUL5_JOINS`, `EUL5_JOI_COMP`, `EUL5_ELEM_ACCESS`,
+> `EUL5_EUL`, `EUL5_OPTIONS`, `OBJ_TABLE_NAME`, `EXP_COL_NAME` are all
+> fabricated; the real names are `EUL5_BAS`, `EUL5_KEY_CONS`,
+> `EUL5_HI_NODES`/`EUL5_HI_SEGMENTS`, `EUL5_ACCESS_PRIVS`, `EUL5_VERSIONS`,
+> `SOBJ_EXT_TABLE`, `IT_EXT_COLUMN`.
+>
+> For EUL table/column detail use
+> [`discoverer-neo/migrate/EUL_SCHEMA_GROUND_TRUTH.md`](discoverer-neo/migrate/EUL_SCHEMA_GROUND_TRUTH.md).
+> The rest of this document (architecture, components, concepts, migration
+> strategy) is unaffected.
+
 > **Status:** Desupported by Oracle (Premier Support ended December 2012).  
 > **Replacement:** Oracle Analytics Cloud (OAC) / Oracle Analytics Server (OAS).  
 > This document covers Oracle Discoverer 10g / 11g with EUL version 5.

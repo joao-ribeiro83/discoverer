@@ -17,6 +17,28 @@ Introduza as suas credenciais e clique em **Iniciar sessão**.
 
 **Primeira vez?** Contacte o administrador para criar uma conta.
 
+## Primeiro início de sessão com uma palavra-passe temporária
+
+Se a sua conta foi transferida do Oracle Discoverer, o administrador dar-lhe-á uma
+**palavra-passe temporária**. É uma cadeia aleatória de 16 caracteres, por
+exemplo `ufNnRksjgR7U%M6X`.
+
+1. Inicie sessão com o seu endereço de e-mail e a palavra-passe temporária.
+2. É levado diretamente para **Alterar a palavra-passe** — não pode ignorar este
+   passo. Até escolher uma palavra-passe, o resto da aplicação está indisponível.
+3. Introduza novamente a palavra-passe temporária e depois a nova duas vezes.
+4. Chega ao painel, e a palavra-passe temporária deixa de funcionar de imediato.
+
+A nova palavra-passe tem de ter **pelo menos 12 caracteres** e ser diferente da
+temporária.
+
+> **Dica:** a palavra-passe temporária evita deliberadamente caracteres fáceis de
+> confundir — sem `O` maiúsculo nem zero, sem `l` minúsculo nem um. Se um
+> caractere lhe parecer ambíguo, não é nenhum desses.
+
+Se escrever a palavra-passe temporária incorretamente, o ecrã indica-o e nada é
+alterado; peça ao administrador que a redefina se a tiver perdido.
+
 ## Interface Principal
 
 Após iniciar sessão, é apresentado o painel principal com as seguintes secções:

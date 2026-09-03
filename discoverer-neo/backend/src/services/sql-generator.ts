@@ -9,6 +9,7 @@ import {
   mapConditions,
   mapParameters,
   mapCalculatedFields,
+  mapTotals,
   type Item,
   type Folder,
 } from '../db/schema.js';
@@ -26,6 +27,7 @@ import { buildWhereClause } from '../lib/sql/where-clause.js';
 import { buildGroupByClause } from '../lib/sql/group-by-clause.js';
 import { buildOrderByClause } from '../lib/sql/order-by-clause.js';
 import { buildPagination } from '../lib/sql/pagination.js';
+import { planTotals } from '../lib/sql/totals.js';
 
 export { SqlGenerationError } from '../types/sql.js';
 export { validateFormula } from '../lib/sql/formula-parser.js';
@@ -53,21 +55,53 @@ export function generateSql(
   // aggregates (including those hidden inside formulas).
   const select = buildSelectClause(def, ctx);
   const where = buildWhereClause(def, ctx, options);
+  // ORDER BY and the totals plan come before FROM, not after: a sort on a
+  // hidden item and a total on a column no other clause names both reach
+  // folders nothing else has aliased yet, and FROM joins whatever has been
+  // aliased by the time it runs.
+  const orderBy = buildOrderByClause(def, ctx, select);
+  const totalsPlan = planTotals(def, ctx, select);
   // FROM is built last so it sees every folder the query touches.
   const from = buildFromClause(def, ctx);
   const groupBy = buildGroupByClause(select.hasAggregates, select.nonAggregateExprs);
-  const orderBy = buildOrderByClause(def);
   const pagination = buildPagination(options);
 
-  const sql = [select.sql, from, where.sql, groupBy, orderBy, pagination.sql]
+  const sql = [select.sql, from, where.sql, groupBy, orderBy.sql, pagination.sql]
     .filter(Boolean)
     .join('\n');
+
+  // Totals reuse the main query's FROM and WHERE — and so its bind parameters
+  // — but never its GROUP BY, ORDER BY or pagination: a total is one row over
+  // the whole filtered set, or one row per break value.
+  const totals = totalsPlan.entries.map((entry) => ({
+    breakAlias: entry.breakAlias,
+    breakLabel: entry.breakLabel,
+    breakTargetAlias: entry.breakTargetAlias,
+    sql: [
+      `SELECT ${entry.selectParts.join(',\n       ')}`,
+      from,
+      where.sql,
+      entry.groupByExpr ? `GROUP BY ${entry.groupByExpr}` : '',
+      entry.groupByExpr ? 'ORDER BY 1' : '',
+    ]
+      .filter(Boolean)
+      .join('\n'),
+    bindParams: { ...where.bindParams },
+    totals: entry.totals,
+  }));
 
   return {
     sql,
     bindParams: { ...where.bindParams, ...pagination.bindParams },
     hasAggregates: select.hasAggregates,
     columns: select.columns,
+    distinct: select.distinct,
+    groupBreakAliases: orderBy.groupMapItemIds.flatMap((id) => {
+      const alias = select.aliasByMapItemId.get(id);
+      return alias ? [alias] : [];
+    }),
+    totals,
+    warnings: [...orderBy.warnings, ...totalsPlan.warnings],
   };
 }
 
@@ -139,6 +173,7 @@ export async function loadMapDefinition(mapId: string): Promise<MapDefinition> {
     conditionRows,
     parameterRows,
     calculatedFieldRows,
+    totalRows,
   ] = await Promise.all([
     db.select().from(mapItems).where(eq(mapItems.mapId, mapId)),
     db.select().from(mapConditions).where(eq(mapConditions.mapId, mapId)),
@@ -147,6 +182,7 @@ export async function loadMapDefinition(mapId: string): Promise<MapDefinition> {
       .select()
       .from(mapCalculatedFields)
       .where(eq(mapCalculatedFields.mapId, mapId)),
+    db.select().from(mapTotals).where(eq(mapTotals.mapId, mapId)),
   ]);
 
   // All folders + items of the business area (formula references may reach
@@ -202,6 +238,7 @@ export async function loadMapDefinition(mapId: string): Promise<MapDefinition> {
     })),
     parameters: parameterRows,
     calculatedFields: calculatedFieldRows,
+    totals: totalRows,
     joins: joinRows.flatMap((j) => {
       if (!j.leftItemId || !j.rightItemId) return [];
       const leftItem = itemById.get(j.leftItemId);

@@ -1,7 +1,10 @@
 import fp from 'fastify-plugin';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import fastifyJwt from '@fastify/jwt';
+import { eq } from 'drizzle-orm';
 import { config } from '../config.js';
+import { db } from '../db/index.js';
+import { users } from '../db/schema.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -15,6 +18,18 @@ declare module 'fastify' {
     ) => Promise<void>;
   }
 }
+
+/**
+ * The only routes an account with a pending password change may reach.
+ *
+ * Kept minimal on purpose: changing the password, reading who you are (the
+ * client needs it to render the change screen), and logging out.
+ */
+const PASSWORD_CHANGE_EXEMPT_ROUTES = new Set<string>([
+  '/api/auth/change-password',
+  '/api/auth/me',
+  '/api/auth/logout',
+]);
 
 interface JwtPayload {
   sub: string;
@@ -63,6 +78,33 @@ export default fp(
           }
         } catch {
           reply.code(401).send({ error: 'Unauthorized' });
+          return;
+        }
+
+        // An account provisioned with a temporary password may do exactly one
+        // thing: change that password. Enforced HERE rather than in the UI —
+        // the API is reachable directly, so a front-end-only prompt would be
+        // decoration, not a control.
+        //
+        // The flag is read from the database, not the JWT: a token minted
+        // before the change would otherwise keep asserting the stale value
+        // until it expired.
+        if (!PASSWORD_CHANGE_EXEMPT_ROUTES.has(request.routeOptions.url ?? '')) {
+          const [row] = await db
+            .select({ mustChangePassword: users.mustChangePassword })
+            .from(users)
+            .where(eq(users.id, request.user.sub))
+            .limit(1);
+
+          if (row?.mustChangePassword) {
+            reply.code(403).send({
+              error: 'Password change required',
+              // A stable code so the client can route to the change screen
+              // instead of pattern-matching on prose.
+              code: 'PASSWORD_CHANGE_REQUIRED',
+            });
+            return;
+          }
         }
       },
     );

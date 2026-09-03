@@ -44,6 +44,10 @@ services:
       # install needs the root lockfile and every workspace manifest.
       context: .
       dockerfile: backend/Dockerfile
+      args:
+        # Tied to the same flag the runtime check reads, so a rebuild can never
+        # produce a thick-mode backend with no Instant Client in the image.
+        INSTALL_ORACLE_CLIENT: ${ORACLE_THICK_MODE:-false}
     container_name: discoverer-neo-backend
     restart: unless-stopped
     env_file: .env
@@ -57,10 +61,10 @@ services:
       EXPORT_DIR: /app/exports
       SCHEDULE_RESULT_DIR: /app/scheduled-results
       # Thin mode by default — no Instant Client needed, supports Oracle 12.1+.
-      # For an EUL on 11.2–12.0, rebuild with
-      #   docker compose build --build-arg INSTALL_ORACLE_CLIENT=true backend
-      # and set ORACLE_THICK_MODE=true in .env. The backend refuses to start if
-      # thick mode is on without a usable client, so this cannot silently regress.
+      # For an EUL on 11.2–12.0, set ORACLE_THICK_MODE=true in .env and rebuild:
+      # the build arg above reads the same flag, so the image gets the Instant
+      # Client. The backend refuses to start if thick mode is on without a usable
+      # client, so a mismatch fails loudly at boot rather than at first query.
       ORACLE_THICK_MODE: ${ORACLE_THICK_MODE:-false}
     ports:
       - "${BACKEND_PORT:-3000}:3000"

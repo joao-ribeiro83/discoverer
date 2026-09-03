@@ -80,6 +80,26 @@
       "updated": "Folder updated",
       "created": "Folder created",
       "deactivated": "Folder deactivated"
+    },
+    "sharedBadge": "Shared",
+    "sharedTooltip": "Owned by another business area and shared into this one",
+    "manageSharing": "Manage business areas",
+    "sharing": {
+      "title": "Business areas for \"{{name}}\"",
+      "description": "A folder is owned by one business area and can be shared into others, as in Oracle Discoverer.",
+      "memberOf": "Member of",
+      "owning": "owner",
+      "owningTooltip": "The owning business area cannot be removed",
+      "noShares": "Not shared with any other business area.",
+      "addTo": "Share into",
+      "selectPlaceholder": "Select a business area",
+      "noneAvailable": "No other business areas available",
+      "share": "Share",
+      "removeShare": "Remove share with {{name}}",
+      "shared": "Folder shared",
+      "unshared": "Share removed",
+      "shareFailed": "Could not share folder",
+      "unshareFailed": "Could not remove share"
     }
   },
   "items": {
@@ -91,9 +111,9 @@
     "entityLabel": "item",
     "selectFolderPlaceholder": "Select a folder",
     "itemTypes": {
-      "ci": "Column Item (CI)",
+      "co": "Database Item (CO)",
+      "ci": "Created Item (CI)",
       "cu": "Calculated Item (CU)",
-      "co": "Condition (CO)",
       "ji": "Join Item (JI)",
       "hi": "Hierarchy Item (HI)",
       "ag": "Aggregation (AG)",

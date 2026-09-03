@@ -11,6 +11,8 @@ import {
 import type {
   ColumnFormat,
   GeneratedColumn,
+  GeneratedTotal,
+  GeneratedTotalsQuery,
   MapDefinition,
   SecurityPredicate,
 } from '../types/sql.js';
@@ -80,6 +82,24 @@ export interface ResultColumn extends ColumnFormat {
   isAggregate: boolean;
 }
 
+/**
+ * One executed totals statement: the metadata the generator planned, plus the
+ * numbers it returned.
+ *
+ * A grand-total group has exactly one row. A break group (`breakAlias` set)
+ * has one row per distinct value of the break column, each carrying that value
+ * under `breakAlias` — which is what lets a renderer drop a subtotal line in
+ * at each change without matching on row position.
+ */
+export interface ResultTotalsGroup {
+  breakAlias: string | null;
+  breakLabel?: string;
+  /** Alias of the break column in the main result set, when it is drawn. */
+  breakTargetAlias?: string;
+  totals: GeneratedTotal[];
+  rows: Record<string, unknown>[];
+}
+
 export interface ExecuteResult {
   columns: ResultColumn[];
   rows: Record<string, unknown>[];
@@ -94,6 +114,22 @@ export interface ExecuteResult {
    * adds no new exposure; it lets the UI offer a "view SQL" affordance.
    */
   sql?: string;
+  /**
+   * Aliases of the group/break columns, outermost first — where a renderer
+   * draws a break at each change. Absent when the map has no group sort.
+   */
+  groupBreakAliases?: string[];
+  /**
+   * Totals and subtotals the map defines, each already run. Absent when the
+   * map defines none.
+   */
+  totals?: ResultTotalsGroup[];
+  /**
+   * Map semantics this run could not honour — a sort dropped because the
+   * statement is `SELECT DISTINCT`, a total whose aggregate did not migrate, a
+   * totals statement Oracle rejected. The rows above are still valid.
+   */
+  warnings?: string[];
 }
 
 export interface PreparedQuery {
@@ -101,6 +137,12 @@ export interface PreparedQuery {
   bindParams: Record<string, unknown>;
   columns: GeneratedColumn[];
   dataSourceId: string;
+  /** Break columns the statement sorts on first, outermost first. */
+  groupBreakAliases?: string[];
+  /** Totals statements to run alongside `sql`; empty when the map has none. */
+  totals?: GeneratedTotalsQuery[];
+  /** Advisories from generation; carried through to `ExecuteResult`. */
+  warnings?: string[];
 }
 
 export type ExecutionErrorKind =
@@ -283,8 +325,13 @@ export async function resolveSecurityPredicates(
 /**
  * Resolve a map's declared parameters against the supplied values: apply
  * defaults, coerce each to its declared type, and refuse execution if a
- * required parameter is missing. Undeclared supplied values are passed through
- * untouched so condition paramNames without a formal definition keep working.
+ * required parameter is missing.
+ *
+ * Callers supply values keyed by prompt (that is what the run-time dialog and
+ * a schedule's stored values hold); what comes back is keyed by bind name,
+ * which is what the WHERE builder looks up. Undeclared supplied values are
+ * passed through untouched so a condition naming a parameter the map never
+ * declared keeps working — those keys are already bind names.
  */
 function resolveParametersForQuery(
   def: MapDefinition,
@@ -311,7 +358,11 @@ function resolveParametersForQuery(
     );
   }
 
-  const definedNames = new Set(def.parameters.map((p) => p.name));
+  // Both spellings of a declared parameter are consumed above; only keys that
+  // match neither are pass-throughs.
+  const definedNames = new Set(
+    def.parameters.flatMap((p) => [p.name, p.bindName]),
+  );
   const merged: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(parameterValues)) {
     if (!definedNames.has(key) && value !== undefined && value !== null) {
@@ -375,13 +426,19 @@ async function defaultPrepareQuery(
   });
 
   // Defence in depth: the generator only ever emits a single SELECT, but we
-  // refuse anything else before it reaches Oracle.
-  const check = validateSql(generated.sql);
-  if (!check.valid) {
-    throw new MapExecutionError(
-      'QUERY',
-      `Refusing to execute generated SQL: ${check.error}`,
-    );
+  // refuse anything else before it reaches Oracle. Totals statements come off
+  // the same generator and get the same check.
+  for (const statement of [
+    generated.sql,
+    ...generated.totals.map((t) => t.sql),
+  ]) {
+    const check = validateSql(statement);
+    if (!check.valid) {
+      throw new MapExecutionError(
+        'QUERY',
+        `Refusing to execute generated SQL: ${check.error}`,
+      );
+    }
   }
 
   return {
@@ -389,7 +446,51 @@ async function defaultPrepareQuery(
     bindParams: generated.bindParams,
     columns: generated.columns,
     dataSourceId,
+    groupBreakAliases: generated.groupBreakAliases,
+    totals: generated.totals,
+    warnings: generated.warnings,
   };
+}
+
+/**
+ * Run a prepared query's totals statements on the connection that just served
+ * the detail rows.
+ *
+ * A failed totals statement degrades to a warning instead of failing the run:
+ * a report whose subtotal line is missing is still the report, and refusing to
+ * show any rows because a summary would not compute is the worse trade.
+ */
+async function runTotalsQueries(
+  conn: Connection,
+  totals: GeneratedTotalsQuery[],
+): Promise<{ groups: ResultTotalsGroup[]; warnings: string[] }> {
+  const groups: ResultTotalsGroup[] = [];
+  const warnings: string[] = [];
+
+  for (const query of totals) {
+    try {
+      const result = await conn.execute(
+        query.sql,
+        query.bindParams as BindParameters,
+        { outFormat: OUT_FORMAT_OBJECT },
+      );
+      groups.push({
+        breakAlias: query.breakAlias,
+        breakLabel: query.breakLabel,
+        breakTargetAlias: query.breakTargetAlias,
+        totals: query.totals,
+        rows: (result.rows ?? []) as Record<string, unknown>[],
+      });
+    } catch (err) {
+      warnings.push(
+        query.breakLabel
+          ? `Subtotals by "${query.breakLabel}" could not be computed: ${errorMessage(err)}`
+          : `Totals could not be computed: ${errorMessage(err)}`,
+      );
+    }
+  }
+
+  return { groups, warnings };
 }
 
 async function defaultRecordExecution(entry: ExecutionLogEntry): Promise<void> {
@@ -462,6 +563,11 @@ export function buildColumns(
     dataType: c?.dataType,
     formatMask: c?.formatMask,
     columnWidth: c?.columnWidth,
+    alignment: c?.alignment,
+    wordWrap: c?.wordWrap,
+    headingFormatMask: c?.headingFormatMask,
+    axisType: c?.axisType,
+    axisEdge: c?.axisEdge,
   });
 
   if (metaData && metaData.length === gen.length) {
@@ -566,6 +672,15 @@ export async function executeMap(
       baseColumns,
       options.calculatedFields,
     );
+
+    // Totals run on the same connection, after the detail rows, and over the
+    // whole filtered set rather than the fetched page.
+    const totals = prepared.totals ?? [];
+    const totalsRun = totals.length
+      ? await runTotalsQueries(conn, totals)
+      : { groups: [], warnings: [] };
+    const warnings = [...(prepared.warnings ?? []), ...totalsRun.warnings];
+
     const executionTimeMs = Date.now() - start;
 
     await safeRecord(deps, {
@@ -585,6 +700,11 @@ export async function executeMap(
       executionTimeMs,
       truncated,
       sql: prepared.sql,
+      ...(prepared.groupBreakAliases?.length
+        ? { groupBreakAliases: prepared.groupBreakAliases }
+        : {}),
+      ...(totalsRun.groups.length ? { totals: totalsRun.groups } : {}),
+      ...(warnings.length ? { warnings } : {}),
     };
   } catch (err) {
     const timedOut = isTimeoutError(err);

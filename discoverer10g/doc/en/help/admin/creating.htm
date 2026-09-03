@@ -1,0 +1,2348 @@
+
+<!DOCTYPE html public "-//w3c//dtd html 3.2 transitional//en.us">
+<HTML lang="en.us">
+<HEAD>
+
+<META NAME="Generator" CONTENT="Quadralay WebWorks Publisher 5.0.4">
+<META NAME="Page" CONTENT="DefaultSingle">
+<META NAME="Title" CONTENT="Creating summary folders manually">
+<meta http-equiv="Content-Type" content="text/html;  charset=iso-8859-1">
+
+<TITLE>Creating summary folders manually</TITLE>
+	   
+<LINK REL="home" HREF="../../library.htm" TITLE="Library">
+<LINK REL="toc" HREF="toc.htm" TITLE="Contents">
+<LINK REL="index" HREF="bookix.htm" TITLE="Index">
+<LINK REL="copyright" HREF="./html/cpyr.htm" TITLE="Copyright">
+<LINK REL="up" HREF="toc.htm" TITLE="Up">
+<LINK REL="next" HREF="addition.htm" TITLE="Next">
+<LINK REL="previous" HREF="managing.htm" TITLE="Previous">
+
+
+</HEAD>
+       
+<BODY BGCOLOR="#ffffff">
+
+<A NAME="top"></A>
+
+
+
+
+<A HREF="#BEGIN">Skip Headers</A><BR><BR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+ 
+<TD ALIGN="LEFT" VALIGN="TOP"><FONT COLOR="#330099" FACE="Helvetica, Arial, sans-serif"><STRONG>Oracle Discoverer Administrator Administration Guide (Online Help)<BR>10<i>g</i> (9.0.4)</STRONG><BR>Part Number B10270-01</FONT></TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="144">
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+
+
+
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<HR>
+<P>
+<A HREF="managing.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+
+<A HREF="addition.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+    
+
+
+<A NAME="BEGIN"></A>
+
+
+
+<DIV CLASS="IND">
+<!-- End Header -->
+
+
+
+
+
+
+
+<A NAME="1656"></A>
+<!--TOC=Title-"1656"-->
+<H1 CLASS="Title"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099">14<BR>Creating summary folders manually</FONT></H1>
+
+<!--/TOC=Title-->
+
+<A NAME="1007292"></A>
+<!--TOC=h1-"1007292"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Creating summary folders manually</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1007295"></A>
+<P CLASS="BP">
+This chapter explains how you create summary folders manually using Discoverer Administrator (i.e. instead of using Automated Summary Management), and contains the following topics:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007305"></A><A HREF="creating.htm#1004603">"What is manual summary folder creation?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007309"></A><A HREF="creating.htm#1005182">"What are the prerequisites for creating summary folders manually in Discoverer?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007325"></A><A HREF="creating.htm#1011055">"What are summary combinations?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007333"></A><A HREF="creating.htm#1004663">"What to consider when defining summary combinations?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007341"></A><A HREF="creating.htm#1010200">"Guidelines for setting up summary combinations"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007349"></A><A HREF="creating.htm#1004665">"When will an expression use a summary folder?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007358"></A><A HREF="creating.htm#1004667">"How to create summary folders based on items in the EUL"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007367"></A><A HREF="creating.htm#1004668">"How to create summary folders based on users' queries"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007376"></A><A HREF="creating.htm#1004669">"How to create summary folders based on external summary tables"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007385"></A><A HREF="creating.htm#1004882">"How to manually refresh a summary folder"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007393"></A><A HREF="creating.htm#1004911">"How to edit the properties of summary folders"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007401"></A><A HREF="creating.htm#1004913">"How to edit summary folders"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007409"></A><A HREF="creating.htm#1004919">"How to edit database storage properties of summary combinations for a summary folder"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007417"></A><A HREF="creating.htm#1004938">"How to delete summary folders"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007426"></A><A HREF="creating.htm#1004962">"How to view the status of the summary tables/materialized views for a summary folder"</a>
+<P>
+</UL>
+
+<A NAME="1004603"></A>
+<!--TOC=h1-"1004603"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What is manual summary folder creation?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004877"></A>
+<P CLASS="BP">
+Manual summary folder creation is the process of creating summary folders yourself, instead of using Discoverer's Automated Summary Management (ASM) functionality (for more information, see <A HREF="managing.htm#1009688">Chapter&nbsp;13, "Managing summary folders"</a>). It is recommended that you use ASM to create summary folders. However, you might choose to create summary folders yourself, if you want to:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010068"></A>manually select the combination of EUL items (e.g. when you know the items to use in the summary folder)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010072"></A>use query performance statistics to choose from a selection of summary folder suggestions (based on queries that have been run) 
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010080"></A>use a summary table or view created and/or maintained by an external application (e.g. an external summary table)
+<P>
+</UL>
+<A NAME="1009978"></A>
+<P CLASS="BP">
+You choose whether to create summary folders using ASM or manually in the first step of the Summary Wizard. To create summary folders manually you select the option <STRONG CLASS="Bold">I want to specify the summaries myself</STRONG> and complete one of the following tasks:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004990"></A><A HREF="creating.htm#1004667">"How to create summary folders based on items in the EUL"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009811"></A><A HREF="creating.htm#1004668">"How to create summary folders based on users' queries"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="594142"></A><A HREF="creating.htm#1004669">"How to create summary folders based on external summary tables"</a>
+<P>
+</UL>
+<A NAME="1009807"></A>
+<P CLASS="BP">
+For information about summary folders and how Discoverer creates and maintains them automatically see <A HREF="managing.htm#1009688">Chapter&nbsp;13, "Managing summary folders"</a>.
+</P>
+
+<A NAME="1005182"></A>
+<!--TOC=h1-"1005182"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are the prerequisites for creating summary folders manually in Discoverer?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005191"></A>
+<P CLASS="BP">
+To create summary folders, the following requirements must be met:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005193"></A>The database must support PL/SQL.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005195"></A>The DBMS_JOB package must be installed for scheduling summary folder creation and refresh. For more information see <A HREF="managing.htm#1005388">Chapter&nbsp;13, "How to confirm that DBMS_JOB is installed for summary management"</a>. 
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005200"></A>The User ID that you intend to use to create the summary folders must have the following database privileges:
+<P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005204"></A>CREATE TABLE
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005205"></A>CREATE VIEW
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005206"></A>CREATE PROCEDURE
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005207"></A>SELECT ON V_$PARAMETER
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005209"></A>CREATE/DROP/ALTER ANY MATERIALIZED VIEW (Oracle 8.1.7 (or later) Enterprise Edition databases)
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005210"></A>GLOBAL QUERY REWRITE (Oracle 8.1.7 (or later) Enterprise Edition databases)
+<P>
+</UL>
+
+<A NAME="1009887"></A>
+<P CLASS="BP1">
+For more information, see <A HREF="managing.htm#1008343">Chapter&nbsp;13, "How to use SQL*Plus to grant the privileges required to create summary folders"</a>.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009707"></A>The User ID that you intend to use to create the summary folders must have sufficient quota in their default tablespace. For more information, see <A HREF="managing.htm#1005295">Chapter&nbsp;13, "How to determine and reset tablespace quotas"</a>.
+<P>
+</UL>
+
+<A NAME="1009713"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif"><STRONG CLASS="Bold">Notes</STRONG></FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1013164"></A>If a database user was created in Discoverer 3.1 against an Oracle 8.1.7 (or later) Enterprise Edition database, it must have additional privileges granted to enable them to create summary folders (for more information, see <A HREF="managing.htm#1004994">"What are the prerequisites for creating summary folders with ASM?"</a>).
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009716"></A>If you want Discoverer to use external summary tables, the EUL owner:
+<P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1009900"></A>must have SELECT WITH GRANT access to the external summary tables
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1009904"></A>must have been granted SELECT WITH GRANT access explicitly (i.e. not via a database role)
+<P>
+</UL>
+</UL>
+
+<A NAME="1011055"></A>
+<!--TOC=h1-"1011055"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are summary combinations?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005013"></A>
+<P CLASS="BP">
+Summary combinations are groupings of items that make up a summary folder. A summary combination maps directly to a materialized view or summary table in the database. Discoverer creates materialized views or summary tables based on the summary combinations you create. Each summary combination defines a different way of combining two or more items in a summary folder. If a Discoverer Plus user executes a query with a combination of items that closely matches those specified in a particular combination, the query will be run against a summary table or materialized view instead of the detail data, resulting in improved response times.
+</P>
+<A NAME="1014988"></A>
+<P CLASS="BP">
+For example, you might create a summary folder against two folder items, Product Key and Product Type. 
+</P>
+<A NAME="1015057"></A>
+<P CLASS="BP">
+You might want the summary folder to be used only when the Product Key and Product Type items are used together.
+</P>
+<A NAME="1015058"></A>
+<P CLASS="BP">
+For this example you would not add any summary combinations but accept the default combination, as follows:
+</P>
+   
+<A NAME="1015201">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1015061"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Combinations<br></STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1015063"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Combination 1<br>(default)</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1015065"></A>
+<P CLASS="TB">
+Product Key&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1015067"></A>
+<P CLASS="TB">
+selected&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1015069"></A>
+<P CLASS="TB">
+Product Type&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1015071"></A>
+<P CLASS="TB">
+selected&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   <A NAME="1015053"></A>
+<P CLASS="BP">
+Alternatively, you might want the summary folder to be used for any of the following combinations:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014989"></A>Product Key and Product Type (Combination 1)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014990"></A>Product Key (Combination 2)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014991"></A>Product Type (Combination 3)
+<P>
+</UL>
+<A NAME="1014992"></A>
+<P CLASS="BP">
+For this example you would add two summary combinations and select the check box next to the items that you want to use as follows:
+</P>
+   
+<A NAME="1015205">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1014995"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Combinations<br></STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1014997"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Combination 1 (default)</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1014999"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Combination 2<br></STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1015001"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Combination 3<br></STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1015003"></A>
+<P CLASS="TB">
+Product Key&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1015005"></A>
+<P CLASS="TB">
+selected&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1015007"></A>
+<P CLASS="TB">
+selected&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1015009"></A>
+<P CLASS="TB">
+not selected&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1015011"></A>
+<P CLASS="TB">
+Product Type&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1015013"></A>
+<P CLASS="TB">
+selected&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1015015"></A>
+<P CLASS="TB">
+not selected&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1015017"></A>
+<P CLASS="TB">
+selected&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   <A NAME="1005015"></A>
+<P CLASS="BP">
+You can define as many combinations as you need for each summary folder using the Summary Wizard.
+</P>
+
+<A NAME="1012504"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 14-1 &#32;The relationship between summary combinations, summary folders and summary tables/materialized views</EM></FONT></H4>
+   
+<BR><A NAME="1012508">
+
+
+<img src="sumcomb.gif" ALT="Text description of sumcomb.gif follows.">
+<A HREF="img_text/sumcomb.htm"><br>Text description of the illustration sumcomb.gif</A>
+
+
+</A>
+   <A NAME="1009931"></A>
+<P CLASS="BP">
+The diagram above illustrates that for every summary combination, Discoverer creates a materialised view or summary table in the database.
+</P>
+<A NAME="1014357"></A>
+<P CLASS="BP">
+If you add multiple summary combinations, Discoverer (where possible) builds the higher level combinations (i.e. combinations with a greater number of items) using the lower level combinations (i.e. combinations with fewer items). This improves performance because:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009947"></A>the detail tables do not have to be queried so often
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009948"></A>summary folders are refreshed more quickly
+<P>
+</UL>
+<A NAME="1011485"></A>
+<P CLASS="BP">
+For example, a summary folder might contain two summary combinations:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014613"></A>month, region and revenue
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014620"></A>year, region and revenue.
+<P>
+</UL>
+<A NAME="1014621"></A>
+<P CLASS="BP">
+Discoverer aggregates the data for the revenue by month and region by accessing the detail data directly. Discoverer then uses data aggregated for the first combination to aggregate the data for the second combination, saving both processing and CPU overhead.
+</P>
+<A NAME="1011960"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> Summary combinations are only available when Discoverer manages the refresh of a summary folder.
+</P>
+
+<A NAME="1004663"></A>
+<!--TOC=h1-"1004663"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What to consider when defining summary combinations?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1010179"></A>
+<P CLASS="BP">
+There are three things to consider when defining summary combinations:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010180"></A>how much database space is required to store summary data?
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010181"></A>how quickly do you want a query to run?
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010182"></A>how often is a query run?
+<P>
+</UL>
+<A NAME="1010177"></A>
+<P CLASS="BP">
+The key to good summary folder design is to create the most appropriate summary combinations for the pattern of system usage.
+</P>
+<A NAME="1010187"></A>
+<P CLASS="BP">
+Typically you will want queries that are run most often to run the most quickly, even if this requires more database space. Similarly, it is usually desirable for queries that run less frequently to use less database space, even if this means the queries run more slowly.
+</P>
+<A NAME="1005045"></A>
+<P CLASS="BP">
+When creating summary combinations, look for:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005046"></A>summary combinations for popular and frequent queries
+<P>
+
+<A NAME="1005047"></A>
+<P CLASS="BP1">
+If you are creating a summary combination for a popular query, include all the items and joins used in the query. Note that such a summary combination might require considerable database space.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005048"></A>summary combinations that meet ad hoc, less frequent queries
+<P>
+
+<A NAME="1005049"></A>
+<P CLASS="BP1">
+Summary combinations for a more ad hoc environment (where queries are far less predictable) are typically based on different combinations of keys in the main fact table.
+</P>
+</UL>
+<A NAME="1010167"></A>
+<P CLASS="BP">
+For example, in the summary tables below, the columns EUL_SUM200801 and EUL_SUM200802 are mapped to appropriate items in the Sales Fact folder.
+</P>
+
+<A NAME="1005056"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 14-2 &#32;Sample summary tables and joins to fact and dimension tables</EM></FONT></H4>
+   
+<BR><A NAME="1005068">
+
+
+<img src="sumtab4.gif" ALT="Text description of sumtab4.gif follows.">
+<A HREF="img_text/sumtab4.htm"><br>Text description of the illustration sumtab4.gif</A>
+
+
+</A>
+   <A NAME="1012524"></A>
+<P CLASS="BP">
+Key to the figure above:
+</P>
+<OL>
+
+<OL CLASS="LA2" TYPE="a">
+
+<LI CLASS="LA2" TYPE="a" VALUE="1"><A NAME="1014668"></A>join from the Sales Fact table to Product table using the Product Key
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1014673"></A>join from the Sales Fact table to Fiscal Date table, using the Time Key
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1014674"></A>join from the Sales Fact table to Store table, using the Store Key
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1014675"></A>join from the summary table EUL_SUM200801 to the Product table using the Product Key
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1014682"></A>join from the summary table EUL_SUM200801 to the Fiscal Date table using the Time Key
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1014670"></A>join from the summary table EUL_SUM200802 to the Fiscal Date table using the Time Key
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1014801"></A>join from the summary table EUL_SUM200802 to the Store table using the  Store Key
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1014829"></A>EUL_SUM200801 and EUL_SUM200802 represent summary tables that Discoverer creates in the database
+<P>
+</OL>
+</OL>
+<A NAME="1011898"></A>
+<P CLASS="BP">
+Depending on the query, Discoverer will join a summary table to one or more of the dimension tables (i.e. Store, Product, or Fiscal Date). The dimension table must be joined to the fact table by items defined in the EUL, and the summary table must contain the foreign key items in the fact folder.
+</P>
+<A NAME="1010198"></A>
+<P CLASS="BP">
+For example, if a user requests Product Category, Month and SUM(Dollar Profit), Discoverer will join EUL_SUM200801 to Product and Fiscal Date to obtain results. Discoverer knows about the foreign and primary keys between the Sales Fact table and Product and Fiscal Date, and can apply them to EUL_SUM200801.
+</P>
+
+<A NAME="1010200"></A>
+<!--TOC=h1-"1010200"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Guidelines for setting up summary combinations</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1010201"></A>
+<P CLASS="BP">
+We suggest that you build summary combinations in stages. Concentrate first on frequent queries, then on less frequent queries, and finally create a catch all summary combination. Guidelines for setting up summary combinations are as follows: 
+<P>
+<TABLE CLASS="RuleInformalWide" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1012727"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Query coverage</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1012753"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Number of items</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1012729"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Notes</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1012731"></A>
+<P CLASS="TB">
+<STRONG CLASS="Bold">Frequent queries</STRONG>&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012755"></A>
+<P CLASS="TB">
+3-4&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012733"></A>
+<P CLASS="TB">
+Create many summary combinations that combine only three or four axis items (dimension values). This minimizes space and maximizes performance gain.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1012735"></A>
+<P CLASS="TB">
+<STRONG CLASS="Bold">Less frequent queries</STRONG>&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012757"></A>
+<P CLASS="TB">
+5-7&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012737"></A>
+<P CLASS="TB">
+Create less summary combinations that combine, for example five to seven axis items. More space is required but large performance gains are still realized. The more items you create in a summary combination the wider the variety of queries that is served.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1012739"></A>
+<P CLASS="TB">
+<STRONG CLASS="Bold">A catch all</STRONG>&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012802"></A>
+<P CLASS="TB">
+all&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012741"></A>
+<P CLASS="TB">
+When you choose to specify summaries yourself, create one summary combination that contains all of the items in a summary folder (the total number must be less than the number of items in the source folder(s)). Although the speed of the query results is slower, performance is still better than if the detailed tables are queried. Discoverer Administrator creates this summary combination automatically&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+</P>
+<A NAME="1005103"></A>
+<P CLASS="BP">
+Include the following in summary combinations:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014883"></A>data point items 
+<P>
+
+<A NAME="1014887"></A>
+<P CLASS="BP1">
+Additional data point items take up little extra room in the summary tables.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005105"></A>aggregates (with the possible exception of STDEV and VARIANCE, which are rarely used)
+<P>
+
+<A NAME="1014897"></A>
+<P CLASS="BP1">
+Multiple aggregates do not require much space and can improve performance significantly. Remember that AVG requires the inclusion of SUM and COUNT, which Discoverer uses to calculate the average. 
+</P>
+</UL>
+
+<A NAME="1005088"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1013188"></A>You do not have to include items at all levels of a hierarchy in a summary combination. If you include items at the bottom level, queries that use items higher up in the hierarchy can still use the summary table. However, for this to work the summary folder must contain a foreign key to the folder that contains the hierarchy. Creating a summary combination for all levels in a hierarchy achieves only a marginal performance gain. For example, the hierarchy from Year to Quarter only saves a 4:1 aggregation because quarters are added up to years. 
+<P>
+</UL>
+
+<A NAME="1004665"></A>
+<!--TOC=h1-"1004665"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> When will an expression use a summary folder?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1012853"></A>
+<P CLASS="BP">
+An expression will use a summary folder except under specific conditions. For this reason it is useful to be able to identify when an expression will use a summary folder. The following examples show when an expression will use a summary folder, if that summary folder contains the item SUM(Salary) and SUM(Comm):
+<P>
+<TABLE CLASS="RuleInformalWide" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1012868"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Expression<br></STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1012829"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Use summary table</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1012878"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Notes<br><STRONG CLASS="Bold"></STRONG></STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1012890"></A>
+<P CLASS="TB">
+ SUM(Salary + Comm)&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012892"></A>
+<P CLASS="TB">
+No&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012894"></A>
+<P CLASS="TB">
+This expression will not use a summary folder even though SUM(Salary) and SUM(Comm) are available as summarized items. This occurs because SUM(Salary + Comm) is not relationally equal to SUM(Salary) + SUM(Comm). Because the results could be wrong, the expression will not be used.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1012896"></A>
+<P CLASS="TB">
+SUM(Salary) * 12&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012898"></A>
+<P CLASS="TB">
+Yes&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012900"></A>
+<P CLASS="TB">
+You can query expressions such as this, and as SUM(Salary) is summarized it will use the summary folder.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1012902"></A>
+<P CLASS="TB">
+NVL(SUM(Comm),0)&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012904"></A>
+<P CLASS="TB">
+Yes&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012906"></A>
+<P CLASS="TB">
+Expressions that use SQL functions such as NVL(SUM(Comm),0) will use a summary because SUM(Comm) is available in a summary.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1012908"></A>
+<P CLASS="TB">
+SUM(NVL(Comm,0))&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012910"></A>
+<P CLASS="TB">
+No&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012912"></A>
+<P CLASS="TB">
+An expression such as SUM(NVL(Comm,0)) will not use a summary, because no direct match exists between a part of the expression and the available summarized item, SUM(Comm).&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+</P>
+<A NAME="1010443"></A>
+<P CLASS="BP">
+In essence, an expression will only use a summary folder when the expression or parts of it and the summarized expression are relationally equal.
+</P>
+
+<A NAME="1004667"></A>
+<!--TOC=h1-"1004667"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to create summary folders based on items in the EUL</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1010095"></A>
+<P CLASS="BP">
+Use this option to manually select combinations of EUL items that you want to include in a summary folder.
+</P>
+<A NAME="1010096"></A>
+<P CLASS="BP">
+You might select this option if, for example:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010097"></A>you have switched off the <STRONG CLASS="Bold">Collect Query Statistics</STRONG> privilege (for more information, see <A HREF="privileg.htm#1004624">Chapter&nbsp;6, "How to specify the tasks a user or role (responsibility) can perform"</a>)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010101"></A>you want to manually select the combinations of EUL items that make up a summary folder
+<P>
+</UL>
+<A NAME="1005253"></A>
+<P CLASS="BP">
+To create summary folders based on items in the EUL.
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005257"></A>Select Insert | Summary to display <A HREF="adsws101.htm#1005113">"Summary Wizard: Step 1 dialog"</a>.
+<P>
+
+<A NAME="1005260"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 14-3 &#32;Summary Wizard: Step 1 dialog</EM></FONT></H4>
+  
+<BR><A NAME="1005261">
+
+
+<img src="swz1.gif" ALT="Text description of swz1.gif follows.">
+<A HREF="img_text/swz1.htm"><br>Text description of the illustration swz1.gif</A>
+
+
+</A>
+  
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1005263"></A>Select the <STRONG CLASS="Bold">I want to specify the summaries myself</STRONG> radio button and click Next to display <A HREF="adsws201.htm#1005113">"Summary Wizard: Step 2 dialog"</a>.
+<P>
+
+<A NAME="1005265"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 14-4 &#32;Summary Wizard: Step 2 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1005266"> 
+
+
+<img src="swz2eul.gif" ALT="Text description of swz2eul.gif follows.">
+<A HREF="img_text/swz2eul.htm"><br>Text description of the illustration swz2eul.gif</A>
+
+
+</A>
+ 
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005268"></A>Select <STRONG CLASS="Bold">From items in the End User Layer </STRONG>to create a summary folder. 
+<P>
+</OL>
+
+<A NAME="1009311"></A>
+<P CLASS="BP1">
+This option is only available if the summary folders feature is enabled. For more information, see <A HREF="managing.htm#1005181">Chapter&nbsp;13, "How to configure the database for summary folders"</a>.
+</P>
+</OL>
+<A NAME="1012437"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1009317"></A>Click Next to display the <A HREF="adaisf01.htm#1006555">"Summary Wizard: Step 3"</a>.
+<P>
+
+<A NAME="1005278"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 14-5 &#32;Summary Wizard: Step 3 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1005279">
+
+
+<img src="swz3eul.gif" ALT="Text description of swz3eul.gif follows.">
+<A HREF="img_text/swz3eul.htm"><br>Text description of the illustration swz3eul.gif</A>
+
+
+</A>
+ </OL>
+ 
+<A NAME="1012441"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1005281"></A>Move the items that you want to include in the new summary folder from the <STRONG CLASS="Bold">Available items</STRONG> list to the <STRONG CLASS="Bold">Selected item</STRONG>s list.
+<P>
+ 
+
+<A NAME="1008738"></A>
+<P CLASS="BP1">
+You can select more than one item at a time by holding down the Ctrl key and clicking another item.
+</P>
+
+<A NAME="1005287"></A>
+<P CLASS="BP1">
+Remember to include:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005288"></A>all aggregate functions for each data point item - for more information, see <A HREF="creating.htm#1010200">"Guidelines for setting up summary combinations"</a>.
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005292"></A>items from complex folders (where necessary) - for more information, see <A HREF="addition.htm#1008927">Chapter&nbsp;15, "What are the conditions for query rewrite by Discoverer?"</a>.
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005296"></A>derived items (where necessary) - for more information, see <A HREF="addition.htm#1008927">Chapter&nbsp;15, "What are the conditions for query rewrite by Discoverer?"</a>.
+<P>
+</UL>
+
+<A NAME="1005300"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note: </STRONG>You can select any items and math functions. However, if you select items from different folders, a join must already exist between the folders.
+</P>
+</OL>
+<A NAME="1012442"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1005301"></A>Click Next<STRONG CLASS="Bold"> </STRONG>to display the <A HREF="adacit01.htm#1006700">"Summary Wizard: Step 4"</a> to define the summary combinations in the new summary folder.
+<P>
+
+<A NAME="1005306"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 14-6 &#32;Summary Wizard: Step 4 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1005307">
+
+
+<img src="swz4eul.gif" ALT="Text description of swz4eul.gif follows.">
+<A HREF="img_text/swz4eul.htm"><br>Text description of the illustration swz4eul.gif</A>
+
+
+</A>
+ </OL>
+ 
+<A NAME="1014150"></A>
+<P CLASS="BP">
+
+</P>
+
+<UL>
+
+<A NAME="1010537"></A>
+<P CLASS="BP1">
+The Summary Wizard: Step 4 dialog enables you to define the summary combinations in the new summary folder.
+</P>
+
+<A NAME="1005309"></A>
+<P CLASS="BP1">
+By default, all the items you selected in the Summary Wizard: Step 3 are included in the first summary combination (in column 0).
+</P>
+</UL>
+<A NAME="1013287"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1005310"></A>Click Add Combination to add a new summary combination.
+<P>
+ 
+
+<A NAME="1005311"></A>
+<P CLASS="BP1">
+The summary combination appears in a new numbered column.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="8"><A NAME="1008942"></A>Select the relevant check boxes to include items in the summary combination.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="9"><A NAME="1010549"></A>Add as many summary combinations as necessary
+<P>
+ 
+
+<A NAME="1005313"></A>
+<P CLASS="BP1">
+For more information, see <A HREF="creating.htm#1011055">"What are summary combinations?"</a>
+</P>
+
+<A NAME="1005322"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Hints</STRONG>: 
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1013022"></A>If you are not sure whether the performance gains offered by using the specified summary combinations are outweighed by the amount of tablespace they occupy, click Estimate Space.
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005331"></A>You can view and edit database storage properties for a selected summary combination by clicking Properties. For more information, see <A HREF="creating.htm#1004919">"How to edit database storage properties of summary combinations for a summary folder"</a>.
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005332"></A>To remove an unwanted summary combination, select the relevant column number and click Remove Combination.
+<P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="10"><A NAME="1005333"></A>Click Next to display the <A HREF="adrsfo01.htm#1006421">"Summary Wizard: Step 5"</a> to specify a refresh schedule for the summary folder.
+<P>
+
+<A NAME="1005338"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 14-7 &#32;Summary Wizard: Step 5 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1005339">
+
+
+<img src="swz5eul.gif" ALT="Text description of swz5eul.gif follows.">
+<A HREF="img_text/swz5eul.htm"><br>Text description of the illustration swz5eul.gif</A>
+
+
+</A>
+ 
+<LI CLASS="LN1" TYPE="1" VALUE="11"><A NAME="1005341"></A>Select the <STRONG CLASS="Bold">Automatically refresh this summary folder</STRONG> check box to specify the date, time and frequency that Discoverer will automatically refresh this summary folder. 
+<P>
+</OL>
+
+<A NAME="1006114"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Hint</STRONG>: Do not select this check box if the data is static and will not change, or if you want to refresh the summary folder manually. For more information about manually refreshing summary folders, see <A HREF="creating.htm#1004882">"How to manually refresh a summary folder"</a>.
+</P>
+ 
+<A NAME="1012459"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="12"><A NAME="1005342"></A>Set the date and time you want Discoverer to start the first refresh.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="13"><A NAME="1005343"></A>Set the <STRONG CLASS="Bold">Repeat every</STRONG> fields for the refresh interval you want.
+<P>
+ 
+
+<A NAME="1006165"></A>
+<P CLASS="BP1">
+The refresh period you specify here is the period of time that will elapse before Discoverer refreshes and updates the data. This refresh pattern will continue until you change the settings.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="14"><A NAME="1005346"></A>Click Next to display <A HREF="adnsfo01.htm#1006428">"Summary Wizard: Step 6"</a>.
+<P>
+
+<A NAME="1005349"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 14-8 &#32;Summary Wizard: Step 6 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1005350">
+
+
+<img src="swz6eul.gif" ALT="Text description of swz6eul.gif follows.">
+<A HREF="img_text/swz6eul.htm"><br>Text description of the illustration swz6eul.gif</A>
+
+
+</A>
+ </OL>
+ 
+<A NAME="1012461"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="15"><A NAME="1005352"></A>Specify a name and description for the summary folder.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="16"><A NAME="1005353"></A>Specify when you want to build this summary folder as follows:
+<P>
+ 
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005354"></A>select the <STRONG CLASS="Bold">Build immediately</STRONG> radio button if you have smaller summary tables, or if you want to build the summary tables immediately.
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005355"></A>Select the <STRONG CLASS="Bold">Build at</STRONG> radio button if you have larger summary tables that are best built at off-peak hours. Enter the time and date you want to build the summary tables.
+<P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="17"><A NAME="1005356"></A>Click Finish.
+<P>
+ 
+</OL>
+<A NAME="1005357"></A>
+<P CLASS="BP">
+When Discoverer builds the summary folder, it creates:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010628"></A>a summary folder and summary tables (Oracle Standard Edition databases)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010634"></A>a summary folder and materialized views (Oracle 8.16 databases or later)
+<P>
+</UL>
+<A NAME="1010627"></A>
+<P CLASS="BP">
+The build process generates the summary data and marks the summary table/materialized view as Ready to use.
+</P>
+<A NAME="1005249"></A>
+<P CLASS="BP">
+When the process completes Discoverer displays the new summary folder in the <A HREF="adstab01.htm#1005113">"Workarea: Summaries tab"</a>.
+</P>
+
+<A NAME="1004668"></A>
+<!--TOC=h1-"1004668"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to create summary folders based on users' queries</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1011988"></A>
+<P CLASS="BP">
+Query performance statistics are automatically generated when the <STRONG CLASS="Bold">Collect Query Statistics</STRONG> privilege is switched on for users (for more information, see <A HREF="privileg.htm#1004624">Chapter&nbsp;6, "How to specify the tasks a user or role (responsibility) can perform"</a>).
+</P>
+<A NAME="1005380"></A>
+<P CLASS="BP">
+You can create a new summary folder based on query performance statistics rather than choosing the items yourself. Discoverer suggests the summary folder items for you based on the query performance statistics that are generated from Discoverer end user queries.
+</P>
+<A NAME="1010121"></A>
+<P CLASS="BP">
+You might select this option if you know that you want to create one or more summary folders based upon specific queries and you do not necessarily want Discoverer to create any other summary folders.
+</P>
+<A NAME="1006237"></A>
+<P CLASS="BP">
+To create summary folders based on query performance statistics:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005384"></A>Choose Insert | Summary to display <A HREF="adsws101.htm#1005113">"Summary Wizard: Step 1 dialog"</a>.
+<P>
+
+<A NAME="1005386"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 14-9 &#32;Summary Wizard: Step 1 dialog</EM></FONT></H4>
+  
+<BR><A NAME="1005387">
+
+
+<img src="swz1slf.gif" ALT="Text description of swz1slf.gif follows.">
+<A HREF="img_text/swz1slf.htm"><br>Text description of the illustration swz1slf.gif</A>
+
+
+</A>
+  
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1005389"></A>Select the <STRONG CLASS="Bold">I want to specify the summaries myself</STRONG> radio button and click Next to display <A HREF="adsws201.htm#1005113">"Summary Wizard: Step 2 dialog"</a>.
+<P>
+
+<A NAME="1005391"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 14-10 &#32;Summary Wizard: Step 2 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1005392">
+
+
+<img src="swz2qp.gif" ALT="Text description of swz2qp.gif follows.">
+<A HREF="img_text/swz2qp.htm"><br>Text description of the illustration swz2qp.gif</A>
+
+
+</A>
+ 
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005394"></A>Select the <STRONG CLASS="Bold">Using query performance statistics </STRONG>option.
+<P>
+ 
+
+<A NAME="1006279"></A>
+<P CLASS="BP1">
+This option creates a summary table or materialized view. It is only available if the summary management feature is enabled. For more information see <A HREF="managing.htm#1005181">Chapter&nbsp;13, "How to configure the database for summary folders"</a>.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1005401"></A>Click Next to display the <A HREF="aduqst01.htm#1006340">"Summary Wizard: Step 3"</a>.
+<P>
+
+<A NAME="1005404"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 14-11 &#32;Summary Wizard: Step 3 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1005405">
+
+
+<img src="swz3qp.gif" ALT="Text description of swz3qp.gif follows.">
+<A HREF="img_text/swz3qp.htm"><br>Text description of the illustration swz3qp.gif</A>
+
+
+</A>
+  
+</OL>
+<A NAME="1005409"></A>
+<P CLASS="BP">
+The Summary Wizard: Step 3 dialog is divided into three sections as follows:
+</P>
+   
+<A NAME="1015209">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1014211"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG><STRONG CLASS="Bold">Section number</STRONG></STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1014213"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Purpose</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1014215"></A>
+<P CLASS="TB">
+Section 1&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014227"></A>
+<P CLASS="TB">
+<STRONG CLASS="Bold">Specify search criteria to obtain statistics on query performance.</STRONG>
+<A NAME="1014228"></A>
+<P CLASS="TB">
+This section enables you to specify search criteria to obtain statistics on query performance.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1014219"></A>
+<P CLASS="TB">
+Section 2&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014243"></A>
+<P CLASS="TB">
+<STRONG CLASS="Bold">Select a query to be summarized.</STRONG>
+<A NAME="1014244"></A>
+<P CLASS="TB">
+This section shows queries that meet the search criteria.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1014223"></A>
+<P CLASS="TB">
+Section 3&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014246"></A>
+<P CLASS="TB">
+<STRONG CLASS="Bold">Verify items to be summarized.</STRONG>
+<A NAME="1014247"></A>
+<P CLASS="TB">
+This section shows a selected query's folders, joins and items.&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   <A NAME="1012962"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1005415"></A>Specify the values in Section 1 that you want to use to search for previously run queries.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1005416"></A>Click Search.
+<P>
+ 
+
+<A NAME="1005417"></A>
+<P CLASS="BP1">
+If the search time is significant, Discoverer displays a progress bar.
+</P>
+
+<A NAME="1005418"></A>
+<P CLASS="BP1">
+All the queries that match the threshold values in Section 1 are displayed in Section 2. To narrow or expand this list further, re-specify the threshold values.
+</P>
+
+<A NAME="1005419"></A>
+<P CLASS="BP1">
+If a query in the list uses items that are already summarized, a cube icon appears beside the query.
+</P>
+
+<A NAME="1005420"></A>
+<P CLASS="BP1">
+To sort the display order of items in a column in Section 2, click the relevant column heading.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1005421"></A>Select the row that represents the query you want to summarize from the list in Section 2.
+<P>
+ 
+
+<A NAME="1012259"></A>
+<P CLASS="BP1">
+The query's folders, joins, and items appear in Section 3.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="8"><A NAME="1012265"></A>Click Next to display the <A HREF="adaisf01.htm#1006570">"Summary Wizard: Step 4"</a>.
+<P>
+
+<A NAME="1012267"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 14-12 &#32;Summary Wizard: Step 4 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1005430">
+
+
+<img src="swz4qp.gif" ALT="Text description of swz4qp.gif follows.">
+<A HREF="img_text/swz4qp.htm"><br>Text description of the illustration swz4qp.gif</A>
+
+
+</A>
+ </OL>
+ 
+<A NAME="1014151"></A>
+<P CLASS="BP">
+
+</P>
+
+<UL>
+
+<A NAME="1010714"></A>
+<P CLASS="BP1">
+The Summary Wizard: Step 4 dialog enables you to select items to include in the summary folder. By default, the <STRONG CLASS="Bold">Selected items</STRONG> list contains the items from the query you selected on the previous page of the Summary Wizard.
+</P>
+</UL>
+<A NAME="1013206"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="9"><A NAME="1012154"></A>Move the items that you want to include in the new summary folder from the <STRONG CLASS="Bold">Available items</STRONG> list to the <STRONG CLASS="Bold">Selected items</STRONG> list.
+<P>
+ 
+
+<A NAME="1012155"></A>
+<P CLASS="BP1">
+You can select more than one item at a time by holding down the Ctrl key and clicking another item.
+</P>
+
+<A NAME="1006378"></A>
+<P CLASS="BP1">
+Remember to include:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1006379"></A>all aggregate functions for each data point item (for more information, see <A HREF="creating.htm#1010200">"Guidelines for setting up summary combinations"</a>)
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1006383"></A>items from complex folders, where necessary (for more information, see <A HREF="addition.htm#1008927">Chapter&nbsp;15, "What are the conditions for query rewrite by Discoverer?"</a>)
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1006387"></A>derived items, where necessary (for more information, see <A HREF="addition.htm#1008927">Chapter&nbsp;15, "What are the conditions for query rewrite by Discoverer?"</a>)
+<P>
+</UL>
+
+<A NAME="1005451"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> You can select any items and math functions. However, if you select items from different folders, a join must already exist between the folders.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="10"><A NAME="1005452"></A>Click Next to display the <A HREF="adacit01.htm#1006710">"Summary Wizard: Step 5"</a>.
+<P>
+
+<A NAME="1005458"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 14-13 &#32;Summary Wizard: Step 5 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1005459">
+
+
+<img src="swz5qp.gif" ALT="Text description of swz5qp.gif follows.">
+<A HREF="img_text/swz5qp.htm"><br>Text description of the illustration swz5qp.gif</A>
+
+
+</A>
+ </OL>
+
+<A NAME="1010740"></A>
+<P CLASS="BP1">
+The Summary Wizard: Step 5 dialog enables you to define the summary combinations in the new summary folder.
+</P>
+
+<A NAME="1008924"></A>
+<P CLASS="BP1">
+By default, all the items you selected in Summary Wizard: Step 4 are included in the first summary combination (in column 0).
+</P>
+ 
+<A NAME="1013213"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="11"><A NAME="1005463"></A>Click Add Combination to add a new summary combination.
+<P>
+ 
+
+<A NAME="1005464"></A>
+<P CLASS="BP1">
+The summary combination appears in the new numbered column.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="12"><A NAME="1005465"></A>Select the relevant check boxes to include items in the new summary combination.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="13"><A NAME="1010755"></A>Add as many summary combination as necessary.
+<P>
+ 
+
+<A NAME="1006444"></A>
+<P CLASS="BP1">
+For more information, see <A HREF="creating.htm#1011055">"What are summary combinations?"</a>.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="14"><A NAME="1010767"></A>Click Estimate Space to help you decide whether the performance gains offered by using the specified summary combinations are outweighed by the amount of tablespace they occupy.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="15"><A NAME="1005477"></A>Click OK.
+<P>
+ 
+
+<A NAME="1006507"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> You can view and edit database storage properties for a selected Summary Combination by clicking Properties. For more information, see <A HREF="creating.htm#1004919">"How to edit database storage properties of summary combinations for a summary folder"</a>.
+</P>
+
+<A NAME="1005485"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Hint</STRONG>: To remove an unwanted summary combination, select the relevant column number and click Remove Combination.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="16"><A NAME="1005486"></A>Click Next to display the <A HREF="adrsfo01.htm#1006434">"Summary Wizard: Step 6"</a> to specify a refresh schedule for the summary folder.
+<P>
+
+<A NAME="1005491"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 14-14 &#32;Summary Wizard: Step 6 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1005492">
+
+
+<img src="swz6qp.gif" ALT="Text description of swz6qp.gif follows.">
+<A HREF="img_text/swz6qp.htm"><br>Text description of the illustration swz6qp.gif</A>
+
+
+</A>
+ 
+<LI CLASS="LN1" TYPE="1" VALUE="17"><A NAME="1005494"></A>Select the <STRONG CLASS="Bold">Automatically refresh this summary folder</STRONG> check box to specify the date, time and frequency of automatic refresh for this summary.
+<P>
+</OL>
+
+<A NAME="1006522"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Hint</STRONG>: Do not select the check box if the data is static and will not change, or if you want to refresh the summary folder manually. For more information about manually refreshing summary folders, see <A HREF="creating.htm#1004882">"How to manually refresh a summary folder"</a>.
+</P>
+ 
+<A NAME="1013283"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="18"><A NAME="1005495"></A>Set the <STRONG CLASS="Bold">Date</STRONG> and <STRONG CLASS="Bold">Time</STRONG> you want Discoverer to start the first refresh.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="19"><A NAME="1005496"></A>Set the <STRONG CLASS="Bold">Repeat every</STRONG> fields for the refresh interval you want.
+<P>
+ 
+
+<A NAME="1006559"></A>
+<P CLASS="BP1">
+The refresh period you specify here is the period of time that will elapse before Discoverer refreshes and updates the data. This refresh pattern will continue until you change the specification.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="20"><A NAME="1005499"></A>Click Next to display the <A HREF="adnsfo01.htm#1006410">"Summary Wizard: Step 7"</a>.
+<P>
+
+<A NAME="1005502"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 14-15 &#32;Summary Wizard: Step 7 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1005503">
+
+
+<img src="swz7qp.gif" ALT="Text description of swz7qp.gif follows.">
+<A HREF="img_text/swz7qp.htm"><br>Text description of the illustration swz7qp.gif</A>
+
+
+</A>
+ 
+<LI CLASS="LN1" TYPE="1" VALUE="21"><A NAME="1005505"></A>Specify a name and description for the summary folder.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="22"><A NAME="1008991"></A>Specify when you want to build this summary folder.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="23"><A NAME="1008994"></A>Click Finish.
+<P>
+</OL>
+
+<A NAME="1010840"></A>
+<P CLASS="BP1">
+When Discoverer builds the summary folder, it creates:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1010841"></A>a summary folder and summary tables (Oracle Standard Edition databases)
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1010842"></A>a summary folder and materialized views (Oracle 8.1.7 or later Enterprise Edition databases)
+<P>
+</UL>
+
+<A NAME="1010843"></A>
+<P CLASS="BP1">
+The build process generates the summary data and marks the summary table/materialized view as 'Ready to use'.
+</P>
+ 
+<A NAME="1008996"></A>
+<P CLASS="BP">
+When the process is complete Discoverer displays the new summary folder in the <A HREF="adstab01.htm#1005113">"Workarea: Summaries tab"</a>.
+</P>
+
+<A NAME="1010658"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+<A NAME="1010667"></A>
+<P CLASS="BP">
+The business area named Query Statistics that is supplied with Discoverer includes a workbook that analyzes the following:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010659"></A>query usage
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010660"></A>the items most frequently used in queries
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010661"></A>the folders containing the items
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010662"></A>query execution times
+<P>
+</UL>
+
+<A NAME="1004669"></A>
+<!--TOC=h1-"1004669"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to create summary folders based on external summary tables</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1012710"></A>
+<P CLASS="BP">
+This section describes how to create a new summary folder based on summary tables created by an application other than Discoverer. Summary tables created by an application outside Discoverer are called external summary tables. Note that this task also applies to creating summary folders based on external views.
+</P>
+<A NAME="1012711"></A>
+<P CLASS="BP">
+To create summary folders based on external summary tables:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005558"></A>Choose Insert | Summary to display <A HREF="adsws101.htm#1005113">"Summary Wizard: Step 1 dialog"</a>.
+<P>
+
+<A NAME="1005560"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 14-16 &#32;Summary Wizard: Step 1 dialog</EM></FONT></H4>
+  
+<BR><A NAME="1005561">
+
+
+<img src="swz1slf.gif" ALT="Text description of swz1slf.gif follows.">
+<A HREF="img_text/swz1slf.htm"><br>Text description of the illustration swz1slf.gif</A>
+
+
+</A>
+  
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1009013"></A>Select the radio button <STRONG CLASS="Bold">I want to specify the summaries myself</STRONG> and click Next to display <A HREF="adsws201.htm#1005113">"Summary Wizard: Step 2 dialog"</a>.
+<P>
+
+<A NAME="1005565"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 14-17 &#32;Summary Wizard: Step 2 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1005566">
+
+
+<img src="swz2ext.gif" ALT="Text description of swz2ext.gif follows.">
+<A HREF="img_text/swz2ext.htm"><br>Text description of the illustration swz2ext.gif</A>
+
+
+</A>
+ 
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005568"></A>Select the <STRONG CLASS="Bold">Registering an external summary table</STRONG> radio button.
+<P>
+ 
+
+<A NAME="1005569"></A>
+<P CLASS="BP1">
+The result of completing this task is that the database will create a materialized view from the summary table created by the external application. 
+</P>
+
+<A NAME="1012662"></A>
+<P CLASS="BP1">
+Note that Discoverer will continue to create summary tables under the following conditions:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1012675"></A>If you run Discoverer against an Oracle Standard Edition database.
+<P>
+
+<A NAME="1012676"></A>
+<P CLASS="BP2">
+For more information, see <A HREF="addition.htm#1004656">Chapter&nbsp;15, "What is different about summary folders that are based on external summary tables?"</a>.
+</P>
+ 
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1012683"></A>If you map an external view to EUL items against an Oracle 8.1.7 (or later) Enterprise Edition database.
+<P>
+
+<A NAME="1012679"></A>
+<P CLASS="BP2">
+For more information, see <A HREF="addition.htm#1004703">Chapter&nbsp;15, "What is different between mapping external summary tables and views to EUL items, with Oracle 8.1.7 (or later) Enterprise Edition databases?"</a>.
+</P>
+ 
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1005576"></A>Click Next to display the <A HREF="adueta01.htm#1006530">"Summary Wizard: Step 3 dialog"</a>.
+<P>
+
+<A NAME="1005579"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 14-18 &#32;Summary Wizard: Step 3 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1005580">
+
+
+<img src="swz3ext.gif" ALT="Text description of swz3ext.gif follows.">
+<A HREF="img_text/swz3ext.htm"><br>Text description of the illustration swz3ext.gif</A>
+
+
+</A>
+ 
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1005582"></A>Click Select to display the <A HREF="adctvd01.htm#1005113">"Choose user or table/view dialog"</a>.
+<P>
+
+<A NAME="1005583"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 14-19 &#32;Choose table or view dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1005584">
+
+
+<img src="swz3eta.gif" ALT="Text description of swz3eta.gif follows.">
+<A HREF="img_text/swz3eta.htm"><br>Text description of the illustration swz3eta.gif</A>
+
+
+</A>
+ 
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1005586"></A>Select the database (from the drop down list) that contains the external summary table that you want to register.
+<P>
+ 
+
+<A NAME="1006675"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> When connected to an Oracle 8.1.7 (or later) Enterprise Edition database, Oracle prevents a user from registering an external summary over a database link. This is because the database does not allow a materialized view to be created over a database link. However, this may be achieved by creating a view in the database that the EUL is in and referencing the external summary in the view. This view may then be registered within Discoverer as an external summary.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1005594"></A>Select the external summary table that you want to register with Discoverer Administrator.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="8"><A NAME="1005596"></A>Click OK to display all the database columns found in the external summary table in the mapped items list.
+<P>
+
+<A NAME="1005598"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 14-20 &#32;Summary Wizard: Step 3 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1005599">
+
+
+<img src="swz3etm.gif" ALT="Text description of swz3etm.gif follows.">
+<A HREF="img_text/swz3etm.htm"><br>Text description of the illustration swz3etm.gif</A>
+
+
+</A>
+  
+
+<A NAME="1010882"></A>
+<P CLASS="BP1">
+You now map each database column in the external summary table to a corresponding item in the EUL.
+</P>
+</OL>
+<A NAME="1013226"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="9"><A NAME="1005601"></A>For each database column, drag the corresponding item from the <STRONG CLASS="Bold">Available items</STRONG> list onto the database column in the <STRONG CLASS="Bold">Mapped items</STRONG> list
+<P>
+ 
+
+<A NAME="1009046"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Hint</STRONG>: If several items from the same folder correspond to columns in the external summary table, you can drag and drop the folder onto an item in the <STRONG CLASS="Bold">Mapped items</STRONG> list. Discoverer Administrator attempts to map the correct items to the database columns using the item names. Note that you will have to map items to any columns for which Discoverer Administrator cannot identify corresponding items.
+</P>
+
+<A NAME="1009039"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Hint</STRONG>: To remove the mapping between a database column in the external summary table and an item in the EUL, select the relevant row in the <STRONG CLASS="Bold">Mapped items</STRONG> list and click the left arrow button.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="10"><A NAME="1009040"></A>Click Next to display the <A HREF="adrsfo01.htm#1006454">"Summary Wizard: Step 4"</a> to specify a refresh schedule for the summary folder.
+<P>
+
+<A NAME="1005622"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 14-21 &#32;Summary Wizard: Step 4 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1005623">
+
+
+<img src="sw48i1e.gif" ALT="Text description of sw48i1e.gif follows.">
+<A HREF="img_text/sw48i1e.htm"><br>Text description of the illustration sw48i1e.gif</A>
+
+
+</A>
+ 
+<LI CLASS="LN1" TYPE="1" VALUE="11"><A NAME="1005625"></A>Select the <STRONG CLASS="Bold">Manage the refresh of this summary</STRONG> check box if you want Discoverer to manage the refresh of this external summary table.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="12"><A NAME="1010925"></A>Select the <STRONG CLASS="Bold">Automatically refresh this summary folder</STRONG> check box to specify the date, time and frequency of automatic refresh for this summary.
+<P>
+</OL>
+
+<A NAME="1010926"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Hint</STRONG>: Do not select the check box if the data is static and will not change, or if you want to refresh the summary folder manually. For more information about manually refreshing summary folders, see <A HREF="creating.htm#1004882">"How to manually refresh a summary folder"</a>.
+</P>
+ 
+<A NAME="1012454"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="13"><A NAME="1010930"></A>Set the Date and Time you want Discoverer to start the first refresh.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="14"><A NAME="1010931"></A>Set the <STRONG CLASS="Bold">Repeat every</STRONG> fields for the refresh interval you want.
+<P>
+ 
+
+<A NAME="1012314"></A>
+<P CLASS="BP1">
+The refresh period you specify here is the period of time that will elapse before Discoverer refreshes and updates the data. This refresh pattern will continue until you change the specification.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="15"><A NAME="1012317"></A>Click Next to display <A HREF="adnsfo01.htm#1006393">"Summary Wizard: Step 5"</a>.
+<P>
+
+<A NAME="1005632"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 14-22 &#32;Summary Wizard: Step 5 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1005633">
+
+
+<img src="swz5ext.gif" ALT="Text description of swz5ext.gif follows.">
+<A HREF="img_text/swz5ext.htm"><br>Text description of the illustration swz5ext.gif</A>
+
+
+</A>
+ 
+<LI CLASS="LN1" TYPE="1" VALUE="16"><A NAME="1005635"></A>Specify a name and description for the summary folder
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="17"><A NAME="1010937"></A>Click Finish to create the summary folder in the business area and register the external summary table with Discoverer.
+<P>
+</OL>
+ 
+<A NAME="1005251"></A>
+<P CLASS="BP">
+When the process is complete, Discoverer displays the new summary folder in the <A HREF="adstab01.htm#1005113">"Workarea: Summaries tab"</a>.
+</P>
+
+<A NAME="1011459"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif"><STRONG CLASS="Bold">Notes</STRONG></FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1013230"></A>Summary combinations are only available when Discoverer manages the refresh of a summary folder. When Discoverer uses external summary tables, summary combinations are not available.
+<P>
+</UL>
+
+<A NAME="1004882"></A>
+<!--TOC=h1-"1004882"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to manually refresh a summary folder</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1010944"></A>
+<P CLASS="BP">
+This section describes how you can refresh a summary folder. You might need to refresh a summary folder if the database has changed.
+</P>
+<A NAME="1010945"></A>
+<P CLASS="BP">
+To manually refresh a summary folder:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1004883"></A>Select the summary folder that you want to refresh in the <A HREF="adstab01.htm#1005113">"Workarea: Summaries tab"</a>.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1004884"></A>Choose Tools | Refresh Summaries to display the <A HREF="adrsum01.htm#1005113">"Refresh Summaries dialog"</a>.
+<P>
+ 
+
+<A NAME="1012969"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> Discoverer does not display the Refresh Summaries dialog for externally managed summary folders.
+</P>
+
+<A NAME="1004890"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 14-23 &#32;Refresh Summaries dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1004894">
+
+
+<img src="sumfref.gif" ALT="Text description of sumfref.gif follows.">
+<A HREF="img_text/sumfref.htm"><br>Text description of the illustration sumfref.gif</A>
+
+
+</A>
+ 
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1010948"></A>Specify when you want to refresh the selected summary folder as follows:
+<P>
+ 
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1010949"></A>select the <STRONG CLASS="Bold">Refresh the summary immediately</STRONG> radio button if you want to refresh the summary folder immediately
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1010956"></A>select <STRONG CLASS="Bold">Schedule the refresh at a later time</STRONG> radio button if you want to refresh the summary folder at a specified time
+<P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1004898"></A>If you selected <STRONG CLASS="Bold">Schedule the refresh at a later time</STRONG>, specify the date and time when you want the refresh to begin.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1004899"></A>To perform an incremental refresh, select the check box. 
+<P>
+ 
+
+<A NAME="1004900"></A>
+<P CLASS="BP1">
+You might want to perform an incremental refresh when the detail data in the database tables has changed little since the last refresh. Performing an incremental refresh saves time, as it updates only those changes committed to the database since the last refresh.
+</P>
+
+<A NAME="1010990"></A>
+<P CLASS="BP1">
+For further information on the conditions required for incremental refresh, see <EM CLASS="Italic">Oracle9i Data Warehousing Guide</EM>.
+</P>
+</OL>
+
+<A NAME="1004901"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010991"></A>Sometimes you will want to refresh a summary folder when a process outside Discoverer has completed (e.g. the loading of data into a data warehouse). You can refresh a summary folder from a batch command file using the Discoverer's command line interface option (for more information, see <A HREF="command_.htm#1005747">Chapter&nbsp;21, "/refresh_summary"</a>).
+<P>
+</UL>
+<A NAME="1004902"></A>
+<P CLASS="BP">
+For more information about refreshing summary folders, see:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004906"></A><A HREF="addition.htm#1005527">Chapter&nbsp;15, "About refresh options for Oracle 8.1.7 (or later) Enterprise Edition databases"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004909"></A><A HREF="addition.htm#1005501">Chapter&nbsp;15, "About refreshing summary folders following import between Oracle databases"</a>
+<P>
+</UL>
+
+<A NAME="1004911"></A>
+<!--TOC=h1-"1004911"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to edit the properties of summary folders</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005664"></A>
+<P CLASS="BP">
+This section describes you how to edit the properties of a summary folder. 
+</P>
+<A NAME="1005686"></A>
+<P CLASS="BP">
+To edit the properties of a summary folder:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005692"></A>Select one or more summary folders in the <A HREF="adstab01.htm#1005113">"Workarea: Summaries tab"</a>
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1011043"></A>Choose Edit | Properties to display the <A HREF="adspro01.htm#1005113">"Summary Properties dialog"</a>.
+<P>
+
+<A NAME="1007037"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 14-24 &#32;Summary Properties dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1007041">
+
+
+<img src="sump1.gif" ALT="Text description of sump1.gif follows.">
+<A HREF="img_text/sump1.htm"><br>Text description of the illustration sump1.gif</A>
+
+
+</A>
+  
+
+<A NAME="1011027"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Hint</STRONG>: You can select more than one summary folder at a time by holding down the Ctrl key and clicking another summary folder. If all the selected folders have the same value for a particular property, that value is shown. If the selected folders have different values for a particular property, no value is shown for the property. Any changes you make here are applied to all selected summary folders.
+</P>
+</OL>
+<A NAME="1013237"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005693"></A>Make your changes as required.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1011051"></A>Click OK to save the changes you have made.
+<P>
+ 
+</OL>
+
+<A NAME="1004913"></A>
+<!--TOC=h1-"1004913"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to edit summary folders</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1007910"></A>
+<P CLASS="BP">
+You might want to edit a summary folder to:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011136"></A>change its name or description
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011143"></A>view or edit its properties
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011170"></A>refresh it
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011144"></A>alter its composition (e.g. change items or combinations)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011141"></A>view or modify database storage properties
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011175"></A>investigate the composition of a broken summary folder and remove broken folders
+<P>
+</UL>
+
+<A NAME="1011176"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif"><STRONG CLASS="Bold">Notes</STRONG></FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1013241"></A>You can edit summary folders, regardless of whether they are valid or broken.
+<P>
+</UL>
+<A NAME="1013248"></A>
+<P CLASS="BP">
+
+</P>
+<A NAME="1011142"></A>
+<P CLASS="BP">
+To edit a summary folder:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005729"></A>Display the <STRONG CLASS="Bold"><A HREF="adstab01.htm#1005113"></STRONG>"Workarea: Summaries tab"<STRONG CLASS="Bold"></a></STRONG>.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1005730"></A>Select the + symbol next to a business area to display its available summary folders.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1011929"></A>(optional) Choose View|Validate Summaries to display diagnostic summary folder information, if required.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1005737"></A>Click the summary folder and choose Edit | Edit...
+<P>
+
+<A NAME="1005740"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 14-25 &#32;Edit Summary dialog: General tab</EM></FONT></H4>
+ 
+<BR><A NAME="1005741">
+
+
+<img src="sumedg.gif" ALT="Text description of sumedg.gif follows.">
+<A HREF="img_text/sumedg.htm"><br>Text description of the illustration sumedg.gif</A>
+
+
+</A>
+ 
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1005743"></A>Edit the summary folder as required.
+<P>
+ 
+
+<A NAME="1005744"></A>
+<P CLASS="BP1">
+The Edit Summary dialog is divided into four tabs. Each tab corresponds to a step of the Summary Wizard as follows:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005745"></A><A HREF="adaisf01.htm#1006580">"Edit Summary dialog: Choose items tab"</a> - use this tab to specify the items in a summary folder. 
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005746"></A><A HREF="adacit01.htm#1006719">"Edit Summary dialog: Combinations tab"</a> - use this tab to edit, add, or delete summary combinations. You can also use this tab to view and configure database storage properties of materialized views or summary tables (depending on database version).
+<P>
+
+<A NAME="1011514"></A>
+<P CLASS="BP2">
+<STRONG CLASS="Bold">Note:</STRONG> The Combinations tab is not displayed for summary folders that are based upon external summary tables.
+</P>
+ 
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005747"></A><A HREF="adrsfo01.htm#1006463">"Edit Summary dialog: Refresh tab"</a> - use this tab to set the refresh and refresh interval of the summary folder.
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005748"></A><A HREF="adnsfo01.htm#1006433">"Edit Summary dialog: General tab"</a> - use this tab to edit the name, description and to view the build time of the summary folder.
+<P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1005722"></A>Click OK.
+<P>
+ 
+</OL>
+
+<A NAME="1011191"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011194"></A>If a summary folder is broken, you can view the status of folders within the summary folder by choosing View | Validate Summaries. If Discoverer detects a problem with a folder within a summary folder, an error message is displayed beside the folder.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011204"></A>If a summary folder remains broken following an edit, any modifications made in Discoverer are not written to the materialized view or summary table. Where a summary folder is valid following an edit, any modifications made in Discoverer are also written to the materialized view/summary table.
+<P>
+</UL>
+
+<A NAME="1004919"></A>
+<!--TOC=h1-"1004919"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to edit database storage properties of summary combinations for a summary folder</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004920"></A>
+<P CLASS="BP">
+You can use Discoverer Administrator to control how summary combinations are stored in the database by editing the database storage properties.
+</P>
+<A NAME="1011256"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> Database storage properties are not available for summary folders that are based on external summary tables. For more information, see <A HREF="addition.htm#1004656">Chapter&nbsp;15, "What is different about summary folders that are based on external summary tables?"</a>. 
+</P>
+<A NAME="1004926"></A>
+<P CLASS="BP">
+To edit the database storage properties of summary combinations for a summary folder:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1004927"></A>Select a summary folder from the <A HREF="adstab01.htm#1005113">"Workarea: Summaries tab"</a>.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1004928"></A>Choose Edit | Edit... to display the Edit Summary dialog.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1004929"></A>Display the <A HREF="adacit01.htm#1006719">"Edit Summary dialog: Combinations tab"</a>.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1004930"></A>Select the summary combination with database storage properties that you want to edit.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1004931"></A>Click Properties to display the Database Storage Properties dialog (see <A HREF="addspl01.htm#1005113">"Database Storage Properties dialog: List of tabs"</a>).
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1009208"></A>Display the appropriate tab and edit the properties as required.
+<P>
+ 
+</OL>
+<A NAME="1011998"></A>
+<P CLASS="BP">
+For more information about the Database Storage Properties dialog tabs, see:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1012002"></A><A HREF="addspp01.htm#1005113">"Database Storage Properties dialog: Properties tab"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1012024"></A><A HREF="addspm01.htm#1005113">"Database Storage Properties dialog: Mappings tab"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1012012"></A><A HREF="addspt01.htm#1005113">"Database Storage Properties dialog: Tablespaces tab"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1012035"></A><A HREF="addsp801.htm#1005113">"Database Storage Properties dialog: Materialized Views tab"</a>
+<P>
+</UL>
+
+<A NAME="1004938"></A>
+<!--TOC=h1-"1004938"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to delete summary folders</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004939"></A>
+<P CLASS="BP">
+This section describes how you can delete a summary folder. When you delete a summary folder, the underlying summary tables or materialized views are also deleted.
+</P>
+<A NAME="1011282"></A>
+<P CLASS="BP">
+To delete a summary folder:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1004940"></A>Select the summary folder that you want to delete from the <A HREF="adstab01.htm#1005113">"Workarea: Summaries tab"</a>.
+<P>
+
+<A NAME="1011572"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Hint</STRONG>: You can select more than one summary folder at a time by holding down the Ctrl key and clicking another summary folder.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1011577"></A>Choose Edit | Delete to display the <A HREF="adcdel01.htm#1005113">"Confirm Delete dialog"</a>.
+<P>
+ 
+
+<A NAME="1011578"></A>
+<P CLASS="BP1">
+You can review the objects that might be affected by deleting this summary folder.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1008007"></A>(optional) To see the potential impact of the deletion:
+<P>
+ 
+
+<OL CLASS="LA2" TYPE="a">
+
+<LI CLASS="LA2" TYPE="a" VALUE="1"><A NAME="1011296"></A>Click Impact to display the <A HREF="adimpa01.htm#1005691">"Impact dialog"</a>.
+<P>
+
+<A NAME="1008013"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 14-26 &#32;Impact dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1008017">
+
+
+<img src="impacta.gif" ALT="Text description of impacta.gif follows.">
+<A HREF="img_text/impacta.htm"><br>Text description of the illustration impacta.gif</A>
+
+
+</A>
+ 
+<A NAME="1015165"></A>
+<P CLASS="BP2">
+The Impact dialog enables you to review the other EUL objects that might be affected when you delete a summary folder.
+</P>
+
+<A NAME="1015182"></A>
+<P CLASS="BP2">
+<STRONG CLASS="Bold">Note:</STRONG> The Impact dialog does not show the impact on workbooks saved to the file system (i.e. in .dis files).
+</P>
+ 
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1015161"></A>(optional) Select a row to view text at the bottom of the list, indicating what affect the current action will have on the EUL object.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1012213"></A>When you have finished reviewing the impact of deleting the summary folder, click Close to close the Impact dialog.
+<P>
+</OL>
+</OL>
+<A NAME="1013250"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1004961"></A>If you still want to delete the selected summary folder click Yes.
+<P>
+ 
+
+<A NAME="1011313"></A>
+<P CLASS="BP1">
+Discoverer Administrator deletes the selected summary folder from the EUL and drops the summary table/materialized view from the database.
+</P>
+</OL>
+
+<A NAME="1004962"></A>
+<!--TOC=h1-"1004962"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to view the status of the summary tables/materialized views for a summary folder</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1009244"></A>
+<P CLASS="BP">
+This section describes how you can view the status of the summary table/materialized view for a summary folder.
+</P>
+<A NAME="1011317"></A>
+<P CLASS="BP">
+To view the status of the summary table/materialized view for a summary folder:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1009245"></A>Select the summary folder that contains the summary table or materialized view you are interested in from the <A HREF="adstab01.htm#1005113">"Workarea: Summaries tab"</a>.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1004965"></A>Choose Edit | Edit... to display the Edit Summary dialog
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1004966"></A>Display the <A HREF="adacit01.htm#1006719">"Edit Summary dialog: Combinations tab"</a>.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1004967"></A>Select the numbered column heading for the summary combination that corresponds to the summary table materialized view you are interested in.
+<P>
+ 
+
+<A NAME="1004968"></A>
+<P CLASS="BP1">
+Discoverer displays the status of the summary table/materialized view in the status bar at the bottom of the dialog.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1011325"></A>When you have finished viewing the status of the summary table/materialized view (represented by the summary combination), click OK to close the Edit Summary dialog. 
+<P>
+ 
+</OL>
+
+<A NAME="1011567"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif"><STRONG CLASS="Bold">Notes</STRONG></FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1013254"></A>The status is not available for summary folders that are based upon external summary tables.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004969"></A>To see additional diagnostic information in the <A HREF="adstab01.htm#1005113">"Workarea: Summaries tab"</a> use the View | Validate Folders option. This displays any errors that exist within the folders of a summary folder.
+<P>
+
+<A NAME="1004970"></A>
+<P CLASS="BP1">
+For more information about validating folders and summary status messages, see:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1004974"></A><A HREF="adspro01.htm#1005113">"Summary Properties dialog"</a>
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1004978"></A><A HREF="folders.htm#1004608">Chapter&nbsp;5, "How to validate folders in a business area"</a>
+<P>
+</UL>
+</UL>
+
+
+
+
+
+
+<!-- Start Footer -->
+</DIV>
+
+<DIV CLASS="OUTD">
+<HR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+<TD VALIGN="BOTTOM" WIDTH="33%">
+<TABLE CELLSPACING="0" CELLPADDING="0">
+<TR>
+<TD ALIGN="CENTER"><A HREF="managing.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+
+<TD ALIGN="CENTER"><A HREF="addition.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+    
+</TR>
+</TABLE>
+</TD>
+<TD ALIGN="CENTER" WIDTH="34%">
+<A HREF="./html/cpyr.htm"><IMG SRC="./gifs/oracle.gif" ALT="Oracle" BORDER="0"><BR>
+<FONT SIZE="-2">Copyright &copy 2003 Oracle Corporation.</FONT></A>
+<BR>
+<FONT SIZE="-2">All Rights Reserved.</FONT>
+</TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="33%"> 
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="144">
+<TR>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+  
+</DIV>
+
+</BODY>
+</HTML>
+

@@ -40,6 +40,7 @@ Configure and manage the Discoverer Neo system.
 - **[Security Policies](admin-guide/security.md)** — Row-level security and access control
 - **[Custom Functions](admin-guide/custom-functions.md)** — Defining SQL/PLSQL functions
 - **[Audit Logging](admin-guide/audit-logging.md)** — Monitoring system activity
+- **[Migrated Users & Passwords](migration/user-credentials.md)** — Temporary passwords, the credentials file, forced password change
 
 ## API Documentation
 
@@ -75,11 +76,13 @@ Deploy Discoverer Neo to production.
 
 Migrate from legacy Oracle Discoverer.
 
-- **[From Discoverer 4](migration/from-discoverer4.md)** — EUL migration overview and process
-- **[Migration Tool](migration/migration-tool.md)** — `dn-migrate` CLI commands and options
-- **[Troubleshooting](migration/troubleshooting.md)** — Common migration issues
+- **[From Discoverer 4](migration/from-discoverer4.md)** — EUL migration overview, what becomes what, and how workbooks become maps
+- **[Migration Tool](migration/migration-tool.md)** — `dn-migrate` CLI commands, options, and the maps-only re-import
+- **[Migrated Users & Passwords](migration/user-credentials.md)** — Temporary passwords, the credentials file, forced password change
+- **[Troubleshooting](migration/troubleshooting.md)** — Common migration issues, including maps that arrived without their layout
+- **[EUL Schema Ground Truth](../migrate/EUL_SCHEMA_GROUND_TRUTH.md)** — the real EUL table and column names, and the `.DIS` workbook container format
 
 ---
 
-**Last Updated:** July 2026  
+**Last Updated:** August 2026  
 **Version:** 0.1.0

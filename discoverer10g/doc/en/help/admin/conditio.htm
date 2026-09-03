@@ -1,0 +1,2109 @@
+
+<!DOCTYPE html public "-//w3c//dtd html 3.2 transitional//en.us">
+<HTML lang="en.us">
+<HEAD>
+
+<META NAME="Generator" CONTENT="Quadralay WebWorks Publisher 5.0.4">
+<META NAME="Page" CONTENT="DefaultSingle">
+<META NAME="Title" CONTENT="Creating and maintaining conditions">
+<meta http-equiv="Content-Type" content="text/html;  charset=iso-8859-1">
+
+<TITLE>Creating and maintaining conditions</TITLE>
+	   
+<LINK REL="home" HREF="../../library.htm" TITLE="Library">
+<LINK REL="toc" HREF="toc.htm" TITLE="Contents">
+<LINK REL="index" HREF="bookix.htm" TITLE="Index">
+<LINK REL="copyright" HREF="./html/cpyr.htm" TITLE="Copyright">
+<LINK REL="up" HREF="toc.htm" TITLE="Up">
+<LINK REL="next" HREF="hierarch.htm" TITLE="Next">
+<LINK REL="previous" HREF="calculat.htm" TITLE="Previous">
+
+
+</HEAD>
+       
+<BODY BGCOLOR="#ffffff">
+
+<A NAME="top"></A>
+
+
+
+
+<A HREF="#BEGIN">Skip Headers</A><BR><BR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+ 
+<TD ALIGN="LEFT" VALIGN="TOP"><FONT COLOR="#330099" FACE="Helvetica, Arial, sans-serif"><STRONG>Oracle Discoverer Administrator Administration Guide (Online Help)<BR>10<i>g</i> (9.0.4)</STRONG><BR>Part Number B10270-01</FONT></TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="144">
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+
+
+
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<HR>
+<P>
+<A HREF="calculat.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+
+<A HREF="hierarch.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+    
+
+
+<A NAME="BEGIN"></A>
+
+
+
+<DIV CLASS="IND">
+<!-- End Header -->
+
+
+
+
+
+
+
+<A NAME="1656"></A>
+<!--TOC=Title-"1656"-->
+<H1 CLASS="Title"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099">11<BR>Creating and maintaining conditions</FONT></H1>
+
+<!--/TOC=Title-->
+
+<A NAME="1004604"></A>
+<!--TOC=h1-"1004604"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Creating and maintaining conditions</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1006460"></A>
+<P CLASS="BP">
+This chapter explains how to implement conditions using Discoverer Administrator, and contains the following topics:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004627"></A><A HREF="conditio.htm#1004628">"What are conditions?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004648"></A><A HREF="conditio.htm#1004605">"What are the different types of condition?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004660"></A><A HREF="conditio.htm#1004606">"How to create simple conditions"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006420"></A><A HREF="conditio.htm#1004608">"How to create advanced conditions"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004684"></A><A HREF="conditio.htm#1004610">"How to edit conditions"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006440"></A><A HREF="conditio.htm#1007206">"How to edit condition properties"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006448"></A><A HREF="conditio.htm#1004611">"How to delete conditions"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004700"></A><A HREF="conditio.htm#1004612">"Example conditions"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007483"></A><A HREF="conditio.htm#1005645">"About outer joins and the DisableAutoOuterJoinsOnFilters registry setting"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007743"></A><A HREF="conditio.htm#1007738">"How to create row level security using a mandatory condition"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009070"></A><A HREF="conditio.htm#1008868">"How to enable summary folders if a source folder includes a mandatory condition (e.g. with row level security)"</a>
+<P>
+</UL>
+
+<A NAME="1004628"></A>
+<!--TOC=h1-"1004628"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are conditions?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005478"></A>
+<P CLASS="BP">
+Conditions filter worksheet data, enabling Discoverer end users to analyze only the data they are interested in. For example, you might want to give Discoverer end users access to data for 2001, but not 1999 or 2000.
+</P>
+<A NAME="1005494"></A>
+<P CLASS="BP">
+You also use conditions to restrict access to sensitive data. By imposing mandatory conditions, only non-sensitive data is made available to Discoverer users (see <A HREF="conditio.htm#1004605">"What are the different types of condition?"</a>). You can make sure that Discoverer end users only see the data that you want them to see.
+</P>
+<A NAME="1005485"></A>
+<P CLASS="BP">
+As a Discoverer Administrator, you can anticipate commonly used conditions and make them available to Discoverer end users so they can apply them in worksheets. This enables Discoverer end users to work efficiently.
+</P>
+
+<A NAME="1005506"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif"><STRONG CLASS="Bold">Notes</STRONG></FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011056"></A>Discoverer Plus users can also create their own conditions.
+<P>
+</UL>
+
+<A NAME="1005526"></A>
+<!--TOC=h2-"1005526"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About condition categories</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1005527"></A>
+<P CLASS="BP">
+Conditions are categorized as follows:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004884"></A>Simple conditions - these contain a single condition statement. For example, 'display data where year = 2001'.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004773"></A>Advanced conditions - these contain two or more condition statements. For example:
+<P>
+
+<A NAME="1007544"></A>
+<P CLASS="BP1">
+display data where year = 2001 AND quarter = 1 AND region = south.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004774"></A>Nested conditions - these contain condition statements that are defined within other condition statements. For example:
+<P>
+
+<A NAME="1007536"></A>
+<P CLASS="BP1">
+display data where year = 2001 AND (region = north OR region = south)
+</P>
+
+<A NAME="1007543"></A>
+<P CLASS="BP1">
+here, the OR clause is nested within the AND clause. 
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007522"></A>Advanced nested conditions - these contain two or more condition statements and also include condition statements defined within the advanced condition. For example:
+<P>
+
+<A NAME="1007548"></A>
+<P CLASS="BP1">
+display data where year = 2001 AND quarter = 1 AND region = south' AND (region = north OR region = south)
+</P>
+
+<A NAME="1007552"></A>
+<P CLASS="BP1">
+here as in the nested example, the OR clause is nested within the AND clause)
+</P>
+</UL>
+<A NAME="1007523"></A>
+<P CLASS="BP">
+As an alternative to creating advanced conditions, you might want to create two or more single conditions and apply them at the same time. This enables Discoverer users to be more selective about which parts of the condition they use. 
+</P>
+<A NAME="1005876"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> There can be subtle differences between applying advanced conditions and equivalent multiple single conditions (for more information, see <EM CLASS="Italic">Oracle Application Server Discoverer Plus User's Guide</EM>).
+</P>
+
+<A NAME="1005519"></A>
+<!--TOC=h2-"1005519"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How do conditions work in Discoverer?</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1005525"></A>
+<P CLASS="BP">
+Conditions work in Discoverer by matching condition statements against worksheet data so that: 
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005520"></A>data matching your condition statements is displayed in workbooks
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005521"></A>data not matching your condition statements is not displayed in workbooks
+<P>
+</UL>
+<A NAME="1005522"></A>
+<P CLASS="BP">
+For example, you might want to limit the display of data to the last two years of sales. Or, you might want to see the data for only two types of sales items. Each of these tasks involves filtering the data to find information that meets the conditions. 
+</P>
+
+<A NAME="1004605"></A>
+<!--TOC=h1-"1004605"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are the different types of condition?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1006700"></A>
+<P CLASS="BP">
+There are two types of condition:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006701"></A>mandatory condition
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006708"></A>optional condition
+<P>
+</UL>
+<A NAME="1006709"></A>
+<P CLASS="BP">
+You create mandatory and optional conditions in the same way. However, note the following:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006725"></A>mandatory conditions are always applied to a worksheet that contains one or more items from the folder that contains the condition. Discoverer Plus users are not notified of mandatory conditions and can not turn them off. 
+<P>
+
+<A NAME="1006729"></A>
+<P CLASS="BP1">
+For example, you might want to assign a mandatory condition to sales data for regional sales managers, limiting their view of sales to the region for which each manager is responsible.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006747"></A>optional conditions can be turned on or off as required by Discoverer Plus users. They can also view a condition's formula, but they are not allowed to edit the formula.
+<P>
+
+<A NAME="1006752"></A>
+<P CLASS="BP1">
+For example, a Vice President responsible for all sales regions should be able to see all of the sales data, and also be able to apply conditions to see sales data relating to specific sales regions.
+</P>
+</UL>
+<A NAME="1006723"></A>
+<P CLASS="BP">
+The table below shows further differences between mandatory and optional conditions:
+</P>
+   
+<A NAME="1011910">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1004819"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Mandatory condition</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1004821"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Optional condition</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1004823"></A>
+<P CLASS="TB">
+Always applied to the results of a folder.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1004825"></A>
+<P CLASS="TB">
+Only applied to the results of a folder if selected in Discoverer Plus.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1004830"></A>
+<P CLASS="TB">
+Used by the Discoverer manager to permanently restrict the rows returned by a folder.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1004832"></A>
+<P CLASS="TB">
+Provided by the Discoverer manager as a shortcut to help users build conditions more easily.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1004837"></A>
+<P CLASS="TB">
+Invisible in Discoverer Plus.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1004842"></A>
+<P CLASS="TB">
+Visible (but not editable) in Discoverer Plus.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1004844"></A>
+<P CLASS="TB">
+When created in a complex folder, can reference items in the source folders.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1004846"></A>
+<P CLASS="TB">
+When created in a complex folder, can only reference items in the complex folder.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1004848"></A>
+<P CLASS="TB">
+Affects the result set (in the database) of the folder definition in the EUL.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1004850"></A>
+<P CLASS="TB">
+Does not affect the result set (in the database) of the folder definition in the EUL (because an optional condition is only used when applied in Discoverer Plus).&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1004855"></A>
+<P CLASS="TB">
+When added, changed, or deleted, cause any summaries based on the folder to become invalid, because their result set no longer matches that of the folder.
+<A NAME="1004856"></A>
+<P CLASS="TB">
+These summaries are set to "Refresh required" and must be refreshed to be made available again.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1004858"></A>
+<P CLASS="TB">
+When added, changed, or deleted have no affect on summaries based on the folder.&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   
+<A NAME="1006295"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif"><STRONG CLASS="Bold">Notes</STRONG></FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006302"></A>If you create a complex folder from items in a folder that contains a mandatory condition, the results in the complex folder are restricted by the mandatory condition on the original folder. You can see any mandatory conditions that impact a complex folder using the Components tab of the complex folder's Properties dialog.
+<P>
+</UL>
+
+<A NAME="1004606"></A>
+<!--TOC=h1-"1004606"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to create simple conditions</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004635"></A>
+<P CLASS="BP">
+You create a simple condition when you want Discoverer end users to filter worksheets in a new way. You add the condition to a folder so that Discoverer end users can apply the condition when using workbooks based on the folder.
+</P>
+<A NAME="1006087"></A>
+<P CLASS="BP">
+For example, you might want to create an optional condition that filters data to display results for the current year, because Discoverer end users might only be interested in data for that year. Or, you might want to restrict access to sensitive data by imposing a mandatory condition on a particular area of data (see <A HREF="conditio.htm#1004605">"What are the different types of condition?"</a>).
+</P>
+<A NAME="1004915"></A>
+<P CLASS="BP">
+To create a single condition:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1004918"></A>On the <A HREF="addtab01.htm#1005113">"Workarea: Data tab"</a>, do one of the following:
+<P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1004919"></A>select the folder in which you want to create the condition
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1004920"></A>select the item that you want to form part of your condition
+<P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1005022"></A>Choose Insert | Condition to display the <A HREF="adncsi01.htm#1006028">"New Condition dialog"</a>.
+<P>
+
+<A NAME="1005026"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 11-1 &#32;New Condition dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1006490">
+
+
+<img src="condnew.gif" ALT="Text description of condnew.gif follows.">
+<A HREF="img_text/condnew.htm"><br>Text description of the illustration condnew.gif</A>
+
+
+</A>
+  
+
+<A NAME="1005934"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> If you choose Insert | Condition without first selecting a folder or item, Discoverer prompts you to choose a folder or item before displaying the dialog.
+</P>
+</OL>
+<A NAME="1011063"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005935"></A>(optional) Enter a name for the condition in the <STRONG CLASS="Bold">Name</STRONG> field.
+<P>
+ 
+
+<A NAME="1005042"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> By default, Discoverer Administrator creates a default condition name for the condition, based on the condition itself. However, you can specify your own name for the condition.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1005066"></A>(optional) To specify your own name for the condition:
+<P>
+ 
+
+<OL CLASS="LA2" TYPE="a">
+
+<LI CLASS="LA2" TYPE="a" VALUE="1"><A NAME="1006838"></A>Clear the <STRONG CLASS="Bold">Generate name automatically</STRONG> check box.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1006851"></A>Enter a name for the condition in the <STRONG CLASS="Bold">Name</STRONG> field.
+<P>
+</OL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1006837"></A>(optional) Enter a brief description of the condition in the <STRONG CLASS="Bold">Description</STRONG> field. 
+<P>
+ 
+
+<A NAME="1007555"></A>
+<P CLASS="BP1">
+The text entered here is displayed when the condition is edited in Discoverer Administrator or when the condition is highlighted by end users.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1005067"></A>Specify the type of condition from the <STRONG CLASS="Bold">Type</STRONG> drop down list as follows:
+<P>
+ 
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1006859"></A>select <STRONG CLASS="Bold">Optional</STRONG> if you want Discoverer end users to be able to turn the condition on or off
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1006863"></A>select <STRONG CLASS="Bold">Mandatory</STRONG> if you want the condition to always apply
+<P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1005099"></A>Define the condition statement in the Formula area as follows:
+<P>
+ 
+
+<OL CLASS="LA2" TYPE="a">
+
+<LI CLASS="LA2" TYPE="a" VALUE="1"><A NAME="1006904"></A>Choose what item or calculation you want to filter the data on using the <STRONG CLASS="Bold">Item</STRONG> drop down list. For example, choose Year if you want to display data for a particular year. To create a calculation that you want to filter data on click <STRONG CLASS="Bold">Create Calculation... </STRONG>(for further information, see <A HREF="calculat.htm#1004594">Chapter&nbsp;10, "Creating and maintaining calculated items"</a>).
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1006922"></A>Choose how to match data against the item using the <STRONG CLASS="Bold">Condition</STRONG> drop down list. For example, choose the greater than (&gt;) symbol to filter data where the item value is greater than a particular number.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1006957"></A>Define what data or items you want to match against using the <STRONG CLASS="Bold">Values</STRONG> field. For example, enter 2002 to look only at data for the year 2002. If you created a list of values for the item, these items appear in the drop down list (for more information about lists of values, see <A HREF="item_cla.htm#1010838">Chapter&nbsp;8, "Maintaining items and item classes"</a>). To create a calculation that you want to filter data on click <STRONG CLASS="Bold">Create Calculation.... </STRONG>To choose an item that you want to match against click <STRONG CLASS="Bold">Select Item...</STRONG> and select an item from the list.
+<P>
+</OL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="8"><A NAME="1005104"></A>Specify whether to match the case of text data using the <STRONG CLASS="Bold">Match Case</STRONG> check box as follows:
+<P>
+ 
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1007031"></A>select the <STRONG CLASS="Bold">Match Case</STRONG> check box to make the condition case sensitive
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1007038"></A>clear the <STRONG CLASS="Bold">Match Case</STRONG> check box to make the condition case insensitive
+<P>
+
+<A NAME="1007043"></A>
+<P CLASS="BP2">
+For example, when the <STRONG CLASS="Bold">Match Case</STRONG> check box is selected, the match value 'New York' would not return data for 'new york'.
+</P>
+ 
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="9"><A NAME="1005097"></A>Click OK do save the details and close the New Condition dialog. 
+<P>
+ 
+ 
+<A NAME="1004636"></A>
+<P CLASS="BP">
+The new condition is displayed on the <A HREF="addtab01.htm#1005113">"Workarea: Data tab"</a>. When Discoverer users access this business area, they will see this condition item in a folder. Note that seeing a condition in the folder does not mean that the folder is filtered. The end user must select and use the condition in a workbook.
+</P>
+
+<A NAME="1006134"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007566"></A>When you create a condition based on an analytic function (i.e. a function that computes aggregate values based on a group of rows), you must designate the condition Type as optional (for more information, see <A HREF="conditio.htm#1004605">"What are the different types of condition?"</a>). If you choose mandatory, a message is displayed informing you that analytic functions are not allowed in mandatory conditions. 
+<P>
+</UL>
+
+<A NAME="1004608"></A>
+<!--TOC=h1-"1004608"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to create advanced conditions</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005573"></A>
+<P CLASS="BP">
+Advanced conditions are conditions that contain more than one condition statement. For example, if you want to filter data for the city New York in either 1999 or 2000, you might create the condition City = New York AND (Year = 1999 or 2000). You could then nest an existing condition within the existing advanced condition. For example, where Department = Video AND Rental Profit &gt; $100. In Discoverer, it is easy to add as many condition statements as you want, enabling you to build powerful condition items. 
+</P>
+<A NAME="1005209"></A>
+<P CLASS="BP">
+To create an advanced condition:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005210"></A>Create the first condition statement by following the instructions in <A HREF="conditio.htm#1004606">"How to create simple conditions"</a> 
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1007085"></A>To add more condition statements, click Advanced.
+<P>
+
+<A NAME="1006633"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 11-2 &#32;New Condition dialog (Advanced)</EM></FONT></H4>
+ 
+<BR><A NAME="1011896">
+
+
+<img src="condadv.gif" ALT="Text description of condadv.gif follows.">
+<A HREF="img_text/condadv.htm"><br>Text description of the illustration condadv.gif</A>
+
+
+</A>
+ </OL>
+
+<A NAME="1005618"></A>
+<P CLASS="BP1">
+Discoverer adds Insert buttons for Add, And and Or. You use these buttons to create the advanced condition.
+</P>
+</OL>
+<A NAME="1011028"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005619"></A>Build the advanced condition as follows:
+<P>
+ 
+
+<OL CLASS="LA2" TYPE="a">
+
+<LI CLASS="LA2" TYPE="a" VALUE="1"><A NAME="1005620"></A>Click Add to insert a new condition statement.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1007109"></A>Specify the item for the new condition statement as follows:
+<P>
+</OL>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1007622"></A>Select the drop down list in the <STRONG CLASS="Bold">Item</STRONG> column and choose an item from the list of items displayed.
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1007654"></A>Select the drop down list in the <STRONG CLASS="Bold">Item</STRONG> column and choose the <STRONG CLASS="Bold">Create Calculation</STRONG> option to create a calculation to include in the advanced condition.
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1007579"></A>Select the drop down list in the <STRONG CLASS="Bold">Item</STRONG> column and choose the <STRONG CLASS="Bold">Copy Condition</STRONG> option to include a copy of an existing condition in the advanced condition. The copy can be edited as it is a copy of the original condition. 
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1007614"></A>Select drop down list in the <STRONG CLASS="Bold">Item</STRONG> column and choose the <STRONG CLASS="Bold">Select Condition</STRONG> option to include an existing condition in the advanced condition. If you select an existing condition, it cannot be edited here.
+<P>
+</UL>
+
+<A NAME="1007661"></A>
+<P CLASS="BP1">
+c.     Specify the condition and value for the new condition statement.
+</P>
+
+<A NAME="1011293"></A>
+<P CLASS="BP1">
+d.    Specify how you want to combine the condition statements.
+</P>
+
+<A NAME="1011126"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> You can use the handles next to each condition statement to highlight a condition statement and carry out the following actions:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1010831"></A>click a group and click AND to specify that all condition statements must be met for the condition
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1007117"></A>click a group and click OR to specify that one of the condition statements must be met for the condition
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1007121"></A>click a group and click NOT to specify that no condition statements must be met for the condition
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1006010"></A>click Delete to remove condition statement lines from the condition.
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1007708"></A>drag and drop a handle (next to a condition statement) to reposition the condition statement in a nested hierarchy.
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1011041"></A>double click a group to change from AND to OR or vice versa
+<P>
+</UL>
+
+<A NAME="1011122"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> If you reposition a condition statement, it can affect the order in which the condition statement is applied within the advanced condition (i.e. nested condition statements are applied first).
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1007643"></A>When you have finished, click OK to save the advanced condition and close the dialog.
+<P>
+ 
+ 
+<A NAME="1005590"></A>
+<P CLASS="BP">
+The new condition is displayed on the <A HREF="addtab01.htm#1005113">"Workarea: Data tab"</a>. When Discoverer users access this business area, they will see this condition item in the business area folder.
+</P>
+
+<A NAME="1004610"></A>
+<!--TOC=h1-"1004610"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to edit conditions</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005123"></A>
+<P CLASS="BP">
+You edit a condition to change the way that it behaves. For example, you might want to:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005389"></A>change the name of a condition
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005390"></A>change the data being returned by the condition
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005391"></A>create a more advanced condition
+<P>
+</UL>
+<A NAME="1005124"></A>
+<P CLASS="BP">
+
+</P>
+<A NAME="1005394"></A>
+<P CLASS="BP">
+To edit a condition:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005125"></A>On the <A HREF="addtab01.htm#1005113">"Workarea: Data tab"</a>, select the condition that you want to edit.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1005136"></A>Choose Edit | Edit... to display the <A HREF="adncsi01.htm#1006032">"Edit Condition dialog"</a>.
+<P>
+
+<A NAME="1011854"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 11-3 &#32;Edit Condition dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1011858">
+
+
+<img src="conded.gif" ALT="Text description of conded.gif follows.">
+<A HREF="img_text/conded.htm"><br>Text description of the illustration conded.gif</A>
+
+
+</A>
+ </OL>
+</OL>
+<A NAME="1011859"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005162"></A>Edit the condition details as required.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1005193"></A>Click OK to save the details and close the dialog. 
+<P>
+ 
+</OL>
+<A NAME="1005163"></A>
+<P CLASS="BP">
+The updated condition is displayed on the <A HREF="addtab01.htm#1005113">"Workarea: Data tab"</a>.
+</P>
+
+<A NAME="1006652"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006658"></A>You can also use the <A HREF="adcpro01.htm#1005113">"Condition Properties dialog"</a> to change conditions.
+<P>
+</UL>
+
+<A NAME="1007206"></A>
+<!--TOC=h1-"1007206"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to edit condition properties</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1007207"></A>
+<P CLASS="BP">
+You edit a condition's properties to change the way that it behaves, or change its identifier (for more information, see <A HREF="maintain.htm#1008899">Chapter&nbsp;3, "What are identifiers?"</a>), which is a unique Discoverer identification label. You can also change the way that a condition behaves by editing the condition itself (for more information, see <A HREF="conditio.htm#1004610">"How to edit conditions"</a>). 
+</P>
+<A NAME="1007211"></A>
+<P CLASS="BP">
+To edit condition properties:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1007212"></A>On the <A HREF="addtab01.htm#1005113">"Workarea: Data tab"</a>, select the condition that you want to edit.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1007216"></A>Choose Edit | Properties to display the <A HREF="adcpro01.htm#1005113">"Condition Properties dialog"</a>.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1007217"></A>Edit the condition properties.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1007229"></A>Click OK to save the details and close the dialog.
+<P>
+ 
+</OL>
+<A NAME="1007230"></A>
+<P CLASS="BP">
+The <A HREF="addtab01.htm#1005113">"Workarea: Data tab"</a> is updated to reflect any changes made to the condition.
+</P>
+
+<A NAME="1004611"></A>
+<!--TOC=h1-"1004611"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to delete conditions</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005398"></A>
+<P CLASS="BP">
+You delete a condition when you want to remove it permanently from the business area. For example, you might have previously filtered data relating to the year 2000, and would now like Discoverer users to access data relating to all available years.
+</P>
+<A NAME="1005404"></A>
+<P CLASS="BP">
+To delete a condition:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005405"></A>On the <A HREF="addtab01.htm#1005113">"Workarea: Data tab"</a>, select the condition that you want to delete.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1010862"></A>Choose Edit | Delete to display the <A HREF="adcdel01.htm#1005113">"Confirm Delete dialog"</a>.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005438"></A>Click Yes at the confirmation screen to remove the condition permanently.
+<P>
+ 
+</OL>
+<A NAME="1005439"></A>
+<P CLASS="BP">
+The condition is removed from the business area.
+</P>
+
+<A NAME="1005440"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif"><STRONG CLASS="Bold">Notes</STRONG></FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011067"></A>When Discoverer users next re-open workbooks that use a deleted condition, or refresh the worksheets using the deleted condition, previously filtered out data will be available to the Discoverer end users.
+<P>
+</UL>
+
+<A NAME="1004612"></A>
+<!--TOC=h1-"1004612"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Example conditions</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005849"></A>
+<P CLASS="BP">
+The following examples show how conditions are used in Discoverer Administrator.
+</P>
+
+<A NAME="1005853"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif"><STRONG CLASS="Bold">Notes</STRONG></FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011071"></A>For more examples of conditions, see the <EM CLASS="Italic">Oracle Application Server Discoverer Plus User's Guide</EM>.
+<P>
+</UL>
+
+<A NAME="1006026"></A>
+<!--TOC=h2-"1006026"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Example 1: Using a condition to find data for the year 2002</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1006027"></A>
+<P CLASS="BP">
+To create a condition that returns only data for the year 2002, enter the following in the Formula area of the New Condition dialog:
+</P>
+   
+<A NAME="1011916">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1009992"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Item</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1009994"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG> Condition</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010037"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Value</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010047"></A>
+<P CLASS="TB">
+Year&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010049"></A>
+<P CLASS="TB">
+=&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010051"></A>
+<P CLASS="TB">
+2002&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   
+<A NAME="1004613"></A>
+<!--TOC=h2-"1004613"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Example 2: Using a condition to find sales in the last seven days</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1005647"></A>
+<P CLASS="BP">
+To create a condition that only returns the sales in the last seven days (using the calculated item, "Transaction Age (in Days)"), enter the following in the Formula area of the New Condition dialog:
+</P>
+   
+<A NAME="1011920">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010064"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Item</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010066"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Condition</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010068"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Value</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010079"></A>
+<P CLASS="TB">
+Transaction Age (in days)&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010081"></A>
+<P CLASS="TB">
+&lt;&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010083"></A>
+<P CLASS="TB">
+7&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   <A NAME="1006060"></A>
+<P CLASS="BP">
+Note that the Transaction Age calculated item has the following formula
+</P>
+<A NAME="1007342"></A>
+<P CLASS="BP">
+FLOOR (SYSDATE - Transaction Date)
+</P>
+<A NAME="1005639"></A>
+<P CLASS="BP">
+This type of condition is sometimes described as a "rolling window" condition because the "window" of rows it returns changes from day to day.
+</P>
+
+<A NAME="1004614"></A>
+<!--TOC=h2-"1004614"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Example 3: Using a condition to find shipments in Quarter 3</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1007370"></A>
+<P CLASS="BP">
+To create a condition that only returns shipments made in quarter 3 (Q3) regardless of year (using the calculated item, 'Ship Quarter'), enter the following in the Formula area of the New Condition dialog:
+</P>
+   
+<A NAME="1011924">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010100"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Item</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010102"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Condition</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010104"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Value</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010115"></A>
+<P CLASS="TB">
+Ship Quarter&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010117"></A>
+<P CLASS="TB">
+=&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010119"></A>
+<P CLASS="TB">
+'Q3'&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+ 
+</A>
+   <A NAME="1005662"></A>
+<P CLASS="BP">
+Note that the Ship Quarter calculated item has the following formula:
+</P>
+<A NAME="1005829"></A>
+<P CLASS="BP">
+EUL_DATE_TRUNC(Ship Date, "Q")
+</P>
+
+<A NAME="1005645"></A>
+<!--TOC=h1-"1005645"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About outer joins and the DisableAutoOuterJoinsOnFilters registry setting</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1009307"></A>
+<P CLASS="BP">
+If you define an outer join between two tables, make sure you are aware of how conditions (filters) and the DisableAutoOuterJoinsOnFilters Discoverer registry setting can combine to affect the rows of data returned by an end user query.
+</P>
+<A NAME="1009310"></A>
+<P CLASS="BP">
+You define an outer join between two tables to display:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009295"></A>rows in a master table for which there are no corresponding rows in a detail table
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009299"></A>rows in a detail table for which there are corresponding rows in a master table
+<P>
+</UL>
+<A NAME="1009574"></A>
+<P CLASS="BP">
+For example, you might want to display:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009799"></A>department names and their employees, but also include the department names that have no employees
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009803"></A>employee names and their departments, but also include the employee names that do not belong to a department
+<P>
+</UL>
+<A NAME="1009794"></A>
+<P CLASS="BP">
+In SQL, the outer join is signified by the plus (+) symbol.
+</P>
+<A NAME="1009780"></A>
+<P CLASS="BP">
+Discoverer includes outer joins in SQL:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009781"></A>when explicitly defined in Discoverer Administrator
+<P>
+
+<A NAME="1009808"></A>
+<P CLASS="BP1">
+For more information, see the <A HREF="adjopt01.htm#1005113">"Join Wizard: Step 2 dialog"</a>.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009785"></A>automatically under some circumstances
+<P>
+
+<A NAME="1009786"></A>
+<P CLASS="BP1">
+For example, Discoverer automatically creates outer joins in the SQL for end user queries that contain conditions.
+</P>
+</UL>
+<A NAME="1009841"></A>
+<P CLASS="BP">
+When running a query that contains a condition, users will sometimes want the results to:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009815"></A>include values from one table that have no corresponding values in a table to which it is joined by an outer join
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009819"></A>not include values from one table that have no corresponding values in a table to which it is joined by an outer join
+<P>
+</UL>
+<A NAME="1009832"></A>
+<P CLASS="BP">
+The DisableAutoOuterJoinsOnFilters registry setting enables you to disable the use of automatically generated outer joins when conditions are used in end user queries. The table below summarizes the examples that follow:
+</P>
+   
+<A NAME="1011928">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010709"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Example No.</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010671"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Condition applied?</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010673"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Value of DisableAutoOuterJoinsOnFilters</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010675"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>All values displayed</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010677"></A>
+<P CLASS="TB">
+Example 1&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010679"></A>
+<P CLASS="TB">
+No&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010681"></A>
+<P CLASS="TB">
+0 or 1&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010683"></A>
+<P CLASS="TB">
+Yes&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010685"></A>
+<P CLASS="TB">
+Example 2&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010687"></A>
+<P CLASS="TB">
+Yes&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010689"></A>
+<P CLASS="TB">
+0&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010691"></A>
+<P CLASS="TB">
+No&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010693"></A>
+<P CLASS="TB">
+Example 3&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010695"></A>
+<P CLASS="TB">
+Yes&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010697"></A>
+<P CLASS="TB">
+1&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010699"></A>
+<P CLASS="TB">
+Yes&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   <A NAME="1009617"></A>
+<P CLASS="BP">
+The following examples illustrate how outer joins, conditions, and the value of the DisableAutoOuterJoinsOnFilters registry setting can affect the rows of data returned from an end user query.
+</P>
+<A NAME="1009701"></A>
+<P CLASS="BP">
+For more information about Discoverer registry settings, see <A HREF="registry.htm#1006372">Chapter&nbsp;20, "Discoverer registry settings"</a>. 
+</P>
+
+<A NAME="1009225"></A>
+<!--TOC=h2-"1009225"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Example 1: No condition applied</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1009226"></A>
+<P CLASS="BP">
+This example illustrates the results returned when you execute a query against two tables, where the master and detail tables are joined with an outer join.
+</P>
+<A NAME="1009731"></A>
+<P CLASS="BP">
+Discoverer displays:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009732"></A>rows of data from the master table (dept) and detail table (emp)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009736"></A>rows of data from the master table (dept) where no data exists for the detail table (emp)
+<P>
+</UL>
+<A NAME="1009326"></A>
+<P CLASS="BP">
+The query is defined using the following SQL statement, where the outer join is signified by the plus (+) symbol:
+</P>
+<A NAME="1009282"></A>
+<P CLASS="BP">
+select dname, ename, job from dept, emp where dept.deptno = emp.deptno(+);
+</P>
+   
+<A NAME="1011953">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010123"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>DNAME</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010125"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG> ENAME</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010127"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>JOB</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010186"></A>
+<P CLASS="TS">
+SALES&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010188"></A>
+<P CLASS="TS">
+GRIMES&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010190"></A>
+<P CLASS="TS">
+DIRECTOR&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010192"></A>
+<P CLASS="TS">
+SALES&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010194"></A>
+<P CLASS="TS">
+PETERS&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010196"></A>
+<P CLASS="TS">
+MANAGER&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010198"></A>
+<P CLASS="TS">
+SALES&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010200"></A>
+<P CLASS="TS">
+SCOTT&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010202"></A>
+<P CLASS="TS">
+CLERK&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010204"></A>
+<P CLASS="TS">
+SUPPORT&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010206"></A>
+<P CLASS="TS">
+MAJOR&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010208"></A>
+<P CLASS="TS">
+MANAGER&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010210"></A>
+<P CLASS="TS">
+SUPPORT&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010212"></A>
+<P CLASS="TS">
+SCOTT&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010214"></A>
+<P CLASS="TS">
+CLERK&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010216"></A>
+<P CLASS="TS">
+ADMIN&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010218"></A>
+<P CLASS="TS">
+&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010220"></A>
+<P CLASS="TS">
+&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010222"></A>
+<P CLASS="TS">
+MARKETING&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010224"></A>
+<P CLASS="TS">
+&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010226"></A>
+<P CLASS="TS">
+&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010228"></A>
+<P CLASS="TS">
+DISTRIBUTION&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010230"></A>
+<P CLASS="TS">
+&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010232"></A>
+<P CLASS="TS">
+&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+ 
+</A>
+   <A NAME="1011938"></A>
+<P CLASS="BP">
+The results returned from the query above will not change whether you switch the DisableAutoOuterJoinsOnFilters registry setting on or off.
+</P>
+
+<A NAME="1009364"></A>
+<!--TOC=h2-"1009364"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Example 2: Condition applied to query and DisableAutoOuterJoinsOnFilters set to 1 (switched off)</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1009658"></A>
+<P CLASS="BP">
+This example applies a condition to the query in Example 1 and the DisableAutoOuterJoinsOnFilters registry setting is switched off.
+</P>
+<A NAME="1009687"></A>
+<P CLASS="BP">
+Discoverer displays:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009682"></A>the data specified in the condition
+<P>
+</UL>
+<A NAME="1009718"></A>
+<P CLASS="BP">
+Discoverer does not display:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009686"></A>master rows for which there is no detail data
+<P>
+</UL>
+<A NAME="1009365"></A>
+<P CLASS="BP">
+The following SQL statement is used, where the outer join is signified by the plus (+) symbol:
+</P>
+<A NAME="1011988"></A>
+<P CLASS="BP">
+select dname, ename, job from dept, emp where dept.deptno = emp.deptno(+) and job = 'CLERK';
+</P>
+   
+<A NAME="1012011">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1011991"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG><STRONG CLASS="Bold">DNAME</STRONG></STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1011993"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG> ENAME</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1011995"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>JOB</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011997"></A>
+<P CLASS="TS">
+SALES&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011999"></A>
+<P CLASS="TS">
+SCOTT&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012001"></A>
+<P CLASS="TS">
+CLERK&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1012003"></A>
+<P CLASS="TS">
+SUPPORT&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012005"></A>
+<P CLASS="TS">
+SCOTT&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1012007"></A>
+<P CLASS="TS">
+CLERK&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   
+<A NAME="1012008"></A>
+<!--TOC=h2-"1012008"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Example 3: Condition applied to query and DisableAutoOuterJoinsOnFilters set to 0 (switched on)</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1009674"></A>
+<P CLASS="BP">
+This example applies a condition to the query in Example 1 and the DisableAutoOuterJoinsOnFilters registry setting is switched on.
+</P>
+<A NAME="1009714"></A>
+<P CLASS="BP">
+Discoverer displays:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009677"></A>the data specified in the condition
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009681"></A>master rows for which there is no detail data (Null values)
+<P>
+</UL>
+<A NAME="1005754"></A>
+<P CLASS="BP">
+The following SQL statement is used, where the outer join is signified by the (+) symbol:
+</P>
+<A NAME="1007457"></A>
+<P CLASS="BP">
+select dname, ename, job from dept, emp where dept.depno = emp.deptno(+) and job = 'CLERK';
+</P>
+   
+<A NAME="1012015">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010307"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>DNAME</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010309"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG> ENAME</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010311"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>JOB</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010364"></A>
+<P CLASS="TS">
+SALES&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010366"></A>
+<P CLASS="TS">
+SCOTT&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010368"></A>
+<P CLASS="TS">
+CLERK&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010370"></A>
+<P CLASS="TS">
+SUPPORT&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010372"></A>
+<P CLASS="TS">
+SCOTT&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010374"></A>
+<P CLASS="TS">
+CLERK&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010376"></A>
+<P CLASS="TS">
+ADMIN&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010378"></A>
+<P CLASS="TS">
+&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010380"></A>
+<P CLASS="TS">
+&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010382"></A>
+<P CLASS="TS">
+MARKETING&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010384"></A>
+<P CLASS="TS">
+&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010386"></A>
+<P CLASS="TS">
+&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010388"></A>
+<P CLASS="TS">
+DISTRIBUTION&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010390"></A>
+<P CLASS="TS">
+&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010392"></A>
+<P CLASS="TS">
+&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   
+<A NAME="1009753"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif"><STRONG CLASS="Bold">Notes</STRONG></FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011075"></A>The database supports placing outer joins in IS NULL and IS NOT NULL clauses, but does not support placing outer joins in IN and OR clauses.
+<P>
+</UL>
+
+<A NAME="1007738"></A>
+<!--TOC=h1-"1007738"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to create row level security using a mandatory condition</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1007742"></A>
+<P CLASS="BP">
+You might want to restrict the data that end users can see in Discoverer workbooks. 
+</P>
+<A NAME="1010431"></A>
+<P CLASS="BP">
+For example, you have a single table with profit data for all regions. Each row of profit data applies to a transaction in a single region. You would like a manager in the West region to only access the rows with profit data for the West region.
+</P>
+   
+<A NAME="1012019">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010500"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>REGION</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010502"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG> PROFIT</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010504"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>DATE</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010545"></A>
+<P CLASS="TB">
+<STRONG CLASS="Bold">East</STRONG>&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010547"></A>
+<P CLASS="TB">
+$100&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010549"></A>
+<P CLASS="TB">
+8/7&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010551"></A>
+<P CLASS="TB">
+<STRONG CLASS="Bold">West</STRONG>&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010553"></A>
+<P CLASS="TB">
+$50&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010555"></A>
+<P CLASS="TB">
+8/7&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010557"></A>
+<P CLASS="TB">
+<STRONG CLASS="Bold">South</STRONG>&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010559"></A>
+<P CLASS="TB">
+$65&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010561"></A>
+<P CLASS="TB">
+8/10&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010563"></A>
+<P CLASS="TB">
+<STRONG CLASS="Bold">North</STRONG>&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010565"></A>
+<P CLASS="TB">
+$100&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010567"></A>
+<P CLASS="TB">
+8/6&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   <A NAME="1008404"></A>
+<P CLASS="BP">
+To create row level security you must complete the following tasks:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007925"></A><A HREF="conditio.htm#1007948">"Load the ALL_USERS table from the SYS view into the business area that contains the folder in which you want to apply row level security"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007929"></A><A HREF="conditio.htm#1007841">"Create a new calculated item in the folder where you want to apply row level security"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007947"></A><A HREF="conditio.htm#1007821">"Apply the list of values from the Username item (in the ALL_USERS table) to the new calculated item"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007954"></A><A HREF="conditio.htm#1007876">"Create a mandatory advanced condition to define row level security in a folder for specified database users"</a>
+<P>
+</UL>
+
+<A NAME="1007948"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Load the ALL_USERS table from the SYS view into the business area that contains the folder in which you want to apply row level security</FONT></H4>
+
+<UL>
+
+<A NAME="1007962"></A>
+<P CLASS="BP1">
+This task enables you to obtain a list of all the database users to which you can subsequently apply conditions and achieve row level security.
+</P>
+
+<A NAME="1008122"></A>
+<P CLASS="BP1">
+To load the ALL_USERS table into the business area where you want to apply row level security:
+</P>
+</UL>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1007753"></A>Select the business area that contains the folder in which you want to create row level security.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1007765"></A>Choose Insert | Folder | From Database to display the <A HREF="adlwiz01.htm#1005113">"Load Wizard: Step 1 dialog"</a>.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1007769"></A>Select the <STRONG CLASS="Bold">Online dictionary</STRONG> check box and click Next to display the <A HREF="adlwiz02.htm#1005113">"Load Wizard: Step 2 dialog"</a>.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1007773"></A>Select the SYS user from the <STRONG CLASS="Bold">Select the users whose tables you want to load</STRONG> list box and click Next to display the <A HREF="adlwiz03.htm#1005113">"Load Wizard: Step 3 dialog"</a>.
+<P>
+ 
+
+<A NAME="1007808"></A>
+<P CLASS="BP1">
+The SYS user contains a view that holds the names of all database users.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1007799"></A>Expand the SYS user in the <STRONG CLASS="Bold">Available</STRONG> list box and drag the ALL_USERS view into the <STRONG CLASS="Bold">Selected</STRONG> list box and click Next to display the <A HREF="adlwiz04.htm#1005847">"Load Wizard: Step 4 dialog"</a>.
+<P>
+ 
+
+<A NAME="1007802"></A>
+<P CLASS="BP1">
+This loads the ALL_USERS view into the current business area. The ALL_USERS view contains the names of all database user accounts.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1007803"></A>Select the <STRONG CLASS="Bold">List of values for items of type</STRONG> check box and the <STRONG CLASS="Bold">Character</STRONG> check box, leaving all the other check boxes in this area cleared.
+<P>
+ 
+
+<A NAME="1007851"></A>
+<P CLASS="BP1">
+This will create a list of values of the names of all the database users.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1007820"></A>Click Finish.
+<P>
+ 
+
+<A NAME="1007855"></A>
+<P CLASS="BP1">
+This loads the ALL_USERS view from the SYS table into the current business area.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="8"><A NAME="1008060"></A>(optional) Edit the folder properties of ALL_USERS and set the <STRONG CLASS="Bold">Visible to user</STRONG> property to No (for more information about how to edit folder properties, see <A HREF="folders.htm#1004928">"How to edit folder properties"</a>).
+<P>
+ 
+
+<A NAME="1008072"></A>
+<P CLASS="BP1">
+This makes sure that Discoverer does not display the ALL_USERS folder to end users.
+</P>
+</OL>
+
+<A NAME="1007841"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Create a new calculated item in the folder where you want to apply row level security</FONT></H4>
+<A NAME="1007982"></A>
+<P CLASS="BP">
+You create a calculated item so that you can subsequently apply the list of values item class of all the database users from the SYS table.
+</P>
+<A NAME="1008176"></A>
+<P CLASS="BP">
+To create a calculated item in the folder where you want to apply row level security:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1007974"></A>Highlight the folder in which you want to create row level security (e.g. the Video Analysis folder).
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1008032"></A>Choose Insert | Item.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1008035"></A>Type Username into the <STRONG CLASS="Bold">Name</STRONG> field.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1008038"></A>Type USER into the <STRONG CLASS="Bold">Calculation</STRONG> field.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1008041"></A>Click OK to create the new calculated item.
+<P>
+ 
+</OL>
+
+<A NAME="1007821"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Apply the list of values from the Username item (in the ALL_USERS table) to the new calculated item</FONT></H4>
+<A NAME="1007998"></A>
+<P CLASS="BP">
+To apply the list of values item class to the calculated item created in the previous task:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1007875"></A>Highlight the folder in which you want to apply row level security (e.g. the Video Analysis folder).
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1007881"></A>Click Insert | Item Class to display the <A HREF="adicwc01.htm#1006338">"Item Class Wizard dialog"</a>.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1007885"></A>Select <STRONG CLASS="Bold">List of values</STRONG> check box and click Next to display the <A HREF="adicws02.htm#1006273">"Item Class Wizard: Step 2"</a>.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1007886"></A>Select the Username item from the All Users table that you loaded previously into the business area and click Next to display the <A HREF="adicwi02.htm#1006325">"Item Class Wizard: Step 3"</a>.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1007880"></A>Select the calculated item Username (that you created in the previous step) from the <STRONG CLASS="Bold">Available items:</STRONG> list and drag it into the <STRONG CLASS="Bold">Selected</STRONG> list.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1007893"></A>Click Finish to apply the list of values to the calculated item 'Username'.
+<P>
+ 
+</OL>
+
+<A NAME="1007876"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Create a mandatory advanced condition to define row level security in a folder for specified database users</FONT></H4>
+<A NAME="1008084"></A>
+<P CLASS="BP">
+You create a mandatory advanced condition so that you can apply data conditions to specified database users. 
+</P>
+<A NAME="1008292"></A>
+<P CLASS="BP">
+You must create a mandatory advanced condition that includes both:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008085"></A>a condition statement defining the database user(s)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008089"></A>one or more condition statements restricting data access to the specified database user(s)
+<P>
+</UL>
+<A NAME="1008014"></A>
+<P CLASS="BP">
+To create a mandatory advanced condition to define row level security for the specified database user(s):
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1008006"></A>Highlight the folder in which you want to create row level security.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1007897"></A>Choose Insert | Condition to display the <A HREF="adncsi01.htm#1006028">"New Condition dialog"</a>.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1007903"></A>(optional) Enter a description for the new condition.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1008055"></A>Click the <STRONG CLASS="Bold">Type</STRONG> drop down list and choose Mandatory.
+<P>
+ 
+
+<A NAME="1008056"></A>
+<P CLASS="BP1">
+The Type Mandatory specifies that a condition always applies to end users.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1007904"></A>Click the <STRONG CLASS="Bold">Item</STRONG> drop down list and select the calculated item Username.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1007905"></A>Click the <STRONG CLASS="Bold">Values</STRONG> drop down list and choose <STRONG CLASS="Bold">Select Multiple Values</STRONG> to display the Values dialog.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1007898"></A>Select a check box for each database user that you want row level security to apply then click OK.
+<P>
+ 
+
+<A NAME="1007899"></A>
+<P CLASS="BP1">
+Discoverer displays the selected database user(s) in the <STRONG CLASS="Bold">Values</STRONG> field.
+</P>
+
+<A NAME="1008048"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> You have now created a mandatory simple condition specifying the names of one or more database users. However, before you can apply row level security to the database user(s) in the current folder, you must specify the data conditions that you want to apply to the specified database user(s). 
+</P>
+
+<A NAME="1008333"></A>
+<P CLASS="BP1">
+The remaining steps describe how you can apply row level security to the specified database user(s) so that they can see only data from the West region.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="8"><A NAME="1007918"></A>Click the Advanced button and then the Add button.
+<P>
+ 
+
+<A NAME="1008191"></A>
+<P CLASS="BP1">
+This enables you to add a new condition statement to the current condition and specify a data condition to apply to the specified database user(s). 
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="9"><A NAME="1008139"></A>(example) Click the <STRONG CLASS="Bold">Item</STRONG> drop down list and select Store.Region.
+<P>
+ 
+
+<A NAME="1008300"></A>
+<P CLASS="BP1">
+This data condition will be applied to the specified database user(s). 
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="10"><A NAME="1008205"></A>(example) Click the <STRONG CLASS="Bold">Values</STRONG> drop down list and select the region West.
+<P>
+ 
+
+<A NAME="1008248"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> The Username and Region condition statements must be grouped together using the AND clause in order to associate the database user(s) (Username) with the data condition (Region). 
+</P>
+
+<A NAME="1008318"></A>
+<P CLASS="BP1">
+Each Username/data condition statement must group using the AND clause. Pairs of Username/data condition statements, must group together with other pairs using the OR clause. By grouping the pairs of Username/data condition statements using the OR clause ensures that each condition statement pair can be applied (see figure below). 
+</P>
+
+<A NAME="1008791"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 11-4 &#32;Condition where one group of database users sees data from the 'West' region and the other group sees data from the 'East' region</EM></FONT></H4>
+ 
+<BR><A NAME="1008801">
+
+
+<img src="condrw.gif" ALT="Text description of condrw.gif follows.">
+<A HREF="img_text/condrw.htm"><br>Text description of the illustration condrw.gif</A>
+
+
+</A>
+ </OL>
+<A NAME="1008802"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="11"><A NAME="1008203"></A>Click OK.
+<P>
+ 
+
+<A NAME="1008266"></A>
+<P CLASS="BP1">
+This creates a mandatory advanced condition that applies row level security to the database user(s) specified (i.e. binding a group of users either to the West or the East region). In the example above, the database user ADMTEST can view data from the West region only.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="12"><A NAME="1008201"></A>(optional) Edit the Properties of the new condition and set the <STRONG CLASS="Bold">Visible to user</STRONG> property to No (for more information about editing condition properties, see <A HREF="conditio.htm#1007206">"How to edit condition properties"</a>).
+<P>
+ 
+
+<A NAME="1008140"></A>
+<P CLASS="BP1">
+This ensures that Discoverer does not display the condition to end users, but it is always enforced. 
+</P>
+</OL>
+
+<A NAME="1008868"></A>
+<!--TOC=h1-"1008868"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to enable summary folders if a source folder includes a mandatory condition (e.g. with row level security)</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1008901"></A>
+<P CLASS="BP">
+When you create a mandatory condition in a folder, database user queries must not use a summary folder that is based upon the folder that contains the mandatory condition. This is because the data in the summary table will be only for the database user that created the summary folder.
+</P>
+<A NAME="1008955"></A>
+<P CLASS="BP">
+To enable database user queries to use summary folders where the source folders use mandatory conditions (e.g. with row level security), you must carry out the following steps before you create the mandatory condition.
+</P>
+<A NAME="1009060"></A>
+<P CLASS="BP">
+To enable summary folders for database user queries where the source folders contain a mandatory condition:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1008880"></A>Create a summary folder based upon folders where no mandatory condition (e.g. row level security) has yet been set up.
+<P>
+
+<A NAME="1008987"></A>
+<P CLASS="BP1">
+For more information about creating summary folders, see <A HREF="managing.htm#1009688">Chapter&nbsp;13, "Managing summary folders"</a> and <A HREF="creating.htm#1007292">Chapter&nbsp;14, "Creating summary folders manually"</a>. 
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1008925"></A>Set the summary property <STRONG CLASS="Bold">Available for Queries</STRONG> to 'No'.
+<P>
+ 
+
+<A NAME="1009100"></A>
+<P CLASS="BP1">
+This summary folder references data for the database user that created it. You must set this property to No to prevent end user queries from accessing this summary folder.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1009186"></A>(optional) Set the summary folder properties <STRONG CLASS="Bold">Next Refresh</STRONG> and <STRONG CLASS="Bold">Refresh Interval</STRONG> to suitable values.
+<P>
+ 
+
+<A NAME="1009192"></A>
+<P CLASS="BP1">
+For more information, see the <A HREF="adspro01.htm#1005113">"Summary Properties dialog"</a>.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1009093"></A>Create a database view against your summary folder.
+<P>
+ 
+
+<A NAME="1008991"></A>
+<P CLASS="BP1">
+Ask your database administrator for more information as this is done outside Discoverer.
+</P>
+
+<A NAME="1008928"></A>
+<P CLASS="BP1">
+Use a WHERE clause to apply the mandatory condition (e.g. row level security) to the view just created.
+</P>
+
+<A NAME="1009020"></A>
+<P CLASS="BP1">
+For example:
+</P>
+
+<A NAME="1009012"></A>
+<P CLASS="BP1">
+SQL&gt; WHERE Userid='SMITH' AND Region='WEST'
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1009014"></A>Register the view in Discoverer as an external summary. 
+<P>
+ 
+
+<A NAME="1009006"></A>
+<P CLASS="BP1">
+For more information, see <A HREF="creating.htm#1004669">Chapter&nbsp;14, "How to create summary folders based on external summary tables"</a>.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1009160"></A>Set the summary property <STRONG CLASS="Bold">Available for Queries</STRONG> to Yes.
+<P>
+ 
+
+<A NAME="1009161"></A>
+<P CLASS="BP1">
+You must set this property to Yes to enable database users to access this summary folder.
+</P>
+
+<A NAME="1009180"></A>
+<P CLASS="BP1">
+The <STRONG CLASS="Bold">Next Refresh</STRONG> and <STRONG CLASS="Bold">Refresh Interval</STRONG> summary folder properties should be set to Never in Discoverer.
+</P>
+
+<A NAME="1009184"></A>
+<P CLASS="BP1">
+For more information, see the <A HREF="adspro01.htm#1005113">"Summary Properties dialog"</a>.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1009977"></A>Create the required mandatory condition (e.g. row level security) in a folder in Discoverer Administrator (for more information, see <A HREF="conditio.htm#1007738">"How to create row level security using a mandatory condition"</a>).
+<P>
+ 
+</OL>
+
+<A NAME="1009741"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif"><STRONG CLASS="Bold">Notes</STRONG></FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011052"></A>You cannot use analytic functions in external summary folders (for more information about analytic functions, see <A HREF="glossary.htm#436038">"analytic functions"</a>).
+<P>
+</UL>
+
+
+
+
+
+
+<!-- Start Footer -->
+</DIV>
+
+<DIV CLASS="OUTD">
+<HR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+<TD VALIGN="BOTTOM" WIDTH="33%">
+<TABLE CELLSPACING="0" CELLPADDING="0">
+<TR>
+<TD ALIGN="CENTER"><A HREF="calculat.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+
+<TD ALIGN="CENTER"><A HREF="hierarch.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+    
+</TR>
+</TABLE>
+</TD>
+<TD ALIGN="CENTER" WIDTH="34%">
+<A HREF="./html/cpyr.htm"><IMG SRC="./gifs/oracle.gif" ALT="Oracle" BORDER="0"><BR>
+<FONT SIZE="-2">Copyright &copy 2003 Oracle Corporation.</FONT></A>
+<BR>
+<FONT SIZE="-2">All Rights Reserved.</FONT>
+</TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="33%"> 
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="144">
+<TR>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+  
+</DIV>
+
+</BODY>
+</HTML>
+

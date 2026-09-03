@@ -88,6 +88,29 @@ Las carpetas y los elementos se crean automáticamente con los tipos y las asign
 | **JOIN** | Resultado precombinado de varias tablas |
 | **SUMMARY** | Tabla de resumen preagregada |
 
+### Compartir una carpeta entre áreas de negocio
+
+Una carpeta pertenece a un área de negocio **propietaria**, pero puede
+*compartirse* con otras, igual que Oracle Discoverer permite que una carpeta
+aparezca en varias áreas a la vez. Una dimensión de fecha u organización
+compartida es el caso habitual.
+
+1. Panel de administración → **Carpetas**
+2. Haga clic en el icono de **compartir** en la fila de la carpeta
+3. Elija un área de negocio en **Compartir con** y haga clic en **Compartir**
+
+La carpeta aparecerá en ambas áreas. En cualquier área que no sea la propietaria
+se muestra con una etiqueta **Compartida**, para que nadie la edite creyendo que
+el cambio es local: las ediciones se aplican en todas partes.
+
+Para dejar de compartirla, abra el mismo diálogo y quite la etiqueta de esa área.
+El área de negocio **propietaria** no se puede quitar; para mover una carpeta,
+vuelva a crearla en el destino.
+
+> **Migración desde Discoverer:** se conservan todas las pertenencias
+> `BA_OBJ_LINKS`. Una carpeta que pertenecía a tres áreas conserva las tres: una
+> como propietaria y dos como compartidas.
+
 ### Editar una carpeta
 
 1. Haga clic en la carpeta → **Editar**
@@ -117,7 +140,9 @@ Un **elemento** es una columna o un atributo de una carpeta. Los elementos son l
    - **Nombre para mostrar** — Etiqueta fácil de usar (el valor predeterminado es el nombre)
    - **Nombre de columna** — Columna real de la base de datos
    - **Descripción** — Texto de ayuda para los usuarios
-   - **Tipo** — CI (personalizado), CU (usuario), CO (calculado), etc.
+   - **Tipo** — consulte la tabla siguiente. **CO** (Elemento de base de datos)
+     es la opción habitual: un elemento vinculado a una columna real. **CI** es
+     un elemento *creado*: un cálculo.
    - **Es clave** — Casilla de verificación si se trata de una clave principal/externa
    - **Está oculto** — Casilla de verificación para excluirlo del generador de mapas
    - **Es obligatorio** — Casilla de verificación si siempre debe incluirse

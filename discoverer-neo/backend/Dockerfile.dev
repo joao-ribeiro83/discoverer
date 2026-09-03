@@ -2,6 +2,11 @@
 # Discoverer Neo — Backend Dev Dockerfile
 # For development with hot reload
 # =============================================
+# Build context is the REPO ROOT, not backend/ — same reason as the production
+# backend/Dockerfile: this is an npm workspaces monorepo, the backend depends
+# on @discoverer-neo/migrate ("*", a workspace-only reference — see
+# backend/package.json), and the only lockfile is the root package-lock.json.
+# =============================================
 
 FROM node:22-bookworm-slim
 
@@ -32,16 +37,46 @@ ENV PATH=/opt/oracle/instantclient:$PATH
 
 WORKDIR /app
 
-# Install dependencies first for better layer caching
-COPY package.json package-lock.json* ./
-RUN npm install
+# Every workspace manifest has to be present for npm to reconcile the root
+# lockfile, even though only backend (+ its migrate dependency) get installed —
+# same reasoning as the production Dockerfile's "manifests" stage.
+COPY package.json package-lock.json ./
+COPY backend/package.json backend/
+COPY frontend/package.json frontend/
+COPY migrate/package.json migrate/
+RUN npm ci --workspace @discoverer-neo/backend --workspace @discoverer-neo/migrate --include-workspace-root
 
-# Copy source code
-COPY tsconfig*.json ./
-COPY drizzle.config.ts ./
-COPY src ./src
+# Both workspace tsconfigs extend this root one (skipLibCheck etc.) — without
+# it here, `tsc -p migrate/tsconfig.json` silently drops the extends and fully
+# type-checks drizzle-orm's bundled multi-dialect .d.ts files.
+COPY tsconfig.json ./
+
+# migrate first: the backend imports it as a built package (dist/index.js),
+# resolved through the node_modules workspace symlink — tsx watching the
+# backend's own src does not transpile migrate, so it must already be built.
+COPY migrate/tsconfig.json migrate/
+# jest.config.js too — not needed to build, but without it `npx jest` inside
+# this container falls back to jest's own defaults (plain babel, no ESM, no
+# path aliases) instead of erroring, which reads as "tests pass" right up
+# until they report zero tests collected. Needed to run migrate/src/scripts'
+# dev tooling and its tests (see migrate/src/scripts/README.md).
+COPY migrate/jest.config.js migrate/
+COPY migrate/src migrate/src
+RUN npm run build --workspace @discoverer-neo/migrate
+
+COPY backend/tsconfig*.json backend/
+COPY backend/drizzle.config.ts backend/
+# `drizzle-kit migrate` reads the .sql files and meta/_journal.json from
+# `out: './drizzle'` at runtime. Without them, `docker compose exec backend npm
+# run db:migrate` fails with "Can't find meta/_journal.json" — which is how this
+# database's schema once ended up ahead of its own bookkeeping. docker-compose.dev.yml
+# also bind-mounts this directory, so a freshly generated migration is picked up
+# without a rebuild; the COPY is what makes the image correct on its own.
+COPY backend/drizzle backend/drizzle
+COPY backend/src backend/src
 
 ENV NODE_ENV=development
+WORKDIR /app/backend
 EXPOSE 3000 9229
 
 CMD ["npx", "tsx", "watch", "src/server.ts"]

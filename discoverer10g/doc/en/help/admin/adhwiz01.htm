@@ -1,0 +1,210 @@
+
+<!DOCTYPE html public "-//w3c//dtd html 3.2 transitional//en.us">
+<HTML lang="en.us">
+<HEAD>
+
+<META NAME="Generator" CONTENT="Quadralay WebWorks Publisher 5.0.4">
+<META NAME="Page" CONTENT="DefaultSingle">
+<META NAME="Title" CONTENT="">
+<meta http-equiv="Content-Type" content="text/html;  charset=iso-8859-1">
+
+<Title>Reference topic </Title>
+	   
+<LINK REL="home" HREF="../../library.htm" TITLE="Library">
+<LINK REL="toc" HREF="toc.htm" TITLE="Contents">
+<LINK REL="index" HREF="bookix.htm" TITLE="Index">
+<LINK REL="copyright" HREF="./html/cpyr.htm" TITLE="Copyright">
+<LINK REL="up" HREF="toc.htm" TITLE="Up">
+<LINK REL="next" HREF="aditud01.htm" TITLE="Next">
+<LINK REL="previous" HREF="adfpro01.htm" TITLE="Previous">
+
+
+</HEAD>
+       
+<BODY BGCOLOR="#ffffff">
+
+<A NAME="top"></A>
+
+
+
+
+<A HREF="#BEGIN">Skip Headers</A><BR><BR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+ 
+<TD ALIGN="LEFT" VALIGN="TOP"><FONT COLOR="#330099" FACE="Helvetica, Arial, sans-serif"><STRONG>Oracle Discoverer Administrator Administration Guide (Online Help)<BR>10<i>g</i> (9.0.4)</STRONG><BR>Part Number B10270-01</FONT></TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="144">
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+
+
+
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<HR>
+<P>
+<A HREF="adfpro01.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+
+<A HREF="aditud01.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+    
+
+
+<A NAME="BEGIN"></A>
+
+
+
+<DIV CLASS="IND">
+<!-- End Header -->
+
+
+
+
+
+
+
+<A NAME="1005113"></A>
+<!--TOC=h1-"1005113"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Hierarchy Wizard dialog</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005684"></A>
+<P CLASS="BP">
+Use this dialog to select the type of hierarchy that you want to create. For example, to select a date hierarchy when you want Discoverer end users to be able to drill into time-based data.
+</P>
+<A NAME="1005890"></A>
+<P CLASS="BP">
+For more information, see:
+</P>
+<A NAME="1005704"></A>
+<P CLASS="BP">
+<A HREF="hierarch.htm#1007611">"What are hierarchies?"</a>
+</P>
+<A NAME="1005708"></A>
+<P CLASS="BP">
+<A HREF="hierarch.htm#1004596">"What are item hierarchies?"</a>
+</P>
+<A NAME="1006459"></A>
+<P CLASS="BP">
+<A HREF="hierarch.htm#1004602">"How to create item hierarchies"</a>
+</P>
+<A NAME="1006471"></A>
+<P CLASS="BP">
+<A HREF="hierarch.htm#1004603">"How to create date hierarchies and templates"</a>
+</P>
+
+<A NAME="1006485"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Which type of hierarchy do you want to create?</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006486"></A><STRONG CLASS="Bold">Item hierarchy</STRONG>
+<P>
+
+<A NAME="1006487"></A>
+<P CLASS="BP1">
+Use this radio button to select the item hierarchy type.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006488"></A><STRONG CLASS="Bold">Date hierarchy</STRONG>
+<P>
+
+<A NAME="1005689"></A>
+<P CLASS="BP1">
+Use this radio button to select the date hierarchy type.
+</P>
+</UL>
+
+<A NAME="1004918"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005751"></A>The hierarchical relationships that you create are not defined in the database, but in the business area. 
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005749"></A>Item hierarchies are used to connect multiple items in a specified order, allowing your user to drill up and down to different levels of detailed information. For example, you can connect the columns country, region, district, and retail store to create a location-based sales hierarchy. Each higher item (country is higher than region, for example) being a super-set of the items below it. When you create this sales hierarchy, users can create a worksheet that displays sales by country, then drill down to get regional details for each country, and so on down to the retail store level. 
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005764"></A>A date hierarchy lets your users drill up or down into date items from virtually any time-based perspective. For example, users can see sales data based on year, then drill down to quarter, and even further to month. Date hierarchies, unlike Item hierarchies, possess an inherent structure based on year, quarter, month, week, day, hour, minute, and second. Therefore, Discoverer Administrator uses pre-existing Date Templates to define many common formats for date hierarchies. In addition, you can create customized date hierarchies. 
+<P>
+</UL>
+
+
+
+
+
+
+<!-- Start Footer -->
+</DIV>
+
+<DIV CLASS="OUTD">
+<HR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+<TD VALIGN="BOTTOM" WIDTH="33%">
+<TABLE CELLSPACING="0" CELLPADDING="0">
+<TR>
+<TD ALIGN="CENTER"><A HREF="adfpro01.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+
+<TD ALIGN="CENTER"><A HREF="aditud01.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+    
+</TR>
+</TABLE>
+</TD>
+<TD ALIGN="CENTER" WIDTH="34%">
+<A HREF="./html/cpyr.htm"><IMG SRC="./gifs/oracle.gif" ALT="Oracle" BORDER="0"><BR>
+<FONT SIZE="-2">Copyright &copy 2003 Oracle Corporation.</FONT></A>
+<BR>
+<FONT SIZE="-2">All Rights Reserved.</FONT>
+</TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="33%"> 
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="144">
+<TR>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+  
+</DIV>
+
+</BODY>
+</HTML>
+

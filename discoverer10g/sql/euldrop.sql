@@ -1,0 +1,55 @@
+REM EULDROP.SQL
+REM Script to clear all EUL objects
+REM
+
+DROP SEQUENCE EUL5_ID_SEQ;                                                                                                                                                                              
+DROP TABLE EUL5_ACCESS_PRIVS CASCADE CONSTRAINTS;                                                                                                                                                       
+DROP TABLE EUL5_APP_PARAMS CASCADE CONSTRAINTS;                                                                                                                                                         
+DROP TABLE EUL5_ASMP_CONS CASCADE CONSTRAINTS;                                                                                                                                                          
+DROP TABLE EUL5_ASMP_LOGS CASCADE CONSTRAINTS;                                                                                                                                                          
+DROP TABLE EUL5_ASM_POLICIES CASCADE CONSTRAINTS;                                                                                                                                                       
+DROP TABLE EUL5_BAS CASCADE CONSTRAINTS;                                                                                                                                                                
+DROP TABLE EUL5_BATCH_PARAMS CASCADE CONSTRAINTS;                                                                                                                                                       
+DROP TABLE EUL5_BATCH_QUERIES CASCADE CONSTRAINTS;                                                                                                                                                      
+DROP TABLE EUL5_BATCH_REPORTS CASCADE CONSTRAINTS;                                                                                                                                                      
+DROP TABLE EUL5_BATCH_SHEETS CASCADE CONSTRAINTS;                                                                                                                                                       
+DROP TABLE EUL5_BA_OBJ_LINKS CASCADE CONSTRAINTS;                                                                                                                                                       
+DROP TABLE EUL5_BQ_DEPS CASCADE CONSTRAINTS;                                                                                                                                                            
+DROP TABLE EUL5_BQ_TABLES CASCADE CONSTRAINTS;                                                                                                                                                          
+DROP TABLE EUL5_BR_RUNS CASCADE CONSTRAINTS;                                                                                                                                                            
+DROP TABLE EUL5_DBH_NODES CASCADE CONSTRAINTS;                                                                                                                                                          
+DROP TABLE EUL5_DOCUMENTS CASCADE CONSTRAINTS;                                                                                                                                                          
+DROP TABLE EUL5_DOMAINS CASCADE CONSTRAINTS;                                                                                                                                                            
+DROP TABLE EUL5_ELEM_XREFS CASCADE CONSTRAINTS;                                                                                                                                                         
+DROP TABLE EUL5_EUL_USERS CASCADE CONSTRAINTS;                                                                                                                                                          
+DROP TABLE EUL5_EXPRESSIONS CASCADE CONSTRAINTS;                                                                                                                                                        
+DROP TABLE EUL5_EXP_DEPS CASCADE CONSTRAINTS;                                                                                                                                                           
+DROP TABLE EUL5_FREQ_UNITS CASCADE CONSTRAINTS;                                                                                                                                                         
+DROP TABLE EUL5_FUNCTIONS CASCADE CONSTRAINTS;                                                                                                                                                          
+DROP TABLE EUL5_FUN_ARGUMENTS CASCADE CONSTRAINTS;                                                                                                                                                      
+DROP TABLE EUL5_FUN_CTGS CASCADE CONSTRAINTS;                                                                                                                                                           
+DROP TABLE EUL5_FUN_FC_LINKS CASCADE CONSTRAINTS;                                                                                                                                                       
+DROP TABLE EUL5_GATEWAYS CASCADE CONSTRAINTS;                                                                                                                                                           
+DROP TABLE EUL5_HIERARCHIES CASCADE CONSTRAINTS;                                                                                                                                                        
+DROP TABLE EUL5_HI_NODES CASCADE CONSTRAINTS;                                                                                                                                                           
+DROP TABLE EUL5_HI_SEGMENTS CASCADE CONSTRAINTS;                                                                                                                                                        
+DROP TABLE EUL5_IG_EXP_LINKS CASCADE CONSTRAINTS;                                                                                                                                                       
+DROP TABLE EUL5_IHS_FK_LINKS CASCADE CONSTRAINTS;                                                                                                                                                       
+DROP TABLE EUL5_KEY_CONS CASCADE CONSTRAINTS;                                                                                                                                                           
+DROP TABLE EUL5_OBJS CASCADE CONSTRAINTS;                                                                                                                                                               
+DROP TABLE EUL5_OBJ_DEPS CASCADE CONSTRAINTS;                                                                                                                                                           
+DROP TABLE EUL5_OBJ_JOIN_USGS CASCADE CONSTRAINTS;                                                                                                                                                      
+DROP TABLE EUL5_PLAN_TABLE CASCADE CONSTRAINTS;                                                                                                                                                         
+DROP TABLE EUL5_QPP_STATS CASCADE CONSTRAINTS;                                                                                                                                                          
+DROP TABLE EUL5_SEGMENTS CASCADE CONSTRAINTS;                                                                                                                                                           
+DROP TABLE EUL5_SEQUENCES CASCADE CONSTRAINTS;                                                                                                                                                          
+DROP TABLE EUL5_SQ_CRRLTNS CASCADE CONSTRAINTS;                                                                                                                                                         
+DROP TABLE EUL5_SUB_QUERIES CASCADE CONSTRAINTS;                                                                                                                                                        
+DROP TABLE EUL5_SUMMARY_OBJS CASCADE CONSTRAINTS;                                                                                                                                                       
+DROP TABLE EUL5_SUMO_EXP_USGS CASCADE CONSTRAINTS;                                                                                                                                                      
+DROP TABLE EUL5_SUM_BITMAPS CASCADE CONSTRAINTS;                                                                                                                                                        
+DROP TABLE EUL5_SUM_RFSH_SETS CASCADE CONSTRAINTS;                                                                                                                                                      
+DROP TABLE EUL5_VERSIONS CASCADE CONSTRAINTS;                                                                                                                                                           
+DROP VIEW EUL5_NAMED_ELEMS;                                                                                                                                                                             
+DROP VIEW EUL5_ODBC_CATALOGS;                                                                                                                                                                           
+DROP VIEW EUL5_ODBC_SCHEMAS;                                                                                                                                                                            

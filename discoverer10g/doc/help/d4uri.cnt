@@ -1,0 +1,251 @@
+:Base d4uri.hlp>main
+:Title Guida in linea di Oracle Discoverer Plus
+1 Introduzione a Oracle Discoverer
+2 Informazioni sulle query e sulle cartelle di lavoro=CON_ABOUT_QUERIES>main
+2 Informazioni sulle tabelle e i campi incrociati=CON_ABOUT_TANDC>main
+2 Informazioni sui totali=CON_ABOUT_TOTALS>main
+2 Informazioni sulle percentuali=CON_ABOUT_PERCENTAGES>main
+2 Informazioni sulle cartelle di lavoro pianificate=CON_ABOUT_SCHEDULED>main
+2 Apprendimento di Oracle Discoverer
+3 Apprendimento di Oracle Discoverer=CON_LEARN_OD>main
+1 Procedure dettagliate
+2 Avvio e interruzione di Oracle Discoverer
+3 Avviare Oracle Discoverer=To_start_Oracle_Discoverer>main
+3 Configurare la finestra di dialogo Connetti per gli utenti di Oracle Applications=HIDD_OPTIONS_CONNECTION>main
+3 Connettersi a un database=To_connect_to_a_database>main
+3 Uscire da Oracle Discoverer=To_exit_Oracle_Discoverer>main
+2 Operazioni con le cartelle di lavoro
+3 Creare una nuova cartella di lavoro=To_create_a_new_workbook>main
+3 Aprire una cartella di lavoro salvata=To_open_a_saved_workbook>main
+3 Salvare una cartella di lavoro=To_save_a_workbook>main
+3 Chiudere una cartella di lavoro=To_close_a_workbook>main
+3 Eliminare una cartella di lavoro dal database=To_delete_a_workbook_from_the_database>main
+3 Aggiungere un nuovo foglio a una cartella di lavoro=To_add_a_new_sheet_to_a_workbook>main
+3 Modificare un foglio=To_edit_a_sheet>main
+3 Duplicare un foglio come tabella=To_duplicate_a_sheet_as_a_table>main
+3 Duplicare un foglio come layout a campi incrociati=To_duplicate_a_sheet_as_a_crosstab>main
+3 Assegnare un nome a un foglio=To_name_a_sheet>main
+3 Modificare il nome di un foglio=To_edit_the_name_of_a_sheet>main
+3 Eliminare un foglio da una cartella di lavoro=To_delete_a_sheet_from_a_workbook>main
+3 Condividere una cartella di lavoro con altri utenti=To_share_a_workbook_with_other_users>main
+3 Visualizzare il codice SQL del foglio corrente=To_view_the_SQL_code_for_the_current_sheet>main
+3 Visualizzare le proprietà di un elemento selezionato=To_view_the_properties_of_a_selected_item>main
+3 Visualizzare le proprietà della cartella di lavoro corrente=To_view_the_properties_of_the_current_workbook>main
+3 Creare un grafico per il foglio corrente=To_show_data_in_a_sheet_as_a_graph>main
+3 Mostrare un grafico=To_Hide_or_Show_a_Graph>main
+3 Nascondere un grafico=To_Hide_or_Show_a_Graph>main
+2 Aggiunta e rimozione di dati
+3 Aggiungere un elemento a un foglio=To_add_an_item_to_a_sheet>main
+3 Eliminare un elemento da un foglio=To_delete_an_item_from_a_sheet>main
+3 Modificare i valori visualizzati di un elemento=To_change_displayed_values_for_an_item>main
+3 Espansione
+4 Eseguire l'espansione=To_drill_up>main
+4 Eseguire la compressione=To_drill_down>main
+4 Eseguire l'espansione di un elemento correlato in un altro foglio=To_drill_to_a_related_item_in_another_sheet>main
+4 Eseguire la compressione delle informazioni correlate in un'altra applicazione=To_drill_to_related_information_in_another_application>main
+4 Comprimere un elemento=To_collapse_an_item>main
+3 Utilizzo delle condizioni per definire ulteriormente una query
+4 Definire una condizione=To_define_a_condition>main
+4 Modificare una condizione=To_apply_a_condition>main
+4 Aggiungere un calcolo a una condizione esistente=To_add_a_calculation_to_an_existing_condition>main
+4 Creare una condizione che include un calcolo=To_create_a_condition_that_includes_a_calculation>main
+4 Eliminare una condizione=To_delete_a_condition>main
+3 Utilizzo dei calcoli
+4 Creare un calcolo=To_create_a_calculation>main
+4 Modificare un calcolo=To_edit_a_calculation>main
+3 Utilizzo dei totali riepilogare i risultati delle query
+4 Creare un totale=To_create_a_total>main
+4 Modificare un totale=To_edit_a_total>main
+2 Gestione di dati e intestazioni
+3 Spostare un elemento da un asse a un altro=To_move_an_item_from_one_axis_to_another>main
+3 Creare un elemento di pagina=To_create_a_page_item>main
+3 Visualizzare le barre del grafico nelle celle=To_show_graphic_bars_in_cells>main
+3 Ordinamento dei dati
+4 Ordinare una tabella=To_sort_a_table>main
+4 Ordinare i campi incrociati=To_sort_a_crosstab>main
+2 Specifica del modo in cui Oracle Discoverer esegue le query
+3 Eseguire le query in modo incrementale=To_run_queries_incrementally>main
+3 Ignorare un'impostazione incrementale e restituire tutte le righe in una query=To_override_an_incremental_setting_and_return_all_rows_in_a_query>main
+3 Specificare il numero massimo di righe restituite in una query=To_specify_the_maximum_number_of_rows_returned_in_a_query>main
+3 Impostare le preferenze per la cache del database=To_set_preferences_for_the_database_cache>main
+3 Impostare le preferenze per i fogli con layout a campi incrociati=To_set_preferences_for_crosstab_layout_sheets>main
+3 Impostare le preferenze per i fogli con layout di tabella=To_set_preferences_for_table_layout_sheets>main
+2 Formattazione
+3 Formattare i dati di un foglio=To_format_data_in_a_sheet>main
+3 Formattare le intestazioni di un foglio=To_format_headings_in_a_sheet>main
+3 Formattare i numeri=To_format_numbers>main
+3 Formattare il titolo di un foglio=To_format_the_title_of_a_sheet>main
+3 Modificare la larghezza di una colonna=To_change_a_column_width>main
+3 Aggiungere un titolo a un foglio=To_add_a_title_to_a_sheet>main
+3 Modificare il titolo di un foglio=To_edit_the_title_of_a_sheet>main
+3 Aggiungere uno sfondo a un foglio=To_add_a_background_to_a_sheet>main
+3 Rimuovere uno sfondo da un foglio=To_remove_a_background_from_a_sheet>main
+3 Utilizzo delle eccezioni per evidenziare i dati
+4 Creare un'eccezione=To_create_an_exception>main
+4 Modificare un'eccezione=To_edit_an_exception>main
+4 Eliminare un'eccezione=To_delete_an_exception>main
+3 Visualizzazione dei dati come grafico
+4 Creare un grafico per il foglio corrente=To_show_data_in_a_sheet_as_a_graph>main
+4 Modificare lo stile di un grafico=To_change_the_style_of_a_graph>main
+4 Gestire la vista tridimensionale di un grafico=To_manipulate_the_three_dimensional_view_of_a_graph>main
+4 Aggiungere titoli a un grafico=To_add_titles_to_a_graph>main
+4 Modificare i titoli di un grafico=To_edit_titles_in_a_graph>main
+4 Eliminare i titoli da un grafico=To_delete_titles_from_a_graph>main
+4 Esportare un grafico in un'altra applicazione=To_export_a_graph_to_another_application>main
+2 Stampa
+3 Stampare una cartella di lavoro=To_print_a_workbook>main
+3 Stampare un foglio=To_print_a_sheet>main
+3 Stampare le etichette dell'asse=To_print_axis_labels>main
+3 Aggiungere le interruzioni di pagina=To_add_page_breaks>main
+3 Impostare l'ordine di stampa delle pagine=To_set_the_printing_order_of_pages>main
+3 Impostare il layout di pagina=To_set_up_the_page_layout>main
+3 Visualizzare la stampa in anteprima=To_preview_the_printout>main
+3 Aggiunta di intestazioni e piè di pagina
+4 Aggiungere un piè di pagina=To_add_a_footer>main
+4 Creare un piè di pagina personalizzato=To_create_a_custom_footer>main
+4 Aggiungere un'intestazione=To_add_a_header>main
+4 Creare un'intestazione personalizzata=To_create_a_custom_header>main
+2 Utilizzo di Oracle Discoverer con altre applicazioni
+3 Esportare i dati e salvarli in un altro formato di file=To_export_data_and_save_it_in_another_file_format>main
+3 Incorporare una query in un file di un'altra applicazione=To_embed_a_query_in_a_file_in_another_application>main
+1 Glossario
+2 Glossario=DCM_GLOSSARY>gloss
+1 Riferimento all'interfaccia utente
+2 Procedure guidate, finestre di dialogo e di informazioni
+3 Pagina Allineamento=HIDD_FORMAT_ALIGN>main
+3 Pagina Colore dello sfondo=HIDD_FORMAT_COLOR>main
+3 Finestra di dialogo Opzioni, Cache=HIDD_OPTIONS_CACHE>main
+3 Finestra di dialogo Calcoli=HIDD_DCMCALCULATIONS>main
+3 Finestra di dialogo Calcolo: addizione=HIDD_CALC_ADD>main
+3 Finestra di dialogo Calcolo: divisione=HIDD_CALC_DIV>main
+3 Finestra di dialogo Calcolo: moltiplicazione=HIDD_CALC_MULT>main
+3 Finestra di dialogo Calcolo: percentuale=HIDD_CALC_PERCENT>main
+3 Finestra di dialogo Calcolo: sottrazione=HIDD_CALC_SUB>main
+3 Finestra di dialogo Condizioni=HIDD_DCMCONDITIONS>main
+3 Finestra di dialogo Connessione a Oracle Discoverer=HIDD_CONNECT>main
+3 Finestra di dialogo Opzioni, Campi incrociati=HIDD_OPTIONS_MATRIX>main
+3 Finestra di dialogo Elimina una cartella di lavoro dal database=HIDD_DELETE_DB>main
+3 Finestra di dialogo Espandi=HIDD_DRILL_WIZARD>main
+3 Finestra di dialogo Opzioni di espansione=HIDD_DRILL_OPTIONS>main
+3 Finestra di dialogo Modifica calcolo=HIDD_CALC_EDIT>main
+3 Finestra di dialogo Modifica parametro=HIDD_PARAM_EDIT>main
+3 Eccezione, pagina=HIDD_FORMAT_EXCEPTION_NEW>main
+3 Finestra di dialogo Eccezioni=HIDD_EXCEPTION>main
+3 Finestra di dialogo Esporta=HIDD_EXPORT_NAME>main
+3 Finestra di dialogo Proprietà del file=HIDD_FILEPROP>main
+3 Pagina Carattere=HIDD_FORMAT_FONT>main
+3 Finestra di dialogo Formatta layout=HIDD_WIZARD_LAYOUT>main
+3 Finestra di dialogo Opzioni, Formati=HIDD_OPTIONS_FORMAT>main
+3 Pagina Intestazione/Piè di pagina=HIDD_SETUP_HEADER>main
+3 Finestra di informazioni Appunti elemento=HIDD_DCMCLIPBOARD>main
+3 Finestra di dialogo Proprietà dell'elemento=HIDD_ITEMPROP>main
+3 Finestra di dialogo Layout=HIDD_WIZARD_START>main
+3 Finestra di dialogo Imposta pagina, Margini=HIDD_SETUP_MARGIN>main
+3 Finestra di dialogo Nuovo parametro=HIDD_PARAM_NEW>main
+3 Finestra di dialogo Apri cartella di lavoro=HIDD_OPEN>main
+3 Finestra di dialogo Apri cartella di lavoro dal database=HIDD_OPEN_DB>main
+3 Panoramica sulla finestra di dialogo Opzioni=HIDD_WIZARD_OPTIONS>main
+3 Panoramica sulla finestra di dialogo Imposta pagina=HIDD_WIZARD_PREVIEW>main
+3 Finestra di dialogo Parametri=HIDD_PARAMETERS>main
+3 creazione guidata di un parametro=HIDD_PARAMETERS_RUNTIME>main
+3 Finestra di dialogo Salva cartella di lavoro=HIDD_SAVE>main
+3 Finestra di dialogo Salva cartella di lavoro in database=HIDD_SAVE_DB>main
+3 Finestra di dialogo Imposta pagina, Foglio=HIDD_SETUP_SHEET>main
+3 Finestra di dialogo Ordina campi incrociati=HIDD_SORT_CROSSTAB>main
+3 Finestra di dialogo Ordina tabella=HIDD_SORT_TABLE>main
+3 Finestra di dialogo SQL Inspector=HIDD_DCMSQL>main
+3 Finestra di dialogo Opzioni, Tabella=HIDD_OPTIONS_TABLE>main
+3 Testo/Numero=HIDD_FORMAT_MASK>main
+3 Finestra di dialogo Titolo - scheda Bitmap=HIDD_TITLE_BMP>main
+3 Finestra di dialogo Titolo - scheda Testo=HIDD_TITLE_TEXT>main
+3 Finestra di dialogo Totali=HIDD_SUMMARIES>main
+3 Totale, finestra di dialogo (per i campi incrociati)=HIDD_TOTAL_EDIT_CROSSTAB>main
+3 Finestra di dialogo Totale (per le tabelle)=HIDD_TOTAL_EDIT_TABLE>main
+3 Utente > Cartella di lavoro=HIDD_GRANT_USERTOBOOK>main
+3 Finestra di dialogo Valori=HIDD_DCMLIST>main
+3 Finestra di dialogo Cartella di lavoro in un altro account del database=HIDD_CONNECT_IO>main
+3 Cartella di lavoro -> Utente=HIDD_GRANT_BOOKTOUSER>main
+1 Menu File
+2 Comando Nuovo=HID_FILE_NEW>main
+2 Comando Apri=HID_FILE_OPEN>main
+2 Comando Chiudi=HID_FILE_CLOSE>main
+2 Comando Salva=HID_FILE_SAVE>main
+2 Comando Salva con nome=HID_FILE_SAVE_AS>main
+2 Comando Pianifica=HID_FILE_SCHEDULE
+2 Comando Imposta pagina=HID_FILE_PAGE_SETUP
+2 Comando Anteprima di stampa=HID_FILE_PRINT_PREVIEW>main
+2 Comando Stampa=HID_FILE_PRINT>main
+2 Comando Importa SQL=HID_FILE_IMPORT>main
+2 Comando Esporta dati=HID_FILE_EXPORT>main
+2 Comando Gestione cartelle di lavoro=Manage_Workbooks_command>main
+2 Comando Connetti al database=HID_FILE_CONNECT>main
+2 Comando Esci=HID_APP_EXIT>main
+1 Menu Modifica
+2 Comando Annulla/Ripristina=HID_EDIT_UNDO>main
+2 Comando Ripeti=HID_EDIT_REPEAT>main
+2 Comando Taglia=HID_EDIT_CUT>main
+2 Comando Copia=HID_EDIT_COPY>main
+2 Comando Incolla elemento=HID_EDIT_PASTE>main
+2 Comando Elimina elemento=HID_EDIT_DELETEITEM>main
+2 Comando Seleziona tutto=HID_EDIT_SELECTALL>main
+2 Comando Trova=HID_TOOLS_FIND>main
+2 Comando Proprietà elemento=HID_EDIT_ITEMPROPERTIES>main
+1 Menu Visualizza
+2 Comando Barra degli strumenti=HID_VIEW_TOOLBAR>main
+2 Comando Barra della formattazione=HID_TOOLBAR_FORMAT>main
+2 Comando Barra di analisi=HID_TOOLBAR_ANALYSIS>main
+2 Comando Barra di stato=HID_VIEW_STATUS_BAR>main
+2 Elementi della pagina=View_Page_Items
+2 Comando Appunti elemento=HID_VIEW_CLIPBOARD>main
+2 Comando SQL Inspector=HID_VIEW_SQL>main
+1 Menu Foglio
+2 Comando Nuovo foglio=HID_SHEET_NEW>main
+2 Comando Modifica foglio=HID_SHEET_MODIFY>main
+2 Comando Duplica come tabella=HID_DUPLICATE_TABLE>main
+2 Comando Duplica come layout a campi incrociati=HID_DUPLICATE_CROSSTAB>main
+2 Comando Rinomina foglio=HID_SHEET_RENAME>main
+2 Comando Elimina foglio=HID_SHEET_DELETE>main
+2 Comando Modifica titolo=HID_SHEET_TITLE>main
+2 Comando Espandi=HID_SHEET_DRILLDOWN>main
+2 Comando Comprimi=HID_SHEET_ROLLUP>main
+2 Comando Modifica valori parametro=HID_SHEET_MODPARAMS>main
+2 Aggiorna foglio=HIDD_Sheet_Refresh
+2 Comando Recupera tutte le righe=HID_SHEET_FETCHALL>main
+2 Comando Conta tutte le righe=HID_SHEET_COUNTALL>main
+1 Menu Formato
+2 Comando Dati=HID_FORMAT_DATA>main
+2 Comando Intestazioni=HID_FORMAT_HEADINGS>main
+2 Comando Eccezioni=HID_FORMAT_EXCEPTIONS>main
+2 Colonne - Larghezza=HID_COLUMN_WIDTH>main
+2 Colonne - Dimensionamento automatico=HID_COLUMN_AUTOFIT>main
+2 Foglio - Titolo=HID_FORMAT_SHEETTITLE>main
+2 Foglio - Imposta sfondo=HID_FORMAT_SHEETBKGND>main
+2 Comando Cancella sfondo=HID_FORMAT_SHEETCLEAR>main
+1 Menu Strumenti
+2 Comando Condizioni=HID_TOOLS_CONDITIONS>main
+2 Comando Ordina=HID_TOOLS_SORT>main
+2 Comando Totali=HID_TOOLS_TOTALS>main
+2 Comando Percentuali=HIDD_PERCENTAGES
+2 Comando Calcoli=HID_TOOLS_CALCULATIONS>main
+2 Comando Parametri=HID_TOOLS_PARAMS>main
+2 Comando Opzioni=HID_TOOLS_OPTIONS>main
+1 Menu Grafico
+2 Comando Nuovo grafico=New_Graph_command>main
+2 Comando Mostra=HID_MENU_VIEW_GRAPH>main
+2 Comando Stampa=Print_command_graph
+2 Comando Copia in Appunti=Copy_to_clipboard_command_graph>main
+2 Comando Legenda=Legend_command>main
+2 Etichette asse X=X_Labels_command>main
+2 Comando Barra di stato=Status_bar_command_graph>main
+2 Comando Scala=HID_GRAPH_SCALE>main
+2 Comando Vista 3D=HID_GRAPH_3D>main
+1 Menu Finestra
+2 Comando Disponi icone=HID_WINDOW_ARRANGE>main
+2 Comando Sovrapponi=HID_WINDOW_CASCADE>main
+2 Comando Affianca orizzontalmente=HID_WINDOW_TILE_HORZ>main
+2 Comando Affianca verticalmente=HID_WINDOW_TILE_VERT>main
+1 Menu ?
+2 Comando Guida in linea=HID_HELP_INDEX>main
+2 Comando Uso della Guida=HID_HELP_USING>main
+2 Comando Manuali=HID_HELP_MANUALS>main
+2 Comando Informazioni su Discoverer=HID_APP_ABOUT>main

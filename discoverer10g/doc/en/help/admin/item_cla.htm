@@ -1,0 +1,2305 @@
+
+<!DOCTYPE html public "-//w3c//dtd html 3.2 transitional//en.us">
+<HTML lang="en.us">
+<HEAD>
+
+<META NAME="Generator" CONTENT="Quadralay WebWorks Publisher 5.0.4">
+<META NAME="Page" CONTENT="DefaultSingle">
+<META NAME="Title" CONTENT="Maintaining items and item classes">
+<meta http-equiv="Content-Type" content="text/html;  charset=iso-8859-1">
+
+<TITLE>Maintaining items and item classes</TITLE>
+	   
+<LINK REL="home" HREF="../../library.htm" TITLE="Library">
+<LINK REL="toc" HREF="toc.htm" TITLE="Contents">
+<LINK REL="index" HREF="bookix.htm" TITLE="Index">
+<LINK REL="copyright" HREF="./html/cpyr.htm" TITLE="Copyright">
+<LINK REL="up" HREF="toc.htm" TITLE="Up">
+<LINK REL="next" HREF="joins.htm" TITLE="Next">
+<LINK REL="previous" HREF="schedule.htm" TITLE="Previous">
+
+
+</HEAD>
+       
+<BODY BGCOLOR="#ffffff">
+
+<A NAME="top"></A>
+
+
+
+
+<A HREF="#BEGIN">Skip Headers</A><BR><BR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+ 
+<TD ALIGN="LEFT" VALIGN="TOP"><FONT COLOR="#330099" FACE="Helvetica, Arial, sans-serif"><STRONG>Oracle Discoverer Administrator Administration Guide (Online Help)<BR>10<i>g</i> (9.0.4)</STRONG><BR>Part Number B10270-01</FONT></TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="144">
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+
+
+
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<HR>
+<P>
+<A HREF="schedule.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+
+<A HREF="joins.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+    
+
+
+<A NAME="BEGIN"></A>
+
+
+
+<DIV CLASS="IND">
+<!-- End Header -->
+
+
+
+
+
+
+
+<A NAME="1656"></A>
+<!--TOC=Title-"1656"-->
+<H1 CLASS="Title"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099">8<BR>Maintaining items and item classes</FONT></H1>
+
+<!--/TOC=Title-->
+
+<A NAME="1010838"></A>
+<!--TOC=h1-"1010838"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Maintaining items and item classes</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1010841"></A>
+<P CLASS="BP">
+This chapter explains how to maintain items and item classes using Discoverer Administrator, and contains the following topics:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010851"></A><A HREF="item_cla.htm#1016666">"What are items?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010917"></A><A HREF="item_cla.htm#1016677">"What are item classes?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010944"></A><A HREF="item_cla.htm#1005596">"What are lists of values?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1017253"></A><A HREF="item_cla.htm#1013982">"About setting up lists of values"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010960"></A><A HREF="item_cla.htm#1005636">"What are alternative sorts?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1015781"></A><A HREF="item_cla.htm#1015691">"Examples of different ways to implement alternative sorts"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010968"></A><A HREF="item_cla.htm#1005693">"What is drill to detail?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1017262"></A><A HREF="item_cla.htm#1014551">"About setting up drill to detail"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010976"></A><A HREF="item_cla.htm#1014606">"What are date items?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010992"></A><A HREF="item_cla.htm#1014634">"What are date format masks?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011015"></A><A HREF="item_cla.htm#1010437">"About truncating date items and the EUL_DATE_TRUNC function"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1016525"></A><A HREF="item_cla.htm#1010420">"About applying conditions to truncated date items"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011000"></A><A HREF="item_cla.htm#1004998">"About drilling out to other applications"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010925"></A><A HREF="item_cla.htm#1004999">"How to edit item properties"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1015728"></A><A HREF="item_cla.htm#1013258">"How to create a LOV item class"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1015737"></A><A HREF="item_cla.htm#1013145">"How to create an alternative sort item class"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1015745"></A><A HREF="item_cla.htm#1013150">"How to create a drill to detail item class"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1015754"></A><A HREF="item_cla.htm#1013853">"How to create a list of values using a custom folder"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011063"></A><A HREF="item_cla.htm#1004679">"How to edit an item class"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011642"></A><A HREF="item_cla.htm#1010817">"How to add items to an item class"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011089"></A><A HREF="item_cla.htm#1009176">"How to remove items from an item class"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011098"></A><A HREF="item_cla.htm#1016715">"How to view the items that use an item class"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011107"></A><A HREF="item_cla.htm#1005480">"How to view the list of values for an item"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011116"></A><A HREF="item_cla.htm#1005490">"How to view the list of values for an item class"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1016664"></A><A HREF="item_cla.htm#1004624">"How to delete items and item classes"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1017271"></A><A HREF="item_cla.htm#1017049">"Notes about maintaining items and item classes"</a>
+<P>
+</UL>
+
+<A NAME="1016666"></A>
+<!--TOC=h1-"1016666"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are items?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1016667"></A>
+<P CLASS="BP">
+A Discoverer item is a representation in the End User Layer of one of the following:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1015685"></A>a column in a database table or view
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1015687"></A>a component of a custom folder (for more information, see <A HREF="folders.htm#1004597">Chapter&nbsp;5, "What are custom folders?"</a>)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1015688"></A>a calculation (for more information, see <A HREF="calculat.htm#1006693">Chapter&nbsp;10, "What are calculated items?"</a>)
+<P>
+</UL>
+<A NAME="1016675"></A>
+<P CLASS="BP">
+Items are stored in folders and can be created, deleted and moved between folders. Items have properties that you can change (e.g. display name, formatting details). Items enable Discoverer end users to access and manipulate information until they find the information they want.
+</P>
+
+<A NAME="1016677"></A>
+<!--TOC=h1-"1016677"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are item classes?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1016678"></A>
+<P CLASS="BP">
+Item classes are groups of items that share some similar properties. An item class enables you to define item properties once, and then assign the item class to other items that share similar properties.
+</P>
+<A NAME="1013069"></A>
+<P CLASS="BP">
+For example, assume the Product folder includes an item called Product Name that describes each product. A similar item also called Product Name may be required in the Sales Revenue folder. To enable both items to share common properties (e.g. a list of values), you might create one item class to define the properties, and apply it to both items. In other words, you only have to define the properties once. Without the item class, you would have to define the properties individually for each item.
+</P>
+<A NAME="1005589"></A>
+<P CLASS="BP">
+Discoverer uses item classes to implement the following features:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1013941"></A>lists of values
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1013942"></A>alternative sorts
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1013943"></A>drill to detail links
+<P>
+</UL>
+<A NAME="1013939"></A>
+<P CLASS="BP">
+As the Discoverer manager, it is your responsibility to create suitable item classes to support these Discoverer features. You can create a different item class for each feature or you can specify that Discoverer uses the same item class for more than one feature. Note that an item class to support an alternative sort must also support a list of values.
+</P>
+
+<A NAME="1005596"></A>
+<!--TOC=h1-"1005596"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are lists of values?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005598"></A>
+<P CLASS="BP">
+A list of values (or 'LOV') is a set of valid values for an item. The values are those values in the database column on which the item is based. Discoverer end users use LOVs to display values or enter values in:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014073"></A>parameters
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014074"></A>conditions
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014075"></A>the Discoverer item navigator
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014076"></A>the Export dialog
+<P>
+</UL>
+<A NAME="1013972"></A>
+<P CLASS="BP">
+For example, assume that an item is based on a database column (e.g. Region) that contains the following values:
+</P>
+   
+<A NAME="1017788">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1017524"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Region</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1017540"></A>
+<P CLASS="TB">
+West&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1017542"></A>
+<P CLASS="TB">
+East&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1017544"></A>
+<P CLASS="TB">
+South&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1017546"></A>
+<P CLASS="TB">
+North&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1017548"></A>
+<P CLASS="TB">
+East&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1017550"></A>
+<P CLASS="TB">
+North&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1017552"></A>
+<P CLASS="TB">
+South&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   <A NAME="1005629"></A>
+<P CLASS="BP">
+An LOV based on this item might contain five distinct values:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014066"></A>West
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014067"></A>East
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014068"></A>South
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014069"></A>North
+<P>
+</UL>
+
+<A NAME="1013982"></A>
+<!--TOC=h1-"1013982"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About setting up lists of values</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1016730"></A>
+<P CLASS="BP">
+Discoverer uses item classes to implement LOVs. When you first create a business area, you can specify that LOVs are to be generated automatically (for more information, see <A HREF="adlwiz04.htm#1005847">"Load Wizard: Step 4 dialog"</a>). Subsequently, you can use the Item Class Wizard to create new LOVs and assign existing LOVs to other items (for more information, see <A HREF="item_cla.htm#1013258">"How to create a LOV item class"</a>).
+</P>
+
+<A NAME="1005636"></A>
+<!--TOC=h1-"1005636"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are alternative sorts?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005640"></A>
+<P CLASS="BP">
+An alternative sort is an instruction to Discoverer about how to sort the values in an item. Alternative sorts enable you to specify a different sort order to the one that Discoverer uses by default. 
+</P>
+<A NAME="1014085"></A>
+<P CLASS="BP">
+By default, Discoverer sorts items in ascending or descending order using ASCII values. However, Discoverer end users might require some items to be sorted in a different order.
+</P>
+<A NAME="1013103"></A>
+<P CLASS="BP">
+For example, by default, Discoverer sorts a series of sales regions alphabetically (e.g. Central, East, North, South, West). But Discoverer end users might need sales regions sorted in a different order (e.g. North, South, East, West, Central). 
+</P>
+<A NAME="1005641"></A>
+<P CLASS="BP">
+To create an alternative sort order, you must use an item class to link together two items:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1013119"></A>an item to define the sort order 
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1013120"></A>an item to define the list of values to be sorted
+<P>
+</UL>
+<A NAME="1013121"></A>
+<P CLASS="BP">
+Having defined the item class, you associate that item class with the item that Discoverer end users will include in their worksheets.
+</P>
+<A NAME="1014113"></A>
+<P CLASS="BP">
+There are a number of ways to implement alternative sorts, including:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014382"></A>using a custom folder (for more information, see <A HREF="item_cla.htm#1014122">"Example 1: Using a custom folder to implement alternative sorts"</a>)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014383"></A>using a separate database table (for more information, see <A HREF="item_cla.htm#1014128">"Example 2: Using a database table to implement alternative sorts"</a>)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014384"></A>using a calculated item and a DECODE statement (for more information, see <A HREF="item_cla.htm#1014123">"Example 3: Using a calculated item and a DECODE statement to implement alternative sorts"</a>)
+<P>
+</UL>
+<A NAME="1014391"></A>
+<P CLASS="BP">
+Regardless of the way you choose to implement an alternative sort, note the following:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014393"></A>the item class you use to implement an alternative sort must include both an alternative sort and a LOV
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014415"></A>the two items you select for the item class's alternative sort and LOV must be in the same folder
+<P>
+</UL>
+<A NAME="1014398"></A>
+<P CLASS="BP">
+For information about how to create an alternative sort item class, see <A HREF="item_cla.htm#1013145">"How to create an alternative sort item class"</a>.
+</P>
+
+<A NAME="1015691"></A>
+<!--TOC=h1-"1015691"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Examples of different ways to implement alternative sorts</FONT></H2>
+
+
+<!--/TOC=h1-->
+
+<A NAME="1014122"></A>
+<!--TOC=h2-"1014122"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Example 1: Using a custom folder to implement alternative sorts</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1014116"></A>
+<P CLASS="BP">
+You can use a custom folder to implement an alternative sort by using the folder's Custom SQL property to create two items. One item contains the list of values and the other item specifies the sort order. You can then create an item class and specify the two items in the custom folder as the item class's LOV and alternative sort respectively.
+</P>
+<A NAME="1014147"></A>
+<P CLASS="BP">
+For example, you might want Discoverer end users to include an item called Ordered Regions in their worksheets. When users sort the values in this item, you want the order of the sales regions to be North, South, East, West (i.e. not the default alphabetical order). To implement this alternative sort using a custom folder, you might:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014152"></A>create a custom folder called Sales Regions Sort Folder
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014153"></A>enter the following as the custom folder's Custom SQL property:
+<P>
+    
+<PRE CLASS="CE1">
+<A NAME="1014215"></A>select 'North' region_name, 1 region_order from dual union
+<A NAME="1014225"></A>select 'South' region_name, 2 region_order from dual union
+<A NAME="1014229"></A>select 'East' region_name, 3 region_order from dual union
+<A NAME="1014233"></A>select 'West' region_name, 4 region_order from dual union
+<A NAME="1014158"></A>
+</PRE>
+    
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014155"></A>create an item class called Sales Regions Customized Sort
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014156"></A>specify region_name as the LOV item and region_order as the alternative sort item for the Sales Regions Customized Sort item class
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014157"></A>specify Sales Regions Customized Sort as the item class associated with the Ordered Regions item that users will include in their worksheets
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014322"></A>when users sort a worksheet using the Ordered Regions item, the worksheet is sorted using the new order
+<P>
+</UL>
+
+<A NAME="1014128"></A>
+<!--TOC=h2-"1014128"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Example 2: Using a database table to implement alternative sorts</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1014129"></A>
+<P CLASS="BP">
+You can use a database table to implement an alternative sort by creating a new database table with two columns containing the values and their associated numerical order. If a suitable database table containing the values and their associated numerical order already exists, consider using that table. To avoid performance issues, avoid using a database table that contains more than one occurrence of each value.
+</P>
+<A NAME="1014470"></A>
+<P CLASS="BP">
+Having loaded the table into the EUL as a folder, you can then create an item class and specify the two items for the item class's LOV and alternative sort respectively.
+</P>
+<A NAME="1014481"></A>
+<P CLASS="BP">
+For example, you might want Discoverer end users to include an item called Ordered Regions in their worksheets. When users sort the values in this item, you want the order of the sales regions to be North, South, East, West (i.e. not the default alphabetical order). To implement this alternative sort using a database table:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014482"></A>use SQL*Plus to create a database table called SALES_REGION_SORT with two columns REGION_NAME and REGION_NUMBER by entering the following at the command prompt:
+<P>
+   
+<PRE CLASS="CEW">
+<A NAME="1014336"></A>&gt; create table SALES_REGION_SORT (REGION_NAME VARCHAR2(10), REGION_NUMBER NUMBER(2));
+
+<PRE CLASS="CE1">
+<A NAME="1014331"></A>
+</PRE>
+</PRE></PRE></PRE> 
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014270"></A>use SQL*Plus to insert values into the SALES_REGION_SORT table by entering the following at the command prompt:
+<P>
+   
+<PRE CLASS="CEW">
+<A NAME="1014345"></A>&gt; insert into SALES_REGION_SORT (REGION_NAME, REGION_NUMBER) values ('North', 1)
+<A NAME="1014355"></A>&gt; insert into SALES_REGION_SORT (REGION_NAME, REGION_NUMBER) values ('South', 2)
+<A NAME="1014359"></A>&gt; insert into SALES_REGION_SORT (REGION_NAME, REGION_NUMBER) values ('East', 3)
+<A NAME="1014363"></A>&gt; insert into SALES_REGION_SORT (REGION_NAME, REGION_NUMBER) values ('West', 4)
+
+<PRE CLASS="CE1">
+<A NAME="1014353"></A>
+</PRE>
+</PRE>   
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014243"></A>load the SALES_REGION_SORT database table into the EUL as a new folder containing the items Name and Number (for more information, see <A HREF="business.htm#1009339">Chapter&nbsp;4, "Creating and maintaining business areas"</a>)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014170"></A>create an item class called Sales Regions Customized Sort
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014171"></A>specify the Name item as the LOV item and the Number item as the alternative sort item for the item class
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014498"></A>specify Sales Regions Customized Sort as the item class associated with the Ordered Regions item that users will include in their worksheets
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014499"></A>when users sort a worksheet using the Ordered Regions item, the worksheet is sorted using the new order
+<P>
+</UL>
+
+<A NAME="1014123"></A>
+<!--TOC=h2-"1014123"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Example 3: Using a calculated item and a DECODE statement to implement alternative sorts</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1014114"></A>
+<P CLASS="BP">
+You can use a calculated item with a DECODE statement to implement an alternative sort. You create two new items in an existing folder and specify the SQL statements for those items so that they contain the list of values and the sort order. You can then create an item class and specify the two items for the item class's LOV and alternative sort respectively.
+</P>
+<A NAME="1014135"></A>
+<P CLASS="BP">
+If an item containing the list of values already exists in the folder, you can use that item.
+</P>
+<A NAME="1014503"></A>
+<P CLASS="BP">
+For example, you might want Discoverer end users to include an item called Ordered Regions in their worksheets. When users sort the values in this item, you want the order of the sales regions to be North, South, East, West, Central (i.e. not the default alphabetical order). To implement this alternative sort using a calculated item and a DECODE statement:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014187"></A>create a new calculated item called Sales Region Order in the folder that already contains the Ordered Regions item (the Ordered Regions item will provide the names of the regions)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014188"></A>specify the following SQL statement as the formula for the item:
+<P>
+    
+<PRE CLASS="CE1">
+<A NAME="1014202"></A>DECODE(Ordered Regions,'North',1,'South',2,'East',3,'West',4 ,5)
+<A NAME="1014200"></A>
+</PRE>
+    
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014192"></A>create an item class called Sales Regions Customized Sort
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014519"></A>specify Sales Regions Customized Sort as the item class associated with the Ordered Regions item that users will include in their worksheets
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014520"></A>when users sort a worksheet using the Ordered Regions item, the worksheet is sorted using the new order
+<P>
+</UL>
+<A NAME="1016738"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> In performance terms, this is the least efficient mechanism.
+</P>
+
+<A NAME="1005693"></A>
+<!--TOC=h1-"1005693"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What is drill to detail?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005699"></A>
+<P CLASS="BP">
+A drill to detail is a relationship between two or more items that might otherwise be unrelated. Drill to detail is achieved using an item class and gives Discoverer end users direct access to detail information about the currently selected row from other folders, without having to drill through hierarchical levels.
+</P>
+
+<A NAME="1014551"></A>
+<!--TOC=h1-"1014551"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About setting up drill to detail</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1016749"></A>
+<P CLASS="BP">
+When you create a drill to detail item class, you specify the items that use that item class. The folders containing the items that share the item class do not have to be joined. 
+</P>
+<A NAME="1014557"></A>
+<P CLASS="BP">
+When a user selects the drill to detail option for one item, any folders containing other items that share the same drill to detail item class are available for drilling. If the user selects one of those folders, the worksheet contains all the items in the selected folder and conditions are applied for all the item classes that it has in common with the original sheet.
+</P>
+<A NAME="1014595"></A>
+<P CLASS="BP">
+Note that for a hyperdrill to work, items that share the same drill to detail item class must have the same data type.
+</P>
+
+<A NAME="1014606"></A>
+<!--TOC=h1-"1014606"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are date items?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1014607"></A>
+<P CLASS="BP">
+Date items are items that users include in worksheets to show date information.
+</P>
+<A NAME="1014608"></A>
+<P CLASS="BP">
+Date items can be:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014609"></A>items that are based on database columns with a date datatype
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014610"></A>calculated items that you have created
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014611"></A>items that Discoverer creates automatically when you specify a date hierarchy for a date item
+<P>
+</UL>
+
+<A NAME="1014634"></A>
+<!--TOC=h1-"1014634"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are date format masks?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1014703"></A>
+<P CLASS="BP">
+A date format mask is an instruction about how to display date information.
+</P>
+<A NAME="1014945"></A>
+<P CLASS="BP">
+The table below shows how a number of dates are stored in the database, and the affect of applying different date format masks to those dates.
+</P>
+   
+<A NAME="1017792">
+<P>
+<TABLE CLASS="RuleInformalWide" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1014836"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG><STRONG CLASS="Bold">Stored in the database:</STRONG></STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1014838"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>DD-MM-YYYY</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1014840"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>DD-MONTH</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1014842"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>MM/DD</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1014844"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>DD-Month-YY HH:MI AM</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1014856"></A>
+<P CLASS="TB">
+04-JUN-1999 13:03:45&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014896"></A>
+<P CLASS="TB">
+04-06-1999&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014904"></A>
+<P CLASS="TB">
+04-JUNE&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014862"></A>
+<P CLASS="TB">
+06/04&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014934"></A>
+<P CLASS="TB">
+04-June-99 1:03 PM&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1014866"></A>
+<P CLASS="TB">
+05-AUG-2000 23:14:12&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014898"></A>
+<P CLASS="TB">
+05-08-2000&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014906"></A>
+<P CLASS="TB">
+05-AUGUST&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014872"></A>
+<P CLASS="TB">
+08/05&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014936"></A>
+<P CLASS="TB">
+05-August-00 11:14 PM&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1014876"></A>
+<P CLASS="TB">
+15-JAN-2001 03:45:38&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014900"></A>
+<P CLASS="TB">
+15-01-2001&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014908"></A>
+<P CLASS="TB">
+15-JANUARY&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014882"></A>
+<P CLASS="TB">
+01/15&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014938"></A>
+<P CLASS="TB">
+15-January-01 3:45 PM&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1014886"></A>
+<P CLASS="TB">
+14-APR-2002 09:52:26&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014902"></A>
+<P CLASS="TB">
+14-04-2002&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014910"></A>
+<P CLASS="TB">
+14-APRIL&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014892"></A>
+<P CLASS="TB">
+04/14&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1014940"></A>
+<P CLASS="TB">
+14-April-02 9:52 AM&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+</A>
+   <A NAME="1014708"></A>
+<P CLASS="BP">
+As the Discoverer manager, you can specify a default date format mask for date items that users include in their worksheets.
+</P>
+<A NAME="1014960"></A>
+<P CLASS="BP">
+Note that date format masks have no effect on the way the date is stored in the database. 
+</P>
+<A NAME="1014646"></A>
+<P CLASS="BP">
+When you create a new level in a date hierarchy template, you specify a date format for the new level. If you include that new level in the date hierarchy, Discoverer automatically creates a new date item in any folders with date items that use that date hierarchy. 
+</P>
+<A NAME="1014972"></A>
+<P CLASS="BP">
+The formula of the new date item is:
+</P>
+
+<UL>
+
+<A NAME="1014980"></A>
+<P CLASS="BP1">
+EUL_DATE_TRUNC(<EM CLASS="Italic">item_name, format_mask</EM>)
+</P>
+</UL>
+<A NAME="1014977"></A>
+<P CLASS="BP">
+where:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014984"></A>EUL_DATE_TRUNC is a Discoverer function to truncate dates to the format specified by format_mask
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014989"></A><EM CLASS="Italic">item_name</EM> is the name of the item in the folder that uses the date hierarchy
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014990"></A><EM CLASS="Italic">format_mask</EM> is the date format you specified for the new level in the date hierarchy template
+<P>
+</UL>
+<A NAME="1015006"></A>
+<P CLASS="BP">
+The date format you specified for the new level in the date hierarchy template is also used to set the Format Mask property of the new date item.
+</P>
+
+<A NAME="1010437"></A>
+<!--TOC=h1-"1010437"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About truncating date items and the EUL_DATE_TRUNC function</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1010438"></A>
+<P CLASS="BP">
+Truncating date items involves extracting and manipulating individual elements of a date (e.g. the month, the quarter, the year). Truncating date items is useful when comparing dates. Discoverer uses truncated date items to implement date hierarchies.
+</P>
+<A NAME="1015009"></A>
+<P CLASS="BP">
+The EUL_DATE_TRUNC function truncates a date value to a specified date format mask. Using EUL_DATE_TRUNC has several benefits:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014998"></A>it is easier to use EUL_DATE_TRUNC to truncate a date than the alternative method (which is to convert a date to a character string, remove part of the date, and then convert the character string back to a date)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1015007"></A>using EUL_DATE_TRUNC enables truncated dates to be sorted in correct chronological order (e.g. if the date format mask is Q, data for quarters is ordered within each year, and then by year)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1015008"></A>using EUL_DATE_TRUNC enables periods of time to be represented by a single date, which is useful when defining conditions
+<P>
+</UL>
+<A NAME="1014996"></A>
+<P CLASS="BP">
+Discoverer uses EUL_DATE_TRUNC automatically when creating date hierarchies. You can also use EUL_DATE_TRUNC yourself when entering a formula for a date item. 
+</P>
+<A NAME="1017704"></A>
+<P CLASS="BP">
+Note that EUL_DATE_TRUNC always returns dates that comprise day, month, and year elements. If one of these elements is not included in the specified format mask, EUL_DATE_TRUNC uses 01-JAN-1900 as a default date to provide the missing elements. For example:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1017707"></A>if you apply EUL_DATE_TRUNC(date,'YYYY') to the dates 25-aug-1934, 11-nov-1934 and 03-feb-1933, the results are 01-jan-1934, 01-jan-1934 and 01-jan-1933 respectively
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1017712"></A>if you apply EUL_DATE_TRUNC(date,'Mon') to the dates 25-aug-1934, 11-nov-1934 and 03-feb-1933, the results are 01-Aug-1900, 01-Nov-1900 and 01-Feb-1900 respectively
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1017713"></A>if you apply EUL_DATE_TRUNC(date,'DD') to the dates 25-aug-1934, 11-nov-1934 and 03-feb-1933, the results are 25-jan-1900, 11-jan-1900 and 03-jan-1900 respectively
+<P>
+</UL>
+<A NAME="1017714"></A>
+<P CLASS="BP">
+It is likely that the default values that EUL_DATE_TRUNC returns for the missing date elements will be inappropriate or not required. We therefore recommend that you specify (i.e in the EUL_DATE_TRUNC formula) all of the date elements that you want to display. Or put another way, that you only display those date elements that you specified in the EUL_DATE_TRUNC function call.
+</P>
+
+<A NAME="1010420"></A>
+<!--TOC=h1-"1010420"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About applying conditions to truncated date items</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1015053"></A>
+<P CLASS="BP">
+You can include a truncated date item in a condition. The value you specify for the condition must be in the same format as the date format mask of the truncated date item.
+</P>
+<A NAME="1015533"></A>
+<P CLASS="BP">
+Note the following:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1015527"></A>To reduce the risk of an item's date format mask being incompatible with the date format mask specified in the formula used to truncate the item, a warning is displayed whenever you attempt to change the date format mask of a date item that has an editable formula.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1015538"></A>The standard Oracle date format includes time (DD-MON-YY:HH24:MI:SS). When you load date items into the EUL, Discoverer gives them a default date format mask of DD-MON-YYYY (i.e. without the time). If time information is stored in a database column and a user applies a condition to a date item based on that column:
+<P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1015551"></A>the time component is included in the condition (even though the default date format mask indicates that the time component is not included)
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1015552"></A>no results will be returned
+<P>
+</UL>
+
+<A NAME="1015553"></A>
+<P CLASS="BP1">
+To resolve this situation, change the date item's formula to truncate dates to DD-MON-YYYY.
+</P>
+</UL>
+
+<A NAME="1015104"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Example 1</FONT></H4>
+<A NAME="1015492"></A>
+<P CLASS="BP">
+Assume the formula of a date item is EUL_DATE_TRUNC(order_date,'YYYY') and the item is included in a condition as order_date='2001':
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1015105"></A>the dates of all orders placed in 2001 will be returned by the item
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1015106"></A>the date of each order will be shown as 01-JAN-2001 (because EUL_DATE_TRUNC uses the date 01-JAN-1900 to default date elements that are not specified in the format mask)
+<P>
+</UL>
+
+<A NAME="1015503"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Example 2</FONT></H4>
+<A NAME="1015504"></A>
+<P CLASS="BP">
+Assume you have used EUL_DATE_TRUNC to truncate a date item called order_quarter_date, and you want to include the order_quarter_date item in a condition. If the date format mask of the truncated item is 'Q', the formula of the item must use the same date format mask (i.e. EUL_DATE_TRUNC(order_quarter_date,'Q')).
+</P>
+
+<A NAME="1004998"></A>
+<!--TOC=h1-"1004998"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About drilling out to other applications</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1015566"></A>
+<P CLASS="BP">
+From a Discoverer perspective, a database column can contain data itself (e.g. regions, order numbers) or pointers to where data is located outside the database (e.g. names of files containing pictures of stores, URLs). You can set an item property to specify a pointer for Discoverer end users to drill to data outside the database.
+</P>
+<A NAME="1015570"></A>
+<P CLASS="BP">
+To specify the location of the data of the column on which an item is based, use the item's Content Type property as follows (for more information, see <A HREF="adipta01.htm#1005113">"Item Properties dialog"</a>):
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1015575"></A>select NONE to specify that the column contains the data
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1015579"></A>select FILE to specify that the column contains a pointer to information held outside the database (e.g. Microsoft Word documents, HTML pages)
+<P>
+</UL>
+<A NAME="1015557"></A>
+<P CLASS="BP">
+When users include an item that has its Content Type property set to FILE, Discoverer displays the pointers contained in the column. If a user clicks the pointer, Discoverer launches the application associated with the pointer. For example:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1015582"></A>if the pointer is a filename, Discoverer launches the application associated with the filename extension and displays the specified file (e.g. if the filename extension is .doc, Discoverer launches Microsoft Word containing the specified file)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1015583"></A>if the pointer is a URL, Discoverer launches the user's web browser and displays the specified page
+<P>
+</UL>
+
+<A NAME="1015600"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+<A NAME="1015601"></A>
+<P CLASS="BP">
+If the datatype of the column is LONG RAW, the column can contain different kinds of data, including:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1015608"></A>BFILE data - Locators to large binary files stored outside the database. BFILE data enables byte stream I/O access to external LOBs residing on the database server. BFILE data has a maximum size of 4 gigabytes.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1015613"></A>BLOB data - Binary large objects. BLOB data has a maximum size of 4 gigabytes.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1015618"></A>CLOB data -  Character large objects containing single-byte characters. Both fixed-width and variable-width character sets are supported, both using the CHAR database Data Type. CLOB data has a maximum size of 4 gigabytes.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1015623"></A>NCLOB data - Character large objects containing multibyte characters. Both fixed-width and variable-width character sets are supported, both using the NCHAR database Data Type. Stores national character set data. NCLOB data has a maximum size of 4 gigabytes.
+<P>
+</UL>
+<A NAME="1015642"></A>
+<P CLASS="BP">
+If the datatype of the column on which an item is based is LONG RAW, Discoverer provides additional options for the item's Content Type property (i.e. options in addition to FILE and NONE). These options enable you to specify how Discoverer decides which application to launch to view the column's content. For example, if you select DOC as the item's Content Type property, Discoverer will launch the application associated with the .DOC extension (usually Microsoft Word).
+</P>
+
+<A NAME="1004999"></A>
+<!--TOC=h1-"1004999"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to edit item properties</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004944"></A>
+<P CLASS="BP">
+To edit item properties:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1004950"></A>Click an item on the Data page and choose Edit | Properties to display the <A HREF="adipta01.htm#1005113">"Item Properties dialog"</a>.
+<P>
+
+<A NAME="1010804"></A>
+<P CLASS="BP1">
+You can select more than one item at a time by holding down the Ctrl key and clicking another item.
+</P>
+
+<A NAME="1006966"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> Where you select multiple items, all properties that are common to each of the selected items are displayed. If the data for a field is not common to each of the selected items, the field is blank. 
+</P>
+
+<A NAME="1010498"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 8-1 &#32;Item Properties dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1010502">
+
+
+<img src="itpgen.gif" ALT="Text description of itpgen.gif follows.">
+<A HREF="img_text/itpgen.htm"><br>Text description of the illustration itpgen.gif</A>
+
+
+</A>
+ </OL>
+<A NAME="1017184"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1004951"></A>Make the required changes.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1004637"></A>Click OK.
+<P>
+ 
+</OL>
+
+<A NAME="1013258"></A>
+<!--TOC=h1-"1013258"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to create a LOV item class</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1013447"></A>
+<P CLASS="BP">
+To create a LOV item class:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1013354"></A>Choose Insert | Item Class to display the <A HREF="adicwc01.htm#1006338">"Item Class Wizard dialog"</a>.
+<P>
+
+<A NAME="1016867"></A>
+<P CLASS="BP1">
+If Discoverer displays the <A HREF="adicws02.htm#1006273">"Item Class Wizard: Step 2"</a> press the &lt;Back button.
+</P>
+
+<A NAME="1013355"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 8-2 &#32;The Item Class Wizard dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1013359">
+
+
+<img src="itcwz1l.gif" ALT="Text description of itcwz1l.gif follows.">
+<A HREF="img_text/itcwz1l.htm"><br>Text description of the illustration itcwz1l.gif</A>
+
+
+</A>
+ </OL>
+<A NAME="1016866"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1013361"></A>Select the <STRONG CLASS="Bold">List of Values</STRONG> check box.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1013363"></A>Click Next to display the <A HREF="adicws02.htm#1006273">"Item Class Wizard: Step 2"</a>.
+<P>
+
+<A NAME="1013383"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 8-3 &#32;Item Class Wizard: Step 2 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1013387">
+
+
+<img src="itcwzsig.gif" ALT="Text description of itcwzsig.gif follows.">
+<A HREF="img_text/itcwzsig.htm"><br>Text description of the illustration itcwzsig.gif</A>
+
+
+</A>
+ 
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1013391"></A>Select the business area that contains the item you want to use to generate the list of values.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1013392"></A>Select the item that you want to use to generate the list of values.
+<P>
+</OL>
+
+<A NAME="1013393"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> By default, Discoverer uses a SELECT DISTINCT query to retrieve a list of values. If you select an item in a folder with a large number of rows compared to the number of distinct values, then the query can be inefficient. It is more efficient to select an item from a smaller table (attached to the folder with a large number of rows) rather than using the large table itself. If a smaller table does not exist, it might be worth creating it to speed up the list of values process.
+</P>
+
+<A NAME="1013394"></A>
+<P CLASS="BP1">
+Alternatively if you have a small number of values, use a custom folder to create a local list of values within the End User Layer. For more information, see <A HREF="item_cla.htm#1013853">"How to create a list of values using a custom folder"</a>.
+</P>
+ 
+<A NAME="1017249"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1013458"></A>Click Next to display the <A HREF="adicwi02.htm#1006325">"Item Class Wizard: Step 3"</a> to select the items that use this item class.
+<P>
+
+<A NAME="1013407"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 8-4 &#32;Item Class Wizard: Step 3 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1013411">
+
+
+<img src="itcwzsil.gif" ALT="Text description of itcwzsil.gif follows.">
+<A HREF="img_text/itcwzsil.htm"><br>Text description of the illustration itcwzsil.gif</A>
+
+
+</A>
+ </OL>
+
+<A NAME="1013414"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> If you had also selected the <STRONG CLASS="Bold">Drill to detail</STRONG> check box on the first page of the Item Class Wizard, end users will be able to drill between any of the items that you select on this page.
+</P>
+ 
+<A NAME="1017180"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1013415"></A>Move the items that use this item class, from the <STRONG CLASS="Bold">Available items</STRONG> list to the <STRONG CLASS="Bold">Selected items</STRONG> list.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="8"><A NAME="1013821"></A>Click Next to display the <A HREF="adicwa01.htm#1006480">"Item Class Wizard: Step 4"</a> to specify options controlling how LOVs are selected and displayed in Discoverer Plus.
+<P>
+
+<A NAME="1013808"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 8-5 &#32;Item Class Wizard: Step 4 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1013812">
+
+
+<img src="itcwzad4.gif" ALT="Text description of itcwzad4.gif follows.">
+<A HREF="img_text/itcwzad4.htm"><br>Text description of the illustration itcwzad4.gif</A>
+
+
+</A>
+ </OL>
+ 
+<A NAME="1016880"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="9"><A NAME="1015907"></A>Specify the number of values to retrieve in each group, and select other check boxes as required.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="10"><A NAME="1016282"></A>Click Next to display the <A HREF="adicwi01.htm#1006283">"Item Class Wizard: Step 5"</a> dialog and specify a name and description for the new item class.
+<P>
+
+<A NAME="1016283"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 8-6 &#32;Item Class Wizard: Step 5 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1016287">
+
+
+<img src="itcwzn5.gif" ALT="Text description of itcwzn5.gif follows.">
+<A HREF="img_text/itcwzn5.htm"><br>Text description of the illustration itcwzn5.gif</A>
+
+
+</A>
+ </OL>
+ 
+<A NAME="1016891"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="11"><A NAME="1013433"></A>Enter a name and description for your new item class.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="12"><A NAME="1013434"></A>Click Finish.
+<P>
+ 
+
+<A NAME="1016881"></A>
+<P CLASS="BP1">
+Discoverer creates a new List of Values item class.
+</P>
+</OL>
+
+<A NAME="1013145"></A>
+<!--TOC=h1-"1013145"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to create an alternative sort item class</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1013495"></A>
+<P CLASS="BP">
+An alternative sort item class enables you to sort a list of values based on an alternative sort sequence.
+</P>
+<A NAME="1016888"></A>
+<P CLASS="BP">
+To create an alternative sort item class:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1013499"></A>Choose Insert | Item Class to display the <A HREF="adicwc01.htm#1006338">"Item Class Wizard dialog"</a>.
+<P>
+
+<A NAME="1013500"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 8-7 &#32;The Item Class Wizard: Step 1 dialog</EM></FONT></H4>
+  
+<BR><A NAME="1013504">
+
+
+<img src="itcwz1a.gif" ALT="Text description of itcwz1a.gif follows.">
+<A HREF="img_text/itcwz1a.htm"><br>Text description of the illustration itcwz1a.gif</A>
+
+
+</A>
+  </OL>
+<A NAME="1016890"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1013506"></A>Select the <STRONG CLASS="Bold">Alternative sort</STRONG> check box.
+<P>
+ 
+
+<A NAME="1015822"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> If you select the <STRONG CLASS="Bold">Alternative sort</STRONG> check box, the <STRONG CLASS="Bold">List of values</STRONG> check box is automatically selected.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1015825"></A>Click Next to display the <A HREF="adicws02.htm#1006273">"Item Class Wizard: Step 2"</a> dialog.
+<P>
+
+<A NAME="1013528"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 8-8 &#32;Item Class Wizard: Step 2 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1013532">
+
+
+<img src="itcwzsig.gif" ALT="Text description of itcwzsig.gif follows.">
+<A HREF="img_text/itcwzsig.htm"><br>Text description of the illustration itcwzsig.gif</A>
+
+
+</A>
+ </OL>
+ 
+<A NAME="1016889"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1013536"></A>Select the business area that contains the item you want to use to generate the list of values.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1013537"></A>Select the item that you want to use to generate the list of values.
+<P>
+ 
+
+<A NAME="1013538"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> Discoverer uses a SELECT DISTINCT query to retrieve a list of values. If you select an item in a folder with a large number of rows compared to the number of distinct values, then the query can be inefficient. It is more efficient to select an item from a smaller table (attached to the folder with a large number of rows) rather than using the large table itself. If a smaller table does not exist, it might be worth creating it to speed up the list of values process.
+</P>
+
+<A NAME="1013539"></A>
+<P CLASS="BP1">
+Alternatively if you have a small number of values, use a custom folder to create a local list of values within the End User Layer. For more information, see <A HREF="item_cla.htm#1013853">"How to create a list of values using a custom folder"</a>.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1013634"></A>Click Next to display the <A HREF="adicws01.htm#1006263">"Item Class Wizard: Step 3"</a> dialog.
+<P>
+
+<A NAME="1013557"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 8-9 &#32;Item Class Wizard:Step 3 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1013561">
+
+
+<img src="itcwzslt.gif" ALT="Text description of itcwzslt.gif follows.">
+<A HREF="img_text/itcwzslt.htm"><br>Text description of the illustration itcwzslt.gif</A>
+
+
+</A>
+ </OL>
+ 
+<A NAME="1016892"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1013564"></A>Select the item that contains the alternative sort sequence.
+<P>
+ 
+
+<A NAME="1013565"></A>
+<P CLASS="BP1">
+This item must:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1013566"></A>already exist in the database
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1013567"></A>be in the same folder as the item that generates the list of values
+<P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="8"><A NAME="1013568"></A>Click Next to display the <A HREF="adicwi02.htm#1006336">"Item Class Wizard: Step 4"</a> dialog.
+<P>
+ 
+
+<A NAME="1013569"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Hint</STRONG>: Alternatively, if you have a small number of values, use a custom folder to create a local list of values containing an alternative sort order within the End User Layer see <A HREF="item_cla.htm#1014122">"Example 1: Using a custom folder to implement alternative sorts"</a>. 
+</P>
+</OL>
+<A NAME="1017371"></A>
+<P CLASS="BP">
+
+</P>
+
+<A NAME="1013586"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 8-10 &#32;Item Class Wizard: Step 4 dialog</EM></FONT></H4>
+   
+<BR><A NAME="1013590">
+
+
+<img src="itcwzsit.gif" ALT="Text description of itcwzsit.gif follows.">
+<A HREF="img_text/itcwzsit.htm"><br>Text description of the illustration itcwzsit.gif</A>
+
+
+</A>
+  
+<A NAME="1013593"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> If you selected the <STRONG CLASS="Bold">Drill to detail</STRONG> check box on the first page of the Item Class Wizard, end users will be able to drill between any of the items that you select on this page.
+</P>
+ <A NAME="1017191"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="9"><A NAME="1013594"></A>Move the items that use this item class, from the <STRONG CLASS="Bold">Available items</STRONG> list to the <STRONG CLASS="Bold">Selected items</STRONG> list.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="10"><A NAME="1017644"></A>Click Next to display the <A HREF="adicwa01.htm#1006454">"Item Class Wizard: Step 5"</a> to specify options controlling how LOVs are selected and displayed in Discoverer Plus.
+<P>
+
+<A NAME="1017650"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 8-11 &#32;Item Class Wizard: Step 5 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1017653">
+
+
+<img src="itcwzadv.gif" ALT="Text description of itcwzadv.gif follows.">
+<A HREF="img_text/itcwzadv.htm"><br>Text description of the illustration itcwzadv.gif</A>
+
+
+</A>
+ </OL>
+ 
+<A NAME="1017654"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="11"><A NAME="1017659"></A>Specify the number of values to retrieve in each group, and select other check boxes as required.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="12"><A NAME="1017668"></A>Click Next to display the <A HREF="adicwi01.htm#1006268">"Item Class Wizard: Step 6"</a>.
+<P>
+
+<A NAME="1013609"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 8-12 &#32;Item Class Wizard: Step 6 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1017676">
+
+
+<img src="itcwznm.gif" ALT="Text description of itcwznm.gif follows.">
+<A HREF="img_text/itcwznm.htm"><br>Text description of the illustration itcwznm.gif</A>
+
+
+</A>
+ </OL>
+ 
+<A NAME="1016893"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="13"><A NAME="1013616"></A>Enter a name and description for your new item class.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="14"><A NAME="1013617"></A>Click Finish.
+<P>
+ 
+</OL>
+
+<A NAME="1013150"></A>
+<!--TOC=h1-"1013150"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to create a drill to detail item class</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1013679"></A>
+<P CLASS="BP">
+To create a drill to detail item class:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1013683"></A>Choose Insert | Item Class to display the <A HREF="adicwc01.htm#1006338">"Item Class Wizard dialog"</a>.
+<P>
+
+<A NAME="1013684"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 8-13 &#32;The Item Class Wizard: Step 1 dialog</EM></FONT></H4>
+  
+<BR><A NAME="1013688">
+
+
+<img src="itcwz1d.gif" ALT="Text description of itcwz1d.gif follows.">
+<A HREF="img_text/itcwz1d.htm"><br>Text description of the illustration itcwz1d.gif</A>
+
+
+</A>
+  </OL>
+<A NAME="1016894"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1013690"></A>Select the <STRONG CLASS="Bold">Drill to detail</STRONG> check box.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1013692"></A>Click Next to display the <A HREF="adicwi02.htm#1006346">"Item Class Wizard: Step 2"</a> dialog.
+<P>
+
+<A NAME="1013715"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 8-14 &#32;Item Class Wizard: Step 2 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1013719">
+
+
+<img src="itcwzsid.gif" ALT="Text description of itcwzsid.gif follows.">
+<A HREF="img_text/itcwzsid.htm"><br>Text description of the illustration itcwzsid.gif</A>
+
+
+</A>
+ </OL>
+ 
+<A NAME="1016895"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1013723"></A>Move the items that use this item class, from the <STRONG CLASS="Bold">Available items</STRONG> list to the <STRONG CLASS="Bold">Selected items</STRONG> list.
+<P>
+ 
+
+<A NAME="1013779"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> End users will be able to drill between any of the items that you select on this page.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1013724"></A>Click Next to display the <A HREF="adicwi01.htm#1006295">"Item Class Wizard: Step 3"</a> dialog.
+<P>
+
+<A NAME="1013744"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 8-15 &#32;Item Class Wizard: Step 3 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1013748">
+
+
+<img src="itcwznd.gif" ALT="Text description of itcwznd.gif follows.">
+<A HREF="img_text/itcwznd.htm"><br>Text description of the illustration itcwznd.gif</A>
+
+
+</A>
+ </OL>
+ 
+<A NAME="1016896"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1013751"></A>Enter a name and description for your new item class.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1013752"></A>Click Finish.
+<P>
+ 
+</OL>
+
+<A NAME="1013853"></A>
+<!--TOC=h1-"1013853"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to create a list of values using a custom folder</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1007584"></A>
+<P CLASS="BP">
+This alternative method is useful if you have a small number of values. You can use a custom folder to create a local list of values within the End User Layer.
+</P>
+<A NAME="1007585"></A>
+<P CLASS="BP">
+For example, if you want a list of values for North, South, East, and West, create a custom folder called Region_lov and type in the SQL statements suggested below.
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1007587"></A>In the Data page of the Workarea, choose Insert | Folder | Custom to display the <A HREF="adcfdi01.htm#1005113">"Custom Folder dialog"</a>.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1007588"></A>Enter the following SQL statements into the Custom Folder dialog:
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1007589"></A>SELECT 'NORTH' REGION FROM sys.dual<br>
+UNION<br>
+SELECT 'SOUTH' REGION FROM sys.dual<br>
+UNION<br>
+SELECT 'EAST' REGION FROM sys.dual<br>
+UNION<br>
+SELECT 'WEST' REGION FROM sys.dual
+<A NAME="1017799"></A>
+</PRE>
+    
+
+<A NAME="1007590"></A>
+<P CLASS="BP1">
+This query creates one item Region, that can now be used as a list of values which will help optimize performance.
+</P>
+
+<A NAME="1007594"></A>
+<P CLASS="BP1">
+For more information about custom folders, see <A HREF="folders.htm#1004597">Chapter&nbsp;5, "What are custom folders?"</a>.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1007595"></A>Click Validate to validate the SQL statement.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1015950"></A>Click OK.
+<P>
+ 
+</OL>
+
+<A NAME="1004679"></A>
+<!--TOC=h1-"1004679"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to edit an item class</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005275"></A>
+<P CLASS="BP">
+To edit an existing item class:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005279"></A>In the <A HREF="adicta01.htm#1005113">"Workarea: Item Classes tab"</a>, click on the item class that you want to edit and choose Edit | Edit... to display the Edit Item Class dialog.
+<P>
+</OL>
+<A NAME="1007767"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> The Edit Item Class dialog consists of five tabs. These resemble the pages in the Item Class Wizard and enable you to edit the settings you specified when you created the item class.
+</P>
+
+<A NAME="1005287"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 8-16 &#32;Edit Item Class dialog: List of Values tab</EM></FONT></H4>
+   
+<BR><A NAME="1007758">
+
+
+<img src="itcedlv.gif" ALT="Text description of itcedlv.gif follows.">
+<A HREF="img_text/itcedlv.htm"><br>Text description of the illustration itcedlv.gif</A>
+
+
+</A>
+   <A NAME="1016757"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1010569"></A>Display the <A HREF="adicws02.htm#1006304">"Edit Item Class: List of values tab"</a> to change the list of values used in the selected item class.
+<P>
+
+<A NAME="1005294"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 8-17 &#32;Edit Item Class dialog: Alternative Sort tab</EM></FONT></H4>
+ 
+<BR><A NAME="1008939">
+
+
+<img src="itcedalt.gif" ALT="Text description of itcedalt.gif follows.">
+<A HREF="img_text/itcedalt.htm"><br>Text description of the illustration itcedalt.gif</A>
+
+
+</A>
+ </OL>
+ 
+<A NAME="1016758"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1010580"></A>Display the <A HREF="adicws01.htm#1006280">"Edit Item Class: Alternative Sort tab"</a> to change the alternative sort sequence assigned to the list of values for the selected item class.
+<P>
+
+<A NAME="1008954"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 8-18 &#32;Edit Item Class dialog: Select Items tab</EM></FONT></H4>
+ 
+<BR><A NAME="1016465">
+
+
+<img src="itcedsit.gif" ALT="Text description of itcedsit.gif follows.">
+<A HREF="img_text/itcedsit.htm"><br>Text description of the illustration itcedsit.gif</A>
+
+
+</A>
+ </OL>
+ 
+<A NAME="1016759"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1016469"></A>Display the <A HREF="adicwi02.htm#1006354">"Edit Item Class: Select Items tab"</a> to add or remove the items that use the selected item class.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1008956"></A>Select the <STRONG CLASS="Bold">Use these items in drill to detail</STRONG> check box to enable drill to detail between the items that belong to this item class (otherwise, clear it).
+<P>
+
+<A NAME="1005306"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 8-19 &#32;Edit Item Class dialog: Options tab</EM></FONT></H4>
+ 
+<BR><A NAME="1011596">
+
+
+<img src="itcedadv.gif" ALT="Text description of itcedadv.gif follows.">
+<A HREF="img_text/itcedadv.htm"><br>Text description of the illustration itcedadv.gif</A>
+
+
+</A>
+ </OL>
+ 
+<A NAME="1016760"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1011607"></A>Display the <A HREF="adicwa01.htm#1006488">"Edit Item Class: Options tab"</a> to set the advanced LOV options as required.
+<P>
+
+<A NAME="1005311"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 8-20 &#32;Edit Item Class dialog: General tab</EM></FONT></H4>
+ 
+<BR><A NAME="1008983">
+
+
+<img src="itcedgen.gif" ALT="Text description of itcedgen.gif follows.">
+<A HREF="img_text/itcedgen.htm"><br>Text description of the illustration itcedgen.gif</A>
+
+
+</A>
+ </OL>
+ 
+<A NAME="1016761"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1016445"></A>Display the <A HREF="adicwi01.htm#1006303">"Edit Item Class: General tab"</a> to change the name and description of the selected item class. 
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="8"><A NAME="1005266"></A>Click OK.
+<P>
+ 
+</OL>
+
+<A NAME="1010817"></A>
+<!--TOC=h1-"1010817"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to add items to an item class</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1013911"></A>
+<P CLASS="BP">
+Use one of the following methods to add items to an item class:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005326"></A><A HREF="item_cla.htm#1005329">"How to add items to an item class using drag and drop"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005327"></A><A HREF="item_cla.htm#1005336">"How to add items to an item class using the Edit Item Class dialog"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005328"></A><A HREF="item_cla.htm#1016457">"How to add items to an item class using the Item Properties dialog"</a>
+<P>
+</UL>
+
+<A NAME="1005329"></A>
+<!--TOC=h2-"1005329"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to add items to an item class using drag and drop</FONT></H3>
+<!--/TOC=h2-->
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005330"></A>Choose Window | New Window to display a second Workarea.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1005331"></A>Select the Data tab in one Workarea.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005332"></A>Display the Item Classes tab in the other Workarea.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1005333"></A>Select the Item(s) that you want to add to an item class in the Data tab of the Workarea.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1005334"></A>Drag the Items from the Data tab to the item class in the Item classes tab of the Workarea.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1005335"></A>Close one of the Workarea windows.
+<P>
+ 
+</OL>
+
+<A NAME="1005336"></A>
+<!--TOC=h2-"1005336"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to add items to an item class using the Edit Item Class dialog</FONT></H3>
+<!--/TOC=h2-->
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005340"></A>In the <A HREF="adicta01.htm#1005113">"Workarea: Item Classes tab"</a> click on the item class to edit and choose Edit | Edit.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1005341"></A>Display the <A HREF="adicwi02.htm#1006354">"Edit Item Class: Select Items tab"</a>.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005342"></A>Move the items from the <STRONG CLASS="Bold">Available items</STRONG> list to the <STRONG CLASS="Bold">Selected items</STRONG> list to add them to this item class.
+<P>
+ 
+
+<A NAME="1010821"></A>
+<P CLASS="BP1">
+You can select more than one item at a time by holding down the Ctrl key and clicking another item.
+</P>
+
+<A NAME="1005348"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> The <STRONG CLASS="Bold">Available items</STRONG> drop down list enables you to select items from any open business area.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1016451"></A>Click OK.
+<P>
+ 
+</OL>
+<A NAME="1016501"></A>
+<P CLASS="BP">
+For more information see <A HREF="item_cla.htm#1004679">"How to edit an item class"</a>.
+</P>
+
+<A NAME="1016457"></A>
+<!--TOC=h2-"1016457"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to add items to an item class using the Item Properties dialog</FONT></H3>
+<!--/TOC=h2-->
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005355"></A>In the <A HREF="addtab01.htm#1005113">"Workarea: Data tab"</a>, select the item(s) to add to an item class.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1005360"></A>Choose Edit | Properties to display the <A HREF="adipta01.htm#1005113">"Item Properties dialog"</a>.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005361"></A>Specify the item class for the selected item(s) to belong to using the Item class field.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1005362"></A>Click OK.
+<P>
+ 
+</OL>
+<A NAME="1005322"></A>
+<P CLASS="BP">
+For more information, see <A HREF="item_cla.htm#1004999">"How to edit item properties"</a>.
+</P>
+
+<A NAME="1009176"></A>
+<!--TOC=h1-"1009176"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to remove items from an item class</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1009178"></A>
+<P CLASS="BP">
+Use one of the following methods to remove items from an item class:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005407"></A><A HREF="item_cla.htm#1005410">"How to remove items from an item class using a popup menu"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009191"></A><A HREF="item_cla.htm#1005424">"How to remove items from an item class using the Edit Item Class dialog"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009202"></A><A HREF="item_cla.htm#1005441">"How to remove items from an item class using the Item Properties dialog"</a>
+<P>
+</UL>
+
+<A NAME="1005410"></A>
+<!--TOC=h2-"1005410"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to remove items from an item class using a popup menu</FONT></H3>
+<!--/TOC=h2-->
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005411"></A>Display the <A HREF="adicta01.htm#1005113">"Workarea: Item Classes tab"</a>.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1005412"></A>Click the + symbol next to the item class you want to remove items from.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005413"></A>Click the + symbol to expand the <STRONG CLASS="Bold">Items using this item class (with drill to detail)</STRONG> object.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1005414"></A>Select the items to remove from the item class.
+<P>
+ 
+
+<A NAME="1010825"></A>
+<P CLASS="BP1">
+You can select more than one item at a time by holding down the Ctrl key and clicking another item.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1005416"></A>Right click one of the selected items and choose <STRONG CLASS="Bold">Delete Item from Item Class</STRONG> on the popup menu.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1005419"></A>Discoverer Administrator displays the <A HREF="adcdel01.htm#1005113">"Confirm Delete dialog"</a>. 
+<P>
+ 
+
+<A NAME="1010701"></A>
+<P CLASS="BP1">
+For further information, see <A HREF="item_cla.htm#1004624">"How to delete items and item classes"</a>.
+</P>
+</OL>
+
+<A NAME="1005424"></A>
+<!--TOC=h2-"1005424"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to remove items from an item class using the Edit Item Class dialog</FONT></H3>
+<!--/TOC=h2-->
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005425"></A>Click the <A HREF="adicta01.htm#1005113">"Workarea: Item Classes tab"</a>.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1010705"></A>Click the item class to edit and choose Edit | Edit...
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005429"></A>Display the <A HREF="adicwi02.htm#1006354">"Edit Item Class: Select Items tab"</a>.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1005430"></A>Move the items you want to remove from this item class from the <STRONG CLASS="Bold">Selected items</STRONG> list to the <STRONG CLASS="Bold">Available items</STRONG> list.
+<P>
+ 
+
+<A NAME="1010829"></A>
+<P CLASS="BP1">
+You can select more than one item at a time by holding down the Ctrl key and clicking another item.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1005436"></A>Click OK.
+<P>
+ 
+</OL>
+<A NAME="1005440"></A>
+<P CLASS="BP">
+For more information, see <A HREF="item_cla.htm#1004679">"How to edit an item class"</a>.
+</P>
+
+<A NAME="1005441"></A>
+<!--TOC=h2-"1005441"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to remove items from an item class using the Item Properties dialog</FONT></H3>
+<!--/TOC=h2-->
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005442"></A>In the <A HREF="addtab01.htm#1005113">"Workarea: Data tab"</a> select the item(s) to remove from an item class.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1005443"></A>Choose Edit | Properties to display the <A HREF="adipta01.htm#1005113">"Item Properties dialog"</a>.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005448"></A>Specify None in the <STRONG CLASS="Bold">Item class</STRONG> field.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1005449"></A>Click OK.
+<P>
+ 
+</OL>
+<A NAME="1016713"></A>
+<P CLASS="BP">
+For more information, see <A HREF="item_cla.htm#1004999">"How to edit item properties"</a>.
+</P>
+
+<A NAME="1016715"></A>
+<!--TOC=h1-"1016715"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to view the items that use an item class</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1016716"></A>
+<P CLASS="BP">
+To view the items that use a specific item class:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1013924"></A>In the <A HREF="adicta01.htm#1005113">"Workarea: Item Classes tab"</a>, click the + symbol next to the item class that you want to expand.
+<P>
+
+<A NAME="1013925"></A>
+<P CLASS="BP1">
+This reveals two objects under the item class.
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1013926"></A>List of values
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1013927"></A>Items using this item class (with drill to detail)
+<P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1013928"></A>Click the + symbol next to <STRONG CLASS="Bold">Items using this item class (with drill to detail)</STRONG> to display the list of items that belong to this item class.
+<P>
+ 
+</OL>
+
+<A NAME="1005480"></A>
+<!--TOC=h1-"1005480"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to view the list of values for an item</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1010029"></A>
+<P CLASS="BP">
+To view the list of values associated with an item:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005481"></A>In the <A HREF="addtab01.htm#1005113">"Workarea: Data tab"</a> expand the item that has a list of values you want to view.
+<P>
+</OL>
+
+<A NAME="1013895"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005482"></A>Discoverer may warn you that retrieving the list of values may take a long time. When you retrieve a list of values Discoverer submits a SELECT DISTINCT query to the database (which selects the distinct set of values for the item). If there is a large number of values in the database, retrieving the list can take some time. The End User Layer has a record of the length of time it takes to retrieve the values. If this length of time is greater than 15 seconds, Discoverer displays a warning. You can change this limit in Discoverer Plus under Tools | Options | Query Governor.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005489"></A>If the item you want to display a list of values for exists in more than one folder, choose the item in the folder that has the least number of rows. This will return the list of values in the shortest amount of time.
+<P>
+</UL>
+
+<A NAME="1005490"></A>
+<!--TOC=h1-"1005490"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to view the list of values for an item class</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005491"></A>
+<P CLASS="BP">
+To view the list of values associated with an item class:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005492"></A>Display the <A HREF="adicta01.htm#1005113">"Workarea: Item Classes tab"</a>.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1013894"></A>Click the + symbol to expand the item class whose list of values you want to view.
+<P>
+ 
+
+<A NAME="1005493"></A>
+<P CLASS="BP1">
+This reveals two items under the item class:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005494"></A>List of values
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005495"></A>Items using this item class
+<P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005496"></A>Click the + symbol to expand the <STRONG CLASS="Bold">List of values</STRONG> object to display the list of values for the item class.
+<P>
+
+<A NAME="1005503"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 8-21 &#32;Workarea: Item classes tab displaying a list of values</EM></FONT></H4>
+ 
+<BR><A NAME="1010056">
+
+
+<img src="itctablv.gif" ALT="Text description of itctablv.gif follows.">
+<A HREF="img_text/itctablv.htm"><br>Text description of the illustration itctablv.gif</A>
+
+
+</A>
+  
+</OL>
+<A NAME="1011314"></A>
+<P CLASS="BP">
+
+</P>
+
+<A NAME="1010069"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1017195"></A>Discoverer may warn you that retrieving the list of values may take a long time. When you retrieve a list of values, Discoverer submits a SELECT DISTINCT query to the database (which selects the distinct set of values for the item). If there is a large number of values in the database, retrieving the list can take some time. The End User Layer has a record of the length of time it takes to retrieve the values. If this length of time is greater than 15 seconds, Discoverer displays a warning. You can change this limit in Discoverer Plus under Tools | Options | Query Governor.
+<P>
+</UL>
+
+<A NAME="1004624"></A>
+<!--TOC=h1-"1004624"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to delete items and item classes</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005513"></A>
+<P CLASS="BP">
+To delete items and item classes:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005514"></A>Select the item(s) or item class(es) to delete as follows:
+<P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005515"></A>select the items to delete from the <A HREF="addtab01.htm#1005113">"Workarea: Data tab"</a>
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005516"></A>select the item classes to delete from the <A HREF="adicta01.htm#1005113">"Workarea: Item Classes tab"</a>
+<P>
+</UL>
+
+<A NAME="1011316"></A>
+<P CLASS="BP1">
+You can select more than one item or item class at a time by holding down the Ctrl key and clicking another one.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1005521"></A>Choose Edit | Delete to open the <A HREF="adcdel01.htm#1005113">"Confirm Delete dialog"</a>.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005525"></A>(optional) To see the objects that might be affected by deleting the items or item classes you selected for deletion:
+<P>
+ 
+
+<OL CLASS="LA2" TYPE="a">
+
+<LI CLASS="LA2" TYPE="a" VALUE="1"><A NAME="1013138"></A>Click Impact to display the <A HREF="adimpa01.htm#1005691">"Impact dialog"</a>.
+<P>
+
+<A NAME="1005531"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 8-22 &#32;The Impact dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1010123">
+
+
+<img src="impact.gif" ALT="Text description of impact.gif follows.">
+<A HREF="img_text/impact.htm"><br>Text description of the illustration impact.gif</A>
+
+
+</A>
+ 
+<A NAME="1017698"></A>
+<P CLASS="BP2">
+The Impact dialog enables you to review the other EUL objects that might be affected when you delete an item or item class.
+</P>
+
+<A NAME="1017783"></A>
+<P CLASS="BP2">
+<STRONG CLASS="Bold">Note:</STRONG> The Impact dialog does not show the impact on workbooks saved to the file system (i.e. in .dis files).
+</P>
+ 
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1017688"></A>(optional) Select a row in the Impact dialog to view text at the bottom of the list, indicating what affect the current action will have on the EUL object.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1016108"></A>Click Close when you have finished reviewing the impact that the deletion will have.
+<P>
+</OL>
+</OL>
+<A NAME="1016901"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1005511"></A>Click Yes to confirm you want to delete the selected item(s) or item class(es).
+<P>
+ 
+</OL>
+
+<A NAME="1017049"></A>
+<!--TOC=h1-"1017049"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Notes about maintaining items and item classes</FONT></H2>
+
+
+<!--/TOC=h1-->
+
+<A NAME="1017050"></A>
+<!--TOC=h2-"1017050"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Notes about items based on columns with user-defined datatypes</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1017171"></A>
+<P CLASS="BP">
+When a table is created, a datatype must be specified for each of the columns in the table. Oracle provides a number of built-in datatypes (e.g. number, date, varchar2) as well as several categories for user-defined datatypes (e.g. object types, varrays, nested tables). User-defined datatypes are sometimes called abstract datatypes. User-defined datatypes use Oracle built-in datatypes and other user-defined datatypes as the building blocks of types that model the structure and behavior of data in applications.
+</P>
+<A NAME="1017075"></A>
+<P CLASS="BP">
+Note that when you create a Discoverer folder based on a table using the Load Wizard, any columns that have user-defined datatypes are ignored (i.e. no items are created in the folder).
+</P>
+<A NAME="1017076"></A>
+<P CLASS="BP">
+If you want to include an attribute of a user-defined datatype as an item in a Discoverer folder, you must do one of the following:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1017098"></A>create a custom folder and define a column with a built-in datatype in the folder's SQL statement to access the attribute of the user-defined datatype on which you want to base the item (for more information about creating custom folders, see <A HREF="folders.htm#1004602">Chapter&nbsp;5, "How to create custom folders"</a>)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1017102"></A>create a database view, define  a column with a built-in datatype  in the view definition to access the attribute of the user-defined datatype on which you want to base the item, and specify the view as the object on which to base a simple folder when using the Load Wizard (for more information about using the Load Wizard, see <A HREF="folders.htm#1004600">Chapter&nbsp;5, "How to create simple folders from the database"</a>)
+<P>
+</UL>
+<A NAME="1017072"></A>
+<P CLASS="BP">
+To access the attributes of a user-defined datatype, you will have to be familiar with the appropriate syntax. For more information about user-defined datatypes and accessing their attributes, see the Oracle documentation supplied with your version of the database. 
+</P>
+
+
+
+
+
+
+<!-- Start Footer -->
+</DIV>
+
+<DIV CLASS="OUTD">
+<HR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+<TD VALIGN="BOTTOM" WIDTH="33%">
+<TABLE CELLSPACING="0" CELLPADDING="0">
+<TR>
+<TD ALIGN="CENTER"><A HREF="schedule.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+
+<TD ALIGN="CENTER"><A HREF="joins.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+    
+</TR>
+</TABLE>
+</TD>
+<TD ALIGN="CENTER" WIDTH="34%">
+<A HREF="./html/cpyr.htm"><IMG SRC="./gifs/oracle.gif" ALT="Oracle" BORDER="0"><BR>
+<FONT SIZE="-2">Copyright &copy 2003 Oracle Corporation.</FONT></A>
+<BR>
+<FONT SIZE="-2">All Rights Reserved.</FONT>
+</TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="33%"> 
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="144">
+<TR>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+  
+</DIV>
+
+</BODY>
+</HTML>
+

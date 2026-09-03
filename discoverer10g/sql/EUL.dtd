@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XML Spy v3.0 NT (http://www.xmlspy.com) by Paolo (ORACLE CORPORATION UK LTD) -->
+<!--DTD file to define the syntax of Discoverer 4.1 export files.-->
+<!--Created by W.Garratt 23-May-2000-->
+<!--Updated by N.Aslam 03-Jul-2000-->
+<!--Updated by P. Fragapane 02-Aug-2000-->
+<!--Updated by N. Aslam 04-Oct-2000-->
+<!ENTITY % ELEMENT_PROPERTIES '
+Id CDATA #IMPLIED
+CreatedBy CDATA #IMPLIED
+CreatedDate CDATA #IMPLIED
+UpdatedBy CDATA #IMPLIED
+UpdatedDate CDATA #IMPLIED 
+DeveloperKeyFrozen (True | False) "False" '>
+<!ENTITY % NAMED_ELEMENT_PROPERTIES '
+Name CDATA #IMPLIED
+DeveloperKey CDATA #IMPLIED
+Description CDATA #IMPLIED 
+UserProperty1 CDATA #IMPLIED 
+UserProperty2 CDATA #IMPLIED'>
+<!ENTITY % ITEM_PROPERTIES '
+Sequence CDATA #IMPLIED 
+DataType CDATA #IMPLIED 
+MaxDisplayWidth CDATA #IMPLIED
+ MaxDataWidth CDATA #IMPLIED 
+FormatMask CDATA #IMPLIED 
+Alignment (Default | Left | Center | Right) "Default" 
+WordWrap (False | True) "False" 
+Placement (Unknown | Measure | Axis | XAxis | YAxis | ZAxis) "Unknown" 
+Hidden (False | True) "False" 
+CaseStorage (Unknown | Upper | Lower | Mixed) "Unknown" 
+CaseDisplay (Unchanged | Lower | Upper | InitCapped) "Unchanged" 
+DisplayNullValue CDATA #IMPLIED 
+Heading CDATA #IMPLIED 
+UserDefinedFormat CDATA #IMPLIED 
+ExternalColumnName CDATA #IMPLIED '>
+<!ENTITY % OBJECT_PROPERTIES '
+ExternalObjectName CDATA #IMPLIED
+ExternalObjectOwner CDATA #IMPLIED
+ExternalDatabaseLink CDATA #IMPLIED
+Hidden (False | True) "False" 
+NonDeterministic (False | True) "False" SQL CDATA #IMPLIED CBOHint CDATA #IMPLIED DistinctFlag CDATA #IMPLIED'>
+<!ENTITY % COMMON_SUB_ELEMENTS '
+BinaryProperty*, InternalProperty*, ExternalProperty*'>
+<!ELEMENT BinaryPropertySegment (#PCDATA)>
+<!ATTLIST BinaryPropertySegment
+	Value CDATA #IMPLIED
+>
+<!ELEMENT BinaryProperty (BinaryPropertySegment*)>
+<!ATTLIST BinaryProperty
+	Name CDATA #REQUIRED
+>
+<!ELEMENT InternalProperty (#PCDATA)>
+<!ATTLIST InternalProperty
+	Name CDATA #REQUIRED
+	Value CDATA #IMPLIED
+>
+<!ELEMENT ExternalProperty (#PCDATA)>
+<!ATTLIST ExternalProperty
+	Name CDATA #REQUIRED
+	Value CDATA #IMPLIED
+>
+<!ELEMENT ElementRef (UniqueIdent*)>
+<!ATTLIST ElementRef
+	Name CDATA #REQUIRED
+	Type CDATA #IMPLIED
+>
+<!ELEMENT UniqueIdent (ElementRef*)>
+<!ATTLIST UniqueIdent
+	ConstraintName CDATA #REQUIRED
+	Name CDATA #IMPLIED
+	DeveloperKey CDATA #IMPLIED
+	RoleFlag (False | True) "False"
+	Username CDATA #IMPLIED
+	NameMN CDATA #IMPLIED
+	Id CDATA #IMPLIED
+	BitmapPosition CDATA #IMPLIED
+>
+<!ELEMENT Formula (ElementRef*)>
+<!ATTLIST Formula
+	ExpressionString CDATA #IMPLIED
+>
+<!ELEMENT EndUserLayerExport (BusinessArea*, EulUser*, SimpleObject*, ComplexObject*, CustomObject*, Domain*, ItemHierarchy*, DateHierarchy*, Function*, SummaryRefreshSet*, ASMPolicy?, Document*)*>
+<!ATTLIST EndUserLayerExport
+	SourceEULId CDATA #REQUIRED
+	SourceEULVersion CDATA #REQUIRED
+	ExportFileVersion CDATA #REQUIRED
+	MinimumCodeVersion CDATA #REQUIRED
+>
+<!ELEMENT EulUser (%COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST EulUser
+	%ELEMENT_PROPERTIES; CDATA #IMPLIED
+	Username CDATA #IMPLIED
+	RoleFlag CDATA #IMPLIED
+	SecurityModel CDATA #IMPLIED
+	BatchCommitSize CDATA #IMPLIED
+	BatchExpiry CDATA #IMPLIED
+	BatchJobsLimit CDATA #IMPLIED
+	BatchQueryTimeLimit CDATA #IMPLIED
+	BatchRepositoryUser CDATA #IMPLIED
+	BatchWindowEnd CDATA #IMPLIED
+	BatchWindowStart CDATA #IMPLIED
+	QueryEstimateLimit CDATA #IMPLIED
+	QueryTimeLimit CDATA #IMPLIED
+	RowFetchLimit CDATA #IMPLIED
+	UsePublicPrivileges CDATA #IMPLIED
+>
+<!ELEMENT BusinessArea (GrantedBusinessArea*, BAOBJLink*, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST BusinessArea
+	%ELEMENT_PROPERTIES; 
+	%NAMED_ELEMENT_PROPERTIES; 
+	ExternalName CDATA #IMPLIED
+>
+<!ELEMENT BAOBJLink (ElementRef*, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST BAOBJLink
+	Sequence CDATA #IMPLIED
+	%ELEMENT_PROPERTIES; 
+>
+<!ELEMENT GrantedBusinessArea (ElementRef*, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST GrantedBusinessArea
+	%ELEMENT_PROPERTIES; 
+	PrivilegeType (ReadOnly | Administrative) #IMPLIED
+>
+<!ELEMENT GrantedDocument (ElementRef*, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST GrantedDocument
+	%ELEMENT_PROPERTIES; 
+	PrivilegeType (ReadOnly | Administrative) #IMPLIED
+>
+<!ELEMENT SimpleObject (ColumnItem*, ComplexItem*, Filter*, Parameter*, ForeignKey*, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST SimpleObject
+	%ELEMENT_PROPERTIES; 
+	%NAMED_ELEMENT_PROPERTIES; 
+	%OBJECT_PROPERTIES; 
+	ExternalTableName CDATA #IMPLIED
+>
+<!ELEMENT CustomObject (ComplexItem*, ColumnItem*, Filter*, Parameter*, ForeignKey*, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST CustomObject
+	%ELEMENT_PROPERTIES; 
+	%NAMED_ELEMENT_PROPERTIES; 
+	%OBJECT_PROPERTIES; 
+	CustomSQL CDATA #IMPLIED
+>
+<!ELEMENT ComplexObject (ComplexItem*, Filter*, Parameter*, ForeignKey*, ObjectDependency*, ObjectJoinUsage*, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST ComplexObject
+	%ELEMENT_PROPERTIES; 
+	%NAMED_ELEMENT_PROPERTIES; 
+	%OBJECT_PROPERTIES; 
+>
+<!ELEMENT ObjectDependency (ElementRef+, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST ObjectDependency
+	%ELEMENT_PROPERTIES; 
+>
+<!ELEMENT ObjectJoinUsage (ElementRef+, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST ObjectJoinUsage
+	%ELEMENT_PROPERTIES; 
+	JoinModified (True | False) "False"
+>
+<!ELEMENT Parameter (Formula, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST Parameter
+	%ELEMENT_PROPERTIES; 
+	%NAMED_ELEMENT_PROPERTIES; 
+	%ITEM_PROPERTIES; 
+	RuntimeItem (False | True) "False"
+	AllowMultipleValues (False | True) "False"
+>
+<!ELEMENT ComplexItem (ElementRef*, Formula?, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST ComplexItem
+	%ELEMENT_PROPERTIES; 
+	%NAMED_ELEMENT_PROPERTIES; 
+	%ITEM_PROPERTIES; CDATA #IMPLIED
+	RuntimeItem (False | True) "False"
+>
+<!ELEMENT ColumnItem (ElementRef*, Formula?, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST ColumnItem
+	%ELEMENT_PROPERTIES; 
+	%NAMED_ELEMENT_PROPERTIES; 
+	%ITEM_PROPERTIES; CDATA #IMPLIED
+	Nullable (False | True) "False"
+>
+<!ELEMENT Filter (ElementRef*, Formula*, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST Filter
+	%ELEMENT_PROPERTIES; 
+	%NAMED_ELEMENT_PROPERTIES; 
+	DataType CDATA #IMPLIED
+	ExternalFilterName CDATA #IMPLIED
+	Sequence CDATA #IMPLIED
+	ApplicationType (Unselected | Selected | AlwaysSelected) "Unselected"
+	RuntimeFilter (False | True) "False"
+	CaseSensitive (False | True) "False"
+>
+<!ELEMENT ForeignKey (ElementRef*, Formula?, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST ForeignKey
+	%ELEMENT_PROPERTIES; 
+	%NAMED_ELEMENT_PROPERTIES; 
+	RemoteKey CDATA #IMPLIED
+	ExternalKeyName CDATA #IMPLIED
+	AllowDetailNoMaster (False | True) "False"
+	AllowMasterNoDetail (False | True) "False"
+	OneToOne (False | True) "False"
+	Mandatory (False | True) "False"
+>
+<!ELEMENT ItemHierarchy (ElementRef*, HierNode*, ItemHierarchySeg*, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST ItemHierarchy
+	%ELEMENT_PROPERTIES; 
+	%NAMED_ELEMENT_PROPERTIES; (True | False) "False"
+	ExternalHierarchyName CDATA #IMPLIED
+	SystemGenerated CDATA #IMPLIED
+>
+<!ELEMENT ItemHierarchySeg (IHSFKLink*, ElementRef*, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST ItemHierarchySeg
+	%ELEMENT_PROPERTIES; 
+>
+<!ELEMENT IHSFKLink (ElementRef*, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST IHSFKLink
+	%ELEMENT_PROPERTIES; 
+>
+<!ELEMENT HNITLink (ElementRef*, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST HNITLink
+	%ELEMENT_PROPERTIES; 
+>
+<!ELEMENT HierNode (ElementRef*, HNITLink*)*>
+<!ATTLIST HierNode
+	%ELEMENT_PROPERTIES; 
+	%NAMED_ELEMENT_PROPERTIES; (True | False) "False"
+	ExternalNodeName CDATA #IMPLIED
+>
+<!ELEMENT DateHierarchy (DateHierNode*, DateHierarchySeg*, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST DateHierarchy
+	%ELEMENT_PROPERTIES; 
+	%NAMED_ELEMENT_PROPERTIES; 
+	ExternalHierarchyName CDATA #IMPLIED
+	SystemGenerated (False | True) "False"
+	DefaultHierarchy (False | True) "False"
+>
+<!ELEMENT DateHierarchySeg (ElementRef*, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST DateHierarchySeg
+	%ELEMENT_PROPERTIES; 
+>
+<!ELEMENT DateHierNode (ElementRef*, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST DateHierNode
+	%ELEMENT_PROPERTIES; 
+	%NAMED_ELEMENT_PROPERTIES; (True | False) "False"
+	DataFormatMask CDATA #IMPLIED
+	DisplayFormatMask CDATA #IMPLIED
+>
+<!ELEMENT Document (GrantedDocument*, BinaryProperty*, ElementRef*, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST Document
+	%ELEMENT_PROPERTIES; 
+	%NAMED_ELEMENT_PROPERTIES; (True | False) "False"
+	ContentType CDATA #IMPLIED
+	Length CDATA #IMPLIED
+>
+<!ELEMENT Domain (ElementRef*, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST Domain
+	%ELEMENT_PROPERTIES; 
+	%NAMED_ELEMENT_PROPERTIES; 
+	Cached CDATA #IMPLIED
+	Cardinality CDATA #IMPLIED
+	DataType CDATA #IMPLIED
+	LastExecuteTime CDATA #IMPLIED
+	LogicalItemFlag CDATA #IMPLIED
+	SystemGenerated CDATA #IMPLIED
+>
+<!ELEMENT Function (FunctionArg*, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST Function
+	%ELEMENT_PROPERTIES; 
+	%NAMED_ELEMENT_PROPERTIES; CDATA #IMPLIED
+	Available (False | True) "True"
+	ExternalName CDATA #IMPLIED
+	ExternalOwner CDATA #IMPLIED
+	ExternalPackage CDATA #IMPLIED
+	FunctionType CDATA #IMPLIED
+	ExternalDatabaseLink CDATA #IMPLIED
+	Hidden (False | True) "False"
+	MaximumArgs CDATA #IMPLIED
+	MinimumArgs CDATA #IMPLIED
+	ReturnDataType CDATA #IMPLIED
+>
+<!ELEMENT FunctionArg (ElementRef*, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST FunctionArg
+	%ELEMENT_PROPERTIES; 
+	%NAMED_ELEMENT_PROPERTIES; CDATA #IMPLIED
+	DataType CDATA #IMPLIED
+	Optional (False | True) "False"
+	Position CDATA #IMPLIED
+>
+<!ELEMENT SummaryRefreshSet (ElementRef*, SummaryBaseObject*, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST SummaryRefreshSet
+	%ELEMENT_PROPERTIES; 
+	%NAMED_ELEMENT_PROPERTIES; (True | False) "False"
+	AutomaticRefresh (True | False) "False"
+	JobId CDATA #IMPLIED
+	LastRefresh CDATA #IMPLIED
+	NextRefresh CDATA #IMPLIED
+	NumFrequencyUnits CDATA #IMPLIED
+	Online (True | False) "True"
+	RefreshCount CDATA #IMPLIED
+	State (Unknown | BuildPending | BuildCurrent | BuildOK | BuildFailed | RefreshNeeded | External | Delete | Query | Insert | Analyze | Initializing | Unusable | Invalid | Stale | RefreshNeededEUL | RefreshNeededServer | RefreshingSummary | MetaDataMigrationRequired) #IMPLIED
+>
+<!ELEMENT SummaryBaseObject (ElementRef*, SummaryAxisItem*, SummaryMeasureItem*, EulMaterialisedSDO*, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST SummaryBaseObject
+	%ELEMENT_PROPERTIES; 
+	Active (True | False) "False"
+	ExternalDatabaseLink CDATA #IMPLIED
+	ExternalObjectName CDATA #IMPLIED
+	ExternalObjectOwner CDATA #IMPLIED
+	Internal (True | False) "False"
+	ItemDeleted (True | False) "False"
+	ItemModified (True | False) "False"
+	JoinState (Valid | Modified | Deleted) #IMPLIED
+	MaxItemCombinations CDATA #IMPLIED
+	Validity (True | False) "False"
+>
+<!ELEMENT SummaryAxisItem (ElementRef*, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST SummaryAxisItem
+	%ELEMENT_PROPERTIES; (True | False) "False"
+	ItemModified (True | False) "False"
+	Visible (True | False) "False"
+	ServerColumnName CDATA #IMPLIED
+>
+<!ELEMENT SummaryMeasureItem (ElementRef*, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST SummaryMeasureItem
+	%ELEMENT_PROPERTIES; (True | False) "False"
+	ItemModified (True | False) "False"
+	Visible (True | False) "False"
+	ServerColumnName CDATA #IMPLIED
+>
+<!ELEMENT EulMaterialisedSDO (ElementRef*, SummaryAxisItem*, SummaryMeasureItem*, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST EulMaterialisedSDO
+	%ELEMENT_PROPERTIES; 
+	State (Unknown | BuildPending | BuildCurrent | BuildOK | BuildFailed | RefreshNeeded | External | Delete | Query | Insert | Analyze | Initializing | Unusable | Invalid | Stale | RefreshNeededEUL | RefreshNeededServer | RefreshingSummary | MetaDataMigrationRequired) #REQUIRED
+	CommitSize CDATA #IMPLIED
+	ServerErrorCode CDATA #IMPLIED
+	ServerErrorText CDATA #IMPLIED
+	RefreshRequired (True | False) "False"
+	BitmapPosition CDATA #IMPLIED
+	LastRefresh CDATA #IMPLIED
+	NumAxisItems CDATA #IMPLIED
+	NumJoins CDATA #IMPLIED
+	NumRows CDATA #IMPLIED
+	NumTimesUsed CDATA #IMPLIED
+	ObjectSQL1 CDATA #IMPLIED
+	ObjectSQL2 CDATA #IMPLIED
+	ObjectSQL3 CDATA #IMPLIED
+	TableName CDATA #IMPLIED
+	TableOwner CDATA #IMPLIED
+	DatabaseLink CDATA #IMPLIED
+	Internal (True | False) "False"
+	Active (True | False) "False"
+	ItemDeleted (True | False) "False"
+	ItemModified (True | False) "False"
+	JoinState (Valid | Modified | Deleted) "Valid"
+	Validity (True | False) "False"
+	ExternalDatabaseLink CDATA #IMPLIED
+	ExternalObjectName CDATA #IMPLIED
+	ExternalObjectOwner CDATA #IMPLIED
+	SQL CDATA #IMPLIED
+>
+<!ELEMENT NonMaterialisedView (ElementRef*, SummaryAxisItem*, SummaryMeasureItem*, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST NonMaterialisedView
+	%ELEMENT_PROPERTIES; 
+	BitmapPosition CDATA #IMPLIED
+	LastRefresh CDATA #IMPLIED
+	NumAxisItems CDATA #IMPLIED
+	NumJoins CDATA #IMPLIED
+	NumRows CDATA #IMPLIED
+	NumTimesUsed CDATA #IMPLIED
+	ObjectSQL1 CDATA #IMPLIED
+	ObjectSQL2 CDATA #IMPLIED
+	ObjectSQL3 CDATA #IMPLIED
+	TableName CDATA #IMPLIED
+	TableOwner CDATA #IMPLIED
+	DatabaseLink CDATA #IMPLIED
+	Internal (True | False) "False"
+	Active (True | False) "False"
+	ItemDeleted (True | False) "False"
+	ItemModified (True | False) "False"
+	JoinState (Valid | Modified | Deleted) "Valid"
+	Validity (True | False) "False"
+	ExternalDatabaseLink CDATA #IMPLIED
+	ExternalObjectName CDATA #IMPLIED
+	ExternalObjectOwner CDATA #IMPLIED
+	SQL CDATA #IMPLIED
+>
+<!ELEMENT ASMPolicy (ASMPSummaryObjectConstraint*, ASMPObjectConstraint*, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST ASMPolicy
+	%ELEMENT_PROPERTIES; 
+	%NAMED_ELEMENT_PROPERTIES; (True | False) "False"
+>
+<!ELEMENT ASMPObjectConstraint (ElementRef*, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST ASMPObjectConstraint
+	ConstraintType CDATA #IMPLIED
+	%ELEMENT_PROPERTIES; CDATA #IMPLIED
+>
+<!ELEMENT ASMPSummaryObjectConstraint (ElementRef*, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST ASMPSummaryObjectConstraint
+	ConstraintType CDATA #IMPLIED
+	%ELEMENT_PROPERTIES; CDATA #IMPLIED
+>
+<!ELEMENT ASMPUserConstraint (ElementRef*, %COMMON_SUB_ELEMENTS;)*>
+<!ATTLIST ASMPUserConstraint
+	%ELEMENT_PROPERTIES; CDATA #IMPLIED
+>

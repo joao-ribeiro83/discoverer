@@ -1,0 +1,1967 @@
+
+<!DOCTYPE html public "-//w3c//dtd html 3.2 transitional//en.us">
+<HTML lang="en.us">
+<HEAD>
+
+<META NAME="Generator" CONTENT="Quadralay WebWorks Publisher 5.0.4">
+<META NAME="Page" CONTENT="DefaultSingle">
+<META NAME="Title" CONTENT="Creating and maintaining hierarchies">
+<meta http-equiv="Content-Type" content="text/html;  charset=iso-8859-1">
+
+<TITLE>Creating and maintaining hierarchies</TITLE>
+	   
+<LINK REL="home" HREF="../../library.htm" TITLE="Library">
+<LINK REL="toc" HREF="toc.htm" TITLE="Contents">
+<LINK REL="index" HREF="bookix.htm" TITLE="Index">
+<LINK REL="copyright" HREF="./html/cpyr.htm" TITLE="Copyright">
+<LINK REL="up" HREF="toc.htm" TITLE="Up">
+<LINK REL="next" HREF="managing.htm" TITLE="Next">
+<LINK REL="previous" HREF="conditio.htm" TITLE="Previous">
+
+
+</HEAD>
+       
+<BODY BGCOLOR="#ffffff">
+
+<A NAME="top"></A>
+
+
+
+
+<A HREF="#BEGIN">Skip Headers</A><BR><BR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+ 
+<TD ALIGN="LEFT" VALIGN="TOP"><FONT COLOR="#330099" FACE="Helvetica, Arial, sans-serif"><STRONG>Oracle Discoverer Administrator Administration Guide (Online Help)<BR>10<i>g</i> (9.0.4)</STRONG><BR>Part Number B10270-01</FONT></TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="144">
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+
+
+
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<HR>
+<P>
+<A HREF="conditio.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+
+<A HREF="managing.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+    
+
+
+<A NAME="BEGIN"></A>
+
+
+
+<DIV CLASS="IND">
+<!-- End Header -->
+
+
+
+
+
+
+
+<A NAME="1656"></A>
+<!--TOC=Title-"1656"-->
+<H1 CLASS="Title"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099">12<BR>Creating and maintaining hierarchies</FONT></H1>
+
+<!--/TOC=Title-->
+
+<A NAME="1004595"></A>
+<!--TOC=h1-"1004595"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Creating and maintaining hierarchies</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1007616"></A>
+<P CLASS="BP">
+This chapter explains how to implement and maintain hierarchies using Discoverer Administrator, and contains the following topics:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007612"></A><A HREF="hierarch.htm#1007611">"What are hierarchies?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007629"></A><A HREF="hierarch.htm#1004596">"What are item hierarchies?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007637"></A><A HREF="hierarch.htm#1004598">"What are date hierarchies?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007645"></A><A HREF="hierarch.htm#1004602">"How to create item hierarchies"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007654"></A><A HREF="hierarch.htm#1004603">"How to create date hierarchies and templates"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007662"></A><A HREF="hierarch.htm#1004605">"How to edit item hierarchies"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007671"></A><A HREF="hierarch.htm#1004606">"How to edit date hierarchy templates"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007679"></A><A HREF="hierarch.htm#1004607">"How to apply a date hierarchy template to a date item"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007688"></A><A HREF="hierarch.htm#1004608">"How to set the default date hierarchy template"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007697"></A><A HREF="hierarch.htm#594142">"How to delete item hierarchies or date hierarchy templates"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008562"></A><A HREF="hierarch.htm#1008233">"How to modify default date hierarchies that use date format 'RR' following upgrade to Oracle Discoverer Administrator"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010550"></A><A HREF="hierarch.htm#1009300">"About creating a hierarchy using the CONNECT BY clause in a custom folder"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011556"></A><A HREF="hierarch.htm#1009433">"How to create a hierarchy with a custom folder and the CONNECT BY clause, using the emp table from the scott schema"</a>
+<P>
+</UL>
+
+<A NAME="1007611"></A>
+<!--TOC=h1-"1007611"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are hierarchies?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005013"></A>
+<P CLASS="BP">
+Hierarchies are default drill paths between items that you define in Discoverer Administrator. You create hierarchies between items in a business area to provide Discoverer end users with a default drill hierarchy. 
+</P>
+<A NAME="1007971"></A>
+<P CLASS="BP">
+There are two kinds of hierarchy:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007976"></A>item hierarchies
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007977"></A>date hierarchies
+<P>
+</UL>
+<A NAME="1006454"></A>
+<P CLASS="BP">
+Discoverer end users can use hierarchies to:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005015"></A>drill up to a more general level of detail (e.g. Store to City to Region to Country)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005016"></A>drill down to a finer level of detail (e.g. Country to Region to City to Store)
+<P>
+</UL>
+<A NAME="1004640"></A>
+<P CLASS="BP">
+Hierarchies can link items in a business area where no relationship is defined in the database. For more information about business areas, see <A HREF="business.htm#1002341">Chapter&nbsp;4, "What are business areas?"</a>.
+</P>
+
+<A NAME="1004596"></A>
+<!--TOC=h1-"1004596"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are item hierarchies?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005103"></A>
+<P CLASS="BP">
+Item hierarchies are relationships between items other than dates.
+</P>
+<A NAME="1005038"></A>
+<P CLASS="BP">
+An example of an item hierarchy: 
+</P>
+
+<A NAME="1006471"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 12-1 &#32;Sales item hierarchy</EM></FONT></H4>
+   
+<BR><A NAME="1006475">
+
+
+<img src="hiecsale.gif" ALT="Text description of hiecsale.gif follows.">
+<A HREF="img_text/hiecsale.htm"><br>Text description of the illustration hiecsale.gif</A>
+
+
+</A>
+   <A NAME="1005041"></A>
+<P CLASS="BP">
+The Sales item hierarchy links a country with its regions, cities and stores.
+</P>
+<A NAME="1006495"></A>
+<P CLASS="BP">
+To use this hierarchy a Discoverer end user could use a report that shows sales from a country perspective. The Discoverer end user could then drill down from country to see sales per region, sales per city or sales per store, and then drill back up to the country level.
+</P>
+<A NAME="1005044"></A>
+<P CLASS="BP">
+The Sales item hierarchy from a Discoverer end user perspective is shown below.
+</P>
+
+<A NAME="1005047"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 12-2 &#32;Sales item hierarchy - Discoverer end user perspective</EM></FONT></H4>
+   
+<BR><A NAME="1005074">
+
+
+<img src="hiuser.gif" ALT="Text description of hiuser.gif follows.">
+<A HREF="img_text/hiuser.htm"><br>Text description of the illustration hiuser.gif</A>
+
+
+</A>
+   <A NAME="1005050"></A>
+<P CLASS="BP">
+The figure below shows the Sales item hierarchy from a database perspective.
+</P>
+
+<A NAME="1005053"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 12-3 &#32;Sales item hierarchy - database perspective</EM></FONT></H4>
+   
+<BR><A NAME="1005072">
+
+
+<img src="hidb.gif" ALT="Text description of hidb.gif follows.">
+<A HREF="img_text/hidb.htm"><br>Text description of the illustration hidb.gif</A>
+
+
+</A>
+   <A NAME="1007991"></A>
+<P CLASS="BP">
+Note that you do not have to specify that Los Angeles is in the West. You only have to specify that City is under Region in your item hierarchy.
+</P>
+
+<A NAME="1004598"></A>
+<!--TOC=h1-"1004598"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are date hierarchies?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005256"></A>
+<P CLASS="BP">
+Date hierarchies are relationships between date items.
+</P>
+<A NAME="1005257"></A>
+<P CLASS="BP">
+An example of a date hierarchy:
+</P>
+
+<A NAME="1006571"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 12-4 &#32;Sales date hierarchy</EM></FONT></H4>
+   
+<BR><A NAME="1006575">
+
+
+<img src="hiedtex.gif" ALT="Text description of hiedtex.gif follows.">
+<A HREF="img_text/hiedtex.htm"><br>Text description of the illustration hiedtex.gif</A>
+
+
+</A>
+   <A NAME="1007476"></A>
+<P CLASS="BP">
+The Sales date hierarchy links a year with its quarters, months, weeks and days.
+</P>
+<A NAME="1007477"></A>
+<P CLASS="BP">
+To use this hierarchy a Discoverer end user could use a report that shows total sales for each year. The Discoverer end user could then drill down from year to show sales per quarter, sales per month, sales per week and the sales per day, and then drill back up to sales per year.
+</P>
+<A NAME="1006631"></A>
+<P CLASS="BP">
+A section of the Sales date hierarchy from a Discoverer end user perspective is shown below.
+</P>
+
+<A NAME="1006632"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 12-5 &#32;Sales date hierarchy - Discoverer end user perspective</EM></FONT></H4>
+   
+<BR><A NAME="1006650">
+
+
+<img src="hiedtexu.gif" ALT="Text description of hiedtexu.gif follows.">
+<A HREF="img_text/hiedtexu.htm"><br>Text description of the illustration hiedtexu.gif</A>
+
+
+</A>
+   <A NAME="1005104"></A>
+<P CLASS="BP">
+The figure below shows the Sales date hierarchy from a database perspective.
+</P>
+
+<A NAME="1005125"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 12-6 &#32;Sample date hierarchy - database perspective</EM></FONT></H4>
+   
+<BR><A NAME="1008024">
+
+
+<img src="hidtdb.gif" ALT="Text description of hidtdb.gif follows.">
+<A HREF="img_text/hidtdb.htm"><br>Text description of the illustration hidtdb.gif</A>
+
+
+</A>
+   <A NAME="1008027"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> Each level in the date hierarchy is a calculation based on the Sales_Orders.SALES_DATE column. The calculations are produced by a date hierarchy template (for more information, see <A HREF="hierarch.htm#1004600">"What are date hierarchy templates?"</a>).
+</P>
+
+<A NAME="1004600"></A>
+<!--TOC=h2-"1004600"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are date hierarchy templates?</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1005163"></A>
+<P CLASS="BP">
+Date hierarchy templates enable you to define a date hierarchy that you can apply to date items. A date item uses information that specifies the date, month, year and time. Discoverer uses this information to calculate for example, quarter, week and days of the week. A date hierarchy template automatically creates items based on a date item, for example to represent the year or month
+</P>
+<A NAME="1008037"></A>
+<P CLASS="BP">
+You will find it more efficient to re-use a date hierarchy template by applying it to date items rather than redefining the same date hierarchy repeatedly for each date item.
+</P>
+<A NAME="1006613"></A>
+<P CLASS="BP">
+You can use the date hierarchy templates (supplied with Discoverer Administrator) to define many common date hierarchies, or you can create your own customized date hierarchies.
+</P>
+<A NAME="1005161"></A>
+<P CLASS="BP">
+Discoverer Administrator includes a default date hierarchy template (see the Date hierarchy template figure below) that enables you to drill from year to quarter to month to day: 
+</P>
+
+<A NAME="1006678"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 12-7 &#32;Date hierarchy template</EM></FONT></H4>
+   
+<BR><A NAME="1006731">
+
+
+<img src="hidtmpl.gif" ALT="Text description of hidtmpl.gif follows.">
+<A HREF="img_text/hidtmpl.htm"><br>Text description of the illustration hidtmpl.gif</A>
+
+
+</A>
+   
+<A NAME="1005283"></A>
+<!--TOC=h2-"1005283"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About date hierarchies and performance</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1008077"></A>
+<P CLASS="BP">
+If you apply a date hierarchy to a date item from an indexed table, a query that includes one of these date items will not use the indexes (which can reduce performance). You can optimize performance in Discoverer Plus by applying date hierarchies to date items from tables that do not rely on indexes.
+</P>
+
+<A NAME="1005322"></A>
+<!--TOC=h3-"1005322"-->
+<H4 CLASS="H3"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Example of how a date hierarchy can affect performance in Discoverer Plus</FONT></H4>
+<!--/TOC=h3-->
+<A NAME="1005699"></A>
+<P CLASS="BP">
+When you load a large fact table (i.e. a table with many rows) that contains a date column (e.g. transaction_date) Discoverer applies the default date hierarchy to the date item (for more information, see <A HREF="adlwiz04.htm#1005847">"Load Wizard: Step 4 dialog"</a>).
+</P>
+<A NAME="1004989"></A>
+<P CLASS="BP">
+Discoverer creates a folder containing date items such as Year, Quarter and Month using the EUL_DATE_TRUNC function (for more information, see <A HREF="item_cla.htm#1010437">Chapter&nbsp;8, "About truncating date items and the EUL_DATE_TRUNC function"</a>). When a Discoverer end user runs queries that include these items, any indexes that include the date item in the fact table are not used. Where indexes are not used, performance can be affected.
+</P>
+<A NAME="1004993"></A>
+<P CLASS="BP">
+It is recommended therefore that you do not apply date hierarchies to date items in folders based on fact tables, as fact tables are likely to have indexes. 
+</P>
+
+<A NAME="1005695"></A>
+<!--TOC=h3-"1005695"-->
+<H4 CLASS="H3"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Example of how performance can be retained</FONT></H4>
+<!--/TOC=h3-->
+<A NAME="1005703"></A>
+<P CLASS="BP">
+To retain performance you should apply date hierarchies to a separate dimension table. 
+</P>
+<A NAME="1005698"></A>
+<P CLASS="BP">
+For example, a transaction_date item in a fact table might join to another dimension table (e.g. Time Period) that specifies time periods. You can load this dimension table using the Load Wizard and apply date hierarchies to it. You can then create a complex folder containing items from both the dimension and fact tables, including the items created by the date hierarchy such as Year or Quarter. When a Discoverer end user uses queries that include date hierarchy items Discoverer can use the date column indexes on the fact table. This can considerably improve performance.
+</P>
+
+<A NAME="1004602"></A>
+<!--TOC=h1-"1004602"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to create item hierarchies</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004642"></A>
+<P CLASS="BP">
+To create an item hierarchy:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1004646"></A>Choose Insert | Hierarchy to display the <A HREF="adhwiz01.htm#1005113">"Hierarchy Wizard dialog"</a>.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1004648"></A>Select the Item Hierarchy radio button and click Next to display the <A HREF="adsis201.htm#1005981">"Edit Hierarchy dialog: Items tab"</a>.
+<P>
+
+<A NAME="1004655"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 12-8 &#32;Hierarchy Wizard: Step 2 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1004656">
+
+
+<img src="hwz21.gif" ALT="Text description of hwz21.gif follows.">
+<A HREF="img_text/hwz21.htm"><br>Text description of the illustration hwz21.gif</A>
+
+
+</A>
+  
+
+<A NAME="1008821"></A>
+<P CLASS="BP1">
+Here you select which items to use in this item hierarchy.
+</P>
+</OL>
+<A NAME="1009025"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1007541"></A>Move the items that you want to include in this item hierarchy from the list on the left to the list on the right.
+<P>
+ 
+
+<A NAME="1007542"></A>
+<P CLASS="BP1">
+You can select more than one item at a time by holding down the Ctrl key and clicking another item.
+</P>
+
+<A NAME="1005385"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> The order of items in the hierarchy list determines the drill down sequence that the Discoverer end user will use to analyze the data. The item hierarchy is arranged in the order that you include the items. For example, Region - City - Store.
+</P>
+
+<A NAME="1004666"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> You can select items from multiple folders but the folders must be joined. If the folders are joined with more than one join, Discoverer will prompt you with the Choose Join dialog to select the correct join to use. 
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1004670"></A>(optional) To move an item in the hierarchy to a different position, select the item in the right-hand list and click:
+<P>
+ 
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1004671"></A>Promote to move the item higher in the hierarchy
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1004672"></A>Demote to move the item lower in the hierarchy
+<P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1004673"></A>(optional) To group two or more items so that they appear on the same level of the hierarchy, select the items and click Group (for more information, see <A HREF="adsis201.htm#1005979">"Hierarchy Wizard: Step 2"</a>).
+<P>
+ 
+
+<A NAME="1007534"></A>
+<P CLASS="BP1">
+You can select more than one item at a time by holding down the Ctrl key and clicking another item.
+</P>
+
+<A NAME="1007064"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> To ungroup a group of items in the hierarchy, select the group and click Ungroup.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1007065"></A>(optional) To rename an item, click on the item in the right hand list and specify a name in the <STRONG CLASS="Bold">Description</STRONG> field.
+<P>
+ 
+
+<A NAME="1004681"></A>
+<P CLASS="BP1">
+The description you specify is the label the user sees in Discoverer Plus. If you don't specify a name, by default each level of the item hierarchy uses the item name.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1004683"></A>Click Next to open the <A HREF="adnhie01.htm#1005847">"Hierarchy Wizard: Step 3"</a>.
+<P>
+
+<A NAME="1004689"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 12-9 &#32;Hierarchy Wizard: Step 3 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1004690">
+
+
+<img src="hwz31.gif" ALT="Text description of hwz31.gif follows.">
+<A HREF="img_text/hwz31.htm"><br>Text description of the illustration hwz31.gif</A>
+
+
+</A>
+ 
+<LI CLASS="LN1" TYPE="1" VALUE="8"><A NAME="1004692"></A>Specify a name and description for the new item hierarchy.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="9"><A NAME="1004694"></A>Click Finish to create the item hierarchy.
+<P>
+</OL>
+ 
+<A NAME="1007072"></A>
+<P CLASS="BP">
+Discoverer displays the item hierarchy in the Hierarchies tab of the Workarea.
+</P>
+
+<A NAME="1004603"></A>
+<!--TOC=h1-"1004603"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to create date hierarchies and templates</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004724"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG><STRONG CLASS="Bold"> </STRONG>You can create date hierarchies only if you use an Oracle database.
+</P>
+<A NAME="1005468"></A>
+<P CLASS="BP">
+To create a date hierarchy:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1004728"></A>Choose Insert | Hierarchy to display the <A HREF="adhwiz01.htm#1005113">"Hierarchy Wizard dialog"</a>.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1004730"></A>Select the Date Hierarchy option and click Next to open the <A HREF="addfs201.htm#1005959">"Hierarchy Wizard: Step 2"</a>.
+<P>
+
+<A NAME="1004736"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 12-10 &#32;Hierarchy Wizard: Step 2 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1004737">
+
+
+<img src="hwz22.gif" ALT="Text description of hwz22.gif follows.">
+<A HREF="img_text/hwz22.htm"><br>Text description of the illustration hwz22.gif</A>
+
+
+</A>
+ 
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1004739"></A>(optional) To create a new date format click New Format... to display the <A HREF="adndfo01.htm#1005113">"New Date Format dialog"</a>.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1008172"></A>Move the date formats to include in this date hierarchy from the list on the left to the list on the right.
+<P>
+ 
+
+<A NAME="1007595"></A>
+<P CLASS="BP1">
+You can select more than one date format at a time by holding down the Ctrl key and clicking another date format.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1004745"></A>(optional) To move a date format in the hierarchy to a different position, select the date format in the list on the right and click:
+<P>
+ 
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1004746"></A>Promote to move the date format higher in the hierarchy
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1004747"></A>Demote to move the date format lower in the hierarchy
+<P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1004748"></A>(optional) To rename a date format, click on the date format in the list on the right and specify the new name in the <STRONG CLASS="Bold">Description</STRONG> field.
+<P>
+ 
+
+<A NAME="1004751"></A>
+<P CLASS="BP1">
+The description you specify is the label the user sees in Discoverer Plus.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1004753"></A>Click Next to display the <STRONG CLASS="Bold"><A HREF="aditud01.htm#1005873"></STRONG>"Hierarchy Wizard: Step 3"<STRONG CLASS="Bold"></a></STRONG>.
+<P>
+
+<A NAME="1004759"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 12-11 &#32;Hierarchy Wizard: Step 3 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1004760">
+
+
+<img src="hwz32.gif" ALT="Text description of hwz32.gif follows.">
+<A HREF="img_text/hwz32.htm"><br>Text description of the illustration hwz32.gif</A>
+
+
+</A>
+  
+
+<A NAME="1008829"></A>
+<P CLASS="BP1">
+Here you select which date items will use this date hierarchy.
+</P>
+</OL>
+<A NAME="1009029"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="8"><A NAME="1004762"></A>Move the date items that will use this date hierarchy from the <STRONG CLASS="Bold">Available Items</STRONG> list to the <STRONG CLASS="Bold">Selected Items</STRONG> list.
+<P>
+ 
+
+<A NAME="1007546"></A>
+<P CLASS="BP1">
+You can select more than one item at a time by holding down the Ctrl key and clicking another item.
+</P>
+
+<A NAME="1004768"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Hint</STRONG>: To create just a date hierarchy template, do not select any date items on this page. Later, you can apply this template to date items by modifying their item properties (for more information, see <A HREF="hierarch.htm#1004607">"How to apply a date hierarchy template to a date item"</a>).
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="9"><A NAME="1004769"></A>Click Next to open the <A HREF="adnhie01.htm#1005849">"Hierarchy Wizard: Step 4"</a>.
+<P>
+
+<A NAME="1008603"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 12-12 &#32;Hierarchy Wizard: Step 4 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1008607">
+
+
+<img src="hwz42.gif" ALT="Text description of hwz42.gif follows.">
+<A HREF="img_text/hwz42.htm"><br>Text description of the illustration hwz42.gif</A>
+
+
+</A>
+ 
+<LI CLASS="LN1" TYPE="1" VALUE="10"><A NAME="1004778"></A>Specify a name and description for the new date hierarchy.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="11"><A NAME="1004780"></A>(optional) To make this date hierarchy template the default, select the <STRONG CLASS="Bold">Set as default date hierarchy</STRONG> check box.
+<P>
+</OL>
+
+<A NAME="1007950"></A>
+<P CLASS="BP1">
+If you select the <STRONG CLASS="Bold">Set as default date hierarchy</STRONG> check box, the date hierarchy template is displayed as the default in the <A HREF="adlwiz04.htm#1005847">"Load Wizard: Step 4 dialog"</a> in the drop down list under the <STRONG CLASS="Bold">Date hierarchies</STRONG> check box.
+</P>
+ 
+<A NAME="1011716"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="12"><A NAME="1007954"></A>Click Finish to create the date hierarchy and apply it to the date items that you selected in the Hierarchy Wizard: Step 4 dialog. 
+<P>
+ 
+
+<A NAME="1007120"></A>
+<P CLASS="BP1">
+The date hierarchies and the date hierarchy template now appear on the <A HREF="adhtab01.htm#1005113">"Workarea: Hierarchies tab"</a>.
+</P>
+</OL>
+
+<A NAME="1004605"></A>
+<!--TOC=h1-"1004605"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to edit item hierarchies</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005631"></A>
+<P CLASS="BP">
+To edit an existing item hierarchy:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1004821"></A>Select a hierarchy on the Hierarchies tab and choose Edit | Edit...to display the the <A HREF="adnhie01.htm#1005875">"Edit Hierarchy dialog: Name tab"</a>. 
+<P>
+
+<A NAME="1004823"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 12-13 &#32;Edit Hierarchy dialog: Name tab</EM></FONT></H4>
+  
+<BR><A NAME="1004824">
+
+
+<img src="hiedn1.gif" ALT="Text description of hiedn1.gif follows.">
+<A HREF="img_text/hiedn1.htm"><br>Text description of the illustration hiedn1.gif</A>
+
+
+</A>
+  
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1004826"></A>Edit the Hierarchy as required.
+<P>
+ 
+
+<A NAME="1004827"></A>
+<P CLASS="BP1">
+The Edit Hierarchy dialog is divided into two tabs.
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1004828"></A>Items
+<P>
+
+<A NAME="1005652"></A>
+<P CLASS="BP2">
+Use this tab to add or remove the items that use this hierarchy.
+</P>
+ 
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1004829"></A>Name
+<P>
+
+<A NAME="1005658"></A>
+<P CLASS="BP2">
+Use this tab to edit the hierarchy's name and description.
+</P>
+ 
+</UL>
+
+<A NAME="1004830"></A>
+<P CLASS="BP1">
+For more information about the above tabs see <A HREF="adsis201.htm#1005981">"Edit Hierarchy dialog: Items tab"</a> or <A HREF="adnhie01.htm#1005875">"Edit Hierarchy dialog: Name tab"</a>.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1004638"></A>Click OK.
+<P>
+ 
+</OL>
+
+<A NAME="1004606"></A>
+<!--TOC=h1-"1004606"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to edit date hierarchy templates</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004845"></A>
+<P CLASS="BP">
+This section describes how to edit an existing date hierarchy template. When you edit a date hierarchy template, all date items that use the date hierarchy template are modified to reflect the changes.
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1004852"></A>Click the date hierarchy template on the Hierarchies page and choose Edit | Edit... to display the <A HREF="adnhie01.htm#1005875">"Edit Hierarchy dialog: Name tab"</a>.
+<P>
+
+<A NAME="1004853"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 12-14 &#32;Edit Hierarchy dialog: Name tab</EM></FONT></H4>
+  
+<BR><A NAME="1004854">
+
+
+<img src="hiednd.gif" ALT="Text description of hiednd.gif follows.">
+<A HREF="img_text/hiednd.htm"><br>Text description of the illustration hiednd.gif</A>
+
+
+</A>
+  
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1004856"></A>Edit the hierarchy as required.
+<P>
+ 
+
+<A NAME="1004857"></A>
+<P CLASS="BP1">
+The Edit Hierarchy dialog is divided in to two tabs:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1004858"></A>Date formats
+<P>
+
+<A NAME="1005733"></A>
+<P CLASS="BP2">
+Use this tab to change the date formats and their position in this date hierarchy template.
+</P>
+ 
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1004859"></A>Name
+<P>
+
+<A NAME="1005740"></A>
+<P CLASS="BP2">
+Use this tab to edit the date hierarchy template's name and description.
+</P>
+ 
+</UL>
+
+<A NAME="1005754"></A>
+<P CLASS="BP1">
+For more information about the above tabs see <A HREF="addfs201.htm#1005971">"Edit Hierarchy dialog: Date formats tab"</a> or <A HREF="adnhie01.htm#1005875">"Edit Hierarchy dialog: Name tab"</a>.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1004637"></A>Click OK.
+<P>
+ 
+</OL>
+
+<A NAME="1004607"></A>
+<!--TOC=h1-"1004607"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to apply a date hierarchy template to a date item</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004876"></A>
+<P CLASS="BP">
+This section describes how to apply a date hierarchy template to an existing date item. 
+</P>
+<A NAME="1004880"></A>
+<P CLASS="BP">
+When you apply a date hierarchy template to an existing date item, Discoverer Administrator automatically creates all the date items that are required to complete the date hierarchy. These new date items appear in the same folder as the original date item (prefixed with the name of the original date item). If you change the date hierarchy template that is applied to a date item, Discoverer creates new date items to reflect the new date hierarchy template. However Discoverer does not remove the date items from the previous date hierarchy. If you want to remove date items from a previous date hierarchy you must remove them manually.
+</P>
+<A NAME="1008769"></A>
+<P CLASS="BP">
+For example, if you create the date hierarchy YY/QQ/MM and assign it to the date item Transaction Date, Discoverer creates the following items in the folder:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008772"></A>Transaction Date YY 
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008800"></A>Transaction Date QQ
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008801"></A>Transaction Date MM
+<P>
+</UL>
+<A NAME="1004887"></A>
+<P CLASS="BP">
+If you then create a new date hierarchy WW/DD and assign it to Transaction Date, Discoverer creates the following additional items in the folder:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008786"></A>Transaction Date WW
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008790"></A>Transaction Date DD
+<P>
+</UL>
+<A NAME="1008791"></A>
+<P CLASS="BP">
+Discoverer does not delete the other three date items created previously.
+</P>
+<A NAME="1008785"></A>
+<P CLASS="BP">
+To apply a date hierarchy template to a date item:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005770"></A>Click the date item on the Data tab and choose Edit | Properties to display the <A HREF="adipta01.htm#1005113">"Item Properties dialog"</a>.
+<P>
+
+<A NAME="1007445"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Hint</STRONG>: To apply a single date hierarchy template to more than one date item at a time, select all the date items before opening the Properties dialog. For more information, see <A HREF="item_cla.htm#1004999">Chapter&nbsp;8, "How to edit item properties"</a>.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1004894"></A>Select the date hierarchy template for this date item to use from the drop-down list in the <STRONG CLASS="Bold">Date Hierarchy</STRONG> field.
+<P>
+ 
+
+<A NAME="1004895"></A>
+<P CLASS="BP1">
+Select None to make the date item not use a date hierarchy template.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1004896"></A>Click OK.
+<P>
+ 
+</OL>
+
+<A NAME="1004608"></A>
+<!--TOC=h1-"1004608"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to set the default date hierarchy template</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004926"></A>
+<P CLASS="BP">
+The default date hierarchy template is displayed as the default selection in the Load Wizard step 4 in the <STRONG CLASS="Bold">Date hierarchies, using:</STRONG> drop down list. For more information see <A HREF="adlwiz04.htm#1005847">"Load Wizard: Step 4 dialog"</a>.
+</P>
+<A NAME="1004930"></A>
+<P CLASS="BP">
+To set the default date hierarchy template:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1004937"></A>Expand the Date hierarchy templates on the <A HREF="adhtab01.htm#1005113">"Workarea: Hierarchies tab"</a> to display all the date hierarchy templates.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1007475"></A>Select the date hierarchy template you want to set as the default.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1007460"></A>Choose Edit | Edit...to display the <A HREF="adnhie01.htm#1005875">"Edit Hierarchy dialog: Name tab"</a>.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1004938"></A>Select the <STRONG CLASS="Bold">Set as default date hierarchy</STRONG> check box on the Name tab.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1004632"></A>Click OK.
+<P>
+ 
+</OL>
+
+<A NAME="594142"></A>
+<!--TOC=h1-"594142"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to delete item hierarchies or date hierarchy templates</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004950"></A>
+<P CLASS="BP">
+To delete item hierarchies or date hierarchy templates:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1004951"></A>Select the item hierarchy or date hierarchy template on the <A HREF="adhtab01.htm#1005113">"Workarea: Hierarchies tab"</a>.
+<P>
+
+<A NAME="1007550"></A>
+<P CLASS="BP1">
+You can select more than one hierarchy at a time by holding down the Ctrl key and clicking another hierarchy.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1004956"></A>Choose Edit | Delete to open the <A HREF="adcdel01.htm#1005113">"Confirm Delete dialog"</a>.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1007841"></A>(optional) To see the objects that might be affected by deleting this hierarchy or hierarchy template:
+<P>
+ 
+
+<OL CLASS="LA2" TYPE="a">
+
+<LI CLASS="LA2" TYPE="a" VALUE="1"><A NAME="1007845"></A>Click Impact to display the <A HREF="adimpa01.htm#1005691">"Impact dialog"</a>.
+<P>
+
+<A NAME="1007847"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 12-15 &#32;The Impact dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1007851">
+
+
+<img src="impacta.gif" ALT="Text description of impacta.gif follows.">
+<A HREF="img_text/impacta.htm"><br>Text description of the illustration impacta.gif</A>
+
+
+</A>
+ 
+<A NAME="1011735"></A>
+<P CLASS="BP2">
+The Impact dialog enables you to review the other EUL objects that might be affected when you delete a hierarchy or hierarchy template.
+</P>
+
+<A NAME="1011747"></A>
+<P CLASS="BP2">
+<STRONG CLASS="Bold">Note:</STRONG> The Impact dialog does not show the impact on workbooks saved to the file system (i.e. in .dis files).
+</P>
+ 
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1011723"></A>(optional) Select a row to view text at the bottom of the list, indicating what affect the current action will have on the EUL object.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1008156"></A>When you have finished reviewing the impact of deleting the hierarchy or hierarchy template, click Close to close the Impact dialog.
+<P>
+</OL>
+</OL>
+<A NAME="1009034"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1004631"></A>Click Yes to delete the selected hierarchies or hierarchy templates.
+<P>
+ 
+</OL>
+<A NAME="1008227"></A>
+<P CLASS="BP">
+
+</P>
+
+<A NAME="1008233"></A>
+<!--TOC=h1-"1008233"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to modify default date hierarchies that use date format 'RR' following upgrade to Oracle Discoverer Administrator</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1008234"></A>
+<P CLASS="BP">
+After upgrading to Oracle Discoverer Administrator, if a date format in a default date hierarchy uses the date format 'RR' you must modify it to 'YYYY' and then remove any affected date items (i.e. date items that use the 'RR' date format) from the business area. This action is necessary to ensure that materialized views can be successfully created (for more information about materialized views, see <A HREF="managing.htm#1004708">Chapter&nbsp;13, "What are materialized views?"</a>).
+</P>
+<A NAME="1008424"></A>
+<P CLASS="BP">
+To modify a default date hierarchy that uses the date format 'RR' so that it uses 'YYYY' you must complete the following tasks:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008425"></A><A HREF="hierarch.htm#1008315">"Modify default date hierarchy replacing the date format 'RR' with 'YYYY'"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008433"></A><A HREF="hierarch.htm#1008366">"Remove remaining date items that use the date format 'RR'"</a>
+<P>
+</UL>
+
+<A NAME="1008315"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Modify default date hierarchy replacing the date format 'RR' with 'YYYY'</FONT></H4>
+<A NAME="1008490"></A>
+<P CLASS="BP">
+To modify a default date hierarchy to use the date format 'YYYY':
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1008277"></A>Click the <A HREF="adhtab01.htm#1005113">"Workarea: Hierarchies tab"</a>.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1008332"></A>Expand <STRONG CLASS="Bold">Date hierarchy templates</STRONG> then highlight the default date hierarchy that uses the date format 'RR'.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1008328"></A>Choose Edit | Edit... to display the <A HREF="addfs201.htm#1005971">"Edit Hierarchy dialog: Date formats tab"</a>.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1008284"></A>Replace each 'RR' date format with a 'YYYY' date format.
+<P>
+ 
+
+<A NAME="1008534"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> Repeat the above steps for each affected default date hierarchy.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1008360"></A>Click OK to save your changes.
+<P>
+ 
+</OL>
+<A NAME="1008308"></A>
+<P CLASS="BP">
+Once you have applied the 'YYYY' format to the affected default date hierarchy, you can remove remaining date items that use the date format 'RR'. 
+</P>
+
+<A NAME="1008366"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Remove remaining date items that use the date format 'RR'</FONT></H4>
+<A NAME="1008491"></A>
+<P CLASS="BP">
+To remove date items that use the date format 'RR':
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1008290"></A>Click the <A HREF="addtab01.htm#1005113">"Workarea: Data tab"</a>.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1008389"></A>Highlight a date item that uses the date format 'RR'.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1008390"></A>Choose Edit | Delete to delete the affected date item.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1008555"></A>Repeat the above steps for each date item that still uses the date format 'RR'.
+<P>
+ 
+</OL>
+
+<A NAME="1009300"></A>
+<!--TOC=h1-"1009300"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About creating a hierarchy using the CONNECT BY clause in a custom folder</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1009315"></A>
+<P CLASS="BP">
+A database table might contain a recursive hierarchy, that is where a relationship exists between different records in one table. This form of hierarchy is not unlike a series of self joins and it cannot be used directly by Discoverer (sometimes described as a value hierarchy). However, you can make Discoverer use a recursive hierarchy if you create a custom folder and use the CONNECT BY clause.
+</P>
+<A NAME="1010747"></A>
+<P CLASS="BP">
+For example, if you look at the emp table in the Scott schema (supplied with Oracle databases), some of the numbers appear in both of the columns empno and mgr. The numbers appear in both columns because an employee's manager is identified by the employee number. This illustrates how a recursive hierarchy exists in the emp table. 
+</P>
+<A NAME="1011507"></A>
+<P CLASS="BP">
+The table below illustrates the relationships that exist between rows in the columns empno, ename and mgr from the emp table.
+</P>
+   
+<A NAME="1011814">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1009943"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>EMPNO</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1009945"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>ENAME</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1009958"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>MGR</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010026"></A>
+<P CLASS="TB">
+7369&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010028"></A>
+<P CLASS="TB">
+SMITH &nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010030"></A>
+<P CLASS="TB">
+7902&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010032"></A>
+<P CLASS="TB">
+7499&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010034"></A>
+<P CLASS="TB">
+ALLEN&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010036"></A>
+<P CLASS="TB">
+7698&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010038"></A>
+<P CLASS="TB">
+7521&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010040"></A>
+<P CLASS="TB">
+WARD&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010042"></A>
+<P CLASS="TB">
+7698&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010044"></A>
+<P CLASS="TB">
+7566&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010046"></A>
+<P CLASS="TB">
+JONES&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010048"></A>
+<P CLASS="TB">
+7839&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010050"></A>
+<P CLASS="TB">
+7654&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010052"></A>
+<P CLASS="TB">
+MARTIN&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010054"></A>
+<P CLASS="TB">
+7698&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010056"></A>
+<P CLASS="TB">
+7698&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010058"></A>
+<P CLASS="TB">
+BLAKE &nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010060"></A>
+<P CLASS="TB">
+7839&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010062"></A>
+<P CLASS="TB">
+7782&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010064"></A>
+<P CLASS="TB">
+CLARK&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010066"></A>
+<P CLASS="TB">
+7839&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010904"></A>
+<P CLASS="TB">
+7788&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010906"></A>
+<P CLASS="TB">
+SCOTT&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010908"></A>
+<P CLASS="TB">
+7566&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010898"></A>
+<P CLASS="TB">
+7839&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010900"></A>
+<P CLASS="TB">
+KING&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010902"></A>
+<P CLASS="TB">
+&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010892"></A>
+<P CLASS="TB">
+7844&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010894"></A>
+<P CLASS="TB">
+TURNER&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010896"></A>
+<P CLASS="TB">
+7698&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010886"></A>
+<P CLASS="TB">
+7876&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010888"></A>
+<P CLASS="TB">
+ADAMS&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010890"></A>
+<P CLASS="TB">
+7788&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010880"></A>
+<P CLASS="TB">
+7900&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010882"></A>
+<P CLASS="TB">
+JAMES&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010884"></A>
+<P CLASS="TB">
+7698&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010874"></A>
+<P CLASS="TB">
+7902&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010876"></A>
+<P CLASS="TB">
+FORD&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010878"></A>
+<P CLASS="TB">
+7566&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010868"></A>
+<P CLASS="TB">
+7934&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010870"></A>
+<P CLASS="TB">
+MILLER&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010872"></A>
+<P CLASS="TB">
+7782&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   <A NAME="1011489"></A>
+<P CLASS="BP">
+Discoverer cannot create a hierarchy directly using the above table. However, you can create a hierarchy from this table if you first use the CONNECT BY clause of the SELECT statement to create a custom folder. You can then use the custom folder as the basis of a hierarchy that Discoverer can use.
+</P>
+<A NAME="1009409"></A>
+<P CLASS="BP">
+To create a hierarchy in Discoverer that uses the information in the above table, you would need a table that is similar to the following table that Discoverer might use to create a hierarchy:
+</P>
+   
+<A NAME="1011818">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010083"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG><STRONG CLASS="Bold">TOP_LEVEL</STRONG></STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010085"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>2nd_LEVEL</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010087"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Nth_LEVEL</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010137"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>EMPNO</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010139"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>ENAME</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010089"></A>
+<P CLASS="TB">
+KING&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010091"></A>
+<P CLASS="TB">
+CLARK&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010093"></A>
+<P CLASS="TB">
+&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010141"></A>
+<P CLASS="TB">
+7934&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010143"></A>
+<P CLASS="TB">
+MILLER&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   <A NAME="1009658"></A>
+<P CLASS="BP">
+The above table displays the name of an employee (ename) and all the managers for that employee. In this table Miller has two levels of manager, his immediate manager being Clark. 
+</P>
+<A NAME="1011397"></A>
+<P CLASS="BP">
+To create a table like the one above (i.e. based on columns from the emp table) and subsequently create a hierarchy between the levels, complete the following task:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010971"></A><A HREF="hierarch.htm#1009433">"How to create a hierarchy with a custom folder and the CONNECT BY clause, using the emp table from the scott schema"</a>
+<P>
+</UL>
+
+<A NAME="1009433"></A>
+<!--TOC=h1-"1009433"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to create a hierarchy with a custom folder and the CONNECT BY clause, using the emp table from the scott schema</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1011774"></A>
+<P CLASS="BP">
+You might want to create a hierarchy based on values in a table (e.g. the emp table in the scott schema). Discoverer Plus users will be able to create workbooks and use this hierarchy to drill up and down between the different levels of employees.
+</P>
+<A NAME="1011753"></A>
+<P CLASS="BP">
+To create a hierarchy, with a custom folder and the CONNECT BY clause, using the emp table from the scott schema:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1010964"></A>Create a custom folder and name it Recursive Hierarchy using the following SQL statement (for more information, see <A HREF="folders.htm#1004602">"How to create custom folders"</a>): 
+<P>
+    
+<PRE CLASS="CE1">
+<A NAME="1009434"></A>SELECT DISTINCT empno, mgr, level
+<A NAME="1009435"></A>FROM scott.emp
+<A NAME="1009436"></A>CONNECT BY mgr = PRIOR empno
+<A NAME="1009437"></A>START WITH mgr IS NULL
+<A NAME="1010192"></A>
+</PRE>
+    </OL>
+<A NAME="1011168"></A>
+<P CLASS="BP">
+The above SQL statement creates a table that contains the following result set:
+</P>
+   
+<A NAME="1011822">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1011171"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>EMPNO</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1011173"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>MGR</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1011175"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>LEVEL</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011177"></A>
+<P CLASS="TB">
+7369&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011179"></A>
+<P CLASS="TB">
+7902&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011181"></A>
+<P CLASS="TB">
+4&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011183"></A>
+<P CLASS="TB">
+7499&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011185"></A>
+<P CLASS="TB">
+7698&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011187"></A>
+<P CLASS="TB">
+3&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011189"></A>
+<P CLASS="TB">
+7521&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011191"></A>
+<P CLASS="TB">
+7698&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011193"></A>
+<P CLASS="TB">
+3&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011195"></A>
+<P CLASS="TB">
+7566&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011197"></A>
+<P CLASS="TB">
+7839&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011199"></A>
+<P CLASS="TB">
+2&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011201"></A>
+<P CLASS="TB">
+7654&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011203"></A>
+<P CLASS="TB">
+7698&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011205"></A>
+<P CLASS="TB">
+3&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011207"></A>
+<P CLASS="TB">
+7698&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011209"></A>
+<P CLASS="TB">
+7839&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011211"></A>
+<P CLASS="TB">
+2&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011213"></A>
+<P CLASS="TB">
+7782&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011215"></A>
+<P CLASS="TB">
+7839&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011217"></A>
+<P CLASS="TB">
+2&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011219"></A>
+<P CLASS="TB">
+7788&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011221"></A>
+<P CLASS="TB">
+7566&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011223"></A>
+<P CLASS="TB">
+3&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011225"></A>
+<P CLASS="TB">
+7839&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011227"></A>
+<P CLASS="TB">
+&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011229"></A>
+<P CLASS="TB">
+1&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011231"></A>
+<P CLASS="TB">
+7844&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011233"></A>
+<P CLASS="TB">
+7698&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011235"></A>
+<P CLASS="TB">
+3&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011237"></A>
+<P CLASS="TB">
+7876&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011239"></A>
+<P CLASS="TB">
+7788&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011241"></A>
+<P CLASS="TB">
+4&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011243"></A>
+<P CLASS="TB">
+7900&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011245"></A>
+<P CLASS="TB">
+7698&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011247"></A>
+<P CLASS="TB">
+3&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1011249"></A>
+<P CLASS="TB">
+7902&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011251"></A>
+<P CLASS="TB">
+7566&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1011253"></A>
+<P CLASS="TB">
+3&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   <A NAME="1011164"></A>
+<P CLASS="BP">
+Note<STRONG CLASS="Bold"> </STRONG>the following points about the SQL statement in the custom folder you created in the above step:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011143"></A>the column named Level<br>This is a pseudo-column generated by the CONNECT BY function that is used to define the hierarchy in Discoverer.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010739"></A>the word PRIOR used in the CONNECT BY statement <br>This makes the SQL look for the next row in which the mgr column is equal to the value in the empno column in the prior row. 
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010740"></A>the START WITH statement<br>This instructs the SQL to start where mgr is null ( i.e. with the top manager).
+<P>
+</UL>
+<A NAME="1010741"></A>
+<P CLASS="BP">
+For more information about the CONNECT BY statement, refer to the <EM CLASS="Italic">Oracle 8i SQL Reference, Volume 2</EM>.
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1009532"></A>Set the custom folder property <STRONG CLASS="Bold">Visible to user</STRONG> to No (for more information, see <A HREF="folders.htm#1004928">"How to edit folder properties"</a>).
+<P>
+ 
+</OL>
+<A NAME="1011119"></A>
+<P CLASS="BP">
+This makes sure that end users cannot access this custom folder.
+</P>
+<A NAME="1010945"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> Although the Level column provides the information needed to create a hierarchy, you first need to separate the rows by Level. You achieve this by creating a complex folder for each level.
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1010953"></A>Create a complex folder for each level (for more information, see <A HREF="folders.htm#1004601">"How to create complex folders"</a>).
+<P>
+ 
+
+<A NAME="1011128"></A>
+<P CLASS="BP1">
+In this example, you create four complex folders.
+</P>
+
+<A NAME="1011514"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Hint</STRONG>: To create each complex folder, drag all three items (i.e. Empno, Mgr and Level) from the custom folder Recursive Hierarchy into each new complex folder in turn.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1011283"></A>Name each of the four new complex folders Level1, Level2, Level3, Level4 respectively(for more information, see <A HREF="folders.htm#1004928">"How to edit folder properties"</a>)
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1011322"></A>Apply a mandatory condition to each complex folder (for more information, see <A HREF="conditio.htm#1004606">"How to create simple conditions"</a>). 
+<P>
+ 
+
+<A NAME="1010954"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Hint</STRONG>: For example, the condition you apply to the complex folder containing data at level 3 is: 
+</P>
+
+<A NAME="1011404"></A>
+<P CLASS="BP1">
+Level = 3. 
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1010962"></A>Create joins to join the complex folders to each other (for more information, see <A HREF="joins.htm#1011027">"How to create joins"</a>) . 
+<P>
+ 
+
+<A NAME="1010963"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Hint</STRONG>: Use the empno and mgr items to do this. Create a join between the complex folder for Level1 and the folder for Level2 as follows:
+</P>
+
+<A NAME="1011339"></A>
+<P CLASS="BP1">
+Level1.empno = Level2.mgr. 
+</P>
+
+<A NAME="1011343"></A>
+<P CLASS="BP1">
+Follow the above rule for joining the Level2 folder to the Level3 folder and the Level3 folder to the Level4 folder. These joins reflect the hierarchy you want to create.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1011298"></A>Set the folder property <STRONG CLASS="Bold">Visible to user</STRONG> for each of these complex folders to No (for more information, see <A HREF="folders.htm#1004928">"How to edit folder properties"</a>). 
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="8"><A NAME="1011359"></A>Create another complex folder and give it an appropriate name (e.g. Chain of Command).
+<P>
+ 
+
+<A NAME="1011374"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> This is the complex folder that end users will see.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="9"><A NAME="1011375"></A>Drag across into the Chain of Command folder, the Empno item from each of the four complex folders created in step 3 above and rename each one as soon as you have dragged it across.
+<P>
+ 
+
+<A NAME="1011539"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Hint</STRONG>: For each Empno item that you drag from one of the folders Level1, Level2, Level3 and Level4 you must rename each appropriately (e.g. Empno1, Empno2 Empno3, Empno4). 
+</P>
+
+<A NAME="1011368"></A>
+<P CLASS="BP1">
+This gives you the following result set that Discoverer can use to build a hierarchy:
+</P>
+ 
+<A NAME="1011826">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010595"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Empno1</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010597"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Empno2</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010599"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Empno3</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1010601"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Empno4</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010667"></A>
+<P CLASS="TB">
+7839&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010669"></A>
+<P CLASS="TB">
+7698&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010671"></A>
+<P CLASS="TB">
+7499&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010673"></A>
+<P CLASS="TB">
+&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010675"></A>
+<P CLASS="TB">
+7839&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010677"></A>
+<P CLASS="TB">
+7698&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010679"></A>
+<P CLASS="TB">
+7521&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010681"></A>
+<P CLASS="TB">
+&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010683"></A>
+<P CLASS="TB">
+7839&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010685"></A>
+<P CLASS="TB">
+7698&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010687"></A>
+<P CLASS="TB">
+7654&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010689"></A>
+<P CLASS="TB">
+&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010691"></A>
+<P CLASS="TB">
+7839&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010693"></A>
+<P CLASS="TB">
+7698&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010695"></A>
+<P CLASS="TB">
+7788&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010697"></A>
+<P CLASS="TB">
+&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010699"></A>
+<P CLASS="TB">
+7839&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010701"></A>
+<P CLASS="TB">
+7698&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010703"></A>
+<P CLASS="TB">
+7844&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010705"></A>
+<P CLASS="TB">
+&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010707"></A>
+<P CLASS="TB">
+7839&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010709"></A>
+<P CLASS="TB">
+7782&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010711"></A>
+<P CLASS="TB">
+7900&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010713"></A>
+<P CLASS="TB">
+&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1010715"></A>
+<P CLASS="TB">
+7839&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010717"></A>
+<P CLASS="TB">
+7566&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010719"></A>
+<P CLASS="TB">
+7902&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1010721"></A>
+<P CLASS="TB">
+7369&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+ </UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="10"><A NAME="1009682"></A>Create a hierarchy based on the items in this folder (for more information, see <A HREF="hierarch.htm#1004602">"How to create item hierarchies"</a>) represented by the columns in the table above.
+<P>
+ 
+
+<A NAME="1011430"></A>
+<P CLASS="BP1">
+Discoverer Plus users will be able to create workbooks and use this hierarchy to drill up and down between the different levels of employees.
+</P>
+ 
+<A NAME="1011014"></A>
+<P CLASS="BP">
+
+</P>
+
+
+
+
+
+
+<!-- Start Footer -->
+</DIV>
+
+<DIV CLASS="OUTD">
+<HR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+<TD VALIGN="BOTTOM" WIDTH="33%">
+<TABLE CELLSPACING="0" CELLPADDING="0">
+<TR>
+<TD ALIGN="CENTER"><A HREF="conditio.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+
+<TD ALIGN="CENTER"><A HREF="managing.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+    
+</TR>
+</TABLE>
+</TD>
+<TD ALIGN="CENTER" WIDTH="34%">
+<A HREF="./html/cpyr.htm"><IMG SRC="./gifs/oracle.gif" ALT="Oracle" BORDER="0"><BR>
+<FONT SIZE="-2">Copyright &copy 2003 Oracle Corporation.</FONT></A>
+<BR>
+<FONT SIZE="-2">All Rights Reserved.</FONT>
+</TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="33%"> 
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="144">
+<TR>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+  
+</DIV>
+
+</BODY>
+</HTML>
+

@@ -1,7 +1,30 @@
 # EUL Version Reference — EUL3 / EUL4 / EUL5 Schema Comparison
 
-> **Purpose:** This document is the authoritative reference for the Discoverer Neo migration tool's version detection and schema adapter layer.
-> **Last Updated:** 2026-06-23
+> # ⚠️ RETRACTED — DO NOT USE FOR TABLE OR COLUMN NAMES
+>
+> **The EUL schema described below does not exist.** Verified 2026-08-20
+> against Oracle's own shipped scripts in `discoverer10g/sql/`
+> (`euldrop.sql`, `eul4del.sql`, `Lineage.sql`, `eulver.sql`, `batchusr.sql`).
+>
+> Fabricated here: `EUL5_JOINS`, `EUL5_JOI_COMP`, `EUL5_HIER_LEVELS`,
+> `EUL5_ELEM_ACCESS`, `EUL5_EUL`, `EUL5_OPTIONS`, `EUL5_TRANSLATIONS`,
+> `OBJ_TABLE_NAME`, `OBJ_TABLE_OWNER`, `EXP_COL_NAME`, `HIER_ID`, and the
+> `BA`/`USERS`/`ROLES`/`*_ROLES` table names. The real equivalents are
+> `KEY_CONS`, `HI_NODES` + `HI_SEGMENTS`, `ACCESS_PRIVS`, `VERSIONS`,
+> `SOBJ_EXT_TABLE`, `OBJ_EXT_OWNER`, `IT_EXT_COLUMN`, `HI_ID`, `BAS`,
+> `EUL_USERS`.
+>
+> This document was the origin of a fabricated schema throughout the
+> `migrate` workspace, since corrected.
+>
+> **Authoritative replacement:**
+> [`discoverer-neo/migrate/EUL_SCHEMA_GROUND_TRUTH.md`](discoverer-neo/migrate/EUL_SCHEMA_GROUND_TRUTH.md)
+>
+> Kept only as a record of what was believed. **No identifier in it should be
+> trusted.**
+
+> **Purpose:** ~~The authoritative reference for the Discoverer Neo migration tool's version detection and schema adapter layer.~~ (retracted — see above)
+> **Last Updated:** 2026-06-23 · **Retracted:** 2026-08-20
 
 ---
 

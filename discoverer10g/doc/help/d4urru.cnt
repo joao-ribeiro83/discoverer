@@ -1,0 +1,251 @@
+:Base d4urru.hlp>main
+:Title Интерактивная Справка Oracle Discoverer Plus
+1 Введение в Oracle Discoverer
+2 О Запросах и Рабочих книгах=CON_ABOUT_QUERIES>main
+2 Информация о таблицах и кросс-таблицах=CON_ABOUT_TANDC>main
+2 Об Итогах=CON_ABOUT_TOTALS>main
+2 О Процентах=CON_ABOUT_PERCENTAGES>main
+2 О Запланированных рабочих книгах=CON_ABOUT_SCHEDULED>main
+2 Изучение Oracle Discoverer
+3 Изучение Oracle Discoverer=CON_LEARN_OD>main
+1 Пошаговые процедуры
+2 Запуск и завершение Oracle Discoverer
+3 Чтобы запустить Oracle Discoverer=To_start_Oracle_Discoverer>main
+3 Чтобы задать конфигурацию в диалоговом окне 'Установить соединение' для пользователей Oracle Applications=HIDD_OPTIONS_CONNECTION>main
+3 Чтобы соединиться с базой данных=To_connect_to_a_database>main
+3 Чтобы выйти из Oracle Discoverer=To_exit_Oracle_Discoverer>main
+2 Использование рабочих книг
+3 Чтобы создать новую рабочую книгу=To_create_a_new_workbook>main
+3 Чтобы открыть сохраненную рабочую книгу=To_open_a_saved_workbook>main
+3 Чтобы сохранить рабочую книгу=To_save_a_workbook>main
+3 Чтобы закрыть рабочую книгу=To_close_a_workbook>main
+3 Чтобы удалить рабочую книгу из базы данных=To_delete_a_workbook_from_the_database>main
+3 Чтобы добавить новый лист в рабочую книгу=To_add_a_new_sheet_to_a_workbook>main
+3 Чтобы редактировать лист=To_edit_a_sheet>main
+3 Чтобы дублировать лист как таблицу=To_duplicate_a_sheet_as_a_table>main
+3 Чтобы дублировать лист как кросс-таблицу=To_duplicate_a_sheet_as_a_crosstab>main
+3 Чтобы назначить листу имя=To_name_a_sheet>main
+3 Чтобы отредактировать имя листа=To_edit_the_name_of_a_sheet>main
+3 Чтобы удалить лист из рабочей книги=To_delete_a_sheet_from_a_workbook>main
+3 Чтобы совместно использовать рабочую книгу с другими пользователями=To_share_a_workbook_with_other_users>main
+3 Чтобы просмотреть код SQL для текущего листа=To_view_the_SQL_code_for_the_current_sheet>main
+3 Чтобы просмотреть свойства выделенного элемента=To_view_the_properties_of_a_selected_item>main
+3 Чтобы просмотреть свойства текущей рабочей книги=To_view_the_properties_of_the_current_workbook>main
+3 Чтобы создать график для текущего листа=To_show_data_in_a_sheet_as_a_graph>main
+3 Чтобы отобразить диаграмму=To_Hide_or_Show_a_Graph>main
+3 Чтобы скрыть диаграмму=To_Hide_or_Show_a_Graph>main
+2 Добавление и удаление данных
+3 Чтобы добавить элемент в лист=To_add_an_item_to_a_sheet>main
+3 Чтобы удалить элемент из листа=To_delete_an_item_from_a_sheet>main
+3 Чтобы изменить отображенные значения для элемента=To_change_displayed_values_for_an_item>main
+3 Переходы по иерархии
+4 Чтобы перейти по иерархии вверх=To_drill_up>main
+4 Чтобы перейти по иерархии вниз=To_drill_down>main
+4 Чтобы перейти к связанному элементу другого листа=To_drill_to_a_related_item_in_another_sheet>main
+4 Чтобы перейти к связанной информации в другом приложении=To_drill_to_related_information_in_another_application>main
+4 Чтобы свернуть элемент=To_collapse_an_item>main
+3 Использование условий для более адресного запроса
+4 Чтобы определить условие=To_define_a_condition>main
+4 Чтобы отредактировать условие=To_apply_a_condition>main
+4 Чтобы добавить вычисления в существующее условие=To_add_a_calculation_to_an_existing_condition>main
+4 Чтобы создать условие, включающее вычисления=To_create_a_condition_that_includes_a_calculation>main
+4 Чтобы удалить условие=To_delete_a_condition>main
+3 Использование вычислений
+4 Чтобы создать вычисления=To_create_a_calculation>main
+4 Чтобы редактировать вычисления=To_edit_a_calculation>main
+3 Использование итогов для получения сводки результатов
+4 Чтобы создать итог=To_create_a_total>main
+4 Чтобы редактировать итог=To_edit_a_total>main
+2 Управление данными и заголовками
+3 Чтобы перенести элемент из одной оси в другую=To_move_an_item_from_one_axis_to_another>main
+3 Чтобы создать элемент страницы=To_create_a_page_item>main
+3 Чтобы показывать в ячейках полосы гистограммы=To_show_graphic_bars_in_cells>main
+3 Сортировка данных
+4 Чтобы сортировать таблицу=To_sort_a_table>main
+4 Чтобы сортировать кросс-таблицу=To_sort_a_crosstab>main
+2 Задание порядка выполнения запросов программой Oracle Discoverer
+3 Чтобы выполнять запросы по возрастанию=To_run_queries_incrementally>main
+3 Чтобы отменить установку на выполнение по возрастанию и возвратить все строки по запросу=To_override_an_incremental_setting_and_return_all_rows_in_a_query>main
+3 Чтобы указать максимальное количество строк, возвращаемых по запросу=To_specify_the_maximum_number_of_rows_returned_in_a_query>main
+3 Чтобы установить предпочтения для кеша базы данных=To_set_preferences_for_the_database_cache>main
+3 Чтобы установить предпочтения для листов кросс-таблицы=To_set_preferences_for_crosstab_layout_sheets>main
+3 Чтобы установить предпочтения для листов таблицы=To_set_preferences_for_table_layout_sheets>main
+2 Форматирование
+3 Чтобы форматировать данные в листе=To_format_data_in_a_sheet>main
+3 Чтобы форматировать заголовки в листе=To_format_headings_in_a_sheet>main
+3 Чтобы форматировать числа=To_format_numbers>main
+3 Чтобы форматировать заголовок листа=To_format_the_title_of_a_sheet>main
+3 Чтобы изменить ширину столбца=To_change_a_column_width>main
+3 Чтобы добавить в лист заголовок=To_add_a_title_to_a_sheet>main
+3 Чтобы редактировать заголовок листа=To_edit_the_title_of_a_sheet>main
+3 Чтобы добавить фон в лист=To_add_a_background_to_a_sheet>main
+3 Чтобы удалить фон из листа=To_remove_a_background_from_a_sheet>main
+3 Использование исключений для выделения данных
+4 Чтобы создать исключение=To_create_an_exception>main
+4 Чтобы редактировать исключение=To_edit_an_exception>main
+4 Чтобы удалить исключение=To_delete_an_exception>main
+3 Отображение данных в виде диаграмм
+4 Чтобы показать данные на листе в виде графика=To_show_data_in_a_sheet_as_a_graph>main
+4 Чтобы изменить стиль графика=To_change_the_style_of_a_graph>main
+4 Чтобы управлять трехмерным видом графика=To_manipulate_the_three_dimensional_view_of_a_graph>main
+4 Чтобы добавить к графику заголовки=To_add_titles_to_a_graph>main
+4 Чтобы редактировать заголовки в графике=To_edit_titles_in_a_graph>main
+4 Чтобы удалить заголовки из графика=To_delete_titles_from_a_graph>main
+4 Чтобы экспортировать график в другое приложение=To_export_a_graph_to_another_application>main
+2 Печать
+3 Чтобы печатать рабочую книгу=To_print_a_workbook>main
+3 Чтобы печатать лист=To_print_a_sheet>main
+3 Чтобы печатать метки оси=To_print_axis_labels>main
+3 Чтобы добавить постраничные разбивки=To_add_page_breaks>main
+3 Чтобы установить порядок печати страниц=To_set_the_printing_order_of_pages>main
+3 Чтобы установить макет страницы=To_set_up_the_page_layout>main
+3 Чтобы выполнить предварительный просмотр документа перед печатью=To_preview_the_printout>main
+3 Добавление верхних и нижних колонтитулов
+4 Чтобы добавить нижний колонтитул=To_add_a_footer>main
+4 Чтобы создать нестандартный нижний колонтитул=To_create_a_custom_footer>main
+4 Чтобы добавить верхний колонтитул=To_add_a_header>main
+4 Чтобы создать нестандартный верхний колонтитул=To_create_a_custom_header>main
+2 Использование Oracle Discoverer с Other Applications
+3 Чтобы выполнить экспорт данных и сохранить их в другом формате файла=To_export_data_and_save_it_in_another_file_format>main
+3 Чтобы включить запрос в файл в другом приложении=To_embed_a_query_in_a_file_in_another_application>main
+1 Глоссарий
+2 Глоссарий=DCM_GLOSSARY>gloss
+1 Справочник по интерфейсу пользователя
+2 Мастера, диалоговые окна и информационные панели
+3 Страница Выравнивание=HIDD_FORMAT_ALIGN>main
+3 Страница Цвета фона=HIDD_FORMAT_COLOR>main
+3 Страница Кэша=HIDD_OPTIONS_CACHE>main
+3 Диалоговое окно Вычисления=HIDD_DCMCALCULATIONS>main
+3 Вычисление: добавить=HIDD_CALC_ADD>main
+3 Вычисление: разделить=HIDD_CALC_DIV>main
+3 Вычисление: Диалоговое окно 'Умножение'=HIDD_CALC_MULT>main
+3 Вычисление: Диалоговое окно Процент=HIDD_CALC_PERCENT>main
+3 Вычисление: вычесть=HIDD_CALC_SUB>main
+3 Диалоговое окно Условия=HIDD_DCMCONDITIONS>main
+3 Диалоговое окно Соединиться с Oracle Discoverer=HIDD_CONNECT>main
+3 Страница Кросс-таблиц=HIDD_OPTIONS_MATRIX>main
+3 Диалоговое окно Удаление рабочей книги из базы данных=HIDD_DELETE_DB>main
+3 Диалоговое окно Переход по иерархии=HIDD_DRILL_WIZARD>main
+3 Диалоговое окно Опции перехода по иерархии=HIDD_DRILL_OPTIONS>main
+3 Диалоговое окно Редактировать вычисление=HIDD_CALC_EDIT>main
+3 Диалоговое окно Редактировать параметр=HIDD_PARAM_EDIT>main
+3 Страница Исключение=HIDD_FORMAT_EXCEPTION_NEW>main
+3 Диалоговое окно Исключения=HIDD_EXCEPTION>main
+3 Диалоговое окно Экспорт=HIDD_EXPORT_NAME>main
+3 Диалоговое окно Свойства файла=HIDD_FILEPROP>main
+3 Страница Шрифт=HIDD_FORMAT_FONT>main
+3 Диалоговое окно 'Формат макета'=HIDD_WIZARD_LAYOUT>main
+3 Страница Форматов=HIDD_OPTIONS_FORMAT>main
+3 Страница верхний/нижний колонтитул=HIDD_SETUP_HEADER>main
+3 Информационное окно Буфер элементов=HIDD_DCMCLIPBOARD>main
+3 Диалоговое окно Свойства элементов=HIDD_ITEMPROP>main
+3 Диалоговое окно 'Макет'=HIDD_WIZARD_START>main
+3 Страница Поля=HIDD_SETUP_MARGIN>main
+3 Диалоговое окно Новый параметр=HIDD_PARAM_NEW>main
+3 Диалоговое окно Открыть рабочую книгу=HIDD_OPEN>main
+3 Диалоговое окно Открыть рабочую книгу из базы данных=HIDD_OPEN_DB>main
+3 Обзор окна диалога Опции=HIDD_WIZARD_OPTIONS>main
+3 Обзор диалогового окна 'Параметры страницы'=HIDD_WIZARD_PREVIEW>main
+3 Диалоговое окно Параметры=HIDD_PARAMETERS>main
+3 Мастер Параметров=HIDD_PARAMETERS_RUNTIME>main
+3 Диалоговое окно Сохранение рабочей книги=HIDD_SAVE>main
+3 Диалоговое окно Сохранение рабочей книги в базу данных=HIDD_SAVE_DB>main
+3 Страница листа=HIDD_SETUP_SHEET>main
+3 Диалоговое окно Сортировать кросс-таблицу=HIDD_SORT_CROSSTAB>main
+3 Диалоговое окно Сортировать таблицу=HIDD_SORT_TABLE>main
+3 Диалоговое окно Инспектор SQL=HIDD_DCMSQL>main
+3 Страница Таблиц=HIDD_OPTIONS_TABLE>main
+3 Страница 'Текст/число'=HIDD_FORMAT_MASK>main
+3 Диалоговое окно Заголовок - панель Растр=HIDD_TITLE_BMP>main
+3 Диалоговое окно Заголовок - панель Текст=HIDD_TITLE_TEXT>main
+3 Диалоговое окно Итоги=HIDD_SUMMARIES>main
+3 Диалоговое окно Итоги (для кросс-таблиц)=HIDD_TOTAL_EDIT_CROSSTAB>main
+3 Диалоговое окно Итоги (для таблиц)=HIDD_TOTAL_EDIT_TABLE>main
+3 Страница 'Пользователь > Рабочая книга'=HIDD_GRANT_USERTOBOOK>main
+3 Диалоговое окно 'Значения'=HIDD_DCMLIST>main
+3 Диалоговое окно Рабочая книга сохраненная другим пользователем базы данных=HIDD_CONNECT_IO>main
+3 Страница 'Рабочая книга > Пользователь'=HIDD_GRANT_BOOKTOUSER>main
+1 Меню 'Файл'
+2 Команда 'Создать'=HID_FILE_NEW>main
+2 Команда Открыть=HID_FILE_OPEN>main
+2 Команда Закрыть=HID_FILE_CLOSE>main
+2 Команда Сохранить=HID_FILE_SAVE>main
+2 Команда Сохранить как=HID_FILE_SAVE_AS>main
+2 Команда Планировать=HID_FILE_SCHEDULE
+2 Команда Параметры страницы=HID_FILE_PAGE_SETUP
+2 Команда Предварительный просмотр печати=HID_FILE_PRINT_PREVIEW>main
+2 Команда Печать=HID_FILE_PRINT>main
+2 команда Импорт SQL=HID_FILE_IMPORT>main
+2 Команда Экспорт=HID_FILE_EXPORT>main
+2 Команда Управление рабочей книгой=Manage_Workbooks_command>main
+2 Команда 'Соединить с базой данных'=HID_FILE_CONNECT>main
+2 Команда Выход=HID_APP_EXIT>main
+1 Меню 'Правка'
+2 Команда 'Отмена/Повторить'=HID_EDIT_UNDO>main
+2 Команда Повторить=HID_EDIT_REPEAT>main
+2 Команда Вырезать=HID_EDIT_CUT>main
+2 Команда 'Копировать'=HID_EDIT_COPY>main
+2 Команда 'Вставить элемент'=HID_EDIT_PASTE>main
+2 Команда Удалить элемент=HID_EDIT_DELETEITEM>main
+2 Команда Выделить все=HID_EDIT_SELECTALL>main
+2 Команда Найти=HID_TOOLS_FIND>main
+2 Команда Свойства элемента=HID_EDIT_ITEMPROPERTIES>main
+1 Меню 'Вид'
+2 Команда Панель инструментов=HID_VIEW_TOOLBAR>main
+2 Команда Панель форматирования=HID_TOOLBAR_FORMAT>main
+2 Команда Окно анализа=HID_TOOLBAR_ANALYSIS>main
+2 Команда Строка состояния=HID_VIEW_STATUS_BAR>main
+2 Элементы страниц=View_Page_Items
+2 Команда Буфер элемента=HID_VIEW_CLIPBOARD>main
+2 Команда Инспектор SQL=HID_VIEW_SQL>main
+1 Меню 'Лист'
+2 Команда Новый лист=HID_SHEET_NEW>main
+2 Команда Редактировать лист=HID_SHEET_MODIFY>main
+2 Команда Дублировать как таблицу=HID_DUPLICATE_TABLE>main
+2 Команда Дублировать как кросс-таблицу=HID_DUPLICATE_CROSSTAB>main
+2 Команда Переименовать лист=HID_SHEET_RENAME>main
+2 Команда Удалить лист=HID_SHEET_DELETE>main
+2 Команда Редактировать заголовок=HID_SHEET_TITLE>main
+2 Команда Переход по иерархии=HID_SHEET_DRILLDOWN>main
+2 Команда Свернуть=HID_SHEET_ROLLUP>main
+2 команда Редактировать значения параметра=HID_SHEET_MODPARAMS>main
+2 Обновление листа=HIDD_Sheet_Refresh
+2 Команда Выбрать все строки=HID_SHEET_FETCHALL>main
+2 Команда Подсчет всех строк=HID_SHEET_COUNTALL>main
+1 Меню 'Формат'
+2 Команда Данные=HID_FORMAT_DATA>main
+2 Команда Заголовки=HID_FORMAT_HEADINGS>main
+2 Команда 'Исключения'=HID_FORMAT_EXCEPTIONS>main
+2 Команда Ширина столбцов=HID_COLUMN_WIDTH>main
+2 Команда Авто-размер столбца=HID_COLUMN_AUTOFIT>main
+2 Команда Заголовок листа=HID_FORMAT_SHEETTITLE>main
+2 Команда Установить фон листа=HID_FORMAT_SHEETBKGND>main
+2 Команда Очистить фон=HID_FORMAT_SHEETCLEAR>main
+1 Меню 'Инструменты'
+2 Команда Условия=HID_TOOLS_CONDITIONS>main
+2 Команда Сортировать=HID_TOOLS_SORT>main
+2 Команда Итоги=HID_TOOLS_TOTALS>main
+2 Команда 'Процент'=HIDD_PERCENTAGES
+2 Команда Вычисления=HID_TOOLS_CALCULATIONS>main
+2 Команда Параметры=HID_TOOLS_PARAMS>main
+2 Команда Опции=HID_TOOLS_OPTIONS>main
+1 Меню 'Диаграмма'
+2 Команда Новый график=New_Graph_command>main
+2 Команда Показать=HID_MENU_VIEW_GRAPH>main
+2 Команда Печать=Print_command_graph
+2 Команда Копировать в буфер обмена=Copy_to_clipboard_command_graph>main
+2 Команда Обозначение=Legend_command>main
+2 Команда Метки горизонтальной оси=X_Labels_command>main
+2 Команда Строка состояния=Status_bar_command_graph>main
+2 Команда Масштаб=HID_GRAPH_SCALE>main
+2 Команда 3D-вид=HID_GRAPH_3D>main
+1 Меню 'Окно'
+2 Команда Упорядочить значки=HID_WINDOW_ARRANGE>main
+2 Команда Каскад=HID_WINDOW_CASCADE>main
+2 Команда Горизонтальная мозаика=HID_WINDOW_TILE_HORZ>main
+2 Команда Вертикальная мозаика=HID_WINDOW_TILE_VERT>main
+1 Меню 'Справка'
+2 Команда Разделы справки=HID_HELP_INDEX>main
+2 Команда Использование справки=HID_HELP_USING>main
+2 Команд Руководства=HID_HELP_MANUALS>main
+2 Команда Информация о Discoverer=HID_APP_ABOUT>main

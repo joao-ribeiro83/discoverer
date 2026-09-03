@@ -106,14 +106,35 @@ O utilizador perde o acesso de imediato.
 
 ## Gestão de Palavras-passe
 
-### Palavras-passe Iniciais
+### Utilizadores importados e palavras-passe temporárias
 
-Os novos utilizadores recebem palavras-passe iniciais. Melhor prática:
+O Discoverer guarda nomes de utilizador, mas nunca palavras-passe, pelo que nada
+pode ser transferido. Em vez disso, a migração **gera uma palavra-passe
+temporária única para cada pessoa importada** e escreve todas num ficheiro para
+que as possa distribuir.
 
-1. Defina uma palavra-passe temporária (p. ex., "TempPassword123!")
-2. Instrua o utilizador a alterá-la no primeiro início de sessão
-3. O utilizador inicia sessão, clica em **Perfil** → **Alterar Palavra-passe**
-4. Introduz a nova palavra-passe
+1. Execute a migração (ver [Utilizadores e palavras-passe migrados](../../migration/user-credentials.md)).
+2. Recolha `credentials/credentials-<id-da-execucao>.csv` do servidor.
+3. Entregue a cada pessoa a sua palavra-passe por um canal de confiança.
+4. **Elimine o ficheiro.** Nada o elimina por si.
+
+Cada conta tem de alterar essa palavra-passe antes de poder fazer qualquer outra
+coisa — isto é imposto pelo servidor, não apenas sugerido pela interface.
+
+### Criar um utilizador manualmente
+
+Ao adicionar um utilizador em Painel de Administração → **Utilizadores**, define
+diretamente a primeira palavra-passe. Peça-lhe que a altere depois de iniciar
+sessão, em **Definições → Alterar Palavra-passe**.
+
+### O que significa "tem de alterar a palavra-passe"
+
+Enquanto uma conta aguarda a alteração da palavra-passe, só consegue aceder ao
+ecrã de alteração. Todas as outras páginas e chamadas à API são recusadas. O
+início de sessão funciona, mas a aplicação fica indisponível até a palavra-passe
+ser alterada.
+
+Pode ver quem está pendente na lista de Utilizadores.
 
 ### Redefinição de Palavra-passe
 
@@ -125,15 +146,33 @@ Se o utilizador se esquecer da palavra-passe (na qualidade de administrador):
 4. Envie-a ao utilizador (por e-mail ou por outro meio)
 5. O utilizador altera a palavra-passe no primeiro início de sessão
 
-### Forçar a Alteração da Palavra-passe
+### Exigir a alteração da palavra-passe
 
-Para exigir a alteração da palavra-passe do utilizador:
+As contas criadas por uma migração são marcadas automaticamente — não precisa de
+fazer nada. Não existe uma caixa de verificação manual: a marca é definida quando
+a conta é provisionada com uma palavra-passe temporária e removida assim que o
+utilizador escolhe a sua.
 
-1. Clique no utilizador → **Editar**
-2. Assinale **Forçar Alteração de Palavra-passe no Início de Sessão**
-3. Guarde
+Para forçar a alteração numa conta existente, redefina a palavra-passe; a
+redefinição coloca a conta no mesmo estado de "tem de alterar".
 
-Será solicitado ao utilizador que altere a palavra-passe no próximo início de sessão.
+## Funções de Base de Dados
+
+Os utilizadores importados do Oracle Discoverer não são todos pessoas. O
+Discoverer concede privilégios a **funções** Oracle (`CONNECT`, `RESOURCE`) tal
+como a indivíduos, e a migração traz ambos.
+
+Uma função aparece na lista de Utilizadores com um distintivo **Função**:
+
+| | Pessoa | Função de base de dados |
+| --- | --- | --- |
+| Pode iniciar sessão | Sim | **Não — nunca** |
+| Detém permissões | Sim | Sim |
+| Tem palavra-passe | Sim | Nenhuma. Nenhuma palavra-passe corresponde. |
+
+As funções são mantidas porque detêm as permissões em que a sua segurança do
+Discoverer assentava. Não podem ser convertidas em contas de acesso — atribua as
+permissões equivalentes a utilizadores reais e depois retire a função.
 
 ## Preferências do Utilizador
 

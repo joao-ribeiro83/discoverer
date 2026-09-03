@@ -1,0 +1,251 @@
+:Base d4urn.hlp>main
+:Title Oracle Discoverer Plus Hjelpefunksjon
+1 Innføring i Oracle Discoverer
+2 Om spørringer og arbeidsbøker=CON_ABOUT_QUERIES>main
+2 Om tabeller og krysstabeller=CON_ABOUT_TANDC>main
+2 Om totalsummer=CON_ABOUT_TOTALS>main
+2 Om prosenter=CON_ABOUT_PERCENTAGES>main
+2 Om planlagte arbeidsbøker=CON_ABOUT_SCHEDULED>main
+2 Lære om Oracle Discoverer
+3 Lære om Oracle Discoverer=CON_LEARN_OD>main
+1 Trinnvise instruksjoner
+2 Starte og stoppe Oracle Discoverer
+3 Starte Oracle Discoverer=To_start_Oracle_Discoverer>main
+3 Konfigurere dialogboksen Koble til for Oracle Applications-brukere=HIDD_OPTIONS_CONNECTION>main
+3 Koble til en database=To_connect_to_a_database>main
+3 Avslutte Oracle Discoverer=To_exit_Oracle_Discoverer>main
+2 Arbeide med arbeidsbøker
+3 Opprette en ny arbeidsbok=To_create_a_new_workbook>main
+3 Åpne en lagret arbeidsbok=To_open_a_saved_workbook>main
+3 Lagre en arbeidsbok=To_save_a_workbook>main
+3 Lukke en arbeidsbok=To_close_a_workbook>main
+3 Slette en arbeidsbok fra databasen=To_delete_a_workbook_from_the_database>main
+3 Legge til et nytt ark i en arbeidsbok=To_add_a_new_sheet_to_a_workbook>main
+3 Redigere et ark=To_edit_a_sheet>main
+3 Lage kopi av et ark som en tabell=To_duplicate_a_sheet_as_a_table>main
+3 Lage kopi av et ark som en krysstabell=To_duplicate_a_sheet_as_a_crosstab>main
+3 Gi navn til et ark=To_name_a_sheet>main
+3 Gi nytt navn til et ark=To_edit_the_name_of_a_sheet>main
+3 Slette et ark fra en arbeidsbok=To_delete_a_sheet_from_a_workbook>main
+3 Dele en arbeidsbok med andre brukere=To_share_a_workbook_with_other_users>main
+3 Vise SQL-koden for gjeldende ark=To_view_the_SQL_code_for_the_current_sheet>main
+3 Vise egenskapene til et merket element=To_view_the_properties_of_a_selected_item>main
+3 Vise egenskapene til gjeldende arbeidsbok=To_view_the_properties_of_the_current_workbook>main
+3 Opprette et diagram for gjeldende ark=To_show_data_in_a_sheet_as_a_graph>main
+3 Vise et diagram=To_Hide_or_Show_a_Graph>main
+3 Skjule et diagram=To_Hide_or_Show_a_Graph>main
+2 Legge til og fjerne data
+3 Legge til et element i et ark=To_add_an_item_to_a_sheet>main
+3 Slette et element fra et ark=To_delete_an_item_from_a_sheet>main
+3 Endre de viste verdiene for et element=To_change_displayed_values_for_an_item>main
+3 Drille
+4 Gå oppover=To_drill_up>main
+4 Gå nedover=To_drill_down>main
+4 Drille til et beslektet element på et annet ark=To_drill_to_a_related_item_in_another_sheet>main
+4 Drille til beslektet informasjon i et annet program=To_drill_to_related_information_in_another_application>main
+4 Skjule et element=To_collapse_an_item>main
+3 Bruke betingelser til å begrense en spørring
+4 Definere en betingelse=To_define_a_condition>main
+4 Redigere en betingelse=To_apply_a_condition>main
+4 Legge til en beregning i en eksisterende betingelse=To_add_a_calculation_to_an_existing_condition>main
+4 Opprette en betingelse som inneholder en beregning=To_create_a_condition_that_includes_a_calculation>main
+4 Slette en betingelse=To_delete_a_condition>main
+3 Bruke Beregninger
+4 Opprette en beregning=To_create_a_calculation>main
+4 Redigere en beregning=To_edit_a_calculation>main
+3 Bruke Totalsummer til å oppsummere spørringsresultater
+4 Opprette en totalsum=To_create_a_total>main
+4 Redigere en totalsum=To_edit_a_total>main
+2 Endre data og overskrifter
+3 Flytte et element fra én akse til en annen=To_move_an_item_from_one_axis_to_another>main
+3 Opprette et sideelement=To_create_a_page_item>main
+3 Vise diagramstolper i celler=To_show_graphic_bars_in_cells>main
+3 Sortere data
+4 Sortere en tabell=To_sort_a_table>main
+4 Sortere en krysstabell=To_sort_a_crosstab>main
+2 Angi hvordan Oracle Discoverer utfører spørringer
+3 Kjøre spørringer trinnvis=To_run_queries_incrementally>main
+3 Overstyre en trinnvis innstilling og returnere alle rader i en spørring=To_override_an_incremental_setting_and_return_all_rows_in_a_query>main
+3 Angi det maksimale antallet rader som kan hentes i en spørring=To_specify_the_maximum_number_of_rows_returned_in_a_query>main
+3 Angi innstillinger for databasebufferen=To_set_preferences_for_the_database_cache>main
+3 Angi innstillinger for ark med krysstabelloppsett=To_set_preferences_for_crosstab_layout_sheets>main
+3 Angi innstillinger for ark med tabelloppsett=To_set_preferences_for_table_layout_sheets>main
+2 Formatere
+3 Formatere data i et ark=To_format_data_in_a_sheet>main
+3 Formatere overskrifter i et ark=To_format_headings_in_a_sheet>main
+3 Formatere tall=To_format_numbers>main
+3 Formatere tittelen på et ark=To_format_the_title_of_a_sheet>main
+3 Endre kolonnebredde=To_change_a_column_width>main
+3 Legge til en tittel i et ark=To_add_a_title_to_a_sheet>main
+3 Redigere tittelen på et ark=To_edit_the_title_of_a_sheet>main
+3 Legge til bakgrunn i et ark=To_add_a_background_to_a_sheet>main
+3 Fjerne bakgrunn fra et ark=To_remove_a_background_from_a_sheet>main
+3 Bruke unntak til å utheve data
+4 Opprette et unntak=To_create_an_exception>main
+4 Redigere et unntak=To_edit_an_exception>main
+4 Slette et unntak=To_delete_an_exception>main
+3 Vise data som et diagram
+4 Vise data i et ark som et diagram=To_show_data_in_a_sheet_as_a_graph>main
+4 Endre stilen for et diagram=To_change_the_style_of_a_graph>main
+4 Endre den tredimensjonale visningen av et diagram=To_manipulate_the_three_dimensional_view_of_a_graph>main
+4 Legge til titler i et diagram=To_add_titles_to_a_graph>main
+4 Redigere titler i et diagram=To_edit_titles_in_a_graph>main
+4 Slette titler i et diagram=To_delete_titles_from_a_graph>main
+4 Eksportere et diagram til et annet program=To_export_a_graph_to_another_application>main
+2 Skrive ut
+3 Skrive ut en arbeidsbok=To_print_a_workbook>main
+3 Skrive ut et ark=To_print_a_sheet>main
+3 Skrive ut akseetiketter=To_print_axis_labels>main
+3 Legge til sideskift=To_add_page_breaks>main
+3 Angi siderekkefølgen for utskrift=To_set_the_printing_order_of_pages>main
+3 Definere sideoppsett=To_set_up_the_page_layout>main
+3 Forhåndsvise utskrift=To_preview_the_printout>main
+3 Legge til topptekster og bunntekster
+4 Legge til en bunntekst=To_add_a_footer>main
+4 Opprette en egendefinert bunntekst=To_create_a_custom_footer>main
+4 Legge til en topptekst=To_add_a_header>main
+4 Opprette en egendefinert bunntekst=To_create_a_custom_header>main
+2 Bruke Oracle Discoverer sammen med andre programmer
+3 Eksportere data og lagre dem i et annet filformat=To_export_data_and_save_it_in_another_file_format>main
+3 Bygge inn en spørring i en fil i et annet program=To_embed_a_query_in_a_file_in_another_application>main
+1 Ordliste
+2 Ordliste=DCM_GLOSSARY>gloss
+1 Referanse for brukergrensesnitt
+2 Veivisere, dialogbokser og informasjonsbokser
+3 Kategorien Justering=HIDD_FORMAT_ALIGN>main
+3 Kategorien Bakgrunnsfarge=HIDD_FORMAT_COLOR>main
+3 Kategorien Hurtigbuffer=HIDD_OPTIONS_CACHE>main
+3 Dialogboksen Beregninger=HIDD_DCMCALCULATIONS>main
+3 Dialogboksen Beregning: Legg til=HIDD_CALC_ADD>main
+3 Dialogboksen Beregning: Divider=HIDD_CALC_DIV>main
+3 Dialogboksen Beregning: Multipliser=HIDD_CALC_MULT>main
+3 Dialogboksen Beregning: Prosent=HIDD_CALC_PERCENT>main
+3 Dialogboksen Beregning: Trekk fra=HIDD_CALC_SUB>main
+3 Dialogboksen Betingelser=HIDD_DCMCONDITIONS>main
+3 Dialogboksen Koble til Oracle Discoverer=HIDD_CONNECT>main
+3 Kategorien Krysstabell=HIDD_OPTIONS_MATRIX>main
+3 Dialogboksen Slett arbeidsbok fra database=HIDD_DELETE_DB>main
+3 Dialogboksen Drill=HIDD_DRILL_WIZARD>main
+3 Dialogboksen Drill-alternativer=HIDD_DRILL_OPTIONS>main
+3 Dialogboksen Rediger beregning=HIDD_CALC_EDIT>main
+3 Dialogboksen Rediger parameter=HIDD_PARAM_EDIT>main
+3 Kategorien Unntak=HIDD_FORMAT_EXCEPTION_NEW>main
+3 Dialogboksen Unntak=HIDD_EXCEPTION>main
+3 Dialogboksen Eksporter=HIDD_EXPORT_NAME>main
+3 Dialogboksen Filegenskaper=HIDD_FILEPROP>main
+3 Kategorien Skrift=HIDD_FORMAT_FONT>main
+3 Dialogboksen Formater oppsett=HIDD_WIZARD_LAYOUT>main
+3 Kategorien Formater=HIDD_OPTIONS_FORMAT>main
+3 Kategorien Topptekst/Bunntekst=HIDD_SETUP_HEADER>main
+3 Informasjonsboksen Utklippstavle med elementer=HIDD_DCMCLIPBOARD>main
+3 Dialogboksen Elementegenskaper=HIDD_ITEMPROP>main
+3 Dialogboksen Oppsett=HIDD_WIZARD_START>main
+3 Kategorien Marger=HIDD_SETUP_MARGIN>main
+3 Dialogboksen Ny parameter=HIDD_PARAM_NEW>main
+3 Dialogboksen Åpne arbeidsbok=HIDD_OPEN>main
+3 Dialogboksen Åpne arbeidsbok fra database=HIDD_OPEN_DB>main
+3 Oversikt over dialogboksen Alternativer=HIDD_WIZARD_OPTIONS>main
+3 Oversikt over dialogboksen Sideoppsett=HIDD_WIZARD_PREVIEW>main
+3 Dialogboksen Parametere=HIDD_PARAMETERS>main
+3 Parameterveiviser=HIDD_PARAMETERS_RUNTIME>main
+3 Dialogboksen Lagre arbeidsbok=HIDD_SAVE>main
+3 Dialogboksen Lagre arbeidsbok i database=HIDD_SAVE_DB>main
+3 Kategorien Ark=HIDD_SETUP_SHEET>main
+3 Dialogboksen Sorter krysstabell=HIDD_SORT_CROSSTAB>main
+3 Dialogboksen Sorter tabell=HIDD_SORT_TABLE>main
+3 Dialogboksen Vis SQL=HIDD_DCMSQL>main
+3 Kategorien Tabell=HIDD_OPTIONS_TABLE>main
+3 Kategorien Tall=HIDD_FORMAT_MASK>main
+3 Dialogboksen Tittel - Kategorien Bilde=HIDD_TITLE_BMP>main
+3 Dialogboksen Tittel - Kategorien Tekst=HIDD_TITLE_TEXT>main
+3 Dialogboksen Totalsummer=HIDD_SUMMARIES>main
+3 Dialogboksen Totalsum (for krysstabeller)=HIDD_TOTAL_EDIT_CROSSTAB>main
+3 Kategorien Totalsum (for tabeller)=HIDD_TOTAL_EDIT_TABLE>main
+3 Kategorien Bruker >Arbeidsbok=HIDD_GRANT_USERTOBOOK>main
+3 Dialogboksen Verdier=HIDD_DCMLIST>main
+3 Dialogboksen Arbeidsbok i annen databasekonto=HIDD_CONNECT_IO>main
+3 Kategorien Arbeidsbok > Bruker=HIDD_GRANT_BOOKTOUSER>main
+1 Menyen Fil
+2 Kommandoen Ny=HID_FILE_NEW>main
+2 Kommandoen Åpne=HID_FILE_OPEN>main
+2 Kommandoen Lukk=HID_FILE_CLOSE>main
+2 Kommandoen Lagre=HID_FILE_SAVE>main
+2 Kommandoen Lagre som=HID_FILE_SAVE_AS>main
+2 Kommandoen Planlegg=HID_FILE_SCHEDULE
+2 Kommandoen Sideoppsett=HID_FILE_PAGE_SETUP
+2 Kommandoen Forhåndsvisning=HID_FILE_PRINT_PREVIEW>main
+2 Kommandoen Skriv ut=HID_FILE_PRINT>main
+2 Kommandoen Importer SQL=HID_FILE_IMPORT>main
+2 Kommandoen Eksporter=HID_FILE_EXPORT>main
+2 Kommandoen Behandle arbeidsbøker=Manage_Workbooks_command>main
+2 Kommandoen Koble til database=HID_FILE_CONNECT>main
+2 Kommandoen Avslutt=HID_APP_EXIT>main
+1 Menyen Rediger
+2 Kommandoen Angre=HID_EDIT_UNDO>main
+2 Kommandoen Gjenta=HID_EDIT_REPEAT>main
+2 Kommandoen Klipp ut=HID_EDIT_CUT>main
+2 Kommandoen Kopier=HID_EDIT_COPY>main
+2 Kommandoen Lim inn=HID_EDIT_PASTE>main
+2 Kommandoen Slett element=HID_EDIT_DELETEITEM>main
+2 Kommandoen Merk alt=HID_EDIT_SELECTALL>main
+2 Kommandoen Søk=HID_TOOLS_FIND>main
+2 Kommandoen Elementegenskaper=HID_EDIT_ITEMPROPERTIES>main
+1 Menyen Vis
+2 Kommandoen Verktøylinje=HID_VIEW_TOOLBAR>main
+2 Kommandoen Formateringslinje=HID_TOOLBAR_FORMAT>main
+2 Kommandoen Analyselinje=HID_TOOLBAR_ANALYSIS>main
+2 Kommandoen Statuslinje=HID_VIEW_STATUS_BAR>main
+2 Sideelementer=View_Page_Items
+2 Kommandoen Utklippstavle med elementer=HID_VIEW_CLIPBOARD>main
+2 Kommandoen Vis SQL=HID_VIEW_SQL>main
+1 Menyen Ark
+2 Kommandoen Nytt ark=HID_SHEET_NEW>main
+2 Kommandoen Rediger ark=HID_SHEET_MODIFY>main
+2 Kommandoen Lag kopi som tabell=HID_DUPLICATE_TABLE>main
+2 Kommandoen Lag kopi som krysstabell=HID_DUPLICATE_CROSSTAB>main
+2 Kommandoen Gi nytt navn til ark=HID_SHEET_RENAME>main
+2 Kommandoen Slett ark=HID_SHEET_DELETE>main
+2 Kommandoen Rediger tittel=HID_SHEET_TITLE>main
+2 Kommandoen Drill=HID_SHEET_DRILLDOWN>main
+2 Kommandoen Skjul=HID_SHEET_ROLLUP>main
+2 Kommandoen Rediger parameterverdier=HID_SHEET_MODPARAMS>main
+2 Oppdater ark=HIDD_Sheet_Refresh
+2 Kommandoen Hent alle rader=HID_SHEET_FETCHALL>main
+2 Kommandoen Tell alle rader=HID_SHEET_COUNTALL>main
+1 Menyen Format
+2 Kommandoen Data=HID_FORMAT_DATA>main
+2 Kommandoen Overskrifter=HID_FORMAT_HEADINGS>main
+2 Kommandoen Unntak=HID_FORMAT_EXCEPTIONS>main
+2 Kommandoen Kolonner - Bredde=HID_COLUMN_WIDTH>main
+2 Kommandoen Kolonner - Automatisk skalering=HID_COLUMN_AUTOFIT>main
+2 Kommandoen Ark - Tittel=HID_FORMAT_SHEETTITLE>main
+2 Kommandoen Ark - Angi bakgrunn=HID_FORMAT_SHEETBKGND>main
+2 Kommandoen Fjern bakgrunn=HID_FORMAT_SHEETCLEAR>main
+1 Menyen Verktøy
+2 Kommandoen Betingelser=HID_TOOLS_CONDITIONS>main
+2 Kommandoen Sortering=HID_TOOLS_SORT>main
+2 Kommandoen Totalsummer=HID_TOOLS_TOTALS>main
+2 Kommandoen Prosentverdier=HIDD_PERCENTAGES
+2 Kommandoen Beregninger=HID_TOOLS_CALCULATIONS>main
+2 Kommandoen Parametere=HID_TOOLS_PARAMS>main
+2 Kommandoen Alternativer=HID_TOOLS_OPTIONS>main
+1 Menyen Diagram
+2 Kommandoen Nytt diagram=New_Graph_command>main
+2 Kommandoen Vis=HID_MENU_VIEW_GRAPH>main
+2 Kommandoen Skriv ut=Print_command_graph
+2 Kommandoen Kopier=Copy_to_clipboard_command_graph>main
+2 Kommandoen Forklaring=Legend_command>main
+2 Kommandoen X-etiketter=X_Labels_command>main
+2 Kommandoen Statuslinje=Status_bar_command_graph>main
+2 Kommandoen Skaler=HID_GRAPH_SCALE>main
+2 Kommandoen 3D-visning=HID_GRAPH_3D>main
+1 Menyen Vindu
+2 Kommandoen Ordne ikoner=HID_WINDOW_ARRANGE>main
+2 Kommandoen Overlappet=HID_WINDOW_CASCADE>main
+2 Kommandoen Side ved side vannrett=HID_WINDOW_TILE_HORZ>main
+2 Kommandoen Side ved side loddrett=HID_WINDOW_TILE_VERT>main
+1 Menyen Hjelp
+2 Kommandoen Emner i Hjelp=HID_HELP_INDEX>main
+2 Kommandoen Bruke Hjelp=HID_HELP_USING>main
+2 Kommandoen Håndbøker=HID_HELP_MANUALS>main
+2 Kommandoen Om Discoverer=HID_APP_ABOUT>main

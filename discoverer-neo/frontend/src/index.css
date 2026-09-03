@@ -8,10 +8,19 @@
  * `dark:` Tailwind variant doesn't fit. Components that need per-theme
  * styling beyond the CSS custom properties below should key off the
  * `data-theme` attribute directly.
+ *
+ * Color palette tokens live in src/styles/palettes/{name}.css, selected via
+ * `[data-palette="..."]` on <html> (see PaletteProvider) — an independent
+ * axis layered on top of theme via a combined [data-theme][data-palette]
+ * selector, so it must be imported after the theme files (its combined
+ * selector already wins on specificity regardless of import order, but this
+ * keeps the cascade's intent readable). 'default' has no override file — it
+ * IS the theme files' own token values.
  */
 @import "./styles/themes/light.css";
 @import "./styles/themes/dark.css";
 @import "./styles/themes/high-contrast.css";
+@import "./styles/palettes/navy.css";
 
 @theme inline {
   --color-background: var(--background);

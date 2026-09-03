@@ -1,0 +1,321 @@
+
+<!DOCTYPE html public "-//w3c//dtd html 3.2 transitional//en.us">
+<HTML lang="en.us">
+<HEAD>
+
+<META NAME="Generator" CONTENT="Quadralay WebWorks Publisher 5.0.4">
+<META NAME="Page" CONTENT="DefaultSingle">
+<META NAME="Title" CONTENT="">
+<meta http-equiv="Content-Type" content="text/html;  charset=iso-8859-1">
+
+<Title>Reference topic </Title>
+	   
+<LINK REL="home" HREF="../../library.htm" TITLE="Library">
+<LINK REL="toc" HREF="toc.htm" TITLE="Contents">
+<LINK REL="index" HREF="bookix.htm" TITLE="Index">
+<LINK REL="copyright" HREF="./html/cpyr.htm" TITLE="Copyright">
+<LINK REL="up" HREF="toc.htm" TITLE="Up">
+<LINK REL="next" HREF="adiws301.htm" TITLE="Next">
+<LINK REL="previous" HREF="adiws101.htm" TITLE="Previous">
+
+
+</HEAD>
+       
+<BODY BGCOLOR="#ffffff">
+
+<A NAME="top"></A>
+
+
+
+
+<A HREF="#BEGIN">Skip Headers</A><BR><BR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+ 
+<TD ALIGN="LEFT" VALIGN="TOP"><FONT COLOR="#330099" FACE="Helvetica, Arial, sans-serif"><STRONG>Oracle Discoverer Administrator Administration Guide (Online Help)<BR>10<i>g</i> (9.0.4)</STRONG><BR>Part Number B10270-01</FONT></TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="144">
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+
+
+
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<HR>
+<P>
+<A HREF="adiws101.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+
+<A HREF="adiws301.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+    
+
+
+<A NAME="BEGIN"></A>
+
+
+
+<DIV CLASS="IND">
+<!-- End Header -->
+
+
+
+
+
+
+
+<A NAME="1005113"></A>
+<!--TOC=h1-"1005113"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Import Wizard: Step 2 dialog</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005995"></A>
+<P CLASS="BP">
+Use this dialog to choose how to treat objects that have the same name or identifier, common to the EUL that you exported the objects from and the EUL that you are importing the objects into.
+</P>
+<A NAME="1006208"></A>
+<P CLASS="BP">
+For more information, see:
+</P>
+<A NAME="1006143"></A>
+<P CLASS="BP">
+<A HREF="maintain.htm#1009549">"About copying EULs and EUL objects by exporting and importing"</a>
+</P>
+<A NAME="1007193"></A>
+<P CLASS="BP">
+<A HREF="maintain.htm#1011931">"How to import EUL objects from a file using the Import Wizard"</a>
+</P>
+
+<A NAME="1005999"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">If two objects match then what action should occur?</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006012"></A><STRONG CLASS="Bold">Rename the imported object</STRONG>
+<P>
+
+<A NAME="1006013"></A>
+<P CLASS="BP1">
+Use this radio button to rename imported objects to differentiate them from existing objects in the current EUL.
+</P>
+
+<A NAME="1007001"></A>
+<P CLASS="BP1">
+For example, you might want to import a folder named Sales into the current EUL, even though the current EUL already contains a folder named Sales. Selecting this option will change the name of the imported folder to Sales1. The EUL will contain a folder called Sales, and a folder called Sales1.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005692"></A><STRONG CLASS="Bold">Rename the existing object</STRONG>
+<P>
+
+<A NAME="1005878"></A>
+<P CLASS="BP1">
+Use this radio button to rename existing objects in the current EUL to differentiate them from imported objects. 
+</P>
+
+<A NAME="1007013"></A>
+<P CLASS="BP1">
+For example, you might want to import a folder named Sales into the current EUL, even though the current EUL already contains a folder named Sales. Selecting this option will change the name of the existing folder to Sales1. The EUL will contain the existing folder renamed to Sales1, and the imported folder named Sales.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005899"></A><STRONG CLASS="Bold">Do not import the matching object</STRONG>
+<P>
+
+<A NAME="1005908"></A>
+<P CLASS="BP1">
+Use this radio button to not import objects that match existing objects in the current EUL. 
+</P>
+
+<A NAME="1007022"></A>
+<P CLASS="BP1">
+For example, you might want to import a folder named Sales into the current EUL, even though the current EUL already contains a folder named Sales. Selecting this option will not import the folder Sales. The EUL will contain only the existing folder called Sales.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005696"></A><STRONG CLASS="Bold">Refresh the object</STRONG>
+<P>
+
+<A NAME="1005918"></A>
+<P CLASS="BP1">
+Use this radio button to refresh any objects that match existing objects in the current EUL. 
+</P>
+
+<A NAME="1007029"></A>
+<P CLASS="BP1">
+For example, you might want to import a folder named Sales into the current EUL, even though the current EUL already contains a folder named Sales. Selecting this option will update the existing folder Sales. The EUL will contain an updated folder named Sales.
+</P>
+
+<A NAME="1007186"></A>
+<P CLASS="BP1">
+When you use the <STRONG CLASS="Bold">Refresh the object</STRONG> radio button, it also activates the <STRONG CLASS="Bold">Preserve display related properties</STRONG> check box.
+</P>
+</UL>
+
+<A NAME="1005700"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Preserve display related properties</FONT></H4>
+<A NAME="1006063"></A>
+<P CLASS="BP">
+This check box is activated when you select the <STRONG CLASS="Bold">Refresh the object</STRONG> radio button.
+</P>
+<A NAME="1007090"></A>
+<P CLASS="BP">
+Select this check box to preserve the following workbook display properties:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007069"></A>heading
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007070"></A>format mask
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007071"></A>alignment
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007079"></A>word wrap
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007080"></A>display case
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007081"></A>replace NULL with
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007106"></A>default position
+<P>
+</UL>
+
+<A NAME="1006024"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">How you would like objects to be matched up?</FONT></H4>
+<A NAME="1007219"></A>
+<P CLASS="BP">
+Discoverer can use one of the following methods for determining, during an import, whether an object from one EUL is the same as an object in another EUL.
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007220"></A><STRONG CLASS="Bold">By Identifier</STRONG>
+<P>
+
+<A NAME="1007221"></A>
+<P CLASS="BP1">
+Use this radio button to match the same objects from different EULs by using identifiers. When an object from one EUL is the same as an object from another EUL, both objects share the same identifier.
+</P>
+
+<A NAME="1007123"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> It is recommended that you use the <STRONG CLASS="Bold">By Identifier</STRONG> radio button to make sure that Discoverer correctly matches the same objects from different EULs, and not use the <STRONG CLASS="Bold">By Display Name</STRONG> radio button.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005960"></A><STRONG CLASS="Bold">By Display Name</STRONG>
+<P>
+
+<A NAME="1006022"></A>
+<P CLASS="BP1">
+Use this radio button to match the same objects from different EULs by using object display names. 
+</P>
+
+<A NAME="1007128"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> It is recomended that you do not use the <STRONG CLASS="Bold">By Display Name</STRONG> radio button, but use the <STRONG CLASS="Bold">By Identifier</STRONG> radio button instead. This option is included here only for compatibility with previous versions of Discoverer.
+</P>
+</UL>
+
+<A NAME="1006027"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Should the current user take ownership of imported workbooks?</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006028"></A><STRONG CLASS="Bold">Always take ownership of imported workbooks</STRONG>
+<P>
+
+<A NAME="1006029"></A>
+<P CLASS="BP1">
+Use this radio button if you want the current user to own any imported workbooks.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005972"></A><STRONG CLASS="Bold">Only take ownership if original owner cannot be found</STRONG>
+<P>
+
+<A NAME="1006030"></A>
+<P CLASS="BP1">
+Use this radio button if you want the owner of an imported workbook to be the same database user as the original owner of that workbook. If the database does not contain a user with the same name as the original owner of a particular workbook, the current user will be the owner of that imported workbook.
+</P>
+</UL>
+
+
+
+
+
+
+<!-- Start Footer -->
+</DIV>
+
+<DIV CLASS="OUTD">
+<HR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+<TD VALIGN="BOTTOM" WIDTH="33%">
+<TABLE CELLSPACING="0" CELLPADDING="0">
+<TR>
+<TD ALIGN="CENTER"><A HREF="adiws101.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+
+<TD ALIGN="CENTER"><A HREF="adiws301.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+    
+</TR>
+</TABLE>
+</TD>
+<TD ALIGN="CENTER" WIDTH="34%">
+<A HREF="./html/cpyr.htm"><IMG SRC="./gifs/oracle.gif" ALT="Oracle" BORDER="0"><BR>
+<FONT SIZE="-2">Copyright &copy 2003 Oracle Corporation.</FONT></A>
+<BR>
+<FONT SIZE="-2">All Rights Reserved.</FONT>
+</TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="33%"> 
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="144">
+<TR>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+  
+</DIV>
+
+</BODY>
+</HTML>
+

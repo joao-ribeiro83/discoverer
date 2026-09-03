@@ -1,0 +1,964 @@
+
+<!DOCTYPE html public "-//w3c//dtd html 3.2 transitional//en.us">
+<HTML lang="en.us">
+<HEAD>
+
+<META NAME="Generator" CONTENT="Quadralay WebWorks Publisher 5.0.4">
+<META NAME="Page" CONTENT="DefaultSingle">
+<META NAME="Title" CONTENT="Additional information about summary folders ">
+<meta http-equiv="Content-Type" content="text/html;  charset=iso-8859-1">
+
+<TITLE>Additional information about summary folders </TITLE>
+	   
+<LINK REL="home" HREF="../../library.htm" TITLE="Library">
+<LINK REL="toc" HREF="toc.htm" TITLE="Contents">
+<LINK REL="index" HREF="bookix.htm" TITLE="Index">
+<LINK REL="copyright" HREF="./html/cpyr.htm" TITLE="Copyright">
+<LINK REL="up" HREF="toc.htm" TITLE="Up">
+<LINK REL="next" HREF="oracle_a.htm" TITLE="Next">
+<LINK REL="previous" HREF="creating.htm" TITLE="Previous">
+
+
+</HEAD>
+       
+<BODY BGCOLOR="#ffffff">
+
+<A NAME="top"></A>
+
+
+
+
+<A HREF="#BEGIN">Skip Headers</A><BR><BR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+ 
+<TD ALIGN="LEFT" VALIGN="TOP"><FONT COLOR="#330099" FACE="Helvetica, Arial, sans-serif"><STRONG>Oracle Discoverer Administrator Administration Guide (Online Help)<BR>10<i>g</i> (9.0.4)</STRONG><BR>Part Number B10270-01</FONT></TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="144">
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+
+
+
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<HR>
+<P>
+<A HREF="creating.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+
+<A HREF="oracle_a.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+    
+
+
+<A NAME="BEGIN"></A>
+
+
+
+<DIV CLASS="IND">
+<!-- End Header -->
+
+
+
+
+
+
+
+<A NAME="1006574"></A>
+<!--TOC=Title-"1006574"-->
+<H1 CLASS="Title"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099">15<BR>Additional information about summary folders </FONT></H1>
+
+<!--/TOC=Title-->
+
+<A NAME="1006455"></A>
+<!--TOC=h1-"1006455"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Additional information about summary folders</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1006458"></A>
+<P CLASS="BP">
+This chapter provides additional information about Discoverer summary folders and contains the following topics:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005678"></A><A HREF="addition.htm#1004609">"What is the context and future for Discoverer's use of summary tables/materialized views?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009156"></A><A HREF="addition.htm#1008908">"What is query rewrite?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008989"></A><A HREF="addition.htm#1008927">"What are the conditions for query rewrite by Discoverer?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009652"></A><A HREF="addition.htm#1009006">"About viewing the SQL and execution plan for query rewrite in Discoverer"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009676"></A><A HREF="addition.htm#1009363">"About configuring how Discoverer displays SQL in the SQL Inspector dialog"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009655"></A><A HREF="addition.htm#1009010">"Examples of execution plan (in Discoverer) using/not using a materialized view"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009107"></A><A HREF="addition.htm#1009035">"Example of the SQL (in Discoverer) where Discoverer rewrites the query"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009130"></A><A HREF="addition.htm#1009058">"Example illustrating the advantages of rewriting a query to use a summary table"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009144"></A><A HREF="addition.htm#1009003">"What characteristics differ between summary folders in Oracle Standard Edition databases and Oracle 8.1.7 (or later) Enterprise Edition databases?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005205"></A><A HREF="addition.htm#1004656">"What is different about summary folders that are based on external summary tables?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005213"></A><A HREF="addition.htm#1004703">"What is different between mapping external summary tables and views to EUL items, with Oracle 8.1.7 (or later) Enterprise Edition databases?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005733"></A><A HREF="addition.htm#1005527">"About refresh options for Oracle 8.1.7 (or later) Enterprise Edition databases"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005741"></A><A HREF="addition.htm#1005501">"About refreshing summary folders following import between Oracle databases"</a>
+<P>
+</UL>
+
+<A NAME="1004609"></A>
+<!--TOC=h1-"1004609"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What is the context and future for Discoverer's use of summary tables/materialized views?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1008863"></A>
+<P CLASS="BP">
+Discoverer created the concept of rewriting a query to use a summary table. The idea of creating a summary table and having the SQL automatically rewritten was patented by Oracle.
+</P>
+<A NAME="1008873"></A>
+<P CLASS="BP">
+It became clear that this functionality would be useful for all database users, so Oracle moved the functionality to the database. Discoverer uses materialized views and query rewrite whenever possible and still supports its original query rewrite to Discoverer summary tables if not.
+</P>
+<A NAME="1008874"></A>
+<P CLASS="BP">
+The long term direction is to work with the server query rewrite mechanism and gradually remove the Discoverer-specific mechanism.
+</P>
+
+<A NAME="1008908"></A>
+<!--TOC=h1-"1008908"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What is query rewrite?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1009183"></A>
+<P CLASS="BP">
+Discoverer uses query rewrite under the following database conditions:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008913"></A>With Oracle 8.1.7 (or later) Enterprise Edition databases Discoverer sends a query to the database and the database decides whether a suitable materialized view exists for the query rather than accessing the detail data tables. If one does exist, the database rewrites the query to use the materialized view.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008915"></A>With Oracle Standard Edition databases. Discoverer rewrites the query to use a suitable summary table rather than accessing the detail data tables.
+<P>
+
+<A NAME="1008916"></A>
+<P CLASS="BP1">
+With Oracle 8.1.7 (or later) Enterprise Edition databases, when mapping a view to items in the EUL, Discoverer rewrites the query to use a suitable summary table.
+</P>
+</UL>
+<A NAME="1008919"></A>
+<P CLASS="BP">
+Query rewrite is transparent to the Discoverer end user and provides exactly the same results as queries that run against the detail tables but returns the results in far less time. 
+</P>
+<A NAME="1008921"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> Before query rewrite can be used, the option to use summary folders must be set in Discoverer Plus (for further information, see the <EM CLASS="Italic">Oracle Application Server Discoverer Plus User's Guide</EM>).
+</P>
+<A NAME="1009252"></A>
+<P CLASS="BP">
+For more information about the rules regarding Oracle 8.1.7 (or later) Enterprise Edition database rewrite scenarios, see the <EM CLASS="Italic">Oracle9i Data Warehousing Guide</EM>.
+</P>
+
+<A NAME="1008927"></A>
+<!--TOC=h1-"1008927"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are the conditions for query rewrite by Discoverer?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1008928"></A>
+<P CLASS="BP">
+Discoverer rewrites a query to use a summary table instead of the detail data when<EM CLASS="Italic"> </EM>all of the following conditions are met:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008929"></A>All the items specified in a query must either:
+<P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1008930"></A>exist in a single summary combination 
+<P>
+
+<A NAME="1008934"></A>
+<P CLASS="BP2">
+For more information, see <A HREF="creating.htm#1011055">Chapter&nbsp;14, "What are summary combinations?"</a>.
+</P>
+ 
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1008935"></A>be able to be joined to a summary table via foreign keys that exist in a summary combination
+<P>
+</UL>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008936"></A>Where derived items are used, you must include in the summary combination:
+<P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1008937"></A>the derived items
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1008938"></A>the components used to create the derived items
+<P>
+
+<A NAME="1008941"></A>
+<P CLASS="BP2">
+For more information about derived items, see <A HREF="calculat.htm#1009689">Chapter&nbsp;10, "What are derived items?"</a>.
+</P>
+ 
+</UL>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008943"></A>Where items are from complex folders, create another summary folder using the same combination of items, but from the source (simple) folders.
+<P>
+
+<UL>
+
+
+<A NAME="1008946"></A>
+<P CLASS="BP2">
+For more information about complex folders, see <A HREF="folders.htm#1004596">Chapter&nbsp;5, "What are complex folders?"</a>.
+</P>
+ 
+</UL>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008948"></A>Join paths specified in the query must match those specified in the summary combination that satisfies the query. This ensures that the summary result set data matches that in the detail data tables. 
+<P>
+
+<A NAME="1008949"></A>
+<P CLASS="BP1">
+However, you can define queries using fewer joins than specified in the summary table, provided that you select the <STRONG CLASS="Bold">Detail item values always exist in the master folder</STRONG> radio button in the <A HREF="adjopt01.htm#1005113">"Join Wizard: Step 2 dialog"</a>.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008957"></A>The summary folder must have the <STRONG CLASS="Bold">Available for Queries</STRONG> property set to Yes 
+<P>
+
+<A NAME="1008960"></A>
+<P CLASS="BP1">
+For more information about summary folder properties, see <A HREF="creating.htm#1004911">Chapter&nbsp;14, "How to edit the properties of summary folders"</a>.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008962"></A>The conditions specified on the Query Governor tab of the Options dialog in Discoverer Plus must be met.
+<P>
+
+<A NAME="1008966"></A>
+<P CLASS="BP1">
+For more information, see the<EM CLASS="Italic"> Oracle Application Server Discoverer Plus User's Guide</EM>.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008970"></A>The Discoverer end user running the query must have database SELECT access to the summary table.
+<P>
+
+<A NAME="1008971"></A>
+<P CLASS="BP1">
+For more information about the privileges required to create summary folders, see <A HREF="creating.htm#1005182">Chapter&nbsp;14, "What are the prerequisites for creating summary folders manually in Discoverer?"</a>.
+</P>
+</UL>
+
+<A NAME="1009006"></A>
+<!--TOC=h1-"1009006"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About viewing the SQL and execution plan for query rewrite in Discoverer</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1009008"></A>
+<P CLASS="BP">
+To view the SQL sent to the database server and the execution plan that the database server uses to return the results data from a query, you use the SQL Inspector dialog in Discoverer Plus. The SQL Inspector dialog displays the SQL and includes the name of the materialized view or the summary table used. For more information about the SQL Inspector dialog, see the <EM CLASS="Italic">Oracle Application Server Discoverer Plus User's Guide</EM>.
+</P>
+
+<A NAME="1009363"></A>
+<!--TOC=h1-"1009363"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About configuring how Discoverer displays SQL in the SQL Inspector dialog</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1009371"></A>
+<P CLASS="BP">
+In OracleAS Discoverer Plus and Oracle Discoverer Desktop, end users can look at SQL being generated by Discoverer to create worksheets. The SQL that is shown in the SQL Inspector is not necessarily the same as that which is sent to the RDBMS. 
+</P>
+<A NAME="1009416"></A>
+<P CLASS="BP">
+Discoverer always sends SQL that contains inline views to the RDBMS. Because inline views can be difficult for end users to read, you can configure Discoverer to reformat SQL to make it easier to read. Reformatted SQL is also known as 'flattened' SQL.
+</P>
+<A NAME="1009410"></A>
+<P CLASS="BP">
+To configure how Discoverer displays SQL, edit the SQLType registry setting (for more information, see <A HREF="registry.htm#1006372">"Discoverer registry settings"</a> and <A HREF="registry.htm#1006567">"How to edit Discoverer Administrator and Discoverer Desktop registry settings"</a>).
+</P>
+
+<A NAME="1009010"></A>
+<!--TOC=h1-"1009010"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Examples of execution plan (in Discoverer) using/not using a materialized view</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1009012"></A>
+<P CLASS="BP">
+You can tell whether a query is subject to query rewrite by invoking the SQL Inspector dialog in Discoverer Plus. The table below illustrates how the server execution plan might be displayed when used in a query for which no suitable materialized view exists. In this example the server completes a full table scan of three VIDEO5 data tables to return the result set.
+</P>
+   
+<A NAME="1010052">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1009016"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>A SQL statement that Discoverer displays in the SQL Inspector dialog: Plan tab</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">     
+<PRE CLASS="TCI">
+<A NAME="1009018"></A>SELECT STATEMENT  
+<A NAME="1009019"></A>SORT GROUP BY 
+<A NAME="1009020"></A>TABLE ACCESS FULL VIDEO5.Sales
+<A NAME="1009021"></A>TABLE ACCESS FULL VIDEO5.Product
+<A NAME="1009022"></A>TABLE ACCESS FULL VIDEO5.Time
+</PRE>
+     &nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   <A NAME="1009023"></A>
+<P CLASS="BP">
+The table below illustrates how the server execution plan might be displayed when used in a query for which a suitable materialized view exists. In this example the server uses the materialized view to return the result set.
+</P>
+   
+<A NAME="1010056">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1009027"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>An execution plan that Discoverer displays in the SQL Inspector dialog: Plan tab</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">     
+<PRE CLASS="TCI">
+<A NAME="1009029"></A>SELECT STATEMENT  
+<A NAME="1009030"></A>SORT GROUP BY 
+<A NAME="1009031"></A>TABLE ACCESS FULL NICK.EUL5_MV101510
+</PRE>
+     &nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   <A NAME="1009032"></A>
+<P CLASS="BP">
+The SQL statement in the table above illustrates how the server can rewrite a query to use a suitable materialized view.
+</P>
+<A NAME="1009033"></A>
+<P CLASS="BP">
+The materialized view is identified in the execution plan by the table name EUL5_MV{identifier}
+</P>
+
+<A NAME="1009035"></A>
+<!--TOC=h1-"1009035"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Example of the SQL (in Discoverer) where Discoverer rewrites the query</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1009036"></A>
+<P CLASS="BP">
+When Discoverer runs against an Oracle Standard Edition database, Discoverer controls query rewrite to use a suitable summary table. Discoverer displays the SQL sent to the database server in the SQL Inspector dialog: SQL tab.
+</P>
+<A NAME="1009037"></A>
+<P CLASS="BP">
+The table below displays the SQL statement used for a Discoverer worksheet using items from the Video Analysis folder (for more information, see <EM CLASS="Italic">Oracle Discoverer Administrator Tutoria</EM>). The SQL statement shows that the summary table EUL5_SUM100750 is referenced.
+</P>
+   
+<A NAME="1010060"> 
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1009041"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>A SQL statement that Discoverer Plus might display in the SQL Inspector dialog: SQL tab</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">     
+<PRE CLASS="TCI">
+<A NAME="1009043"></A>SELECT EUL5_SUM100750,"Department", EUL5_SUM100750, "Region", 
+EUL5_SUM100750,"Calendar Date Year", SUM(EUL5_
+SUM100750,"Profit SUM")<br>
+FROM ADMINTUTORNF806.EUL5_SUM100750 EUL5_SUM100750<br>
+GROUP BY EUL5_SUM10075."Department", EUL5_SUM10075."REgion", 
+EUL5_SUM10075."Calendar Date Year";
+</PRE>
+     &nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   <A NAME="1009044"></A>
+<P CLASS="BP">
+Discoverer automatically chooses the most appropriate summary table to process the query efficiently. This action is completely transparent to the Discoverer end user.
+</P>
+<A NAME="1009048"></A>
+<P CLASS="BP">
+The next table below displays the SQL statement for the same Discoverer worksheet as above, except that the end user has now drilled down from Year to Month. 
+</P>
+<A NAME="1009049"></A>
+<P CLASS="BP">
+The SQL statement shows that Discoverer has rewritten the first part of the query to the summary table EUL5_SUM100750 (as above). However, Discoverer has rewritten the second part of the query (the drill down) to the summary table EUL5_SUM100774.
+</P>
+   
+<A NAME="1010064">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1009053"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>A SQL statement that Discoverer Plus might display in the SQL Inspector dialog: SQL tab following a drill down</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">     
+<PRE CLASS="TCI">
+<A NAME="1009055"></A>SELECT EUL5_SUM100750,"Department", EUL5_SUM100750, "Region", 
+EUL5_SUM100750,"Calendar Date Year", SUM(EUL5_
+SUM100750,"Profit SUM")<br>
+FROM ADMINTUTORNF806.EUL5_SUM100750 EUL5_SUM100750<br>
+GROUP BY EUL5_SUM100750."Department", EUL5_SUM100750."Region", 
+EUL5_SUM100750."Calendar Date Year";
+<A NAME="1009056"></A>SELECT EUL5_SUM100774,"Department", EUL5_SUM100774, "Region", 
+EUL5_SUM100774,"Calendar Date Month", EUL5_SUM100774,"Calendar 
+Date Year", SUM(EUL5_SUM100774,"Profit SUM")<br>
+FROM ADMINTUTORNF806.EUL5_SUM100774 EUL5_SUM100774<br>
+WHERE (EUL5_SUM100774."Calendar Date Year" = TO_
+DATE('200001011000000','YYYYMMDDHH24MISS')<br>
+GROUP BY EUL5_SUM100774."Department", EUL5_SUM100774."Region", 
+EUL5_SUM100774,"Calendar Date Month", EUL5_SUM100774."Calendar 
+Date Year";
+</PRE>
+     &nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   
+<A NAME="1009058"></A>
+<!--TOC=h1-"1009058"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Example illustrating the advantages of rewriting a query to use a summary table</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1009060"></A>
+<P CLASS="BP">
+This example consists of five tables, one of which has almost 70,000 records (for more information, see the figure below). The schema and data are taken from the tutorial data.
+</P>
+
+<A NAME="1009062"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 15-1 &#32;Example schema and data</EM></FONT></H4>
+   
+<BR><A NAME="1009066">
+
+
+<img src="schema.gif" ALT="Text description of schema.gif follows.">
+<A HREF="img_text/schema.htm"><br>Text description of the illustration schema.gif</A>
+
+
+</A>
+   <A NAME="1009067"></A>
+<P CLASS="BP">
+Consider a query requiring the following items:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009068"></A>Region - (from the STORE table)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009069"></A>Department - (from the PRODUCT table)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009070"></A>Fiscal Year - (from the FISCAL DATE table)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009071"></A>SUM (Dollar_Profit) - (from the SALES FACT table)
+<P>
+</UL>
+<A NAME="1009072"></A>
+<P CLASS="BP">
+This would require a five-table join and an aggregation of all matching rows in SALES_FACT (the table with almost 70,000 rows). Producing results for the query could take several minutes depending on the capability of the server.
+</P>
+<A NAME="1009073"></A>
+<P CLASS="BP">
+On the other hand, if the query could be rewritten to use a single table that already contains the data for Region, Department, Fiscal Year, and SUM (Profit) (see the Sample summary table figure), then the query would produce an almost instantaneous response.
+</P>
+
+<A NAME="1009074"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 15-2 &#32;Sample summary table </EM></FONT></H4>
+   
+<BR><A NAME="1009078">
+
+
+<img src="sumtab1.gif" ALT="Text description of sumtab1.gif follows.">
+<A HREF="img_text/sumtab1.htm"><br>Text description of the illustration sumtab1.gif</A>
+
+
+</A>
+   <A NAME="1008862"></A>
+<P CLASS="BP">
+The Sample summary table above stores the information needed by the query at the month level, and only has to be aggregated to the year level. Discoverer therefore uses a single table rather than aggregating from a five table join and performing a full table scan.
+</P>
+
+<A NAME="1009003"></A>
+<!--TOC=h1-"1009003"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What characteristics differ between summary folders in Oracle Standard Edition databases and Oracle 8.1.7 (or later) Enterprise Edition databases?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005805"></A>
+<P CLASS="BP">
+A number of characteristics differ between summary folders when using different database versions and are compared in the following table:
+</P>
+<A NAME="1008892"></A>
+<P CLASS="BP">
+For more information about summary folders, see <A HREF="managing.htm#1009673">Chapter&nbsp;13, "About folders and summary folders in Discoverer"</a> and <A HREF="creating.htm#1004603">Chapter&nbsp;14, "What is manual summary folder creation?"</a>. The following table compares summary folders in Oracle Standard Edition databases, and Oracle 8.1.7 (or later) Enterprise Edition databases:
+</P>
+   
+<A NAME="1010068"> 
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1007400"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG><STRONG CLASS="Bold">Question?<br></STRONG></STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1004617"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Oracle Standard Edition databases</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1004619"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Oracle 8.1.7 (or later) Enterprise Edition databases</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1007402"></A>
+<P CLASS="TB">
+How are summary folders stored in the database?&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1004625"></A>
+<P CLASS="TB">
+Stored as summary tables&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1004627"></A>
+<P CLASS="TB">
+Stored as materialized views or summary tables&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1007404"></A>
+<P CLASS="TB">
+How are summary folders refreshed?&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1004629"></A>
+<P CLASS="TB">
+Full refresh only&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1004631"></A>
+<P CLASS="TB">
+Full or incremental refresh&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1007406"></A>
+<P CLASS="TB">
+What kind of refresh is available?&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1004633"></A>
+<P CLASS="TB">
+Refresh is On Demand only&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1004635"></A>
+<P CLASS="TB">
+Refresh can be On Demand/On Commit&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1007416"></A>
+<P CLASS="TB">
+How is refresh performed?&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1004637"></A>
+<P CLASS="TB">
+Discoverer performs the refresh&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1004639"></A>
+<P CLASS="TB">
+The server performs the refresh&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1007410"></A>
+<P CLASS="TB">
+What performs the summary rewrite?&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1004641"></A>
+<P CLASS="TB">
+Discoverer performs the summary rewrite&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1004643"></A>
+<P CLASS="TB">
+The server performs the query rewrite&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1007412"></A>
+<P CLASS="TB">
+What are the terms used to define summary folders?&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1004645"></A>
+<P CLASS="TB">
+Summary folders are defined in terms of items and folders&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1004647"></A>
+<P CLASS="TB">
+Summary folders are defined in terms of tables and columns&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1008251"></A>
+<P CLASS="TB">
+Can other applications take advantage of them?&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1008253"></A>
+<P CLASS="TB">
+No, only Discoverer&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1008255"></A>
+<P CLASS="TB">
+Yes, other applications can take advantage of materialized views&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   
+<A NAME="1004652"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005896"></A>Since materialized views are stored in the server, they are available for refresh by other client applications. For example, a materialized view created when using Discoverer can be refreshed through SQL*Plus using the supplied DBMS_MVIEW package.
+<P>
+</UL>
+
+<A NAME="1004656"></A>
+<!--TOC=h1-"1004656"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What is different about summary folders that are based on external summary tables?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004659"></A>
+<P CLASS="BP">
+Discoverer creates summary folders based on:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004661"></A>Discoverer summary tables or materialized views
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004662"></A>external summary tables
+<P>
+</UL>
+<A NAME="1007485"></A>
+<P CLASS="BP">
+The main differences between summary folders based on Discoverer summary tables/materialized views and summary folders based on external summary tables are outlined below.
+</P>
+   
+<A NAME="1010072">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1007458"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Question?<br></STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1007103"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Summary folders based on Discoverer summary tables/materialized views</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1007105"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Summary folders based on external summary tables</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1007460"></A>
+<P CLASS="TB">
+How are they populated and maintained?&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007107"></A>
+<P CLASS="TB">
+Automatically by Discoverer Administrator or the Oracle 8.1.7 (or later) Enterprise Edition database.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007109"></A>
+<P CLASS="TB">
+Using another application (e.g. SQL*Plus).&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1007462"></A>
+<P CLASS="TB">
+How are they created?&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007113"></A>
+<P CLASS="TB">
+Using Discoverer Administrator.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007116"></A>
+<P CLASS="TB">
+Using another application.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1007464"></A>
+<P CLASS="TB">
+How are they refreshed?&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007118"></A>
+<P CLASS="TB">
+Automatically at regular intervals (defined by the Discoverer manager in Discoverer Administrator).&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1007123"></A>
+<P CLASS="TB">
+Using another application.&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   <A NAME="1009508"></A>
+<P CLASS="BP">
+The figure below illustrates how Discoverer creates a summary folder that is based on a Materialized View. The Materialized View is supplied with data from an external summary, which is populated by an external application.
+</P>
+
+<A NAME="1009509"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 15-3 &#32;Discoverer using external summaries</EM></FONT></H4>
+   
+<BR><A NAME="1009577">
+
+
+<img src="sum.gif" ALT="Text description of sum.gif follows.">
+<A HREF="img_text/sum.htm"><br>Text description of the illustration sum.gif</A>
+
+
+</A>
+   <A NAME="1009578"></A>
+<P CLASS="BP">
+When you create a summary using Discoverer Administrator, you specify how the summary is refreshed, which is in one of the following ways:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009579"></A>by Discoverer  - the <STRONG CLASS="Bold">Manage the refresh of this summary </STRONG>check box has been selected on the <A HREF="adrsfo01.htm#1005113">"Refresh Summary Folder dialog"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009552"></A>by an external application - the <STRONG CLASS="Bold">Manage the refresh of this summary </STRONG>check box has been cleared on the <A HREF="adrsfo01.htm#1005113">"Refresh Summary Folder dialog"</a>
+<P>
+</UL>
+<A NAME="1009545"></A>
+<P CLASS="BP">
+External summary tables are useful when: 
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004697"></A>you are working with existing warehouse applications that have already generated the summary tables using some other method and you want to maintain them externally
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004701"></A>you are using a non-Oracle database
+<P>
+</UL>
+<A NAME="1005978"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> If you are using a non-Oracle database, Discoverer only supports external summary tables and will not create summary folders.
+</P>
+
+<A NAME="1004703"></A>
+<!--TOC=h1-"1004703"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What is different between mapping external summary tables and views to EUL items, with Oracle 8.1.7 (or later) Enterprise Edition databases? </FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004704"></A>
+<P CLASS="BP">
+You can create summary folders in Discoverer Administrator by mapping external summary tables or views to EUL items, with Oracle 8.1.7 (or later) Enterprise Edition databases. However, when you map a view to EUL items, materialized views are not created. This is a restriction imposed by Oracle 8.1.7 (or later) Enterprise Edition databases. Where materialized views are not created, query rewrite to Discoverer summary tables is used instead. For more information about query rewrite, see <A HREF="addition.htm#1008908">"What is query rewrite?"</a>.
+</P>
+<A NAME="1009755"></A>
+<P CLASS="BP">
+The differences in Mapping external summary tables or views to EUL items with Oracle 8.1.7 (or later) Enterprise Edition databases are highlighted in the table below:
+</P>
+   
+<A NAME="1010076">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1004715"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Mapping a table</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1004717"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Mapping a view</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1004719"></A>
+<P CLASS="TB">
+Where an external summary table is mapped to EUL items, a materialized view definition is created. 
+<A NAME="1008282"></A>
+<P CLASS="TB">
+In this case the materialized view definition is used for the Oracle 8.1.7 (or later) Enterprise Edition database's query rewrite.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1004721"></A>
+<P CLASS="TB">
+Where an external view is mapped to EUL items, a materialized view is not created.
+<A NAME="1006030"></A>
+<P CLASS="TB">
+In this case summary folders behave in the same manner as for Oracle Standard Edition databases where Discoverer rewrites queries to use Discoverer summary tables.&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   
+<A NAME="1005527"></A>
+<!--TOC=h1-"1005527"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About refresh options for Oracle 8.1.7 (or later) Enterprise Edition databases</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005528"></A>
+<P CLASS="BP">
+Oracle 8.1.7 (or later) Enterprise Edition databases support incremental refresh (when available) enabling you to work with large data warehouses/databases. Parallelism (for more information, see below) is also supported for the refresh operation.
+</P>
+<A NAME="1005529"></A>
+<P CLASS="BP">
+For further information on the conditions required for incremental refresh, see <EM CLASS="Italic">Oracle9i Data Warehousing Guide</EM>.
+</P>
+
+<A NAME="1005501"></A>
+<!--TOC=h1-"1005501"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About refreshing summary folders following import between Oracle databases</FONT></H2>
+
+
+<!--/TOC=h1-->
+
+<A NAME="1005440"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Export from an Oracle Standard Edition database to an Oracle 8.1.7 (or later) Enterprise Edition database</FONT></H4>
+<A NAME="1005442"></A>
+<P CLASS="BP">
+If you export a business area with summary folders from an Oracle Standard Edition database and then import it into an Oracle 8.1.7 (or later) Enterprise Edition database, materialized views need to be created for these summary folders. For the database server to create the materialized views, you must refresh the summary folders in Discoverer. 
+</P>
+
+<A NAME="1005443"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Export from an Oracle 8.1.7 (or later) Enterprise Edition database to an Oracle Standard Edition database</FONT></H4>
+<A NAME="1005246"></A>
+<P CLASS="BP">
+If you export a business area with summary folders from an Oracle 8.1.7 (or later) Enterprise Edition database and then import it into a Oracle Standard Edition database, Discoverer needs to create summary tables based on the summary folders. For Discoverer to do this, you must refresh the summary folders. 
+</P>
+
+
+
+
+
+
+<!-- Start Footer -->
+</DIV>
+
+<DIV CLASS="OUTD">
+<HR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+<TD VALIGN="BOTTOM" WIDTH="33%">
+<TABLE CELLSPACING="0" CELLPADDING="0">
+<TR>
+<TD ALIGN="CENTER"><A HREF="creating.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+
+<TD ALIGN="CENTER"><A HREF="oracle_a.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+    
+</TR>
+</TABLE>
+</TD>
+<TD ALIGN="CENTER" WIDTH="34%">
+<A HREF="./html/cpyr.htm"><IMG SRC="./gifs/oracle.gif" ALT="Oracle" BORDER="0"><BR>
+<FONT SIZE="-2">Copyright &copy 2003 Oracle Corporation.</FONT></A>
+<BR>
+<FONT SIZE="-2">All Rights Reserved.</FONT>
+</TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="33%"> 
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="144">
+<TR>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+  
+</DIV>
+
+</BODY>
+</HTML>
+

@@ -1,0 +1,123 @@
+/*
+ * 'navy' color palette — layered on top of light.css/dark.css via the
+ * combined [data-theme][data-palette] selector (higher specificity than a
+ * bare [data-theme] rule, so source order doesn't matter). Recolors
+ * primary/secondary/accent/destructive/success/warning/info/ring/chart/
+ * sidebar; --background/--foreground/--card/--muted stay exactly as
+ * light.css/dark.css already define them.
+ *
+ * Deliberately has NO [data-theme='high-contrast'] variant: that theme's CSS
+ * only ever keys off [data-theme] (see high-contrast.css), so its AAA
+ * contrast guarantees hold regardless of which palette is selected — this
+ * file never targets it.
+ *
+ * Values sourced from allianz-trade.com's own live design-system tokens
+ * (captured 2026-08-24), converted from sRGB to OKLCH:
+ *   brand navy         #003781 -> oklch(0.356 0.136 258.6)
+ *   hover navy         #00266D -> oklch(0.299 0.130 261.0)
+ *   action blue        #007AB3 -> oklch(0.552 0.125 239.5)
+ *   selection tint      #DBEAF5 -> oklch(0.929 0.022 239.4)
+ *   danger              #DC3149 -> oklch(0.589 0.205 19.2)
+ *   success             #05813C -> oklch(0.528 0.142 150.5)
+ *   warning text        #8F6A00 -> oklch(0.554 0.18 84.4)  (hue only, kept the
+ *                                  existing tuned lightness/chroma from
+ *                                  light.css/dark.css for contrast weight)
+ * --chart-5 (purple) is lightened from Allianz's own #5B0037 (L 0.310, too
+ * dark to read as a distinct chart series) to L 0.47/0.62 — not a literal
+ * site token, kept close in hue.
+ *
+ * Contrast ratios below were computed via the same OKLCH -> linear sRGB ->
+ * WCAG relative luminance conversion high-contrast.css documents (not
+ * eyeballed from L alone):
+ *
+ *   LIGHT primary/primary-foreground        10.79:1
+ *   LIGHT secondary-foreground/secondary    11.41:1
+ *   LIGHT accent-foreground/accent           9.17:1
+ *   LIGHT destructive-foreground/destructive 4.66:1  (L nudged from the raw
+ *     Allianz danger hex — 4.39:1 as converted verbatim — up to 4.66:1 to
+ *     clear AA's 4.5:1 text floor; matches light.css's own destructive,
+ *     which sits at 4.56:1)
+ *   LIGHT success-foreground/success         4.78:1
+ *   LIGHT warning-foreground/warning         4.60:1
+ *   LIGHT info-foreground/info               4.53:1
+ *   LIGHT sidebar-foreground/sidebar        10.79:1
+ *   LIGHT sidebar-primary-foreground/sidebar-primary  4.53:1
+ *   LIGHT sidebar-accent-foreground/sidebar-accent(hover)  8.10:1
+ *   LIGHT sidebar/sidebar-border (non-text UI boundary, >=3:1)  3.36:1
+ *
+ *   DARK primary-foreground/primary          7.94:1
+ *   DARK secondary-foreground/secondary     10.84:1
+ *   DARK destructive-foreground/destructive  3.27:1  (matches dark.css's own
+ *     documented --destructive/--destructive-foreground tradeoff — a light
+ *     saturated chip against the same near-white --*-foreground clears only
+ *     ~2.8:1-3.3:1 there too; see dark.css's comment. --success/--warning
+ *     below follow the identical, already-accepted shape.)
+ *   DARK background/destructive              5.81:1  (color still reads as
+ *     its hue against the page)
+ *   DARK success-foreground/success          2.80:1  (see destructive note)
+ *   DARK background/success                  6.78:1
+ *   DARK warning-foreground/warning          2.59:1  (see destructive note)
+ *   DARK background/warning                  7.33:1
+ *   DARK info-foreground/info                8.10:1
+ *   DARK sidebar-foreground/sidebar         17.91:1
+ *   DARK sidebar-primary-foreground/sidebar-primary  6.22:1
+ *   DARK sidebar/sidebar-border (non-text UI boundary, >=3:1)  3.53:1
+ */
+
+[data-theme='light'][data-palette='navy'] {
+  --primary: oklch(0.356 0.136 258.6);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.929 0.022 239.4);
+  --secondary-foreground: oklch(0.299 0.13 261.0);
+  --accent: oklch(0.929 0.022 239.4);
+  --accent-foreground: oklch(0.356 0.136 258.6);
+  --destructive: oklch(0.575 0.205 19.2);
+  --success: oklch(0.528 0.142 150.5);
+  --warning: oklch(0.554 0.18 84.4);
+  --info: oklch(0.552 0.125 239.5);
+  --border: oklch(0.912 0.008 240);
+  --input: oklch(0.912 0.008 240);
+  --ring: oklch(0.552 0.125 239.5);
+  --chart-1: oklch(0.552 0.125 239.5);
+  --chart-2: oklch(0.628 0.101 197.5);
+  --chart-3: oklch(0.528 0.142 150.5);
+  --chart-4: oklch(0.563 0.17 41.9);
+  --chart-5: oklch(0.47 0.128 351.8);
+  --sidebar: oklch(0.356 0.136 258.6);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.552 0.125 239.5);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.42 0.11 250);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.64 0.08 255);
+  --sidebar-ring: oklch(0.552 0.125 239.5);
+}
+
+[data-theme='dark'][data-palette='navy'] {
+  --primary: oklch(0.72 0.09 239.5);
+  --primary-foreground: oklch(0.16 0.03 258);
+  --secondary: oklch(0.28 0.05 250);
+  --secondary-foreground: oklch(0.9 0.02 239);
+  --accent: oklch(0.28 0.05 250);
+  --accent-foreground: oklch(0.9 0.02 239);
+  --destructive: oklch(0.66 0.19 19.2);
+  --success: oklch(0.66 0.15 150.5);
+  --warning: oklch(0.7 0.15 84.4);
+  --info: oklch(0.72 0.1 239.5);
+  --border: oklch(0.28 0.02 250);
+  --input: oklch(0.28 0.02 250);
+  --ring: oklch(0.65 0.11 239.5);
+  --chart-1: oklch(0.72 0.1 239.5);
+  --chart-2: oklch(0.7 0.09 197.5);
+  --chart-3: oklch(0.66 0.15 150.5);
+  --chart-4: oklch(0.68 0.16 41.9);
+  --chart-5: oklch(0.62 0.12 351.8);
+  --sidebar: oklch(0.184 0.038 262.1);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.65 0.11 239.5);
+  --sidebar-primary-foreground: oklch(0.145 0 0);
+  --sidebar-accent: oklch(0.26 0.05 258);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.53 0.06 262);
+  --sidebar-ring: oklch(0.65 0.11 239.5);
+}

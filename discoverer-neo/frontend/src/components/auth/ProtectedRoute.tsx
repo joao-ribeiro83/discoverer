@@ -6,6 +6,7 @@ import { useAuthStore } from '@/store/auth'
 export function ProtectedRoute({ children }: { children: ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const hasHydrated = useAuthStore((s) => s.hasHydrated)
+  const mustChangePassword = useAuthStore((s) => s.user?.mustChangePassword === true)
   const location = useLocation()
 
   if (!hasHydrated) {
@@ -18,6 +19,13 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />
+  }
+
+  // An account provisioned with a temporary password can reach nothing else —
+  // the API returns 403 PASSWORD_CHANGE_REQUIRED for every other route — so
+  // send it straight to the change screen instead of a wall of failed requests.
+  if (mustChangePassword && location.pathname !== '/change-password') {
+    return <Navigate to="/change-password" replace />
   }
 
   return <>{children}</>

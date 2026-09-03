@@ -48,6 +48,39 @@ Quando a execução termina, é apresentado:
 - **Executado Por** — O seu nome de utilizador
 - **Executado Em** — Data/hora
 
+## Quebras de Grupo e Totais
+
+Um mapa migrado do Discoverer é apresentado como a folha original o desenhava.
+
+**Quebras de grupo.** Uma coluna marcada como *agrupar e quebrar* é mostrada
+uma vez por grupo: o valor aparece na primeira linha e fica em branco nas
+linhas que o repetem. O cabeçalho da coluna tem o distintivo **Grupo**.
+
+**Subtotais.** Quando o mapa os define, uma linha de subtotal fecha cada grupo,
+com a etiqueta que o autor original escreveu — `Total de EMEA`.
+
+**Totais gerais.** Uma linha a negrito no fim dos resultados.
+
+Os totais são calculados sobre **todas as linhas que os filtros abrangem**, não
+sobre as linhas atualmente carregadas. Carregar mais linhas não os altera.
+
+**Ordenar ou filtrar a grelha suspende isto.** As quebras e os subtotais só
+fazem sentido pela ordem em que a consulta devolveu as linhas. Se clicar num
+cabeçalho para ordenar, os resultados passam a uma lista simples; limpe a
+ordenação para recuperar a disposição. O rodapé indica quando está suspensa.
+
+## Tabelas Cruzadas
+
+Uma tabela cruzada coloca um conjunto de valores ao lado, outro no topo e as
+medidas entre ambos.
+
+Os mapas migrados do Discoverer chegam **como tabelas**, mesmo quando o
+original era uma tabela cruzada. O Discoverer nunca registou que colunas
+ficavam no topo, por isso nada o pode recuperar. Abra o mapa no construtor,
+abra uma coluna e defina a *Margem da tabela cruzada* como *No topo* para
+recuperar o cruzamento. Consulte
+[Construir Mapas](building-maps.md).
+
 ## Paginação
 
 Para conjuntos de resultados extensos:
@@ -133,6 +166,16 @@ Se surgir "Falha na ligação":
 - A origem de dados está temporariamente indisponível
 - Tente novamente dentro de instantes
 - Contacte o administrador se persistir
+
+### Definições da Folha Que Não Foi Possível Aplicar
+
+Uma nota amarela por cima dos resultados lista tudo o que o mapa pediu e esta
+execução não conseguiu cumprir — um total cuja função do Discoverer não tem
+equivalente em SQL, ou uma ordenação por uma coluna que o relatório não mostra.
+
+As linhas em si estão corretas. Corrija a definição no construtor de mapas ou
+consulte
+[Resolução de Problemas da Migração](../migration/troubleshooting.md#worksheet-settings-that-could-not-be-applied).
 
 ## O Que Se Segue?
 

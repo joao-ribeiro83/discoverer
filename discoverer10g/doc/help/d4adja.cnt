@@ -1,0 +1,242 @@
+:Base d4adja.hlp
+:Title Oracle Discovererヘルプ
+1 Oracle Discovererの紹介
+2 Oracle Discovererの紹介=CON_INTRO_OD>main
+1 メニュー・コマンド
+2 「ファイル」
+3 「新規作成」=reffilnew>main
+3 「開く」=reffilopen>main
+3 「閉じる」=reffilclos>main
+3 「インポート」=Import>main
+3 「エクスポート」=reffilexp>main
+3 「接続」=reffilcon>main
+3 「リフレッシュ」=Refresh>main
+3 「終了」=reffilexit>main
+2 「編集」
+3 「元に戻す」=refediundo>main
+3 「切り取り」=refedicut>main
+3 「コピー」=refedicopy>main
+3 「貼り付け」=refedipast>main
+3 「削除」=refedidele>main
+3 「プロパティ」=refediprop>main
+3 「編集」=refediobj>main
+2 「表示」
+3 「ツールバー」=refvietoolbar>main
+3 「ステータスバー」=refviestatus>main
+3 「タスクリスト」=refvietask>main
+3 「フォルダの妥当性チェック」=refvievalidate>main
+3 Administration Editionタスクリスト =IDD_CHECKLIST>main
+2 「挿入」
+3 ビジネスエリア
+4 「ビジネスエリア」→「新規ビジネスエリアの作成」=d30bafnew>main
+4 「ビジネスエリア」→「データベースから新規ビジネスエリアを作成」=d30bafdb>main
+4 ロード（ビジネスエリア）ウィザード
+5 ロード・ウィザード=HIDD_EULGATEWAY_INTRO>main
+5 ロード・ウィザード:ステップ2=HIDD_EULGATEWAY_CHOOSE>main
+5 オンライン・ディクショナリ・オプション=HIDD_EULGATEWAY_SERVER_OPTIONS>main
+5 ロード・ウィザード:ステップ3=HIDD_EULGATEWAY_IMPORT>main
+5 ロード・ウィザード:ステップ4=HIDD_EULGATEWAY_OPTIONS>main
+5 ロード・ウィザード:ステップ5=HIDD_EULGATEWAY_NAME>main
+5 ビジネスエリアを開く=HIDD_LOADWIZARD_OPEN>main
+5 ワイルド・カード文字の使用=Wildcard_Characters>main
+3 フォルダ
+4 新規フォルダの作成
+5 「フォルダ」→「新規フォルダの作成」=Folder_New>main
+4 データベースから
+5 「フォルダ」→「データベースから新規フォルダを作成」=Folder_From_Database>main
+4 カスタム・フォルダ
+5 カスタム・フォルダについて=Custom_Folder>main
+5 「フォルダ」→「新規カスタム フォルダの作成」=Folder_Custom>main
+5 カスタム・フォルダのプロパティ=Editing_the_SQL_Statement>main
+5 「カスタム フォルダ」ダイアログ・ボックス=HIDD_CUSTOM_FOLDER>main
+5 「カスタム フォルダ」ダイアログ・ボックス=Custom_Folder_dialog_box>main
+5 カスタム・フォルダとSQL文=Custom_Folders_and_SQL_Statements>main
+5 SQL構文例:シノニム=SQL_Syntax_Example_Synonyms>main
+5 SQL構文例:集合演算子=SQL_Syntax_Example_Set_Operator>main
+5 SQL構文例:Oracleデータベース以外=SQL_Syntax_Example: Non-Oracle Databases>main
+5 SQL構文例:フォルダ定義の副問合せ=SQL_Syntax_Example_Sub_query_in_a_Folder_Definition>main
+5 SQL構文例:オプティマイザ・ヒント=SQL_Syntax_Example_Optimizer_Hint>main
+5 SQL構文例:CONNECT BY句=SQL_Syntax_Example_CONNECT_BY_Clauses>main
+5 列の式=Column_Expressions>main
+3 「アイテム」
+4 「アイテム」=Item>main
+4 ユーザー定義アイテムの編集=HIDD_CALC_EDIT>main
+4 アイテムの作成
+5 新規アイテム（フォルダの選択）=HIDD_CHOOSEOBJECT_FORITEM>main
+5 新規アイテム=New_Item_dialog>main
+3 「条件」
+4 「条件」=Condition>main
+4 新規条件
+5 新規条件（フォルダの選択）=HIDD_CHOOSEOBJECT_FORCOND>main
+5 新規条件=HIDD_COND_SIMPLE>main
+5 新規条件（詳細設定）=HIDD_COND_COMPLEX>main
+3 「結合」
+4 「結合」=Join>main
+4 新規結合
+5 フォルダの選択（アイテム、条件、結合）=HIDD_CHOOSEOBJECT>main
+5 新規結合（フォルダの選択）=HIDD_CHOOSEOBJECT_FORJOIN>main
+5 新規結合=HIDD_JOIN_EDIT_SIMPLE>main
+5 新規結合=HIDD_JOIN_EDIT>main
+5 結合オプション=HIDD_JOIN_OPTIONS>main
+3 「階層」
+4 「階層」=Hierarchy>main
+4 階層ウィザード
+5 階層タイプの選択=HIDD_DCAHIERARCHY_SELECT>main
+5 アイテムの選択=HIDD_DCAHIERARCHY_ITEM_SELECT>main
+5 階層の名前付け=HIDD_DCAHIERARCHY_NAME>main
+5 日付階層書式=HIDD_DATEHIERARCHY_SELECT>main
+5 「新規日付書式」ダイアログ・ボックス=HIDD_NEWFORMAT>main
+5 日付階層を使用するアイテム=HIDD_DATEHIERARCHY_SELITEMS>main
+3 「サマリー」
+4 「サマリー」=refinssum>main
+4 サマリー・ウィザード
+5 サマリー・フォルダの作成方法の選択=HIDD_SUM_WIZARD_MAIN>main
+5 サマリー・ウィザード（ASM）: フォルダの分析=HIDD_ASM_WIZARD_ANALYZE>main
+5 サマリー・ウィザード（ASM）: 分析不能 =HIDD_ASM_MB_YES_NO_HELP>main
+5 サマリー・ウィザード（ASM）: 領域の割当て=HIDD_ASM_WIZARD_CREATE>main
+5 サマリー・ウィザード（ASM）: 推奨サマリー=HIDD_ASM_RECOMMENDED_SUMMARIES>main
+5 サマリー・ウィザード（ASM）: オプション - 分析=HIDD_ASM_OPTIONS_ANALYZE>main
+5 サマリー・ウィザード（ASM）: オプション - フォルダ=HIDD_ASM_OPTIONS_FOLDERS>main
+5 サマリー・ウィザード（ASM）: オプション - 問合せユーザー=HIDD_ASM_OPTIONS_QUSER>main
+5 サマリー・ウィザード（ASM）: オプション - 問合せの使用方法=HIDD_ASM_OPTIONS_QUSAGE>main
+5 サマリー・ウィザード（ASM）: オプション - 削除=HIDD_ASM_OPTIONS_DELETION>main
+5 手動でのサマリーの作成: ステップ2 － 手動でのサマリーの作成方法の選択=HIDD_SUM_WIZARD_START>main
+5 手動でのサマリーの作成: ステップ3 － EULのアイテムを使用する=HIDD_SUM_WIZARD_CHOOSE>main
+5 手動でのサマリーの作成: ステップ3 － 問合せの統計を使用する=HIDD_SUM_WIZARD_STATS_NEW>main
+5 手動でのサマリーの作成: ステップ4 － 組合せの選択=HIDD_SUM_WIZARD_COMBO>main
+5 手動でのサマリーの作成: サマリー・フォルダのリフレッシュの管理=Summary_Wizard_Manage_refresh_of_summary_folder>main
+5 サマリー・ウィザード: 最終ステップ=HIDD_SUM_WIZARD_FINAL>main
+5 手動でのサマリーの作成: ステップ3 － 外部の表を使用する=HIDD_SUM_WIZARD_EXTERNAL>main
+5 表またはビューの選択=Choose_Table_or_View_Dialog>main
+5 データベースの記憶領域のプロパティ - 「プロパティ」タブ=HIDD_SUM_DBPROP>main
+5 データベースの記憶領域のプロパティ - 「マップ」タブ=HIDD_SUM_DBMAPPING>main
+5 データベースの記憶領域のプロパティ - 「表領域」タブ=HIDD_SUM_DBTABLESPACE>main
+5 データベースの記憶領域のプロパティ - 「8iプロパティ」タブ=HIDD_SUM_DBPROP8I>main
+5 サマリー状態=Summary_Status>main
+5 マッピングに関するヒント=Mapping_Tip>main
+3 「アイテム クラス」
+4 「アイテム クラス」=refitmcls>main
+4 アイテム・クラス・ウィザード
+5 属性の選択=HIDD_DOMAINWIZARD_TYPE>main
+5 アイテムの選択（値リスト）=HIDD_DOMAINWIZARD_ITEM_VALUE>main
+5 アイテムの選択（代替ソート）=HIDD_DOMAINWIZARD_ITEM_SEQUENCE>main
+5 アイテム・クラスを使用するアイテム=HIDD_DOMAINWIZARD_SELITEMS>main
+5 名前と説明の入力=HIDD_DOMAINWIZARD_NAME>main
+2 「ツール」メニュー・オプション
+3 「セキュリティ」
+4 「セキュリティ」=Security>main
+4 「ビジネスエリア→ユーザー」タブ=HIDD_GRANT_AREATOUSER>main
+4 「ユーザー→ビジネスエリア」タブ=HIDD_GRANT_USERTOAREA>main
+3 「権限」
+4 「権限」=Privileges>main
+4 「ユーザー→権限」タブ=HIDD_PRIV_PRIVS>main
+4 「権限→ユーザー」タブ=HIDD_PRIV_USER>main
+4 「問合せ管理」タブ=HIDD_PRIV_GOV>main
+4 「スケジュールされたワークブック」タブ=HIDD_PRIV_SCHED>main
+4 デフォルトの権限=Default_Privileges>main
+4 リポジトリ・ユーザー=Repository_Users>main
+3 「フォルダの管理」
+4 「フォルダの管理」=Manage_Folders>main
+4 「ビジネスエリア→フォルダ」ダイアログ=HIDD_GRANT_AREATOFOLDER>main
+4 「フォルダ→ビジネスエリア」ダイアログ=HIDD_GRANT_FOLDERTOAREA>main
+3 PL/SQL関数
+4 「PL/SQL関数の登録」=d30regplsql>main
+4 PL/SQL関数:「関数」タブ=HIDD_PLSQL_FUNCTIONS>main
+4 PL/SQL関数:「引数」タブ=HIDD_PLSQL_ARGUMENTS>main
+3 「サマリーのリフレッシュ」
+4 「サマリーのリフレッシュ」=Summary_Refresh_Sets>main
+4 「サマリーのリフレッシュ」ダイアログ=HIDD_SUM_REFRESHMGR>main
+3 「スケジュールの管理」
+4 「スケジュールの管理」=Manage_Scheduled_Workbooks>main
+4 「スケジュールの管理」ダイアログ=HIDD_SCHEDULE_ADMIN>main
+3 「EULマネージャ」
+4 「EULマネージャ」=EUL_Manager>main
+4 「EULマネージャ」ダイアログ=HIDD_EUL_MANAGER>main
+4 EULの作成
+5 「EULの作成ウィザード:ステップ1=HIDD_CREATE_EUL_PAGE1>main
+5 「EULの作成ウィザード:ステップ2=HIDD_CREATE_EUL_PAGE2>main
+4 「EULの削除」
+5 「EULの削除」=HIDD_DELETE_EUL>main
+4 チュートリアルのインストール/削除
+5 チュートリアルのインストール/削除ウィザード: ステップ1=HIDD_INSTALL_TUTORIAL_PAGE1>main
+5 チュートリアルのインストール/削除ウィザード: ステップ2=HIDD_INSTALL_TUTORIAL_PAGE2>main
+5 「チュートリアルのインストール」ウィザード:ステップ3=HIDD_INSTALL_TUTORIAL_PAGE3>main
+3 「オプション」
+4 オプション（接続とデフォルトEUL）=Options>main
+4 オプション -「接続」タブ=HIDD_OPTIONS_CONNECTION>main
+4 オプション -「デフォルトEUL」タブ=Options_dialog_Default_EUL_tab>main
+2 「ウィンドウ」
+3 「新しいウィンドウを開く」=New_Window>main
+3 「重ねて表示」=Cascade>main
+3 「上下に並べて表示」=Tile_Horizontal>main
+3 「左右に並べて表示」=Tile_Vertical>main
+3 「アイコンの整列」=Arrange_Icons>main
+3 「すべて閉じる」=Close_All>main
+2 「ヘルプ」
+3 「トピックの検索」=Help_Topics>main
+3 「ヘルプの使用方法」=Using_Help>main
+3 「マニュアル」=Manuals>main
+3 「データベース情報」=HIDD_Database_Info>main
+1 Discovererワークエリア
+2 「ワークエリア」タブ
+3 「データ」タブ=HIDD_TEMPLATEPAGE>main
+3 「階層」タブ=HIDD_HIERARCHYTAB>main
+3 「アイテム クラス」タブ=HIDD_DOMAINTAB>main
+3 「サマリー」タブ=HIDD_SUMMARYTAB>main
+1 概念の説明
+2 「バージョン情報」=About Discoverer>main
+2 ワークエリアについて=refedi>main
+2 ビジネスエリアについて=m20tabtba>main
+2 フォルダについて=m20tabfldr>main
+2 条件について=m20tabtcnd>main
+2 結合について=m20tabjoin>main
+2 階層について=abhierar>main
+2 アイテム・クラスについて=m20tabtitm>main
+2 識別子について=About_Identifiers>main
+2 サマリーについて=m20tabtsum>main
+2 セキュリティについて=a20tabtsec>main
+2 ワークブックのスケジュールについて=About_Scheduled_Workbooks>main
+2 EULについて=m20tabteul>main
+1 手引き
+2 ビジネスエリアを作成する=Create_a_business_area>main
+2 新規EULを作成する=Create_a_new_EUL>main
+2 EULを削除する=Delete_an_EUL>main
+2 アイテム階層を作成する=Create_an_item_hierarchy>main
+2 値リストを作成する=Create_a_list_of_values>main
+2 既存のビジネスエリアを開く=Open_an_existing_business_area>main
+2 ビジネスエリアをエクスポートする=Export_a_business_area>main
+2 ビジネスエリアをリフレッシュする=Refresh_a_business_area>main
+2 EULの要素をインポートする=Import>main
+2 現行のEULに権限を設定する=Set_privileges_for_the_current_EUL>main
+1 End User Layer（EUL）
+2 EULアップグレード=EUL_Upgrade>main
+2 EULアップグレード・エラー=EUL_Upgrade_Error>main
+2 「リフレッシュ ウィザード」ダイアログ・ボックス=HIDD_EUL_REFRESH_INTRO>main
+2 「リフレッシュ ウィザード」ダイアログ・ボックス=HIDD_EUL_REFRESH_CHANGES>main
+2 EULのインポート
+3 インポート（EUL）=Import
+3 EULのインポート　ステップ1=HIDD_IMPORTEXPORT_WIZ_CHOOSE>main
+3 EULのインポート　ステップ2=HIDD_IMPORTEXPORT_WIZ_OPTIONS>main
+3 EULのインポート　ステップ3=HIDD_IMPORTEXPORT_WIZ_LOG>main
+1 「プロパティ」
+2 識別子の変更（警告）=Changing_Identifier_Warning_dialog>main
+2 「ビジネスエリア プロパティ」=busiprops>main
+2 「フォルダ プロパティ」=foldprops>main
+2 アイテム プロパティ=itemprops>main
+2 条件プロパティ=condprops>main
+2 結合プロパティ=joinprops>main
+2 サマリー プロパティ=summprops>main
+1 その他のダイアログ
+2 ビジネスエリアのエクスポート=HIDD_EUL_EXPORT>main
+2 「接続」ダイアログ・ボックス=HIDD_CONNECT>main
+2 「職責」ダイアログ・ボックス=Responsibilities_Dialog>main
+2 「ビジネスエリア削除の確認」ダイアログ・ボックス =HIDD_CONFIRMDELETE_AREA>main
+2 「フォルダ削除の確認」ダイアログ・ボックス=HIDD_CONFIRMDELETE_CATEGORY>main
+2 「End User Layerの削除確認」ダイアログ・ボックス =HIDD_CONFIRMDELETE>main
+2 「影響」ダイアログ・ボックス=HIDD_DEPENDENCY>main
+2 「表またはビューの選択」ダイアログ・ボックス=HIDD_CHOOSESERVER>main
+2 「データベースの選択」ダイアログ・ボックス=HIDD_CHOOSE_DIALOG>main
+2 「PL/SQL関数の登録」ダイアログ・ボックス=OBSELETE>main
+2 「ユーザー プロパティ」ダイアログ・ボックス=HIDD_QUERY_GOVERNOR>main
+1 用語集
+2 Oracle Discoverer用語集=DCM_GLOSSARY>glossary

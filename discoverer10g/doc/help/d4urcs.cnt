@@ -1,0 +1,251 @@
+:Base d4urcs.hlp>main
+:Title Nápovìda pro Oracle Discoverer Plus
+1 Úvod do aplikace Oracle Discoverer
+2 Dotazy a sešity=CON_ABOUT_QUERIES>main
+2 Tabulky a køíové tabulky=CON_ABOUT_TANDC>main
+2 Souèty=CON_ABOUT_TOTALS>main
+2 Procenta=CON_ABOUT_PERCENTAGES>main
+2 Plánované sešity=CON_ABOUT_SCHEDULED>main
+2 Seznámení s Oracle Discoverer
+3 Seznámení s Oracle Discoverer=CON_LEARN_OD>main
+1 Podrobné pracovní postupy
+2 Spouštìní a ukonèení aplikace Oracle Discoverer
+3 Spuštení aplikace Oracle Discoverer=To_start_Oracle_Discoverer>main
+3 Konfigurace dialogového okna Pøipojit pro uivatele aplikací Oracle=HIDD_OPTIONS_CONNECTION>main
+3 Pøipojení k databázi=To_connect_to_a_database>main
+3 Ukonèení aplikace Oracle Discoverer=To_exit_Oracle_Discoverer>main
+2 Práce se sešity
+3 Vytvoøení nového sešitu=To_create_a_new_workbook>main
+3 Otevøení uloeného sešitu=To_open_a_saved_workbook>main
+3 Uloení sešitu=To_save_a_workbook>main
+3 Zavøení sešitu=To_close_a_workbook>main
+3 Odstranìní sešitu z databáze=To_delete_a_workbook_from_the_database>main
+3 Pøidání nového listu k sešitu=To_add_a_new_sheet_to_a_workbook>main
+3 Úpravy listu=To_edit_a_sheet>main
+3 Duplikát listu jako tabulka=To_duplicate_a_sheet_as_a_table>main
+3 Duplikát listu jako køíová tabulka=To_duplicate_a_sheet_as_a_crosstab>main
+3 Pojmenování listu=To_name_a_sheet>main
+3 Úpravy názvu listu=To_edit_the_name_of_a_sheet>main
+3 Odstranìní listu se sešitu=To_delete_a_sheet_from_a_workbook>main
+3 Sdílení sešitu s dalšími uivateli=To_share_a_workbook_with_other_users>main
+3 Zobrazení kódu SQL pro aktuální sešit=To_view_the_SQL_code_for_the_current_sheet>main
+3 Zobrazení vlastností vybrané poloky=To_view_the_properties_of_a_selected_item>main
+3 Zobrazení vlastností aktuálního sešitu=To_view_the_properties_of_the_current_workbook>main
+3 Vytvoøení grafu pro aktuální list=To_show_data_in_a_sheet_as_a_graph>main
+3 Zobrazení grafu=To_Hide_or_Show_a_Graph>main
+3 Skrytí grafu=To_Hide_or_Show_a_Graph>main
+2 Pøidání a odstranìní dat
+3 Pøidání poloky do listu=To_add_an_item_to_a_sheet>main
+3 Odstranìní poloky z listu=To_delete_an_item_from_a_sheet>main
+3 Zmìna zobrazenıch hodnot poloky=To_change_displayed_values_for_an_item>main
+3 Procházení
+4 Procházení vıše=To_drill_up>main
+4 Procházení níe=To_drill_down>main
+4 Procházení k pøidruené poloce v jiném listu=To_drill_to_a_related_item_in_another_sheet>main
+4 Procházení k pøidruenım informacím v jiné aplikaci=To_drill_to_related_information_in_another_application>main
+4 Sbalení poloky=To_collapse_an_item>main
+3 Pouití podmínek pro zpøesòování dotazu
+4 Definice podmínky=To_define_a_condition>main
+4 Úpravy podmínky=To_apply_a_condition>main
+4 Pøidání vıpoètu k existující podmínce=To_add_a_calculation_to_an_existing_condition>main
+4 Vytvoøení podmínky obsahující vıpoèet=To_create_a_condition_that_includes_a_calculation>main
+4 Odstranìní podmínky=To_delete_a_condition>main
+3 Pouití vıpoètu
+4 Vytvoøení vıpoètu=To_create_a_calculation>main
+4 Úpravy vıpoètu=To_edit_a_calculation>main
+3 Pouití souètu ke shrnutí vısledku dotazu
+4 Vytvoøení souètu=To_create_a_total>main
+4 Úpravy souètu=To_edit_a_total>main
+2 Práce s daty a záhlavím
+3 Pøesun poloky z jedné osy na druhou=To_move_an_item_from_one_axis_to_another>main
+3 Vytvoøení poloky stránky=To_create_a_page_item>main
+3 Zobrazení grafickıch pruhù v buòkách=To_show_graphic_bars_in_cells>main
+3 Øazení dat
+4 Øazení tabulky=To_sort_a_table>main
+4 Øazení køíové tabulky=To_sort_a_crosstab>main
+2 Specifikace zpùsobu provádìní dotazu pro Oracle Discoverer
+3 Dotazy s naèítáním po skupinách=To_run_queries_incrementally>main
+3 Zrušení naèítání po skupinách a návrat k dotazu s naètením všech øádkù=To_override_an_incremental_setting_and_return_all_rows_in_a_query>main
+3 Stanovení maximálního poètu øádkù vrácenıch po dotazu=To_specify_the_maximum_number_of_rows_returned_in_a_query>main
+3 Nastavení pøedvoleb databázové cache=To_set_preferences_for_the_database_cache>main
+3 Nastavení pøedvoleb pro list jako køíovou tabulku=To_set_preferences_for_crosstab_layout_sheets>main
+3 Nastavení pøedvoleb pro list jako tabulku=To_set_preferences_for_table_layout_sheets>main
+2 Formátování
+3 Formátování dat v listu=To_format_data_in_a_sheet>main
+3 Formátování záhlaví listu=To_format_headings_in_a_sheet>main
+3 Formátování èísel=To_format_numbers>main
+3 Formátování titulku listu=To_format_the_title_of_a_sheet>main
+3 Zmìna šíøky sloupce=To_change_a_column_width>main
+3 Pøidání titulku do listu=To_add_a_title_to_a_sheet>main
+3 Úpravy titulku listu=To_edit_the_title_of_a_sheet>main
+3 Pøidání pozadí do listu=To_add_a_background_to_a_sheet>main
+3 Odstranìní pozadí z listu=To_remove_a_background_from_a_sheet>main
+3 Pouití vıjimek pro zvıraznìní dat
+4 Vytvoøení vıjimky=To_create_an_exception>main
+4 Úpravy vıjimky=To_edit_an_exception>main
+4 Odstranìní vıjimky=To_delete_an_exception>main
+3 Zobrazení dat ve formì grafu
+4 Vytvoøení grafu pro aktuální list=To_show_data_in_a_sheet_as_a_graph>main
+4 Zmìna stylu grafu=To_change_the_style_of_a_graph>main
+4 Manipulace s prostorovım provedením grafu=To_manipulate_the_three_dimensional_view_of_a_graph>main
+4 Pøidání titulku do grafu=To_add_titles_to_a_graph>main
+4 Úpravy titulku v grafu=To_edit_titles_in_a_graph>main
+4 Odstranìní titulku v grafu=To_delete_titles_from_a_graph>main
+4 Export grafu do jiné aplikace=To_export_a_graph_to_another_application>main
+2 Tisk
+3 Tisk sešitu=To_print_a_workbook>main
+3 Tisk listu=To_print_a_sheet>main
+3 Tisk popisek os=To_print_axis_labels>main
+3 Pøidání zalomení stránky=To_add_page_breaks>main
+3 Nastavení poøadí tisku stránek=To_set_the_printing_order_of_pages>main
+3 Nastavení vzhledu stránky=To_set_up_the_page_layout>main
+3 Zobrazení náhledu=To_preview_the_printout>main
+3 Pøidání záhlaví a paty
+4 Pøidání paty=To_add_a_footer>main
+4 Vytvoøení uivatelské paty=To_create_a_custom_footer>main
+4 Pøidání záhlaví=To_add_a_header>main
+4 Vytvoøení uivatelského záhlaví=To_create_a_custom_header>main
+2 Pouití systému Oracle Discoverer spoleènì s jinımi aplikacemi
+3 Export dat a jejich uloení v jiném formátu souboru=To_export_data_and_save_it_in_another_file_format>main
+3 Vloení dotazu do souboru v jiné aplikaci=To_embed_a_query_in_a_file_in_another_application>main
+1 Slovník
+2 Slovník=DCM_GLOSSARY>gloss
+1 Odkaz na uivatelské rozhraní
+2 Prùvodci, dialogová a informaèní okna
+3 Karta Zarovnání=HIDD_FORMAT_ALIGN>main
+3 Karta Barva pozadí=HIDD_FORMAT_COLOR>main
+3 Karta Cache=HIDD_OPTIONS_CACHE>main
+3 Dialog Vıpoèty=HIDD_DCMCALCULATIONS>main
+3 Dialog Vıpoèet:Souèet=HIDD_CALC_ADD>main
+3 Dialog Vıpoèet:Podíl=HIDD_CALC_DIV>main
+3 Dialog Vıpoèet:Souèin=HIDD_CALC_MULT>main
+3 Dialog Vıpoèet:Procento=HIDD_CALC_PERCENT>main
+3 Dialog Vıpoèet:Rozdíl=HIDD_CALC_SUB>main
+3 Dialog Podmínky=HIDD_DCMCONDITIONS>main
+3 Dialog Pøipojení k Oracle Discoverer=HIDD_CONNECT>main
+3 Karta Køíová tabulka=HIDD_OPTIONS_MATRIX>main
+3 Dialog Odstranìní sešitu z databáze=HIDD_DELETE_DB>main
+3 Dialog Procházení=HIDD_DRILL_WIZARD>main
+3 Dialog Monosti procházení=HIDD_DRILL_OPTIONS>main
+3 Dialog Úpravy vıpoètu=HIDD_CALC_EDIT>main
+3 Dialog Úpravy parametru=HIDD_PARAM_EDIT>main
+3 Karta Vıjimky=HIDD_FORMAT_EXCEPTION_NEW>main
+3 Dialog VıjimkyHIDD_DCMEXCEPTIONS=HIDD_EXCEPTION>main
+3 Dialog Export=HIDD_EXPORT_NAME>main
+3 Dialog Vlastnosti sešitu=HIDD_FILEPROP>main
+3 Karta Písmo=HIDD_FORMAT_FONT>main
+3 Dialog Formátovat rozvrení=HIDD_WIZARD_LAYOUT>main
+3 Karta Formáty=HIDD_OPTIONS_FORMAT>main
+3 Karta Záhlaví/Pata=HIDD_SETUP_HEADER>main
+3 Informaèní okno Poloka schránky=HIDD_DCMCLIPBOARD>main
+3 Dialog Vlastnosti poloky=HIDD_ITEMPROP>main
+3 Dialog Rozvrení=HIDD_WIZARD_START>main
+3 Karta Okraje=HIDD_SETUP_MARGIN>main
+3 Dialog Novı parametr=HIDD_PARAM_NEW>main
+3 Dialog Otevøení sešitu=HIDD_OPEN>main
+3 Dialog Otevøení sešitu z databáze=HIDD_OPEN_DB>main
+3 Dialog Monosti - pøehled=HIDD_WIZARD_OPTIONS>main
+3 Dialog Vzhled stránky - pøehled=HIDD_WIZARD_PREVIEW>main
+3 Dialog Parametry=HIDD_PARAMETERS>main
+3 Prùvodce parametry=HIDD_PARAMETERS_RUNTIME>main
+3 Dialog Uloení sešitu=HIDD_SAVE>main
+3 Dialog Uloení sešitu do databáze=HIDD_SAVE_DB>main
+3 Karta List=HIDD_SETUP_SHEET>main
+3 Dialog Øazení køíové tabulky=HIDD_SORT_CROSSTAB>main
+3 Dialog Øazení tabulky=HIDD_SORT_TABLE>main
+3 Dialog Inspektor SQL=HIDD_DCMSQL>main
+3 Karta Tabulka=HIDD_OPTIONS_TABLE>main
+3 Karta Text/Èíslo=HIDD_FORMAT_MASK>main
+3 Dialog Titulek - karta Bitová mapa=HIDD_TITLE_BMP>main
+3 Dialog Titulek - karta Text=HIDD_TITLE_TEXT>main
+3 Dialog Souèty=HIDD_SUMMARIES>main
+3 Dialog Souèet (pro køíové tabulky)=HIDD_TOTAL_EDIT_CROSSTAB>main
+3 Dialog Souèet (pro tabulky)=HIDD_TOTAL_EDIT_TABLE>main
+3 Karta Uivatel >Sešit=HIDD_GRANT_USERTOBOOK>main
+3 Dialog Hodnoty=HIDD_DCMLIST>main
+3 Dialog Sešit v jiném úètu databáze=HIDD_CONNECT_IO>main
+3 Karta Sešit >Uivatel=HIDD_GRANT_BOOKTOUSER>main
+1 Nabídka Soubor
+2 Pøíkaz Novı=HID_FILE_NEW>main
+2 Pøíkaz Otevøít=HID_FILE_OPEN>main
+2 Pøíkaz Zavøít=HID_FILE_CLOSE>main
+2 Pøíkaz Uloit=HID_FILE_SAVE>main
+2 Pøíkaz Uloit jako=HID_FILE_SAVE_AS>main
+2 Pøíkaz Plánování=HID_FILE_SCHEDULE
+2 Pøíkaz Vzhled stránky=HID_FILE_PAGE_SETUP
+2 Pøíkaz Náhled=HID_FILE_PRINT_PREVIEW>main
+2 Pøíkaz Tisk=HID_FILE_PRINT>main
+2 Pøíkaz Import SQL=HID_FILE_IMPORT>main
+2 Pøíkaz Export=HID_FILE_EXPORT>main
+2 Pøíkaz Správa sešitu=Manage_Workbooks_command>main
+2 Pøíkaz Pøipojit k databázi=HID_FILE_CONNECT>main
+2 Pøíkaz Konec=HID_APP_EXIT>main
+1 Nabídka Úpravy
+2 Pøíkaz Zpìt[MJB1]/Znovu=HID_EDIT_UNDO>main
+2 Pøíkaz Znovu=HID_EDIT_REPEAT>main
+2 Pøíkaz Vyjmout=HID_EDIT_CUT>main
+2 Pøíkaz Kopírovat=HID_EDIT_COPY>main
+2 Pøíkaz Vloit poloku=HID_EDIT_PASTE>main
+2 Pøíkaz Odstranit poloku=HID_EDIT_DELETEITEM>main
+2 Pøíkaz Vybrat vše=HID_EDIT_SELECTALL>main
+2 Pøíkaz Najít=HID_TOOLS_FIND>main
+2 Pøíkaz Vlastnosti poloky=HID_EDIT_ITEMPROPERTIES>main
+1 Pøíkaz Zobrazit
+2 Pøíkaz Nástroje=HID_VIEW_TOOLBAR>main
+2 Pøíkaz Formát=HID_TOOLBAR_FORMAT>main
+2 Pøíkaz Analıza=HID_TOOLBAR_ANALYSIS>main
+2 Pøíkaz Stavovı øádek=HID_VIEW_STATUS_BAR>main
+2 Poloky stránky=View_Page_Items
+2 Pøíkaz Poloka schránky=HID_VIEW_CLIPBOARD>main
+2 Pøíkaz Inspektor SQL=HID_VIEW_SQL>main
+1 Nabídka List
+2 Pøíkaz Novı list=HID_SHEET_NEW>main
+2 Pøíkaz Úpravy listu=HID_SHEET_MODIFY>main
+2 Pøíkaz Duplikovat jako tabulku=HID_DUPLICATE_TABLE>main
+2 Pøíkaz Duplikovat jako køíovou tabulku=HID_DUPLICATE_CROSSTAB>main
+2 Pøíkaz Pøejmenovat list=HID_SHEET_RENAME>main
+2 Pøíkaz Odstranit list=HID_SHEET_DELETE>main
+2 Pøíkaz Úpravy titulku=HID_SHEET_TITLE>main
+2 Pøíkaz Procházet=HID_SHEET_DRILLDOWN>main
+2 Pøíkaz Sbalit=HID_SHEET_ROLLUP>main
+2 Pøíkaz Úpravy hodnot parametru=HID_SHEET_MODPARAMS>main
+2 Obnovit list=HIDD_Sheet_Refresh
+2 Pøíkaz Naèíst všechny øádky=HID_SHEET_FETCHALL>main
+2 Pøíkaz Poèet všech øádkù=HID_SHEET_COUNTALL>main
+1 Nabídka Formát
+2 Pøíkaz Data=HID_FORMAT_DATA>main
+2 Pøíkaz Záhlaví=HID_FORMAT_HEADINGS>main
+2 Pøíkaz Vıjimky=HID_FORMAT_EXCEPTIONS>main
+2 Pøíkaz Sloupce - Šíøka=HID_COLUMN_WIDTH>main
+2 Pøíkaz Sloupce - Automatická šíøka sloupce=HID_COLUMN_AUTOFIT>main
+2 Pøíkaz List - Titulek=HID_FORMAT_SHEETTITLE>main
+2 Pøíkaz List - Nastavení pozadí=HID_FORMAT_SHEETBKGND>main
+2 Pøíkaz Smazat pozadí=HID_FORMAT_SHEETCLEAR>main
+1 Nabídka Nástroje
+2 Pøíkaz Podmínky=HID_TOOLS_CONDITIONS>main
+2 Pøíkaz Øadit=HID_TOOLS_SORT>main
+2 Pøíkaz Souèty=HID_TOOLS_TOTALS>main
+2 Pøíkaz Procenta=HIDD_PERCENTAGES
+2 Pøíkaz Vıpoèty=HID_TOOLS_CALCULATIONS>main
+2 Pøíkaz Parametry=HID_TOOLS_PARAMS>main
+2 Pøíkaz Monosti=HID_TOOLS_OPTIONS>main
+1 Nabídka Graf
+2 Pøíkaz Novı graf=New_Graph_command>main
+2 Pøíkaz Zobrazit=HID_MENU_VIEW_GRAPH>main
+2 Pøíkaz Tisk=Print_command_graph
+2 Pøíkaz Kopírovat do schránky=Copy_to_clipboard_command_graph>main
+2 Pøíkaz Legenda=Legend_command>main
+2 Pøíkaz Popisky X=X_Labels_command>main
+2 Pøíkaz Stavovı øádek=Status_bar_command_graph>main
+2 Pøíkaz Mìøítko=HID_GRAPH_SCALE>main
+2 Pøíkaz 3D zobrazení=HID_GRAPH_3D>main
+1 Nabídka Okno
+2 Pøíkaz Uspoøádat ikony=HID_WINDOW_ARRANGE>main
+2 Pøíkaz Kaskáda=HID_WINDOW_CASCADE>main
+2 Pøíkaz Rozdìlit vodorovnì=HID_WINDOW_TILE_HORZ>main
+2 Pøíkaz Rozdìlit svisle=HID_WINDOW_TILE_VERT>main
+1 Nabídka Nápovìda
+2 Pøíkaz Témata nápovìdy=HID_HELP_INDEX>main
+2 Pøíkaz Pouití nápovìdy=HID_HELP_USING>main
+2 Pøíkaz Pøíruèky=HID_HELP_MANUALS>main
+2 Pøíkaz O nástroji Discoverer=HID_APP_ABOUT>main

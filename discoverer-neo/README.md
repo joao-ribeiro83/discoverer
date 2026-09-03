@@ -123,10 +123,24 @@ Workspace-scoped: `npm run <script> --workspace=<name>`
 Discoverer Neo includes a migration tool (`dn-migrate` CLI) for importing End User Layer (EUL) metadata from existing
 Oracle Discoverer installations (versions 4.1 through 11g). This includes:
 
-- Business Areas, Folders, Items, Joins, Hierarchies
-- Workbooks and Worksheets
-- Conditions, Calculations, and Analytic Functions
-- Users, Privileges, and Security Settings
+- Business areas, folders, items and joins
+- Custom functions, users and privileges
+- **Workbooks** — each worksheet becomes a Discoverer Neo map, with the columns,
+  headings, format masks, conditions, parameters and calculations it displayed
+
+The worksheet layout is decoded from `DOCUMENTS.DOC_DOCUMENT`, the proprietary
+Discoverer container (the same bytes a `.DIS` file holds). Oracle never
+documented that format; it is reverse-engineered in
+[`migrate/EUL_SCHEMA_GROUND_TRUTH.md`](migrate/EUL_SCHEMA_GROUND_TRUTH.md) §7
+and decoded by `migrate/src/services/workbook-parser.ts`.
+
+Hierarchies and row-level security are **not** migrated — see the migration
+guide for the full list and why.
+
+A database that was migrated before the tool could read the workbook body has
+maps with no columns. Fix it with the maps-only re-import
+(`POST /api/migration/reimport-maps`) rather than a second full migration,
+which is refused by design.
 
 See the [Migration Guide](docs/migration/) for detailed instructions.
 

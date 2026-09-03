@@ -1,0 +1,242 @@
+:Base d4adf.hlp
+:Title Aide d'Oracle Discoverer
+1 Présentation d'Oracle Discoverer
+2 Introduction à Oracle Discoverer=CON_INTRO_OD>main
+1 Commandes de menu
+2 Fichier
+3 Nouveau=reffilnew>main
+3 Ouvrir=reffilopen>main
+3 Fermer=reffilclos>main
+3 Importer=Import>main
+3 Exporter=reffilexp>main
+3 Connecter=reffilcon>main
+3 Régénérer=Refresh>main
+3 Quitter=reffilexit>main
+2 Modifier
+3 Annuler=refediundo>main
+3 Couper=refedicut>main
+3 Copier=refedicopy>main
+3 Coller=refedipast>main
+3 Supprimer=refedidele>main
+3 Propriétés=refediprop>main
+3 Modifier <Objet>=refediobj>main
+2 Affichage
+3 Barre d’outils=refvietoolbar>main
+3 Barre d’état=refviestatus>main
+3 Liste de tâches=refvietask>main
+3 Valider les dossiers=refvievalidate>main
+3 Liste de tâches de l’administrateur Discoverer=IDD_CHECKLIST>main
+2 Insertion
+3 Entité
+4 Entité | Nouvelle=d30bafnew>main
+4 Entité | Depuis la base de données=d30bafdb>main
+4 Assistant Chargement (entité)
+5 Assistant Chargement=HIDD_EULGATEWAY_INTRO>main
+5 Assistant Chargement : Etape 2=HIDD_EULGATEWAY_CHOOSE>main
+5 Options du dictionnaire en ligne=HIDD_EULGATEWAY_SERVER_OPTIONS>main
+5 Assistant Chargement : Etape 3=HIDD_EULGATEWAY_IMPORT>main
+5 Assistant Chargement : Etape 4=HIDD_EULGATEWAY_OPTIONS>main
+5 Assistant Chargement : Etape 5=HIDD_EULGATEWAY_NAME>main
+5 Ouvrir une entité=HIDD_LOADWIZARD_OPEN>main
+5 Utilisation des caractères génériques=Wildcard_Characters>main
+3 Dossier
+4 Nouveau dossier
+5 Dossier | Nouveau=Folder_New>main
+4 Depuis la base de données
+5 Dossier | Depuis la base de données=Folder_From_Database>main
+4 Dossiers personnalisés
+5 A propos des dossiers personnalisés=Custom_Folder>main
+5 Dossier | Personnaliser=Folder_Custom>main
+5 Propriétés du dossier personnalisé=Editing_the_SQL_Statement>main
+5 Boîte de dialogue Modifier un dossier personnalisé=HIDD_CUSTOM_FOLDER>main
+5 Boîte de dialogue Dossier personnalisé=Custom_Folder_dialog_box>main
+5 Dossiers personnalisés et instructions SQL=Custom_Folders_and_SQL_Statements>main
+5 Exemple de syntaxe SQL : synonymes=SQL_Syntax_Example_Synonyms>main
+5 Exemple de syntaxe SQL : opérateur d'ensemble=SQL_Syntax_Example_Set_Operator>main
+5 Exemple de syntaxe SQL : bases de données non Oracle=SQL_Syntax_Example: Non-Oracle Databases>main
+5 Exemple de syntaxe SQL : sous-interrogation dans une définition de dossier=SQL_Syntax_Example_Sub_query_in_a_Folder_Definition>main
+5 Exemple de syntaxe SQL : conseil d'optimisation=SQL_Syntax_Example_Optimizer_Hint>main
+5 Exemple de syntaxe SQL : clauses CONNECT BY=SQL_Syntax_Example_CONNECT_BY_Clauses>main
+5 Expressions de colonne=Column_Expressions>main
+3 Elément
+4 Elément=Item>main
+4 Modifier un calcul=HIDD_CALC_EDIT>main
+4 Création d'un élément
+5 Nouvel élément (choisir un dossier)=HIDD_CHOOSEOBJECT_FORITEM>main
+5 Nouvel élément=New_Item_dialog>main
+3 Condition
+4 Condition=Condition>main
+4 Nouvelle condition
+5 Nouvelle condition (choisir un dossier)=HIDD_CHOOSEOBJECT_FORCOND>main
+5 Nouvelle condition=HIDD_COND_SIMPLE>main
+5 Nouvelle condition (Avancé)=HIDD_COND_COMPLEX>main
+3 Jointure
+4 Jointure=Join>main
+4 Nouvelle jointure
+5 Choisir un dossier (élément, condition, jointure)=HIDD_CHOOSEOBJECT>main
+5 Nouvelle jointure (choisir un dossier)=HIDD_CHOOSEOBJECT_FORJOIN>main
+5 Nouvelle jointure=HIDD_JOIN_EDIT_SIMPLE>main
+5 Nouvelle jointure multi-élément=HIDD_JOIN_EDIT>main
+5 Options de jointure=HIDD_JOIN_OPTIONS>main
+3 Hiérarchie
+4 Hiérarchie=Hierarchy>main
+4 Assistant Hiérarchie
+5 Sélectionner le type de hiérarchie=HIDD_DCAHIERARCHY_SELECT>main
+5 Sélectionner les éléments=HIDD_DCAHIERARCHY_ITEM_SELECT>main
+5 Nom de hiérarchie=HIDD_DCAHIERARCHY_NAME>main
+5 Format de hiérarchie de dates=HIDD_DATEHIERARCHY_SELECT>main
+5 Boîte de dialogue Nouveau format de date=HIDD_NEWFORMAT>main
+5 Eléments utilisant la hiérarchie de dates=HIDD_DATEHIERARCHY_SELITEMS>main
+3 Récapitulatif
+4 Récapitulatif=refinssum>main
+4 Assistant Récapitulatif
+5 Choix d'ASM ou création manuelle des dossiers récapitulatifs=HIDD_SUM_WIZARD_MAIN>main
+5 ASM : Analyser les dossiers=HIDD_ASM_WIZARD_ANALYZE>main
+5 ASM : Non analysé=HIDD_ASM_MB_YES_NO_HELP>main
+5 ASM : Allouer de l'espace=HIDD_ASM_WIZARD_CREATE>main
+5 ASM : Récapitulatifs recommandés=HIDD_ASM_RECOMMENDED_SUMMARIES>main
+5 ASM : Options - Analyser=HIDD_ASM_OPTIONS_ANALYZE>main
+5 ASM : Options - Dossiers=HIDD_ASM_OPTIONS_FOLDERS>main
+5 ASM : Options - Utilisateur des interrogations=HIDD_ASM_OPTIONS_QUSER>main
+5 ASM : Options - Utilisation des interrogations=HIDD_ASM_OPTIONS_QUSAGE>main
+5 ASM : Options - Suppression=HIDD_ASM_OPTIONS_DELETION>main
+5 Création manuelle de récapitulatifs - Etape 2 : Sélection de la méthode de création manuelle de récapitulatifs=HIDD_SUM_WIZARD_START>main
+5 Création manuelle de récapitulatifs - Etape 3 : Avec les éléments de l’EUL=HIDD_SUM_WIZARD_CHOOSE>main
+5 Création manuelle de récapitulatifs - Etape 3 : A partir des statistiques d’interrogation=HIDD_SUM_WIZARD_STATS_NEW>main
+5 Création manuelle de récapitulatifs - Etape 4 : Choix de combinaisons=HIDD_SUM_WIZARD_COMBO>main
+5 Création manuelle de récapitulatifs : Gestion de la régénération du dossier récapitulatif=Summary_Wizard_Manage_refresh_of_summary_folder>main
+5 Assistant Récapitulatif : Dernière étape=HIDD_SUM_WIZARD_FINAL>main
+5 Création manuelle de récapitulatifs - Etape 3 : A partir des tables externes=HIDD_SUM_WIZARD_EXTERNAL>main
+5 Choisir une table ou une vue=Choose_Table_or_View_Dialog>main
+5 Propriétés de stockage de la base de données - Onglet Propriétés=HIDD_SUM_DBPROP>main
+5 Propriétés de stockage de la base de données - Onglet Correspondances=HIDD_SUM_DBMAPPING>main
+5 Propriétés de stockage de la base de données - Onglet Tablespaces=HIDD_SUM_DBTABLESPACE>main
+5 Propriétés de stockage de la base de données - Onglet Propriétés 8i=HIDD_SUM_DBPROP8I>main
+5 Etat du récapitulatif=Summary_Status>main
+5 Conseil sur la mise en correspondance=Mapping_Tip>main
+3 Classe d'éléments
+4 Classe d'éléments=refitmcls>main
+4 Assistant Classe d'éléments
+5 Choisir les attributs=HIDD_DOMAINWIZARD_TYPE>main
+5 Sélectionner un élément (liste de valeurs)=HIDD_DOMAINWIZARD_ITEM_VALUE>main
+5 Sélectionner un élément (tri alternatif)=HIDD_DOMAINWIZARD_ITEM_SEQUENCE>main
+5 Eléments utilisant une classe d'éléments=HIDD_DOMAINWIZARD_SELITEMS>main
+5 Entrer le nom et la description=HIDD_DOMAINWIZARD_NAME>main
+2 Options du menu Outils
+3 Sécurité
+4 Sécurité=Security>main
+4 Onglet Entités -> Utilisateurs=HIDD_GRANT_AREATOUSER>main
+4 Onglet Utilisateurs -> Entité=HIDD_GRANT_USERTOAREA>main
+3 Privilèges
+4 Privilèges=Privileges>main
+4 Onglet Privilèges=HIDD_PRIV_PRIVS>main
+4 Onglet Utilisateur/Rôle (Responsabilité)=HIDD_PRIV_USER>main
+4 Onglet Gestionnaire d'interrogation=HIDD_PRIV_GOV>main
+4 Onglet Classeurs programmés=HIDD_PRIV_SCHED>main
+4 Privilèges par défaut=Default_Privileges>main
+4 Utilisateurs référentiel=Repository_Users>main
+3 Gérer les dossiers
+4 Gérer les dossiers=Manage_Folders>main
+4 Boîte de dialogue Entité -> Dossier=HIDD_GRANT_AREATOFOLDER>main
+4 Boîte de dialogue Dossier -> Entité=HIDD_GRANT_FOLDERTOAREA>main
+3 Fonctions PL/SQL
+4 Inscrire les fonctions PL/SQL (dans la base de registres)=d30regplsql>main
+4 Onglet Fonctions PL/SQL : Fonctions=HIDD_PLSQL_FUNCTIONS>main
+4 Onglet Fonctions PL/SQL : Arguments=HIDD_PLSQL_ARGUMENTS>main
+3 Régénérer les récapitulatifs
+4 Régénérer les récapitulatifs=Summary_Refresh_Sets>main
+4 Boîte de dialogue Régénérer les récapitulatifs=HIDD_SUM_REFRESHMGR>main
+3 Gérer les classeurs programmés
+4 Gérer les classeurs programmés=Manage_Scheduled_Workbooks>main
+4 Boîte de dialogue Gérer les classeurs programmés=HIDD_SCHEDULE_ADMIN>main
+3 Gestionnaire EUL
+4 Gestionnaire EUL=EUL_Manager>main
+4 Boîte de dialogue Gestionnaire EUL=HIDD_EUL_MANAGER>main
+4 Créer une EUL
+5 Assistant Création d'EUL : étape 1=HIDD_CREATE_EUL_PAGE1>main
+5 Assistant Création d'EUL : étape 2=HIDD_CREATE_EUL_PAGE2>main
+4 Supprimer une couche EUL
+5 Supprimer une couche EUL=HIDD_DELETE_EUL>main
+4 Installer ou désinstaller le didacticiel
+5 Assistant Installation/désinstallation du didacticiel : étape 1=HIDD_INSTALL_TUTORIAL_PAGE1>main
+5 Assistant Installation/désinstallation du didacticiel : étape 2=HIDD_INSTALL_TUTORIAL_PAGE2>main
+5 Assistant Installation du didacticiel : étape 3=HIDD_INSTALL_TUTORIAL_PAGE3>main
+3 Options
+4 Options (Connexion et EUL par défaut)=Options>main
+4 Onglet Connexion - Options=HIDD_OPTIONS_CONNECTION>main
+4 Onglet EUL par défaut - Options=Options_dialog_Default_EUL_tab>main
+2 Fenêtre
+3 Nouvelle fenêtre=New_Window>main
+3 Cascade=Cascade>main
+3 Mosaïque horizontale=Tile_Horizontal>main
+3 Mosaïque verticale=Tile_Vertical>main
+3 Réorganiser les icônes=Arrange_Icons>main
+3 Fermer tout=Close_All>main
+2 Aide
+3 Rubriques d'aide=Help_Topics>main
+3 Utiliser l'aide=Using_Help>main
+3 Manuels=Manuals>main
+3 Infos sur la base de données=HIDD_Database_Info>main
+1 Zone de travail de Discoverer
+2 Onglets de la zone de travail
+3 Onglet Données=HIDD_TEMPLATEPAGE>main
+3 Onglet Hiérarchies=HIDD_HIERARCHYTAB>main
+3 Onglet Classes d'éléments=HIDD_DOMAINTAB>main
+3 Onglet Récapitulatifs=HIDD_SUMMARYTAB>main
+1 Concepts
+2 A propos de Discoverer=About Discoverer>main
+2 A propos de la zone de travail=refedi>main
+2 A propos des entités=m20tabtba>main
+2 A propos des dossiers=m20tabfldr>main
+2 A propos des conditions=m20tabtcnd>main
+2 A propos des jointures=m20tabjoin>main
+2 A propos des hiérarchies=abhierar>main
+2 A propos des classes d'éléments=m20tabtitm>main
+2 A propos des identificateurs=About_Identifiers>main
+2 A propos des récapitulatifs=m20tabtsum>main
+2 A propos de la sécurité=a20tabtsec>main
+2 A propos des classeurs programmés=About_Scheduled_Workbooks>main
+2 A propos de la couche EUL=m20tabteul>main
+1 Comment ?
+2 Créer une entité=Create_a_business_area>main
+2 Créer une nouvelle EUL=Create_a_new_EUL>main
+2 Supprimer une EUL=Delete_an_EUL>main
+2 Créer une hiérarchie d'éléments=Create_an_item_hierarchy>main
+2 Créer une liste de valeurs=Create_a_list_of_values>main
+2 Ouvrir une entité existante=Open_an_existing_business_area>main
+2 Exporter une entité=Export_a_business_area>main
+2 Régénérer une entité=Refresh_a_business_area>main
+2 Importer un élément EUL=Import>main
+2 Définir les privilèges de l'EUL courante=Set_privileges_for_the_current_EUL>main
+1 Couche EUL (End User Layer)
+2 Mise à niveau EUL=EUL_Upgrade>main
+2 Erreur de mise à niveau EUL=EUL_Upgrade_Error>main
+2 Assistant Régénération=HIDD_EUL_REFRESH_INTRO>main
+2 Boîte de dialogue Régénération de la couche EUL=HIDD_EUL_REFRESH_CHANGES>main
+2 Importer une couche EUL
+3 Import (EUL)=Import
+3 Importer une couche EUL : étape 1=HIDD_IMPORTEXPORT_WIZ_CHOOSE>main
+3 Importer une couche EUL : étape 2=HIDD_IMPORTEXPORT_WIZ_OPTIONS>main
+3 Importer une couche EUL : étape 3=HIDD_IMPORTEXPORT_WIZ_LOG>main
+1 Propriétés
+2 Modification d'identificateur (avertissement)=Changing_Identifier_Warning_dialog>main
+2 Propriétés d'entité=busiprops>main
+2 Propriétés de dossier=foldprops>main
+2 Propriétés d'élément=itemprops>main
+2 Propriétés de condition=condprops>main
+2 Propriétés de jointure=joinprops>main
+2 Propriétés de récapitulatif=summprops>main
+1 Boîtes de dialogues diverses
+2 Boîte de dialogue Exporter une entité=HIDD_EUL_EXPORT>main
+2 Boîte de dialogue Connecter=HIDD_CONNECT>main
+2 Boîte de dialogue Responsabilités=Responsibilities_Dialog>main
+2 Boîte de dialogue Confirmation de la suppression de l'entité=HIDD_CONFIRMDELETE_AREA>main
+2 Boîte de dialogue Confirmation de la suppression du dossier=HIDD_CONFIRMDELETE_CATEGORY>main
+2 Boîte de dialogue Confirmation de la suppression de la couche EUL=HIDD_CONFIRMDELETE>main
+2 Boîte de dialogue Impact=HIDD_DEPENDENCY>main
+2 Boîte de dialogue Choisir une table ou une vue=HIDD_CHOOSESERVER>main
+2 Boîte de dialogue Choix de base de données=HIDD_CHOOSE_DIALOG>main
+2 Boîte de dialogue Import de fonctions PL/SQL=OBSELETE>main
+2 Boîte de dialogue Propriétés utilisateur=HIDD_QUERY_GOVERNOR>main
+1 Glossaire
+2 Glossaire Oracle Discoverer=DCM_GLOSSARY>glossary

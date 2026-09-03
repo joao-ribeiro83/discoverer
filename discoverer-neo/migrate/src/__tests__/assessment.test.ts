@@ -8,7 +8,8 @@ import {
   scoreReadiness,
   validateEulData,
 } from '../services/assessment.js';
-import { readEulSchema } from '../services/eul-reader.js';
+import { parseWorkbookContent, readEulSchema, summarizeWorkbookDocument } from '../services/eul-reader.js';
+import { buildWorkbookFixture } from '../testing/workbook-fixture.js';
 import type {
   EulFullData,
   EulReadResult,
@@ -49,8 +50,6 @@ function ba(sourceId: number, name = `BA${sourceId}`): BusinessArea {
     sourceId,
     name,
     description: null,
-    language: 'US',
-    developerKey: null,
     createdBy: null,
     createdAt: null,
     updatedBy: null,
@@ -62,6 +61,7 @@ function folder(sourceId: number, businessAreaId: number | null, folderType = 'T
   return {
     sourceId,
     businessAreaId,
+    sharedBusinessAreaIds: businessAreaId === null ? [] : [businessAreaId],
     name: `Folder${sourceId}`,
     description: null,
     folderType,
@@ -97,11 +97,18 @@ function item(sourceId: number, folderId: number | null, expType = 'CI'): Item {
   };
 }
 
-function join(sourceId: number, components: Join['components']): Join {
+function join(
+  sourceId: number,
+  components: Join['components'],
+  folders: { master?: number | null; detail?: number | null } = {},
+): Join {
   return {
     sourceId,
     name: `Join${sourceId}`,
     description: null,
+    // Joins bind folders; the defaults point at the fixture folders.
+    masterFolderId: folders.master === undefined ? 10 : folders.master,
+    detailFolderId: folders.detail === undefined ? 10 : folders.detail,
     joinType: 'INNER',
     components,
     createdBy: null,
@@ -115,7 +122,7 @@ function hierarchy(sourceId: number, businessAreaId: number | null): Hierarchy {
     businessAreaId,
     name: `Hier${sourceId}`,
     description: null,
-    levels: [],
+    nodes: [],
     createdBy: null,
     createdAt: null,
     updatedBy: null,
@@ -123,26 +130,30 @@ function hierarchy(sourceId: number, businessAreaId: number | null): Hierarchy {
   };
 }
 
-function workbook(sourceId: number, content: string | null, parsed: boolean): ParsedWorkbook {
+function workbook(sourceId: number, parsed: boolean): ParsedWorkbook {
+  const content = parsed
+    ? buildWorkbookFixture({
+        name: `WB${sourceId}`,
+        worksheets: [{ name: 'S1', columns: [{ itemLabel: 'X' }] }],
+      })
+    : Buffer.from('not a workbook', 'latin1');
+  const document = parseWorkbookContent(content);
   return {
     sourceId,
     name: `WB${sourceId}`,
     description: null,
+    contentType: 'application/vnd.oracle-disco.wb',
     content,
+    contentLength: content.length,
+    isBatch: false,
     owner: null,
     developerKey: null,
     createdBy: null,
     createdAt: null,
     updatedBy: null,
     updatedAt: null,
-    info: {
-      parsed,
-      rootName: parsed ? 'workbook' : null,
-      worksheetCount: parsed ? 1 : 0,
-      worksheets: parsed ? [{ name: 'S1' }] : [],
-      itemReferenceCount: 0,
-      ...(parsed ? {} : { parseError: 'not xml' }),
-    },
+    document,
+    info: summarizeWorkbookDocument(document),
   };
 }
 
@@ -179,12 +190,13 @@ describe('findOrphans', () => {
         businessAreas: [ba(100)],
         folders: [folder(10, 100)],
         items: [item(1, 10), item(2, 999), item(3, null)],
-        joins: [join(20, []), join(21, [{ masterItemId: 1, detailItemId: 1, operator: '=' }])],
+        joins: [join(20, [], { detail: null }), join(21, [{ masterItemId: 1, detailItemId: 1, operator: '=' }])],
         hierarchies: [hierarchy(30, 999)],
       }),
     );
 
     expect(orphans.itemsWithoutFolder.map((o) => o.sourceId)).toEqual([2, 3]);
+    // Join 20 has no remote folder; join 21 is fine despite its components.
     expect(orphans.joinsWithoutComponents.map((o) => o.sourceId)).toEqual([20]);
     expect(orphans.hierarchiesWithoutBusinessArea.map((o) => o.sourceId)).toEqual([30]);
     expect(orphans.foldersWithoutBusinessArea).toHaveLength(0);
@@ -304,28 +316,27 @@ describe('scoreReadiness', () => {
 // ---------------------------------------------------------------------------
 
 describe('generateAssessmentReport', () => {
-  it('EUL5: counts objects and flags Security Manager conditions', async () => {
+  it('EUL5: counts objects from the real schema', async () => {
     const report = generateAssessmentReport(await readEulSchema(mockExecutor(eul5Db())));
 
     expect(report.version.version).toBe('EUL5');
-    expect(report.counts.businessAreas).toBe(1);
-    expect(report.counts.items).toBe(2);
+    expect(report.counts.businessAreas).toBe(2);
+    // CO (database items) + CI (created item) — the CO rows the old default skipped.
+    expect(report.counts.items).toBe(3);
     expect(report.counts.calculatedItems).toBe(1);
-    expect(report.counts.securityConditions).toBe(1);
-    expect(report.folderTypeBreakdown).toMatchObject({ TABLE: 1, SUMMARY: 1 });
-    expect(report.warnings.some((w) => w.code === 'SECURITY_MANAGER')).toBe(true);
+    // No confirmed EXP_TYPE identifies a security-manager row.
+    expect(report.counts.securityConditions).toBe(0);
+    expect(report.folderTypeBreakdown).toMatchObject({ TABLE: 1, COMPLEX: 1 });
     expect(report.readiness.rating).not.toBe('not-supported');
   });
 
-  it('EUL4: warns about defaulted columns and the legacy security model', async () => {
+  it('EUL4: no defaulted-column warning — EUL4 and EUL5 share every column', async () => {
     const report = generateAssessmentReport(await readEulSchema(mockExecutor(eul4Db())));
 
     expect(report.version.version).toBe('EUL4');
     const codes = report.warnings.map((w) => w.code);
-    expect(codes).toContain('DEFAULTED_COLUMNS');
+    expect(codes).not.toContain('DEFAULTED_COLUMNS');
     expect(codes).toContain('SECURITY_MODEL');
-    const defaulted = report.warnings.find((w) => w.code === 'DEFAULTED_COLUMNS');
-    expect(defaulted?.message).toContain('BA_LANGUAGE');
   });
 
   it('EUL3: is rated not-supported with an error-level warning', async () => {
@@ -348,7 +359,7 @@ describe('generateAssessmentReport', () => {
 
   it('warns about workbooks whose DOC_CONTENT could not be parsed', () => {
     const report = generateAssessmentReport(
-      eul('EUL5', { workbooks: [workbook(1, 'binary blob', false)] }),
+      eul('EUL5', { workbooks: [workbook(1, false)] }),
     );
     expect(report.warnings.some((w) => w.code === 'WORKBOOK_PARSE')).toBe(true);
   });
@@ -356,7 +367,7 @@ describe('generateAssessmentReport', () => {
   it('summarizes workbook usage when a query log is present', () => {
     const report = generateAssessmentReport(
       eul('EUL5', {
-        workbooks: [workbook(1, '<workbook/>', true)],
+        workbooks: [workbook(1, true)],
         workbookUsage: [
           {
             workbookName: 'WB1',
@@ -372,6 +383,89 @@ describe('generateAssessmentReport', () => {
     expect(report.workbookUsage.hasQueryLog).toBe(true);
     expect(report.workbookUsage.totalExecutions).toBe(3);
     expect(report.workbookUsage.topWorkbooks).toHaveLength(1);
+  });
+
+  it('summarizes worksheet-fidelity coverage — crosstab, sorts, totals, joins, distinct', () => {
+    const content = buildWorkbookFixture({
+      name: 'WB1',
+      joins: [{ name: 'J1' }],
+      worksheets: [
+        {
+          name: 'S1',
+          viewType: 'CROSSTAB',
+          distinct: true,
+          columns: [{ itemLabel: 'X', axisType: 0 }, { itemLabel: 'Y', axisType: 1 }],
+          sorts: [{ item: 'X' }],
+          totals: ['Total Y'],
+          joins: ['J1'],
+        },
+      ],
+    });
+    const document = parseWorkbookContent(content);
+    const wb: ParsedWorkbook = {
+      sourceId: 1,
+      name: 'WB1',
+      description: null,
+      contentType: 'application/vnd.oracle-disco.wb',
+      content,
+      contentLength: content.length,
+      isBatch: false,
+      owner: null,
+      developerKey: null,
+      createdBy: null,
+      createdAt: null,
+      updatedBy: null,
+      updatedAt: null,
+      document,
+      info: summarizeWorkbookDocument(document),
+    };
+
+    const report = generateAssessmentReport(eul('EUL5', { workbooks: [wb] }));
+
+    expect(report.worksheetFidelity).toEqual({
+      totalWorksheets: 1,
+      layoutDecoded: 1,
+      layoutUndecoded: 0,
+      crosstabs: 1,
+      withSorts: 1,
+      withTotals: 1,
+      withForcedJoins: 1,
+      selectDistinct: 1,
+    });
+    expect(report.warnings.some((w) => w.code === 'WORKSHEET_LAYOUT_COVERAGE')).toBe(false);
+  });
+
+  it('warns when a worksheet has no decodable layout model', () => {
+    const content = buildWorkbookFixture({
+      name: 'WB1',
+      worksheets: [{ name: 'S1', undecodableLayout: true, columns: [{ itemLabel: 'X' }] }],
+    });
+    const document = parseWorkbookContent(content);
+    const wb: ParsedWorkbook = {
+      sourceId: 1,
+      name: 'WB1',
+      description: null,
+      contentType: 'application/vnd.oracle-disco.wb',
+      content,
+      contentLength: content.length,
+      isBatch: false,
+      owner: null,
+      developerKey: null,
+      createdBy: null,
+      createdAt: null,
+      updatedBy: null,
+      updatedAt: null,
+      document,
+      info: summarizeWorkbookDocument(document),
+    };
+
+    const report = generateAssessmentReport(eul('EUL5', { workbooks: [wb] }));
+
+    expect(report.worksheetFidelity.layoutUndecoded).toBe(1);
+    const warning = report.warnings.find((w) => w.code === 'WORKSHEET_LAYOUT_COVERAGE');
+    expect(warning).toBeDefined();
+    expect(warning?.severity).toBe('info');
+    expect(warning?.message).toContain('1 of 1 worksheet(s)');
   });
 });
 

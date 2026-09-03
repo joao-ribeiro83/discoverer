@@ -44,6 +44,18 @@ const MapItemInputSchema = z.object({
   sortDirection: z.enum(['ASC', 'DESC']).nullable().optional(),
   sortOrder: z.number().int().nullable().optional(),
   columnWidth: z.number().int().positive().nullable().optional(),
+  /**
+   * Worksheet placement. These were accepted by `map.service.ts` but not by
+   * this schema, so a migrated map that was opened in the builder and saved
+   * came back stripped of its axis, its hidden items and its group sorts —
+   * one Save undid the migration. Zod drops unknown keys silently, which is
+   * why it went unnoticed.
+   */
+  axisType: z.enum(['AXIS', 'MEASURE', 'PAGE']).nullable().optional(),
+  axisEdge: z.enum(['ROW', 'COLUMN']).nullable().optional(),
+  axisOrder: z.number().int().nullable().optional(),
+  isHidden: z.boolean().optional(),
+  sortGroup: z.boolean().optional(),
 });
 
 const MapConditionInputSchema = z.object({
@@ -58,14 +70,21 @@ const MapConditionInputSchema = z.object({
 });
 
 const MapParameterInputSchema = z.object({
-  name: z
-    .string()
-    .min(1)
-    .max(255)
-    .regex(
-      /^[A-Za-z][A-Za-z0-9_]*$/,
-      'Parameter names must start with a letter and contain only letters, digits, and underscores',
-    ),
+  /**
+   * The prompt, and free text on purpose.
+   *
+   * This used to be restricted to `^[A-Za-z][A-Za-z0-9_]*$` because the name
+   * was bound verbatim as a SQL bind variable. That made the identifier rule a
+   * rule about what a person may call a prompt — no spaces, no accents — which
+   * no Discoverer author ever obeyed. It also meant a migrated map could not be
+   * saved from the editor at all: loading one and pressing Save came back 400
+   * on its own stored name.
+   *
+   * Bind safety now comes from `bind_name`, derived server-side from this
+   * (see `bindParameters` in map.service.ts), so the prompt is free to be a
+   * label again.
+   */
+  name: z.string().min(1).max(255),
   paramType: z.enum(['STRING', 'NUMBER', 'DATE', 'LIST']),
   defaultValue: z.string().nullable().optional(),
   isRequired: z.boolean().optional(),

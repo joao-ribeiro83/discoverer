@@ -23,8 +23,14 @@ services:
 
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile.dev
+      # The repo root, not backend/ — see backend/Dockerfile.dev for why.
+      context: .
+      dockerfile: backend/Dockerfile.dev
+      args:
+        # Tied to the same flag the runtime check reads: with thick mode on, a
+        # plain `compose build backend` would otherwise produce an image with no
+        # Instant Client, and the backend would refuse to start.
+        INSTALL_ORACLE_CLIENT: ${ORACLE_THICK_MODE:-false}
     environment:
       NODE_ENV: development
       POSTGRES_HOST: postgres
@@ -39,13 +45,25 @@ services:
       BACKEND_PORT: 3000
       # Thin mode by default. See docker-compose.yml for enabling thick mode.
       ORACLE_THICK_MODE: ${ORACLE_THICK_MODE:-false}
+      # Temporary-password file from a migration. A BIND mount (not a named
+      # volume) so an operator can collect the file from the host and delete
+      # it — a named volume would bury it inside Docker's storage.
+      CREDENTIALS_DIR: /app/credentials
     ports:
       - "3000:3000"
       # Node.js debugger port
       - "9229:9229"
     volumes:
-      - ./backend/src:/app/src:delegated
+      - ./backend/src:/app/backend/src:delegated
+      # Migrations are read at runtime by `drizzle-kit migrate`. Mounted so a
+      # migration generated on the host applies without rebuilding the image.
+      - ./backend/drizzle:/app/backend/drizzle:delegated
+      # ./credentials on the host. Contains working passwords when a migration
+      # provisions accounts — collect, distribute, then delete.
+      - ./credentials:/app/credentials
       - /app/node_modules
+      - /app/backend/node_modules
+      - /app/migrate/node_modules
 
   frontend:
     build:
@@ -54,7 +72,11 @@ services:
     environment:
       FRONTEND_PORT: 5173
       VITE_BACKEND_URL: http://backend:3000
-    ports:
+    # !override replaces the base file's "${FRONTEND_PORT:-5173}:80" (nginx)
+    # entry instead of merging with it — without this, host port 5173 ends up
+    # published to two different container targets (80 and 5173) at once,
+    # which Docker cannot do and fails with "port is already allocated".
+    ports: !override
       - "5173:5173"
       # Vite HMR WebSocket port
       - "443:443"

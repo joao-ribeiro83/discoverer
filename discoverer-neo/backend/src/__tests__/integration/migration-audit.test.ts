@@ -107,6 +107,9 @@ async function countPrefixed(table: TargetTable): Promise<number> {
     users: sql`SELECT count(*)::int AS c FROM users WHERE id::text LIKE ${PREFIX + '%'}`,
     business_areas: sql`SELECT count(*)::int AS c FROM business_areas WHERE id::text LIKE ${PREFIX + '%'}`,
     folders: sql`SELECT count(*)::int AS c FROM folders WHERE id::text LIKE ${PREFIX + '%'}`,
+    // No `id` column — the PK is (folder_id, business_area_id) — so scope the
+    // count by the folder side instead.
+    folder_business_areas: sql`SELECT count(*)::int AS c FROM folder_business_areas WHERE folder_id::text LIKE ${PREFIX + '%'}`,
     items: sql`SELECT count(*)::int AS c FROM items WHERE id::text LIKE ${PREFIX + '%'}`,
     joins: sql`SELECT count(*)::int AS c FROM joins WHERE id::text LIKE ${PREFIX + '%'}`,
     hierarchies: sql`SELECT count(*)::int AS c FROM hierarchies WHERE id::text LIKE ${PREFIX + '%'}`,
@@ -114,6 +117,13 @@ async function countPrefixed(table: TargetTable): Promise<number> {
     custom_functions: sql`SELECT count(*)::int AS c FROM custom_functions WHERE id::text LIKE ${PREFIX + '%'}`,
     maps: sql`SELECT count(*)::int AS c FROM maps WHERE id::text LIKE ${PREFIX + '%'}`,
     map_items: sql`SELECT count(*)::int AS c FROM map_items WHERE id::text LIKE ${PREFIX + '%'}`,
+    map_conditions: sql`SELECT count(*)::int AS c FROM map_conditions WHERE id::text LIKE ${PREFIX + '%'}`,
+    map_parameters: sql`SELECT count(*)::int AS c FROM map_parameters WHERE id::text LIKE ${PREFIX + '%'}`,
+    map_calculated_fields: sql`SELECT count(*)::int AS c FROM map_calculated_fields WHERE id::text LIKE ${PREFIX + '%'}`,
+    map_layouts: sql`SELECT count(*)::int AS c FROM map_layouts WHERE id::text LIKE ${PREFIX + '%'}`,
+    map_totals: sql`SELECT count(*)::int AS c FROM map_totals WHERE id::text LIKE ${PREFIX + '%'}`,
+    map_page_setup: sql`SELECT count(*)::int AS c FROM map_page_setup WHERE id::text LIKE ${PREFIX + '%'}`,
+    map_conditional_formats: sql`SELECT count(*)::int AS c FROM map_conditional_formats WHERE id::text LIKE ${PREFIX + '%'}`,
     user_business_area_grants: sql`SELECT count(*)::int AS c FROM user_business_area_grants WHERE id::text LIKE ${PREFIX + '%'}`,
   };
   const result = (await db.execute(map[table])) as unknown as { rows: Array<{ c: number }> };
@@ -144,7 +154,9 @@ describe('EUL migration into REAL Postgres', () => {
       expect(result.version.version).toBe('EUL5');
       // Planned counts are computed…
       expect(result.planned.business_areas).toBeGreaterThan(0);
-      expect(result.planned.items).toBe(2);
+      // CO (database items) + CI (created item) — CO is the plain
+      // column-backed item the pre-ground-truth reader skipped.
+      expect(result.planned.items).toBe(3);
       // …but nothing landed in Postgres.
       for (const table of TARGET_TABLE_ORDER) {
         expect(result.inserted[table]).toBe(0);
@@ -171,19 +183,22 @@ describe('EUL migration into REAL Postgres', () => {
       expect(result.validation?.valid).toBe(true);
 
       // Every entity type actually present in Postgres, per the EUL5 fixture:
-      // 2 grantees (JSMITH, MJONES) + the synthetic migration user.
-      expect(await countPrefixed('users')).toBe(3);
+      // 3 EUL principals (JSMITH, MJONES, SALES_ROLE) + the migration user.
+      expect(await countPrefixed('users')).toBe(4);
       // 1 real BA (Sales Analysis) + 1 synthetic workbook-host BA.
-      expect(await countPrefixed('business_areas')).toBe(2);
+      expect(await countPrefixed('business_areas')).toBe(3);
       expect(await countPrefixed('folders')).toBe(2);
-      // EXP 300 (CI) + 301 (CU) migrate; 302 (SM security condition) does not.
-      expect(await countPrefixed('items')).toBe(2);
+      // EXP 300 (CO) + 301 (CI) + 302 (CO) all migrate. CO is the plain
+      // column-backed item; the old ['CI','CU'] read dropped every one.
+      expect(await countPrefixed('items')).toBe(3);
       expect(await countPrefixed('joins')).toBe(1);
       expect(await countPrefixed('hierarchies')).toBe(1);
-      expect(await countPrefixed('hierarchy_levels')).toBe(2);
+      // The fixture hierarchy is a 3-node tree: 510 (root) → 511 → 512.
+      expect(await countPrefixed('hierarchy_levels')).toBe(3);
       expect(await countPrefixed('custom_functions')).toBe(1);
       expect(await countPrefixed('maps')).toBe(1);
-      expect(await countPrefixed('user_business_area_grants')).toBe(2);
+      // AP 800 (JSMITH), 801 (MJONES via folder) and 802 (SALES_ROLE).
+      expect(await countPrefixed('user_business_area_grants')).toBe(3);
     } finally {
       await close();
     }
@@ -208,7 +223,10 @@ describe('EUL migration into REAL Postgres', () => {
       .select({ joinType: joins.joinType })
       .from(joins)
       .where(like(sql`${joins.id}::text`, `${PREFIX}%`));
-    expect(migratedJoins[0]?.joinType).toBe('LEFT');
+    // KEY_CONS carries no confirmed join-type column, so joins default to
+    // INNER. Outer-join-ness lives in FK_MSTR_NO_DETAIL / FK_DTL_NO_MASTER,
+    // which the reader does not yet interpret.
+    expect(migratedJoins[0]?.joinType).toBe('INNER');
   });
 
   it('re-running into the now-populated target is rejected (fresh-target invariant)', async () => {
@@ -231,8 +249,8 @@ describe('EUL migration into REAL Postgres', () => {
 
       // The first run's rows are still intact — the failed run rolled back and
       // did not corrupt or duplicate anything.
-      expect(await countPrefixed('users')).toBe(3);
-      expect(await countPrefixed('business_areas')).toBe(2);
+      expect(await countPrefixed('users')).toBe(4);
+      expect(await countPrefixed('business_areas')).toBe(3);
     } finally {
       await close();
     }

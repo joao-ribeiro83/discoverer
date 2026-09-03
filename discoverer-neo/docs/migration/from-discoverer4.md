@@ -51,10 +51,20 @@ The migration tool supports:
 Identify your Oracle Discoverer EUL:
 
 ```sql
--- Connect as EUL owner (e.g., EUL5_US)
-SELECT * FROM eul5_ba;      -- Business areas
-SELECT * FROM eul5_objs;    -- Folders
-SELECT * FROM eul5_obj_cols; -- Items
+-- Connect as the EUL owner (e.g. EUL5_US, or SIID_TESTES on a 4.1 EUL).
+-- The prefix is EUL4_ or EUL5_; EUL5_BAS is the marker that identifies an EUL.
+SELECT * FROM eul5_bas;       -- Business areas
+SELECT * FROM eul5_objs;      -- Folders
+SELECT * FROM eul5_expressions; -- Items and calculations
+SELECT * FROM eul5_documents; -- Workbooks (the body is in DOC_DOCUMENT)
+```
+
+To check how a source stores its workbooks before migrating it — which body
+column exists, whether it decodes, and how much comes out — run the
+workbook probe against a registered data source:
+
+```bash
+docker compose exec backend npx tsx src/scripts/probe-eul-workbooks.ts <dataSourceId>
 ```
 
 Connection details needed:
@@ -109,26 +119,172 @@ See [Migration Tool Reference](migration-tool.md) for all commands and options.
 
 ## What Gets Migrated
 
+Source table names below are the **real** EUL table names, verified against
+Oracle's own shipped scripts and a live 4.1 EUL — see
+[EUL Schema Ground Truth](../../migrate/EUL_SCHEMA_GROUND_TRUTH.md). The prefix
+is `EUL4_` or `EUL5_` depending on the source version.
+
 ### Automatically Migrated
 
-✓ **Business Areas** — EUL_BA → business_areas  
-✓ **Folders** — EUL_OBJS → folders  
-✓ **Items** — EUL_OBJ_COLS → items  
-✓ **Joins** — EUL_JOINS → joins  
-✓ **Hierarchies** — EUL_EXPRESSIONS (level type) → hierarchies  
-✓ **Calculations** — EUL_EXPRESSIONS (calculation) → custom_functions  
-✓ **Workbooks** — EUL_WORKBOOKS → maps  
-✓ **Worksheets** → map definitions  
-✓ **Conditions** → map conditions  
-✓ **Business Area Privileges** → grants  
+| Discoverer | Source | Discoverer Neo |
+| --- | --- | --- |
+| Business areas | `BAS` | `business_areas` |
+| Folders | `OBJS` (+ `BA_OBJ_LINKS`) | `folders`, `folder_business_areas` |
+| Items and calculations | `EXPRESSIONS` | `items` |
+| Joins | `KEY_CONS` | `joins` |
+| Custom functions | `FUNCTIONS` | `custom_functions` |
+| Users and roles | `EUL_USERS` | `users` |
+| Privileges | `ACCESS_PRIVS` | `user_business_area_grants` |
+| **Workbooks / worksheets** | **`DOCUMENTS.DOC_DOCUMENT`** | **`maps`** |
+| **Worksheet columns** | same | **`map_items`** |
+| **Worksheet conditions** | same | **`map_conditions`** |
+| **Workbook parameters** | same | **`map_parameters`** |
+| **Workbook calculations** | same | **`map_calculated_fields`** |
+| **Totals and subtotals** | same | **`map_totals`** |
+| **Print/page setup** | same | **`map_page_setup`** |
+| **Worksheet identity, printed title, join usage** | same | **`map_layouts`** |
+
+### How workbooks become maps
+
+A Discoverer **workbook** is a container of worksheets; a **worksheet** is what
+actually has a column layout and runs a query. Discoverer Neo has no workbook
+container — a map *is* one report — so **each worksheet becomes one map**.
+
+- A workbook with a single worksheet keeps the workbook's name
+  (`GD_M.M172_V01`), which is what users have always called that report.
+- A workbook with several worksheets produces one map per worksheet, named
+  `Workbook — Worksheet` (`M27 — Detalhe de Pagamentos`).
+
+Migrated maps land in an auto-created business area called **Migrated
+Workbooks**: Discoverer workbooks belong to no business area, so they need a
+home in Neo. Move them into real business areas after reviewing them.
+
+The layout comes out of `DOCUMENTS.DOC_DOCUMENT` — the proprietary Discoverer
+container, the same bytes a `.DIS` file holds. It is **not** XML, and none of
+its content is available relationally (`EXPRESSIONS.IT_DOC_ID` and
+`ELEM_XREFS` are empty on a real 4.1 EUL). The migrator decodes it directly;
+the format is documented in §7 of the ground-truth reference.
+
+Worksheet columns resolve to migrated items by the EUL's own
+`EXPRESSIONS.EXP_ID`, which the workbook records alongside each item — the same
+key every other migrated foreign key uses, so a column survives an item being
+renamed in the EUL. The folder and item names are the fallback for the rare
+column that records no id. A column whose item has since been *deleted* from
+the EUL is dropped and reported.
+
+### Worksheet layout, sorting and totals
+
+These are not just stored — the query engine and the results grid act on them.
+
+**Duplicate rows.** A worksheet that asked for distinct rows migrates as
+`SELECT DISTINCT`. It is a property of the query, so it applies to exports and
+scheduled runs too, not only to what you see on screen.
+
+**Sorting.** Direction and position migrate. A *group* sort — Discoverer's
+"group and break" — migrates as well, and the query puts every group sort ahead
+of every plain sort, because a break only groups if nothing sorts outside it.
+In the results grid, repeated values in a group column are left blank and a
+subtotal closes each group, the way the original sheet drew them.
+
+**Query-only columns.** A worksheet often names a column its query needs but
+draws nothing for — a column a filter, a sort or a total uses. Those migrate as
+hidden: they stay out of the results, and out of the `GROUP BY`, but the filter
+or total that needs them still works.
+
+**Totals and subtotals.** A grand total, and a subtotal at each change in a
+column, both migrate and both run. They are computed by their own query over
+the whole filtered set, so a subtotal is the true figure for its group even
+when only the first page of rows has been fetched.
+
+**Column formats.** Format mask, column width, data type and heading format
+migrate and are applied when the report is drawn. A mask is read for its
+*meaning* — grouped thousands, two decimals, day-month-year — and then rendered
+in the reader's own language, so `999,999.00` shows as `1,234.50` in English
+and `1 234,50` in Portuguese.
+
+**The printed title.** A worksheet's name and the heading it printed above the
+data are two different things, and both migrate. The name becomes the map's
+name; the heading becomes its description, so it is what you read under the
+title on the map page. `map_layouts` keeps the heading in all three forms
+Discoverer wrote — plain text, RTF and HTML — along with the worksheet's
+position in its workbook, its GUID and how many queries it linked. Every map
+gets one of these rows.
+
+**Measure vs axis.** Discoverer records whether a column is a measure or
+something to group by. A column on the axis is never aggregated, even when the
+EUL item it came from carries a default aggregation — otherwise a break column
+would arrive summed and the grouping would be meaningless.
+
+If any of this cannot be applied to a particular run, the report says so above
+the results rather than quietly dropping it. See
+[Troubleshooting](troubleshooting.md#worksheet-settings-that-could-not-be-applied).
+
+### Migrated with caveats
+
+⚠ **Conditions on multi-worksheet workbooks.** Discoverer stores conditions per
+*workbook*, not per worksheet, and nothing in the file says which worksheet
+used which. Every condition is therefore attached to every map the workbook
+produced. Review multi-worksheet maps and remove the conditions that worksheet
+did not use — otherwise the map filters more than the original report did.
+
+⚠ **Conditions Neo cannot express.** `NOT IN`, and conditions that combine
+several tests with `AND`/`OR`, have no Discoverer Neo equivalent. They are
+reported in the migration's skipped list with their original text rather than
+approximated — migrating `NOT IN` as `IN` would silently invert a filter.
+
+⚠ **Calculated fields.** A workbook calculation is stored in Discoverer's own
+token language, not SQL. It migrates with its item and parameter references
+resolved to names, but the function codes are left as written and the formula
+must be rewritten as SQL before the map will run.
+
+A workbook writes every calculation into every worksheet that *offers* it, so
+most migrated calculations belong to no sheet's layout — 38 436 of 47 548 in
+the reference corpus. Those are marked hidden and are neither drawn nor
+compiled, so only the calculations a worksheet actually displayed need
+rewriting. A map is blocked by its own calculations, never by another sheet's.
+
+⚠ **Crosstabs have no row/column split.** Discoverer records that a column is
+an axis, a measure or a page item, but it has **no field at all** for which
+axis columns went across the top. A migrated crosstab therefore arrives with
+every axis column down the side and is shown as a table until somebody assigns
+a top edge — open the column in the map builder and set *Crosstab edge* to
+*Across the top*. This is missing data, not a decoding failure.
+
+⚠ **Totals whose aggregate Neo cannot run.** Discoverer's aggregate list is
+wider than SQL's. `COUNT DISTINCT` totals, and a handful using codes nobody has
+decoded, migrate with their label and placement but no function — 304 of the
+reference corpus's 19 639. They are listed in the report's warnings; set the
+function in Neo. Writing `COUNT` instead would have counted duplicates and
+shown a different number without saying so.
+
+⚠ **Subtotals that broke on a calculation.** A subtotal breaking at each change
+in a workbook *calculation* loses its boundary: Neo's break column has to be a
+real map column and a calculation is not one. The total is reported and
+skipped rather than being shown as a grand total, which would print an
+all-rows figure where a reader expects a per-group one.
 
 ### Manual Migration Required
 
-✗ **LDAP/Directory Integration** — Not automatically configured; set up in Neo  
-✗ **Scheduled Reports** — Not migrated; recreate using Neo scheduler  
-✗ **Advanced Analytics** — Analytic window functions may need adjustment  
-✗ **Portlet Configuration** — Discoverer Portlet Provider not supported in Neo  
-✗ **Drill-Down Reports** → Manual setup (create hierarchies in Neo)  
+✗ **Hierarchies** — `HIERARCHIES` has no business-area column, and Neo requires
+one, so hierarchies are currently skipped. Recreate them in Neo.
+✗ **Graphs** — Discoverer's chart definitions. Neo has a `CHART` map type but
+no equivalent model behind it, so `map_layouts.graph` is left null. (The graph
+block is empty on all 917 corpus worksheets that have one, so nothing is being
+discarded today — but a workbook with a real chart would lose it.)
+✗ **Conditional formatting** — the "format this cell when…" rules. Neo has the
+table for them; nothing writes it yet.
+✗ **Percentages** — Discoverer keeps a percentage in the same element as a
+total, and no code in the reference corpus is one, so every migrated summary
+arrives as a plain total. Add percentages in Neo.
+✗ **Cell alignment and word wrap** — the codes are undecoded, so they are left
+unset rather than guessed; numbers right-align and text left-aligns as usual.
+✗ **Sort rank** — Discoverer's explicit sort precedence is not decoded. Sorts
+keep their list position, which is the same order in every case observed.
+✗ **Row-level security** — Recreate as Neo security policies
+✗ **LDAP/Directory Integration** — Not automatically configured; set up in Neo
+✗ **Scheduled Reports** — Not migrated; recreate using Neo scheduler
+✗ **Advanced Analytics** — Analytic window functions may need adjustment
+✗ **Portlet Configuration** — Discoverer Portlet Provider not supported in Neo
 
 ## Post-Migration Steps
 
@@ -150,14 +306,24 @@ The migration imports metadata references, not actual data sources. Create them 
 2. Add Oracle connection pointing to your EUL source
 3. Or add PostgreSQL data source if you're using that
 
-### 3. Test Maps
+### 3. Review the migrated maps
 
-Run a few key maps to verify:
+Migrated maps arrive in the **Migrated Workbooks** business area with the
+columns, conditions and parameters their worksheet had. Before handing them to
+users:
 
-1. Open a map from Neo
-2. Click **Run** or **Execute**
-3. Verify results return correctly
-4. Check any calculated fields work
+1. Open a map and check its column list against the original report.
+2. On maps from a multi-worksheet workbook, remove the conditions that
+   worksheet did not use — Discoverer stored them per workbook, so they were
+   attached to every map it produced.
+3. Rewrite any calculated field's formula as SQL. They arrive in Discoverer's
+   token language, which Neo cannot execute.
+4. Move the maps into the business areas they belong to.
+5. Run each map and confirm the results match.
+
+If the maps arrived **empty** — no columns at all — the workbook body could not
+be read. See [Maps migrated without their
+layout](troubleshooting.md#maps-migrated-without-their-layout).
 
 ### 4. Update Scheduled Reports
 
@@ -197,13 +363,15 @@ Create Neo user accounts:
 - Use thin mode (if Oracle 12.1+)
 - Install Instant Client and set `ORACLE_CLIENT_PATH`
 
-### "Business Area Already Exists"
+### "Target Database Already Contains a Migration"
 
-**Cause:** Re-running migration, target already populated  
+**Cause:** Re-running a migration into a Neo database that already holds one.
+A database holds exactly one migration — the run is refused before it reads the
+EUL, and a dry run reports the same block.  
 **Solution:**
-- Backup current Neo database
-- Delete and restart, or
-- Use `--skip-existing` flag (if available)
+- Back up the current Neo database (`pg_dump`)
+- Migrate into a fresh database, or reset this one — see
+  [Troubleshooting](troubleshooting.md#target-database-already-contains-a-migration)
 
 ### "No Data in Results"
 

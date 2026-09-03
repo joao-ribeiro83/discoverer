@@ -24,6 +24,7 @@ import {
   loadEulConnection,
   getJob,
   resetJobs,
+  startMapReimport,
   startMigration,
 } from '../services/migration.service.js';
 import type { MigrationDeps, MigrationJob } from '../services/migration.service.js';
@@ -192,6 +193,7 @@ const ROUTES: InjectOptions[] = [
   { method: 'POST', url: '/api/migration/detect', payload: { dataSourceId: '00000000-0000-4000-8000-000000000000' } },
   { method: 'POST', url: '/api/migration/analyze', payload: { dataSourceId: '00000000-0000-4000-8000-000000000000' } },
   { method: 'POST', url: '/api/migration/run', payload: { dataSourceId: '00000000-0000-4000-8000-000000000000' } },
+  { method: 'POST', url: '/api/migration/reimport-maps', payload: { dataSourceId: '00000000-0000-4000-8000-000000000000' } },
   { method: 'GET', url: '/api/migration/jobs' },
 ];
 
@@ -225,6 +227,16 @@ describe('migration routes — validation', () => {
     const res = await app.inject({
       method: 'POST',
       url: '/api/migration/detect',
+      payload: { dataSourceId: 'not-a-uuid' },
+      headers: { authorization: `Bearer ${adminToken}` },
+    });
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('rejects a missing/invalid dataSourceId on reimport-maps', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/migration/reimport-maps',
       payload: { dataSourceId: 'not-a-uuid' },
       headers: { authorization: `Bearer ${adminToken}` },
     });
@@ -329,7 +341,9 @@ describe('startMigration', () => {
 
     // Rows really landed in the (in-memory) target.
     expect(fake.state.tables.business_areas.length).toBeGreaterThan(0);
-    expect(fake.state.tables.items).toHaveLength(2);
+    // CO (database items) + CI (created item) — CO is the plain
+    // column-backed item the pre-ground-truth reader silently skipped.
+    expect(fake.state.tables.items).toHaveLength(3);
     // The target connection is always released.
     expect(wasClosed()).toBe(true);
   });
@@ -341,7 +355,8 @@ describe('startMigration', () => {
 
     expect(job.status).toBe('COMPLETED');
     expect(job.detectedVersion).toBe('EUL4');
-    expect(fake.state.tables.joins[0]?.joinType).toBe('LEFT');
+    // KEY_CONS has no confirmed join-type column, so joins default to INNER.
+    expect(fake.state.tables.joins[0]?.joinType).toBe('INNER');
   });
 
   it('honours a dry run — nothing is written', async () => {
@@ -410,5 +425,84 @@ describe('startMigration', () => {
     // The fixture is a pure EUL5 schema, so detection wins and warns.
     expect(job.detectedVersion).toBe('EUL5');
     expect(job.logs.some((l) => l.level === 'WARN' && l.message.includes('Requested version EUL4'))).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Maps-only re-import
+// ---------------------------------------------------------------------------
+
+describe('startMapReimport', () => {
+  it('rebuilds the maps of a target that has already been migrated', async () => {
+    const { deps, fake } = testDeps();
+    // Phase 1: the database is migrated.
+    const migration = await waitForJob(
+      startMigration({ dataSourceId: oracleDsId, startedBy: 'tester' }, deps).id,
+    );
+    expect(migration.status).toBe('COMPLETED');
+    const mapsBefore = fake.state.tables.maps.map((m) => m.id);
+
+    // Phase 2: only the maps are re-imported.
+    const started = startMapReimport({ dataSourceId: oracleDsId, startedBy: 'tester' }, deps);
+    expect(started.kind).toBe('MAPS');
+    const job = await waitForJob(started.id);
+
+    expect(job.status).toBe('COMPLETED');
+    expect(job.progress).toBe(100);
+    expect(job.result).toBeNull();
+    expect(job.mapsResult?.replacedMaps).toBe(mapsBefore.length);
+    expect(job.mapsResult?.written.maps).toBe(mapsBefore.length);
+    expect(job.mapsResult?.written.map_items).toBeGreaterThan(0);
+
+    // The maps are new rows, and the rest of the migration is still there.
+    expect(fake.state.tables.maps.some((m) => mapsBefore.includes(m.id as string))).toBe(false);
+    expect(fake.state.tables.items.length).toBeGreaterThan(0);
+    expect(fake.state.tables.folders.length).toBeGreaterThan(0);
+  });
+
+  it('honours a dry run', async () => {
+    const { deps, fake } = testDeps();
+    await waitForJob(startMigration({ dataSourceId: oracleDsId, startedBy: 'tester' }, deps).id);
+    const mapsBefore = fake.state.tables.maps.map((m) => m.id);
+
+    const job = await waitForJob(
+      startMapReimport({ dataSourceId: oracleDsId, startedBy: 'tester', dryRun: true }, deps).id,
+    );
+
+    expect(job.status).toBe('COMPLETED');
+    expect(job.mapsResult?.written.maps).toBe(0);
+    expect(job.mapsResult?.planned.maps).toBeGreaterThan(0);
+    expect(fake.state.tables.maps.map((m) => m.id)).toEqual(mapsBefore);
+  });
+
+  it('fails cleanly against a database that was never migrated', async () => {
+    const { deps } = testDeps();
+    const job = await waitForJob(
+      startMapReimport({ dataSourceId: oracleDsId, startedBy: 'tester' }, deps).id,
+    );
+
+    expect(job.status).toBe('FAILED');
+    expect(job.error).toMatch(/Migrated Workbooks|never migrated|full migration/i);
+  });
+
+  it('refuses to start while another job is running', async () => {
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const { deps } = testDeps({
+      loadConnection: async () => {
+        await gate;
+        return CONNECTION;
+      },
+    });
+
+    const first = startMigration({ dataSourceId: oracleDsId, startedBy: 'tester' }, deps);
+    expect(() =>
+      startMapReimport({ dataSourceId: oracleDsId, startedBy: 'tester' }, deps),
+    ).toThrow(/already running/);
+
+    release();
+    await waitForJob(first.id);
   });
 });

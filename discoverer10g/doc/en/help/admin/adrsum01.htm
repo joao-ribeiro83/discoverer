@@ -1,0 +1,236 @@
+
+<!DOCTYPE html public "-//w3c//dtd html 3.2 transitional//en.us">
+<HTML lang="en.us">
+<HEAD>
+
+<META NAME="Generator" CONTENT="Quadralay WebWorks Publisher 5.0.4">
+<META NAME="Page" CONTENT="DefaultSingle">
+<META NAME="Title" CONTENT="">
+<meta http-equiv="Content-Type" content="text/html;  charset=iso-8859-1">
+
+<Title>Reference topic </Title>
+	   
+<LINK REL="home" HREF="../../library.htm" TITLE="Library">
+<LINK REL="toc" HREF="toc.htm" TITLE="Contents">
+<LINK REL="index" HREF="bookix.htm" TITLE="Index">
+<LINK REL="copyright" HREF="./html/cpyr.htm" TITLE="Copyright">
+<LINK REL="up" HREF="toc.htm" TITLE="Up">
+<LINK REL="next" HREF="adrsfo01.htm" TITLE="Next">
+<LINK REL="previous" HREF="adrbar01.htm" TITLE="Previous">
+
+
+</HEAD>
+       
+<BODY BGCOLOR="#ffffff">
+
+<A NAME="top"></A>
+
+
+
+
+<A HREF="#BEGIN">Skip Headers</A><BR><BR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+ 
+<TD ALIGN="LEFT" VALIGN="TOP"><FONT COLOR="#330099" FACE="Helvetica, Arial, sans-serif"><STRONG>Oracle Discoverer Administrator Administration Guide (Online Help)<BR>10<i>g</i> (9.0.4)</STRONG><BR>Part Number B10270-01</FONT></TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="144">
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+
+
+
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<HR>
+<P>
+<A HREF="adrbar01.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+
+<A HREF="adrsfo01.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+    
+
+
+<A NAME="BEGIN"></A>
+
+
+
+<DIV CLASS="IND">
+<!-- End Header -->
+
+
+
+
+
+
+
+<A NAME="1005113"></A>
+<!--TOC=h1-"1005113"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Refresh Summaries dialog</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005684"></A>
+<P CLASS="BP">
+Use this dialog to refresh the currently selected summary folder. For Oracle 8.1.7 (or later) Enterprise Edition databases you can also specify an incremental refresh if available (for more information, see the <EM CLASS="Italic">Oracle9i Data Warehousing Guide</EM> for conditions).
+</P>
+<A NAME="1005764"></A>
+<P CLASS="BP">
+For more information about refreshing summary folders, see:
+</P>
+<A NAME="1005762"></A>
+<P CLASS="BP">
+<A HREF="managing.htm#1012033">"How does ASM work?"</a>
+</P>
+<A NAME="1005989"></A>
+<P CLASS="BP">
+<A HREF="managing.htm#1007303">"Why must you refresh summary data?"</a>
+</P>
+<A NAME="1005810"></A>
+<P CLASS="BP">
+<A HREF="managing.htm#1011910">"What happens when a summary folder is refreshed?"</a>
+</P>
+
+<A NAME="1005787"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">When would you like to refresh this summary? </FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005820"></A><STRONG CLASS="Bold">Refresh the summary immediately  </STRONG>
+<P>
+
+<A NAME="1005701"></A>
+<P CLASS="BP1">
+Use this radio button to refresh the selected summary folder immediately. Refresh will begin after clicking OK.
+</P>
+
+<A NAME="1005731"></A>
+<P CLASS="BP1">
+This option is useful when you have smaller materialized views or summary tables, or when you need to refresh the summary folder right away, without relying on the scheduling capabilities of the database server. Discoverer Administrator displays a progress bar enabling you to monitor the refresh.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005687"></A><STRONG CLASS="Bold">Schedule the refresh at a later time</STRONG>
+<P>
+
+<A NAME="1005708"></A>
+<P CLASS="BP1">
+Use this radio button to enable the <STRONG CLASS="Bold">Date</STRONG> and <STRONG CLASS="Bold">Time</STRONG> fields where you can use the arrow buttons or type into the fields to select a later date and time when you want the refresh to occur.
+</P>
+
+<A NAME="1005743"></A>
+<P CLASS="BP1">
+This option submits a job to the queue using DBMS_JOB and immediately returns you to Discoverer Administrator (rather than waiting for the refresh to be complete) enabling you to continue working. This option is useful when you have larger materialized views or summary tables, which are best built during off-peak hours. 
+</P>
+</UL>
+
+<A NAME="1005688"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Perform Incremental refresh  </FONT></H4>
+<A NAME="1005955"></A>
+<P CLASS="BP">
+Select this check box to perform an incremental refresh, available against Oracle 8.1.7 (or later) Enterprise Edition databases only.
+</P>
+<A NAME="1005968"></A>
+<P CLASS="BP">
+An incremental refresh is faster than a full refresh as it incrementally adds the new data that has been inserted into the tables.
+</P>
+<A NAME="1005969"></A>
+<P CLASS="BP">
+During a summary folder refresh with Oracle Standard Edition databases a full table scan is carried out.
+</P>
+<A NAME="1005755"></A>
+<P CLASS="BP">
+Clear this check box to refresh the summary using a full table scan.
+</P>
+
+<A NAME="1005690"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005790"></A>The length of time taken for the refresh to complete depends on the data volume and the current database engine load.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005771"></A>For further information on the conditions required for incremental refresh, please see <EM CLASS="Italic">Oracle9i Data Warehousing Guide</EM>.
+<P>
+</UL>
+<A NAME="1005797"></A>
+<P CLASS="BP">
+
+</P>
+
+
+
+
+
+
+<!-- Start Footer -->
+</DIV>
+
+<DIV CLASS="OUTD">
+<HR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+<TD VALIGN="BOTTOM" WIDTH="33%">
+<TABLE CELLSPACING="0" CELLPADDING="0">
+<TR>
+<TD ALIGN="CENTER"><A HREF="adrbar01.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+
+<TD ALIGN="CENTER"><A HREF="adrsfo01.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+    
+</TR>
+</TABLE>
+</TD>
+<TD ALIGN="CENTER" WIDTH="34%">
+<A HREF="./html/cpyr.htm"><IMG SRC="./gifs/oracle.gif" ALT="Oracle" BORDER="0"><BR>
+<FONT SIZE="-2">Copyright &copy 2003 Oracle Corporation.</FONT></A>
+<BR>
+<FONT SIZE="-2">All Rights Reserved.</FONT>
+</TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="33%"> 
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="144">
+<TR>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+  
+</DIV>
+
+</BODY>
+</HTML>
+

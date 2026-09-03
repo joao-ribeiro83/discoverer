@@ -87,7 +87,23 @@
       "percent": "Percent (12.3%)",
       "dateDmy": "Date (DD-MON-YYYY)",
       "dateYmd": "Date (YYYY-MM-DD)"
-    }
+    },
+    "axisType": "Placement",
+    "axisTypes": {
+      "AXIS": "Group by (axis)",
+      "MEASURE": "Measure",
+      "PAGE": "Page item"
+    },
+    "axisEdge": "Crosstab edge",
+    "axisEdges": {
+      "ROW": "Down the side",
+      "COLUMN": "Across the top"
+    },
+    "axisEdgeHint": "Only crosstabs use this. Migrated worksheets have no edge recorded.",
+    "sortGroup": "Group and break",
+    "sortGroupHint": "Hide repeated values and start a new subtotal each time this column changes.",
+    "isHidden": "Query only, do not show",
+    "isHiddenHint": "The query still asks for this column, so a filter, a sort or a total can use it."
   },
   "sortDirections": {
     "asc": "Ascending",

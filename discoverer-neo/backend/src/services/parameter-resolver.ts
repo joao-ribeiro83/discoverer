@@ -21,6 +21,17 @@ import { mapParameters, type MapParameter } from '../db/schema.js';
  * Nothing here is ever concatenated into SQL text — resolved values only ever
  * become bind variables downstream. The single job of this module is
  * default-filling, required-checking, and type coercion.
+ *
+ * ## Display names in, bind names out
+ *
+ * A parameter has two names. `name` is the prompt — free text a Discoverer
+ * author typed, routinely `Dt Fim Vigência >=` or `Apólice nº`. `bindName` is
+ * the Oracle identifier derived from it. Callers (the prompt dialog, a
+ * schedule's stored values, the API) speak the prompt, because that is what a
+ * human filled in; everything downstream of here speaks the bind name, because
+ * that is what can appear after a colon in SQL. This module is where the two
+ * meet: `provided` is keyed by prompt, `resolved` comes back keyed by bind
+ * name, and `missing` names prompts, since a person has to go find them.
  */
 
 // ---------------------------------------------------------------------------
@@ -38,22 +49,30 @@ export const PARAM_TYPES: readonly ParamType[] = [
 
 /** The subset of a map_parameters row this module needs. */
 export interface ParameterDefinition {
+  /** The prompt shown to the user. */
   name: string;
+  /** The name this parameter binds as in SQL (`map_parameters.bind_name`). */
+  bindName: string;
   paramType: string;
   defaultValue: string | null;
   isRequired: boolean;
 }
 
 export interface ResolvedParameters {
-  /** Bind-ready values keyed by parameter name (defaults applied, cast). */
+  /** Bind-ready values keyed by **bind name** (defaults applied, cast). */
   resolved: Record<string, unknown>;
-  /** Required parameters with neither a supplied value nor a default. */
+  /**
+   * Required parameters with neither a supplied value nor a default, named by
+   * their prompt — these end up in front of a person.
+   */
   missing: string[];
 }
 
 /** Definition returned to the UI to build a run-time prompt dialog. */
 export interface PromptParameter {
+  /** The prompt label, and the key the dialog submits its value under. */
   name: string;
+  bindName: string;
   paramType: ParamType;
   isRequired: boolean;
   defaultValue: string | null;
@@ -216,6 +235,12 @@ export function validateParameterValue(
  * else — when required — report it as missing. Present values (whether from
  * the caller or a default) are type-cast; a value that fails to cast throws.
  *
+ * `provided` is keyed by prompt name; a parameter's bind name is accepted as a
+ * second key so that a caller already holding bind names (a re-run of a
+ * generated query, an integration test) does not have to translate back. The
+ * prompt wins when both are present, because that is the key a human-facing
+ * form produced.
+ *
  * Missing required parameters are RETURNED (not thrown) so a UI can prompt for
  * them and callers can decide policy. The execution service treats a non-empty
  * `missing` list as a hard configuration error.
@@ -228,13 +253,14 @@ export function resolveParametersForDefinitions(
   const missing: string[] = [];
 
   for (const def of definitions) {
-    const supplied = provided[def.name];
+    const byName = provided[def.name];
+    const supplied = isAbsent(byName) ? provided[def.bindName] : byName;
     if (!isAbsent(supplied)) {
-      resolved[def.name] = validateParameterValue(def, supplied);
+      resolved[def.bindName] = validateParameterValue(def, supplied);
       continue;
     }
     if (!isAbsent(def.defaultValue)) {
-      resolved[def.name] = validateParameterValue(def, def.defaultValue);
+      resolved[def.bindName] = validateParameterValue(def, def.defaultValue);
       continue;
     }
     if (def.isRequired) {
@@ -255,6 +281,7 @@ export function resolveParametersForDefinitions(
 function toDefinition(row: MapParameter): ParameterDefinition {
   return {
     name: row.name,
+    bindName: row.bindName,
     paramType: row.paramType,
     defaultValue: row.defaultValue,
     isRequired: row.isRequired,
@@ -294,6 +321,7 @@ export async function buildPromptParameters(
   const definitions = await loadParameterDefinitions(mapId);
   return definitions.map((d) => ({
     name: d.name,
+    bindName: d.bindName,
     paramType: normalizeParamType(d.paramType),
     isRequired: d.isRequired,
     defaultValue: d.defaultValue,

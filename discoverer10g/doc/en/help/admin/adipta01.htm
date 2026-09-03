@@ -1,0 +1,386 @@
+
+<!DOCTYPE html public "-//w3c//dtd html 3.2 transitional//en.us">
+<HTML lang="en.us">
+<HEAD>
+
+<META NAME="Generator" CONTENT="Quadralay WebWorks Publisher 5.0.4">
+<META NAME="Page" CONTENT="DefaultSingle">
+<META NAME="Title" CONTENT="">
+<meta http-equiv="Content-Type" content="text/html;  charset=iso-8859-1">
+
+<Title>Reference topic </Title>
+	   
+<LINK REL="home" HREF="../../library.htm" TITLE="Library">
+<LINK REL="toc" HREF="toc.htm" TITLE="Contents">
+<LINK REL="index" HREF="bookix.htm" TITLE="Index">
+<LINK REL="copyright" HREF="./html/cpyr.htm" TITLE="Copyright">
+<LINK REL="up" HREF="toc.htm" TITLE="Up">
+<LINK REL="next" HREF="aditem01.htm" TITLE="Next">
+<LINK REL="previous" HREF="adicwi02.htm" TITLE="Previous">
+
+
+</HEAD>
+       
+<BODY BGCOLOR="#ffffff">
+
+<A NAME="top"></A>
+
+
+
+
+<A HREF="#BEGIN">Skip Headers</A><BR><BR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+ 
+<TD ALIGN="LEFT" VALIGN="TOP"><FONT COLOR="#330099" FACE="Helvetica, Arial, sans-serif"><STRONG>Oracle Discoverer Administrator Administration Guide (Online Help)<BR>10<i>g</i> (9.0.4)</STRONG><BR>Part Number B10270-01</FONT></TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="144">
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+
+
+
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<HR>
+<P>
+<A HREF="adicwi02.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+
+<A HREF="aditem01.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+    
+
+
+<A NAME="BEGIN"></A>
+
+
+
+<DIV CLASS="IND">
+<!-- End Header -->
+
+
+
+
+
+
+
+<A NAME="1005113"></A>
+<!--TOC=h1-"1005113"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Item Properties dialog</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005857"></A>
+<P CLASS="BP">
+Use this dialog to configure item properties. For example, to change the name or formula of an item.
+</P>
+<A NAME="1006266"></A>
+<P CLASS="BP">
+For more information, see:
+</P>
+<A NAME="1006268"></A>
+<P CLASS="BP">
+<A HREF="item_cla.htm#1010838">"Maintaining items and item classes"</a>
+</P>
+<A NAME="1007142"></A>
+<P CLASS="BP">
+<A HREF="item_cla.htm#1004999">"How to edit item properties"</a>
+</P>
+<A NAME="1006012"></A>
+<P CLASS="BP">
+The Item Properties dialog contains two tabs:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006015"></A><A HREF="adipta01.htm#1005858">"General"</a> - use this tab to configure the item. For example, to change the item.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006018"></A><A HREF="adipta01.htm#1006117">"Dependents"</a> - use this tab to look at other items dependent on this item. For example, summaries that use the item.
+<P>
+</UL>
+
+<A NAME="1005858"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">General</FONT></H4>
+
+<A NAME="1006138"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Name</FONT></H4>
+<A NAME="1005896"></A>
+<P CLASS="BP">
+Use this field to change the name of the item. By default, the name is derived from the database column on which the item is based.
+</P>
+
+<A NAME="1005859"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Description</FONT></H4>
+<A NAME="1005900"></A>
+<P CLASS="BP">
+Use this field to change the description of the item. The contents of this field are displayed on the description line of Discoverer Plus's Query Wizard.
+</P>
+
+<A NAME="1005860"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Data type</FONT></H4>
+<A NAME="1005904"></A>
+<P CLASS="BP">
+This read-only field displays the data type of the item, supplied by the column definition in the data dictionary. This field is not editable because it identifies the data type directly from the dictionary.
+</P>
+
+<A NAME="1005861"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Formula</FONT></H4>
+<A NAME="1006328"></A>
+<P CLASS="BP">
+Use this field to display the <A HREF="adecal01.htm#1005682">"Edit Calculation dialog"</a> where you change the item's formula. A formula displayed in this field means the item is a derived item. A derived item is created, by applying a calculation to an existing item. For example, a derived item can be the calculation for percentage profit. Deriving items in the business area means users do not have to know complex formulas themselves in order to calculate analysis results. A field containing a column name indicates that it is not a derived item and that its data comes directly from the database column (in this case, the field is not editable). 
+</P>
+
+<A NAME="1005862"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Database column</FONT></H4>
+<A NAME="1005912"></A>
+<P CLASS="BP">
+This field displays the derivation of the item. It consists of the owner's user name, the table name and column name. If this field is blank, the column has been created from a formula.
+</P>
+
+<A NAME="1005864"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Visible to User  </FONT></H4>
+<A NAME="1005920"></A>
+<P CLASS="BP">
+Use this field to specify whether the item is visible to Discoverer end users:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006055"></A>choose Yes to display the item in Discoverer Plus.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006061"></A>choose No to hide the item in Discoverer Plus
+<P>
+</UL>
+<A NAME="1006060"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> You typically use the No option to hide items that must be present in the folder to be used in calculations, but are of no value or are inappropriate to display to the end user. Other hidden items might contain data such as primary and foreign keys or sensitive data such as salary information.
+</P>
+
+<A NAME="1005865"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Item Class</FONT></H4>
+<A NAME="1005924"></A>
+<P CLASS="BP">
+Use this field to change the item class to which the item belongs. Use the list to select an alternative item class. This field is active only when the item is an axis item.
+</P>
+
+<A NAME="1005866"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Date Hierarchy</FONT></H4>
+<A NAME="1005928"></A>
+<P CLASS="BP">
+Use this field to change the date hierarchy that is applied to the item. A list is available of valid date hierarchies that can be applied to the item. The field is inactive when the item is not a date item.
+</P>
+
+<A NAME="1005867"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Default position</FONT></H4>
+<A NAME="1005932"></A>
+<P CLASS="BP">
+Use this field to change where the item is positioned by default on worksheets. 
+</P>
+
+<A NAME="1005868"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Default aggregate</FONT></H4>
+<A NAME="1005936"></A>
+<P CLASS="BP">
+Use this field to change the aggregate type for the item (if numeric). 
+</P>
+
+<A NAME="1005870"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Heading</FONT></H4>
+<A NAME="1007178"></A>
+<P CLASS="BP">
+Use this field to change the heading.  Discoverer displays the Heading property of each item used in a worksheet. By default, the heading is the item's Name property, which is derived from the database column on which the item is based.
+</P>
+
+<A NAME="1005871"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Format mask</FONT></H4>
+<A NAME="1005948"></A>
+<P CLASS="BP">
+Use this field to change the default format mask used to display the item in Discoverer end user workbooks. The syntax uses standard Oracle formats found in the <EM CLASS="Italic">Server SQL Language Reference Manual</EM>, which is supplied with your Oracle database. By default, a listing shows sample format masks appropriate for the item's data type. You can enter your own format mask if the samples do not list the one you want.
+</P>
+<A NAME="1005872"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> Discoverer Administrator does not currently enable you to use the Euro currency symbol in the format mask. However, you can specify the Euro currency symbol in the format mask using Discoverer Plus. For more information, see the <EM CLASS="Italic">Oracle Application Server Discoverer Plus User's Guide</EM>.
+</P>
+
+<A NAME="1005873"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Alignment</FONT></H4>
+<A NAME="1005962"></A>
+<P CLASS="BP">
+Use this field to change the alignment of data displayed in Discoverer Plus. Select an alignment from the drop down menu. The default selection, General, right aligns numeric data, and left aligns date and text data.
+</P>
+
+<A NAME="1005874"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Word Wrap</FONT></H4>
+<A NAME="1005966"></A>
+<P CLASS="BP">
+Use this field to specify whether text data wraps in Discoverer Plus.
+</P>
+<A NAME="1006102"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> Setting this to Yes can impact on performance in Discoverer Plus when accessing large amounts of text data.
+</P>
+
+<A NAME="1005875"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Case Storage</FONT></H4>
+<A NAME="1005970"></A>
+<P CLASS="BP">
+Use this field to specify how text items are stored in the database, independent of how they are displayed. The Discoverer end user does not see this information. It enables you to optimize the use or display of this information in end-user workbooks. For example, if the data is already being stored correctly, you do not need to modify the text using the Display case option. Setting this value can improve the user's performance when running queries with conditions. If the data is always stored in uppercase in the database, set the value to uppercase. If the data is stored in lowercase, set the value to lowercase.
+</P>
+
+<A NAME="1005974"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Display case</FONT></H4>
+<A NAME="1005981"></A>
+<P CLASS="BP">
+Use this field to change how items are displayed in workbooks.
+</P>
+
+<A NAME="1005877"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Default width </FONT></H4>
+<A NAME="1005985"></A>
+<P CLASS="BP">
+Use this field to change the item's default width (i.e. in characters) when displayed in end user reports. This value is only used if Use Default Width is set in Discoverer Plus (under Tools | Options | Table).
+</P>
+
+<A NAME="1005878"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Replace NULL with</FONT></H4>
+<A NAME="1005989"></A>
+<P CLASS="BP">
+Use this field to change how Discoverer displays null characters. For example, null = We're out... order now!, null = 0, null = nothing visible, or space.
+</P>
+
+<A NAME="1005879"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Content type </FONT></H4>
+<A NAME="1005993"></A>
+<P CLASS="BP">
+Use this field to specify whether the item can be used to launch an external application. Choose FILE if the data item contents require a helper application to run, such as Microsoft Excel. Choose NONE if the data type does not require a helper application.
+</P>
+<A NAME="1005880"></A>
+<P CLASS="BP">
+If the item is a BLOB (i.e. a binary large object), the file extension determines the application (i.e. which .exe executable file) to use to view the item. For example, .DOC uses MS Word, .WAV plays a sound through the currently registered sound player for WAV files. These associations are set up in your computer's operating system.
+</P>
+<A NAME="1006838"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> If the content is an image that is stored in the database, or a drill out image (e.g. a HTML icon indicating a drill out to a Web report), choose NONE (for more information, see <A HREF="item_cla.htm#1004998">Chapter&nbsp;8, "About drilling out to other applications"</a>). 
+</P>
+
+<A NAME="1005881"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Max char fetched  </FONT></H4>
+<A NAME="1005997"></A>
+<P CLASS="BP">
+Use this field to specify the maximum amount of characters retrieved in a SQL call to the database. This option is particularly useful for LONG data types. The purpose of limiting the total amount is that sometimes there are hundreds, perhaps thousands of characters in a data element and it would be inefficient or unnecessary to retrieve the entire data element.
+</P>
+
+<A NAME="1005882"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Identifier </FONT></H4>
+<A NAME="1006791"></A>
+<P CLASS="BP">
+Use this field to change the unique name that Discoverer uses to identify EUL and workbook objects. When matching objects common to different EULs, Discoverer uses identifiers to locate objects in different EULs that refer to the same business objects.
+</P>
+<A NAME="1006804"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Warning</STRONG>: It is not advisable to change an identifier as it can affect the relationships between EUL objects.
+</P>
+<A NAME="1006130"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> The primary use for the formula and database columns is for tracking the source of the item's data. For example, if something has changed in the underlying database or data dictionary, this field provides an audit trail identifying the data's original source. It provides information to the Discoverer manager about exactly where the data came from.
+</P>
+
+<A NAME="1006117"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Dependents</FONT></H4>
+<A NAME="1006118"></A>
+<P CLASS="BP">
+This read-only tab displays two columns (i.e. Type and Name) that clarify the extent to which other objects (e.g. folders, joins, items, item classes, summary folders, conditions, calculated items) are dependent on the selected item.
+</P>
+
+<A NAME="1005885"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Type </FONT></H4>
+<A NAME="1006147"></A>
+<P CLASS="BP">
+This field displays one or more object types (e.g. folders, items) that have a dependency on the selected item.
+</P>
+
+<A NAME="1005886"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Name </FONT></H4>
+<A NAME="1006005"></A>
+<P CLASS="BP">
+This field displays the name of each object listed in the Type column.
+</P>
+
+
+
+
+
+
+<!-- Start Footer -->
+</DIV>
+
+<DIV CLASS="OUTD">
+<HR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+<TD VALIGN="BOTTOM" WIDTH="33%">
+<TABLE CELLSPACING="0" CELLPADDING="0">
+<TR>
+<TD ALIGN="CENTER"><A HREF="adicwi02.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+
+<TD ALIGN="CENTER"><A HREF="aditem01.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+    
+</TR>
+</TABLE>
+</TD>
+<TD ALIGN="CENTER" WIDTH="34%">
+<A HREF="./html/cpyr.htm"><IMG SRC="./gifs/oracle.gif" ALT="Oracle" BORDER="0"><BR>
+<FONT SIZE="-2">Copyright &copy 2003 Oracle Corporation.</FONT></A>
+<BR>
+<FONT SIZE="-2">All Rights Reserved.</FONT>
+</TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="33%"> 
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="144">
+<TR>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+  
+</DIV>
+
+</BODY>
+</HTML>
+

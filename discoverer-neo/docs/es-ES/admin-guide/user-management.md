@@ -106,14 +106,35 @@ El usuario pierde el acceso de inmediato.
 
 ## Gestión de contraseñas
 
-### Contraseñas iniciales
+### Usuarios importados y contraseñas temporales
 
-Los usuarios nuevos reciben contraseñas iniciales. Práctica recomendada:
+Discoverer almacena nombres de usuario, pero nunca contraseñas, por lo que no se
+puede trasladar ninguna. En su lugar, la migración **genera una contraseña
+temporal única para cada persona importada** y las escribe todas en un archivo
+para que usted las distribuya.
 
-1. Establezca una contraseña temporal (p. ej., «TempPassword123!»)
-2. Indique al usuario que la cambie en el primer inicio de sesión
-3. El usuario inicia sesión y hace clic en **Perfil** → **Cambiar contraseña**
-4. Introduce la nueva contraseña
+1. Ejecute la migración (consulte [Usuarios y contraseñas migrados](../../migration/user-credentials.md)).
+2. Recoja `credentials/credentials-<id-ejecucion>.csv` del servidor.
+3. Entregue a cada persona su contraseña por un canal de confianza.
+4. **Elimine el archivo.** Nada lo elimina por usted.
+
+Cada cuenta debe cambiar esa contraseña antes de poder hacer cualquier otra cosa
+— lo impone el servidor, no es una mera sugerencia de la interfaz.
+
+### Crear un usuario manualmente
+
+Al añadir un usuario desde Panel de administración → **Usuarios**, usted define
+directamente su primera contraseña. Pídale que la cambie tras iniciar sesión,
+desde **Configuración → Cambiar contraseña**.
+
+### Qué significa «debe cambiar la contraseña»
+
+Mientras una cuenta esté pendiente de cambiar la contraseña, solo puede acceder a
+la pantalla de cambio. Todas las demás páginas y llamadas a la API se rechazan.
+El inicio de sesión funciona, pero la aplicación no está disponible hasta que se
+cambie la contraseña.
+
+Puede ver quién sigue pendiente en la lista de Usuarios.
 
 ### Restablecimiento de la contraseña
 
@@ -125,15 +146,32 @@ Si un usuario olvida su contraseña (como administrador):
 4. Envíela al usuario (por correo electrónico o por otro medio)
 5. El usuario cambia la contraseña en el primer inicio de sesión
 
-### Forzar el cambio de contraseña
+### Exigir un cambio de contraseña
 
-Para exigir que un usuario cambie la contraseña:
+Las cuentas creadas por una migración se marcan automáticamente: no tiene que
+hacer nada. No hay una casilla manual; el indicador se establece cuando la cuenta
+recibe una contraseña temporal y se borra en cuanto el usuario elige la suya.
 
-1. Haga clic en el usuario → **Editar**
-2. Marque **Forzar cambio de contraseña al iniciar sesión**
-3. Guarde
+Para forzar una rotación en una cuenta existente, restablezca su contraseña; el
+restablecimiento devuelve la cuenta al mismo estado.
 
-Se pedirá al usuario que cambie la contraseña en el siguiente inicio de sesión.
+## Roles de base de datos
+
+Los usuarios importados de Oracle Discoverer no son todos personas. Discoverer
+concede privilegios tanto a **roles** de Oracle (`CONNECT`, `RESOURCE`) como a
+individuos, y la migración trae ambos.
+
+Un rol aparece en la lista de Usuarios con una etiqueta **Rol**:
+
+| | Persona | Rol de base de datos |
+| --- | --- | --- |
+| Puede iniciar sesión | Sí | **No, nunca** |
+| Tiene permisos | Sí | Sí |
+| Tiene contraseña | Sí | Ninguna. Ninguna contraseña coincide. |
+
+Los roles se conservan porque llevan los permisos sobre los que se basaba su
+seguridad de Discoverer. No pueden convertirse en cuentas de acceso: asigne los
+permisos equivalentes a usuarios reales y después retire el rol.
 
 ## Preferencias de usuario
 

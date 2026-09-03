@@ -1,0 +1,1761 @@
+
+<!DOCTYPE html public "-//w3c//dtd html 3.2 transitional//en.us">
+<HTML lang="en.us">
+<HEAD>
+
+<META NAME="Generator" CONTENT="Quadralay WebWorks Publisher 5.0.4">
+<META NAME="Page" CONTENT="DefaultSingle">
+<META NAME="Title" CONTENT="Managing summary folders">
+<meta http-equiv="Content-Type" content="text/html;  charset=iso-8859-1">
+
+<TITLE>Managing summary folders</TITLE>
+	   
+<LINK REL="home" HREF="../../library.htm" TITLE="Library">
+<LINK REL="toc" HREF="toc.htm" TITLE="Contents">
+<LINK REL="index" HREF="bookix.htm" TITLE="Index">
+<LINK REL="copyright" HREF="./html/cpyr.htm" TITLE="Copyright">
+<LINK REL="up" HREF="toc.htm" TITLE="Up">
+<LINK REL="next" HREF="creating.htm" TITLE="Next">
+<LINK REL="previous" HREF="hierarch.htm" TITLE="Previous">
+
+
+</HEAD>
+       
+<BODY BGCOLOR="#ffffff">
+
+<A NAME="top"></A>
+
+
+
+
+<A HREF="#BEGIN">Skip Headers</A><BR><BR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+ 
+<TD ALIGN="LEFT" VALIGN="TOP"><FONT COLOR="#330099" FACE="Helvetica, Arial, sans-serif"><STRONG>Oracle Discoverer Administrator Administration Guide (Online Help)<BR>10<i>g</i> (9.0.4)</STRONG><BR>Part Number B10270-01</FONT></TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="144">
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+
+
+
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<HR>
+<P>
+<A HREF="hierarch.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+
+<A HREF="creating.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+    
+
+
+<A NAME="BEGIN"></A>
+
+
+
+<DIV CLASS="IND">
+<!-- End Header -->
+
+
+
+
+
+
+
+<A NAME="1656"></A>
+<!--TOC=Title-"1656"-->
+<H1 CLASS="Title"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099">13<BR>Managing summary folders</FONT></H1>
+
+<!--/TOC=Title-->
+
+<A NAME="1009688"></A>
+<!--TOC=h1-"1009688"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Managing summary folders</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1009691"></A>
+<P CLASS="BP">
+This chapter explains summary folders and how you manage them using Discoverer Administrator, and contains the following topics:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009699"></A><A HREF="managing.htm#1009673">"About folders and summary folders in Discoverer"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009721"></A><A HREF="managing.htm#1012639">"What are summary folders?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009704"></A><A HREF="managing.htm#1004703">"What are Discoverer summary tables?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009713"></A><A HREF="managing.htm#1004708">"What are materialized views?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009743"></A><A HREF="managing.htm#1009323">"What is Automated Summary Management (ASM)"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1012050"></A><A HREF="managing.htm#1012033">"How does ASM work?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009759"></A><A HREF="managing.htm#1004994">"What are the prerequisites for creating summary folders with ASM?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009767"></A><A HREF="managing.htm#1011714">"What are the different ways to run ASM and when do you use them?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009776"></A><A HREF="managing.htm#1004959">"What is the ASM policy?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009784"></A><A HREF="managing.htm#1007303">"Why must you refresh summary data?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009792"></A><A HREF="managing.htm#1011910">"What happens when a summary folder is refreshed?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009800"></A><A HREF="managing.htm#1005536">"How to run ASM using the Summary Wizard"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009808"></A><A HREF="managing.htm#1005540">"How to run ASM after bulk load using the Load Wizard"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009816"></A><A HREF="managing.htm#1005542">"How to run ASM using the command line interface"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009824"></A><A HREF="managing.htm#1005543">"How to run ASM using a batch file and the operating system scheduler"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009832"></A><A HREF="managing.htm#1005181">"How to configure the database for summary folders"</a>
+<P>
+</UL>
+
+<A NAME="1009673"></A>
+<!--TOC=h1-"1009673"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> About folders and summary folders in Discoverer</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1010845"></A>
+<P CLASS="BP">
+Discoverer uses two kinds of folders:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1012597"></A>folders - represent data
+<P>
+
+<A NAME="1012718"></A>
+<P CLASS="BP1">
+Discoverer folders are classified as simple, complex, or custom. For more information, see <A HREF="folders.htm#1007453">Chapter&nbsp;5, "What are folders?"</a>.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1012601"></A>summary folders - represent data that has been queried and the results saved for reuse
+<P>
+
+<A NAME="1012694"></A>
+<P CLASS="BP1">
+Discoverer uses summary folders to improve query response times for end users. 
+</P>
+</UL>
+
+<A NAME="1012639"></A>
+<!--TOC=h1-"1012639"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are summary folders?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1012622"></A>
+<P CLASS="BP">
+Summary folders are a representation of queried data (created in Discoverer Administrator) that has been saved for reuse. The data is stored in the database in one of the following (depending on the version of Oracle):
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1012644"></A>materialized views
+<P>
+
+<A NAME="1012645"></A>
+<P CLASS="BP1">
+Discoverer uses materialized views to store summarized data in Oracle 8.1.7 (or later) Enterprise Edition databases.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010812"></A>tables
+<P>
+
+<A NAME="1010817"></A>
+<P CLASS="BP1">
+Discoverer uses tables to store summarized data in Oracle Standard Edition databases. 
+</P>
+
+<A NAME="1012880"></A>
+<P CLASS="BP1">
+The tables created by Discoverer to store summarized data are called Discoverer summary tables. For more information about Discoverer summary tables, see <A HREF="managing.htm#1004703">"What are Discoverer summary tables?"</a>.
+</P>
+</UL>
+<A NAME="1010986"></A>
+<P CLASS="BP">
+Summary folders improve the response time of a query because the query accesses pre-aggregated and pre-joined data rather than querying against the detail database tables.
+</P>
+<A NAME="1011156"></A>
+<P CLASS="BP">
+You can also direct Discoverer to use summary folders based on tables containing summary data that have been created by another application. These tables are known as external summary tables. You can specify that Discoverer refreshes external summary tables.
+</P>
+<A NAME="1009583"></A>
+<P CLASS="BP">
+You can create summary folders in one of two ways:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009584"></A>using the Automated Summary Management (ASM) feature (for more information, see <A HREF="managing.htm#1009323">"What is Automated Summary Management (ASM)"</a>)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009552"></A>manually (for more information, see <A HREF="creating.htm#1004603">"What is manual summary folder creation?"</a>)
+<P>
+</UL>
+<A NAME="1009532"></A>
+<P CLASS="BP">
+The recommended method for creating summary folders in Discoverer is to use Automated Summary Management (ASM).
+</P>
+
+<A NAME="1004703"></A>
+<!--TOC=h1-"1004703"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are Discoverer summary tables?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004707"></A>
+<P CLASS="BP">
+Discoverer summary tables are database tables created by Discoverer Administrator that contain summarized data. Discoverer summary tables contain pre-aggregated and pre-joined data, and can improve query performance in Discoverer Plus and Discoverer Viewer.
+</P>
+<A NAME="1011043"></A>
+<P CLASS="BP">
+Discoverer automatically recognizes when a summary table is available and rewrites the query to use the summary table. For more information, see <A HREF="addition.htm#1008908">Chapter&nbsp;15, "What is query rewrite?"</a>.
+</P>
+<A NAME="1011171"></A>
+<P CLASS="BP">
+For example, when a query is run for the first time in Discoverer Plus it retrieves data from the detail tables. This may require a multiple table join and aggregation over thousands or millions of rows, which could take some time to complete. If Discoverer has created a suitable summary table, the same query retrieves data from the summary table and will return results in a few seconds. Both queries will produce the same results.
+</P>
+<A NAME="1011034"></A>
+<P CLASS="BP">
+For more information about Discoverer and rewriting queries to summary tables with Oracle Standard Edition databases, see <A HREF="addition.htm#1009058">Chapter&nbsp;15, "Example illustrating the advantages of rewriting a query to use a summary table"</a>.
+</P>
+<A NAME="1015616"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> Circumstances sometimes prohibit the creation of materialized views and result in the creation of Discoverer summary tables when running against Oracle 8.1.7 (or later) Enterprise Edition databases. For more information, see <A HREF="addition.htm#1004703">Chapter&nbsp;15, "What is different between mapping external summary tables and views to EUL items, with Oracle 8.1.7 (or later) Enterprise Edition databases?"</a>.
+</P>
+
+<A NAME="1004708"></A>
+<!--TOC=h1-"1004708"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are materialized views?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1011208"></A>
+<P CLASS="BP">
+Materialized views are database objects that contain the results of a query created by an Oracle 8.1.7 (or later) Enterprise Edition database. The query results contain pre-aggregated and pre-joined data and can improve query performance in Discoverer Plus and Discoverer Viewer.
+</P>
+<A NAME="1011210"></A>
+<P CLASS="BP">
+Oracle 8.1.7 (or later) Enterprise Edition databases automatically recognize when a materialized view can be used to satisfy a query request. The database rewrites the query to use the materialized view. Queries are then directed to the materialized view and not to the underlying detail tables or views.
+</P>
+<A NAME="1008515"></A>
+<P CLASS="BP">
+Materialized views have the following characteristics:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004749"></A>Materialized views consume storage space.
+<P>
+
+<A NAME="1004750"></A>
+<P CLASS="BP1">
+Unlike ordinary views, materialized views contain data resulting from a query against one or more detail tables. 
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004751"></A>Materialized views must be refreshed when data changes.
+<P>
+
+<A NAME="1004752"></A>
+<P CLASS="BP1">
+The Oracle database maintains data in materialized views by refreshing the materialized views after changes are made to the detail tables. 
+</P>
+
+<A NAME="1015563"></A>
+<P CLASS="BP1">
+You can configure Discoverer:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1015564"></A>to set the Refresh Type to incremental (i.e. fast refresh, where only the changes made to the detail tables are refreshed) or full (i.e. complete, where the database executes the defining subquery of the materialized view)
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1015568"></A>to set the Refresh to On demand (i.e. manually maintained by the Discoverer manager) or On commit (i.e. whenever a database transaction commits its changes to the detail tables), where the materialized view is in the same database as the detail tables
+<P>
+</UL>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004753"></A>Materialized views are transparent to Discoverer users.
+<P>
+
+<A NAME="1004743"></A>
+<P CLASS="BP1">
+Query rewrite transforms a SQL statement expressed in terms of the detail table into a statement accessing one or more materialized views that are defined on the detail tables. For more information, see <A HREF="addition.htm#1008908">Chapter&nbsp;15, "What is query rewrite?"</a>.
+</P>
+</UL>
+
+<A NAME="1008536"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif"><STRONG CLASS="Bold">Notes</STRONG></FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1015550"></A>You do not need to register external materialized views with Discoverer for end user queries to use them, as the database knows whether a materialized view can satisfy the query. You only register an external materialized view with Discoverer if you want Discoverer to maintain the refresh for you (for more information about registering external summary tables/views, see <A HREF="creating.htm#1004669">Chapter&nbsp;14, "How to create summary folders based on external summary tables"</a>).
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1012896"></A>The SQL Inspector/Explain Plan in Discoverer Plus indicates whether the SQL generated to run a query used a summary table or a materialized view (for more information, see <A HREF="addition.htm#1009006">"About viewing the SQL and execution plan for query rewrite in Discoverer"</a>).
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1012835"></A>For an historical context about Discoverer's use of summary tables/materialized views, see <A HREF="addition.htm#1004609">Chapter&nbsp;15, "What is the context and future for Discoverer's use of summary tables/materialized views?"</a>.
+<P>
+</UL>
+<A NAME="1012833"></A>
+<P CLASS="BP">
+For more information about the differences between Discoverer summary tables and materialized views, see:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004851"></A><A HREF="addition.htm#1009003">Chapter&nbsp;15, "What characteristics differ between summary folders in Oracle Standard Edition databases and Oracle 8.1.7 (or later) Enterprise Edition databases?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004856"></A><A HREF="addition.htm#1004656">Chapter&nbsp;15, "What is different about summary folders that are based on external summary tables?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004868"></A><A HREF="addition.htm#1004703">Chapter&nbsp;15, "What is different between mapping external summary tables and views to EUL items, with Oracle 8.1.7 (or later) Enterprise Edition databases?"</a>
+<P>
+</UL>
+
+<A NAME="1009323"></A>
+<!--TOC=h1-"1009323"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What is Automated Summary Management (ASM)</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005033"></A>
+<P CLASS="BP">
+Automated Summary Management (ASM) is a Discoverer facility that creates and manages summary folders for you.
+</P>
+<A NAME="1005034"></A>
+<P CLASS="BP">
+ASM simplifies the process of summary folder creation and maintenance by offering you a fully automated solution to summary folder management. When run periodically, ASM can automatically refine the summary folders it creates using query statistics gathered by Discoverer from user queries. ASM also provides guidance should you wish to control the specification of default values during summary folder creation/maintenance.
+</P>
+
+<A NAME="1012033"></A>
+<!--TOC=h1-"1012033"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How does ASM work?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1009623"></A>
+<P CLASS="BP">
+ASM determines how to create summary folders by:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009624"></A>analyzing your database tables
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009625"></A>using query statistics (when available)
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009629"></A>using default values known as the ASM policy (for more information, see <A HREF="managing.htm#1004959">"What is the ASM policy?"</a>)
+<P>
+</UL>
+<A NAME="1009630"></A>
+<P CLASS="BP">
+ASM automatically creates and maintains the best set of summary folders based on the above combination. 
+</P>
+<A NAME="1009631"></A>
+<P CLASS="BP">
+ASM converts your summary policy into a list of recommended summary folder definitions. You can either implement these recommendations without further intervention (the actual set of summary tables dynamically adjusts with system usage) or execution can be stalled until you have specifically sanctioned one or more of the recommendations. 
+</P>
+<A NAME="1009632"></A>
+<P CLASS="BP">
+ASM requires table space to create summary folders but you can adjust how much space in the Summary Wizard (for more information, see <A HREF="managing.htm#1005536">"How to run ASM using the Summary Wizard"</a>).
+</P>
+<A NAME="1009637"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> ASM works on the EUL as a whole, not just the currently selected business areas. This means that ASM can use folders from all business areas in the current EUL.
+</P>
+
+<A NAME="1004994"></A>
+<!--TOC=h1-"1004994"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are the prerequisites for creating summary folders with ASM?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005134"></A>
+<P CLASS="BP">
+To create summary folders with ASM, the following requirements must be met:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005136"></A>The database must support PL/SQL.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005138"></A>The DBMS_JOB package must be installed for scheduling summary folder creation and refresh (for more information, see <A HREF="managing.htm#1005388">"How to confirm that DBMS_JOB is installed for summary management"</a>).
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1012105"></A>The User ID that you intend to use to create the summary folders must have the following database privileges (for more information, see <A HREF="managing.htm#1008343">"How to use SQL*Plus to grant the privileges required to create summary folders"</a> for details about granting these privileges):
+<P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005147"></A>CREATE TABLE
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005148"></A>CREATE VIEW
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005149"></A>CREATE PROCEDURE 
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005150"></A>SELECT ON V_$PARAMETER
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005152"></A>CREATE/DROP/ALTER ANY MATERIALIZED VIEW (Oracle 8.1.7 Enterprise Edition databases or later)
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005153"></A>GLOBAL QUERY REWRITE (Oracle 8.1.7 Enterprise Edition databases or later)
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1013661"></A>ANALYZE ANY
+<P>
+</UL>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005116"></A>The User ID that you intend to use to create summary folders must have sufficient quota in the tablespace for the summary tables to be created (for more information, see <A HREF="managing.htm#1005295">"How to determine and reset tablespace quotas"</a>).
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005127"></A>You must connect to Discoverer Administrator as the EUL owner.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005128"></A>If you are using an Oracle 8.1.7 Enterprise Edition database (or later), your folders must not contain SET operators (e.g. UNION, UNION ALL, MINUS, INTERSECT). If ASM finds a folder that contains a SET operator, summary data will not be created for that folder. 
+<P>
+</UL>
+<A NAME="1011724"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> For more information about Oracle SET operators, see the <EM CLASS="Italic">Oracle 8i SQL Reference</EM><STRONG CLASS="Bold">.</STRONG>
+</P>
+<A NAME="1013452"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> A database user created in Discoverer may need additional privileges to enable them to create summary folders. The conditions that determine when this is true are detailed in the following table, that illustrates when a database user created in Discoverer requires additional rpivileges to create summary folders:
+</P>
+   
+<A NAME="1018207"> 
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1013505"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG><STRONG CLASS="Bold">The version of Discoverer and/or database version under which the database user is created?</STRONG></STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1013507"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Does the database user require further privileges to create summary folders?</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1013509"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>What action is required?</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1013514"></A>
+<P CLASS="TB">
+Discoverer 3.1.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1013516"></A>
+<P CLASS="TB">
+Yes, the database user requires further privileges to create summary folders.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1013518"></A>
+<P CLASS="TB">
+You must explicitly grant the required privileges to the database user (for more information about how to grant these privileges, see <A HREF="managing.htm#1008343">"How to use SQL*Plus to grant the privileges required to create summary folders"</a>).&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1013523"></A>
+<P CLASS="TB">
+Discoverer 4<EM CLASS="Italic">i</EM> against an Oracle 8.0 database (or earlier).&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1013525"></A>
+<P CLASS="TB">
+Yes, the database user requires further privileges to create summary folders.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1013527"></A>
+<P CLASS="TB">
+Same action as above.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1013529"></A>
+<P CLASS="TB">
+Discoverer 4<EM CLASS="Italic">i</EM> against an Oracle 8.1.7 Enterprise Edition database (or later).&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1013531"></A>
+<P CLASS="TB">
+No, the database user requires no further privileges to create summary folders. &nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1013533"></A>
+<P CLASS="TB">
+No action is required.&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   
+<A NAME="1011714"></A>
+<!--TOC=h1-"1011714"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are the different ways to run ASM and when do you use them?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1013578"></A>
+<P CLASS="BP">
+There are a number of ways that you can run ASM. The following table shows the different ways that you can run ASM and when to use them:
+</P>
+   
+<A NAME="1018211"> 
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1013589"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>How to run ASM? </STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1013591"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Why run ASM this way?</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1013593"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>For information see</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1013602"></A>
+<P CLASS="TB">
+<STRONG CLASS="Bold">Using the Summary Wizard.</STRONG>&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1013604"></A>
+<P CLASS="TB">
+Discoverer leads you through the whole process.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1013608"></A>
+<P CLASS="TB">
+<A HREF="managing.htm#1005536">"How to run ASM using the Summary Wizard"</a>.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1013611"></A>
+<P CLASS="TB">
+<STRONG CLASS="Bold">Using the Load Wizard after bulk load.</STRONG>&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1013613"></A>
+<P CLASS="TB">
+Enables you to create summary folders during the load of a business area without having to access ASM independently.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1013617"></A>
+<P CLASS="TB">
+<A HREF="managing.htm#1005540">"How to run ASM after bulk load using the Load Wizard"</a>.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1013620"></A>
+<P CLASS="TB">
+<STRONG CLASS="Bold">Using the command line interface.</STRONG>&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1013622"></A>
+<P CLASS="TB">
+Enables you to create summary folders without having to start Discoverer.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1013626"></A>
+<P CLASS="TB">
+<A HREF="managing.htm#1005542">"How to run ASM using the command line interface"</a>.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1013629"></A>
+<P CLASS="TB">
+<STRONG CLASS="Bold">Using a batch file and the Operating System scheduler.</STRONG>&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1013631"></A>
+<P CLASS="TB">
+Automates the scheduling of ASM summary folder creation through the command line.&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1013635"></A>
+<P CLASS="TB">
+<A HREF="managing.htm#1005543">"How to run ASM using a batch file and the operating system scheduler"</a>.&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+   
+<A NAME="1004959"></A>
+<!--TOC=h1-"1004959"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What is the ASM policy?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005634"></A>
+<P CLASS="BP">
+The ASM policy is a set of user defined constraints and options that enable you to control how ASM behaves and what summary folders it produces.
+</P>
+<A NAME="1005636"></A>
+<P CLASS="BP">
+The ASM policy is divided into space options and advanced settings. In many cases you will only need to set the space options.
+</P>
+<A NAME="1007294"></A>
+<P CLASS="BP">
+For more information about space options and advanced settings, see:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007295"></A><A HREF="adasm301.htm#1005113">"Summary Wizard (ASM): Step 3 Allocate Space dialog"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007299"></A><A HREF="adasml01.htm#1005113">"Summary Wizard (ASM): Change default settings: List of dialog tabs"</a>
+<P>
+</UL>
+<A NAME="1007669"></A>
+<P CLASS="BP">
+Discoverer provides default settings that ensure suitable summary folders are created and maintained without your intervention.
+</P>
+<A NAME="1007678"></A>
+<P CLASS="BP">
+The minimum information required for an ASM policy is a tablespace name and an allocated amount of disc space. The tablespace defaults to the user tablespace, and a default amount of disc space is used. Both of these values can be changed if required (for more information, see <A HREF="adasm301.htm#1005113">"Summary Wizard (ASM): Step 3 Allocate Space dialog"</a>).
+</P>
+
+<A NAME="1007303"></A>
+<!--TOC=h1-"1007303"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Why must you refresh summary data?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1007305"></A>
+<P CLASS="BP">
+You must refresh summary data regularly to keep summary tables and materialized views consistent with the database. If the database changes often, summary tables and materialized views need to be refreshed accordingly to keep their data current with the underlying database.
+</P>
+<A NAME="1007346"></A>
+<P CLASS="BP">
+For information about refreshing summary folders see:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007359"></A><A HREF="managing.htm#1011910">"What happens when a summary folder is refreshed?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007347"></A><A HREF="creating.htm#1004882">Chapter&nbsp;14, "How to manually refresh a summary folder"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009943"></A><A HREF="addition.htm#1005527">Chapter&nbsp;15, "About refresh options for Oracle 8.1.7 (or later) Enterprise Edition databases"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007378"></A><A HREF="addition.htm#1005501">Chapter&nbsp;15, "About refreshing summary folders following import between Oracle databases"</a>
+<P>
+</UL>
+<A NAME="1011907"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> Sometimes it is useful to refresh a summary folder after a change has occurred (e.g. the loading of data into a data warehouse). You can use the Discoverer command line interface facility to automatically refresh a summary folder (for more information, see <A HREF="command_.htm#1004701">"Oracle Discoverer command line interface"</a>).
+</P>
+
+<A NAME="1011910"></A>
+<!--TOC=h1-"1011910"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What happens when a summary folder is refreshed?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1007311"></A>
+<P CLASS="BP">
+When a summary folder is refreshed (when running against Oracle 8.1.7 Enterprise Edition databases or later), the database server's own refresh mechanism is used (this can be an incremental refresh) depending on your refresh settings.
+</P>
+<A NAME="1007312"></A>
+<P CLASS="BP">
+Whenever a summary folder is refreshed, the following actions are performed by Discoverer: 
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007313"></A>The summary folder is marked as unavailable.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007314"></A>The materialized view or summary table associated with summary folder is reconciled against its EUL metadata and if necessary the definition is updated.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007315"></A>All existing summary data that is about to be refreshed is deleted.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007316"></A>The summary data is regenerated and inserted into the corresponding materialized views or summary tables.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007317"></A>The summary folder is marked as available.
+<P>
+</UL>
+
+<A NAME="1005536"></A>
+<!--TOC=h1-"1005536"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to run ASM using the Summary Wizard</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1006468"></A>
+<P CLASS="BP">
+You need certain database privileges to run ASM (for more information about the privileges required to run ASM, see <A HREF="managing.htm#1004994">"What are the prerequisites for creating summary folders with ASM?"</a>).
+</P>
+<A NAME="1013904"></A>
+<P CLASS="BP">
+To see a list of headings that point to more information about the Summary Wizard dialogs, see <A HREF="adswli01.htm#1005113">"Summary Wizard (ASM): List of dialogs"</a>.
+</P>
+<A NAME="1009144"></A>
+<P CLASS="BP">
+To start the summary wizard:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005991"></A>Choose Insert | Summary to display the <A HREF="adsws101.htm#1005113">"Summary Wizard: Step 1 dialog"</a>.
+<P>
+
+<A NAME="1005997"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 13-1 &#32;Summary Wizard dialog</EM></FONT></H4>
+  
+<BR><A NAME="1006058">
+
+
+<img src="swzasm1.gif" ALT="Text description of swzasm1.gif follows.">
+<A HREF="img_text/swzasm1.htm"><br>Text description of the illustration swzasm1.gif</A>
+
+
+</A>
+  
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1006008"></A>Select the <STRONG CLASS="Bold">Have Discoverer recommend and create the best summaries</STRONG> radio button and click Next to display the <A HREF="adasm201.htm#1006363">"Summary Wizard: Step 2 dialog"</a>.
+<P>
+
+<A NAME="1006066"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 13-2 &#32;Summary Wizard: Step 2 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1006067">
+
+
+<img src="swzasm2.gif" ALT="Text description of swzasm2.gif follows.">
+<A HREF="img_text/swzasm2.htm"><br>Text description of the illustration swzasm2.gif</A>
+
+
+</A>
+  
+
+<A NAME="1006559"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> To determine which summary folders to create Discoverer analyzes every folder that is to be involved in the summary folder process. Depending on the number and size of folders to be analyzed this could take some time to complete. Discoverer allows you to start and stop this process at your own pace.
+</P>
+</OL>
+<A NAME="1014056"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1006069"></A>Click the Start button to begin the analysis:
+<P>
+ 
+
+<A NAME="1006565"></A>
+<P CLASS="BP1">
+Your progress will be displayed during the analyze process.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1009127"></A>(optional) Click the Stop button to pause the analysis.
+<P>
+ 
+
+<A NAME="1006074"></A>
+<P CLASS="BP1">
+You might want to pause the analysis to make changes to the default settings (using the Advanced Settings button) before resuming table analysis.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1006683"></A>(optional) Click the Continue button to resume the analysis.
+<P>
+ 
+
+<A NAME="1009137"></A>
+<P CLASS="BP1">
+The analysis always resumes from exactly the same point in the process at which the Stop button was clicked.
+</P>
+
+<A NAME="1006685"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 13-3 &#32;Summary Wizard: Step 2 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1014442">
+
+
+<img src="swasm2e.gif" ALT="Text description of swasm2e.gif follows.">
+<A HREF="img_text/swasm2e.htm"><br>Text description of the illustration swasm2e.gif</A>
+
+
+</A>
+
+<BR><A NAME="1014441">
+</A>
+ 
+<A NAME="1009162"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> If some folders cannot be analyzed Discoverer displays the <A HREF="adasmn01.htm#1006383">"Not Analyzed dialog"</a>.
+</P>
+</UL>
+ 
+<A NAME="1014063"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1006579"></A>When analysis is complete click Next to allocate space for summaries.
+<P>
+
+<A NAME="1006302"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 13-4 &#32;Summary Wizard: Step 3 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1006303">
+
+
+<img src="swzasm3.gif" ALT="Text description of swzasm3.gif follows.">
+<A HREF="img_text/swzasm3.htm"><br>Text description of the illustration swzasm3.gif</A>
+
+
+</A>
+ </OL>
+
+<A NAME="1006304"></A>
+<P CLASS="BP1">
+The graph plots the expected performance gain from allocating a certain amount of space for summary folders.
+</P>
+
+<A NAME="1006305"></A>
+<P CLASS="BP1">
+The information displayed here is calculated during folder analysis (see previous step). If you make changes using any of the tabs in the Change Default Settings dialog Discoverer might recalculate the graph.
+</P>
+
+<A NAME="1008045"></A>
+<P CLASS="BP1">
+For more information about settings see <A HREF="adasml01.htm#1005113">"Summary Wizard (ASM): Change default settings: List of dialog tabs"</a>.
+</P>
+ 
+<A NAME="1014070"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1006306"></A>Select the tablespace in which to store summary data in the <STRONG CLASS="Bold">Tablespace to use for summaries</STRONG> list box.
+<P>
+ 
+
+<A NAME="1006308"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> We recommend you place summary data in a separate tablespace specifically intended for it. If such a tablespace does not exist, we strongly recommend you do not use the SYSTEM or TEMP tablespaces. For more information, ask your database administrator.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="8"><A NAME="1006309"></A>Specify the amount of space to allocate for summary data in one of the following ways:
+<P>
+ 
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1006311"></A>click the graph area and drag the pointer/red line to select the space you want to allocate for summaries
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1006312"></A>specify a figure in the <STRONG CLASS="Bold">Create summaries to fill</STRONG> field
+<P>
+</UL>
+
+<A NAME="1006313"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> The value beneath the <STRONG CLASS="Bold">Tablespace to use for summaries</STRONG> field can be less than the value specified in the <STRONG CLASS="Bold">Create summaries to fill</STRONG> field. This does not matter if you have set your tablespace to autoextend. With your tablespace set to autoextend the extra space needed will be added automatically to the database. If your tablespace is not set to autoextend the value <STRONG CLASS="Bold">Space (KB)</STRONG> must be less than the available space.
+</P>
+
+<A NAME="1006318"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 13-5 &#32;Summary Wizard: Step 3</EM></FONT></H4>
+ 
+<BR><A NAME="1006319">
+
+
+<img src="swzas3s.gif" ALT="Text description of swzas3s.gif follows.">
+<A HREF="img_text/swzas3s.htm"><br>Text description of the illustration swzas3s.gif</A>
+
+
+</A>
+ </UL>
+ 
+<A NAME="1012547"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="9"><A NAME="1006321"></A>(optional) To view the summary folders that ASM will create/remove for you, click the Recommended Summaries button.
+<P>
+ 
+
+<A NAME="1007511"></A>
+<P CLASS="BP1">
+For more information about recommended summaries, see the <A HREF="adasmr01.htm#1006436">"Recommended Summaries dialog"</a>.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="10"><A NAME="1007541"></A>(optional) To display the Change default settings dialog, click the Advanced Settings button.
+<P>
+ 
+
+<A NAME="1007549"></A>
+<P CLASS="BP1">
+For more information about advanced settings, see <A HREF="adasml01.htm#1005113">"Summary Wizard (ASM): Change default settings: List of dialog tabs"</a>.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="11"><A NAME="1007545"></A>Click Finish to generate summary folders based on the current settings.
+<P>
+ 
+
+<A NAME="1007566"></A>
+<P CLASS="BP1">
+These settings include those made at the Recommended Summaries dialog or the Change Default Settings dialog.
+</P>
+</OL>
+
+<A NAME="1013912"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif"><STRONG CLASS="Bold">Notes</STRONG></FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014083"></A>To view all the summary folders in the current EUL, display the <A HREF="adstab01.htm#1005113">"Workarea: Summaries tab"</a>.
+<P>
+</UL>
+
+<A NAME="1005540"></A>
+<!--TOC=h1-"1005540"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to run ASM after bulk load using the Load Wizard</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1006785"></A>
+<P CLASS="BP">
+When you use the Load Wizard to load a business area into the current EUL, you can choose whether to create a set of summary folders for this new business area. If you take this option then suitable summaries will be created after bulk load.
+</P>
+<A NAME="1007699"></A>
+<P CLASS="BP">
+To run ASM after bulk load using the Load Wizard:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1009187"></A>Choose Insert | Business Area | From Database to start the Load Wizard (for more information about using the Load Wizard, see <A HREF="business.htm#1004607">Chapter&nbsp;4, "What is the Load Wizard?"</a>).
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1009191"></A>In step 4 of the Load Wizard click the option <STRONG CLASS="Bold">Summaries based on folders that are created</STRONG>.
+<P>
+ 
+
+<A NAME="1009192"></A>
+<P CLASS="BP1">
+For more information, see <A HREF="adlwiz04.htm#1005847">"Load Wizard: Step 4 dialog"</a>.
+</P>
+</OL>
+
+<A NAME="1006786"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif"><STRONG CLASS="Bold">Notes</STRONG></FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011422"></A>The summary folders created during bulk load of a business area are derived from analyzing the tables and using the default summary policy.
+<P>
+
+<A NAME="1007601"></A>
+<P CLASS="BP1">
+For more information about the ASM policy, see <A HREF="managing.htm#1004959">"What is the ASM policy?"</a>
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006818"></A>When database tables have just been loaded in the bulk load process, query statistics will not be available. Where Discoverer has been in use for a while, query statistics will have been gathered by Discoverer. Where query statistics are available they will be used by ASM to create more suitable summary folders.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007690"></A>You do not need to make any changes to summary policy settings for a bulk load ASM process. The default settings which are used should be adequate. If changes are made however, these settings then become the defaults.
+<P>
+</UL>
+
+<A NAME="1005542"></A>
+<!--TOC=h1-"1005542"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to run ASM using the command line interface</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1006857"></A>
+<P CLASS="BP">
+To run ASM using the command line interface:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1009209"></A>From the Start menu choose Run.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1009223"></A>Type in the appropriate command.
+<P>
+ 
+
+<A NAME="1009224"></A>
+<P CLASS="BP1">
+For more information about the command line interface, see <A HREF="command_.htm#1018918">Chapter&nbsp;21, "What is the Oracle Discoverer command line interface?"</a>. For more information about ASM commands and command modifiers see and <A HREF="command_.htm#1017032">Chapter&nbsp;21, "/asm"</a>.
+</P>
+</OL>
+
+<A NAME="1005543"></A>
+<!--TOC=h1-"1005543"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to run ASM using a batch file and the operating system scheduler</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005895"></A>
+<P CLASS="BP">
+You can run ASM through the batch file/scheduler facility provided by your operating system. This way you specify when you want ASM to run including the scheduled intervals when you want to repeat the process.
+</P>
+<A NAME="1005896"></A>
+<P CLASS="BP">
+By using the command line syntax within a batch file the process can be run automatically overnight or on a weekend. This enables the system to maintain itself.
+</P>
+<A NAME="1005897"></A>
+<P CLASS="BP">
+Before you can run ASM from a batch file you need to do two things:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1006848"></A>Create a text file in a text editor (e.g. Notepad).
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1009236"></A>Using the correct command line syntax, enter the command line details as text into the batch file.
+<P>
+ 
+
+<A NAME="1009256"></A>
+<P CLASS="BP1">
+For more information about ASM command line syntax, see <A HREF="command_.htm#1017032">Chapter&nbsp;21, "/asm"</a>.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1009237"></A>Save the file as a .bat file (e.g. asmsched.bat).
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1009238"></A>Use the correct operating system commands to schedule the batch file.
+<P>
+ 
+
+<A NAME="1005893"></A>
+<P CLASS="BP1">
+To learn how to schedule a batch file see your operating system documentation or help.
+</P>
+</OL>
+
+<A NAME="1005181"></A>
+<!--TOC=h1-"1005181"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to configure the database for summary folders</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005394"></A>
+<P CLASS="BP">
+The summary management feature in Discoverer uses native features in the Oracle database management system (DBMS), and is therefore only available when running against the Oracle database. This feature uses the same highly scalable and reliable processing procedures as the workbook scheduling capability and the setup for both features is similar. These procedures use standard packages in the DBMS called DBMS_JOB.    
+</P>
+<A NAME="1005402"></A>
+<P CLASS="BP">
+To enable the processing procedures for summary management in Discoverer you can check the following tasks:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005406"></A><A HREF="managing.htm#1005388">"How to confirm that DBMS_JOB is installed for summary management"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009846"></A><A HREF="managing.htm#1008343">"How to use SQL*Plus to grant the privileges required to create summary folders"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005414"></A><A HREF="managing.htm#1005295">"How to determine and reset tablespace quotas"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009865"></A><A HREF="managing.htm#1005459">"How to check object/schema name"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005418"></A><A HREF="managing.htm#1005471">"How to set the start time for summary processing"</a>
+<P>
+</UL>
+
+<A NAME="1005388"></A>
+<!--TOC=h2-"1005388"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to confirm that DBMS_JOB is installed for summary management</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1008293"></A>
+<P CLASS="BP">
+To confirm that DBMS_JOB is installed for summary management: 
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1018143"></A>Start SQL*Plus (if it is not already running) and connect as the database administrator.
+<P>
+
+<A NAME="1018144"></A>
+<P CLASS="BP1">
+For example, if SQL*Plus is already running, you might type the following at the command prompt:
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1018145"></A>SQL&gt; CONNECT dba_user/dba_pw@database;
+<A NAME="1018146"></A>
+</PRE>
+   
+<A NAME="1018147"></A>
+<P CLASS="BP1">
+Where <CODE>dba_user</CODE> is the database administrator and dba_pw is the database administrator password.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1018148"></A>Type the following at the command prompt:
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1005253"></A>SQL&gt; select * from all_objects where object_name='DBMS_JOB' and object_type 
+= 'PACKAGE'; 
+<A NAME="1018224"></A>
+</PRE>
+    
+
+<A NAME="1005254"></A>
+<P CLASS="BP1">
+If the statement returns no rows, use your database administrator SVRMGRL (Oracle 8.0) to create the necessary packages.
+</P>
+</OL>
+<A NAME="1013687"></A>
+<P CLASS="BP">
+To install DBMS_JOB and create the necessary packages for summary management, for Oracle9<EM CLASS="Italic">i</EM> databases:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1018155"></A>Start SQL*Plus (if it is not already running) and connect as the SYS user, or a user to which the sysdba privilege has been granted.
+<P>
+
+<A NAME="1018156"></A>
+<P CLASS="BP1">
+For example, if SQL*Plus is already running, you might type the following at the command prompt:
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1018157"></A>SQL&gt; CONNECT sys/sys_pw@database AS SYSDBA;
+<A NAME="1018158"></A>
+</PRE>
+   
+<A NAME="1018159"></A>
+<P CLASS="BP1">
+Where sys is the SYS user and sys_pw is the SYS user password.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1018160"></A>Type the following at the command prompt: 
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1013726"></A>SQL&gt; start &lt;ORACLE_HOME&gt;/rdbms/admin/dbmsjob.sql;
+<A NAME="1013727"></A>SQL&gt; start &lt;ORACLE_HOME&gt;/rdbms/admin/prvtjob.plb;
+<A NAME="1013730"></A>
+</PRE>
+    
+</OL>
+<A NAME="1013685"></A>
+<P CLASS="BP">
+To install DBMS_JOB and create the necessary packages for summary management, for Oracle databases earlier than Oracle9<EM CLASS="Italic">i</EM>: 
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005255"></A>From Windows choose Start | Run.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1005256"></A>Type in one of the following:
+<P>
+ 
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005258"></A><CODE>SVRMGRL</CODE> (for Oracle 8.0)
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005259"></A><CODE>SVRMGR</CODE> (for Oracle8<EM CLASS="Italic">i </EM>Personal Edition)
+<P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005260"></A>When in the DBA facility, type <CODE>connect internal</CODE>
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1005261"></A>Execute the following SQL statements: 
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1005262"></A>SQL&gt; start &lt;ORACLE_HOME&gt;/rdbms/admin/dbmsjob.sql;
+<A NAME="1005263"></A>SQL&gt; start &lt;ORACLE_HOME&gt;/rdbms/admin/prvtjob.plb;
+<A NAME="1013749"></A>
+</PRE>
+    
+</OL>
+
+<A NAME="1008343"></A>
+<!--TOC=h2-"1008343"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to use SQL*Plus to grant the privileges required to create summary folders</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1011471"></A>
+<P CLASS="BP">
+You can use SQL*Plus to grant the privileges required to create summary folders in the following ways:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011472"></A><A HREF="managing.htm#1008352">"How to use SQL*Plus to manually grant the privileges required to create summary folders"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011510"></A><A HREF="managing.htm#1005292">"How to use SQL*Plus and the eulasm.sql script to grant the privileges required to create summary folders"</a>
+<P>
+</UL>
+
+<A NAME="1011516"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif"><STRONG CLASS="Bold">Notes</STRONG></FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1014087"></A>The &lt;user&gt; below is the database user for the person using Discoverer Administrator. 
+<P>
+</UL>
+
+<A NAME="1008352"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">How to use SQL*Plus to manually grant the privileges required to create summary folders</FONT></H4>
+<A NAME="1013756"></A>
+<P CLASS="BP">
+To use SQL*Plus to manually grant the privileges required to create summary folders, for Oracle9<EM CLASS="Italic">i</EM> databases:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1018169"></A>Start SQL*Plus (if it is not already running) and connect as the SYS user, or a user to which the sysdba privilege has been granted.
+<P>
+
+<A NAME="1018170"></A>
+<P CLASS="BP1">
+For example, if SQL*Plus is already running, you might type the following at the command prompt:
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1018171"></A>SQL&gt; CONNECT sys/sys_pw@database AS SYSDBA;
+<A NAME="1018172"></A>
+</PRE>
+   
+<A NAME="1018173"></A>
+<P CLASS="BP1">
+Where sys is the SYS user and sys_pw is the SYS user password.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1018174"></A>Type the following at the command prompt: 
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1013764"></A>SQL&gt; grant CREATE TABLE to &lt;user&gt;; 
+<A NAME="1013765"></A>SQL&gt; grant CREATE VIEW to &lt;user&gt;; 
+<A NAME="1013766"></A>SQL&gt; grant CREATE PROCEDURE to &lt;user&gt;; 
+<A NAME="1013767"></A>SQL&gt; grant CREATE ANY MATERIALIZED VIEW to &lt;user&gt;; 
+<A NAME="1013768"></A>SQL&gt; grant DROP ANY MATERIALIZED VIEW to &lt;user&gt;; 
+<A NAME="1013769"></A>SQL&gt; grant ALTER ANY MATERIALIZED VIEW to &lt;user&gt;; 
+<A NAME="1013770"></A>SQL&gt; grant GLOBAL QUERY REWRITE to &lt;user&gt; with admin option; 
+<A NAME="1013771"></A>SQL&gt; grant ANALYZE ANY to &lt;user&gt;; 
+<A NAME="1013772"></A>SQL&gt; grant SELECT ON V_$PARAMETER to &lt;user&gt;; 
+<A NAME="1013773"></A>
+</PRE>
+    
+
+<A NAME="1013774"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> To grant SELECT ON V_$PARAMETER you must log in as the SYS user. If you are unsure about the SYS user name and password, see your database administrator.
+</P>
+</OL>
+<A NAME="1011467"></A>
+<P CLASS="BP">
+To grant the privileges needed to create summary folders, for Oracle databases earlier than Oracle9<EM CLASS="Italic">i</EM>:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1012176"></A>From Windows choose Start | Run (on the database server machine).
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1008359"></A>Type in one of the following:
+<P>
+ 
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1008361"></A><CODE>SVRMGRL</CODE> (for Oracle 8.0)
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1012072"></A><CODE>SVRMGR</CODE> (for Oracle8<EM CLASS="Italic">i </EM>Personal Edition)
+<P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1012073"></A>When in the DBA facility, type <CODE>connect internal</CODE> 
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1012074"></A>Execute the following SQL statements at the command prompt:
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1005281"></A>SQL&gt; grant CREATE TABLE to &lt;user&gt;; 
+<A NAME="1005282"></A>SQL&gt; grant CREATE VIEW to &lt;user&gt;; 
+<A NAME="1005283"></A>SQL&gt; grant CREATE PROCEDURE to &lt;user&gt;; 
+<A NAME="1005285"></A>SQL&gt; grant CREATE ANY MATERIALIZED VIEW to &lt;user&gt;; 
+<A NAME="1005286"></A>SQL&gt; grant DROP ANY MATERIALIZED VIEW to &lt;user&gt;; 
+<A NAME="1005287"></A>SQL&gt; grant ALTER ANY MATERIALIZED VIEW to &lt;user&gt;; 
+<A NAME="1005288"></A>SQL&gt; grant GLOBAL QUERY REWRITE to &lt;user&gt; with admin option; 
+<A NAME="1005289"></A>SQL&gt; grant ANALYZE ANY to &lt;user&gt;; 
+<A NAME="1012274"></A>SQL&gt; grant SELECT ON V_$PARAMETER to &lt;user&gt;; 
+<A NAME="1013649"></A>
+</PRE>
+    
+
+<A NAME="1012277"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> To grant SELECT ON V_$PARAMETER you must log in as the SYS user. If you are unsure about the SYS user name and password, see your database administrator.
+</P>
+</OL>
+
+<A NAME="1005292"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">How to use SQL*Plus and the eulasm.sql script to grant the privileges required to create summary folders</FONT></H4>
+<A NAME="1005293"></A>
+<P CLASS="BP">
+To use SQL*Plus and the eulasm.sql script to grant the privileges required to create summary folders:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1018181"></A>Start SQL*Plus (if it is not already running) and connect as the database administrator.
+<P>
+
+<A NAME="1018182"></A>
+<P CLASS="BP1">
+For example, if SQL*Plus is already running, you might type the following at the command prompt:
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1018183"></A>SQL&gt; CONNECT dba_user/dba_pw@database;
+<A NAME="1018184"></A>
+</PRE>
+   
+<A NAME="1018185"></A>
+<P CLASS="BP1">
+Where <CODE>dba_user</CODE> is the database administrator and dba_pw is the database administrator password.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1018186"></A>Type the following at the command prompt:
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1014249"></A>SQL&gt; @'&lt;ORACLE_HOME&gt;\discoverer\util\eulasm.sql'
+<A NAME="1018026"></A>
+</PRE>
+   
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1014286"></A>When the script prompts you, enter the database user to which the script is to grant the privileges.
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1014291"></A>ENTER value for username: &lt;username&gt;
+<A NAME="1014338"></A>
+</PRE>
+    
+</OL>
+<A NAME="1014393"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> To grant the privilege SELECT ON V_$PARAMETER you must log in again as the SYS user and manually execute the following commands. If you are unsure about the SYS user name and password, see your database administrator.
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1018028"></A>Start SQL*Plus (if it is not already running) and connect as the SYS user, or a user to which the sysdba privilege has been granted.
+<P>
+ 
+
+<A NAME="1018029"></A>
+<P CLASS="BP1">
+For example, if SQL*Plus is already running, you might type the following at the command prompt:
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1018030"></A>SQL&gt; CONNECT sys/sys_pw@database AS SYSDBA;
+<A NAME="1018031"></A>
+</PRE>
+   
+<A NAME="1018032"></A>
+<P CLASS="BP1">
+Where sys is the SYS user and sys_pw is the SYS user password.
+</P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1018033"></A>Type the following at the command prompt: 
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1014346"></A>SQL&gt; grant SELECT ON V_$PARAMETER to &lt;user&gt;; 
+<A NAME="1014347"></A>
+</PRE>
+    
+ 
+
+<A NAME="1005295"></A>
+<!--TOC=h2-"1005295"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to determine and reset tablespace quotas</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1005296"></A>
+<P CLASS="BP">
+A database user must have enough quota in their default tablespace to create summary tables. The following tasks enable you to determine and tablespace quotas, if necessary.
+</P>
+<A NAME="1018066"></A>
+<P CLASS="BP">
+To determine tablespace quotas, for Oracle9<EM CLASS="Italic">i</EM> databases:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1018072"></A>Start SQL*Plus (if it is not already running) and connect as the SYS user, or a user to which the sysdba privilege has been granted.
+<P>
+
+<A NAME="1018073"></A>
+<P CLASS="BP1">
+For example, if SQL*Plus is already running, you might type the following at the command prompt:
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1018074"></A>SQL&gt; CONNECT sys/sys_pw@database AS SYSDBA;
+<A NAME="1018075"></A>
+</PRE>
+   
+<A NAME="1018076"></A>
+<P CLASS="BP1">
+Where sys is the SYS user and sys_pw is the SYS user password.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1018077"></A>Type the following at the command prompt: 
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1013857"></A>SQL&gt; select * from dba_ts_quotas where username = &lt;user&gt;;  
+<A NAME="1013858"></A>
+</PRE>
+    
+
+<A NAME="1013859"></A>
+<P CLASS="BP1">
+where &lt;user&gt; is the userid of the person using Discoverer Administrator.
+</P>
+</OL>
+<A NAME="1013814"></A>
+<P CLASS="BP">
+To determine tablespace quotas, for Oracle databases earlier than Oracle9<EM CLASS="Italic">i</EM>:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1012183"></A>From Windows choose Start | Run.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1008372"></A>Type in one of the following:
+<P>
+ 
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1008374"></A><CODE>SVRMGRL</CODE> (for Oracle 8.0)
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1008375"></A><CODE>SVRMGR</CODE> (for Oracle8<EM CLASS="Italic">i </EM>Personal Edition)
+<P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1008376"></A>When in the DBA facility, type <CODE>connect internal</CODE> 
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1008298"></A>Execute the following SQL statement:
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1005298"></A>SQL&gt; select * from dba_ts_quotas where username = &lt;user&gt;;  
+<A NAME="1005299"></A>
+</PRE>
+    
+
+<A NAME="1005300"></A>
+<P CLASS="BP1">
+where &lt;user&gt; is the userid of the person using Discoverer Administrator.
+</P>
+</OL>
+<A NAME="1012190"></A>
+<P CLASS="BP">
+To reset tablespace quotas:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005301"></A>Reset the tablespace quotas by executing the following SQL statement:
+<P>
+    
+<PRE CLASS="CE1">
+<A NAME="1005302"></A>SQL&gt; alter user &lt;user&gt; quota &lt;n&gt; on &lt;tablespace&gt;;
+<A NAME="1005303"></A>
+</PRE>
+    
+<A NAME="1005304"></A>
+<P CLASS="BP1">
+where &lt;user&gt; is the userid of the person using Discoverer Administrator
+</P>
+
+<A NAME="1005305"></A>
+<P CLASS="BP1">
+where &lt;n&gt; is the quota in K(ilobytes) or M(egabytes) or Unlimited
+</P>
+
+<A NAME="1005306"></A>
+<P CLASS="BP1">
+where &lt;tablespace&gt; is the default tablespace name e.g. USERS
+</P>
+</OL>
+
+<A NAME="1005459"></A>
+<!--TOC=h2-"1005459"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to check object/schema name</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1005309"></A>
+<P CLASS="BP">
+A user must not have an object in their schema with the same name as their user name. This task shows you how to look for any objects in your schema that have the same name as your database user name. 
+</P>
+<A NAME="1014105"></A>
+<P CLASS="BP">
+To check whether there are any objects in your schema with the same name as your user name, do the following:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1018084"></A>Start SQL*Plus (if it is not already running) and connect as the database user.
+<P>
+
+<A NAME="1018085"></A>
+<P CLASS="BP1">
+For example, if SQL*Plus is already running, you might type the following at the command prompt:
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1018086"></A>SQL&gt; CONNECT jchan/tiger@database;
+<A NAME="1018087"></A>
+</PRE>
+   
+<A NAME="1018088"></A>
+<P CLASS="BP1">
+Where <CODE>jchan</CODE> is the database user and tiger is the database user password.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1018089"></A>Type the following at the command prompt:
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1005310"></A>SQL&gt; select object_name from user_objects where object_name = &lt;user&gt;;
+<A NAME="1005311"></A>
+</PRE>
+    
+</OL>
+<A NAME="1005312"></A>
+<P CLASS="BP">
+where &lt;user&gt; is the same as the login used to connect to SQL*Plus.
+</P>
+
+<A NAME="1005471"></A>
+<!--TOC=h2-"1005471"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to set the start time for summary processing</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1005315"></A>
+<P CLASS="BP">
+The summary management processes run within the database on the server, and are controlled by parameters in the initialization file of the Oracle DBMS - the INIT&lt;SID&gt;.ORA file.
+</P>
+
+<A NAME="1005316"></A>
+<!--TOC=h3-"1005316"-->
+<H4 CLASS="H3"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Limiting the number of processing requests that can run simultaneously</FONT></H4>
+<!--/TOC=h3-->
+<A NAME="1005317"></A>
+<P CLASS="BP">
+The parameter job_queue_processes specifies the number of concurrent processes to use to process DBMS_JOB. That is, it controls the number of processing requests that can be handled simultaneously. The default value is zero which means processing requests will NOT be created. You should set it to a minimum of 2, or more if you have any other applications that use DBMS_JOB. 
+</P>
+<A NAME="1005318"></A>
+<P CLASS="BP">
+You need more than one job queue process, because if one job fails for any reason,   it may keep getting re-submitted and thus prevent everything else in the queue from being completed. If you wish to have 10 simultaneous processing requests handled then you will need to set this to 10.
+</P>
+<A NAME="1005319"></A>
+<P CLASS="BP">
+The INIT&lt;SID&gt;.ORA parameter job_queue_interval (desupported in Oracle9<EM CLASS="Italic">i </EM>(and later) Enterprise Edition databases) is the time in seconds which controls how often the job processes process pending jobs. We recommend that you update the 60 second default to at least 10 minutes (a value of 600). Note that this parameter also affects workbook scheduling.
+</P>
+<A NAME="1017846"></A>
+<P CLASS="BP">
+For more information about these parameters, see <A HREF="schedule.htm#1010678">"What Oracle database features support workbook scheduling?"</a>
+</P>
+<A NAME="1005320"></A>
+<P CLASS="BP">
+To enable the above parameters:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005321"></A>Locate the INIT&lt;SID&gt;.ORA file. 
+<P>
+
+<A NAME="1014113"></A>
+<P CLASS="BP1">
+The INIT&lt;SID&gt;.ORA file is held in &lt;ORACLE_HOME&gt;\database. The default name of the file is INITORCL.ORA, where ORCL is the &lt;SID&gt; name.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1005323"></A>Enter 2 lines into the file. For example:
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1015412"></A>job_queue_processes = 2
+<A NAME="1015413"></A>job_queue_interval = 600 (Note: this is equivalent to 10 minutes)
+<A NAME="1015414"></A>
+</PRE>
+    
+</OL>
+
+<A NAME="1011088"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif"><STRONG CLASS="Bold">Notes</STRONG></FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1017824"></A>The summary management and workbook scheduling features both use this scheduling capability within the Oracle DBMS. The interval you specify and the number of concurrent requests affect both features.
+<P>
+</UL>
+
+
+
+
+
+
+<!-- Start Footer -->
+</DIV>
+
+<DIV CLASS="OUTD">
+<HR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+<TD VALIGN="BOTTOM" WIDTH="33%">
+<TABLE CELLSPACING="0" CELLPADDING="0">
+<TR>
+<TD ALIGN="CENTER"><A HREF="hierarch.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+
+<TD ALIGN="CENTER"><A HREF="creating.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+    
+</TR>
+</TABLE>
+</TD>
+<TD ALIGN="CENTER" WIDTH="34%">
+<A HREF="./html/cpyr.htm"><IMG SRC="./gifs/oracle.gif" ALT="Oracle" BORDER="0"><BR>
+<FONT SIZE="-2">Copyright &copy 2003 Oracle Corporation.</FONT></A>
+<BR>
+<FONT SIZE="-2">All Rights Reserved.</FONT>
+</TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="33%"> 
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="144">
+<TR>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+  
+</DIV>
+
+</BODY>
+</HTML>
+

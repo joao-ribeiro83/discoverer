@@ -1,0 +1,1263 @@
+
+<!DOCTYPE html public "-//w3c//dtd html 3.2 transitional//en.us">
+<HTML lang="en.us">
+<HEAD>
+
+<META NAME="Generator" CONTENT="Quadralay WebWorks Publisher 5.0.4">
+<META NAME="Page" CONTENT="DefaultSingle">
+<META NAME="Title" CONTENT="Creating and maintaining business areas">
+<meta http-equiv="Content-Type" content="text/html;  charset=iso-8859-1">
+
+<TITLE>Creating and maintaining business areas</TITLE>
+	   
+<LINK REL="home" HREF="../../library.htm" TITLE="Library">
+<LINK REL="toc" HREF="toc.htm" TITLE="Contents">
+<LINK REL="index" HREF="bookix.htm" TITLE="Index">
+<LINK REL="copyright" HREF="./html/cpyr.htm" TITLE="Copyright">
+<LINK REL="up" HREF="toc.htm" TITLE="Up">
+<LINK REL="next" HREF="folders.htm" TITLE="Next">
+<LINK REL="previous" HREF="maintain.htm" TITLE="Previous">
+
+
+</HEAD>
+       
+<BODY BGCOLOR="#ffffff">
+
+<A NAME="top"></A>
+
+
+
+
+<A HREF="#BEGIN">Skip Headers</A><BR><BR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+ 
+<TD ALIGN="LEFT" VALIGN="TOP"><FONT COLOR="#330099" FACE="Helvetica, Arial, sans-serif"><STRONG>Oracle Discoverer Administrator Administration Guide (Online Help)<BR>10<i>g</i> (9.0.4)</STRONG><BR>Part Number B10270-01</FONT></TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="144">
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+
+
+
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<HR>
+<P>
+<A HREF="maintain.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+
+<A HREF="folders.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+    
+
+
+<A NAME="BEGIN"></A>
+
+
+
+<DIV CLASS="IND">
+<!-- End Header -->
+
+
+
+
+
+
+
+<A NAME="1656"></A>
+<!--TOC=Title-"1656"-->
+<H1 CLASS="Title"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099">4<BR>Creating and maintaining business areas</FONT></H1>
+
+<!--/TOC=Title-->
+
+<A NAME="1009339"></A>
+<!--TOC=h1-"1009339"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Creating and maintaining business areas</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1009342"></A>
+<P CLASS="BP">
+This chapter explains how you create and maintain business areas using Discoverer Administrator, and contains the following topics:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009350"></A><A HREF="business.htm#1002341">"What are business areas?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009356"></A><A HREF="business.htm#1004606">"How to prepare to build a new business area"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009365"></A><A HREF="business.htm#1004607">"What is the Load Wizard?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009373"></A><A HREF="business.htm#1006126">"How to create a business area using the Load Wizard"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009389"></A><A HREF="business.htm#1013007">"How to open an existing business area when connecting to Discoverer Administrator"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1012439"></A><A HREF="business.htm#1013020">"How to open an existing business area when already connected to Discoverer Administrator"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009397"></A><A HREF="business.htm#1004617">"How to copy business areas between EULs"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009405"></A><A HREF="business.htm#1004618">"How to edit business area properties"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009414"></A><A HREF="business.htm#1004619">"How to delete a business area"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009423"></A><A HREF="business.htm#1010400">"How to synchronize a business area with the database"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1013653"></A><A HREF="business.htm#1013654">"Notes about business area creation and maintenance"</a>
+<P>
+</UL>
+
+<A NAME="1002341"></A>
+<!--TOC=h1-"1002341"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are business areas?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004653"></A>
+<P CLASS="BP">
+Business areas are conceptual groupings of tables and/or views designed to match Discoverer end users specific data requirements. For example, an accounting department needs a business area that represents data about budgets and finance. Alternatively, managers in a human resources department need a business area specifically for departments and employee information.
+</P>
+<A NAME="1007904"></A>
+<P CLASS="BP">
+Discoverer Administrator displays a business area as a file cabinet on the Data tab of the Workarea. You can open a business area to display its folders and items (for more information, see <A HREF="folders.htm#1007453">Chapter&nbsp;5, "What are folders?"</a> and <A HREF="item_cla.htm#1016666">Chapter&nbsp;8, "What are items?"</a>).
+</P>
+
+<A NAME="1007911"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 4-1 &#32;Workarea: Data tab displaying business areas, folders and items</EM></FONT></H4>
+   
+<BR><A NAME="1005688">
+
+
+<img src="bawkarea.gif" ALT="Text description of bawkarea.gif follows.">
+<A HREF="img_text/bawkarea.htm"><br>Text description of the illustration bawkarea.gif</A>
+
+
+</A>
+   <A NAME="1009672"></A>
+<P CLASS="BP">
+
+</P>
+
+<A NAME="1004606"></A>
+<!--TOC=h1-"1004606"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to prepare to build a new business area</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004692"></A>
+<P CLASS="BP">
+You create a business area in Discoverer Administrator using the Load Wizard (for more information, see <A HREF="business.htm#1004607">Chapter&nbsp;4, "What is the Load Wizard?"</a>). Before you start the Load Wizard, prepare by sketching out the business area design. Keep in mind what will be useful to the Discoverer end users whose purposes the business area will serve.
+</P>
+<A NAME="1005710"></A>
+<P CLASS="BP">
+Use the following guidelines:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004693"></A>Interview your users for a clear understanding of their requirements. Use the list of questions in <A HREF="getting_.htm#1005215">Chapter&nbsp;2, "What are the prerequisites for using Oracle Discoverer?"</a> as a guideline for your user interviews.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004697"></A>Identify the data source and have a clear understanding of its design.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004698"></A>Identify which tables, views, and columns are required. Identify those that are likely to be included in multiple business areas. For example, the Employee folder might need to be in both the Sales and Human Resources business areas.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004699"></A>Map out the necessary joins and determine whether they exist in the database or will have to be created by you using Discoverer Administrator. Joins might be predefined in the database with primary/foreign key constraints, or column names in different tables may match in ways that trigger sensible join conditions. For more information, see <A HREF="joins.htm#1006440">Chapter&nbsp;9, "What are joins?"</a>.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004706"></A>Identify security issues and access privileges. Include the user names the business area is to serve. 
+<P>
+</UL>
+<A NAME="1004688"></A>
+<P CLASS="BP">
+Keep in mind that your design is likely to change as you add the objects that will make the business area a useful and efficient analysis tool. The sketch provides a framework for you to modify and build upon.
+</P>
+
+<A NAME="1004607"></A>
+<!--TOC=h1-"1004607"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What is the Load Wizard?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004716"></A>
+<P CLASS="BP">
+The Load Wizard provides a user-friendly interface to create a business area and enables you to quickly:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004717"></A>name and describe the business area
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004718"></A>load metadata into the business area
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004719"></A>and automatically:
+<P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1008313"></A>format data
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1008306"></A>create joins from existing relationships between tables
+<P>
+
+<A NAME="1013811"></A>
+<P CLASS="BP2">
+<STRONG CLASS="Bold">Note:</STRONG> When doing a bulk load from an Oracle9<EM CLASS="Italic">i</EM> database, you can use also create joins from existing relationships between views (e.g. constraints on views).
+</P>
+ 
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005793"></A>create summaries 
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1008307"></A>create date hierarchies against date items
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1008310"></A>create default aggregates for datapoint items
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1008309"></A>create lists of values for items
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1010214"></A>sort folders and items
+<P>
+</UL>
+</UL>
+
+<A NAME="1006126"></A>
+<!--TOC=h1-"1006126"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to create a business area using the Load Wizard</FONT></H2>
+
+
+<!--/TOC=h1-->
+
+<A NAME="1007760"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">If you are already connected to Discoverer Administrator</FONT></H4>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1007780"></A>Choose Insert | Business Area | From Database...then follow step 2 below.
+<P>
+</OL>
+
+<A NAME="1007811"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">If you have just connected to Discoverer Administrator</FONT></H4>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1006132"></A>Click <STRONG CLASS="Bold">Create a new business area</STRONG> (conditional option, displayed only when connecting to Discoverer Administrator).
+<P>
+
+<A NAME="1007822"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> The Load Wizard starts automatically when you connect to Discoverer Administrator and your username has access to an EUL.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1007791"></A>Select one of the following options to specify where you want to load the metadata from and click Next to display the <A HREF="adlwiz02.htm#1005113">"Load Wizard: Step 2 dialog"</a>:
+<P>
+ 
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1007803"></A>On-line dictionary (for more information, see <A HREF="business.htm#1007871">"Loading from the online dictionary"</a>)
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1007807"></A>Gateway (for more information, see <A HREF="business.htm#1012918">"Loading from a Gateway"</a>)
+<P>
+</UL>
+
+<A NAME="1007868"></A>
+<P CLASS="BP1">
+For more information about the online dictionary and Gateway see the <A HREF="adlwiz01.htm#1005113">"Load Wizard: Step 1 dialog"</a>.
+</P>
+</OL>
+
+<A NAME="1007871"></A>
+<!--TOC=h2-"1007871"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Loading from the online dictionary</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1007873"></A>
+<P CLASS="BP">
+The <A HREF="adlwiz02.htm#1005113">"Load Wizard: Step 2 dialog"</a> enables you to define the user objects to load into your new business area.
+</P>
+
+<A NAME="1006284"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 4-2 &#32;Load Wizard: Step 2 dialog</EM></FONT></H4>
+   
+<BR><A NAME="1006292">
+
+
+<img src="lw2.gif" ALT="Text description of lw2.gif follows.">
+<A HREF="img_text/lw2.htm"><br>Text description of the illustration lw2.gif</A>
+
+
+</A>
+   
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1004829"></A>Select the database link from the <STRONG CLASS="Bold">Select a Database Link</STRONG><STRONG CLASS="Bold"> </STRONG>drop down list.
+<P>
+
+<A NAME="1004830"></A>
+<P CLASS="BP1">
+This displays the default database for the current<EM CLASS="Italic"> </EM>user ID. The drop down list displays only the databases that the current user ID can connect to, based on any private or public database links that the user has access to.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1004837"></A>Select a check box (for each database user) to load the data dictionary definitions of the database objects owned by each selected database user, into the business area.
+<P>
+ 
+
+<A NAME="1004838"></A>
+<P CLASS="BP1">
+The database users displayed are those that exist on the selected database.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1004839"></A>(optional) Specify the pattern that a user's objects must match to be loaded into the business area in the field <STRONG CLASS="Bold">Load user objects that match</STRONG>.
+<P>
+ 
+
+<A NAME="1007984"></A>
+<P CLASS="BP1">
+The % symbol is displayed by default and is a wildcard that matches any character or string of characters. To reduce the number of schema objects that can be loaded from the database, use the wildcard in combination with other characters as follows:
+</P>
+ 
+<A NAME="1014511">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1013174"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>To load schema objects</STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1013176"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Enter what?</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1013210"></A>
+<P CLASS="TB">
+Find all schema objects&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1013212"></A>
+<P CLASS="TB">
+%&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1013214"></A>
+<P CLASS="TB">
+Find all schema objects beginning with D&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1013216"></A>
+<P CLASS="TB">
+D%&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1013218"></A>
+<P CLASS="TB">
+Find all schema objects ending with AND&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1013220"></A>
+<P CLASS="TB">
+%AND&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1013222"></A>
+<P CLASS="TB">
+Find all objects beginning with A and having a five letter name (each underscore represents a letter).&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1013224"></A>
+<P CLASS="TB">
+A _ _ _ _&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+ 
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1004851"></A>(optional) Click Options to specify the type of tables to be loaded (for further information, see the <A HREF="adodop01.htm#1005113">"Online Dictionary Options dialog"</a>).
+<P>
+ 
+
+<A NAME="1007360"></A>
+<P CLASS="BP1">
+For example, whether public or private, or whether owned by or accessible to the users you select.
+</P>
+
+<A NAME="1004855"></A>
+<P CLASS="BP1">
+By default, the Load Wizard will load only:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1004856"></A>tables owned by the users specified
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1004857"></A>private tables
+<P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1012916"></A>Click Next and go to <A HREF="business.htm#1004613">"Selecting tables and views"</a>.
+<P>
+ 
+</OL>
+
+<A NAME="1012918"></A>
+<!--TOC=h2-"1012918"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Loading from a Gateway</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1014026"></A>
+<P CLASS="BP">
+The <A HREF="adlwiz02.htm#1005113">"Load Wizard: Step 2 dialog"</a> enables you to define the schema objects to load into your new business area.
+</P>
+
+<A NAME="1014027"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 4-3 &#32;Load Wizard: Step 2 dialog</EM></FONT></H4>
+   
+<BR><A NAME="1014031">
+
+
+<img src="lw2gw.gif" ALT="Text description of lw2gw.gif follows.">
+<A HREF="img_text/lw2gw.htm"><br>Text description of the illustration lw2gw.gif</A>
+
+
+</A>
+   
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1007355"></A>Select the database link from the <STRONG CLASS="Bold">Select a Database Link</STRONG> drop down list.
+<P>
+
+<A NAME="1007356"></A>
+<P CLASS="BP1">
+The <STRONG CLASS="Bold">Select a Database Link</STRONG> field displays the default database for the current<EM CLASS="Italic"> </EM>user ID. The drop down list displays only the databases that the current user ID can connect to. 
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1004931"></A>Select a check box for each schema that you want to load into the business area.
+<P>
+ 
+
+<A NAME="1007426"></A>
+<P CLASS="BP1">
+The schemas displayed are those that exist on the selected database.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1007440"></A>Specify the pattern that schema objects must match to be loaded into the business area (in the <STRONG CLASS="Bold">Load schema objects that match</STRONG> field) and click Next.
+<P>
+ 
+
+<A NAME="1004937"></A>
+<P CLASS="BP1">
+The % symbol is displayed by default and is a wildcard that matches any character or string of characters. To reduce the number of schema objects that can be loaded from the database, use the wildcard in combination with other characters as follows:
+</P>
+ 
+<A NAME="1014515">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1013231"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG><STRONG CLASS="Bold">To load schema objects</STRONG></STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1013233"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Enter what?</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1013235"></A>
+<P CLASS="TB">
+Find all schema objects&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1013237"></A>
+<P CLASS="TB">
+%&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1013239"></A>
+<P CLASS="TB">
+Find all schema objects beginning with D&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1013241"></A>
+<P CLASS="TB">
+D%&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1013243"></A>
+<P CLASS="TB">
+Find all schema objects ending with AND&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1013245"></A>
+<P CLASS="TB">
+%AND&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1013247"></A>
+<P CLASS="TB">
+Find all objects beginning with A and having a five letter name (each underscore represents a letter).&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1013249"></A>
+<P CLASS="TB">
+A _ _ _ _&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+ </OL>
+
+<A NAME="1004613"></A>
+<!--TOC=h2-"1004613"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Selecting tables and views</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1007704"></A>
+<P CLASS="BP">
+The <A HREF="adlwiz03.htm#1005113">"Load Wizard: Step 3 dialog"</a> enables you to select tables and views (schema objects) to load into the business area.
+</P>
+
+<A NAME="1004978"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 4-4 &#32;Load Wizard: Step 3 dialog</EM></FONT></H4>
+   
+<BR><A NAME="1007489">
+
+
+<img src="lw3.gif" ALT="Text description of lw3.gif follows.">
+<A HREF="img_text/lw3.htm"><br>Text description of the illustration lw3.gif</A>
+
+
+</A>
+   <A NAME="1004979"></A>
+<P CLASS="BP">
+The <STRONG CLASS="Bold">Available</STRONG> list displays a hierarchical list of users (via the on-line dictionary) or schemas (via the gateway) and the tables and views that are available to load into the business area. You can expand and collapse levels of the hierarchy by clicking the + and - signs.
+</P>
+<A NAME="1007518"></A>
+<P CLASS="BP">
+To select tables or views to load into the business area:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1004984"></A>Move the tables or views that you want to load into the business area, from the <STRONG CLASS="Bold">Available</STRONG> list to the <STRONG CLASS="Bold">Selected</STRONG> list.
+<P>
+
+<A NAME="1004985"></A>
+<P CLASS="BP1">
+You can select more than one table or view at a time by holding down the Ctrl key and clicking another table or view.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1004960"></A>Click Next to display the <STRONG CLASS="Bold"><A HREF="adlwiz04.htm#1005847"></STRONG>"Load Wizard: Step 4 dialog"<STRONG CLASS="Bold"></a></STRONG> where you can specify <EM CLASS="Italic">how</EM> Discoverer Administrator creates joins and which additional objects Discoverer Administrator generates for the new business area. 
+<P>
+ 
+</OL>
+<A NAME="1013634"></A>
+<P CLASS="BP">
+Go to <A HREF="business.htm#1010284">"Specifying what Discoverer Administrator generates for the business area"</a>.
+</P>
+
+<A NAME="1010284"></A>
+<!--TOC=h2-"1010284"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Specifying what Discoverer Administrator generates for the business area</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1010285"></A>
+<P CLASS="BP">
+The <A HREF="adlwiz04.htm#1005847">"Load Wizard: Step 4 dialog"</a> enables you to decide what Discoverer Administrator generates for the business area, in terms of joins, summary folders, date hierarchies, default aggregates on datapoints and lists of values.
+</P>
+
+<A NAME="1005023"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 4-5 &#32;Load Wizard: Step 4 dialog</EM></FONT></H4>
+   
+<BR><A NAME="1005024">
+
+
+<img src="lw4.gif" ALT="Text description of lw4.gif follows.">
+<A HREF="img_text/lw4.htm"><br>Text description of the illustration lw4.gif</A>
+
+
+</A>
+   <A NAME="1010363"></A>
+<P CLASS="BP">
+To specify what Discoverer Administrator generates for the business area:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005086"></A>Select whether you want Discoverer Administrator to create joins and if so select an appropriate join option. 
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1011416"></A>Select the additional objects you want to generate (for reference information about this dialog, see the <STRONG CLASS="Bold"><A HREF="adlwiz04.htm#1005847"></STRONG>"Load Wizard: Step 4 dialog"<STRONG CLASS="Bold"></a></STRONG>).
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1010298"></A>Click Next to display the <A HREF="adlwiz05.htm#1005816">"Load Wizard: Step 5 dialog"</a>.
+<P>
+ 
+</OL>
+<A NAME="1013620"></A>
+<P CLASS="BP">
+Go to <A HREF="business.htm#1010301">"Naming the business area, specifying object name and sorting options"</a>.
+</P>
+
+<A NAME="1010301"></A>
+<!--TOC=h2-"1010301"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Naming the business area, specifying object name and sorting options</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1010302"></A>
+<P CLASS="BP">
+The <A HREF="adlwiz05.htm#1005816">"Load Wizard: Step 5 dialog"</a> enables you to enter a name and description and specify how Discoverer Administrator generates object names and which objects to sort for the business area.
+</P>
+
+<A NAME="1010242"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 4-6 &#32;Load Wizard: Step 5 dialog</EM></FONT></H4>
+   
+<BR><A NAME="1010246">
+
+
+<img src="lw5.gif" ALT="Text description of lw5.gif follows.">
+<A HREF="img_text/lw5.htm"><br>Text description of the illustration lw5.gif</A>
+
+
+</A>
+   <A NAME="1010365"></A>
+<P CLASS="BP">
+To name the business area and specify the folder and item, naming and sorting options:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1008043"></A>Specify a name, description and select the check boxes for how you want Discoverer Administrator to generate folder and item names and whether you want to sort folders and/or items for the business area and click Finish.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1007720"></A>(conditional step) This step (and the next step) applies only if you selected the check box, <STRONG CLASS="Bold">Summaries based on folders that are created</STRONG>, in the Load Wizard: Step 4.
+<P>
+ 
+
+<A NAME="1008053"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> Discoverer Administrator displays the Recommended Summaries dialog that provides information about the summary folders that Automated Summary Management (ASM) will create for you (for more information about summary folders, see <A HREF="adasmr01.htm#1005113">"Summary Wizard (ASM): Recommended Summaries dialog"</a> and <A HREF="managing.htm#1012639">Chapter&nbsp;13, "What are summary folders?"</a>). 
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1008066"></A>Click Create to confirm your choice.
+<P>
+ 
+
+<A NAME="1005099"></A>
+<P CLASS="BP1">
+Discoverer Administrator displays a progress indicator while it generates your new business area (and summaries, if appropriate). When finished, the progress indicator disappears and the new business area is displayed on the <A HREF="addtab01.htm#1005113">"Workarea: Data tab"</a>.
+</P>
+</OL>
+<A NAME="1005108"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note: </STRONG>If you loaded your metadata from Oracle Designer, you must refresh the business area before it can be used. For more information, see <A HREF="business.htm#1010400">"How to synchronize a business area with the database"</a>.
+</P>
+
+<A NAME="1005109"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Important Note: User Access</FONT></H4>
+<A NAME="1004616"></A>
+<P CLASS="BP">
+A new business area (and the data it contains), can only be accessed by the user ID that was used to create it. For more information about how to grant access privileges to other user IDs, see <A HREF="privileg.htm#1007486">Chapter&nbsp;6, "How to specify a user or role (responsibility) that can access a business area"</a>.
+</P>
+
+<A NAME="1013007"></A>
+<!--TOC=h1-"1013007"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to open an existing business area when connecting to Discoverer Administrator</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1013010"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> The Load Wizard starts automatically when you connect to Discoverer Administrator.
+</P>
+<A NAME="1008317"></A>
+<P CLASS="BP">
+To open an existing business area when connecting to Discoverer Administrator:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1008171"></A>Click Open an existing business area in the <A HREF="adlwiz01.htm#1005113">"Load Wizard: Step 1 dialog"</a> to display all the business areas in the EUL of the database to which you are connected.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1008196"></A><STRONG CLASS="Bold"></STRONG>Select a check box for each business area that you want to open or click <STRONG CLASS="Bold">Select All</STRONG> to select all the business areas.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1008197"></A>Click Finish to open the selected business area(s).
+<P>
+ 
+</OL>
+
+<A NAME="1013020"></A>
+<!--TOC=h1-"1013020"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to open an existing business area when already connected to Discoverer Administrator</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1013021"></A>
+<P CLASS="BP">
+To open an existing business area when already connected to Discoverer Administrator:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1012429"></A>Choose File | Open to display the <A HREF="adobar01.htm#1005113">"Open Business Area dialog"</a>.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1012430"></A>Move the business areas that you want to open from the <STRONG CLASS="Bold">Available</STRONG> list to the <STRONG CLASS="Bold">Selected</STRONG> list.
+<P>
+ 
+
+<A NAME="1012431"></A>
+<P CLASS="BP1">
+You can select more than one business area at a time by holding down the Ctrl key and clicking another business area.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1012432"></A>Click OK to open the selected business area(s).
+<P>
+ 
+</OL>
+
+<A NAME="1004617"></A>
+<!--TOC=h1-"1004617"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to copy business areas between EULs</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005246"></A>
+<P CLASS="BP">
+To copy a business area from one EUL to another (e.g. from a development system to a production system) you must first export the business area from the first EUL then reconnect to the second EUL and import the export file for the business area into the second EUL:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005249"></A>To export a business area to a file, carry out the steps outlined in the following task using the link below:
+<P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1011119"></A><A HREF="maintain.htm#1007796">Chapter&nbsp;3, "How to export selected business areas using the Export Wizard"</a>.
+<P>
+</UL>
+
+<A NAME="1005253"></A>
+<P CLASS="BP1">
+Once you have completed the above task, go to the next step below.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1011136"></A>Choose File | Connect.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005254"></A>Connect to the EUL that you want to move the business area into.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1005255"></A>Choose File | Import.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1008405"></A>To import the business area (exported in step 1, above) into the current EUL, carry out the steps outlined in the following task using the link below:
+<P>
+ 
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1011430"></A><A HREF="maintain.htm#1011931">Chapter&nbsp;3, "How to import EUL objects from a file using the Import Wizard"</a>.
+<P>
+</UL>
+</OL>
+
+<A NAME="1005133"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif"><STRONG CLASS="Bold">Notes</STRONG></FONT></H4>
+<A NAME="1013891"></A>
+<P CLASS="BP">
+The Export option exports the definitions for the business area only. It does <EM CLASS="Italic">not</EM> export the database, EUL tables, workbooks, or database objects referenced by the business area definitions.
+</P>
+
+<A NAME="1004618"></A>
+<!--TOC=h1-"1004618"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to edit business area properties</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005270"></A>
+<P CLASS="BP">
+To edit the properties of a business area:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005273"></A>Click a business area on the <A HREF="addtab01.htm#1005113">"Workarea: Data tab"</a> and choose Edit | Properties to display the <A HREF="adbapr01.htm#1005113">"Business Area Properties dialog"</a>.
+<P>
+
+<A NAME="1005281"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 4-7 &#32;Business Area Properties dialog</EM></FONT></H4>
+  
+<BR><A NAME="1008445">
+
+
+<img src="baprop.gif" ALT="Text description of baprop.gif follows.">
+<A HREF="img_text/baprop.htm"><br>Text description of the illustration baprop.gif</A>
+
+
+</A>
+  </OL>
+<A NAME="1013643"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1005282"></A>Set the business area name and description as required.
+<P>
+ 
+
+<A NAME="1014467"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Warning</STRONG>: It is not advisable to change an identifier as it can affect the relationships between EUL objects. Do not change the identifier unless you understand the impact of the change. For example, if you are developing EUL patches in a test environment to be imported to a production environment.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005134"></A>Click OK to confirm any changes made.
+<P>
+ 
+</OL>
+
+<A NAME="1004619"></A>
+<!--TOC=h1-"1004619"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to delete a business area</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005292"></A>
+<P CLASS="BP">
+To delete a business area:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005295"></A>Click a business area on the <A HREF="addtab01.htm#1005113">"Workarea: Data tab"</a> and choose Edit | Delete to display the <A HREF="adcbad01.htm#1005113">"Confirm Business Area Delete dialog"</a>.
+<P>
+
+<A NAME="1005300"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 4-8 &#32;Confirm Business Area Delete dialog</EM></FONT></H4>
+  
+<BR><A NAME="1008481">
+
+
+<img src="badel.gif" ALT="Text description of badel.gif follows.">
+<A HREF="img_text/badel.htm"><br>Text description of the illustration badel.gif</A>
+
+
+</A>
+  </OL>
+<A NAME="1013647"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1005301"></A>Specify the scope of deletion that you require:
+<P>
+ 
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005302"></A>Select the <STRONG CLASS="Bold">Delete this Business Area</STRONG> radio button to remove the business area but not its folders, they remain in the EUL.
+<P>
+
+<A NAME="1005303"></A>
+<P CLASS="BP2">
+<STRONG CLASS="Bold">Note:</STRONG> Folders can exist in the EUL but not belong to a business area (orphan folders).
+</P>
+ 
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005304"></A>Select the <STRONG CLASS="Bold">Delete this Business Area and its Folders </STRONG>radio button to remove the business area and all of the folders contained in that business area. 
+<P>
+
+<A NAME="1008546"></A>
+<P CLASS="BP2">
+<STRONG CLASS="Bold">Note:</STRONG> Folders that are part of another business area are not removed.
+</P>
+
+<A NAME="1008507"></A>
+<P CLASS="BP2">
+<STRONG CLASS="Bold">Note:</STRONG> This is the default option and is usually recommended.
+</P>
+ 
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1011665"></A>(optional) To see the objects that might be affected by deleting this business area:
+<P>
+ 
+
+<OL CLASS="LA2" TYPE="a">
+
+<LI CLASS="LA2" TYPE="a" VALUE="1"><A NAME="1011669"></A>Click Impact to display the <A HREF="adimpa01.htm#1005691">"Impact dialog"</a>.
+<P>
+
+<A NAME="1011741"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 4-9 &#32;Impact dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1012139">
+
+
+<img src="impacta.gif" ALT="Text description of impacta.gif follows.">
+<A HREF="img_text/impacta.htm"><br>Text description of the illustration impacta.gif</A>
+
+
+</A>
+ 
+<A NAME="1014493"></A>
+<P CLASS="BP2">
+The Impact dialog enables you to review the other EUL objects that might be affected when you delete a business area.
+</P>
+
+<A NAME="1014506"></A>
+<P CLASS="BP2">
+<STRONG CLASS="Bold">Note:</STRONG> The Impact dialog does not show the impact on workbooks saved to the file system (i.e. in .dis files).
+</P>
+ 
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1014481"></A>(optional) Select a row to view text at the bottom of the list, indicating what affect the current action will have on the EUL object.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1012761"></A>When you have finished reviewing the impact of deleting the business area, click Close to close the Impact dialog.
+<P>
+</OL>
+ 
+<A NAME="1013650"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1005307"></A>Click Yes to delete the selected business area, based on the choices you have made.
+<P>
+ 
+</OL>
+
+<A NAME="1010400"></A>
+<!--TOC=h1-"1010400"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to synchronize a business area with the database</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005317"></A>
+<P CLASS="BP">
+You use the Refresh command to synchronize a business area with the source dictionary whenever the database schema is changed.
+</P>
+<A NAME="1005318"></A>
+<P CLASS="BP">
+Examples of typical database modifications might include the following:
+</P>
+<UL>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005319"></A>adding tables
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005320"></A>adding columns
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005321"></A>adding joins
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005322"></A>changing the ownership of a table
+<P>
+</UL>
+</UL>
+<A NAME="1005323"></A>
+<P CLASS="BP">
+To synchronize a business area with the database:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005324"></A>Select the business area that you want to refresh in the <A HREF="addtab01.htm#1005113">"Workarea: Data tab"</a>.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1005325"></A>Choose File | Refresh to open the <A HREF="adrw1201.htm#1005113">"Refresh Wizard dialog"</a>.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005326"></A>Select one of the following <STRONG CLASS="Bold">Refresh business areas from</STRONG> options:
+<P>
+ 
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005328"></A>On-line dictionary
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1005329"></A>Gateway
+<P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1005333"></A>Click Finish to begin the refresh business areas process.
+<P>
+ 
+
+<A NAME="1008644"></A>
+<P CLASS="BP1">
+Where any objects have changed since the last refresh Discoverer Administrator displays the <A HREF="adrbar01.htm#1005113">"Refresh Business Area dialog"</a>.
+</P>
+
+<A NAME="1011772"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 4-10 &#32;Refresh Business Area dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1011782">
+
+
+<img src="baref.gif" ALT="Text description of baref.gif follows.">
+<A HREF="img_text/baref.htm"><br>Text description of the illustration baref.gif</A>
+
+
+</A>
+ 
+<A NAME="1011778"></A>
+<P CLASS="BP1">
+The Refresh Business Area dialog displays the:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1011859"></A>name of the object that has changed since the last refresh
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1011900"></A>type of change that has occurred to objects since the last refresh
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1011863"></A>effect that the refresh will have on the object
+<P>
+</UL>
+</OL>
+<A NAME="1013053"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1011758"></A>To decide whether you want to refresh each object:
+<P>
+ 
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1011818"></A>select a check box next to each object you want to refresh
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1011827"></A>clear a check box next to each object you do not want to refresh
+<P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1011845"></A>(optional) You can review objects that will be deleted when you refresh this business area. To see the potential impact of the refresh:
+<P>
+ 
+
+<OL CLASS="LA2" TYPE="a">
+
+<LI CLASS="LA2" TYPE="a" VALUE="1"><A NAME="1011849"></A>Click Impact to display the <A HREF="adimpa01.htm#1005691">"Impact dialog"</a>.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1011850"></A>When you have finished reviewing the impact of refreshing this business area, click Close to close the Impact dialog.
+<P>
+</OL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1013303"></A>Click OK for Discoverer Administrator to refresh the business area or selected objects.
+<P>
+ 
+ 
+
+<A NAME="1013654"></A>
+<!--TOC=h1-"1013654"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Notes about business area creation and maintenance</FONT></H2>
+
+
+<!--/TOC=h1-->
+
+<A NAME="1013656"></A>
+<!--TOC=h2-"1013656"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Why might a business area (or folders within it) not be visible to a user?</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1013655"></A>
+<P CLASS="BP">
+Having created a business area, it is possible that a Discoverer end user might not be able to see the business area (or folders within the business area). For a user to see a business area or folders within it, the following conditions must all be met:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1013659"></A>The user must have access to the EUL. If the user is not the EUL owner, either  the EUL must be publicly accessible or the user must be granted explicit access to the EUL. Also make sure that the user is accessing the EUL in which the business area was created.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1013660"></A>The user must have access to the business area. For more information about granting access to business areas, see:
+<P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1013688"></A><A HREF="privileg.htm#1007486">Chapter&nbsp;6, "How to specify a user or role (responsibility) that can access a business area"</a>
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1013690"></A><A HREF="privileg.htm#1004621">Chapter&nbsp;6, "How to specify the business areas a user or role (responsibility) can access"</a>
+<P>
+</UL>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1013661"></A>The user must have database SELECT access to the tables or views on which the folders in the business area are based. 
+<P>
+
+<A NAME="1013707"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Hint:</STRONG> If you are not sure whether a particular user has access to a specific database table or view, log in to SQL*Plus as the user and type:
+</P>
+   
+<PRE CLASS="CE1">
+<A NAME="1013700"></A>select count(*) from &lt;ownername&gt;.&lt;objectname&gt;;
+<A NAME="1013701"></A>
+</PRE>
+   
+<A NAME="1013706"></A>
+<P CLASS="BP1">
+where:
+</P>
+</UL>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1013709"></A>&lt;ownername&gt; is the database username of the owner of the table or view
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1013710"></A>&lt;objectname&gt; is the name of the table or view
+<P>
+</UL>
+
+<A NAME="1013708"></A>
+<P CLASS="BP1">
+If the user does not have access to the database table or view, an error message is displayed.
+</P>
+</UL>
+<A NAME="1013952"></A>
+<P CLASS="BP">
+
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1013676"></A>The folders in a business area must be based on current database table or view definitions. If the table or view definition has changed, you must refresh the business area (for more information, see <A HREF="business.htm#1010400">"How to synchronize a business area with the database"</a>). For example, an end user might not be able to see a folder if an underlying column that the folder depends on was deleted from the table. To enable the Discoverer end user to see a folder in this, you must refresh the business area containing the folder. 
+<P>
+</UL>
+
+
+
+
+
+
+<!-- Start Footer -->
+</DIV>
+
+<DIV CLASS="OUTD">
+<HR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+<TD VALIGN="BOTTOM" WIDTH="33%">
+<TABLE CELLSPACING="0" CELLPADDING="0">
+<TR>
+<TD ALIGN="CENTER"><A HREF="maintain.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+
+<TD ALIGN="CENTER"><A HREF="folders.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+    
+</TR>
+</TABLE>
+</TD>
+<TD ALIGN="CENTER" WIDTH="34%">
+<A HREF="./html/cpyr.htm"><IMG SRC="./gifs/oracle.gif" ALT="Oracle" BORDER="0"><BR>
+<FONT SIZE="-2">Copyright &copy 2003 Oracle Corporation.</FONT></A>
+<BR>
+<FONT SIZE="-2">All Rights Reserved.</FONT>
+</TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="33%"> 
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="144">
+<TR>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+  
+</DIV>
+
+</BODY>
+</HTML>
+

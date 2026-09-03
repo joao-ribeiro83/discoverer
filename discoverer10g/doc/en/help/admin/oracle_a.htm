@@ -1,0 +1,1312 @@
+
+<!DOCTYPE html public "-//w3c//dtd html 3.2 transitional//en.us">
+<HTML lang="en.us">
+<HEAD>
+
+<META NAME="Generator" CONTENT="Quadralay WebWorks Publisher 5.0.4">
+<META NAME="Page" CONTENT="DefaultSingle">
+<META NAME="Title" CONTENT="Using Discoverer with Oracle Applications">
+<meta http-equiv="Content-Type" content="text/html;  charset=iso-8859-1">
+
+<TITLE>Using Discoverer with Oracle Applications</TITLE>
+	   
+<LINK REL="home" HREF="../../library.htm" TITLE="Library">
+<LINK REL="toc" HREF="toc.htm" TITLE="Contents">
+<LINK REL="index" HREF="bookix.htm" TITLE="Index">
+<LINK REL="copyright" HREF="./html/cpyr.htm" TITLE="Copyright">
+<LINK REL="up" HREF="toc.htm" TITLE="Up">
+<LINK REL="next" HREF="portal.htm" TITLE="Next">
+<LINK REL="previous" HREF="addition.htm" TITLE="Previous">
+
+
+</HEAD>
+       
+<BODY BGCOLOR="#ffffff">
+
+<A NAME="top"></A>
+
+
+
+
+<A HREF="#BEGIN">Skip Headers</A><BR><BR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+ 
+<TD ALIGN="LEFT" VALIGN="TOP"><FONT COLOR="#330099" FACE="Helvetica, Arial, sans-serif"><STRONG>Oracle Discoverer Administrator Administration Guide (Online Help)<BR>10<i>g</i> (9.0.4)</STRONG><BR>Part Number B10270-01</FONT></TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="144">
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+
+
+
+
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<HR>
+<P>
+<A HREF="addition.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+
+<A HREF="portal.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A>
+    
+
+
+<A NAME="BEGIN"></A>
+
+
+
+<DIV CLASS="IND">
+<!-- End Header -->
+
+
+
+
+
+
+
+<A NAME="1008717"></A>
+<!--TOC=Title-"1008717"-->
+<H1 CLASS="Title"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099">16<BR>Using Discoverer with Oracle Applications</FONT></H1>
+
+<!--/TOC=Title-->
+
+<A NAME="1004678"></A>
+<!--TOC=h1-"1004678"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Using Discoverer with Oracle Applications</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1008582"></A>
+<P CLASS="BP">
+This chapter explains how Discoverer supports access to Oracle Applications databases using Oracle Applications security and contains the following topics:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004686"></A><A HREF="oracle_a.htm#1004672">"What are Oracle Applications?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004694"></A><A HREF="oracle_a.htm#1004596">"What are Oracle Applications responsibilities?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004703"></A><A HREF="oracle_a.htm#1004597">"What features does Discoverer support for Oracle Applications users?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004712"></A><A HREF="oracle_a.htm#1004598">"What are the prerequisites for using Discoverer with Oracle Applications?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008501"></A><A HREF="oracle_a.htm#1004638">"What is different about running Discoverer in Oracle Applications mode?"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008513"></A><A HREF="oracle_a.htm#1004602">"How to configure the Connect dialog for Oracle Applications users"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008525"></A><A HREF="oracle_a.htm#1004607">"How to create an Oracle Applications EUL"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006896"></A><A HREF="oracle_a.htm#1005182">"How to grant task privileges to all Oracle Applications users via the Public user"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004835"></A><A HREF="oracle_a.htm#1004611">"How to specify the Oracle Applications users/responsibilities who can access a business area"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004860"></A><A HREF="oracle_a.htm#1004612">"How to specify the business areas that an Oracle Applications user/responsibility can access"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004878"></A><A HREF="oracle_a.htm#1004614">"How to specify the tasks an Oracle Applications user or responsibility can perform"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004887"></A><A HREF="oracle_a.htm#1004615">"How to specify the Oracle Applications users/responsibilities who can perform a specific task"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1011391"></A><A HREF="oracle_a.htm#1010160">"How to display your Oracle Applications database user name and responsibility in a workbook"</a>
+<P>
+</UL>
+
+<A NAME="1004672"></A>
+<!--TOC=h1-"1004672"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are Oracle Applications?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004673"></A>
+<P CLASS="BP">
+Oracle Applications are Oracle's integrated enterprise resource planning (ERP) and customer relationship management (CRM) solutions. Oracle Applications enable companies to run and manage their worldwide operations from a central site. For further information see <EM CLASS="Italic">http://www.oracle.com/</EM>.
+</P>
+
+<A NAME="1004596"></A>
+<!--TOC=h1-"1004596"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are Oracle Applications responsibilities?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005265"></A>
+<P CLASS="BP">
+Oracle Applications responsibilities are akin to database roles. They are an abstraction to which privileges can be assigned and which can apply to many users. Oracle Applications responsibilities are used to control Oracle Applications users functional and data access.
+</P>
+<A NAME="1007305"></A>
+<P CLASS="BP">
+An Oracle Applications user connects to an Oracle Applications database and chooses a single Oracle Applications responsibility. Each Oracle Applications responsibility can have a set of privileges associated with it.
+</P>
+<A NAME="1004634"></A>
+<P CLASS="BP">
+This means that an Oracle Applications user will by default assume the task privileges granted to the chosen responsibility (for more information see <A HREF="oracle_a.htm#1004615">"How to specify the Oracle Applications users/responsibilities who can perform a specific task"</a>). To change responsibility but keep the same user you must reconnect.
+</P>
+
+<A NAME="1010711"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1010712"></A>If you encounter anomalies in Discoverer items available to users (e.g. there is a difference between folders or items visible in Discoverer Administrator and Discoverer Plus for the same Appsuserid or Responsibility), this might be caused by how Oracle Applications security is set up. For more information about Oracle Applications security, contact the Oracle Applications administrator.
+<P>
+</UL>
+
+<A NAME="1004597"></A>
+<!--TOC=h1-"1004597"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What features does Discoverer support for Oracle Applications users?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004919"></A>
+<P CLASS="BP">
+Discoverer supports the following features for Oracle Applications:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004920"></A>Ad-hoc query access to Oracle Applications databases using Oracle Applications user names, passwords and responsibilities
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007935"></A>Oracle Applications mode EULs
+<P>
+
+<A NAME="1007936"></A>
+<P CLASS="BP1">
+An Oracle Applications mode EUL is a Discoverer End User Layer based on an Oracle Applications schema (containing the Oracle Applications FND (Foundation) tables and views). Oracle Applications EULs employ Oracle Applications user names and responsibilities whereas standard EULs use database users and roles. 
+</P>
+
+<A NAME="1007991"></A>
+<P CLASS="BP1">
+The only database user (i.e. non-Oracle Applications user) that can connect to an Oracle Applications mode EUL is the EUL owner. The EUL owner is the database user that is used to create the EUL. However, the EUL owner can grant administration privileges to Oracle Applications users. The authorized Oracle Applications users can then connect to the Oracle Applications mode EUL using Discoverer Administrator.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008250"></A>Oracle Applications row level security
+<P>
+
+<A NAME="1009374"></A>
+<P CLASS="BP1">
+Many Oracle Applications tables and views are user-sensitive, and will return different results depending on which user/responsibility is used to access these tables/views. Discoverer correctly runs queries that respect these user-sensitive tables and views.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009373"></A>Oracle Applications multiple reporting currencies
+<P>
+
+<A NAME="1009378"></A>
+<P CLASS="BP1">
+When connecting to Discoverer as an Oracle Applications user/responsibility, Discoverer will automatically connect to the correct schema (either APPS or APPS_MRC) to support Oracle Applications instances that have implemented the multiple reporting currencies feature.
+</P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009372"></A>Oracle Applications multiple organizations
+<P>
+
+<A NAME="1007969"></A>
+<P CLASS="BP1">
+Using Discoverer with Oracle Applications multiple organizations support enables you to work with data from more than one organization. Discoverer end users can query and analyze data from a set of organizations to which they have been granted access. The folders in the EUL you are connecting to must be based on Oracle Business Views (available in Oracle Applications 11<EM CLASS="Italic">i</EM>). 
+</P>
+</UL>
+<A NAME="1007976"></A>
+<P CLASS="BP">
+These features are only available when Discoverer is running in Oracle Applications mode. In other words, when Discoverer is running with an Oracle Applications mode EUL against an Oracle Applications database.
+</P>
+
+<A NAME="1004598"></A>
+<!--TOC=h1-"1004598"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What are the prerequisites for using Discoverer with Oracle Applications?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005534"></A>
+<P CLASS="BP">
+To start Discoverer as an Oracle Applications user the following conditions must be met:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004931"></A>Oracle Applications must be installed before Discoverer can be used in applications mode
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004933"></A>Discoverer must be running against one of the following Oracle Applications versions:
+<P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1004934"></A>Release 10.7 
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1004935"></A>Release 11
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1004936"></A>Release 11<EM CLASS="Italic">i</EM>
+<P>
+</UL>
+</UL>
+
+<A NAME="1004638"></A>
+<!--TOC=h1-"1004638"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> What is different about running Discoverer in Oracle Applications mode?</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1007451"></A>
+<P CLASS="BP">
+The following differences apply in Discoverer when running in Oracle Applications mode:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007456"></A><A HREF="oracle_a.htm#1005051">"Differences with the Discoverer Connect dialog in Oracle Applications mode"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007483"></A><A HREF="oracle_a.htm#1007440">"Differences with Discoverer security in Oracle Applications mode"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007496"></A><A HREF="oracle_a.htm#1007471">"Differences with Discoverer summary folders in Oracle Applications mode"</a>
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007504"></A><A HREF="oracle_a.htm#1004601">"Differences with Discoverer and secure views/language settings in Oracle Applications mode"</a>
+<P>
+</UL>
+
+<A NAME="1005051"></A>
+<!--TOC=h2-"1005051"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Differences with the Discoverer Connect dialog in Oracle Applications mode</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1008882"></A>
+<P CLASS="BP">
+When you run Discoverer in Oracle Applications mode the <A HREF="oracle_a.htm#1008884">"Connect to Oracle Discoverer Administrator dialog (for Oracle Applications users)"</a> will either display or not display the Oracle Applications user check box.
+</P>
+
+<A NAME="1008884"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 16-1 &#32;Connect to Oracle Discoverer Administrator dialog (for Oracle Applications users)</EM></FONT></H4>
+   
+<BR><A NAME="1008894">
+
+
+<img src="apconn.gif" ALT="Text description of apconn.gif follows.">
+<A HREF="img_text/apconn.htm"><br>Text description of the illustration apconn.gif</A>
+
+
+</A>
+   <A NAME="1008887"></A>
+<P CLASS="BP">
+For more information, see <A HREF="oracle_a.htm#1004602">"How to configure the Connect dialog for Oracle Applications users"</a>.
+</P>
+<A NAME="1007582"></A>
+<P CLASS="BP">
+The following conditions apply when the Connect dialog is configured for Oracle Applications users:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008786"></A>if the Oracle Applications user check box is not displayed you connect to Discoverer as an Oracle Applications database user
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007560"></A>if the Oracle Applications user check box is displayed, you select the check box to connect to Discoverer as an Oracle Applications user. Alternatively, clear the Oracle Applications user check box to connect as an Oracle database user.
+<P>
+</UL>
+<A NAME="1008806"></A>
+<P CLASS="BP">
+Once you have entered details into the Connect dialog and clicked OK Discoverer displays a Responsibilities dialog and you can choose the responsibility with which to connect (if the Oracle Applications user you are connecting with has more than one responsibility).
+</P>
+<A NAME="1009390"></A>
+<P CLASS="BP">
+You can bypass the Choose a Responsibility dialog by entering both the Oracle Applications user and the responsibility into the <STRONG CLASS="Bold">Username</STRONG> field in the form 'user:responsibility'.
+</P>
+
+<A NAME="1008563"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 16-2 &#32;Choose a Responsibility dialog</EM></FONT></H4>
+   
+<BR><A NAME="1008567">
+
+
+<img src="apresch.gif" ALT="Text description of apresch.gif follows.">
+<A HREF="img_text/apresch.htm"><br>Text description of the illustration apresch.gif</A>
+
+
+</A>
+   
+<A NAME="1007440"></A>
+<!--TOC=h2-"1007440"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Differences with Discoverer security in Oracle Applications mode</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1007439"></A>
+<P CLASS="BP">
+When you run Discoverer Administrator as an Oracle Applications user, then the Discoverer Privileges and Security dialogs display Oracle Applications user names and responsibilities. You can assign privileges and security to Oracle Applications user names and responsibilities. When you run Discoverer Administrator as a database user then the Discoverer Privileges and Security dialogs display database users and database roles.
+</P>
+<A NAME="1007466"></A>
+<P CLASS="BP">
+For more information about using privileges to control access to information, see <A HREF="privileg.htm#1009487">Chapter&nbsp;6, "About Discoverer and security"</a>. 
+</P>
+
+<A NAME="1007471"></A>
+<!--TOC=h2-"1007471"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Differences with Discoverer summary folders in Oracle Applications mode</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1008903"></A>
+<P CLASS="BP">
+As the Discoverer manager of an Oracle Applications mode EUL you must be aware of the following:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008600"></A>Some Oracle Applications database views contain row level security and return differing result sets depending upon the currently active responsibility. This means that materialized views (summary tables in Oracle Standard Edition databases) will contain different data depending on the responsibility of the user refreshing the external summary folder.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005041"></A>A summary folder based on an Oracle Applications secure view or Oracle Applications business view must be registered in Discoverer as an external summary folder (for more information, see <A HREF="creating.htm#1004669">Chapter&nbsp;14, "How to create summary folders based on external summary tables"</a>). 
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009503"></A>Where an external summary folder is mapped against a table or view with Oracle Applications row level security, it is your responsibility as Discoverer manager to make sure the external table or view provides secure access. If you are not sure, ask your database administrator.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009472"></A>If a managed summary folder is found that satisfies a query (based on data with Oracle Applications row level security), Discoverer informs the end user that no rows satisfy the query criteria. Discoverer does this to ensure that end users do not see data they should not have access to. 
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1005042"></A>If a managed summary folder is found that satisfies a query (based on data without Oracle Applications row level security), Discoverer returns the rows unaffected. Discoverer does this because the data can be safely accessed by all end users.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1004643"></A>Some Oracle Applications views with row-level security support "public" rows (particularly Human Resources).
+<P>
+</UL>
+
+<A NAME="1004601"></A>
+<!--TOC=h2-"1004601"-->
+<H3 CLASS="H2"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> Differences with Discoverer and secure views/language settings in Oracle Applications mode</FONT></H3>
+<!--/TOC=h2-->
+<A NAME="1005022"></A>
+<P CLASS="BP">
+When a Discoverer end user uses a workbook that accesses Oracle Applications secure views, the user might see different results on different machines (even when using the same connection information) if the machines have different local language (NLS) settings.
+</P>
+<A NAME="1005024"></A>
+<P CLASS="BP">
+When using Oracle Applications secure views, the local language setting of the machine affects the data retrieved by Discoverer. Discoverer will display data consistently across machines with the same language setting.
+</P>
+<A NAME="1007622"></A>
+<P CLASS="BP">
+To change a machines local language setting (on Windows), choose Start | Settings | Control Panel | Regional Settings and change the language value.
+</P>
+<A NAME="1005027"></A>
+<P CLASS="BP">
+For more information on secure views, see <A HREF="query_pr.htm#1004891">Chapter&nbsp;19, "How to use query prediction with secure views"</a>.
+</P>
+<A NAME="1004644"></A>
+<P CLASS="BP">
+You can also define a language setting (NLS) for a user, responsibility, application or site using the Profiles setting in Oracle Applications. For more information see the Oracle Applications documentation.
+</P>
+
+<A NAME="1004602"></A>
+<!--TOC=h1-"1004602"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to configure the Connect dialog for Oracle Applications users</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1004951"></A>
+<P CLASS="BP">
+Before you connect to Oracle Discoverer as an Oracle Applications user, you must configure the Connect dialog to default to Oracle Applications users.
+</P>
+<A NAME="1005620"></A>
+<P CLASS="BP">
+To configure the Connect dialog for Discoverer Administrator and Discoverer Desktop: 
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1004953"></A>Select Tools | Options<STRONG CLASS="Bold"> </STRONG>to display the <A HREF="adocta01.htm#1005113">"Options dialog: Connection tab"</a>:
+<P>
+
+<A NAME="1004954"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 16-3 &#32;The Options dialog: Connection tab</EM></FONT></H4>
+  
+<BR><A NAME="1005636">
+
+
+<img src="options.gif" ALT="Text description of options.gif follows.">
+<A HREF="img_text/options.htm"><br>Text description of the illustration options.gif</A>
+
+
+</A>
+  
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1004957"></A>Specify the type of EUL to connect to by selecting one of the following option:
+<P>
+ 
+<A NAME="1011574">
+<P>
+<TABLE CLASS="RuleInformal" BORDER="1" WIDTH="100%" CELLPADDING="3" CELLSPACING="0" dir="ltr">
+<THEAD>
+<TR CLASS="Informal"><TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1009671"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG><STRONG CLASS="Bold">Option</STRONG></STRONG></FONT>&nbsp;</TH>
+<TH CLASS="Informal" align="left" valign="bottom" scope="col">
+<A NAME="1009691"></A>
+<FONT FACE="Arial, Helvetica, sans-serif"><STRONG>Use this option to:</STRONG></FONT>&nbsp;</TH>
+</TR>
+<TBODY>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1009697"></A>
+<P CLASS="TB">
+Connect to standard EULs&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1009699"></A>
+<P CLASS="TB">
+The <STRONG CLASS="Bold">Oracle Applications User</STRONG> check box is not displayed in the Connect dialog and Discoverer expects standard database users.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1009701"></A>
+<P CLASS="TB">
+Connect to applications EULs&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1009703"></A>
+<P CLASS="TB">
+The <STRONG CLASS="Bold">Oracle Applications User</STRONG> check box is not displayed in the Connect dialog but Discoverer expects users to connect using an Applications user id/password and Oracle Applications database connect string.&nbsp;</TD>
+</TR>
+<TR CLASS="Informal" ALIGN="LEFT" VALIGN="TOP"><TD CLASS="Informal">
+<A NAME="1009705"></A>
+<P CLASS="TB">
+Connect to both standard and applications EULs&nbsp;</TD>
+<TD CLASS="Informal">
+<A NAME="1009707"></A>
+<P CLASS="TB">
+The <STRONG CLASS="Bold">Oracle Applications User</STRONG> check box is displayed in the Connect dialog and (depending on whether the check box is cleared or selected) you can connect to either standard or Oracle Applications database EULs.&nbsp;</TD>
+</TR>
+
+</TABLE>
+
+
+
+</A>
+  
+</OL>
+
+<A NAME="1004603"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009049"></A>To configure the Connect dialog for Discoverer Desktop, repeat the steps described above for Discoverer Administrator, but within Discoverer Desktop.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1009050"></A>To configure the Connect dialog for Discoverer Plus and Viewer to validate Oracle Applications user names and passwords, see the <EM CLASS="Italic">Oracle Application Server Discoverer Configuration Guide.</EM>
+<P>
+</UL>
+
+<A NAME="1007721"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">About entering details into the fields GWYUID/Password and FNDNAM </FONT></H4>
+<A NAME="1004968"></A>
+<P CLASS="BP">
+When you use the Options dialog: Connections tab and you select either the <STRONG CLASS="Bold">Connect to applications EULs</STRONG> radio button or the <STRONG CLASS="Bold">Connect to both standard and applications EULs</STRONG> radio button you can enter values into these fields, but Discoverer uses default values if you do not. The fields and default values are as follows:
+</P>
+<UL>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1004969"></A>Gateway User ID (GWYUID)/Password
+<P>
+
+<A NAME="1005710"></A>
+<P CLASS="BP2">
+You can enter your Gateway User ID and Password here (the default value used is 'applsyspub/pub' if you enter nothing here).
+</P>
+ 
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1004970"></A>Foundation Name (FNDNAM)
+<P>
+
+<A NAME="1005711"></A>
+<P CLASS="BP2">
+You can enter the Foundation Name (the default value used is 'apps' if you enter nothing here).
+</P>
+ 
+</UL>
+</UL>
+<A NAME="1004654"></A>
+<P CLASS="BP">
+If you do not know the values to enter into the above fields contact your Oracle Applications database administrator.
+</P>
+
+<A NAME="1004607"></A>
+<!--TOC=h1-"1004607"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to create an Oracle Applications EUL</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005066"></A>
+<P CLASS="BP">
+You create an Oracle Applications EUL in two ways:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008003"></A>using the Create EUL dialog
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008007"></A>using the command line interface
+<P>
+</UL>
+<A NAME="1007994"></A>
+<P CLASS="BP">
+To create an Oracle Applications EUL using the Create EUL dialog:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1005072"></A>Start Discoverer Administrator and display the <A HREF="adcdia01.htm#1005113">"Connect dialog"</a>.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1007995"></A>Enter the user name, password and connect string for a DBA user.
+<P>
+ 
+
+<A NAME="1005827"></A>
+<P CLASS="BP1">
+For example, dba/dbapassword@oracleappsdb.
+</P>
+
+<A NAME="1005783"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> You must not specify the user name of an Oracle Applications user. The EUL owner is always a database user.
+</P>
+
+<A NAME="1005074"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 16-4 &#32;Connect to Oracle Discoverer Administrator dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1005793">
+
+
+<img src="apcndba.gif" ALT="Text description of apcndba.gif follows.">
+<A HREF="img_text/apcndba.htm"><br>Text description of the illustration apcndba.gif</A>
+
+-
+</A>
+ 
+<A NAME="1005083"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> The Oracle Applications user Connect dialog might display the <STRONG CLASS="Bold">Oracle Applications User</STRONG> check box. For more information see <A HREF="oracle_a.htm#1004602">"How to configure the Connect dialog for Oracle Applications users"</a>.
+</P>
+</UL>
+</OL>
+<A NAME="1009905"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1005085"></A>Clear the <STRONG CLASS="Bold">Oracle Applications User</STRONG> check box (i.e. if the check box is displayed).
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1009817"></A>Click Connect.
+<P>
+ 
+
+<A NAME="1008062"></A>
+<P CLASS="BP1">
+If no EULs exist Discoverer displays a dialog for you to choose whether to create an EUL now.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1010790"></A>Click Yes.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1008068"></A>Discoverer displays the <A HREF="ademan01.htm#1005113">"EUL Manager dialog"</a>.
+<P>
+
+<A NAME="1005090"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 16-5 &#32;EUL Manager dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1005091">
+
+
+<img src="apeulmgr.gif" ALT="Text description of apeulmgr.gif follows.">
+<A HREF="img_text/apeulmgr.htm"><br>Text description of the illustration apeulmgr.gif</A>
+
+
+</A>
+ </OL>
+ 
+<A NAME="1009821"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1005093"></A>Click Create an EUL to display the <A HREF="adcewi01.htm#1005113">"Create EUL Wizard dialog"</a>. 
+<P>
+ 
+
+<A NAME="1008073"></A>
+<P CLASS="BP1">
+This is where you create a new database user and Oracle Applications EUL.
+</P>
+
+<A NAME="1005094"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 16-6 &#32;Create EUL Wizard dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1005095">
+
+
+<img src="apcuseul.gif" ALT="Text description of apcuseul.gif follows.">
+<A HREF="img_text/apcuseul.htm"><br>Text description of the illustration apcuseul.gif</A>
+
+
+</A>
+ </UL>
+ 
+<A NAME="1009603"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="8"><A NAME="1005097"></A>Specify whether an existing or new user is to own the Oracle Applications EUL by selecting one of the following radio buttons:
+<P>
+ 
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1008077"></A><STRONG CLASS="Bold">Select an existing user</STRONG>
+<P>
+
+<A NAME="1008936"></A>
+<P CLASS="BP2">
+then select a user from the drop down list in the <STRONG CLASS="Bold">User</STRONG> field
+</P>
+ 
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1008086"></A><STRONG CLASS="Bold">Create a new user</STRONG>
+<P>
+
+<A NAME="1008940"></A>
+<P CLASS="BP2">
+then enter a user name, password/confirmation for the new user 
+</P>
+ 
+</UL>
+
+<A NAME="1009415"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> The EUL owner is always a database user. Please specify a database user. 
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="9"><A NAME="1008093"></A>(optional) Clear the <STRONG CLASS="Bold">Grant EUL access to PUBLIC</STRONG> check box. 
+<P>
+ 
+
+<A NAME="1005896"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Hint</STRONG>: We recommend that you clear the <STRONG CLASS="Bold">Grant EUL access to PUBLIC</STRONG> check box to restrict public access to your EUL tables. If you do not select the <STRONG CLASS="Bold">Grant EUL access to PUBLIC</STRONG> check box, but still want other database users to have access to your EUL tables, you will need to grant access to your EUL tables manually.
+</P>
+
+<A NAME="1009996"></A>
+<P CLASS="BP1">
+If you want to grant all database users access to your EUL tables you must select the <STRONG CLASS="Bold">Grant EUL access to PUBLIC</STRONG> check box.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="10"><A NAME="1005099"></A>Select the <STRONG CLASS="Bold">New EUL is for Oracle Applications users ONLY</STRONG> check box to create an Oracle Applications mode EUL.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="11"><A NAME="1005101"></A>Click Next to display the <A HREF="adcewi02.htm#1005113">"Create EUL Wizard: Step 2 dialog"</a> where you select the Oracle Applications schema and enter the schema password.
+<P>
+
+<A NAME="1005102"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 16-7 &#32;Create EUL Wizard: Step 2 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1005925">
+
+
+<img src="apeulwz2.gif" ALT="Text description of apeulwz2.gif follows.">
+<A HREF="img_text/apeulwz2.htm"><br>Text description of the illustration apeulwz2.gif</A>
+
+
+</A>
+ </OL>
+ 
+<A NAME="1009826"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="12"><A NAME="1005105"></A>Use the <STRONG CLASS="Bold">Schema</STRONG> drop down list to select the Oracle Applications schema containing the Oracle Applications FND tables.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="13"><A NAME="1005106"></A>Enter the password for the Oracle Applications schema and click Next.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="14"><A NAME="1008156"></A>(if creating a new user) If you are creating a new user Discoverer displays the <A HREF="adcewi02.htm#1006378">"Create EUL Wizard: Step 3 dialog"</a> where you select the default and temporary tablespaces for the new database user/schema.
+<P>
+
+<A NAME="1005108"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 16-8 &#32;Create EUL Wizard Step 3 dialog</EM></FONT></H4>
+ 
+<BR><A NAME="1005962">
+
+
+<img src="apeulwz3.gif" ALT="Text description of apeulwz3.gif follows.">
+<A HREF="img_text/apeulwz3.htm"><br>Text description of the illustration apeulwz3.gif</A>
+
+
+</A>
+ </OL>
+ 
+<A NAME="1009829"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="15"><A NAME="1005111"></A>(if creating a new user) Highlight the required Default and Temporary tablespaces you want to use for the Oracle Applications EUL owner.
+<P>
+ 
+
+<A NAME="1008701"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Hint</STRONG>: Ask your Oracle Applications database administrator if you are not sure.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="16"><A NAME="1005112"></A>Click Finish to create the tables and views for the new Oracle Applications mode EUL and populate them with default data. 
+<P>
+ 
+</OL>
+<A NAME="1008161"></A>
+<P CLASS="BP">
+Discoverer displays a dialog to confirm the creation of the new EUL:
+</P>
+
+<A NAME="1005113"></A>
+<H4 CLASS="FT"><FONT FACE="Arial, Helvetica, sans-serif"><EM>Figure 16-9 &#32;Create EUL wizard - success dialog</EM></FONT></H4>
+   
+<BR><A NAME="1005980">
+
+
+<img src="apeulwzs.gif" ALT="Text description of apeulwzs.gif follows.">
+<A HREF="img_text/apeulwzs.htm"><br>Text description of the illustration apeulwzs.gif</A>
+
+
+</A>
+   <A NAME="1009619"></A>
+<P CLASS="BP">
+
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="17"><A NAME="1005116"></A>Click OK to close the confirmation dialog.
+<P>
+ 
+
+<A NAME="1008171"></A>
+<P CLASS="BP1">
+Discoverer displays a dialog that gives you the option to install tutorial data into the new EUL.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="18"><A NAME="1008177"></A>Click Yes or No to specify whether to install the tutorial data.
+<P>
+ 
+
+<A NAME="1008181"></A>
+<P CLASS="BP1">
+Discoverer displays a dialog that gives you the option to reconnect to the database as the owner of the new Oracle Applications EUL you have just created, or to remain connected as the DBA.
+</P>
+</OL>
+
+<A NAME="1005126"></A>
+<H4 CLASS="SH1"><FONT FACE="Arial, Helvetica, sans-serif">Notes</FONT></H4>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008191"></A>Having created an Oracle Applications EUL you can now:
+<P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1008195"></A>Grant task privileges to an Oracle Applications user so that they have the ability to carry out tasks in Discoverer Administrator or Discoverer Plus using this Oracle Applications EUL (for more information, see <A HREF="oracle_a.htm#1004614">"How to specify the tasks an Oracle Applications user or responsibility can perform"</a>).
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1004650"></A>Create a new business area using the Oracle Applications tables (for further information, see <A HREF="business.htm#1002341">Chapter&nbsp;4, "What are business areas?"</a>).
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1010033"></A>Grant access to the tutorial business area to Oracle Applications users and responsibilities (for more information, see <A HREF="privileg.htm#1007486">"How to specify a user or role (responsibility) that can access a business area"</a>). Granting access to the tutorial business area enables Oracle Applications users and responsibilities to access the tutorial database.
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1010797"></A>If you did not install the Tutorial into the Apps Schema, you must grant the select privilege on the tutorial tables to the APPS schema owner (for more information about granting privileges, see the <EM CLASS="Italic">Oracle9i SQL Reference Guide</EM>. The select privilege is required because the APPS schema owner is the database user that is used as the proxy by applications users. Therefore,  APPS schema owner must have select access to the tutorial tables.
+<P>
+</UL>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1006047"></A>When you create a new Oracle Applications business area, the schema objects you load into the business area must be based on secure views. This retains the row-level security associated with a specific Oracle Applications responsibility. Ask your Oracle Applications database administrator for further information.
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1007947"></A>You can also create an Applications mode EUL via the command line (for more information see <A HREF="command_.htm#1010201">Chapter&nbsp;21, "/create_eul /apps_mode"</a>).
+<P>
+</UL>
+
+<A NAME="1005182"></A>
+<!--TOC=h1-"1005182"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to grant task privileges to all Oracle Applications users via the Public user</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005184"></A>
+<P CLASS="BP">
+You can grant task privileges to all Oracle Applications users in one action by using the Public user.
+</P>
+<A NAME="1008272"></A>
+<P CLASS="BP">
+To grant task privileges to all Oracle Applications users:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1008273"></A>Start Discoverer Administrator and connect as an Oracle Applications user.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1008287"></A>Choose Tools | Privileges to display the <A HREF="adppri01.htm#1005113">"Privileges dialog: Privileges tab"</a>
+<P>
+ 
+
+<A NAME="1008308"></A>
+<P CLASS="BP1">
+The Privileges dialog contains the Public user. The public user is not an Oracle Applications user but represents all Oracle Applications users. You can grant a privilege to every Oracle Applications user by granting that privilege to the Public user. You can subsequently modify individual users' privileges as required.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1008304"></A>Grant privileges to the Public user as required.
+<P>
+ 
+
+<A NAME="1008322"></A>
+<P CLASS="BP1">
+For more information, see <A HREF="privileg.htm#1004624">Chapter&nbsp;6, "How to specify the tasks a user or role (responsibility) can perform"</a>. 
+</P>
+</OL>
+
+<A NAME="1004611"></A>
+<!--TOC=h1-"1004611"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to specify the Oracle Applications users/responsibilities who can access a business area</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1006179"></A>
+<P CLASS="BP">
+This task describes how to grant (or deny) access permission for business areas to specific users or responsibilities.
+</P>
+<A NAME="1008435"></A>
+<P CLASS="BP">
+For information about Oracle Applications responsibilities, see <A HREF="oracle_a.htm#1004596">"What are Oracle Applications responsibilities?"</a>.
+</P>
+<A NAME="1008481"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> When completing the following task there is a notable difference between what Oracle database users and Oracle Applications users will see in the dialog:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008952"></A>Oracle database users will see the words Users and Roles
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008956"></A>Oracle Applications database users will see the words Users and Responsibilities 
+<P>
+</UL>
+<A NAME="1008438"></A>
+<P CLASS="BP">
+For more information about this task see <A HREF="privileg.htm#1007486">Chapter&nbsp;6, "How to specify a user or role (responsibility) that can access a business area"</a>.
+</P>
+
+<A NAME="1004612"></A>
+<!--TOC=h1-"1004612"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to specify the business areas that an Oracle Applications user/responsibility can access</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1008999"></A>
+<P CLASS="BP">
+This task describes how to specify which business areas a specific Oracle Applications user or responsibility can access.
+</P>
+<A NAME="1009000"></A>
+<P CLASS="BP">
+For information about Oracle Applications responsibilities, see <A HREF="oracle_a.htm#1004596">"What are Oracle Applications responsibilities?"</a>
+</P>
+<A NAME="1009001"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> When completing the following task there is a notable difference between what Oracle database users and Oracle Applications users will see in the dialog:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008959"></A>Oracle database users will see the words Users and Roles
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008960"></A>Oracle Applications database users will see the words Users and Responsibilities 
+<P>
+</UL>
+<A NAME="1008420"></A>
+<P CLASS="BP">
+For information about this task see <A HREF="privileg.htm#1004621">Chapter&nbsp;6, "How to specify the business areas a user or role (responsibility) can access"</a>.
+</P>
+
+<A NAME="1004614"></A>
+<!--TOC=h1-"1004614"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to specify the tasks an Oracle Applications user or responsibility can perform</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1006789"></A>
+<P CLASS="BP">
+This section describes how to specify the tasks a specific user or responsibility can perform.
+</P>
+<A NAME="1006793"></A>
+<P CLASS="BP">
+For information about Oracle Applications responsibilities, see <A HREF="oracle_a.htm#1004596">"What are Oracle Applications responsibilities?"</a>.
+</P>
+<A NAME="1008964"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> When completing the following task there is a notable difference between what Oracle database users and Oracle Applications users will see in the dialog:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008965"></A>Oracle database users will see the words Users and Roles
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008966"></A>Oracle Applications database users will see the words Users and Responsibilities 
+<P>
+</UL>
+<A NAME="1008378"></A>
+<P CLASS="BP">
+For information about this task see <A HREF="privileg.htm#1004624">Chapter&nbsp;6, "How to specify the tasks a user or role (responsibility) can perform"</a>.
+</P>
+
+<A NAME="1004615"></A>
+<!--TOC=h1-"1004615"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to specify the Oracle Applications users/responsibilities who can perform a specific task</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1005457"></A>
+<P CLASS="BP">
+This section describes how to specify the users or responsibilities that can perform a specific task.
+</P>
+<A NAME="1008452"></A>
+<P CLASS="BP">
+For information about Oracle Applications responsibilities, see <A HREF="oracle_a.htm#1004596">"What are Oracle Applications responsibilities?"</a>.
+</P>
+<A NAME="1008970"></A>
+<P CLASS="BP">
+<STRONG CLASS="Bold">Note:</STRONG> When completing the following task there is a notable difference between what Oracle database users and Oracle Applications users will see in the dialog:
+</P>
+
+<UL CLASS="LB1">
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008971"></A>Oracle database users will see the words Users and Roles
+<P>
+
+<LI CLASS="LB1" TYPE="DISC"><A NAME="1008972"></A>Oracle Applications database users will see the words Users and Responsibilities 
+<P>
+</UL>
+<A NAME="1008455"></A>
+<P CLASS="BP">
+For information about this task see <A HREF="privileg.htm#1004625">Chapter&nbsp;6, "How to specify a user or role (responsibility) to perform a specific task"</a>.
+</P>
+
+<A NAME="1010160"></A>
+<!--TOC=h1-"1010160"-->
+<H2 CLASS="H1"><FONT FACE="Arial, Helvetica, sans-serif" COLOR="#330099"> How to display your Oracle Applications database user name and responsibility in a workbook</FONT></H2>
+
+
+<!--/TOC=h1-->
+<A NAME="1010837"></A>
+<P CLASS="BP">
+You can use a custom folder to display the name of your Oracle Applications database user and responsibility in a Discoverer workbook. You might want to do this because Discoverer workbooks can display different results depending on the Oracle Applications database user and responsibility that runs the workbook. This task enables you to identify which Oracle Applications database user and responsibility has run a particular Discoverer workbook.
+</P>
+<A NAME="1011074"></A>
+<P CLASS="BP">
+To display your Oracle Applications database user name and responsibility in a Discoverer workbook using a custom folder:
+</P>
+
+<OL CLASS="LN1" TYPE="1">
+
+<LI CLASS="LN1" TYPE="1" VALUE="1"><A NAME="1010996"></A>Start Discoverer Administrator and display the <A HREF="adcdia01.htm#1005113">"Connect dialog"</a>.
+<P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="2"><A NAME="1010997"></A>Enter your Oracle Applications database user name, password and connect string.
+<P>
+ 
+
+<A NAME="1010998"></A>
+<P CLASS="BP1">
+For example, apps1/apps1password@oracleappsdb:
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="3"><A NAME="1010843"></A>If the Oracle Applications database user has more than one responsibility, choose a responsibility from the <STRONG CLASS="Bold">Responsibility</STRONG> list displayed in the <A HREF="adresp01.htm#1005113">"Responsibilities dialog"</a>.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="4"><A NAME="1011005"></A>Choose Tools |Register PL/SQL Functions to display the  <A HREF="adpsff01.htm#1005113">"PL/SQL Functions dialog: Functions tab"</a>.
+<P>
+ 
+
+<A NAME="1011195"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> The PL/SQL functions FND_GLOBAL.USER_NAME and FND_GLOBAL.RESP_NAME must be available in the <A HREF="adpsff01.htm#1005113">"PL/SQL Functions dialog: Functions tab"</a> before you can subsequently use them in a custom folder.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="5"><A NAME="1010894"></A>If either of the functions FND_GLOBAL.USER_NAME and FND_GLOBAL.RESP_NAME do not appear in the functions list you can import them.
+<P>
+ 
+
+<A NAME="1011228"></A>
+<P CLASS="BP1">
+To import the PL/SQL functions:
+</P>
+
+<OL CLASS="LA2" TYPE="a">
+
+<LI CLASS="LA2" TYPE="a" VALUE="1"><A NAME="1011294"></A>Click Import to display the <A HREF="adipfu01.htm#1005750">"Import PL/SQL Functions dialog"</a>.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1011232"></A>Choose both PL/SQL functions from the list and click OK to close the import PL/SQL Functions dialog.
+<P>
+
+<A NAME="1011452"></A>
+<P CLASS="BP2">
+<STRONG CLASS="Bold">Note:</STRONG> Each PL/SQL function is prefixed with the default Oracle Applications user, Apps (e.g. Apps.FND_GLOBAL.USER_NAME).
+</P>
+ 
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1011233"></A>Click OK to close the PL/SQL Functions dialog: Functions tab and apply the changes.
+<P>
+</OL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="6"><A NAME="1011212"></A>(optional) If you do not want to import the PL/SQL functions FND_GLOBAL.USER_NAME and FND_GLOBAL.RESP_NAME, you can create them.
+<P>
+ 
+
+<A NAME="1011270"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> You might choose to create these two PL/SQL functions (instead of importing them), if the database takes a long time to display information.
+</P>
+
+<A NAME="1011283"></A>
+<P CLASS="BP1">
+To create the PL/SQL functions:
+</P>
+
+<OL CLASS="LA2" TYPE="a">
+
+<LI CLASS="LA2" TYPE="a" VALUE="1"><A NAME="1010903"></A>Click New to create a new PL/SQL function, and populate the fields with default data.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1011476"></A>Enter <CODE>FND_GLOBAL.USER_NAME</CODE> into the <STRONG CLASS="Bold">Function Name</STRONG> field.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1011484"></A>Enter <CODE>FND_GLOBAL.USER_NAME</CODE> into the <STRONG CLASS="Bold">Display Name</STRONG> field.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1010911"></A>Enter <CODE>APPS</CODE> into the <STRONG CLASS="Bold">Owner</STRONG> field.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1010925"></A>Choose Varchar in the <STRONG CLASS="Bold">Return Type</STRONG> field.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1011493"></A>Enter some meaningful text into the <STRONG CLASS="Bold">Identifier</STRONG> field.<STRONG CLASS="Bold"></STRONG>
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1010914"></A>Click Apply to save the changes.
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1011266"></A>Repeat the above steps to create another PL/SQL function for FND_GLOBAL.RESP_NAME (i.e. replacing FND_GLOBAL.USER_NAME with FND_GLOBAL.RESP_NAME in step b).
+<P>
+
+<LI CLASS="LA2" TYPE="a"><A NAME="1011500"></A>Click OK to close the dialog and save the changes.
+<P>
+</OL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="7"><A NAME="1010950"></A>Create a new business area or open an existing  business area.
+<P>
+ 
+
+<A NAME="1011544"></A>
+<P CLASS="BP1">
+For more information, see <A HREF="business.htm#1009339">"Creating and maintaining business areas"</a>.
+</P>
+
+<A NAME="1011519"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> In the following steps you will create a custom folder that contains the items User Name and Resp Name, and then you will include these items in a workbook. To make the custom folder readily available to other Oracle Applications business areas, you can create a new business area to contain just the custom folder.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="8"><A NAME="1011543"></A>Choose Insert | Folder | Custom to display the <A HREF="adcfdi01.htm#1005113">"Custom Folder dialog"</a>.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="9"><A NAME="1011044"></A>Enter a meaningful name for the custom folder (e.g. UserResp_Name).
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="10"><A NAME="1011502"></A>Enter the following SQL statement into the <STRONG CLASS="Bold">Enter the SQL to define the custom folder</STRONG> field:
+<P>
+   
+<PRE CLASS="CE1">
+<A NAME="1010855"></A>Select fnd_global.user_name, fnd_global.resp_name from dual; 
+<A NAME="1010975"></A>
+</PRE>
+    
+
+<A NAME="1010974"></A>
+<P CLASS="BP1">
+The SQL statement above creates a custom folder containing the two items, User Name and Resp Name. Discoverer will use the PL/SQL functions (that you previously imported or created) to display the Oracle Applications database user name and responsibility represented by User Name and Resp Name.
+</P>
+
+<A NAME="1011057"></A>
+<P CLASS="BP1">
+For more information, see <A HREF="folders.htm#1004602">"How to create custom folders"</a>.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="11"><A NAME="1011038"></A>Connect to Discoverer Plus or Discoverer Desktop using your Oracle Applications database user and responsibility name.
+<P>
+ 
+
+<A NAME="1011373"></A>
+<P CLASS="BP1">
+For more information about using:
+</P>
+
+<UL CLASS="LB2">
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1011431"></A>Discoverer Plus, see the <EM CLASS="Italic">Oracle Application Server Discoverer Plus User's Guide</EM>.
+<P>
+
+<LI CLASS="LB2" TYPE="DISC"><A NAME="1011437"></A>Discoverer Desktop, see the <EM CLASS="Italic">Oracle Application Server Discoverer Desktop User's Guide</EM>.
+<P>
+</UL>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="12"><A NAME="1011298"></A>Open an existing workbook or create a new workbook.
+<P>
+
+<LI CLASS="LN1" TYPE="1" VALUE="13"><A NAME="1011557"></A>Create a new worksheet that contains just the custom folder items User Name and Resp Name.
+<P>
+ 
+
+<A NAME="1010988"></A>
+<P CLASS="BP1">
+<STRONG CLASS="Bold">Note:</STRONG> Because this custom folder is not joined to other folders, the items User Name and Resp Name must be the only items on the worksheet.
+</P>
+
+
+<LI CLASS="LN1" TYPE="1" VALUE="14"><A NAME="1011503"></A>Run the workbook in Discoverer Plus, Discoverer Desktop or Discoverer Viewer.
+<P>
+ 
+
+<A NAME="1011069"></A>
+<P CLASS="BP1">
+The Discoverer workbook will contain a worksheet that displays your Oracle Applications database user name and responsibility name.
+</P>
+</OL>
+
+
+
+
+
+
+<!-- Start Footer -->
+</DIV>
+
+<DIV CLASS="OUTD">
+<HR>
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="100%">
+<TR>
+<TD VALIGN="BOTTOM" WIDTH="33%">
+<TABLE CELLSPACING="0" CELLPADDING="0">
+<TR>
+<TD ALIGN="CENTER"><A HREF="addition.htm"><IMG SRC="./gifs/larrow.gif" ALT="Go to previous page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+
+<TD ALIGN="CENTER"><A HREF="portal.htm"><IMG SRC="./gifs/rarrow.gif" ALT="Go to next page" BORDER="0" HEIGHT="30" WIDTH="30"></A></TD>
+    
+</TR>
+</TABLE>
+</TD>
+<TD ALIGN="CENTER" WIDTH="34%">
+<A HREF="./html/cpyr.htm"><IMG SRC="./gifs/oracle.gif" ALT="Oracle" BORDER="0"><BR>
+<FONT SIZE="-2">Copyright &copy 2003 Oracle Corporation.</FONT></A>
+<BR>
+<FONT SIZE="-2">All Rights Reserved.</FONT>
+</TD>
+<TD VALIGN="BOTTOM" ALIGN="RIGHT" WIDTH="33%"> 
+<TABLE CELLSPACING="0" CELLPADDING="0" WIDTH="144">
+<TR>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"></TD>
+
+
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="../../library.htm"><IMG SRC="./gifs/prodicon.gif" ALT="Go To Documentation Library" BORDER="0" HEIGHT="30" WIDTH="30"><BR>
+<FONT SIZE="-2">Library</FONT></A></TD>
+
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="toc.htm"><IMG SRC="./gifs/conticon.gif" ALT="Go To Table Of Contents" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Contents</FONT></A></TD>
+<TD ALIGN="CENTER" VALIGN="TOP" WIDTH="25%"><A HREF="bookix.htm"><IMG SRC="./gifs/indxicon.gif" ALT="Go To Index" BORDER="0" HEIGHT="30"
+WIDTH="30"><BR>
+<FONT SIZE="-2">Index</FONT></A></TD>
+
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+  
+</DIV>
+
+</BODY>
+</HTML>
+

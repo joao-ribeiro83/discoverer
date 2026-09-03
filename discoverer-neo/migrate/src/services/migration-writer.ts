@@ -15,11 +15,20 @@
  *    is the post-mortem and must outlive the failure it records.
  */
 
-import { sql } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import type { PgInsertValue, PgTable } from 'drizzle-orm/pg-core';
 
 import type { TargetDatabase } from '../db/client.js';
-import { MIGRATION_LOG_DDL, migrationLog, TARGET_TABLES } from '../db/schema.js';
+import {
+  businessAreas,
+  folders,
+  items,
+  maps,
+  MIGRATION_LOG_DDL,
+  migrationLog,
+  TARGET_TABLES,
+  users,
+} from '../db/schema.js';
 import type { TargetTable } from '../db/schema.js';
 
 export type MigrationLogLevel = 'INFO' | 'WARN' | 'ERROR';
@@ -42,8 +51,43 @@ export interface MigrationWriter {
   insert(table: TargetTable, rows: Record<string, unknown>[]): Promise<void>;
   /** Count rows currently in a target table. */
   count(table: TargetTable): Promise<number>;
+  /**
+   * Emails already in the target `users` table, lower-cased.
+   *
+   * Read before anything is written. The migration's own service account is
+   * the marker for "this database has already been migrated", and every other
+   * address here is one a synthesized email must not collide with — the users
+   * insert is the first statement of the run, so a collision there costs the
+   * whole migration.
+   */
+  existingUserEmails(): Promise<Set<string>>;
+  /**
+   * The target rows a maps-only re-import needs to resolve its references —
+   * see `map-reimport.ts`. Read as one snapshot rather than queried per
+   * workbook: a real EUL has thousands of items and hundreds of workbooks, and
+   * resolving column by column would be thousands of round trips.
+   */
+  snapshotForMaps(): Promise<TargetSnapshot>;
+  /**
+   * Delete every map in `businessAreaId`, returning how many went.
+   *
+   * Cascades to the map's items, conditions, parameters, calculated fields,
+   * shares, schedules and export jobs (all `ON DELETE CASCADE`). Only ever
+   * called against the migration's own host business area.
+   */
+  deleteMapsInBusinessArea(businessAreaId: string): Promise<number>;
   /** Run `fn` inside a transaction; data writes roll back together on throw. */
   transaction<T>(fn: (writer: MigrationWriter) => Promise<T>): Promise<T>;
+}
+
+/** Target state a maps-only re-import resolves against. */
+export interface TargetSnapshot {
+  users: Array<{ id: string; email: string }>;
+  businessAreas: Array<{ id: string; name: string }>;
+  /** Items, each with the name of the folder holding it. */
+  items: Array<{ id: string; name: string; folderName: string }>;
+  /** How many maps each business area currently holds, keyed by its id. */
+  mapCountByBusinessArea: Record<string, number>;
 }
 
 // Postgres caps a statement at 65535 bind parameters. Target rows have well
@@ -99,6 +143,49 @@ class DrizzleMigrationWriter implements MigrationWriter {
     const target: PgTable = TARGET_TABLES[table];
     const result = await this.exec.select({ c: sql<number>`count(*)::int` }).from(target);
     return result[0]?.c ?? 0;
+  }
+
+  async existingUserEmails(): Promise<Set<string>> {
+    const rows = await this.exec.select({ email: users.email }).from(users);
+    return new Set(rows.map((row) => row.email.toLowerCase()));
+  }
+
+  async snapshotForMaps(): Promise<TargetSnapshot> {
+    const userRows = await this.exec.select({ id: users.id, email: users.email }).from(users);
+    const baRows = await this.exec
+      .select({ id: businessAreas.id, name: businessAreas.name })
+      .from(businessAreas);
+    // The folder name rides along on each item: `map_items` resolves by
+    // (folder name, item name), and joining here is one query instead of a
+    // second pass to stitch folders onto items.
+    const itemRows = await this.exec
+      .select({ id: items.id, name: items.name, folderName: folders.name })
+      .from(items)
+      .innerJoin(folders, eq(items.folderId, folders.id));
+    const mapCounts = await this.exec
+      .select({ businessAreaId: maps.businessAreaId, count: sql<number>`count(*)::int` })
+      .from(maps)
+      .groupBy(maps.businessAreaId);
+
+    const mapCountByBusinessArea: Record<string, number> = {};
+    for (const row of mapCounts) mapCountByBusinessArea[row.businessAreaId] = row.count;
+
+    return {
+      users: userRows,
+      businessAreas: baRows,
+      items: itemRows,
+      mapCountByBusinessArea,
+    };
+  }
+
+  async deleteMapsInBusinessArea(businessAreaId: string): Promise<number> {
+    const doomed = await this.exec
+      .select({ id: maps.id })
+      .from(maps)
+      .where(eq(maps.businessAreaId, businessAreaId));
+    if (doomed.length === 0) return 0;
+    await this.exec.delete(maps).where(eq(maps.businessAreaId, businessAreaId));
+    return doomed.length;
   }
 
   async transaction<T>(fn: (writer: MigrationWriter) => Promise<T>): Promise<T> {

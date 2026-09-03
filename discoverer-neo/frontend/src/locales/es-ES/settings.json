@@ -16,5 +16,15 @@
       "high-contrast": "Alto contraste"
     }
   },
+  "palette": {
+    "title": "Paleta de colores",
+    "description": "Elija los colores de acento utilizados en toda la interfaz.",
+    "unavailableHighContrast": "No disponible mientras esté seleccionado Alto contraste; ese modo usa colores fijos propios por accesibilidad.",
+    "label": "Paleta",
+    "options": {
+      "default": "Clásica",
+      "navy": "Azul marino"
+    }
+  },
   "saved": "Preferencias guardadas"
 }
