@@ -181,7 +181,21 @@ export async function analyzeSource(
 // Jobs
 // ---------------------------------------------------------------------------
 
-export type MigrationJobStatus = 'RUNNING' | 'COMPLETED' | 'FAILED';
+/**
+ * `COMPLETED_WITH_BLOCKERS` (D-070) is the state this service had no word for:
+ * the run finished and committed, and something it produced does not hold. It
+ * is not FAILED — the rows are there, and rolling them back would destroy the
+ * evidence needed to debug — and it must not be COMPLETED, because a caller
+ * that reads COMPLETED as "ready" is the exact failure the readiness scorer
+ * made when it returned 75/ready-with-warnings over an estate where nothing
+ * ran. `dn-migrate verify` reports the same status against a target it did not
+ * migrate itself.
+ */
+export type MigrationJobStatus =
+  | 'RUNNING'
+  | 'COMPLETED'
+  | 'COMPLETED_WITH_BLOCKERS'
+  | 'FAILED';
 
 export interface MigrationLogLine {
   level: 'INFO' | 'WARN' | 'ERROR';
@@ -401,7 +415,10 @@ export function startMigration(
 
       job.result = result;
       job.detectedVersion = result.version.version;
-      job.status = 'COMPLETED';
+      // The post-insert count reconciliation was already computed and, until
+      // now, thrown away: a run whose own numbers did not add up still
+      // reported COMPLETED.
+      job.status = result.validation && !result.validation.valid ? 'COMPLETED_WITH_BLOCKERS' : 'COMPLETED';
       job.progress = 100;
       job.currentPhase = 'done';
     } catch (err) {
@@ -514,7 +531,23 @@ export function startMapReimport(
       });
 
       job.mapsResult = result;
-      job.status = 'COMPLETED';
+      // Same reasoning as the full run: a live re-import that wrote fewer rows
+      // than it planned has a problem, and the counts to prove it were already
+      // being computed and discarded.
+      const shortfall = result.dryRun
+        ? []
+        : (Object.keys(result.planned) as Array<keyof typeof result.planned>).filter(
+            (table) => result.written[table] !== result.planned[table],
+          );
+      job.status = shortfall.length > 0 ? 'COMPLETED_WITH_BLOCKERS' : 'COMPLETED';
+      if (shortfall.length > 0) {
+        append({
+          level: 'WARN',
+          phase: 'verify',
+          message: `Wrote fewer rows than planned for: ${shortfall.join(', ')}. Run \`dn-migrate verify\` against the target.`,
+          at: new Date().toISOString(),
+        });
+      }
       job.progress = 100;
       job.currentPhase = 'done';
     } catch (err) {
