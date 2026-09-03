@@ -129,8 +129,9 @@ describe('connection helpers', () => {
     // reference to it. The pool loses that slot for the life of the process.
     let closed = false;
     const late = Promise.resolve({
-      close: async () => {
+      close: () => {
         closed = true;
+        return Promise.resolve();
       },
     } as never);
 
