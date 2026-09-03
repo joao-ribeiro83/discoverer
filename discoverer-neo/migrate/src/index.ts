@@ -170,10 +170,13 @@ export {
   checkSqlGeneration,
   checkFormulaCompileRate,
   checkReferentialClosure,
+  checkReconciliation,
+  EXPECTED_LOSS_ALLOWANCES,
   summarise,
   formatVerifyReport,
 } from './services/migration-verify.js';
 export type {
+  ExpectedLossAllowance,
   VerifyDb,
   SeamId,
   SeamStatus,
