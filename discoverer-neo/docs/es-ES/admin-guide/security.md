@@ -202,6 +202,64 @@ Realice el seguimiento de los cambios en las directivas de seguridad:
 2. Filtre por tipo de entidad: SECURITY_POLICY
 3. Consulte quién creó/modificó/eliminó las directivas
 
+## Redacción de credenciales en el registro de auditoría
+
+Toda petición que modifica datos (`POST`, `PUT`, `PATCH`, `DELETE`) guarda sus
+parámetros, su cadena de consulta, su cuerpo de petición y su cuerpo de
+respuesta en `audit_log.details`. Algunos de esos cuerpos llevan credenciales en
+texto plano: la contraseña de Oracle de una fuente de datos llega a la API en
+texto plano y solo se cifra en el servidor, y un cambio de contraseña lleva la
+contraseña nueva.
+
+### La regla
+
+Antes de guardar nada, toda clave cuyo nombre **contenga** una de estas
+subcadenas, sin distinguir mayúsculas de minúsculas, a cualquier profundidad,
+ve su valor sustituido por `[REDACTED]`:
+
+| Subcadena | Captura, entre otros |
+|-----------|----------------------|
+| `password` | `password`, `passwordEnc`, `newPassword`, `currentPassword`, `passwordHash` |
+| `secret` | `secret`, `clientSecret`, `client_secret` |
+| `token` | `token`, `apiToken`, `refreshToken`, `accessToken` |
+| `credential` | `credential`, `dbCredential`, `credentials` |
+| `apikey` | `apiKey`, `api_key` |
+| `authorization` | `authorization` |
+
+La regla es `isSensitiveKey` en `backend/src/plugins/audit.ts`. Los arrays y los
+objetos anidados se recorren hasta una profundidad de seis.
+
+### Por qué subcadena y no una lista exacta
+
+Antes era una lista exacta de nombres de clave, y una lista exacta es la lista
+de los nombres que a alguien se le ocurrieron. Faltaban dos — `passwordEnc` y
+`newPassword` — y **174 contraseñas de fuentes de datos Oracle y 5 contraseñas
+de usuarios se escribieron en `audit_log` en texto plano**. Sin cifrar; la
+cadena tal cual.
+
+Una regla por subcadena captura todas las variantes con prefijo, con sufijo y en
+camelCase de la misma palabra, sin que nadie tenga que enumerarlas. El texto
+plano existente se purgó con la migración `0010_purge_audit_log_credentials`,
+que redacta los valores en su sitio en lugar de borrar filas: un rastro de
+auditoría cuyas filas desaparecen es un rastro de auditoría peor.
+
+### Lo que la redacción no cubre
+
+- **Valores, no claves.** Una contraseña pegada en un campo de *descripción* se
+  guarda. El redactor compara por el nombre del campo; no puede reconocer un
+  secreto con solo mirarlo.
+- **Texto de error.** Un mensaje de fallo de Oracle o de Postgres puede citar la
+  palabra «password» («password authentication failed»). Son mensajes, no
+  credenciales, y se dejan intactos.
+
+### Si añade un campo que lleva un secreto
+
+Póngale un nombre que contenga una de las seis subcadenas. `apiToken` está
+cubierto; `apiPass` no. Añadir un nombre que no coincida es añadir una fuga, y
+el hook de auditoría no tiene forma de avisarle.
+
+`backend/src/__tests__/audit-redaction.test.ts` fija la regla.
+
 ## Prácticas recomendadas
 
 1. **Empiece de forma sencilla** — Comience con el filtrado por una sola columna (región, departamento)

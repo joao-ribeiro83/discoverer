@@ -4,7 +4,9 @@
 
 ## Purpose
 
-Close the IDOR that lets any of the 18 non-admin accounts read the entire metadata layer.
+Close the IDOR that lets any non-admin account read the entire metadata layer — 18 of them,
+per `docs/master-plan/research/baseline-counts.md` (confirmed by measurement; do not
+re-quote this as a literal in a test or acceptance criterion — assert against the baseline).
 
 > **`GET` by id on folders, items, joins and hierarchies attaches only `authenticate`** — no
 > entity scoping. Any authenticated user can read the whole metadata layer, **including

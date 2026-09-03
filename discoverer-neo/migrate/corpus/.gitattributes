@@ -1,0 +1,5 @@
+# The corpus is latin1 (cp1252) and its sha256 is recorded in
+# formula-corpus.meta.json and asserted by formula-corpus.test.ts. Any EOL or
+# encoding conversion on checkout changes the bytes and fails that test on a
+# fresh clone, so git must leave this file exactly as committed.
+formula-corpus.tsv -text

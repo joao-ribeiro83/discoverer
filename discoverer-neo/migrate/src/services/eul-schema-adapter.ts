@@ -121,13 +121,25 @@ const EXP_COLUMNS: ColumnSpec[] = [
 /**
  * `KEY_CONS` — joins, folder to folder.
  *
- * `KEY_ID` (PK), the join's aggregation/outer-join flags, and the item-level
- * key columns are NOT confirmed offline — they are read via `probeColumns()`
- * so a missing column degrades to null instead of failing the whole read.
+ * **Orientation: `KEY_OBJ_ID` is the DETAIL, `FK_OBJ_ID_REMOTE` is the MASTER.**
+ * This was inverted here until the Phase 0.3 probe measured it on the live
+ * EUL4 — see `docs/master-plan/research/eul-probe-results.md` Q1. The one join
+ * in that estate where a side's key is exactly unique (`M M111 -> M M111 1`:
+ * `M_M111` 1 830 rows / 1 830 distinct keys) has that unique side on
+ * `FK_OBJ_ID_REMOTE`, and `KEY_NAME` reads `master -> detail` with
+ * `KEY_OBJ_ID` on the right of the arrow. Getting this backwards does not
+ * error — it pushes the wrong side into the fan-trap inline view and returns
+ * correct-looking wrong numbers, so it is covered by a regression test.
+ *
+ * `KEY_ID` (PK) and `KEY_NAME` are read via `probeColumns()` so a missing
+ * column degrades to null instead of failing the whole read. `KEY_TYPE` is
+ * probed too, but on a live EUL4 its domain is `FK`/`UK` — a constraint kind,
+ * **not** a join type; the outer-join booleans `FK_MSTR_NO_DETAIL` /
+ * `FK_DTL_NO_MASTER` are the real source, and land in Phase 3.2.
  */
 const JOIN_COLUMNS: ColumnSpec[] = [
-  { name: 'KEY_OBJ_ID', type: 'number', required: true, mapsTo: 'masterFolderId' },
-  { name: 'FK_OBJ_ID_REMOTE', type: 'number', required: false, mapsTo: 'detailFolderId', defaultValue: null },
+  { name: 'KEY_OBJ_ID', type: 'number', required: true, mapsTo: 'detailFolderId' },
+  { name: 'FK_OBJ_ID_REMOTE', type: 'number', required: false, mapsTo: 'masterFolderId', defaultValue: null },
   { name: 'KEY_DESCRIPTION', type: 'string', required: false, mapsTo: 'description', defaultValue: null },
 ];
 

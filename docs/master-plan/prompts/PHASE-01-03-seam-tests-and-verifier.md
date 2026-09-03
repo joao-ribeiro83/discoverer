@@ -185,7 +185,14 @@ dumps; `d4dumps/` is 552 untracked files that **Phase 0.1a gitignores**; and
 v1.0 also created the fixture in Phase **4.1** — three phases *after* this one consumed it.
 
 **Phase 0.5 now builds an anonymised corpus (D-114) and commits it.** This stage **consumes** it.
-If Phase 0.5 has not run, stop: the CI gate you are asked to build has nothing to gate on.
+
+**Phase 0.5 has run.** The corpus is at
+`discoverer-neo/migrate/corpus/formula-corpus.tsv` — TSV, `latin1`, one header line, columns
+`occurrences`, `io_formula`, `display_formula`. **Denominator: 37 971 aligned pairs**, stored
+as 22 748 distinct rows carrying an `occurrences` count. It is **not sampled** — the column
+sums back to 37 971. Counts in `formula-corpus.meta.json`; rebuild and rationale in
+`docs/migration/formula-corpus.md`.
+
 
 ### 2. `scoreReadiness` cannot be fixed as D-071 describes (R-23 / D-03)
 

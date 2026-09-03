@@ -28,3 +28,14 @@ d4dumps/
 
 # Decrypted data-source password, written transiently by the probe scripts.
 *.pw
+
+# The de-anonymisation key for the formula corpus (Phase 0.5). The anonymised
+# corpus itself IS committed; this file maps it back to real customer
+# identifiers, so it never leaves the machine that built it. Rebuild with
+# `npm run build-corpus -w @discoverer-neo/migrate`.
+discoverer-neo/migrate/corpus/*.private.json
+
+# Local Postgres/Redis/file backups. Customer data — never commit. (This rule
+# existed before the repository root was deleted; the tree was clean at the
+# start of that session, so it is restored here rather than added.)
+discoverer-neo/backups/

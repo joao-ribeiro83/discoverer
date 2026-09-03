@@ -105,11 +105,14 @@ report is ~3 MB.
 cd discoverer-neo && npm test --workspace migrate
 ```
 
-Plus a count: every one of the 56 codes appears in the fixture at least once.
+Plus a count: every one of the **55** codes the aligned corpus attests appears at least once.
+`[1,64]` (`GREATEST`) is the 56th and is **not** in the aligned pairs — see the correction below.
 
 ## Acceptance criteria
 
-- [ ] The aligned fixture is committed and every one of the 56 codes is represented
+- [ ] The aligned corpus (Phase 0.5's, not a new one) is used, and every one of the **55**
+      codes it attests is represented. `[1,64]` `GREATEST` is marked `[INFER]` with its
+      absence from the corpus stated
 - [ ] **Every code has an attested arity and fixity, or is explicitly marked refuse-only**
 - [ ] **No code is guessed** — this repository has a documented history of fabricated names
       reaching production code
@@ -182,6 +185,29 @@ deliberate — it keeps this stage's character-encoding question (`PR?MIO`) answ
 **This stage consumes the committed corpus** and does the fitting: derive name, arity and fixity
 for the 56 used codes, classify the unrendered `IOFormula` entries, settle the encoding, and
 write the implementation spec (D-004).
+
+**Phase 0.5 has run.** The corpus is at
+`discoverer-neo/migrate/corpus/formula-corpus.tsv` — TSV, `latin1`, one header line, columns
+`occurrences`, `io_formula`, `display_formula`. **37 971 aligned pairs** stored as 22 748
+distinct rows carrying an `occurrences` count; **not sampled** — the column sums back to
+37 971. Counts in `formula-corpus.meta.json`; rebuild and rationale in
+`docs/migration/formula-corpus.md`.
+
+Three things 0.5 settled that change this stage's work:
+
+1. **The encoding question is already answered — verify it, do not re-derive it.** The dumps
+   are **cp1252, single-byte** (`NÃO`, `OCORRÊNCIA`), and the corpus is stored `latin1`
+   so one byte is one character. 827 rows carry a non-ASCII byte. `PR?MIO` is `Prémio`, and
+   it occurs as a **string literal**, not only as an item name.
+2. **The corpus attests 55 of the 56 codes, not 56.** `[1,64]` (`GREATEST`) appears only in an
+   `IOFormula` that has no `DisplayFormula`, so there is nothing to fit its rendering against.
+   Take it from `EUL_FUNCTION_NAMES` and mark it `[INFER]`, or restate the criterion as 55 —
+   but do **not** guess its fixity from the corpus, because the corpus does not contain it.
+3. **Identifiers are synthetic; literals mostly are not.** `[5,2]` numbers, `[5,4]` dates and
+   Oracle format masks are verbatim, so the `[5,4]` rendering question
+   (`[5,4,"20011201000000"]` -> `TO_DATE('01.12.01')`) is answerable directly from the corpus.
+   Customer *text* literals were anonymised byte-class- and length-preserving, so their shape
+   is intact and their words are gone.
 
 ### Rename the parser while you are here (A-10 / informational)
 

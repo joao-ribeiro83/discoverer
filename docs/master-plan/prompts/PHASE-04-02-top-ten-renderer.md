@@ -115,7 +115,11 @@ Then the corpus comparison, reporting the exact-match percentage.
 
 ## Acceptance criteria
 
-- [ ] **≥ 93 % of the aligned corpus renders exactly equal to `DisplayFormula`**
+- [ ] **≥ 93 % of the aligned corpus renders exactly equal to `DisplayFormula`** — the
+      corpus is `discoverer-neo/migrate/corpus/formula-corpus.tsv`, **denominator 37 971
+      aligned pairs**, not sampled. **State which denominator the percentage uses**: weight by
+      the `occurrences` column for "% of the estate", or count the 22 748 rows for "% of
+      distinct formulas". They are different numbers
 - [ ] Every infix node is fully parenthesised
 - [ ] Unimplemented codes quarantine with a reason; none renders best-effort
 - [ ] Output emits into the existing AST and shares the existing allowlist

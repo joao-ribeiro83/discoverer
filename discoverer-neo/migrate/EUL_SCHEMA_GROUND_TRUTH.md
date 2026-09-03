@@ -138,11 +138,48 @@ The folder→business-area link is **`BA_OBJ_LINKS`** (a link table), not a
 | `EXP_DATA_TYPE` | Data type | `EXP_DATA_TYPE` ✅ |
 | `IT_FORMAT_MASK` | Format mask | `EXP_FORMAT_MASK` ❌ |
 | `IT_HEADING` | Column heading | *(none)* ❌ |
+| `IT_FUN_ID` | **Default aggregate** → `FUNCTIONS.FUN_ID` **[LIVE EUL4]** | *(none)* ❌ |
+| `JP_KEY_ID` | **Join predicate → `KEY_CONS.KEY_ID`** (only on `EXP_TYPE='JP'`) **[LIVE EUL4]** | *(none)* ❌ |
+| `EXP_FORMULA1` | VARCHAR2(250) — the token tree for `CI` and `JP` rows **[LIVE EUL4]** | *(none)* ❌ |
+| `EXP_SEQUENCE` | Ordinal; `1` on every `JP` row **[LIVE EUL4]** | *(none)* ❌ |
 
 **The `EXP_TYPE` semantics are inverted in the code.** Oracle: `CO` is the
 database (base) item mapped to a real column; `CI` is a *created* item
 (calculation). `readItems` currently selects `CI`/`CU` — i.e. it reads
 calculations and skips every real column-backed item.
+
+`EXP_TYPE` holds exactly three values on the live EUL4: `CO` 6 967, `CI` 2 830,
+`JP` 10 (one join predicate per join).
+
+**Full live column list (44), read from `ALL_TAB_COLUMNS` on the live EUL4**
+(Phase 0.3 probe — see `docs/master-plan/research/eul-probe-results.md`):
+
+```
+EXP_ID, EXP_TYPE, EXP_NAME, EXP_DEVELOPER_KEY, EXP_DESCRIPTION, EXP_FORMULA1,
+EXP_DATA_TYPE, EXP_SEQUENCE, IT_DOM_ID, IT_OBJ_ID, IT_DOC_ID, IT_FORMAT_MASK,
+IT_MAX_DATA_WIDTH, IT_MAX_DISP_WIDTH, IT_ALIGNMENT, IT_WORD_WRAP,
+IT_DISP_NULL_VAL, IT_FUN_ID, IT_HEADING, IT_HIDDEN, IT_PLACEMENT,
+IT_USER_DEF_FMT, IT_CASE_STORAGE, IT_CASE_DISPLAY, IT_EXT_COLUMN, CI_IT_ID,
+CI_RUNTIME_ITEM, PAR_MULTIPLE_VALS, CO_NULLABLE, P_CASE_SENSITIVE, JP_KEY_ID,
+FIL_OBJ_ID, FIL_DOC_ID, FIL_RUNTIME_FILTER, FIL_APP_TYPE, FIL_EXT_FILTER,
+EXP_USER_PROP2, EXP_USER_PROP1, EXP_ELEMENT_STATE, EXP_CREATED_BY,
+EXP_CREATED_DATE, EXP_UPDATED_BY, EXP_UPDATED_DATE, NOTM
+```
+
+#### The default aggregate lives in `IT_FUN_ID` **[LIVE EUL4]**
+
+It is a foreign key to `EUL4_FUNCTIONS`, not a code. Live distribution over
+`CO` + `CI` rows:
+
+| `IT_FUN_ID` | `FUN_NAME` | `FUN_FUNCTION_TYPE` | rows |
+| ---: | --- | ---: | ---: |
+| 110 | `Detail` | 7 | 8 152 |
+| 1 | `SUM` | 4 | 1 292 |
+| null | — | — | 353 |
+
+`Detail` is the marker for *no aggregation*, not an aggregate function.
+`IT_PLACEMENT` was ruled out as the carrier — it groups `3`/`1`/`2`, a display
+placement code.
 
 ### 3.3 Hierarchies — a node tree, not numbered levels **[SQL — `Lineage.sql`]**
 
@@ -158,18 +195,95 @@ recursively (the root is the node with no parent segment — see
 The `HierarchyLevel.levelNumber` field has no source column; depth must be
 derived by walking the tree.
 
-### 3.4 Joins — `KEY_CONS` **[GUIDE; columns need live confirmation]**
+**`HIERARCHIES` full live column list (17) — and there is no business-area
+column** **[LIVE EUL4]**:
 
-| Real column | Meaning |
-| --- | --- |
-| `KEY_OBJ_ID` | → the parent/detail folder `OBJS.OBJ_ID` |
-| `FK_OBJ_ID_REMOTE` | → the remote/master folder `OBJS.OBJ_ID` |
-| `KEY_DESCRIPTION` | Join display text |
-| `KEY_ID` | PK **[?]** |
+```
+HI_ID, HI_TYPE, HI_NAME, HI_DEVELOPER_KEY, HI_DESCRIPTION, HI_SYS_GENERATED,
+HI_EXT_HIERARCHY, DBH_DEFAULT, IBH_DBH_ID, HI_USER_PROP2, HI_USER_PROP1,
+HI_ELEMENT_STATE, HI_CREATED_BY, HI_CREATED_DATE, HI_UPDATED_BY,
+HI_UPDATED_DATE, NOTM
+```
 
-Related: `IHS_FK_LINKS` and `OBJ_JOIN_USGS` carry join usage/keys. The code's
-`JOI_ID`/`JOI_NAME`/`JOI_TYPE`/`EXP_ID_1`/`EXP_ID_2`/`JOI_OP` model is entirely
-invented — note joins bind **folder to folder**, not item to item.
+**`HI_SYS_GENERATED` separates author-made from generated hierarchies**, and on
+the live EUL4 the split is perfectly clean:
+
+| `HI_TYPE` | `HI_SYS_GENERATED` | rows |
+| --- | ---: | ---: |
+| `DBH` (date) | 0 | 6 |
+| `IBH` (item-based) | 1 | **502** |
+
+Every `IBH` row is system-generated — an instantiation of a `DBH` template,
+linked back through `IBH_DBH_ID`. **Not one hand-authored item hierarchy exists
+on this estate.** So the real hierarchy scope is 6 author-made date hierarchies
+plus one generated-instance rule, not 508 hand-modelled trees.
+
+### 3.4 Joins — `KEY_CONS` **[LIVE EUL4 — every column confirmed]**
+
+Full live column list (22), from `ALL_TAB_COLUMNS` on the live EUL4:
+
+| Real column | Type | Meaning |
+| --- | --- | --- |
+| `KEY_ID` | NUMBER (not null) | PK |
+| `KEY_TYPE` | VARCHAR2(10) (not null) | **`FK` / `UK` — the constraint kind, NOT a join type.** `FK` on all ten live rows |
+| `KEY_NAME` | VARCHAR2(100) (not null) | `A -> B`, always **`master -> detail`** |
+| `KEY_DEVELOPER_KEY` | VARCHAR2(100) (not null) | Developer key |
+| `KEY_DESCRIPTION` | VARCHAR2(240) | Join display text |
+| `KEY_EXT_KEY` | VARCHAR2(64) | External key name |
+| **`KEY_OBJ_ID`** | NUMBER (not null) | → the **DETAIL** folder `OBJS.OBJ_ID` |
+| `UK_PRIMARY` | NUMBER | null on every live row |
+| `FK_KEY_ID_REMOTE` | NUMBER | → a remote `KEY_CONS.KEY_ID`; null on every live row |
+| **`FK_OBJ_ID_REMOTE`** | NUMBER | → the **MASTER** folder `OBJS.OBJ_ID` |
+| **`FK_ONE_TO_ONE`** | NUMBER | DTD `OneToOne` — fan-trap detection only |
+| **`FK_MSTR_NO_DETAIL`** | NUMBER | DTD `AllowMasterNoDetail` — `master LEFT OUTER JOIN detail` |
+| **`FK_DTL_NO_MASTER`** | NUMBER | DTD `AllowDetailNoMaster` — the rare right-outer |
+| **`FK_MANDATORY`** | NUMBER | DTD `Mandatory` — referential-integrity assertion; unlocks join trimming and summary eligibility |
+| `KEY_USER_PROP1`, `KEY_USER_PROP2` | VARCHAR2(100) | User properties |
+| `KEY_ELEMENT_STATE` | NUMBER (not null) | Element state |
+| `KEY_CREATED_BY`, `KEY_CREATED_DATE`, `KEY_UPDATED_BY`, `KEY_UPDATED_DATE` | — | Audit |
+| `NOTM` | NUMBER | Present on every EUL4 table |
+
+**The four cardinality flags are real columns and are populated.** They were
+never read from this estate before Phase 0.3; `legacy-analysis.md:112` recorded
+them as UNKNOWN and attested only in the EEX export DTD. They are here. Live
+values across the ten joins: `FK_ONE_TO_ONE = 0` everywhere,
+`FK_MSTR_NO_DETAIL = 1` on `109828` only, `FK_DTL_NO_MASTER = 0` everywhere,
+`FK_MANDATORY = 1` on nine of ten (`109818` is `0`).
+
+**Orientation — measured, not inferred.** `KEY_OBJ_ID` is the **detail**;
+`FK_OBJ_ID_REMOTE` is the **master**. The proof is `108451
+M M111 -> M M111 1`: `M_M111` (on `FK_OBJ_ID_REMOTE`) returns 1 830 rows and
+exactly 1 830 distinct join-key tuples — the only provably unique key on either
+side of any join in this estate — while `M_M111_1` (on `KEY_OBJ_ID`) has 216
+rows over 94 keys. Full table of counts in
+`docs/master-plan/research/eul-probe-results.md` Q1.
+
+**Do not use `KEY_TYPE` as the join type.** Its domain is `FK`/`UK`. Derive the
+join type from `FK_MSTR_NO_DETAIL` and `FK_DTL_NO_MASTER` instead.
+
+**The join predicate is one `EXPRESSIONS` row, linked by `JP_KEY_ID`.**
+`EXP_TYPE = 'JP'`, exactly one row per join, and a multi-column predicate is a
+token tree inside that single row's `EXP_FORMULA1` — `[1,98]` (`AND`) wrapping
+n `[1,81]` (`=`) nodes, each taking two `[6,EXP_ID]` item references. Live
+widths: 5 single-column, 4 three-column, 1 four-column; **every operator is
+`=`**. So `join_predicates` must be filled by *parsing the formula*, not by
+reading rows.
+
+Related: `IHS_FK_LINKS` (`IFL_ID, IFL_IHS_ID, IFL_KEY_ID, IFL_ELEMENT_STATE`
++ audit) and `OBJ_JOIN_USGS` (`OJU_ID, OJU_OBJ_ID, OJU_JOIN_MODIFIED,
+OJU_KEY_ID, OJU_SUMO_ID, OJU_ELEMENT_STATE` + audit) are link tables carrying
+**no** cardinality or outer-join flag — and both hold **0 rows** on the live
+EUL4. The code's `JOI_ID`/`JOI_NAME`/`JOI_TYPE`/`EXP_ID_1`/`EXP_ID_2`/`JOI_OP`
+model is entirely invented — note joins bind **folder to folder**, not item to
+item.
+
+**A caution for anyone measuring cardinality again:** on this estate the
+folders are Oracle **VIEWS**, not tables, and `ALL_TABLES.NUM_ROWS` is null
+(never analysed). Every `COUNT(*)` re-executes the view — the ten joins took
+hours, and one side reached 6 660 408 rows. Budget accordingly, and note that
+**nine of the ten joins have duplicate keys on both sides**: orientation in
+this EUL is an author's declaration, not something the data can be counted back
+out of.
 
 ### 3.5 Security — `ACCESS_PRIVS` + `EUL_USERS` **[SQL — `batchusr.sql`]**
 
@@ -226,6 +340,28 @@ inside `DOC_DOCUMENT`. Parse the blob or migrate nothing but names.
 
 Run `backend/src/scripts/probe-eul-workbooks.ts` against a new source to check
 all of the above before migrating it.
+
+### 3.7 `QPP_STATS` — the query performance predictor's history **[LIVE EUL4]**
+
+47 columns; **7 316 rows** on the live EUL4. Nothing migrates it today, but it
+is the only independent record in this estate of what a real Discoverer query
+returned — which makes it the natural oracle for validating the fan-trap guard.
+
+| Column | Type | Meaning |
+| --- | --- | --- |
+| `QS_ID` | NUMBER (not null) | PK |
+| **`QS_NUM_ROWS`** | NUMBER | **rows the query returned** |
+| `QS_COST` | NUMBER | optimiser cost |
+| `QS_ACT_CPU_TIME` | NUMBER | measured CPU time |
+| `QS_ACT_ELAP_TIME` | NUMBER (not null) | measured elapsed time |
+| `QS_EST_ELAP_TIME` | NUMBER (not null) | predicted elapsed time |
+| `QS_OBJECT_USE_KEY` | VARCHAR2 (not null) | folder/item/join fingerprint of the query |
+| `QS_SUMMARY_FIT` | NUMBER | whether a summary folder satisfied it |
+| `QS_STATE` | NUMBER | row state |
+| `QS_SDO_ID` | NUMBER | summary object used |
+| `QS_DOC_OWNER`, `QS_DOC_NAME`, `QS_DOC_DETAILS` | VARCHAR2 | the workbook that ran it |
+| `QS_DBMP0..7`, `QS_MBMP0..7`, `QS_JBMP0..7`, `QS_FBMP0..7` | RAW ×32 | four 8-slot bitmap families — folder / measure / join / filter participation. **Not decoded.** |
+| `QS_CREATED_BY`, `QS_CREATED_DATE` | — | audit |
 
 ---
 

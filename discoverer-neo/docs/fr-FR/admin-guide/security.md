@@ -202,6 +202,65 @@ Suivez les modifications des stratégies de sécurité :
 2. Filtrez par type d'entité : SECURITY_POLICY
 3. Consultez qui a créé/modifié/supprimé des stratégies
 
+## Expurgation des identifiants dans le journal d'audit
+
+Toute requête qui modifie des données (`POST`, `PUT`, `PATCH`, `DELETE`) voit
+ses paramètres, sa chaîne de requête, son corps de requête et son corps de
+réponse enregistrés dans `audit_log.details`. Certains de ces corps
+transportent des identifiants en clair — le mot de passe Oracle d'une source de
+données arrive à l'API en clair et n'est chiffré que côté serveur, et un
+changement de mot de passe transporte le nouveau mot de passe.
+
+### La règle
+
+Avant tout enregistrement, toute clé dont le nom **contient** l'une de ces
+sous-chaînes, sans distinction de casse, à n'importe quelle profondeur, voit sa
+valeur remplacée par `[REDACTED]` :
+
+| Sous-chaîne | Attrape, entre autres |
+|-------------|-----------------------|
+| `password` | `password`, `passwordEnc`, `newPassword`, `currentPassword`, `passwordHash` |
+| `secret` | `secret`, `clientSecret`, `client_secret` |
+| `token` | `token`, `apiToken`, `refreshToken`, `accessToken` |
+| `credential` | `credential`, `dbCredential`, `credentials` |
+| `apikey` | `apiKey`, `api_key` |
+| `authorization` | `authorization` |
+
+La règle est `isSensitiveKey` dans `backend/src/plugins/audit.ts`. Les tableaux
+et les objets imbriqués sont parcourus jusqu'à une profondeur de six.
+
+### Pourquoi une sous-chaîne et non une liste exacte
+
+C'était auparavant une liste exacte de noms de clés, et une liste exacte est la
+liste des noms auxquels quelqu'un a pensé. Il en manquait deux — `passwordEnc`
+et `newPassword` — et **174 mots de passe de sources de données Oracle et 5
+mots de passe d'utilisateurs ont été écrits en clair dans `audit_log`**. Non
+chiffrés ; la chaîne telle quelle.
+
+Une règle par sous-chaîne attrape toutes les variantes préfixées, suffixées et
+en camelCase du même mot, sans que personne ait à les énumérer. Le texte en
+clair existant a été purgé par la migration
+`0010_purge_audit_log_credentials`, qui expurge les valeurs sur place plutôt
+que de supprimer des lignes — une piste d'audit dont les lignes disparaissent
+est une piste d'audit moins bonne.
+
+### Ce que l'expurgation ne couvre pas
+
+- **Les valeurs, pas les clés.** Un mot de passe collé dans un champ
+  *description* est enregistré. L'expurgateur compare sur le nom du champ ; il
+  ne peut pas reconnaître un secret en le regardant.
+- **Les textes d'erreur.** Un message d'échec d'Oracle ou de Postgres peut
+  citer le mot « password » (« password authentication failed »). Ce sont des
+  messages, pas des identifiants, et ils restent intacts.
+
+### Si vous ajoutez un champ qui transporte un secret
+
+Nommez-le de sorte qu'il contienne l'une des six sous-chaînes. `apiToken` est
+couvert ; `apiPass` ne l'est pas. Ajouter un nom qui ne correspond pas revient
+à ajouter une fuite, et le hook d'audit n'a aucun moyen de vous en avertir.
+
+`backend/src/__tests__/audit-redaction.test.ts` fixe la règle.
+
 ## Bonnes pratiques
 
 1. **Commencez simplement** — Débutez par un filtrage sur une seule colonne (region, department)

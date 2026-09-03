@@ -63,7 +63,10 @@ Phase 4.2 — the renderer at ≥ 93 %.
 ## Tests
 
 - A unit test per implemented tail code
-- **A corpus test asserting ≥ 99 % exact match**
+- **A corpus test asserting ≥ 99 % exact match** against
+  `discoverer-neo/migrate/corpus/formula-corpus.tsv` — **denominator 37 971 aligned pairs**,
+  not sampled. Say which denominator the percentage uses (weight by `occurrences`, or count
+  the 22 748 distinct rows)
 - **A corpus test asserting `FAILED = 0`** — every formula compiles or quarantines with a
   reason; an unhandled path is a bug, not a data problem
 - A `[2,n]` resolving to a real `custom_functions` row renders a call
