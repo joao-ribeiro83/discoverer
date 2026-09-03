@@ -1,0 +1,9 @@
+{
+  "renderer": "NO_RENDERER — Discoverer [class,id] tokens are parsed into a tree but never rendered back into display form. Phase 4 replaces this.",
+  "measuredAt": "2026-09-03",
+  "distinctPairs": 22748,
+  "totalOccurrences": 37971,
+  "distinctRate": 0,
+  "weightedRate": 0,
+  "note": "A ratchet, not a target. formula-corpus-agreement.test.ts fails if a change lowers either rate; raise these by hand when a change lifts them, in the same commit that lifts them. Both rates are reported because they answer different questions: distinct is how much of the formula language is covered, weighted is how many real formulas in a real estate would render."
+}
