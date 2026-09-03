@@ -147,11 +147,13 @@ export default async function joinRoutes(fastify: FastifyInstance) {
     },
   );
 
-  // GET /api/joins/:id — get one join
+  // GET /api/joins/:id — get one join.
+  //
+  // Grant-scoped: a join row names the column pair that relates two tables.
   fastify.get(
     '/api/joins/:id',
     {
-      preHandler: [fastify.authenticate],
+      preHandler: [fastify.authenticate, requireJoinAccess('VIEW')],
       schema: {
         tags: ['Joins'],
         security: [{ bearerAuth: [] }],

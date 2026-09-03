@@ -192,11 +192,15 @@ export default async function folderRoutes(fastify: FastifyInstance) {
     },
   );
 
-  // GET /api/folders/:id — get one folder
+  // GET /api/folders/:id — get one folder.
+  //
+  // Grant-scoped: a folder row names its physical table and owner, which is
+  // the shape of the warehouse. `fastify.authenticate` alone let any signed-in
+  // user read that for a business area they hold no grant on.
   fastify.get(
     '/api/folders/:id',
     {
-      preHandler: [fastify.authenticate],
+      preHandler: [fastify.authenticate, requireFolderAccess('VIEW')],
       schema: {
         tags: ['Folders'],
         security: [{ bearerAuth: [] }],

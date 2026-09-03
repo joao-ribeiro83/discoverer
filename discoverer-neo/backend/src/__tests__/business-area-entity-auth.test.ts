@@ -506,3 +506,102 @@ describe('Folder :id routes resolve grants via the owning business area', () => 
     expect(response.statusCode).toBe(403);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Read-side scoping.
+//
+// Five GET-by-id routes carried `preHandler: [fastify.authenticate]` and
+// nothing else, so any signed-in user could read folder table names, item
+// column names and data types, and join column pairs for business areas they
+// hold no grant on — the schema of the warehouse, one id at a time.
+//
+// The guards already existed and were already used for EDIT and DELETE on the
+// same entities. These are the five read routes that were missing them.
+// ---------------------------------------------------------------------------
+
+describe('Entity GET-by-id routes are grant-scoped', () => {
+  const cases: Array<{ what: string; url: () => string }> = [
+    { what: 'a folder', url: () => `/api/folders/${otherFolderId}` },
+    { what: 'an item', url: () => `/api/items/${otherItemId}` },
+    { what: 'item descendants', url: () => `/api/items/${otherItemId}/descendants` },
+  ];
+
+  for (const { what, url } of cases) {
+    it(`forbids a granted USER from reading ${what} in another business area`, async () => {
+      const response = await app.inject({
+        method: 'GET',
+        url: url(),
+        headers: { authorization: `Bearer ${viewerToken}` },
+      });
+
+      expect(response.statusCode).toBe(403);
+    });
+
+    it(`forbids an ungranted USER from reading ${what}`, async () => {
+      const response = await app.inject({
+        method: 'GET',
+        url: url(),
+        headers: { authorization: `Bearer ${outsiderToken}` },
+      });
+
+      expect(response.statusCode).toBe(403);
+    });
+  }
+
+  it('forbids an ungranted USER from reading a join', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: `/api/joins/${testJoinId}`,
+      headers: { authorization: `Bearer ${outsiderToken}` },
+    });
+
+    expect(response.statusCode).toBe(403);
+  });
+
+  it('forbids an ungranted USER from reading a hierarchy', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: `/api/hierarchies/${testHierarchyId}`,
+      headers: { authorization: `Bearer ${outsiderToken}` },
+    });
+
+    expect(response.statusCode).toBe(403);
+  });
+
+  it('still lets a granted USER read a folder in their own business area', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: `/api/folders/${testFolderId}`,
+      headers: { authorization: `Bearer ${viewerToken}` },
+    });
+
+    expect(response.statusCode).toBe(200);
+  });
+
+  it('still lets a granted USER read an item, its descendants, a join and a hierarchy', async () => {
+    for (const url of [
+      `/api/items/${testItemId}`,
+      `/api/items/${testItemId}/descendants`,
+      `/api/joins/${testJoinId}`,
+      `/api/hierarchies/${testHierarchyId}`,
+    ]) {
+      const response = await app.inject({
+        method: 'GET',
+        url,
+        headers: { authorization: `Bearer ${viewerToken}` },
+      });
+
+      expect([url, response.statusCode]).toEqual([url, 200]);
+    }
+  });
+
+  it('still lets ADMIN read across business areas (bypass unchanged)', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: `/api/folders/${otherFolderId}`,
+      headers: { authorization: `Bearer ${adminToken}` },
+    });
+
+    expect(response.statusCode).toBe(200);
+  });
+});
