@@ -437,3 +437,162 @@ de-anonymisation key, which was staged for commit without it) and
 `docs/master-plan/prompts/PHASE-01-02-visibility-and-schema.md`, with one thing
 ahead of it: **Phase 0.2 must be redone** before anything depends on credential
 hygiene, and `.env` must be recreated before any live Oracle work.
+
+---
+
+## Phase 1.2 execution - visibility, schema unification, write path - 2026-09-03
+
+### The plan's counts were right; the review's correction was wrong
+
+The prompt carried a correction claiming 18 shared tables, 10 backend-only, and
+`custom_functions` existing **only** in `migrate`. Measured against the tree:
+
+| | Plan v1.0 | Correction | Measured |
+|---|---|---|---|
+| Shared tables | 19 | 18 | **19** |
+| Backend runtime-only | 11 | 10 | **11** |
+| Migrate-only | 0 | 1 (`custom_functions`) | **1 (`migration_log`)** |
+
+`custom_functions` is declared in `backend/src/db/schema.ts` and always was, as
+is `security_policies` - the table the correction's backend-only list omitted.
+So the extra scope item the correction added ("core exports `custom_functions`;
+backend re-exports it") was already true the moment the table moved with the
+rest. Nothing was needed for it.
+
+The 4 differing columns the plan named were real and exact: `users.locale`,
+`users.theme`, `users.color_palette` and `map_conditions.group_id`, all
+backend-only.
+
+### The drift gate CAN be built as a compile error
+
+The correction said it could not, and prescribed a grep instead. Under the
+re-export it can, and does. Deliberate test, run and reverted:
+
+```
+migrate/src/db/schema.ts:  maps.name  .notNull()  ->  nullable
+npm run typecheck -w backend
+  src/services/map.service.ts(699,44): error TS2345:
+    Argument of type 'string | null' is not assignable to parameter of type 'string'.
+```
+
+A column change in core propagates through the type system into every backend
+consumer that relied on the old type. The grep-checkable form was added too, as
+`backend/src/__tests__/schema-single-definition.test.ts` - it guards the other
+direction, failing if a local `pgTable` for a shared table reappears in the
+backend, which is the only way to undo the gate.
+
+### The move found two live bugs on its first compile
+
+1. `migrate`'s `maps.business_area_id` was still `notNull()` a phase after
+   1.1 made it advisory. `migration-writer.ts:171` indexed a `Record` by it.
+   Fixed in the same commit.
+2. `map_conditions.group_id` (D-072). `buildMapConditionRows` has always
+   assigned it and its unit tests have always asserted it; the column did not
+   exist in the migrator's schema, and **drizzle silently ignores a key that
+   matches no column**. Green tests, 5 605 conditions imported with
+   `group_id = NULL`, parenthesisation discarded. **The schema move is the
+   fix** - no transformer change and no Drizzle migration were needed, because
+   `backend/drizzle/0000_silky_husk.sql:169` already creates the column.
+
+   The 5 605 rows already in the database still carry NULL. Repairing them
+   needs a re-import, which this stage is explicitly not allowed to run.
+
+### Deviations from the prompt, recorded
+
+- **`data_sources` moved to core** with the 19. `folders.data_source_id`
+  references it; leaving it in the backend would have dropped a real foreign
+  key from the generated DDL. So core holds 20 tables, backend adds 10.
+- **`migration_log` moved out of `db/schema.ts`** into
+  `migrate/src/db/migration-log.ts`. The backend re-exports the schema
+  wholesale, so leaving it there made `drizzle-kit generate` emit a
+  `CREATE TABLE` for a table `ensureSchema()` already creates. Confirmed: with
+  it moved, `drizzle-kit generate` reports **"No schema changes, nothing to
+  migrate"**. The move is physically a no-op.
+- **The package was renamed, the directory was not.** `migrate/` still holds
+  `@discoverer-neo/core`. The prompt asked for a package rename.
+- **`.` has no export.** Only `./db/schema`, `./migration` and `./testing`, so
+  an import has to say which half it wants.
+- **`backend`'s `pretypecheck` builds core.** Types resolve through
+  `migrate/dist`, so without it a stale build hides the drift gate.
+- **F-07, F-32 and BE-02 are one commit,** not three. All three touch
+  `map.service.ts` in ways that do not compile apart.
+- **BE-12 needed no code.** Phase 1.1 already removed the business-area filter
+  from `loadMapDefinition` (`sql-generator.ts` contains no `businessAreaId`),
+  and `businessAreasForFolders` already unions `folder_business_areas` for the
+  entitlement gate. Two tests were added so it cannot regress silently.
+- **`duplicate()` was fixed too.** It copied items and conditions but not
+  totals, formats, layouts or page setup - BE-02's bug at a second call site,
+  four lines using the same helpers.
+- **The reciprocal ESLint rule is scoped, not absolute.** The correction asked
+  that the backend import "core's schema and semantics subpaths only", but
+  `migration.service.ts` legitimately drives the EUL pipeline. The rule bans
+  `@discoverer-neo/core/migration` across `backend/src/` and allow-lists the
+  four places that own it (migration.service.ts, credential-file.service.ts,
+  scripts, tests).
+
+### Acceptance criteria - status
+
+| Criterion | Status |
+|---|---|
+| `GET /api/maps?scope=all` returns the recorded map count for an admin | PASS - asserted against `count(*)`, not a literal |
+| ...and a correctly filtered set for a non-admin | PASS - and pinned to agree with `canAccessMap` row by row |
+| A save round-trip preserves totals | PASS |
+| Map detail returns totals, layout and page setup | PASS |
+| A deliberate column mismatch fails typecheck | PASS - see above; reverted |
+| The ESLint rule rejects a `backend/` import from inside `migrate/` | PASS - both directions |
+| Re-imported conditions carry non-null `group_id` | PASS at the write path; the 5 605 existing rows still need a re-import |
+| The package is renamed and every consumer updated | PASS |
+| A non-admin cannot read a folder, item, descendants, join or hierarchy outside their grants | PASS - 12 tests |
+
+### Measured, for handover
+
+| | |
+|---|---|
+| Active maps (`scope=all` for an admin) | **923** |
+| `map_totals` rows BE-02 was destroying | **19 632** |
+| `map_conditions` | **5 605** |
+| ...with a non-null `group_id` | **0** - needs a re-import |
+| `map_page_setup` | 923 |
+| `map_layouts` | 24 |
+| `map_conditional_formats` | 0 |
+| `folder_business_areas` | **0** - nothing on the estate exercises BE-12's path yet |
+
+### Test state
+
+- backend: **47 suites, 1104 tests, 0 failures**
+- core (`migrate`): **14 suites, 480 tests, 0 failures**
+- `npm run typecheck --workspaces`: clean
+
+One thing worth knowing: an earlier full backend run in this session reported
+77 failures across 8 suites, all of them authentication failures in `beforeAll`.
+Every one of those suites passed alone, and the next full run was clean. It is
+a cross-suite state race, not a regression, and it is not new - but a run that
+looks catastrophic is probably this, so re-run before believing it.
+
+Backend `npm run lint` has been red since before this phase (test files raise
+`no-unsafe-member-access` on `res.json()`, and `scripts/setup-test-db.mjs` sits
+outside the tsconfig project). Measured before and after: the files this phase
+touched carry the same 9 errors either way. Nothing here added one.
+
+### Git checkpoint
+
+| Commit | What |
+|---|---|
+| `f61d4c2` | BE-10 / D-011 - the schema move and the `@discoverer-neo/core` rename |
+| `1a10df2` | D-012 - both dependency-direction ESLint rules |
+| `af41a59` | D-072 - the condition write-path test |
+| `b0f6101` | F-07 / F-32 / BE-02 - the maps API |
+| `fbbcbe3` | The five entity GET-by-id routes, grant-scoped (brought forward from 6.2) |
+| `e1c6df9` | BE-12 - tests for what 1.1 already fixed |
+
+### Still open after this phase
+
+- **The 5 605 `group_id = NULL` condition rows.** The write path is fixed; the
+  data is not. A re-import is out of this stage's scope.
+- Everything in "Still open" above: Phase 0.2, `.env`, `d4dumps/`.
+
+### Next
+
+`docs/master-plan/prompts/PHASE-01-03-seam-tests-and-verifier.md`. Its seam
+tests can now pin conditions whose structure survives import - which was the
+reason D-072 was pulled into this stage.
