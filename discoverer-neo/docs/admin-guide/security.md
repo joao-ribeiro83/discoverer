@@ -202,6 +202,124 @@ Track security policy changes:
 2. Filter by entity type: SECURITY_POLICY
 3. See who created/modified/deleted policies
 
+## Credential redaction in the audit log
+
+Every mutating request (`POST`, `PUT`, `PATCH`, `DELETE`) has its parameters,
+query string, body and response body stored in `audit_log.details`. Some of
+those bodies carry credentials in plaintext — a data source's Oracle password
+reaches the API as plaintext and is encrypted server-side, and a password
+change carries the new password.
+
+### The rule
+
+Before anything is stored, any key whose name **contains** one of these
+substrings, case-insensitively, at any depth, has its value replaced with
+`[REDACTED]`:
+
+| Substring | Catches, among others |
+|-----------|-----------------------|
+| `password` | `password`, `passwordEnc`, `newPassword`, `currentPassword`, `passwordHash` |
+| `secret` | `secret`, `clientSecret`, `client_secret` |
+| `token` | `token`, `apiToken`, `refreshToken`, `accessToken` |
+| `credential` | `credential`, `dbCredential`, `credentials` |
+| `apikey` | `apiKey`, `api_key` |
+| `authorization` | `authorization` |
+
+The rule is `isSensitiveKey` in `backend/src/plugins/audit.ts`. Arrays and
+nested objects are walked to a depth of six.
+
+### Why substring, not an exact list
+
+It used to be an exact list of key names, and an exact list is a list of the
+names somebody thought of. Two were missing — `passwordEnc` and `newPassword` —
+and **174 Oracle data-source passwords and 5 user passwords were written to
+`audit_log` in cleartext**. Not encrypted; the plain string.
+
+A substring rule catches every prefixed, suffixed and camel-cased variant of
+the same word without anyone having to enumerate them. The existing cleartext
+was purged by migration `0010_purge_audit_log_credentials`, which redacts the
+values in place rather than deleting rows — an audit trail whose rows vanish is
+a worse audit trail.
+
+### What redaction does not cover
+
+- **Values, not keys.** A password pasted into a *description* field is stored.
+  The redactor matches on the field name; it cannot recognise a secret by
+  looking at it.
+- **Error text.** An Oracle or Postgres failure message may quote the word
+  "password" ("password authentication failed"). Those are messages, not
+  credentials, and are left intact.
+
+### If you add a field carrying a secret
+
+Name it so it contains one of the six substrings. `apiToken` is covered;
+`apiPass` is not. Adding a name that does not match means adding a leak, and
+the audit hook has no way to warn you.
+
+`backend/src/__tests__/audit-redaction.test.ts` pins the rule.
+
+## What changed for business-area grants
+
+Three changes to how a grant is read. All of them tighten access; none of them
+widens it.
+
+### 1. A grant on the map's business area is no longer enough
+
+Running a map now requires a grant on **every folder the query touches**, not
+on the business area recorded against the map. A folder is entitled by a grant
+on *any* business area it belongs to — the one that owns it, or any it has been
+shared into.
+
+This closes an escalation: previously, owning or being shared a map let you
+read folders in a business area you had never been granted, because the owner,
+public and share checks all returned before the grant check ran.
+
+**What you may see:** a user who could open a shared or public report before now
+gets *"You do not have access to the data in folder X"*. The fix is a grant on a
+business area that folder belongs to — not a change to the map.
+
+Admins still bypass this gate. The bypass is now recorded in the audit log as
+`DATA_ENTITLEMENT_ADMIN_BYPASS`, and only when the admin genuinely holds no
+grant, so the log shows real bypasses rather than every admin query.
+
+### 2. A business-area policy now follows the folders, not the map
+
+A `BUSINESS_AREA`-scoped rule fires when **any folder the query reads** belongs
+to that business area — owning it or shared into it. It used to be matched
+against a single column on the map row.
+
+**What you may see:** a policy reaching a report you did not expect it to,
+because that report reads a folder in your business area even though the report
+itself is filed elsewhere. That is the intended behaviour: the policy protects
+the data, not the report.
+
+### 3. A folder with a policy is fail-closed
+
+If **anyone's** active policy targets a folder (or a business area that folder
+belongs to) and the person running the query resolves **no** predicate for it,
+the query is refused by name rather than run unfiltered.
+
+Before this, a user with no policy assignment simply got every row the policy
+existed to hide.
+
+**What you may see:** *"Refusing to run unfiltered: no row-level security policy
+resolves for you on folder(s) X"*. The fix is to assign that user (or their
+role) a policy covering the folder. If they are meant to see everything, assign
+them a permissive policy (`1=1`) rather than leaving them unassigned — the
+absence of a policy is no longer read as permission.
+
+This applies to **admins too**. Admins bypass grants; they do not bypass
+row-level policies, and they never did — this only extends the same rule to the
+case where no policy resolves.
+
+Two things it deliberately does *not* do:
+
+- **It is not a global fail-closed.** A folder no policy targets runs exactly as
+  before. Against an empty policy table the rule changes nothing at all.
+- **Inactive policies do not count.** Their rules apply to nobody, so a folder
+  targeted only by an inactive policy is not treated as policy-bearing —
+  otherwise disabling a policy would lock everyone out with no way back in.
+
 ## Best Practices
 
 1. **Start Simple** — Begin with single-column filtering (region, department)

@@ -1,4 +1,4 @@
-import { eq, inArray } from 'drizzle-orm';
+import { eq, inArray, or } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import {
   items,
@@ -61,8 +61,13 @@ export function generateSql(
   // aliased by the time it runs.
   const orderBy = buildOrderByClause(def, ctx, select);
   const totalsPlan = planTotals(def, ctx, select);
-  // FROM is built last so it sees every folder the query touches.
-  const from = buildFromClause(def, ctx);
+  // FROM is built last so it sees every folder the query touches. It also
+  // carries the interim multi-folder aggregate refusal (D-014), so it has to
+  // be told whether the statement aggregates — including through a totals
+  // query, which reuses this very FROM clause.
+  const from = buildFromClause(def, ctx, {
+    hasAggregates: select.hasAggregates || totalsPlan.entries.length > 0,
+  });
   const groupBy = buildGroupByClause(select.hasAggregates, select.nonAggregateExprs);
   const pagination = buildPagination(options);
 
@@ -185,13 +190,56 @@ export async function loadMapDefinition(mapId: string): Promise<MapDefinition> {
     db.select().from(mapTotals).where(eq(mapTotals.mapId, mapId)),
   ]);
 
-  // All folders + items of the business area (formula references may reach
-  // beyond the selected items).
-  const folderRows = await db
-    .select()
-    .from(folders)
-    .where(eq(folders.businessAreaId, map.businessAreaId));
-  const folderIds = folderRows.map((f) => f.id);
+  // ---------------------------------------------------------------------
+  // Derived query scope (D-013)
+  //
+  // The scope is the folders the map's own items and conditions live in, plus
+  // everything reachable from them through join metadata — NOT the folders of
+  // `maps.business_area_id`. That column is advisory (UI grouping) and
+  // nullable, and a Discoverer worksheet's folders were never constrained to
+  // one business area in the first place: `BA_OBJ_LINKS` is many-to-many, and
+  // `folder_business_areas` records the same thing here.
+  // ---------------------------------------------------------------------
+  const referencedItemIds = [
+    ...new Set([
+      ...mapItemRows.map((r) => r.itemId),
+      ...conditionRows.map((r) => r.itemId),
+    ]),
+  ];
+  const seedItems = referencedItemIds.length
+    ? await db.select().from(items).where(inArray(items.id, referencedItemIds))
+    : [];
+
+  const scopeFolderIds = new Set<string>(seedItems.map((i) => i.folderId));
+  // Transitive closure over the join graph: a folder joined to one in scope is
+  // reachable by the query, and its items are addressable from formulas.
+  let frontier = [...scopeFolderIds];
+  while (frontier.length > 0) {
+    const edges = await db
+      .select()
+      .from(joins)
+      .where(
+        or(
+          inArray(joins.leftFolderId, frontier),
+          inArray(joins.rightFolderId, frontier),
+        ),
+      );
+    const next: string[] = [];
+    for (const edge of edges) {
+      for (const id of [edge.leftFolderId, edge.rightFolderId]) {
+        if (!scopeFolderIds.has(id)) {
+          scopeFolderIds.add(id);
+          next.push(id);
+        }
+      }
+    }
+    frontier = next;
+  }
+
+  const folderIds = [...scopeFolderIds];
+  const folderRows = folderIds.length
+    ? await db.select().from(folders).where(inArray(folders.id, folderIds))
+    : [];
   const folderById = new globalThis.Map<string, Folder>(
     folderRows.map((f) => [f.id, f]),
   );
@@ -203,6 +251,8 @@ export async function loadMapDefinition(mapId: string): Promise<MapDefinition> {
     itemRows.map((i) => [i.id, i]),
   );
 
+  // Both endpoints must be in scope — the closure above guarantees that for
+  // every join touching a scoped folder, so this only filters dangling rows.
   const joinRows = folderIds.length
     ? await db
         .select()

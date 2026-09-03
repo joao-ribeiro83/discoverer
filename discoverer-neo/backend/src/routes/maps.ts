@@ -379,11 +379,10 @@ export default async function mapRoutes(fastify: FastifyInstance) {
       // Duplicating creates a new map, so the user also needs create
       // rights in the business area (owners and admins always may).
       if (user.role !== 'ADMIN' && map.createdBy !== user.sub) {
-        const { hasPermission } = await userHasPermission(
-          user.sub,
-          map.businessAreaId,
-          'CREATE',
-        );
+        // No business area to check means no grant to find — fail closed.
+        const { hasPermission } = map.businessAreaId
+          ? await userHasPermission(user.sub, map.businessAreaId, 'CREATE')
+          : { hasPermission: false };
         if (!hasPermission) {
           return reply.code(403).send({
             error: 'Forbidden',

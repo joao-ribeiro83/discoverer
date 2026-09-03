@@ -71,6 +71,13 @@
       "when": 1787866643565,
       "tag": "0009_worksheet_layout_model",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1788437690166,
+      "tag": "0010_advisory_map_business_area",
+      "breakpoints": true
     }
   ]
 }

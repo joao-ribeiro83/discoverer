@@ -1,6 +1,7 @@
 import type { Folder } from '../../db/schema.js';
 import { SqlGenerationError, type MapDefinition } from '../../types/sql.js';
 import type { GenerationContext } from './context.js';
+import { spanningJoinPath } from './folder-set.js';
 import { quoteIdentifier } from './identifiers.js';
 
 const JOIN_SQL: Record<string, string> = {
@@ -8,14 +9,6 @@ const JOIN_SQL: Record<string, string> = {
   LEFT: 'LEFT OUTER JOIN',
   RIGHT: 'RIGHT OUTER JOIN',
   FULL: 'FULL OUTER JOIN',
-};
-
-/** Flip LEFT/RIGHT when a join is traversed from its right side. */
-const FLIPPED_JOIN: Record<string, string> = {
-  INNER: 'INNER',
-  LEFT: 'RIGHT',
-  RIGHT: 'LEFT',
-  FULL: 'FULL',
 };
 
 /**
@@ -55,18 +48,46 @@ export function folderTableRef(folder: Folder): string {
     : table;
 }
 
+export interface FromClauseOptions {
+  /**
+   * Whether the statement aggregates — a SELECT-list aggregate, an aggregate
+   * hidden in a formula, or a totals query planned over the same FROM.
+   *
+   * Only used by the interim multi-folder refusal below.
+   */
+  hasAggregates?: boolean;
+}
+
 /**
  * Build the FROM clause. When the query spans multiple folders, a join path
- * connecting them is computed from the business area's join metadata (BFS
- * spanning tree, pruned to the folders the query actually uses).
+ * connecting them is computed from the join metadata (BFS spanning tree,
+ * pruned to the folders the query actually uses).
  */
 export function buildFromClause(
   def: MapDefinition,
   ctx: GenerationContext,
+  options: FromClauseOptions = {},
 ): string {
   const required = ctx.usedFolderIds();
   if (required.length === 0) {
     throw new SqlGenerationError('The query references no folders');
+  }
+
+  // INTERIM REFUSAL — D-014. Delete in Phase 3.4, when the fan-trap planner
+  // lands, and not before.
+  //
+  // Until this commit, multi-folder maps failed earlier, at the "No join path
+  // connects..." check below. That failure was an accidental fan-trap guard:
+  // deriving the query scope from the referenced items (D-013) makes those
+  // maps loadable, and a flat inner join across a master/detail pair then
+  // returns every master measure multiplied by its detail count. Oracle's own
+  // worked example puts the inflation at 2x-3x on two measures at once. A
+  // wrong number that looks right is worse than a refusal.
+  if (required.length > 1 && options.hasAggregates) {
+    const names = required.map((id) => ctx.getFolder(id).name);
+    throw new SqlGenerationError(
+      `Multi-folder aggregate queries are refused until the fan-trap planner lands. Folders: ${names.join(', ')}`,
+    );
   }
 
   const rootId = required[0]!;
@@ -75,67 +96,21 @@ export function buildFromClause(
     return `FROM ${folderTableRef(folder)} ${ctx.aliasFor(rootId)}`;
   }
 
-  // Adjacency list over join metadata.
-  type Edge = { joinIdx: number; from: string; to: string };
-  const adjacency = new globalThis.Map<string, Edge[]>();
-  def.joins.forEach((j, joinIdx) => {
-    const l = j.join.leftFolderId;
-    const r = j.join.rightFolderId;
-    if (!adjacency.has(l)) adjacency.set(l, []);
-    if (!adjacency.has(r)) adjacency.set(r, []);
-    adjacency.get(l)!.push({ joinIdx, from: l, to: r });
-    adjacency.get(r)!.push({ joinIdx, from: r, to: l });
-  });
-
-  // BFS spanning tree from the root folder.
-  const parentEdge = new globalThis.Map<string, Edge>();
-  const visited = new Set<string>([rootId]);
-  const queue = [rootId];
-  while (queue.length) {
-    const current = queue.shift()!;
-    for (const edge of adjacency.get(current) ?? []) {
-      if (visited.has(edge.to)) continue;
-      visited.add(edge.to);
-      parentEdge.set(edge.to, edge);
-      queue.push(edge.to);
-    }
-  }
-
-  for (const folderId of required) {
-    if (!visited.has(folderId)) {
-      const folder = ctx.getFolder(folderId);
-      throw new SqlGenerationError(
-        `No join path connects folder "${folder.name}" to the rest of the query`,
-      );
-    }
-  }
-
-  // Keep only the tree edges on paths from required folders to the root.
-  const needed = new Set<string>();
-  const edgesInOrder: Edge[] = [];
-  for (const folderId of required) {
-    let node = folderId;
-    const chain: Edge[] = [];
-    while (node !== rootId && !needed.has(node)) {
-      const edge = parentEdge.get(node)!;
-      chain.unshift(edge);
-      needed.add(node);
-      node = edge.from;
-    }
-    edgesInOrder.push(...chain);
+  const { edges, unreachable } = spanningJoinPath(required, def.joins);
+  if (unreachable.length > 0) {
+    const folder = ctx.getFolder(unreachable[0]!);
+    throw new SqlGenerationError(
+      `No join path connects folder "${folder.name}" to the rest of the query`,
+    );
   }
 
   const parts: string[] = [
     `FROM ${folderTableRef(ctx.getFolder(rootId))} ${ctx.aliasFor(rootId)}`,
   ];
 
-  for (const edge of edgesInOrder) {
+  for (const edge of edges) {
     const j = def.joins[edge.joinIdx]!;
-    const joinedForward = edge.from === j.join.leftFolderId;
-    const joinType = joinedForward
-      ? j.join.joinType
-      : FLIPPED_JOIN[j.join.joinType]!;
-    const joinSql = JOIN_SQL[joinType];
+    const joinSql = JOIN_SQL[edge.joinType];
     if (!joinSql) {
       throw new SqlGenerationError(`Unknown join type "${j.join.joinType}"`);
     }

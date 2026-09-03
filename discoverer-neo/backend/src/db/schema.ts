@@ -621,9 +621,24 @@ export const maps = pgTable(
     name: varchar('name', { length: 255 }).notNull(),
     description: text('description'),
     mapType: mapTypeEnum('map_type').notNull(),
-    businessAreaId: uuid('business_area_id')
-      .notNull()
-      .references(() => businessAreas.id, { onDelete: 'cascade' }),
+    /**
+     * ADVISORY ONLY — UI grouping. Nullable since D-013.
+     *
+     * A map's query scope is derived from the folders its items and conditions
+     * live in, plus everything reachable from them through joins
+     * (`loadMapDefinition`), never from this column. Discoverer models
+     * folder-to-business-area as many-to-many (`BA_OBJ_LINKS`), so a worksheet
+     * was never confined to one business area, and `NOT NULL` here was the
+     * root cause of the estate-wide execution failure.
+     *
+     * Nothing that decides what a user may read may read this column: the
+     * entitlement gate and row-level security both resolve against the derived
+     * folder set (see `effectiveFolderSet`).
+     */
+    businessAreaId: uuid('business_area_id').references(
+      () => businessAreas.id,
+      { onDelete: 'cascade' },
+    ),
     createdBy: uuid('created_by')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),

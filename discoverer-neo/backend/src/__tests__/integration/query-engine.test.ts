@@ -746,7 +746,12 @@ describe('Scenario 6: ad-hoc calculated field', () => {
 });
 
 // ===========================================================================
-// Scenario 7 — complex: joins + aggregation + conditions + parameter + calc
+// Scenario 7 — complex: joins + conditions + parameters + calc
+//
+// The aggregate this scenario used to carry is gone: a multi-folder aggregate
+// is exactly the fan trap D-014 refuses, and the refusal has its own test
+// below. Phase 3.4 restores the SUM, the GROUP BY and the AVG calculation here
+// when the planner lands.
 // ===========================================================================
 
 describe('Scenario 7: complex combined map', () => {
@@ -757,7 +762,6 @@ describe('Scenario 7: complex combined map', () => {
         {
           item: fx.amount,
           displayOrder: 1,
-          aggFunction: 'SUM',
           displayName: 'Total Amount',
           sortDirection: 'DESC',
           sortOrder: 1,
@@ -782,21 +786,18 @@ describe('Scenario 7: complex combined map', () => {
         { name: 'p_regions', paramType: 'LIST' },
         { name: 'p_from', paramType: 'DATE' },
       ],
-      calculatedFields: [{ name: 'Avg Amount', formula: 'AVG([Amount])' }],
     });
 
     const { result, sql, binds } = await executeTestMap(
       mapId,
       { p_regions: 'EMEA,APAC', p_from: '2026-01-01' },
-      { rows: [{ CUSTOMER_NAME: 'Acme', TOTAL_AMOUNT: 900, AVG_AMOUNT: 450 }] },
+      { rows: [{ CUSTOMER_NAME: 'Acme', TOTAL_AMOUNT: 900 }] },
     );
 
     assertSqlContains(sql, 'INNER JOIN');
-    assertSqlContains(sql, 'SUM(f2."AMOUNT") AS TOTAL_AMOUNT');
-    assertSqlContains(sql, 'AVG(f2."AMOUNT") AS AVG_AMOUNT');
+    assertSqlContains(sql, 'f2."AMOUNT" AS TOTAL_AMOUNT');
     assertSqlContains(sql, 'IN (:p_regions_0, :p_regions_1)');
     assertSqlContains(sql, "TO_DATE(:p_from, 'YYYY-MM-DD')");
-    assertSqlContains(sql, 'GROUP BY f1."CUSTOMER_NAME"');
     assertSqlContains(sql, 'ORDER BY 2 DESC');
 
     expect(binds).toMatchObject({
@@ -805,6 +806,19 @@ describe('Scenario 7: complex combined map', () => {
       p_from: '2026-01-01',
     });
     expect(result.rowCount).toBe(1);
+  });
+
+  it('refuses the same map end to end once it aggregates (D-014)', async () => {
+    const mapId = await createTestMap({
+      items: [
+        { item: fx.custName, displayOrder: 0 },
+        { item: fx.amount, displayOrder: 1, aggFunction: 'SUM' },
+      ],
+    });
+
+    await expect(
+      executeTestMap(mapId, {}, { rows: [] }),
+    ).rejects.toThrow(/Multi-folder aggregate queries are refused/);
   });
 });
 
