@@ -1,8 +1,14 @@
 import { randomUUID } from 'node:crypto';
-import { desc, eq } from 'drizzle-orm';
+import { and, desc, eq, inArray } from 'drizzle-orm';
 import type { BindParameters, Connection } from 'oracledb';
 import { db } from '../db/index.js';
-import { queryExecutionLog, users } from '../db/schema.js';
+import {
+  folders,
+  queryExecutionLog,
+  securityPolicies,
+  securityPolicyRules,
+  users,
+} from '../db/schema.js';
 import {
   generateSql,
   loadMapDefinition,
@@ -17,6 +23,15 @@ import type {
   SecurityPredicate,
 } from '../types/sql.js';
 import { getUserPolicies } from './security.service.js';
+import {
+  assertDataEntitlement,
+  businessAreasForFolders,
+  DataEntitlementError,
+} from './business-area.service.js';
+import {
+  effectiveFolderSet,
+  securityRelevantFolderIds,
+} from '../lib/sql/folder-set.js';
 import * as pool from './oracle-connection-pool.js';
 import {
   resolveParametersForDefinitions,
@@ -150,7 +165,9 @@ export type ExecutionErrorKind =
   | 'CONNECT'
   | 'TIMEOUT'
   | 'QUERY'
-  | 'CANCELLED';
+  | 'CANCELLED'
+  /** The user may see the map object but not the data it reads (D-016/D-116). */
+  | 'FORBIDDEN';
 
 export class MapExecutionError extends Error {
   constructor(
@@ -261,15 +278,28 @@ export interface ResolvedRowSecurity {
  * Row-level security predicates for the executing user.
  *
  * The user's ACTIVE assigned policies (direct or via role) are matched against
- * the map: BUSINESS_AREA rules apply when they target the map's business area,
- * FOLDER rules when they target a folder the query reads from (selected items
- * or conditions). Applicable predicates are ANDed into the WHERE clause by the
- * SQL generator; folder rules may use `{alias}` to reference their folder's
- * query alias, and any rule may use the `:current_user_*` context binds.
+ * the map's EFFECTIVE FOLDER SET (D-115) — every folder whose column values
+ * reach the statement, plus every join bridge that can change which rows come
+ * back. `maps.business_area_id` is not consulted: it is advisory and nullable
+ * (D-013), and `rule.targetId === null` would have matched nothing, silently
+ * running every query unfiltered.
  *
- * Fails closed: an unknown executing user is refused rather than run without
- * policies. Exported for the security test-suite; production callers go
- * through `defaultPrepareQuery`.
+ * A BUSINESS_AREA rule fires when any folder in that set belongs to the rule's
+ * business area — owning it, or shared into it via `folder_business_areas`.
+ * A FOLDER rule fires when it targets a folder in the set. Applicable
+ * predicates are ANDed into the WHERE clause by the SQL generator; folder
+ * rules may use `{alias}` for their folder's query alias, and any rule may use
+ * the `:current_user_*` context binds.
+ *
+ * Fails closed twice:
+ *  - an unknown executing user is refused rather than run without policies;
+ *  - a folder in the set that SOMEONE's active policy targets, but for which
+ *    THIS user resolves no predicate, is refused by name (D-116). Against an
+ *    empty `security_policy_rules` table that rule is a no-op, and it becomes
+ *    correct the instant the first policy is written.
+ *
+ * Exported for the security test-suite; production callers go through
+ * `defaultPrepareQuery`.
  */
 export async function resolveSecurityPredicates(
   def: MapDefinition,
@@ -287,30 +317,39 @@ export async function resolveSecurityPredicates(
     );
   }
 
+  const usedFolderIds = securityRelevantFolderIds(effectiveFolderSet(def));
+  if (usedFolderIds.length === 0) return { predicates: [], bindParams: {} };
+
+  const baByFolder = await businessAreasForFolders(usedFolderIds);
+
   const policies = await getUserPolicies(user.id, user.role);
-  if (policies.length === 0) return { predicates: [], bindParams: {} };
-
-  const usedFolderIds = new Set<string>();
-  for (const entry of def.items) usedFolderIds.add(entry.folder.id);
-  for (const entry of def.conditions) usedFolderIds.add(entry.folder.id);
-  const businessAreaId = def.map.businessAreaId;
-
   const predicates: SecurityPredicate[] = [];
+  /** Folders this user actually resolved a predicate for. */
+  const covered = new Set<string>();
+
   for (const policy of policies) {
     for (const rule of policy.rules) {
-      if (
-        rule.targetType === 'BUSINESS_AREA' &&
-        rule.targetId === businessAreaId
-      ) {
-        predicates.push({ sql: rule.sqlPredicate });
+      if (rule.targetType === 'BUSINESS_AREA') {
+        const matched = usedFolderIds.filter((folderId) =>
+          (baByFolder.get(folderId) ?? []).includes(rule.targetId),
+        );
+        if (matched.length > 0) {
+          predicates.push({ sql: rule.sqlPredicate });
+          for (const folderId of matched) covered.add(folderId);
+        }
       } else if (
         rule.targetType === 'FOLDER' &&
-        usedFolderIds.has(rule.targetId)
+        usedFolderIds.includes(rule.targetId)
       ) {
         predicates.push({ sql: rule.sqlPredicate, folderId: rule.targetId });
+        covered.add(rule.targetId);
       }
     }
   }
+
+  await assertPolicyBearingFoldersCovered(usedFolderIds, baByFolder, covered);
+
+  if (predicates.length === 0) return { predicates: [], bindParams: {} };
 
   return {
     predicates,
@@ -320,6 +359,76 @@ export async function resolveSecurityPredicates(
       current_user_role: user.role,
     },
   };
+}
+
+/**
+ * Fail closed per policy-bearing folder (D-116).
+ *
+ * A folder is policy-bearing when at least one rule of an ACTIVE policy —
+ * anyone's — targets it, or targets a business area it belongs to. If the
+ * executing user resolved no predicate for such a folder, the query is refused
+ * by name instead of running unfiltered.
+ *
+ * Deliberately NOT a global fail-closed. `getUserPolicies` returning empty
+ * means "no predicates", and flipping that globally would return zero rows for
+ * every map in the estate, because `security_policy_rules` is empty today. The
+ * full treatment is Phase 6.3 (D-090). Inactive policies are excluded: their
+ * rules apply to nobody, so treating their folders as policy-bearing would
+ * lock everyone out with no way to satisfy the check.
+ *
+ * Admins are NOT exempt. They bypass the grant gate above; "which rows may I
+ * see" is a different question, and a policy an admin silently escaped would
+ * be no policy at all.
+ */
+async function assertPolicyBearingFoldersCovered(
+  usedFolderIds: string[],
+  baByFolder: globalThis.Map<string, string[]>,
+  covered: Set<string>,
+): Promise<void> {
+  const uncovered = usedFolderIds.filter((id) => !covered.has(id));
+  if (uncovered.length === 0) return;
+
+  const businessAreaIds = [
+    ...new Set(uncovered.flatMap((id) => baByFolder.get(id) ?? [])),
+  ];
+  const targetIds = [...new Set([...uncovered, ...businessAreaIds])];
+
+  const rows = await db
+    .select({
+      targetId: securityPolicyRules.targetId,
+      targetType: securityPolicyRules.targetType,
+    })
+    .from(securityPolicyRules)
+    .innerJoin(
+      securityPolicies,
+      eq(securityPolicyRules.policyId, securityPolicies.id),
+    )
+    .where(
+      and(
+        eq(securityPolicies.isActive, true),
+        inArray(securityPolicyRules.targetId, targetIds),
+      ),
+    );
+  if (rows.length === 0) return;
+
+  const targeted = new Set(rows.map((r) => r.targetId));
+  const blocked = uncovered.filter(
+    (id) =>
+      targeted.has(id) ||
+      (baByFolder.get(id) ?? []).some((ba) => targeted.has(ba)),
+  );
+  if (blocked.length === 0) return;
+
+  const names = await db
+    .select({ id: folders.id, name: folders.name })
+    .from(folders)
+    .where(inArray(folders.id, blocked));
+  const label = names.map((f) => `"${f.name}"`).join(', ') || blocked.join(', ');
+
+  throw new MapExecutionError(
+    'FORBIDDEN',
+    `Refusing to run unfiltered: no row-level security policy resolves for you on folder(s) ${label}`,
+  );
 }
 
 /**
@@ -414,6 +523,24 @@ async function defaultPrepareQuery(
 ): Promise<PreparedQuery> {
   const def = await loadMapDefinition(mapId);
   const dataSourceId = resolveDataSourceId(def);
+
+  // GATE 2 of 2 (D-016). `canAccessMap` upstream answered "may you see this
+  // map object"; this answers "may you read the data it touches". It runs on
+  // every execute and export path — they all come through here — because four
+  // of canAccessMap's five grant paths return before any business-area check,
+  // so a shared or public map would otherwise be a grant escalation.
+  try {
+    await assertDataEntitlement(
+      userId,
+      securityRelevantFolderIds(effectiveFolderSet(def)),
+    );
+  } catch (err) {
+    if (err instanceof DataEntitlementError) {
+      throw new MapExecutionError('FORBIDDEN', err.message, err);
+    }
+    throw err;
+  }
+
   const security = await resolveSecurityPredicates(def, userId);
   const resolvedParams = resolveParametersForQuery(def, parameterValues);
 

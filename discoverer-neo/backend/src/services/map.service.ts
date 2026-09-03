@@ -150,7 +150,7 @@ export class MapValidationError extends Error {
  * the map's business area. Throws MapValidationError on failure.
  */
 export async function validateMapItems(
-  businessAreaId: string,
+  businessAreaId: string | null,
   itemIds: string[],
 ): Promise<void> {
   if (itemIds.length === 0) return;
@@ -175,7 +175,11 @@ export async function validateMapItems(
     if (!ba) {
       throw new MapValidationError(`Item "${itemId}" does not exist`);
     }
-    if (ba !== businessAreaId) {
+    // `maps.business_area_id` is advisory since D-013, so it only constrains
+    // authoring when it is actually set. A map with no business area is scoped
+    // by the folders its items live in, which is what the generator, the
+    // entitlement gate and row-level security all derive from.
+    if (businessAreaId !== null && ba !== businessAreaId) {
       throw new MapValidationError(
         `Item "${itemId}" does not belong to the map's business area`,
       );
@@ -773,7 +777,20 @@ const SHARE_ALLOWS: Record<string, MapAction[]> = {
 };
 
 /**
- * Decide whether a user may perform an action on a map.
+ * GATE 1 of 2 (D-016): may this user see this map OBJECT?
+ *
+ * It does NOT answer "may this user read the data the map touches". Four of
+ * the five grant paths below return before any business-area check, so a
+ * folder rule bolted onto the last branch would leave map sharing as
+ * business-area grant escalation: I own a map over folders in a business area
+ * you were never granted, I share it with you, you read the data.
+ *
+ * The data question is `assertDataEntitlement` in business-area.service.ts,
+ * which runs unconditionally on every execute and export path.
+ *
+ * A map with no business area (the column is advisory and nullable since
+ * D-013) has no grant to check, so it falls through to false — fail-closed on
+ * the object gate; the data gate decides the rest.
  *
  * Rules (first match wins):
  *  - admins may do anything
@@ -803,6 +820,8 @@ export async function canAccessMap(
   if (share && SHARE_ALLOWS[share.permissionLevel]?.includes(action)) {
     return true;
   }
+
+  if (!map.businessAreaId) return false;
 
   const { hasPermission } = await userHasPermission(
     user.sub,

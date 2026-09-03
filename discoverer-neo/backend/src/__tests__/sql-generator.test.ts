@@ -1355,7 +1355,6 @@ describe('SQL generator', () => {
           {
             mapItem: mkMapItem(f.amount, {
               displayOrder: 1,
-              aggFunction: 'SUM',
               displayName: 'Total Amount',
               sortDirection: 'DESC',
               sortOrder: 1,
@@ -1389,12 +1388,6 @@ describe('SQL generator', () => {
           mkParameter({ name: 'p_regions', paramType: 'LIST' }),
           mkParameter({ name: 'p_from', paramType: 'DATE' }),
         ],
-        calculatedFields: [
-          mkCalcField({
-            name: 'Avg Amount',
-            formula: 'AVG([Amount])',
-          }),
-        ],
         joins: [f.join],
         formulaItems: f.formulaItems,
       });
@@ -1405,12 +1398,10 @@ describe('SQL generator', () => {
       });
 
       const sql = norm(result.sql);
-      expect(sql).toContain('SUM(f2."AMOUNT") AS TOTAL_AMOUNT');
-      expect(sql).toContain('AVG(f2."AMOUNT") AS AVG_AMOUNT');
+      expect(sql).toContain('f2."AMOUNT" AS TOTAL_AMOUNT');
       expect(sql).toContain('INNER JOIN');
       expect(sql).toContain('IN (:p_regions_0, :p_regions_1)');
       expect(sql).toContain("TO_DATE(:p_from, 'YYYY-MM-DD')");
-      expect(sql).toContain('GROUP BY f1."CUSTOMER_NAME"');
       expect(sql).toContain('ORDER BY 2 DESC');
       expect(sql).toContain('FETCH NEXT :row_limit ROWS ONLY');
       expect(result.bindParams).toEqual({
@@ -1419,6 +1410,101 @@ describe('SQL generator', () => {
         p_from: '2026-01-01',
         row_limit: 50,
       });
+      expect(result.hasAggregates).toBe(false);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Interim multi-folder aggregate refusal (D-014)
+  //
+  // Deleted in Phase 3.4, when the fan-trap planner lands. Until then a flat
+  // inner join across a master/detail pair would multiply every master measure
+  // by its detail count, so the generator refuses rather than return a wrong
+  // number that looks right.
+  // -------------------------------------------------------------------------
+  describe('multi-folder aggregate refusal', () => {
+    function multiFolderDef(aggregating: boolean) {
+      const f = salesFixture();
+      return mkDef({
+        items: [
+          {
+            mapItem: mkMapItem(f.custName, { displayOrder: 0 }),
+            item: f.custName,
+            folder: f.customers,
+          },
+          {
+            mapItem: mkMapItem(f.amount, {
+              displayOrder: 1,
+              aggFunction: aggregating ? 'SUM' : null,
+            }),
+            item: f.amount,
+            folder: f.sales,
+          },
+        ],
+        joins: [f.join],
+        formulaItems: f.formulaItems,
+      });
+    }
+
+    it('refuses a multi-folder aggregate map, naming the folders', () => {
+      expect(() => generateSql(multiFolderDef(true))).toThrow(
+        SqlGenerationError,
+      );
+      expect(() => generateSql(multiFolderDef(true))).toThrow(
+        /Multi-folder aggregate queries are refused[\s\S]*Folders:[\s\S]*CUSTOMERS[\s\S]*SALES/,
+      );
+    });
+
+    it('refuses when the aggregate is hidden inside a calculated field', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          {
+            mapItem: mkMapItem(f.custName),
+            item: f.custName,
+            folder: f.customers,
+          },
+          { mapItem: mkMapItem(f.amount), item: f.amount, folder: f.sales },
+        ],
+        calculatedFields: [
+          mkCalcField({ name: 'Avg Amount', formula: 'AVG([Amount])' }),
+        ],
+        joins: [f.join],
+        formulaItems: f.formulaItems,
+      });
+      expect(() => generateSql(def)).toThrow(
+        /Multi-folder aggregate queries are refused/,
+      );
+    });
+
+    it('leaves a multi-folder NON-aggregate map alone', () => {
+      const result = generateSql(multiFolderDef(false));
+      expect(norm(result.sql)).toContain('INNER JOIN');
+      expect(result.hasAggregates).toBe(false);
+    });
+
+    it('leaves a single-folder aggregate map alone', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          {
+            mapItem: mkMapItem(f.region, { displayOrder: 0 }),
+            item: f.region,
+            folder: f.sales,
+          },
+          {
+            mapItem: mkMapItem(f.amount, {
+              displayOrder: 1,
+              aggFunction: 'SUM',
+            }),
+            item: f.amount,
+            folder: f.sales,
+          },
+        ],
+        formulaItems: f.formulaItems,
+      });
+      const result = generateSql(def);
+      expect(norm(result.sql)).toContain('SUM(f1."AMOUNT")');
       expect(result.hasAggregates).toBe(true);
     });
   });
@@ -1532,7 +1618,7 @@ describe('SQL generator', () => {
       },
     );
 
-    it('complex query (joins + aggregation + conditions + params + calc fields + sort + pagination) parses', () => {
+    it('complex query (joins + conditions + params + sort + pagination) parses', () => {
       const f = salesFixture();
       const def = mkDef({
         items: [
@@ -1544,7 +1630,6 @@ describe('SQL generator', () => {
           {
             mapItem: mkMapItem(f.amount, {
               displayOrder: 1,
-              aggFunction: 'SUM',
               displayName: 'Total Amount',
               sortDirection: 'DESC',
               sortOrder: 1,
@@ -1574,9 +1659,6 @@ describe('SQL generator', () => {
           },
         ],
         parameters: [mkParameter({ name: 'p_regions', paramType: 'LIST' })],
-        calculatedFields: [
-          mkCalcField({ name: 'Avg Amount', formula: 'AVG([Amount])' }),
-        ],
         joins: [f.join],
         formulaItems: f.formulaItems,
       });
@@ -2593,7 +2675,7 @@ describe('SQL generator', () => {
       expect(group!.totals[0]!.targetLabel).toBe('Amount');
     });
 
-    it('joins the folder a total reaches into', () => {
+    it('refuses a total that reaches into another folder (D-014)', () => {
       const f = salesFixture();
       const custItem = mkMapItem(f.custName, {
         displayOrder: 1,
@@ -2609,10 +2691,12 @@ describe('SQL generator', () => {
         formulaItems: f.formulaItems,
       });
 
-      const result = generateSql(def);
-      const [group] = result.totals;
-      expect(norm(group!.sql)).toContain('INNER JOIN "APP"."CUSTOMERS" f2');
-      expect(norm(group!.sql)).toContain('COUNT(f2."CUSTOMER_NAME")');
+      // A total is an aggregate over the SAME multi-folder FROM clause, so it
+      // is exactly the fan trap D-014 refuses. Phase 3.4 restores the INNER
+      // JOIN + COUNT assertions this test made before the guard existed.
+      expect(() => generateSql(def)).toThrow(
+        /Multi-folder aggregate queries are refused/,
+      );
     });
   });
 });

@@ -30,6 +30,7 @@ import {
   mapConditions,
   mapParameters,
   queryExecutionLog,
+  userBusinessAreaGrants,
 } from '../db/schema.js';
 import { hashPassword } from '../lib/password.js';
 import { closeAll as closeOraclePools } from '../services/oracle-connection-pool.js';
@@ -68,6 +69,7 @@ async function login(email: string): Promise<string> {
 }
 
 async function cleanup() {
+  await db.delete(userBusinessAreaGrants);
   await db.delete(queryExecutionLog);
   await db.delete(mapConditions);
   await db.delete(mapParameters);
@@ -96,6 +98,16 @@ beforeAll(async () => {
     .values({ name: 'MX Test BA' })
     .returning();
   baId = ba!.id;
+
+  // The DATA gate (D-016) runs on every execute path and refuses a user with
+  // no grant on any business area the query's folders belong to. These tests
+  // assert what happens AFTER that gate — parameter validation, connection
+  // failure — so both users are entitled to the folders.
+  // Only the owner: OTHER_EMAIL must stay unentitled, because the 403 tests
+  // below assert that a caller with no access is refused.
+  await db
+    .insert(userBusinessAreaGrants)
+    .values({ userId: ownerId, businessAreaId: baId, permissionLevel: 'VIEW' });
 
   // A folder with NO dataSourceId — a map over it has no data source, so
   // execution fails in SQL generation (CONFIG) before touching Oracle.

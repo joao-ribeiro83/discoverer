@@ -2,12 +2,15 @@ import { eq, and, inArray } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import {
   businessAreas,
+  folderBusinessAreas,
+  folders,
   userBusinessAreaGrants,
   users,
   type BusinessArea,
   type NewBusinessArea,
   type UserBusinessAreaGrant,
 } from '../db/schema.js';
+import { log as logAudit } from './audit.service.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -370,4 +373,154 @@ async function getBusinessAreaGrants(
     grantedBy: r.grantedBy,
     grantedAt: r.grantedAt,
   }));
+}
+
+
+// ---------------------------------------------------------------------------
+// Folder entitlement — the second authorisation gate (D-016)
+// ---------------------------------------------------------------------------
+
+/**
+ * The business areas each folder belongs to: its owning `business_area_id`
+ * plus every business area it is shared into via `folder_business_areas`.
+ *
+ * Discoverer's `BA_OBJ_LINKS` is many-to-many and sharing a dimension folder
+ * across business areas is ordinary practice, so "which business area grants
+ * this folder" has never had a single answer.
+ */
+export async function businessAreasForFolders(
+  folderIds: string[],
+): Promise<globalThis.Map<string, string[]>> {
+  const byFolder = new globalThis.Map<string, string[]>();
+  const ids = [...new Set(folderIds)];
+  if (ids.length === 0) return byFolder;
+
+  const owning = await db
+    .select({ id: folders.id, businessAreaId: folders.businessAreaId })
+    .from(folders)
+    .where(inArray(folders.id, ids));
+  for (const row of owning) {
+    byFolder.set(row.id, [row.businessAreaId]);
+  }
+
+  const shared = await db
+    .select({
+      folderId: folderBusinessAreas.folderId,
+      businessAreaId: folderBusinessAreas.businessAreaId,
+    })
+    .from(folderBusinessAreas)
+    .where(inArray(folderBusinessAreas.folderId, ids));
+  for (const row of shared) {
+    const list = byFolder.get(row.folderId);
+    if (list && !list.includes(row.businessAreaId)) {
+      list.push(row.businessAreaId);
+    }
+  }
+
+  return byFolder;
+}
+
+export class DataEntitlementError extends Error {
+  constructor(
+    message: string,
+    public folderName: string,
+  ) {
+    super(message);
+    this.name = 'DataEntitlementError';
+  }
+}
+
+/**
+ * The DATA gate: may this user read the rows these folders hold?
+ *
+ * Deliberately separate from `canAccessMap`, which answers a different
+ * question — may this user see this map *object*. `canAccessMap` has five
+ * grant paths and four of them (admin, owner, public, explicit share) return
+ * before any business-area check, so bolting the folder rule onto its last
+ * branch would leave map sharing as business-area grant escalation: I own a
+ * map over folders in a business area you were never granted, I share it with
+ * you, and you read the data.
+ *
+ * So this runs unconditionally after it, on every execute and export path.
+ *
+ * All-of across folders: every folder the query touches must be entitled.
+ * Any-of within one folder: a grant on ANY business area the folder belongs to
+ * entitles it, because sharing a folder into a business area is what grants
+ * that area's members access to it — requiring a grant on all of them would
+ * mean sharing a folder silently revoked access from everyone already using it.
+ *
+ * Admins bypass, as they do at every other grant check in this codebase; the
+ * bypass is recorded in the audit log rather than being silent.
+ */
+export async function assertDataEntitlement(
+  userId: string,
+  folderIds: string[],
+): Promise<void> {
+  const ids = [...new Set(folderIds)];
+  if (ids.length === 0) return;
+
+  const [user] = await db
+    .select({ id: users.id, role: users.role })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  if (!user) {
+    throw new DataEntitlementError(
+      'Executing user not found — refusing to read data',
+      '',
+    );
+  }
+
+  const baByFolder = await businessAreasForFolders(ids);
+  const grants = await db
+    .select({ businessAreaId: userBusinessAreaGrants.businessAreaId })
+    .from(userBusinessAreaGrants)
+    .where(eq(userBusinessAreaGrants.userId, userId));
+  const granted = new Set(grants.map((g) => g.businessAreaId));
+
+  const ungranted = ids.filter(
+    (folderId) =>
+      !(baByFolder.get(folderId) ?? []).some((ba) => granted.has(ba)),
+  );
+  if (ungranted.length === 0) return;
+
+  if (user.role === 'ADMIN') {
+    // The bypass is deliberate, and only reached when the admin genuinely
+    // holds no grant — so the audit log records real bypasses, not every
+    // query an admin runs.
+    await logAdminBypass(userId, ungranted);
+    return;
+  }
+
+  const [folder] = await db
+    .select({ name: folders.name })
+    .from(folders)
+    .where(eq(folders.id, ungranted[0]!))
+    .limit(1);
+  const name = folder?.name ?? ungranted[0]!;
+  throw new DataEntitlementError(
+    `You do not have access to the data in folder "${name}"`,
+    name,
+  );
+}
+
+/**
+ * Record that an admin read data without a business-area grant. The bypass is
+ * deliberate; leaving no trace of it would not be.
+ */
+async function logAdminBypass(
+  userId: string,
+  folderIds: string[],
+): Promise<void> {
+  try {
+    await logAudit({
+      userId,
+      action: 'DATA_ENTITLEMENT_ADMIN_BYPASS',
+      entityType: 'FOLDER',
+      entityId: folderIds[0] ?? null,
+      details: { folderCount: folderIds.length, folderIds },
+    });
+  } catch {
+    // An audit write must never block a read the user is entitled to make.
+  }
 }

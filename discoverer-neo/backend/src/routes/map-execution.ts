@@ -62,6 +62,7 @@ const KIND_STATUS: Record<ExecutionErrorKind, number> = {
   TIMEOUT: 504,
   QUERY: 500,
   CANCELLED: 409,
+  FORBIDDEN: 403,
 };
 
 /** Translate a thrown execution error into a JSON response. Returns true when handled. */

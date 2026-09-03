@@ -21,6 +21,7 @@ import {
   securityPolicies,
   securityPolicyAssignments,
   securityPolicyRules,
+  userBusinessAreaGrants,
   users,
   type Folder,
   type Item,
@@ -30,6 +31,7 @@ import { loadMapDefinition } from '../../services/sql-generator.js';
 import {
   defaultDeps,
   executeMap,
+  MapExecutionError,
   resolveSecurityPredicates,
   type MapExecutionDeps,
 } from '../../services/map-execution.service.js';
@@ -235,6 +237,9 @@ async function cleanup(): Promise<void> {
   }
   if (userIds.length) {
     await db
+      .delete(userBusinessAreaGrants)
+      .where(inArray(userBusinessAreaGrants.userId, userIds));
+    await db
       .delete(securityPolicyAssignments)
       .where(inArray(securityPolicyAssignments.userId, userIds));
     await db.delete(users).where(inArray(users.id, userIds));
@@ -337,6 +342,14 @@ beforeAll(async () => {
     .returning();
   productsMapId = productsMap!.id;
   await db.insert(mapItems).values([{ mapId: productsMapId, itemId: pcode.id, displayOrder: 0 }]);
+
+  // The DATA gate (D-016) refuses a user with no grant on any business area
+  // the query's folders belong to. These tests are about PREDICATES, so both
+  // users are entitled and only their policies differ.
+  await db.insert(userBusinessAreaGrants).values([
+    { userId: userAId, businessAreaId: baId, permissionLevel: 'VIEW' },
+    { userId: userBId, businessAreaId: baId, permissionLevel: 'VIEW' },
+  ]);
 }, 60_000);
 
 afterAll(async () => {
@@ -383,17 +396,19 @@ describe('business-area policy — assigned vs unassigned user', () => {
     expect(sql).toContain("(REGION = 'EMEA')");
   });
 
-  it('injects nothing for the unassigned user (user B)', async () => {
-    const forB = await resolveSecurityPredicates(await loadMapDefinition(salesMapId), userBId);
-    expect(forB.predicates).toHaveLength(0);
+  it('REFUSES the unassigned user (user B) rather than run unfiltered', async () => {
+    // D-116: the SALES folder's business area bears an active policy, and B
+    // resolves nothing for it. Before this rule B silently got every row the
+    // policy exists to hide.
+    await expect(
+      resolveSecurityPredicates(await loadMapDefinition(salesMapId), userBId),
+    ).rejects.toThrow(MapExecutionError);
 
-    const { sql } = await runAndCaptureSql(
-      salesMapId,
-      userBId,
-      [{ REGION: 'AMER', AMOUNT: 2 }],
-      SALES_META,
-    );
-    expect(sql).not.toContain("REGION = 'EMEA'");
+    const { conn, execute } = makeCaptureConn([], SALES_META);
+    await expect(
+      executeMap(salesMapId, {}, userBId, {}, realPipelineDeps(conn)),
+    ).rejects.toThrow(/no row-level security policy resolves for you/);
+    expect(execute).not.toHaveBeenCalled();
   });
 
   it('applies the BA policy to EVERY map in that business area (products map too)', async () => {
@@ -589,9 +604,16 @@ describe('admin users are NOT exempt from assigned row-level policies', () => {
     expect(sql).toContain("(REGION = 'APAC')");
   });
 
-  it('an admin WITHOUT an assigned policy gets no predicate', async () => {
-    const resolved = await resolveSecurityPredicates(await loadMapDefinition(salesMapId), adminId);
-    expect(resolved.predicates).toHaveLength(0);
+  it('an admin WITHOUT an assigned policy is refused too, not handed every row', async () => {
+    // This suite's own title is the rule: admins are NOT exempt from row-level
+    // policies. D-116 extends that to the absence of one — a policy-bearing
+    // folder the executing user resolves nothing for is refused, whoever they
+    // are. Admins DO bypass the separate entitlement gate (which business-area
+    // grants they hold); "which rows may I see" is a different question, and
+    // this is the answer to it.
+    await expect(
+      resolveSecurityPredicates(await loadMapDefinition(salesMapId), adminId),
+    ).rejects.toThrow(/no row-level security policy resolves for you/);
   });
 });
 

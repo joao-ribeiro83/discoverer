@@ -23,6 +23,7 @@ import {
   securityPolicies,
   securityPolicyAssignments,
   securityPolicyRules,
+  userBusinessAreaGrants,
   users,
   type Folder,
   type Item,
@@ -523,6 +524,7 @@ async function login(email: string): Promise<string> {
 }
 
 async function cleanupTestData() {
+  await db.delete(userBusinessAreaGrants);
   await db.delete(securityPolicyAssignments);
   await db.delete(securityPolicyRules);
   await db.delete(securityPolicies);
@@ -626,6 +628,15 @@ beforeAll(async () => {
   await db.insert(mapItems).values([
     { mapId, itemId: regionItemId, displayOrder: 0 },
     { mapId, itemId: amountItemId, displayOrder: 1 },
+  ]);
+
+  // The DATA gate (D-016) runs on every execute path and refuses a user with
+  // no grant on any business area the folder belongs to. Row-level security is
+  // a different question — these tests are about predicates, so both users are
+  // entitled to the folder and only their POLICIES differ.
+  await db.insert(userBusinessAreaGrants).values([
+    { userId: userAId, businessAreaId: baId, permissionLevel: 'VIEW' },
+    { userId: userBId, businessAreaId: baId, permissionLevel: 'VIEW' },
   ]);
 }, 60_000);
 
@@ -1135,7 +1146,7 @@ describe('row-level security enforcement', () => {
     await db.delete(securityPolicies).where(eq(securityPolicies.id, policyId));
   });
 
-  it('resolves predicates for an assigned user and none for others', async () => {
+  it('resolves predicates for an assigned user, and REFUSES an unassigned one', async () => {
     // Through the real resolver against the live DB.
     const def = await loadMapDefinition(mapId);
 
@@ -1143,8 +1154,12 @@ describe('row-level security enforcement', () => {
     expect(forA.predicates).toHaveLength(2);
     expect(forA.bindParams.current_user_id).toBe(userAId);
 
-    const forB = await resolveSecurityPredicates(def, userBId);
-    expect(forB.predicates).toHaveLength(0);
+    // D-116: the SALES folder is policy-bearing (user A's policy targets it),
+    // and user B resolves no predicate for it. Running unfiltered would hand
+    // B every row the policy exists to hide, so the query is refused instead.
+    await expect(resolveSecurityPredicates(def, userBId)).rejects.toThrow(
+      /no row-level security policy resolves for you on folder\(s\) "SALES"/,
+    );
   });
 
   it('fails closed for an unknown executing user', async () => {
@@ -1154,20 +1169,10 @@ describe('row-level security enforcement', () => {
     ).rejects.toThrow(MapExecutionError);
   });
 
-  it('user A and user B produce different SQL for the same map', async () => {
+  it('user A gets a filtered query; user B gets no query at all', async () => {
     const capA = makeCaptureConn([{ REGION: 'EMEA', AMOUNT: 1 }]);
     await executeMap(mapId, {}, userAId, {}, realPipelineDeps(capA.conn));
     const [sqlA, bindsA] = capA.execute.mock.calls[0] as unknown as [
-      string,
-      Record<string, unknown>,
-    ];
-
-    const capB = makeCaptureConn([
-      { REGION: 'EMEA', AMOUNT: 1 },
-      { REGION: 'AMER', AMOUNT: 2 },
-    ]);
-    await executeMap(mapId, {}, userBId, {}, realPipelineDeps(capB.conn));
-    const [sqlB, bindsB] = capB.execute.mock.calls[0] as unknown as [
       string,
       Record<string, unknown>,
     ];
@@ -1176,17 +1181,21 @@ describe('row-level security enforcement', () => {
     // resolved, and the BA rule with A's own id bound.
     expect(sqlA).toContain('(f1."REGION" = \'EMEA\')');
     expect(sqlA).toContain('(CREATED_BY = :current_user_id)');
-    expect((bindsA as Record<string, { val?: unknown } | unknown>)).toBeDefined();
-    const bindValA = extractBindValue(bindsA, 'current_user_id');
-    expect(bindValA).toBe(userAId);
+    expect(extractBindValue(bindsA, 'current_user_id')).toBe(userAId);
 
-    // B has no policy: no security predicates, no context binds.
-    expect(sqlB).not.toContain('current_user_id');
-    expect(sqlB).not.toContain("(f1.\"REGION\" = 'EMEA')");
-    expect(extractBindValue(bindsB, 'current_user_id')).toBeUndefined();
+    // B is entitled to the folder's data but has no policy for a folder that
+    // bears one, so nothing reaches Oracle at all (D-116).
+    const capB = makeCaptureConn([
+      { REGION: 'EMEA', AMOUNT: 1 },
+      { REGION: 'AMER', AMOUNT: 2 },
+    ]);
+    await expect(
+      executeMap(mapId, {}, userBId, {}, realPipelineDeps(capB.conn)),
+    ).rejects.toThrow(MapExecutionError);
+    expect(capB.execute).not.toHaveBeenCalled();
   });
 
-  it('stops enforcing after the policy is unassigned', async () => {
+  it('refuses, rather than runs unfiltered, after the policy is unassigned', async () => {
     const listRes = await app.inject({
       method: 'GET',
       url: `/api/security/policies/${policyId}/assignments`,
@@ -1199,10 +1208,14 @@ describe('row-level security enforcement', () => {
       headers: authHeaders(adminToken),
     });
 
+    // Unassigning does NOT hand user A an unfiltered query: the policy still
+    // exists and still targets this folder, so A now resolves nothing for a
+    // policy-bearing folder and the run is refused (D-116).
     const cap = makeCaptureConn([]);
-    await executeMap(mapId, {}, userAId, {}, realPipelineDeps(cap.conn));
-    const [sql] = cap.execute.mock.calls[0] as unknown as [string];
-    expect(sql).not.toContain('current_user_id');
+    await expect(
+      executeMap(mapId, {}, userAId, {}, realPipelineDeps(cap.conn)),
+    ).rejects.toThrow(/no row-level security policy resolves for you/);
+    expect(cap.execute).not.toHaveBeenCalled();
 
     // Re-assign for any later assertions.
     await app.inject({

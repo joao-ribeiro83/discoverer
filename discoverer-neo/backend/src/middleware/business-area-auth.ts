@@ -1,7 +1,13 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { eq } from 'drizzle-orm';
 import { db } from '../db/index.js';
-import { folders, hierarchies, items, joins } from '../db/schema.js';
+import {
+  folderBusinessAreas,
+  folders,
+  hierarchies,
+  items,
+  joins,
+} from '../db/schema.js';
 import {
   userHasPermission,
   userHasAnyPermission,
@@ -95,49 +101,68 @@ interface OwnedEntity {
   label: string;
   /** Route params that may carry the entity ID, checked in order. */
   paramNames: string[];
-  /** Resolve the owning business area ID, or null if the entity does not exist. */
-  resolveBusinessAreaId: (entityId: string) => Promise<string | null>;
+  /**
+   * Every business area that can grant this entity, or an empty array if the
+   * entity does not exist.
+   *
+   * A folder belongs to its owning business area AND to every area it is
+   * shared into (`folder_business_areas`) — Discoverer's `BA_OBJ_LINKS` is
+   * many-to-many, so "which business area owns this" never had one answer.
+   * A grant on ANY of them entitles the entity: sharing a folder into a new
+   * area is what gives that area's members access to it, so requiring a grant
+   * on all of them would mean sharing silently revoked access from everyone
+   * already using the folder.
+   */
+  resolveBusinessAreaIds: (entityId: string) => Promise<string[]>;
 }
 
-async function folderBusinessAreaId(folderId: string): Promise<string | null> {
+/** Owning business area plus every area the folder is shared into. */
+async function businessAreasOfFolder(folderId: string): Promise<string[]> {
   const [row] = await db
     .select({ businessAreaId: folders.businessAreaId })
     .from(folders)
     .where(eq(folders.id, folderId))
     .limit(1);
-  return row?.businessAreaId ?? null;
+  if (!row) return [];
+  const shared = await db
+    .select({ businessAreaId: folderBusinessAreas.businessAreaId })
+    .from(folderBusinessAreas)
+    .where(eq(folderBusinessAreas.folderId, folderId));
+  return [
+    ...new Set([row.businessAreaId, ...shared.map((s) => s.businessAreaId)]),
+  ];
 }
 
-async function itemBusinessAreaId(itemId: string): Promise<string | null> {
+async function itemBusinessAreaIds(itemId: string): Promise<string[]> {
   const [row] = await db
-    .select({ businessAreaId: folders.businessAreaId })
+    .select({ folderId: items.folderId })
     .from(items)
-    .innerJoin(folders, eq(items.folderId, folders.id))
     .where(eq(items.id, itemId))
     .limit(1);
-  return row?.businessAreaId ?? null;
+  return row ? businessAreasOfFolder(row.folderId) : [];
 }
 
 // Joins do not reference a business area directly; both sides are validated
 // to live in the same business area on create/update, so the left folder
 // determines the owner.
-async function joinBusinessAreaId(joinId: string): Promise<string | null> {
+async function joinBusinessAreaIds(joinId: string): Promise<string[]> {
   const [row] = await db
-    .select({ businessAreaId: folders.businessAreaId })
+    .select({ folderId: joins.leftFolderId })
     .from(joins)
-    .innerJoin(folders, eq(joins.leftFolderId, folders.id))
     .where(eq(joins.id, joinId))
     .limit(1);
-  return row?.businessAreaId ?? null;
+  return row ? businessAreasOfFolder(row.folderId) : [];
 }
 
-async function hierarchyBusinessAreaId(hierarchyId: string): Promise<string | null> {
+async function hierarchyBusinessAreaIds(
+  hierarchyId: string,
+): Promise<string[]> {
   const [row] = await db
     .select({ businessAreaId: hierarchies.businessAreaId })
     .from(hierarchies)
     .where(eq(hierarchies.id, hierarchyId))
     .limit(1);
-  return row?.businessAreaId ?? null;
+  return row ? [row.businessAreaId] : [];
 }
 
 function requireOwnedEntityAccess(
@@ -167,17 +192,18 @@ function requireOwnedEntityAccess(
       });
     }
 
-    const businessAreaId = await entity.resolveBusinessAreaId(entityId);
+    const businessAreaIds = await entity.resolveBusinessAreaIds(entityId);
 
-    if (!businessAreaId) {
+    if (businessAreaIds.length === 0) {
       return reply.code(404).send({ error: `${entity.label} not found` });
     }
 
-    const { hasPermission } = await userHasPermission(
-      user.sub,
-      businessAreaId,
-      permissionLevel,
+    const checks = await Promise.all(
+      businessAreaIds.map((baId) =>
+        userHasPermission(user.sub, baId, permissionLevel),
+      ),
     );
+    const hasPermission = checks.some((c) => c.hasPermission);
 
     if (!hasPermission) {
       return reply.code(403).send({
@@ -194,7 +220,7 @@ export function requireFolderAccess(permissionLevel: PermissionLevel) {
     {
       label: 'Folder',
       paramNames: ['folderId', 'id'],
-      resolveBusinessAreaId: folderBusinessAreaId,
+      resolveBusinessAreaIds: businessAreasOfFolder,
     },
     permissionLevel,
   );
@@ -206,7 +232,7 @@ export function requireItemAccess(permissionLevel: PermissionLevel) {
     {
       label: 'Item',
       paramNames: ['itemId', 'id'],
-      resolveBusinessAreaId: itemBusinessAreaId,
+      resolveBusinessAreaIds: itemBusinessAreaIds,
     },
     permissionLevel,
   );
@@ -218,7 +244,7 @@ export function requireJoinAccess(permissionLevel: PermissionLevel) {
     {
       label: 'Join',
       paramNames: ['joinId', 'id'],
-      resolveBusinessAreaId: joinBusinessAreaId,
+      resolveBusinessAreaIds: joinBusinessAreaIds,
     },
     permissionLevel,
   );
@@ -230,7 +256,7 @@ export function requireHierarchyAccess(permissionLevel: PermissionLevel) {
     {
       label: 'Hierarchy',
       paramNames: ['hierarchyId', 'id'],
-      resolveBusinessAreaId: hierarchyBusinessAreaId,
+      resolveBusinessAreaIds: hierarchyBusinessAreaIds,
     },
     permissionLevel,
   );

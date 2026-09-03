@@ -236,6 +236,75 @@ Understand Discoverer Neo's system design, component relationships, and data flo
 - Predicates added to WHERE clause at query time
 - Users only see rows matching their context
 
+### Two authorisation gates
+
+Reading a map's data crosses **two** gates, and both must pass. They answer
+different questions, so neither can stand in for the other.
+
+| Gate | Question | Where | Admin bypass |
+|---|---|---|---|
+| Object | May you see this map object? | `canAccessMap` (`map.service.ts`) | yes |
+| Data | May you read the rows it touches? | `assertDataEntitlement` (`business-area.service.ts`) | yes, audit-logged |
+| Rows | *Which* rows may you see? | `resolveSecurityPredicates` (`map-execution.service.ts`) | **no** |
+
+`canAccessMap` has five grant paths and four of them — admin, owner, public,
+explicit share — return before any business-area check. Appending a folder rule
+to its last branch would therefore make map sharing a business-area grant
+escalation: own a map over folders in an area you were never granted, share it,
+and the recipient reads the data.
+
+So the data gate runs **unconditionally**, after the object gate, on every path
+that produces SQL. There is one such path — `defaultPrepareQuery` — and the
+interactive, async, export and scheduler routes all go through it.
+
+The third row is the one place admins are deliberately *not* exempt. "Which
+business areas were you granted" is an administrative question; "which rows may
+you see" is not, and a policy that an admin silently escaped would be no policy
+at all.
+
+### Derived query scope
+
+A map's query scope is **derived**, never declared:
+
+1. the folders its `map_items` and `map_conditions` live in;
+2. everything reachable from those through join metadata (transitive closure);
+3. every folder a resolved calculated-field reference reaches.
+
+`maps.business_area_id` is **advisory** — UI grouping only — and nullable.
+Discoverer models folder-to-business-area as many-to-many (`BA_OBJ_LINKS`, and
+`folder_business_areas` here), so a worksheet was never confined to one
+business area; making the column authoritative was what stopped the migrated
+estate from executing at all.
+
+Nothing that decides what a user may read reads that column. Both the data gate
+and the row gate resolve against `effectiveFolderSet(def)`
+(`lib/sql/folder-set.ts`), which is the single derivation of "which folders does
+this query touch". Its rule is:
+
+> Any folder that can change the rows the user sees must resolve its policies,
+> or the query refuses.
+
+It returns two named sets:
+
+- `columnBearingFolderIds` — folders whose column values reach the statement,
+  including those reached only through a calculated field's formula;
+- `joinPathFolderIds` — folders the FROM clause adds purely to bridge the
+  others, each tagged with its join type and whether it can change the row set.
+  A `LEFT OUTER` bridge preserves every existing row and so cannot; every other
+  join type can.
+
+Row-level security resolves over the column-bearing set plus every row-changing
+bridge. The FROM clause spans the union.
+
+### Interim: multi-folder aggregates are refused
+
+`buildFromClause` refuses a query that spans more than one folder *and*
+aggregates, naming the folders. A flat inner join across a master/detail pair
+multiplies every master measure by its detail count — Oracle's own worked
+example shows 2x-3x inflation on two measures at once — and a wrong number that
+looks right is worse than a refusal. The guard is removed when the fan-trap
+planner lands; until then, multi-folder maps without aggregates are unaffected.
+
 ## Data Flow Examples
 
 ### Creating a Map
