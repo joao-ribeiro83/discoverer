@@ -1,4 +1,4 @@
-import { eq, and, asc, inArray } from 'drizzle-orm';
+import { eq, and, asc, inArray, or } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import {
   maps,
@@ -6,7 +6,12 @@ import {
   mapConditions,
   mapParameters,
   mapCalculatedFields,
+  mapConditionalFormats,
+  mapLayouts,
+  mapPageSetup,
+  mapTotals,
   mapShares,
+  userBusinessAreaGrants,
   items,
   folders,
   users,
@@ -15,6 +20,10 @@ import {
   type MapCondition,
   type MapParameter,
   type MapCalculatedField,
+  type MapConditionalFormat,
+  type MapLayout,
+  type MapPageSetup,
+  type MapTotal,
   type MapShare,
 } from '../db/schema.js';
 import { userHasPermission } from './business-area.service.js';
@@ -123,6 +132,14 @@ export interface MapWithDetails extends Map {
   conditions: MapCondition[];
   parameters: MapParameter[];
   calculatedFields: MapCalculatedField[];
+  /**
+   * F-32 — the three the API used to omit. They are not decoration: the
+   * estate carries 19 632 totals and a page-setup row for every map, and a
+   * client that cannot read them cannot round-trip a map without losing them.
+   */
+  totals: MapTotal[];
+  layouts: MapLayout[];
+  pageSetup: MapPageSetup | null;
 }
 
 export type MapAction = 'VIEW' | 'EDIT' | 'EXPORT' | 'DELETE' | 'SCHEDULE';
@@ -373,6 +390,109 @@ async function insertChildren(
   };
 }
 
+/**
+ * BE-02 — what a save would otherwise destroy.
+ *
+ * `map_totals` and `map_conditional_formats` anchor on `map_items.id` and
+ * `map_calculated_fields.id` with `ON DELETE CASCADE`, and a save replaces
+ * every one of those rows. So a plain `PUT /api/maps/:id` silently deleted the
+ * map's totals — 19 632 rows across the migrated estate — and the API cannot
+ * even express them, so the client could not put them back.
+ *
+ * Neither table is part of `UpdateMapInput`. The fix is to carry them across
+ * the replace: snapshot each anchor as a key that survives it (the underlying
+ * `items.id` for a map item, the field name for a calculation), then re-point
+ * the rows at the new ids afterwards. A total whose column is no longer on the
+ * map is dropped — that is what removing a column means.
+ */
+interface AnchoredChildren {
+  totals: Array<Omit<MapTotal, 'id' | 'mapItemId' | 'mapCalculatedFieldId' | 'breakMapItemId'> & {
+    itemKey: string | null;
+    calculatedFieldKey: string | null;
+    breakItemKey: string | null;
+  }>;
+  formats: Array<Omit<MapConditionalFormat, 'id' | 'mapItemId'> & { itemKey: string | null }>;
+}
+
+async function snapshotAnchoredChildren(
+  tx: Tx,
+  mapId: string,
+): Promise<AnchoredChildren> {
+  const [totalRows, formatRows, itemRows, calcRows] = await Promise.all([
+    tx.select().from(mapTotals).where(eq(mapTotals.mapId, mapId)),
+    tx
+      .select()
+      .from(mapConditionalFormats)
+      .where(eq(mapConditionalFormats.mapId, mapId)),
+    tx.select().from(mapItems).where(eq(mapItems.mapId, mapId)),
+    tx
+      .select()
+      .from(mapCalculatedFields)
+      .where(eq(mapCalculatedFields.mapId, mapId)),
+  ]);
+
+  const itemKeyById = new globalThis.Map(itemRows.map((r) => [r.id, r.itemId]));
+  const calcKeyById = new globalThis.Map(calcRows.map((r) => [r.id, r.name]));
+  const key = <T>(m: globalThis.Map<string, T>, id: string | null): T | null =>
+    id === null ? null : (m.get(id) ?? null);
+
+  return {
+    totals: totalRows.map(({ id: _id, mapItemId, mapCalculatedFieldId, breakMapItemId, ...rest }) => ({
+      ...rest,
+      itemKey: key(itemKeyById, mapItemId),
+      calculatedFieldKey: key(calcKeyById, mapCalculatedFieldId),
+      breakItemKey: key(itemKeyById, breakMapItemId),
+    })),
+    formats: formatRows.map(({ id: _id, mapItemId, ...rest }) => ({
+      ...rest,
+      itemKey: key(itemKeyById, mapItemId),
+    })),
+  };
+}
+
+async function restoreAnchoredChildren(
+  tx: Tx,
+  snapshot: AnchoredChildren,
+  newItems: MapItem[],
+  newCalculatedFields: MapCalculatedField[],
+): Promise<void> {
+  // ponytail: first row wins when a map carries the same underlying item
+  // twice (the same column on two axes). Discoverer's totals point at a
+  // column element, not at an axis placement, so the distinction does not
+  // exist in the source. Key on (item, axis) if that ever changes.
+  const itemIdByKey = new globalThis.Map<string, string>();
+  for (const row of newItems) if (!itemIdByKey.has(row.itemId)) itemIdByKey.set(row.itemId, row.id);
+  const calcIdByKey = new globalThis.Map<string, string>();
+  for (const row of newCalculatedFields) if (!calcIdByKey.has(row.name)) calcIdByKey.set(row.name, row.id);
+
+  /** null key -> null id; a key that no longer resolves -> undefined (drop). */
+  const resolve = (
+    m: globalThis.Map<string, string>,
+    k: string | null,
+  ): string | null | undefined => (k === null ? null : m.get(k));
+
+  const totalValues = [];
+  for (const { itemKey, calculatedFieldKey, breakItemKey, ...rest } of snapshot.totals) {
+    const mapItemId = resolve(itemIdByKey, itemKey);
+    const mapCalculatedFieldId = resolve(calcIdByKey, calculatedFieldKey);
+    const breakMapItemId = resolve(itemIdByKey, breakItemKey);
+    // Its column, its calculation or its break column is gone from the map.
+    if (mapItemId === undefined || mapCalculatedFieldId === undefined || breakMapItemId === undefined) {
+      continue;
+    }
+    totalValues.push({ ...rest, mapItemId, mapCalculatedFieldId, breakMapItemId });
+  }
+  if (totalValues.length) await tx.insert(mapTotals).values(totalValues);
+
+  const formatValues = [];
+  for (const { itemKey, ...rest } of snapshot.formats) {
+    const mapItemId = resolve(itemIdByKey, itemKey);
+    if (mapItemId === undefined) continue;
+    formatValues.push({ ...rest, mapItemId });
+  }
+  if (formatValues.length) await tx.insert(mapConditionalFormats).values(formatValues);
+}
+
 async function deleteChildren(tx: Tx, mapId: string): Promise<void> {
   await tx.delete(mapItems).where(eq(mapItems.mapId, mapId));
   await tx.delete(mapConditions).where(eq(mapConditions.mapId, mapId));
@@ -382,41 +502,59 @@ async function deleteChildren(tx: Tx, mapId: string): Promise<void> {
     .where(eq(mapCalculatedFields.mapId, mapId));
 }
 
-async function loadChildren(mapId: string): Promise<{
-  items: MapItem[];
-  conditions: MapCondition[];
-  parameters: MapParameter[];
-  calculatedFields: MapCalculatedField[];
-}> {
-  const [itemRows, conditionRows, parameterRows, calculatedFieldRows] =
-    await Promise.all([
-      db
-        .select()
-        .from(mapItems)
-        .where(eq(mapItems.mapId, mapId))
-        .orderBy(asc(mapItems.displayOrder)),
-      db
-        .select()
-        .from(mapConditions)
-        .where(eq(mapConditions.mapId, mapId))
-        .orderBy(asc(mapConditions.displayOrder)),
-      db
-        .select()
-        .from(mapParameters)
-        .where(eq(mapParameters.mapId, mapId))
-        .orderBy(asc(mapParameters.name)),
-      db
-        .select()
-        .from(mapCalculatedFields)
-        .where(eq(mapCalculatedFields.mapId, mapId))
-        .orderBy(asc(mapCalculatedFields.displayOrder)),
-    ]);
+type MapChildren = Omit<MapWithDetails, keyof Map>;
+
+async function loadChildren(mapId: string, tx: Tx | typeof db = db): Promise<MapChildren> {
+  const [
+    itemRows,
+    conditionRows,
+    parameterRows,
+    calculatedFieldRows,
+    totalRows,
+    layoutRows,
+    pageSetupRows,
+  ] = await Promise.all([
+    tx
+      .select()
+      .from(mapItems)
+      .where(eq(mapItems.mapId, mapId))
+      .orderBy(asc(mapItems.displayOrder)),
+    tx
+      .select()
+      .from(mapConditions)
+      .where(eq(mapConditions.mapId, mapId))
+      .orderBy(asc(mapConditions.displayOrder)),
+    tx
+      .select()
+      .from(mapParameters)
+      .where(eq(mapParameters.mapId, mapId))
+      .orderBy(asc(mapParameters.name)),
+    tx
+      .select()
+      .from(mapCalculatedFields)
+      .where(eq(mapCalculatedFields.mapId, mapId))
+      .orderBy(asc(mapCalculatedFields.displayOrder)),
+    tx
+      .select()
+      .from(mapTotals)
+      .where(eq(mapTotals.mapId, mapId))
+      .orderBy(asc(mapTotals.displayOrder)),
+    tx
+      .select()
+      .from(mapLayouts)
+      .where(eq(mapLayouts.mapId, mapId))
+      .orderBy(asc(mapLayouts.worksheetIndex)),
+    tx.select().from(mapPageSetup).where(eq(mapPageSetup.mapId, mapId)).limit(1),
+  ]);
 
   return {
     items: itemRows,
     conditions: conditionRows,
     parameters: parameterRows,
     calculatedFields: calculatedFieldRows,
+    totals: totalRows,
+    layouts: layoutRows,
+    pageSetup: pageSetupRows[0] ?? null,
   };
 }
 
@@ -457,7 +595,9 @@ export async function create(
       .returning();
 
     const children = await insertChildren(tx, map!.id, data);
-    return { ...map!, ...children };
+    // A new map has no totals, layouts or page setup yet — only the migrator
+    // and the (future) worksheet editor write those.
+    return { ...map!, ...children, totals: [], layouts: [], pageSetup: null };
   });
 }
 
@@ -513,17 +653,26 @@ export async function update(
       .returning();
 
     if (replacingChildren) {
+      // BE-02: totals and conditional formats cascade off `map_items`; carry
+      // them across the replace rather than letting the save delete them.
+      const anchored = await snapshotAnchoredChildren(tx, id);
       await deleteChildren(tx, id);
-      const children = await insertChildren(tx, id, {
+      const inserted = await insertChildren(tx, id, {
         items: data.items!,
         conditions: data.conditions,
         parameters: data.parameters,
         calculatedFields: data.calculatedFields,
       });
-      return { ...map!, ...children };
+      await restoreAnchoredChildren(
+        tx,
+        anchored,
+        inserted.items,
+        inserted.calculatedFields,
+      );
+      return { ...map!, ...(await loadChildren(id, tx)) };
     }
 
-    const children = await loadChildren(id);
+    const children = await loadChildren(id, tx);
     return { ...map!, ...children };
   });
 }
@@ -563,6 +712,68 @@ export async function listByUser(userId: string): Promise<Map[]> {
     .select()
     .from(maps)
     .where(and(eq(maps.createdBy, userId), eq(maps.isActive, true)))
+    .orderBy(maps.name);
+}
+
+/**
+ * F-07 — every map the caller may see, in one list.
+ *
+ * `GET /api/maps` returned `{ mine, shared }`, which for an estate migrated
+ * under one service account is `{ mine: [], shared: [] }` for everyone else:
+ * all 923 maps invisible. This is the third scope.
+ *
+ * The predicate mirrors `canAccessMap(user, map, 'VIEW')` exactly, in SQL,
+ * because calling it per row would be two round trips per map. The mirroring
+ * is pinned by a test — if the two ever disagree, that test fails, not a user.
+ *
+ * Listing is not entitlement. `assertDataEntitlement` still governs execution
+ * (Phase 1.1's second gate); appearing here only means the map OBJECT is
+ * readable.
+ */
+export async function listAll(user: {
+  sub: string;
+  role: string;
+}): Promise<Map[]> {
+  if (user.role === 'ADMIN') {
+    return db
+      .select()
+      .from(maps)
+      .where(eq(maps.isActive, true))
+      .orderBy(maps.name);
+  }
+
+  const [grantRows, shareRows] = await Promise.all([
+    db
+      .select({ businessAreaId: userBusinessAreaGrants.businessAreaId })
+      .from(userBusinessAreaGrants)
+      .where(eq(userBusinessAreaGrants.userId, user.sub)),
+    db
+      .select({ mapId: mapShares.mapId })
+      .from(mapShares)
+      .where(eq(mapShares.sharedWithUserId, user.sub)),
+  ]);
+
+  const grantedBaIds = [...new Set(grantRows.map((r) => r.businessAreaId))];
+  const sharedMapIds = [...new Set(shareRows.map((r) => r.mapId))];
+
+  // Every share level grants VIEW (see SHARE_ALLOWS), and VIEW is the bottom
+  // of the permission hierarchy, so holding any grant on the business area is
+  // enough. `inArray` on a nullable column never matches NULL, which is the
+  // behaviour we want: a map with no business area is not visible through a
+  // grant — matching `canAccessMap`'s `if (!map.businessAreaId) return false`.
+  const visible = [
+    eq(maps.createdBy, user.sub),
+    eq(maps.isPublic, true),
+    ...(sharedMapIds.length ? [inArray(maps.id, sharedMapIds)] : []),
+    ...(grantedBaIds.length
+      ? [inArray(maps.businessAreaId, grantedBaIds)]
+      : []),
+  ];
+
+  return db
+    .select()
+    .from(maps)
+    .where(and(eq(maps.isActive, true), or(...visible)))
     .orderBy(maps.name);
 }
 
@@ -627,6 +838,12 @@ export async function duplicate(
       })
       .returning();
 
+    // Totals, conditional formats, layouts and page setup are not part of
+    // `insertChildren` (the API cannot express them). Copy them explicitly —
+    // a duplicate that quietly loses the original's totals is the same bug as
+    // BE-02, one call site over.
+    const anchored = await snapshotAnchoredChildren(tx, id);
+
     const children = await insertChildren(tx, copy!.id, {
       items: source.items.map((i) => ({
         itemId: i.itemId,
@@ -669,7 +886,23 @@ export async function duplicate(
       })),
     });
 
-    return { ...copy!, ...children };
+    await restoreAnchoredChildren(
+      tx,
+      anchored,
+      children.items,
+      children.calculatedFields,
+    );
+
+    for (const layout of source.layouts) {
+      const { id: _id, mapId: _mapId, createdAt: _createdAt, ...rest } = layout;
+      await tx.insert(mapLayouts).values({ ...rest, mapId: copy!.id });
+    }
+    if (source.pageSetup) {
+      const { id: _id, mapId: _mapId, createdAt: _createdAt, ...rest } = source.pageSetup;
+      await tx.insert(mapPageSetup).values({ ...rest, mapId: copy!.id });
+    }
+
+    return { ...copy!, ...(await loadChildren(copy!.id, tx)) };
   });
 }
 

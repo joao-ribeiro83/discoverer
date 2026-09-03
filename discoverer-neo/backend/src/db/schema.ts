@@ -49,10 +49,10 @@ import {
   mapConditions,
   mapParameters,
   mapCalculatedFields,
-  mapLayouts,
-  mapTotals,
-  mapPageSetup,
   mapConditionalFormats,
+  mapLayouts,
+  mapPageSetup,
+  mapTotals,
 } from '@discoverer-neo/core/db/schema';
 import type { customFunctions } from '@discoverer-neo/core/db/schema';
 
@@ -685,6 +685,8 @@ export type MapParameter = typeof mapParameters.$inferSelect;
 export type MapCalculatedField = typeof mapCalculatedFields.$inferSelect;
 export type MapLayout = typeof mapLayouts.$inferSelect;
 export type MapTotal = typeof mapTotals.$inferSelect;
+export type MapPageSetup = typeof mapPageSetup.$inferSelect;
+export type MapConditionalFormat = typeof mapConditionalFormats.$inferSelect;
 export type MapShare = typeof mapShares.$inferSelect;
 export type QueryExecutionLog = typeof queryExecutionLog.$inferSelect;
 export type ExportJob = typeof exportJobs.$inferSelect;
