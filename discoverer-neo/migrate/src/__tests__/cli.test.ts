@@ -49,7 +49,7 @@ describe('runCli — analyze', () => {
     expect(text).toContain('EUL Migration Assessment');
     expect(text).toContain('EUL5');
     expect(text).toContain('Business areas');
-    expect(text).toContain('Migration readiness');
+    expect(text).toContain('Source readiness');
   });
 
   it('emits JSON with --json', async () => {
