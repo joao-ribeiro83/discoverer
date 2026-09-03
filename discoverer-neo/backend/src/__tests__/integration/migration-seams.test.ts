@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import { inArray, like, sql } from 'drizzle-orm';
 
 import {
+  checkFormulaCompileRate,
   checkSqlGeneration,
   createMigrationWriter,
   createTargetDb,
@@ -32,6 +33,7 @@ import {
   users,
 } from '../../db/schema.js';
 import { generateSqlForMap } from '../../services/sql-generator.js';
+import { bucketFormula } from '../../services/formula-bucket.js';
 
 // ===========================================================================
 // The four seam tests (Phase 1.3).
@@ -183,6 +185,85 @@ describe('Migration seam tests', () => {
       const result = await checkSqlGeneration(db, { mapIdPrefix: PREFIX });
       expect(result.status).toBe('SKIPPED');
       expect(result.reason).toContain('backend workspace');
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Seam 2 — formula compile rate
+  // -------------------------------------------------------------------------
+  describe('seam 2: every calculated field compiles or is quarantined with a reason', () => {
+    // The EUL5 fixture carries no calculated fields, so the seam would pass
+    // vacuously over it. These three cover the buckets the real estate lands
+    // in: one that parses, one unrendered Discoverer token (49 027 of them
+    // live), and one that is not a formula at all.
+    const FIELD_IDS = [
+      `${PREFIX}888800000001`,
+      `${PREFIX}888800000002`,
+      `${PREFIX}888800000003`,
+    ];
+
+    beforeAll(async () => {
+      const [map] = await db.select().from(maps).where(idLike(maps.id)).limit(1);
+      await db.insert(mapCalculatedFields).values([
+        { id: FIELD_IDS[0]!, mapId: map!.id, name: 'parses', formula: 'SUM(AMOUNT) * 2', displayOrder: 1 },
+        { id: FIELD_IDS[1]!, mapId: map!.id, name: 'token', formula: '[1,1]([6,2])', displayOrder: 2 },
+        { id: FIELD_IDS[2]!, mapId: map!.id, name: 'garbage', formula: 'SUM(', displayOrder: 3 },
+      ]);
+    });
+
+    afterAll(async () => {
+      await db.delete(mapCalculatedFields).where(inArray(mapCalculatedFields.id, FIELD_IDS));
+    });
+
+    it('buckets every formula, and gates only on FAILED', async () => {
+      const result = await checkFormulaCompileRate(db, {
+        mapIdPrefix: PREFIX,
+        compileFormula: bucketFormula,
+      });
+
+      const { formulas = 0, compiledUnverified = 0, quarantined = 0, failed = 0 } = result.metrics;
+      expect(formulas).toBe(3);
+      // Every formula lands in exactly one bucket — no silent third state.
+      expect(compiledUnverified + quarantined + failed + (result.metrics.compiled ?? 0)).toBe(formulas);
+      expect(compiledUnverified).toBe(1);
+      expect(quarantined).toBe(2);
+      // FAILED is the only gated bucket: an unhandled path is our bug.
+      expect(failed).toBe(0);
+      expect(result.status).toBe('PASS');
+    });
+
+    it('states a reason for every quarantined formula', async () => {
+      const result = await checkFormulaCompileRate(db, {
+        mapIdPrefix: PREFIX,
+        compileFormula: bucketFormula,
+      });
+
+      // A quarantine without a reason is the unknown this seam exists to
+      // delete, so the verifier must never fall back to a placeholder.
+      expect(result.findings.join(' | ')).not.toContain('no reason given');
+      expect(result.findings.join(' | ')).toContain('unrendered Discoverer');
+      expect(result.metrics.distinctReasons).toBe(2);
+    });
+
+    it('reports FAIL when the classifier hits a path it does not handle', async () => {
+      // Negative control for the one bucket CI gates on.
+      const result = await checkFormulaCompileRate(db, {
+        mapIdPrefix: PREFIX,
+        compileFormula: () => {
+          throw new Error('unhandled formula shape');
+        },
+      });
+
+      expect(result.metrics.failed).toBe(3);
+      expect(result.status).toBe('FAIL');
+      expect(result.findings.join(' | ')).toContain('classifier threw');
+    });
+
+    it('never reports PASS when no compiler is injected', async () => {
+      const result = await checkFormulaCompileRate(db, { mapIdPrefix: PREFIX });
+      expect(result.status).toBe('SKIPPED');
+      // The count is still useful, and still not a pass.
+      expect(result.metrics.formulas).toBe(3);
     });
   });
 });
