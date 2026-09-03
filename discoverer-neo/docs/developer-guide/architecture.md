@@ -96,6 +96,45 @@ Understand Discoverer Neo's system design, component relationships, and data flo
 
 **Migrations:** Drizzle migrations in `backend/drizzle/`
 
+#### One schema, two workspaces
+
+The 20 tables the migrator and the backend share are declared **once**, in
+`migrate/src/db/schema.ts` — the `@discoverer-neo/core` package.
+`backend/src/db/schema.ts` re-exports them and adds the 10 runtime-only tables
+the migrator never writes (map shares, query execution log, export jobs,
+schedules, schedule parameters, scheduled results, the three security-policy
+tables and the audit log). Relations span both halves, so every `relations()`
+block lives on the backend side, which can see both.
+
+Neither TypeScript file is the DDL. `backend/drizzle/*.sql` is; both files are
+typed views over one physical schema.
+
+This replaced two independent declarations that nothing forced to agree — and
+they didn't. The migrator's `map_conditions` had no `group_id`, so every
+imported condition lost its parenthesisation on insert (drizzle drops a key
+that matches no column, silently), and its `maps.business_area_id` was still
+`notNull()` a phase after the backend made it advisory. Under the re-export a
+column change in core is a compile error in every backend consumer that
+relied on the old type. `backend/src/__tests__/schema-single-definition.test.ts`
+is what stops a local `pgTable` reappearing and undoing that.
+
+`migration_log` is deliberately **not** in `db/schema.ts`. The migrator creates
+it itself through `ensureSchema()`; declaring it there would make the backend
+re-export it and `drizzle-kit generate` would emit a `CREATE TABLE` for a table
+that already exists. It lives in `migrate/src/db/migration-log.ts`.
+
+#### Dependency direction
+
+`backend` -> `@discoverer-neo/core`, never the reverse. Core carries no Fastify
+dependency, which is the only thing keeping `dn-migrate` runnable on its own.
+Two `no-restricted-imports` rules in `eslint.config.js` enforce it:
+
+- Nothing under `migrate/` may import from `backend/`.
+- Nothing under `backend/src/` may import `@discoverer-neo/core/migration`
+  except `migration.service.ts`, `credential-file.service.ts`, scripts and
+  tests. The shared schema (`@discoverer-neo/core/db/schema`) is free to
+  import anywhere; the EUL pipeline is not request-path code.
+
 ### Redis Cache & Job Queue
 
 **Cache:**

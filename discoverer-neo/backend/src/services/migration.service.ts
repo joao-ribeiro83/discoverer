@@ -1,5 +1,5 @@
 /**
- * Migration service — drives the `@discoverer-neo/migrate` pipeline from the
+ * Migration service — drives the `@discoverer-neo/core/migration` pipeline from the
  * API so an admin can detect, analyse and run an EUL migration from the UI.
  *
  * Two deliberate design points:
@@ -32,7 +32,7 @@ import {
   reimportMaps,
   runMigration,
   TARGET_TABLE_ORDER,
-} from '@discoverer-neo/migrate';
+} from '@discoverer-neo/core/migration';
 import type {
   AssessmentReport,
   EulConnectionConfig,
@@ -42,7 +42,7 @@ import type {
   MigrationEvent,
   MigrationResult,
   MigrationWriter,
-} from '@discoverer-neo/migrate';
+} from '@discoverer-neo/core/migration';
 import { eq } from 'drizzle-orm';
 
 import { config } from '../config.js';

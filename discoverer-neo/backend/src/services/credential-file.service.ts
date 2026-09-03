@@ -24,7 +24,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { chmod, mkdir, writeFile } from 'node:fs/promises';
 import { isAbsolute, join, resolve } from 'node:path';
 
-import type { ProvisionedCredential } from '@discoverer-neo/migrate';
+import type { ProvisionedCredential } from '@discoverer-neo/core/migration';
 import { config } from '../config.js';
 
 /** Owner-only, for both the directory and the file. */

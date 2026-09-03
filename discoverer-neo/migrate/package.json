@@ -1,13 +1,15 @@
 {
-  "name": "@discoverer-neo/migrate",
+  "name": "@discoverer-neo/core",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Discoverer Neo EUL migration tool — imports Oracle Discoverer 4–11 EUL metadata",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "description": "Discoverer Neo core — the shared database schema, plus the Oracle EUL migration pipeline",
   "exports": {
-    ".": {
+    "./db/schema": {
+      "types": "./dist/db/schema.d.ts",
+      "default": "./dist/db/schema.js"
+    },
+    "./migration": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },

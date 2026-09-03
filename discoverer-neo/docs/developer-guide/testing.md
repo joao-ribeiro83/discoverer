@@ -124,9 +124,9 @@ Tests use:
 - **Jest mocks** — Mock services and database
 - **Test database** — `discoverer_neo_test`, never your dev database (above)
 
-#### The `migrate` workspace resolves to source, not `dist`
+#### `@discoverer-neo/core` resolves to source, not `dist`
 
-`migration.test.ts` imports `@discoverer-neo/migrate/testing`. Both
+`migration.test.ts` imports `@discoverer-neo/core/testing`. Both
 `moduleNameMapper` **and** the ts-jest `paths` override in `jest.config.js`
 point that at `migrate/src/**`, so no build is required.
 

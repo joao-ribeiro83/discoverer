@@ -6,6 +6,7 @@
   "description": "Discoverer Neo backend - Node.js 22 + TypeScript + Fastify API",
   "scripts": {
     "dev": "tsx watch src/server.ts",
+    "prebuild": "npm run build -w @discoverer-neo/core",
     "build": "tsc --noEmit false -p tsconfig.json",
     "start": "node dist/server.js",
     "worker": "tsx src/workers/export.standalone.ts",
@@ -14,6 +15,7 @@
     "worker:scheduler:start": "node dist/workers/scheduler.standalone.js",
     "lint": "eslint .",
     "format": "prettier --write .",
+    "pretypecheck": "npm run build -w @discoverer-neo/core",
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "test:integration": "jest --testPathPattern='integration'",
@@ -28,7 +30,7 @@
     "pretest": "npm run db:test:setup"
   },
   "dependencies": {
-    "@discoverer-neo/migrate": "*",
+    "@discoverer-neo/core": "*",
     "@fastify/cors": "^11.0.0",
     "@fastify/helmet": "^13.0.0",
     "@fastify/jwt": "^10.0.0",

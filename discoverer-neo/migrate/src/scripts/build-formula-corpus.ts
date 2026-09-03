@@ -2,7 +2,7 @@
  * Builds the **anonymised formula corpus** — the checked-in evidence Phases
  * 4.1-4.3 fit the token-formula renderer against (decision D-114).
  *
- *   npm run rebuild-corpus -w @discoverer-neo/migrate
+ *   npm run rebuild-corpus -w @discoverer-neo/core/migration
  *   # or: npx tsx src/scripts/build-formula-corpus.ts [--dumps-dir <path>]
  *
  * ## Why anonymised
@@ -44,7 +44,7 @@ import { parseD4wkdmpDump, type DumpEntry } from '../services/d4wkdmp-dump-parse
 import { EUL_FUNCTION_NAMES } from '../services/workbook-parser.js';
 
 /** Paths are resolved from the migrate workspace root, which is where
- *  `npm run rebuild-corpus -w @discoverer-neo/migrate` puts the cwd. */
+ *  `npm run rebuild-corpus -w @discoverer-neo/core/migration` puts the cwd. */
 const CORPUS_DIR = resolve(process.cwd(), 'corpus');
 const CORPUS_PATH = join(CORPUS_DIR, 'formula-corpus.tsv');
 const META_PATH = join(CORPUS_DIR, 'formula-corpus.meta.json');

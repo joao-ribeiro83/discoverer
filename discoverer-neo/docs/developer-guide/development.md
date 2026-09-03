@@ -25,7 +25,8 @@ cd discoverer-neo
 npm install
 ```
 
-This installs dependencies for all workspaces (backend, frontend, migrate).
+This installs dependencies for all workspaces (backend, frontend, and
+`migrate/`, which publishes as `@discoverer-neo/core`).
 
 ### 3. Start Services
 
@@ -210,16 +211,19 @@ npm run db:migrate --workspace=backend
 ### A change to `migrate/` needs a rebuild; a change to `backend/src` does not
 
 `docker-compose.dev.yml` bind-mounts `./backend/src` and `./frontend/src` into
-their containers, so edits there are live. The `migrate` workspace is **not**
-mounted: the backend imports it as `@discoverer-neo/migrate`, which resolves to
-`migrate/dist`, and that is baked into the image at build time.
+their containers, so edits there are live. The `migrate` workspace — the
+`@discoverer-neo/core` package, which holds the shared database schema as well
+as the EUL pipeline — is **not** mounted: the backend imports it as
+`@discoverer-neo/core/db/schema` and `@discoverer-neo/core/migration`, both of
+which resolve to `migrate/dist`, and that is baked into the image at build
+time.
 
 So a change under `migrate/src` is invisible to a running backend until you
 rebuild — the container keeps running the version it was built with, which
 looks like your change having no effect:
 
 ```bash
-npm run build --workspace=migrate
+npm run build -w @discoverer-neo/core
 docker compose -f docker-compose.yml -f docker-compose.dev.yml build backend
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d backend
 ```

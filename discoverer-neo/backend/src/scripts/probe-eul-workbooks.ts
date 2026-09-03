@@ -18,7 +18,7 @@
  * Read-only. Prints a report; writes nothing.
  */
 
-import { countWorkbookColumns, parseWorkbookDocument } from '@discoverer-neo/migrate';
+import { countWorkbookColumns, parseWorkbookDocument } from '@discoverer-neo/core/migration';
 import { eq } from 'drizzle-orm';
 
 import { db } from '../db/index.js';
