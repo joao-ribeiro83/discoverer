@@ -7,6 +7,7 @@ import { db } from '../../db/index.js';
 import {
   businessAreas,
   dataSources,
+  folderBusinessAreas,
   folders,
   items,
   joins,
@@ -34,6 +35,7 @@ import {
   effectiveFolderSet,
   securityRelevantFolderIds,
 } from '../../lib/sql/folder-set.js';
+import { assertDataEntitlement } from '../../services/business-area.service.js';
 
 // ===========================================================================
 // RLS conformance suite — D-115 / D-116, Phase 1.1
@@ -472,6 +474,60 @@ describe('effectiveFolderSet', () => {
     expect(securityRelevantFolderIds(effectiveFolderSet(def))).toEqual([
       salesFolder.id,
     ]);
+  });
+
+  // BE-12. The original complaint was that `loadMapDefinition` filtered its
+  // folders by `maps.business_area_id` and so could not see a folder shared
+  // into a second business area (`folder_business_areas` — the EUL's
+  // many-to-many `BA_OBJ_LINKS`). Phase 1.1 replaced that filter with a scope
+  // derived from the map's own items plus the join closure, which has no
+  // business-area filter left to be wrong. These pin that: a folder shared
+  // across areas must stay loadable, and must stay entitled through the
+  // sharing area's grant.
+  it('BE-12: loads a folder shared into a second business area', async () => {
+    await db
+      .insert(folderBusinessAreas)
+      .values({ folderId: salesFolder.id, businessAreaId: otherBaId })
+      .onConflictDoNothing();
+
+    try {
+      const def = await loadMapDefinition(plainMapId);
+      expect(def.items.map((i) => i.folder.id)).toContain(salesFolder.id);
+      expect(securityRelevantFolderIds(effectiveFolderSet(def))).toContain(
+        salesFolder.id,
+      );
+    } finally {
+      await db
+        .delete(folderBusinessAreas)
+        .where(eq(folderBusinessAreas.folderId, salesFolder.id));
+    }
+  });
+
+  it('BE-12: a grant on the sharing area entitles the shared folder', async () => {
+    // No grant on BA_NAME for this user, only on OTHER_BA_NAME — the folder is
+    // reachable solely because it was shared there.
+    await db.insert(userBusinessAreaGrants).values({
+      userId: userNoGrantId,
+      businessAreaId: otherBaId,
+      permissionLevel: 'VIEW',
+    });
+    await db
+      .insert(folderBusinessAreas)
+      .values({ folderId: salesFolder.id, businessAreaId: otherBaId })
+      .onConflictDoNothing();
+
+    try {
+      await expect(
+        assertDataEntitlement(userNoGrantId, [salesFolder.id]),
+      ).resolves.toBeUndefined();
+    } finally {
+      await db
+        .delete(folderBusinessAreas)
+        .where(eq(folderBusinessAreas.folderId, salesFolder.id));
+      await db
+        .delete(userBusinessAreaGrants)
+        .where(eq(userBusinessAreaGrants.userId, userNoGrantId));
+    }
   });
 });
 
