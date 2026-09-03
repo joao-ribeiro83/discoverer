@@ -171,11 +171,13 @@ export default async function itemRoutes(fastify: FastifyInstance) {
     },
   );
 
-  // GET /api/items/:id — get one item
+  // GET /api/items/:id — get one item.
+  //
+  // Grant-scoped: an item row names its column and data type.
   fastify.get(
     '/api/items/:id',
     {
-      preHandler: [fastify.authenticate],
+      preHandler: [fastify.authenticate, requireItemAccess('VIEW')],
       schema: {
         tags: ['Items'],
         security: [{ bearerAuth: [] }],
@@ -527,11 +529,14 @@ export default async function itemRoutes(fastify: FastifyInstance) {
     },
   );
 
-  // GET /api/items/:id/descendants — get hierarchical descendants
+  // GET /api/items/:id/descendants — get hierarchical descendants.
+  //
+  // Grant-scoped for the same reason as GET /api/items/:id — and this one
+  // returns a subtree, so it leaks more per call.
   fastify.get(
     '/api/items/:id/descendants',
     {
-      preHandler: [fastify.authenticate],
+      preHandler: [fastify.authenticate, requireItemAccess('VIEW')],
       schema: {
         tags: ['Items'],
         security: [{ bearerAuth: [] }],

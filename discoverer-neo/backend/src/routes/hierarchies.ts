@@ -138,11 +138,13 @@ export default async function hierarchyRoutes(fastify: FastifyInstance) {
     },
   );
 
-  // GET /api/hierarchies/:id — get one with levels
+  // GET /api/hierarchies/:id — get one with levels.
+  //
+  // Grant-scoped: the levels name the items they are built from.
   fastify.get(
     '/api/hierarchies/:id',
     {
-      preHandler: [fastify.authenticate],
+      preHandler: [fastify.authenticate, requireHierarchyAccess('VIEW')],
       schema: {
         tags: ['Hierarchies'],
         security: [{ bearerAuth: [] }],
