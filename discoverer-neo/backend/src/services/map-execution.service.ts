@@ -1072,6 +1072,16 @@ async function runAsyncJob(
 
   activeConnections.set(jobId, { dataSourceId: prepared.dataSourceId, conn });
 
+  /**
+   * The terminal status is assigned LAST, in `finally`, once the execution-log
+   * row and `finishedAt` are already in place. It used to be set first, so a
+   * caller that polled to COMPLETED and immediately read the execution history
+   * could find nothing there — the job said done while the audit trail said
+   * nothing had happened. That race is what made the async-execution test
+   * intermittent (F-23); it was a real defect, not a flaky assertion.
+   */
+  let terminal: AsyncJobStatus | null = null;
+
   try {
     conn.callTimeout = timeoutMs;
     const {
@@ -1086,7 +1096,7 @@ async function runAsyncJob(
     );
     const executionTimeMs = Date.now() - start;
 
-    job.status = 'COMPLETED';
+    terminal = 'COMPLETED';
     job.rowCount = rows.length;
     job.truncated = truncated;
     job.executionTimeMs = executionTimeMs;
@@ -1113,7 +1123,7 @@ async function runAsyncJob(
     job.executionTimeMs = elapsed;
 
     if (cancelRequested.has(jobId) || isCancelError(err)) {
-      job.status = 'CANCELLED';
+      terminal = 'CANCELLED';
       job.error = 'Execution cancelled by user';
       await safeRecord(deps, {
         mapId,
@@ -1125,7 +1135,7 @@ async function runAsyncJob(
         status: 'FAILED',
       });
     } else if (isTimeoutError(err)) {
-      job.status = 'TIMEOUT';
+      terminal = 'TIMEOUT';
       job.error = errorMessage(err);
       await safeRecord(deps, {
         mapId,
@@ -1137,7 +1147,7 @@ async function runAsyncJob(
         status: 'TIMEOUT',
       });
     } else {
-      job.status = 'FAILED';
+      terminal = 'FAILED';
       job.error = errorMessage(err);
       await safeRecord(deps, {
         mapId,
@@ -1153,6 +1163,9 @@ async function runAsyncJob(
     activeConnections.delete(jobId);
     cancelRequested.delete(jobId);
     job.finishedAt = new Date();
+    // Everything the status implies is now true. Flip it before releasing the
+    // connection, so a poller is not held up by driver teardown.
+    if (terminal) job.status = terminal;
     await deps.releaseConnection(prepared.dataSourceId, conn);
   }
 }

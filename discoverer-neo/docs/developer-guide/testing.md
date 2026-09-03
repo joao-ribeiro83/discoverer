@@ -143,15 +143,27 @@ rm -rf migrate/dist && npm run test -- migration.test --workspace=backend
 
 It must still pass with `dist` absent.
 
-### Coverage Goals
+### Coverage
 
-Target > 80% coverage:
+CI runs every workspace with `--coverage`, and each one fails below a **branch**
+threshold set at its measured baseline. Branch coverage, not lines: for a SQL
+generator full of conditionals, a line figure says almost nothing about whether
+the interesting paths were taken. A commit titled "coverage push to >80%" once
+left the only coverage artefact in the repository reporting 75.38% lines and
+56.10% branches, with nothing checking either.
+
+| Workspace | Branch threshold | Set in |
+| --- | --- | --- |
+| backend | 56% | `backend/jest.config.js` |
+| migrate | 71% | `migrate/jest.config.js` |
+| frontend | 78% | `frontend/vitest.config.ts` |
+
+These are floors at what the suite measurably achieves, not targets. Raise one
+in the commit that earns it. No coverage report is committed — a checked-in
+artefact goes stale and then gets quoted.
 
 ```bash
-npm run test -- --coverage --workspace=backend
-
-# See coverage report
-open backend/coverage/lcov-report/index.html
+npm test --workspace @discoverer-neo/backend -- --coverage
 ```
 
 ## Frontend Testing
@@ -379,6 +391,81 @@ Load test setup (see `backend/src/__tests__/integration/`):
 ```bash
 npm run test:integration -- performance.test.ts --workspace=backend
 ```
+
+## The four seam tests
+
+Every other suite here checks one component against its own fixtures. That is
+worth having, and it is not enough: in September 2026 this repository had 1 654
+tests at 99.94% passing over an estate where 807 of 923 migrated worksheets
+could not produce SQL at all. No test spanned two components, so no test could
+see it.
+
+Four tests close that gap. They live in
+`backend/src/__tests__/integration/migration-seams.test.ts` and drive the shared
+verifier in `migrate/src/services/migration-verify.ts` — the same code
+`dn-migrate verify` runs against a real target.
+
+| Seam | Asks | Catches |
+| --- | --- | --- |
+| `sql-generation` | Does every migrated map load and generate SQL? | A migration that produces rows nothing can execute |
+| `formula-compile` | Does every calculated field compile, or carry a stated quarantine reason? | Formula support silently going backwards |
+| `referential-closure` | Does every reference resolve to an item, folder and data source in the map's scope? | Rows that satisfy every foreign key and still cannot run |
+| `reconciliation` | Do target counts match what the declared allowances say? | A regression disguised as a known gap |
+
+### Two of them need the backend, and say so
+
+`generateSqlForMap` and the formula parser live in `backend/`, which depends on
+`@discoverer-neo/core` and not the reverse. The verifier takes both as injected
+hooks. `dn-migrate verify` reports those seams **SKIPPED** — never PASS — and
+`npm run verify --workspace @discoverer-neo/backend` supplies both and runs all
+four. A SKIPPED seam is not a pass anywhere.
+
+### Declared baselines, not green lights
+
+Several seams fail today, on purpose. Their known counts are pinned as named
+constants carrying a comment that names the phase which removes them, so a
+regression fails the build while a known defect waits for its fix. When you fix
+one, lower the constant in the same commit.
+
+### The compile-rate buckets (D-059)
+
+| Bucket | Means |
+| --- | --- |
+| `COMPILED` | Parsed **and** proven against a real Oracle. Nothing may claim this until the Oracle contract tests exist |
+| `COMPILED_UNVERIFIED` | Parses against our grammar; never run anywhere |
+| `QUARANTINED(reason)` | Does not compile, and we can say why |
+| `FAILED` | The classifier hit a path it does not handle |
+
+CI gates on `FAILED === 0` only. An unhandled path is our bug; a quarantine is a
+data problem waiting on the phase that fixes it. A quarantine without a stated
+reason is the unknown these tests exist to delete, so the verifier never falls
+back to a placeholder.
+
+### The expected-loss allowance file
+
+A migration drops things, and some of that is understood and accepted. Left as
+magic numbers inside assertions, a real regression looks exactly like a known
+gap. They live instead in `migrate/src/verify/expected-loss.ts`, one entry per
+concept: what it is, the source count, the expected target count, and why they
+differ.
+
+Seam 4 fails on **any** drift from `expectedTarget`, in either direction. Fewer
+rows is a regression. More rows means a phase recovered something and left the
+declaration stale, which is how an allowance quietly becomes permanent.
+
+`explained: false` marks a gap recorded but not understood. Those are counted
+separately so they cannot pass for accepted ones.
+
+### The formula corpus agreement gate
+
+`migrate/src/__tests__/formula-corpus-agreement.test.ts` runs the token renderer
+over 37 971 aligned (stored, displayed) formula pairs from real workbooks and
+refuses a drop against `migrate/corpus/agreement-baseline.json`.
+
+It reports two rates, because they answer different questions: **distinct** is
+how much of the formula language is covered, **weighted** is how many formulas
+in a real estate would render. It is a ratchet — raise the baseline by hand, in
+the commit that earns it.
 
 ## What's Next?
 

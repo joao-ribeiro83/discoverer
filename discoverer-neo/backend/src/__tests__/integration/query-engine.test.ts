@@ -881,7 +881,12 @@ describe('Scenario 9: async execution', () => {
     expect(job.rowCount).toBe(3);
     expect(job.result?.rows).toEqual(rows);
 
-    // Logged as a successful execution too.
+    // Logged as a successful execution too — with NO extra wait. The status is
+    // the signal that everything it implies is already true, so reading the
+    // history the instant a poller sees COMPLETED must find the row. This
+    // assertion was intermittent until the terminal status stopped being set
+    // before the log write (F-23).
+    expect(job.finishedAt).toBeInstanceOf(Date);
     const logs = await db
       .select()
       .from(queryExecutionLog)
