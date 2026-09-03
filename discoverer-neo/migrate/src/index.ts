@@ -164,6 +164,18 @@ export type {
   SkipRecord,
 } from './services/migration-runner.js';
 
+// --- Formula corpus agreement gate (D-114) -------------------------------
+export {
+  measureAgreement,
+  readFormulaCorpus,
+  NO_RENDERER,
+} from './services/formula-corpus-agreement.js';
+export type {
+  FormulaRenderer,
+  AgreementResult,
+  AgreementSample,
+} from './services/formula-corpus-agreement.js';
+
 // --- Post-commit verification (D-070) -------------------------------------
 export {
   verifyMigration,
