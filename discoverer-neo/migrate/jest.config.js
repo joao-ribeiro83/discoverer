@@ -21,4 +21,10 @@ export default {
   },
   testMatch: ['**/?(*.)+(spec|test).ts'],
   clearMocks: true,
+  // ponytail: baseline from the 2026-09-03 measured run (branches 71.7%).
+  coverageThreshold: {
+    global: {
+      branches: 71,
+    },
+  },
 };

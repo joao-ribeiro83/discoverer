@@ -28,17 +28,12 @@ Two things live side by side:
    replacement for Discoverer 4. This is where the code is. See
    `discoverer-neo/CLAUDE.md`.
 
-Also present: `.claude/agents-off/` (138 sub-agents) and `.claude/skills/` (2,543
-skills). **Neither is auto-loaded.**
-
-- Skills sit one directory level below where Claude Code discovers skills, which
-  keeps 352 KB of descriptions out of every session. Find one by reading
-  `.claude/skills/SKILL_INDEX.md` on demand.
-- Agents were renamed `agents/` → `agents-off/` on 2026-08-31. Nesting them was
-  not enough: agent discovery **recurses**, so all 138 name+description entries
-  were landing in every system prompt (8,217 tokens, re-read on every turn) while
-  going unused across ten sessions. Read `.claude/agents-off/AGENT_INDEX.md` to
-  find one; rename the folder back to `agents/` to re-enable them all.
+The local `.claude/agents-off/` (138 sub-agents) and `.claude/skills/` (2,543
+skills) libraries were deleted from disk on 2026-09-03 — they were going unused
+across ten sessions while costing 8,217 tokens of system-prompt overhead per
+turn. If you need one back, restore it from git history
+(`git log --diff-filter=D -- '.claude/agents/*'`) rather than assuming it is
+still present.
 
 ## Directory Structure
 
@@ -48,8 +43,7 @@ E:\claude\discoverer\
 ├── discoverer10g\sql\     # Oracle's shipped SQL scripts — EUL schema ground truth
 ├── DISCVR4\               # Oracle Discoverer 4 binaries and SQL
 ├── d4dumps\               # Sample .DIS workbook files
-├── 4.1\ 9.0.4\ 10.1.2\ 10.1.2.1\ 11.1.1\   # Vendor PDFs by version
-└── .claude\agents-off\, .claude\skills\    # Agent and skill definitions (neither auto-loads)
+└── 4.1\ 9.0.4\ 10.1.2\ 10.1.2.1\ 11.1.1\   # Vendor PDFs by version
 ```
 
 ## Oracle Discoverer Key Facts
@@ -87,7 +81,5 @@ shipped SQL.
 ## Working with This Repository
 
 - Vendor PDFs are organized by version in the numbered directories.
-- `.claude/agents-off/AGENT_INDEX.md` and `.claude/skills/SKILL_INDEX.md` list the
-  available agents and skills. Neither loads automatically — read on demand.
 - The knowledge-base half has nothing to build, lint or test — it is documentation.
   The `discoverer-neo/` half does; its own CLAUDE.md has the commands.
