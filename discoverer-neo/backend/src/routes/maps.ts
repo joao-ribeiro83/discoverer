@@ -5,6 +5,7 @@ import {
   update,
   getById,
   listByBusinessArea,
+  listAll,
   listByUser,
   listSharedWithUser,
   softDelete,
@@ -122,6 +123,10 @@ const DuplicateBodySchema = z.object({
   name: z.string().min(1).max(255).optional(),
 });
 
+const MapScopeQuerySchema = z.object({
+  scope: z.enum(['owned', 'all']).optional(),
+});
+
 const IdParamSchema = z.object({ id: z.string().uuid() });
 const BaIdParamSchema = z.object({ baId: z.string().uuid() });
 
@@ -198,7 +203,16 @@ export default async function mapRoutes(fastify: FastifyInstance) {
     },
   );
 
-  // GET /api/maps — the current user's maps (own + shared with them)
+  // GET /api/maps — the maps the caller may see.
+  //
+  // F-07: the default `owned` scope answers "what did I make", which for an
+  // estate migrated under one service account is nothing at all — every
+  // migrated map belonged to the migrating user and `{mine: [], shared: []}`
+  // hid all of them. `?scope=all` is the answer to "what can I open", and it
+  // is the default for an admin, for whom the two differ most.
+  //
+  // Being listed here is not entitlement to the data. Executing a map still
+  // goes through `assertDataEntitlement` (Phase 1.1, D-016 gate 2).
   fastify.get(
     '/api/maps',
     {
@@ -206,15 +220,29 @@ export default async function mapRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Maps'],
         security: [{ bearerAuth: [] }],
+        querystring: {
+          type: 'object',
+          properties: {
+            scope: { type: 'string', enum: ['owned', 'all'] },
+          },
+        },
       },
     },
     async (request) => {
-      const user = request.user as { sub: string };
+      const user = request.user as { sub: string; role: string };
+      const { scope } = MapScopeQuerySchema.parse(request.query ?? {});
+      const effective = scope ?? (user.role === 'ADMIN' ? 'all' : 'owned');
+
+      if (effective === 'all') {
+        const all = await listAll(user);
+        return { data: { all }, scope: 'all' };
+      }
+
       const [mine, shared] = await Promise.all([
         listByUser(user.sub),
         listSharedWithUser(user.sub),
       ]);
-      return { data: { mine, shared } };
+      return { data: { mine, shared }, scope: 'owned' };
     },
   );
 

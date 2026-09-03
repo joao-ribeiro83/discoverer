@@ -3,10 +3,12 @@ import {
   it,
   expect,
   beforeAll,
+  beforeEach,
   afterAll,
+  afterEach,
 } from '@jest/globals';
 import type { FastifyInstance } from 'fastify';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { buildApp } from '../app.js';
 import { db } from '../db/index.js';
 import {
@@ -20,9 +22,14 @@ import {
   mapConditions,
   mapParameters,
   mapCalculatedFields,
+  mapConditionalFormats,
+  mapTotals,
+  mapLayouts,
+  mapPageSetup,
   mapShares,
 } from '../db/schema.js';
 import { hashPassword } from '../lib/password.js';
+import { canAccessMap } from '../services/map.service.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -73,6 +80,10 @@ async function login(email: string): Promise<string> {
 
 async function cleanupTestData() {
   await db.delete(mapShares);
+  await db.delete(mapConditionalFormats);
+  await db.delete(mapTotals);
+  await db.delete(mapLayouts);
+  await db.delete(mapPageSetup);
   await db.delete(mapCalculatedFields);
   await db.delete(mapParameters);
   await db.delete(mapConditions);
@@ -890,6 +901,256 @@ describe('Map management', () => {
     it('requires authentication for all map routes', async () => {
       const res = await app.inject({ method: 'GET', url: '/api/maps' });
       expect(res.statusCode).toBe(401);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // F-07 — the `all` scope
+  // -------------------------------------------------------------------------
+
+  describe('GET /api/maps?scope=all', () => {
+    it('returns every active map for an admin', async () => {
+      const res = await app.inject({
+        method: 'GET',
+        url: '/api/maps?scope=all',
+        headers: { authorization: `Bearer ${adminToken}` },
+      });
+      expect(res.statusCode).toBe(200);
+
+      // Not a literal: whatever the database holds is the answer. On the live
+      // estate that is Phase 0.4's recorded count; here it is the fixtures.
+      const [row] = await db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(maps)
+        .where(eq(maps.isActive, true));
+      expect(res.json().data.all).toHaveLength(row!.count);
+    });
+
+    it('defaults to the all scope for an admin and to owned for a user', async () => {
+      const asAdmin = await app.inject({
+        method: 'GET',
+        url: '/api/maps',
+        headers: { authorization: `Bearer ${adminToken}` },
+      });
+      expect(asAdmin.json().scope).toBe('all');
+
+      const asUser = await app.inject({
+        method: 'GET',
+        url: '/api/maps',
+        headers: { authorization: `Bearer ${ownerToken}` },
+      });
+      expect(asUser.json().scope).toBe('owned');
+      expect(asUser.json().data).toHaveProperty('mine');
+    });
+
+    it('returns only what a non-admin may see, agreeing with canAccessMap', async () => {
+      const res = await app.inject({
+        method: 'GET',
+        url: '/api/maps?scope=all',
+        headers: { authorization: `Bearer ${viewerToken}` },
+      });
+      expect(res.statusCode).toBe(200);
+      const returned: string[] = res
+        .json()
+        .data.all.map((m: { id: string }) => m.id)
+        .sort();
+
+      // The SQL predicate in listAll mirrors canAccessMap. Pin them together:
+      // a divergence has to fail here, not in front of a user.
+      const all = await db.select().from(maps).where(eq(maps.isActive, true));
+      const permitted: string[] = [];
+      for (const map of all) {
+        if (await canAccessMap({ sub: viewerId, role: 'USER' }, map, 'VIEW')) {
+          permitted.push(map.id);
+        }
+      }
+      expect(returned).toEqual(permitted.sort());
+    });
+
+    it('does not leak a map in a business area the caller has no grant on', async () => {
+      const [foreign] = await db
+        .insert(maps)
+        .values({
+          name: 'Foreign Scope Map',
+          mapType: 'TABLE',
+          businessAreaId: otherBaId,
+          createdBy: ownerId,
+        })
+        .returning();
+
+      const res = await app.inject({
+        method: 'GET',
+        url: '/api/maps?scope=all',
+        headers: { authorization: `Bearer ${viewerToken}` },
+      });
+      const ids = res.json().data.all.map((m: { id: string }) => m.id);
+      expect(ids).not.toContain(foreign!.id);
+
+      await db.delete(maps).where(eq(maps.id, foreign!.id));
+    });
+
+    it('rejects an unknown scope', async () => {
+      const res = await app.inject({
+        method: 'GET',
+        url: '/api/maps?scope=everything',
+        headers: { authorization: `Bearer ${adminToken}` },
+      });
+      expect(res.statusCode).toBe(400);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // F-32 and BE-02 — totals, layout and page setup
+  // -------------------------------------------------------------------------
+
+  describe('totals, layout and page setup', () => {
+    let subjectId: string;
+
+    beforeEach(async () => {
+      const created = await app.inject({
+        method: 'POST',
+        url: `/api/business-areas/${baId}/maps`,
+        headers: { authorization: `Bearer ${ownerToken}` },
+        payload: { ...validMapPayload(), name: 'Totals Round Trip' },
+      });
+      subjectId = created.json().data.id as string;
+
+      const rows = await db
+        .select()
+        .from(mapItems)
+        .where(eq(mapItems.mapId, subjectId));
+      const amount = rows.find((r) => r.itemId === itemId2)!;
+      const region = rows.find((r) => r.itemId === itemId1)!;
+
+      await db.insert(mapTotals).values([
+        {
+          mapId: subjectId,
+          kind: 'TOTAL',
+          mapItemId: amount.id,
+          aggFunction: 'SUM',
+          placement: 'GRAND_TOTAL',
+          label: 'Grand total',
+          displayOrder: 0,
+        },
+        {
+          mapId: subjectId,
+          kind: 'TOTAL',
+          mapItemId: amount.id,
+          breakMapItemId: region.id,
+          aggFunction: 'SUM',
+          placement: 'AT_CHANGE',
+          label: 'Subtotal by region',
+          displayOrder: 1,
+        },
+      ]);
+      await db
+        .insert(mapLayouts)
+        .values({ mapId: subjectId, worksheetIndex: 0, title: 'Sheet 1' });
+      await db
+        .insert(mapPageSetup)
+        .values({ mapId: subjectId, orientation: 'LANDSCAPE', scalePercent: 80 });
+    });
+
+    afterEach(async () => {
+      await db.delete(maps).where(eq(maps.id, subjectId));
+    });
+
+    it('F-32: returns totals, layouts and page setup from GET /api/maps/:id', async () => {
+      const res = await app.inject({
+        method: 'GET',
+        url: `/api/maps/${subjectId}`,
+        headers: { authorization: `Bearer ${ownerToken}` },
+      });
+      expect(res.statusCode).toBe(200);
+
+      const body = res.json().data;
+      expect(body.totals).toHaveLength(2);
+      expect(body.layouts).toHaveLength(1);
+      expect(body.pageSetup).toMatchObject({
+        orientation: 'LANDSCAPE',
+        scalePercent: 80,
+      });
+    });
+
+    it('BE-02: a GET -> PUT round trip preserves every total row', async () => {
+      const before = await app.inject({
+        method: 'GET',
+        url: `/api/maps/${subjectId}`,
+        headers: { authorization: `Bearer ${ownerToken}` },
+      });
+      const original = before.json().data;
+
+      // Put back exactly what the client just read. The API has no field for
+      // totals, so if the save does not carry them across they are gone.
+      const res = await app.inject({
+        method: 'PUT',
+        url: `/api/maps/${subjectId}`,
+        headers: { authorization: `Bearer ${ownerToken}` },
+        payload: {
+          name: original.name,
+          items: original.items.map(
+            (i: {
+              itemId: string;
+              displayOrder: number;
+              aggFunction: string | null;
+            }) => ({
+              itemId: i.itemId,
+              displayOrder: i.displayOrder,
+              aggFunction: i.aggFunction,
+            }),
+          ),
+          conditions: original.conditions.map(
+            (c: { itemId: string; operator: string; conditionType: string }) => ({
+              itemId: c.itemId,
+              operator: c.operator,
+              conditionType: c.conditionType,
+              paramName: 'p_region',
+            }),
+          ),
+          parameters: [
+            { name: 'p_region', paramType: 'STRING', isRequired: true },
+          ],
+          calculatedFields: original.calculatedFields.map(
+            (f: { name: string; formula: string }) => ({
+              name: f.name,
+              formula: f.formula,
+            }),
+          ),
+        },
+      });
+      expect(res.statusCode).toBe(200);
+
+      const totals = res.json().data.totals as Array<Record<string, unknown>>;
+      expect(totals).toHaveLength(2);
+      expect(totals.map((t) => t.label).sort()).toEqual([
+        'Grand total',
+        'Subtotal by region',
+      ]);
+
+      // Re-anchored, not orphaned: every total points at a live map_item.
+      const liveItemIds = new Set(
+        (res.json().data.items as Array<{ id: string }>).map((i) => i.id),
+      );
+      for (const total of totals) {
+        expect(liveItemIds.has(total.mapItemId as string)).toBe(true);
+        if (total.breakMapItemId) {
+          expect(liveItemIds.has(total.breakMapItemId as string)).toBe(true);
+        }
+      }
+    });
+
+    it('BE-02: drops only the totals whose column left the map', async () => {
+      const res = await app.inject({
+        method: 'PUT',
+        url: `/api/maps/${subjectId}`,
+        headers: { authorization: `Bearer ${ownerToken}` },
+        payload: {
+          // `Region` alone — both totals anchor on `Amount`, so both must go.
+          items: [{ itemId: itemId1 }],
+        },
+      });
+      expect(res.statusCode).toBe(200);
+      expect(res.json().data.totals).toHaveLength(0);
     });
   });
 });
