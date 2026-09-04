@@ -454,7 +454,7 @@ describe('processExportJob', () => {
       writeExportFile: async (source, _format, _filePath, onRows) => {
         const dir = await fsp.mkdtemp(path.join(os.tmpdir(), 'progress-'));
         try {
-          return await writeCsv(path.join(dir, 'p.csv'), source as ExportSource, { onRows });
+          return await writeCsv(path.join(dir, 'p.csv'), source, { onRows });
         } finally {
           await fsp.rm(dir, { recursive: true, force: true });
         }

@@ -78,7 +78,7 @@ const looseDataArray = {
 // Routes
 // ---------------------------------------------------------------------------
 
-export default async function migrationRoutes(fastify: FastifyInstance) {
+export default function migrationRoutes(fastify: FastifyInstance) {
   const adminPreHandler = [fastify.authenticate, fastify.authorizeAdmin];
   const tags = ['Migration'];
   const security = [{ bearerAuth: [] }];

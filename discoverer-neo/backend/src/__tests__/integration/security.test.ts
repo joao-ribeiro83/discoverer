@@ -1238,7 +1238,7 @@ function extractBindValue(
   if (!binds || typeof binds !== 'object') return undefined;
   const entry = (binds as Record<string, unknown>)[name];
   if (entry && typeof entry === 'object' && 'val' in entry) {
-    return (entry as { val: unknown }).val;
+    return entry.val;
   }
   return entry;
 }

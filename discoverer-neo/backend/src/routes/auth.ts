@@ -31,7 +31,7 @@ const RefreshBodySchema = z.object({
 // Route handler
 // ---------------------------------------------------------------------------
 
-export default async function authRoutes(fastify: FastifyInstance) {
+export default function authRoutes(fastify: FastifyInstance) {
   // POST /api/auth/login
   fastify.post(
     '/api/auth/login',

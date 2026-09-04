@@ -6,7 +6,7 @@ import { getOracleClientStatus } from '../services/oracle-connection-pool.js';
 /** Version — kept in sync with package.json. */
 const version = '0.1.0';
 
-export default async function healthRoutes(fastify: FastifyInstance) {
+export default function healthRoutes(fastify: FastifyInstance) {
   // Registered at /health (container healthchecks) and /api/health
   // (frontend dev proxy, which forwards /api/* without rewriting).
   for (const path of ['/health', '/api/health'] as const) {

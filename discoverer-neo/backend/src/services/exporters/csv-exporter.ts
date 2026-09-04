@@ -3,6 +3,7 @@ import { pipeline } from 'node:stream/promises';
 import { format as formatCsv } from 'fast-csv';
 import {
   cellValue,
+  cellText,
   isDateType,
   PROGRESS_ROW_INTERVAL,
   type ExportSource,
@@ -38,7 +39,7 @@ function toText(value: unknown, dateOnly: boolean): string {
     const text = formatDate(v);
     return dateOnly ? text.slice(0, 10) : text;
   }
-  return String(v);
+  return cellText(v);
 }
 
 /**
