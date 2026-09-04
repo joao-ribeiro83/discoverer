@@ -450,8 +450,24 @@ export interface ExecuteMapBody {
   offset?: number
 }
 
-/** Mirrors the backend's `ExecutionErrorKind` (see `KIND_STATUS` in map-execution.ts). */
-export type ExecutionErrorKind = 'CONFIG' | 'CONNECT' | 'TIMEOUT' | 'QUERY' | 'CANCELLED'
+/**
+ * Mirrors the backend's `ExecutionErrorKind` (see `KIND_STATUS` in
+ * map-execution.ts). `FORBIDDEN` is what `assertDataEntitlement` raises — the
+ * caller may open the map but not run it. `REFUSED` is not a failure at all:
+ * the planner declined a request it cannot answer correctly (D-036), and the
+ * client renders it as an explanation, never as an error.
+ */
+export type ExecutionErrorKind =
+  | 'CONFIG'
+  | 'CONNECT'
+  | 'TIMEOUT'
+  | 'QUERY'
+  | 'CANCELLED'
+  | 'FORBIDDEN'
+  | 'REFUSED'
+
+/** Machine-readable reason behind a `REFUSED` execution. Keys the explanation copy. */
+export type RefusalCode = 'MULTI_FOLDER_AGGREGATE' | 'NO_JOIN_PATH'
 
 export type AsyncJobStatus = 'QUEUED' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'TIMEOUT' | 'CANCELLED'
 
