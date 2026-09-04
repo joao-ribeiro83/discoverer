@@ -19,6 +19,7 @@
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "test:integration": "jest --testPathPattern='integration'",
+    "pretest:integration": "npm run db:test:setup",
     "test:unit": "jest --testPathIgnorePatterns='/integration/'",
     "test:watch": "jest --watch",
     "db:generate": "drizzle-kit generate",

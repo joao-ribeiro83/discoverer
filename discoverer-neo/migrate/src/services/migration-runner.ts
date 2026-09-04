@@ -102,6 +102,17 @@ export interface RunMigrationOptions {
   dryRun?: boolean;
   /** Owner of migrated maps and created_by attribution. */
   migrationUser?: { email?: string; name?: string };
+  /**
+   * The target `data_sources` row this EUL is being read from, stamped onto
+   * every migrated folder.
+   *
+   * Without it a folder has no database behind it, and
+   * `resolveDataSourceId` refuses to execute any map that touches it — so a
+   * migration that omits this produces an estate where nothing runs, however
+   * good its SQL. The migrator does not create the row: you migrate FROM a
+   * data source that already exists in the target.
+   */
+  dataSourceId?: string;
   onEvent?: (event: MigrationEvent) => void;
   deps?: Partial<MigrationRunnerDeps>;
 }
@@ -613,6 +624,7 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     folderRows.push({
       id,
       businessAreaId: baId,
+      dataSourceId: options.dataSourceId ?? null,
       name: t.name,
       description: t.description,
       folderType: t.folderType,
@@ -627,6 +639,24 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     });
   }
   planned.folders = folderRows.length;
+
+  // Loud, because the consequence is invisible until someone opens a map: no
+  // data source means no database to send the query to, and every map that
+  // touches these folders fails at execution with "no data source configured".
+  if (options.dataSourceId === undefined && folderRows.length > 0) {
+    warnings.push({
+      code: 'FOLDERS_WITHOUT_DATA_SOURCE',
+      message:
+        `No dataSourceId was supplied, so all ${folderRows.length} folder(s) migrate with ` +
+        `no data source. Every map built on them will refuse to execute until ` +
+        `folders.data_source_id is set.`,
+    });
+    await emit(
+      'WARN',
+      'folders',
+      `${folderRows.length} folder(s) have no data source; maps on them cannot execute.`,
+    );
+  }
 
   // A folder shared across business areas (EUL BA_OBJ_LINKS is many-to-many)
   // keeps its owning area on folders.business_area_id; the rest are recorded

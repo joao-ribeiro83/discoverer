@@ -483,6 +483,8 @@ export interface RunCommandOptions {
   dryRun?: boolean;
   json?: boolean;
   migrationDeps?: { genId?: () => string; now?: () => Date };
+  /** Target data_sources row every migrated folder points at. */
+  dataSourceId?: string;
 }
 
 export async function commandRun(
@@ -507,6 +509,7 @@ export async function commandRun(
     readOptions: options.readOptions,
     version: options.version,
     dryRun: options.dryRun,
+    dataSourceId: options.dataSourceId,
     deps: options.migrationDeps,
     onEvent,
   });
@@ -628,6 +631,11 @@ function parseArgs(argv: string[]) {
       choices: ['auto', 'eul4', 'eul5'],
       default: 'auto',
       describe: 'Override EUL auto-detection (run/validate)',
+    })
+    .option('data-source-id', {
+      type: 'string',
+      describe:
+        'Target data_sources UUID to stamp on every migrated folder (run). Without it, no map can execute.',
     })
     .option('samples', {
       type: 'number',
@@ -795,6 +803,7 @@ export async function runCli(argv: string[], deps: CliDeps = {}): Promise<number
     version: versionOverride,
     json: parsed.json === true,
     migrationDeps: deps.migrationDeps,
+    dataSourceId: typeof parsed['data-source-id'] === 'string' ? parsed['data-source-id'] : undefined,
   };
 
   try {
