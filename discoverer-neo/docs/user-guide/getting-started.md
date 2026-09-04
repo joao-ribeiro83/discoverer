@@ -57,9 +57,11 @@ After logging in, you'll see the main dashboard with the following sections:
 ### Dashboard
 
 The dashboard displays:
-- **Recent Maps** — Your recently viewed or executed maps
-- **Quick Stats** — Number of maps, executions, and shared items
-- **Scheduled Jobs** — Active and upcoming scheduled runs
+- **Total Maps** — Every map you can see (yours, and shared with you)
+- **Total Executions** — How many times you've run a query, across every map you can see
+- **Scheduled Maps** — How many of your schedules are active
+- **Scheduled Results** — How many results your schedules have produced
+- **Recent Maps** — Your last 5 updated maps, if you own any
 
 ## Exploring Business Areas
 
