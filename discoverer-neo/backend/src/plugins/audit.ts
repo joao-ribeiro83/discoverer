@@ -162,7 +162,7 @@ export interface AuditPluginOptions {
 }
 
 export default fp(
-  async (fastify, opts: AuditPluginOptions = {}) => {
+  (fastify, opts: AuditPluginOptions = {}) => {
     const excludePrefixes = opts.excludeRoutes ?? DEFAULT_EXCLUDE_PREFIXES;
 
     fastify.addHook('onSend', async (request: FastifyRequest, reply, payload) => {

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from '@jest/globals';
 import type { FastifyInstance } from 'fastify';
-import { eq, and } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { buildApp } from '../../app.js';
 import { db } from '../../db/index.js';
 import {
@@ -182,7 +182,7 @@ describe('GET /api/business-areas', () => {
   });
 
   it('non-admin sees only granted business areas', async () => {
-    const admin = await createTestUser('ba-admin@example.com', TEST_PASSWORD, 'ADMIN');
+    const _admin = await createTestUser('ba-admin@example.com', TEST_PASSWORD, 'ADMIN');
     const adminToken = await loginAndReturnToken('ba-admin@example.com', TEST_PASSWORD);
 
     // Create two business areas as admin
@@ -332,7 +332,7 @@ describe('PUT /api/business-areas/:id', () => {
   });
 
   it('allows user with EDIT grant to update', async () => {
-    const admin = await createTestUser('ba-admin@example.com', TEST_PASSWORD, 'ADMIN');
+    const _admin = await createTestUser('ba-admin@example.com', TEST_PASSWORD, 'ADMIN');
     const adminToken = await loginAndReturnToken('ba-admin@example.com', TEST_PASSWORD);
 
     const createRes = await app.inject({
@@ -367,7 +367,7 @@ describe('PUT /api/business-areas/:id', () => {
   });
 
   it('returns 403 for user with only VIEW grant', async () => {
-    const admin = await createTestUser('ba-admin@example.com', TEST_PASSWORD, 'ADMIN');
+    const _admin = await createTestUser('ba-admin@example.com', TEST_PASSWORD, 'ADMIN');
     const adminToken = await loginAndReturnToken('ba-admin@example.com', TEST_PASSWORD);
 
     const createRes = await app.inject({
@@ -721,7 +721,7 @@ describe('Permission enforcement', () => {
   });
 
   it('user with VIEW grant can access but not edit', async () => {
-    const admin = await createTestUser('ba-admin@example.com', TEST_PASSWORD, 'ADMIN');
+    const _admin = await createTestUser('ba-admin@example.com', TEST_PASSWORD, 'ADMIN');
     const adminToken = await loginAndReturnToken('ba-admin@example.com', TEST_PASSWORD);
 
     const createRes = await app.inject({

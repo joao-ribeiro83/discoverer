@@ -5,10 +5,8 @@ import {
   update,
   getById,
   listByFolder,
-  listByBusinessArea,
   softDelete,
   importFromOracleColumns,
-  validateFormula,
   getDescendants,
 } from '../services/item.service.js';
 import { requireFolderAccess, requireItemAccess } from '../middleware/business-area-auth.js';
@@ -127,7 +125,7 @@ const importResultSchema = {
 // Routes
 // ---------------------------------------------------------------------------
 
-export default async function itemRoutes(fastify: FastifyInstance) {
+export default function itemRoutes(fastify: FastifyInstance) {
   // GET /api/folders/:folderId/items — list items in a folder
   fastify.get(
     '/api/folders/:folderId/items',
@@ -273,7 +271,7 @@ export default async function itemRoutes(fastify: FastifyInstance) {
         });
       }
 
-      const user = request.user!;
+      const user = request.user;
 
       try {
         const item = await create({

@@ -11,7 +11,7 @@ import {
 } from '@jest/globals';
 import type { FastifyInstance } from 'fastify';
 import type { Connection } from 'oracledb';
-import { and, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import ExcelJS from 'exceljs';
 import { parseString } from 'fast-csv';
 import { db } from '../../db/index.js';
@@ -123,9 +123,9 @@ function makeFailingConn(err: unknown): { conn: Connection } {
 function exportDeps(conn: Connection, overrides: Partial<ExportJobDeps> = {}): ExportJobDeps {
   return {
     ...defaultExportDeps(),
-    getConnection: (async () => conn) as ExportJobDeps['getConnection'],
-    releaseConnection: (async () => {}) as ExportJobDeps['releaseConnection'],
-    enqueue: (async () => {}) as ExportJobDeps['enqueue'],
+    getConnection: (async () => conn),
+    releaseConnection: (async () => {}),
+    enqueue: (async () => {}),
     ...overrides,
   };
 }
@@ -134,8 +134,8 @@ function exportDeps(conn: Connection, overrides: Partial<ExportJobDeps> = {}): E
 function schedulerDeps(conn: Connection, overrides: Partial<SchedulerDeps> = {}): SchedulerDeps {
   return {
     ...defaultSchedulerDeps(),
-    getConnection: (async () => conn) as SchedulerDeps['getConnection'],
-    releaseConnection: (async () => {}) as SchedulerDeps['releaseConnection'],
+    getConnection: (async () => conn),
+    releaseConnection: (async () => {}),
     ...overrides,
   };
 }

@@ -152,7 +152,7 @@ function sendValidationError(reply: FastifyReply, err: unknown): boolean {
 // Routes
 // ---------------------------------------------------------------------------
 
-export default async function scheduleRoutes(fastify: FastifyInstance) {
+export default function scheduleRoutes(fastify: FastifyInstance) {
   // GET /api/maps/:mapId/schedules — schedules configured on a map.
   fastify.get(
     '/api/maps/:mapId/schedules',

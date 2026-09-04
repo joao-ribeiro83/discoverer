@@ -5,10 +5,8 @@ import {
   update,
   getById,
   listByBusinessArea,
-  listByDataSource,
   softDelete,
   importFromOracle,
-  validateCustomSql,
   shareWithBusinessArea,
   unshareWithBusinessArea,
   listSharedBusinessAreas,
@@ -148,7 +146,7 @@ const importResultSchema = {
 // Routes
 // ---------------------------------------------------------------------------
 
-export default async function folderRoutes(fastify: FastifyInstance) {
+export default function folderRoutes(fastify: FastifyInstance) {
   // GET /api/business-areas/:baId/folders — list folders in a business area
   fastify.get(
     '/api/business-areas/:baId/folders',
@@ -293,7 +291,7 @@ export default async function folderRoutes(fastify: FastifyInstance) {
         });
       }
 
-      const user = request.user!;
+      const user = request.user;
 
       try {
         const folder = await create(
@@ -783,7 +781,7 @@ export default async function folderRoutes(fastify: FastifyInstance) {
         });
       }
 
-      const user = request.user!;
+      const user = request.user;
 
       try {
         const result = await importFromOracle(

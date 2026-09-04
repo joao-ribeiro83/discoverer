@@ -72,7 +72,7 @@ const errorResponse = {
 // Routes
 // ---------------------------------------------------------------------------
 
-export default async function customFunctionRoutes(fastify: FastifyInstance) {
+export default function customFunctionRoutes(fastify: FastifyInstance) {
   // All custom-function endpoints require authentication and ADMIN/MANAGER role.
   const adminManagerPreHandler = [fastify.authenticate, fastify.authorize('ADMIN', 'MANAGER')];
 

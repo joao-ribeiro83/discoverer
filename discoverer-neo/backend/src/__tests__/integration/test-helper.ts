@@ -11,7 +11,6 @@ import {
   joins,
   hierarchies,
   hierarchyLevels,
-  customFunctions,
 } from '../../db/schema.js';
 import { hashPassword } from '../../lib/password.js';
 import { eq } from 'drizzle-orm';
