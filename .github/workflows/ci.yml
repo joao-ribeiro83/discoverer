@@ -122,6 +122,45 @@ jobs:
       - name: Build
         run: npm run build --workspace @discoverer-neo/frontend
 
+  e2e:
+    name: E2E (Playwright)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: discoverer-neo/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+        working-directory: discoverer-neo/frontend
+
+      # Every spec mocks the backend via page.route() (apiClient's baseURL is
+      # a same-origin '/api' by default), and Playwright's webServer starts
+      # its own Vite dev server — no Postgres/backend service needed here.
+      # FRONTEND_PORT matches the discoverer-neo-frontend-verify convention
+      # (see ../../discoverer-neo/CLAUDE.md) so this never collides with the
+      # stale-nginx-on-5173 trap that exists in local dev.
+      - name: Run E2E tests
+        run: npx playwright test
+        working-directory: discoverer-neo/frontend
+        env:
+          FRONTEND_PORT: '5174'
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: discoverer-neo/frontend/playwright-report/
+          retention-days: 14
+
   migrate:
     name: Migrate CLI (lint, typecheck, test)
     runs-on: ubuntu-latest

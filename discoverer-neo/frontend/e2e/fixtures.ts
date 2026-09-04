@@ -189,9 +189,21 @@ export async function mockCommonApi(page: Page): Promise<void> {
     if (route.request().method() === 'GET') return jsonRoute(route, { data: [BUSINESS_AREA, BUSINESS_AREA_2] })
     return route.continue()
   })
-  await page.route('**/api/maps', (route) => jsonRoute(route, { data: { mine: [MAP_SUMMARY], shared: [] } }))
+  // A plain glob without a trailing wildcard only matches a bare '/api/maps'
+  // — MapsListPage and DashboardPage call it with `?scope=all`, which falls
+  // through this route unmocked and hits the real (proxied) backend with the
+  // test's unsigned fake JWT, 401s, and silently logs the page out mid-test.
+  await page.route(/\/api\/maps(\?.*)?$/, (route) => {
+    const scope = new URL(route.request().url()).searchParams.get('scope')
+    if (scope === 'all') return jsonRoute(route, { data: { all: [MAP_SUMMARY] } })
+    return jsonRoute(route, { data: { mine: [MAP_SUMMARY], shared: [] } })
+  })
   await page.route('**/api/data-sources', (route) => {
     if (route.request().method() === 'GET') return jsonRoute(route, { data: [DATA_SOURCE] })
     return route.continue()
   })
+  await page.route(
+    /\/api\/dashboard\/stats$/,
+    (route) => jsonRoute(route, { data: { totalExecutions: 0, scheduledMaps: 0, scheduledResults: 0 } }),
+  )
 }
