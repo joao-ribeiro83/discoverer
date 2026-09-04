@@ -18,18 +18,58 @@ Saiba como executar mapas e visualizar os resultados.
 
 ## Fornecer Parâmetros
 
-Se o seu mapa tiver parâmetros, é apresentado um painel de introdução:
+Uma folha migrada do Discoverer traz frequentemente parâmetros — os títulos
+originais mostram-nos como `&Dt Início`, `&Dt Fim`. Existem 7 521 no total.
 
-1. Introduza valores para cada parâmetro **Obrigatório**
-2. Os parâmetros opcionais podem ficar em branco (é utilizado o valor predefinido)
-3. Clique em **Executar** para iniciar
+Clique em **Executar** e, se a folha tiver algum parâmetro sem valor
+predefinido, abre-se a janela **Parâmetros de execução** antes de qualquer
+coisa ser enviada para a base de dados:
 
-**Exemplo:**
-```
-Start Date: [2026-01-01]
-End Date: [2026-12-31]
-Region: [EMEA]
-```
+1. Preencha todos os campos marcados com um `*` vermelho. Esses são obrigatórios.
+2. Deixe um campo opcional em branco para usar o valor predefinido.
+3. Clique em **Executar** na janela.
+
+A janela não o deixa continuar enquanto um campo obrigatório estiver vazio —
+marca o campo em vez disso. Nada é executado até a janela ser preenchida, por
+isso uma folha que parece não reagir ao **Executar** está normalmente à espera
+desta janela por trás da página.
+
+Os valores que escreve são enviados para o servidor como variáveis de ligação.
+O navegador nunca constrói SQL, por isso um valor com aspas ou ponto e vírgula
+é dados, nunca código.
+
+As listas de valores para parâmetros chegam numa versão posterior; por agora
+todos os campos são texto livre.
+
+## Quando o botão Executar está desligado
+
+O botão **Executar** fica cinzento quando não pode fazer nada de útil, e o
+motivo é impresso por baixo do botão. Hoje, o único motivo que a página
+consegue saber antes de perguntar ao servidor é:
+
+- **Sem colunas de saída.** A folha não desenha nada. Abra-a no construtor e
+  adicione pelo menos uma coluna.
+
+Mais duas condições só o servidor consegue saber, por isso chegam como
+mensagem depois de clicar:
+
+- **Sem autorização para executar.** Pode abrir a folha mas não executá-la
+  sobre esta fonte de dados.
+- **Não foi possível ligar à fonte de dados.** A ligação não existe ou está em
+  baixo.
+
+## Quando uma folha é recusada
+
+Por vezes a resposta não é um erro nem um resultado — o planeador de consultas
+recusa executar a folha, porque consegue construir o SQL mas não consegue
+garantir que o número está certo.
+
+Uma folha recusada mostra um painel âmbar, não vermelho. Diz o que foi pedido,
+porque não pode ser respondido, e o que mudar. O Discoverer recusava as mesmas
+formas.
+
+Os motivos, e o que fazer, estão em
+[Resolução de problemas: porque foi uma folha recusada](../troubleshooting/refusals.md).
 
 ## Visualizar Resultados
 

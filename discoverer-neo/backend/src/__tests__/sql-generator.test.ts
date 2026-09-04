@@ -2697,6 +2697,21 @@ describe('SQL generator', () => {
       expect(() => generateSql(def)).toThrow(
         /Multi-folder aggregate queries are refused/,
       );
+
+      // The refusal is machine-readable: the client renders its own
+      // translated explanation from `code`, never the English message
+      // above, and names the folders from `details` (D-036).
+      try {
+        generateSql(def);
+        throw new Error('expected a refusal');
+      } catch (err) {
+        expect(err).toBeInstanceOf(SqlGenerationError);
+        const refusal = err as SqlGenerationError;
+        expect(refusal.code).toBe('MULTI_FOLDER_AGGREGATE');
+        expect(refusal.details).toEqual({
+          folders: expect.arrayContaining([f.sales.name, f.customers.name]),
+        });
+      }
     });
   });
 });

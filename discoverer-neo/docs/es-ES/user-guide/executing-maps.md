@@ -18,18 +18,58 @@ Aprenda a ejecutar mapas y a consultar los resultados.
 
 ## Proporcionar parámetros
 
-Si su mapa tiene parámetros, verá un panel de entrada:
+Una hoja migrada desde Discoverer suele llevar parámetros — los títulos
+originales los muestran como `&Dt Início`, `&Dt Fim`. Hay 7.521 en total.
 
-1. Introduzca valores para cada parámetro **obligatorio**
-2. Los parámetros opcionales pueden dejarse en blanco (se utiliza el valor predeterminado)
-3. Haga clic en **Ejecutar** para iniciar la ejecución
+Pulse **Ejecutar**: si la hoja tiene algún parámetro sin valor predeterminado,
+se abre la ventana **Parámetros de ejecución** antes de enviar nada a la base
+de datos:
 
-**Ejemplo:**
-```
-Start Date: [2026-01-01]
-End Date: [2026-12-31]
-Region: [EMEA]
-```
+1. Rellene cada campo marcado con un `*` rojo. Esos son obligatorios.
+2. Deje en blanco un campo opcional para usar su valor predeterminado.
+3. Pulse **Ejecutar** en la ventana.
+
+La ventana no le deja continuar mientras un campo obligatorio esté vacío —
+marca el campo en su lugar. Nada se ejecuta hasta que la ventana esté
+completa, así que una hoja que parece no responder a **Ejecutar** suele estar
+esperando esta ventana detrás de la página.
+
+Los valores que escribe se envían al servidor como variables de enlace. El
+navegador nunca construye SQL, por lo que un valor con comillas o punto y coma
+es dato, nunca código.
+
+Las listas de valores llegarán en una versión posterior; por ahora todos los
+campos son texto libre.
+
+## Cuando el botón Ejecutar está desactivado
+
+**Ejecutar** aparece en gris cuando no puede hacer nada útil, y el motivo se
+imprime debajo del botón. Hoy, el único motivo que la página puede conocer
+antes de preguntar al servidor es:
+
+- **Sin columnas de salida.** La hoja no dibuja nada. Ábrala en el generador y
+  añada al menos una columna.
+
+Otras dos condiciones solo las conoce el servidor, así que llegan como mensaje
+después de pulsar:
+
+- **Sin autorización para ejecutar.** Puede abrir la hoja pero no ejecutarla
+  sobre esta fuente de datos.
+- **No se pudo conectar con la fuente de datos.** La conexión falta o está
+  caída.
+
+## Cuando una hoja se rechaza
+
+A veces la respuesta no es un error ni un resultado — el planificador de
+consultas rechaza ejecutar la hoja, porque puede construir el SQL pero no
+puede garantizar que la cifra sea correcta.
+
+Una hoja rechazada muestra un panel ámbar, no rojo. Indica qué se pidió, por
+qué no se puede responder, y qué cambiar. Discoverer rechazaba las mismas
+formas.
+
+Los motivos, y qué hacer, están en
+[Resolución de problemas: por qué se rechazó una hoja](../troubleshooting/refusals.md).
 
 ## Consulta de los resultados
 

@@ -87,6 +87,8 @@ export function buildFromClause(
     const names = required.map((id) => ctx.getFolder(id).name);
     throw new SqlGenerationError(
       `Multi-folder aggregate queries are refused until the fan-trap planner lands. Folders: ${names.join(', ')}`,
+      { folders: names },
+      'MULTI_FOLDER_AGGREGATE',
     );
   }
 
@@ -101,6 +103,8 @@ export function buildFromClause(
     const folder = ctx.getFolder(unreachable[0]!);
     throw new SqlGenerationError(
       `No join path connects folder "${folder.name}" to the rest of the query`,
+      { folders: unreachable.map((id) => ctx.getFolder(id).name) },
+      'NO_JOIN_PATH',
     );
   }
 

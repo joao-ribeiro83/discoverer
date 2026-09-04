@@ -6,7 +6,10 @@
     "executedTitle": "Mapa executado",
     "rowsReturned": "{{count}} linha(s) devolvida(s).",
     "runFailedTitle": "Falha na execução",
-    "scheduleManagement": "Gestão de agendamentos"
+    "scheduleManagement": "Gestão de agendamentos",
+    "runRefusedTitle": "Folha não executada",
+    "runRefusedDescription": "O planeador de consultas recusou este pedido. O painel de resultados explica porquê.",
+    "cannotRunNoColumns": "Esta folha não tem colunas de saída, por isso não há nada para executar. Abra-a no construtor e adicione pelo menos uma coluna."
   },
   "mapsList": {
     "title": "Mapas",
@@ -102,7 +105,9 @@
       "CONNECT": "Erro de ligação",
       "TIMEOUT": "A consulta excedeu o tempo limite",
       "QUERY": "Erro na consulta",
-      "CANCELLED": "Cancelado"
+      "CANCELLED": "Cancelado",
+      "FORBIDDEN": "Sem autorização para executar",
+      "REFUSED": "Pedido recusado"
     },
     "noRows": "A consulta não devolveu linhas.",
     "runToSeeResults": "Execute o mapa para ver os resultados.",
@@ -130,5 +135,18 @@
   "crosstab": {
     "noColumnEdge": "Esta tabela cruzada ainda não tem colunas no topo, por isso é apresentada como tabela. O Discoverer não regista que colunas ficavam no topo — abra uma coluna e defina a margem da tabela cruzada como «No topo».",
     "tooLarge": "Esta tabela cruzada teria {{rows}} x {{columns}}, acima do limite de {{max}} células. Filtre o relatório ou agrupe por menos valores."
+  },
+  "refusal": {
+    "folders": "Pastas envolvidas: {{folders}}",
+    "MULTI_FOLDER_AGGREGATE": {
+      "title": "Este total ainda não é fiável, por isso não foi executado",
+      "why": "Esta folha totaliza um valor através de uma junção de um-para-muitos. Cada linha do lado \"um\" é repetida uma vez por cada linha correspondente do lado \"muitos\", por isso o total contaria o mesmo valor várias vezes e ficaria demasiado alto. O Discoverer também recusava esta forma.",
+      "whatToChange": "Totalize um valor de apenas uma pasta, ou remova as colunas que vão buscar dados à segunda pasta. Os totais entre pastas ficam disponíveis quando o planeador de fan-trap for publicado."
+    },
+    "NO_JOIN_PATH": {
+      "title": "Estas pastas não estão ligadas, por isso a folha não foi executada",
+      "why": "A folha usa colunas de pastas que nenhuma cadeia de junções liga entre si. Sem uma junção, a base de dados combinaria cada linha de uma pasta com cada linha da outra e devolveria um resultado sem sentido.",
+      "whatToChange": "Remova as colunas da pasta não ligada, ou peça a um administrador para definir uma junção entre elas."
+    }
   }
 }

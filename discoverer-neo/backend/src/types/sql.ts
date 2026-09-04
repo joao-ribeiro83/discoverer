@@ -229,10 +229,20 @@ export interface ExplainPlan {
   planQuery: string;
 }
 
+/**
+ * A refusal is a `SqlGenerationError` the planner raises deliberately, because
+ * it can build the SQL but cannot vouch for the answer. It carries a stable
+ * code so the client can explain it instead of showing the message as an
+ * error — the copy belongs to the UI and has to translate (D-036).
+ */
+export type RefusalCode = 'MULTI_FOLDER_AGGREGATE' | 'NO_JOIN_PATH';
+
 export class SqlGenerationError extends Error {
   constructor(
     message: string,
     public details?: unknown,
+    /** Set only for deliberate refusals; absent means a genuine config error. */
+    public code?: RefusalCode,
   ) {
     super(message);
     this.name = 'SqlGenerationError';

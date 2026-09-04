@@ -18,18 +18,56 @@ Learn how to run maps and view results.
 
 ## Providing Parameters
 
-If your map has parameters, you'll see an input panel:
+A worksheet migrated from Discoverer often carries parameters — the original
+titles show them as `&Dt Inicio`, `&Dt Fim`. There are 7,521 of them across the
+estate.
 
-1. Enter values for each **Required** parameter
-2. Optional parameters can be left blank (default value used)
-3. Click **Execute** to run
+Click **Run** and, if the worksheet has any parameter without a saved default,
+a **Run parameters** prompt opens before anything is sent to the database:
 
-**Example:**
-```
-Start Date: [2026-01-01]
-End Date: [2026-12-31]
-Region: [EMEA]
-```
+1. Fill in every field marked with a red `*`. Those are required.
+2. Leave an optional field blank to use its saved default.
+3. Click **Run** in the prompt.
+
+The prompt will not let you continue while a required field is empty — it marks
+the field instead. Nothing runs until the prompt is satisfied, so a worksheet
+that seems not to react to **Run** is usually waiting on this prompt behind the
+page.
+
+Values you type are sent to the server as bind variables. The browser never
+builds SQL, so a value with a quote or a semicolon in it is data, never code.
+
+Pick-lists for parameters that have a list of values arrive in a later release;
+for now every field is free text.
+
+## When Run is switched off
+
+**Run** is greyed out when it cannot do anything useful, and the reason is
+printed under the button. Today the one reason the page can know before it
+asks the server is:
+
+- **No output columns.** The worksheet draws nothing. Open it in the builder
+  and add at least one column.
+
+Two more conditions only the server can know, so they arrive as a message after
+you click:
+
+- **Not entitled to run.** You may open the worksheet but not run it against
+  this data source.
+- **Could not connect to the data source.** The connection is missing or down.
+
+## When a worksheet is declined
+
+Sometimes the answer is not an error and not a result — the query planner
+declines to run the worksheet, because it can build the SQL but cannot promise
+the number is right.
+
+A declined worksheet shows an amber panel, not a red one. It says what was
+asked, why it cannot be answered, and what to change. Discoverer refused the
+same shapes.
+
+The reasons, and what to do, are in
+[Troubleshooting: why a worksheet was declined](../troubleshooting/refusals.md).
 
 ## Viewing Results
 

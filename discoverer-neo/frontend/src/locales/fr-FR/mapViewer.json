@@ -6,7 +6,10 @@
     "executedTitle": "Carte exécutée",
     "rowsReturned": "{{count}} ligne(s) renvoyée(s).",
     "runFailedTitle": "Échec de l'exécution",
-    "scheduleManagement": "Gestion des planifications"
+    "scheduleManagement": "Gestion des planifications",
+    "runRefusedTitle": "Feuille non exécutée",
+    "runRefusedDescription": "Le planificateur de requêtes a refusé cette demande. Le panneau de résultats explique pourquoi.",
+    "cannotRunNoColumns": "Cette feuille n'a aucune colonne de sortie, il n'y a donc rien à exécuter. Ouvrez-la dans le générateur et ajoutez au moins une colonne."
   },
   "mapsList": {
     "title": "Cartes",
@@ -102,7 +105,9 @@
       "CONNECT": "Erreur de connexion",
       "TIMEOUT": "Délai de la requête dépassé",
       "QUERY": "Erreur de requête",
-      "CANCELLED": "Annulé"
+      "CANCELLED": "Annulé",
+      "FORBIDDEN": "Exécution non autorisée",
+      "REFUSED": "Demande refusée"
     },
     "noRows": "La requête n'a renvoyé aucune ligne.",
     "runToSeeResults": "Exécutez la carte pour afficher les résultats.",
@@ -130,5 +135,18 @@
   "crosstab": {
     "noColumnEdge": "Ce tableau croisé n'a pas encore de colonnes en haut ; il est donc affiché sous forme de tableau. Discoverer n'enregistre pas quelles colonnes figuraient en haut — ouvrez une colonne et définissez son bord de tableau croisé sur « En haut ».",
     "tooLarge": "Ce tableau croisé ferait {{rows}} x {{columns}}, au-delà de la limite de {{max}} cellules. Filtrez le rapport ou groupez sur moins de valeurs."
+  },
+  "refusal": {
+    "folders": "Dossiers concernés : {{folders}}",
+    "MULTI_FOLDER_AGGREGATE": {
+      "title": "Ce total n'est pas encore fiable, il n'a donc pas été exécuté",
+      "why": "Cette feuille totalise une valeur à travers une jointure un-à-plusieurs. Chaque ligne du côté « un » est répétée une fois par ligne correspondante du côté « plusieurs » : le total compterait donc la même valeur plusieurs fois et serait trop élevé. Discoverer refusait aussi cette forme.",
+      "whatToChange": "Totalisez une valeur d'un seul dossier, ou retirez les colonnes qui puisent dans le second dossier. Les totaux multi-dossiers seront disponibles avec le planificateur de fan-trap."
+    },
+    "NO_JOIN_PATH": {
+      "title": "Ces dossiers ne sont pas reliés, la feuille n'a donc pas été exécutée",
+      "why": "La feuille utilise des colonnes de dossiers qu'aucune chaîne de jointures ne relie. Sans jointure, la base de données associerait chaque ligne d'un dossier à chaque ligne de l'autre et renverrait un résultat dénué de sens.",
+      "whatToChange": "Retirez les colonnes du dossier non relié, ou demandez à un administrateur de définir une jointure entre eux."
+    }
   }
 }

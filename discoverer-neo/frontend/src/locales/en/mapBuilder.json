@@ -43,7 +43,9 @@
     "crossBusinessAreaTitle": "Different business area",
     "crossBusinessAreaDescription": "All columns in a map must come from the same business area.",
     "collapsePanel": "Collapse panel",
-    "expandPanel": "Expand panel"
+    "expandPanel": "Expand panel",
+    "runRefusedTitle": "Worksheet not run",
+    "runRefusedDescription": "The query planner declined this request. The results panel explains why."
   },
   "tree": {
     "title": "Business Areas",
