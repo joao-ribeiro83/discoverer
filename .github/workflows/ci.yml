@@ -71,19 +71,7 @@ jobs:
       - name: Build migrate workspace
         run: npm run build --workspace @discoverer-neo/core
 
-      # Reported, not gating, and deliberately so — for now. This step fails on
-      # 1 030 pre-existing errors, none of them introduced by the code they
-      # guard: 829 are the `no-unsafe-*` family inside test files, where
-      # Fastify's `inject().json()` is `any` by design and asserting on it is
-      # the whole point; 201 are real (require-await, unused vars, unnecessary
-      # assertions) and spread across the backend.
-      #
-      # Gating on it today would mean the tests below never run at all, which
-      # is how a repository ends up with gates nobody executes. Clearing the
-      # 201 and scoping the type-aware rules off test files is its own job;
-      # remove this line in the commit that finishes it.
       - name: Lint
-        continue-on-error: true
         run: npm run lint --workspace @discoverer-neo/backend
 
       - name: Typecheck

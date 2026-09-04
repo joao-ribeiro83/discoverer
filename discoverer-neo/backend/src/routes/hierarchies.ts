@@ -86,7 +86,7 @@ const errorResponse = {
 // Routes
 // ---------------------------------------------------------------------------
 
-export default async function hierarchyRoutes(fastify: FastifyInstance) {
+export default function hierarchyRoutes(fastify: FastifyInstance) {
   // GET /api/business-areas/:baId/hierarchies — list hierarchies in a business area
   fastify.get(
     '/api/business-areas/:baId/hierarchies',

@@ -218,17 +218,19 @@ export interface ExecutionLogEntry {
 // Injectable dependencies (real implementations by default; mocked in tests)
 // ---------------------------------------------------------------------------
 
+// Declared as function properties rather than methods: these are injected
+// values, passed around detached from any object, and `this` is never bound.
 export interface MapExecutionDeps {
-  prepareQuery(
+  prepareQuery: (
     mapId: string,
     parameterValues: Record<string, unknown>,
     userId: string,
     rowLimit?: number,
     offset?: number,
-  ): Promise<PreparedQuery>;
-  getConnection(dataSourceId: string): Promise<Connection>;
-  releaseConnection(dataSourceId: string, conn: Connection): Promise<void>;
-  recordExecution(entry: ExecutionLogEntry): Promise<void>;
+  ) => Promise<PreparedQuery>;
+  getConnection: (dataSourceId: string) => Promise<Connection>;
+  releaseConnection: (dataSourceId: string, conn: Connection) => Promise<void>;
+  recordExecution: (entry: ExecutionLogEntry) => Promise<void>;
 }
 
 export function defaultDeps(): MapExecutionDeps {
@@ -923,6 +925,7 @@ export async function openRowStream(
   if (!rs) {
     // No result set (should not happen for a SELECT) — fall back to rows.
     const rows = (result.rows ?? []) as Record<string, unknown>[];
+    // eslint-disable-next-line @typescript-eslint/require-await -- the consumer reads this with `for await`, so it must be an async generator.
     async function* single(): AsyncIterableIterator<Record<string, unknown>[]> {
       if (rows.length > 0) yield rows;
     }

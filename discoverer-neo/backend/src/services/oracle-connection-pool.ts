@@ -1,7 +1,7 @@
 import type { Connection, Pool } from 'oracledb';
 import { config } from '../config.js';
 import * as dataSourceService from './data-source.service.js';
-import { importOracleDb } from './oracle-driver.js';
+import { importOracleDb, type OracleDbModule } from './oracle-driver.js';
 
 /**
  * Oracle connection-pool manager.
@@ -57,9 +57,10 @@ export class OraclePoolError extends Error {
 // Driver loading (dynamic, cached)
 // ---------------------------------------------------------------------------
 
-// The driver is imported dynamically (see loadOracleDb) so this inline
-// `typeof import(...)` annotation is the only way to type the module value.
-let oracledbModule: typeof import('oracledb') | null = null;
+// The driver is imported dynamically (see loadOracleDb), so the module value
+// is typed by `OracleDbModule` — a type-only alias that names the module
+// without emitting a require for it.
+let oracledbModule: OracleDbModule | null = null;
 let clientInitialized = false;
 // A failed thick-mode init is sticky. Without this, the flag would be set
 // before the attempt and the *next* caller would skip init and silently get a
@@ -69,7 +70,7 @@ let clientInitialized = false;
 let clientInitError: OracleDriverError | null = null;
 
 /** Initialise thick mode once. Thin mode (the default) needs no client. */
-function initOracleClientOnce(oracledb: typeof import('oracledb')): void {
+function initOracleClientOnce(oracledb: OracleDbModule): void {
   if (clientInitError) throw clientInitError;
   if (clientInitialized) return;
 
@@ -125,9 +126,9 @@ export function getOracleClientStatus(): 'thin' | 'thick_ready' | 'thick_unavail
   return clientInitError ? 'thick_unavailable' : 'thick_ready';
 }
 
-async function loadOracleDb(): Promise<typeof import('oracledb')> {
+async function loadOracleDb(): Promise<OracleDbModule> {
   if (oracledbModule) return oracledbModule;
-  let mod: typeof import('oracledb');
+  let mod: OracleDbModule;
   try {
     mod = await importOracleDb();
   } catch {

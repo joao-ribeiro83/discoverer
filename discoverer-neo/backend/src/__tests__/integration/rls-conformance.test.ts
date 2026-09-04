@@ -85,7 +85,7 @@ let secretFolder: Folder;
 let bridgeFolder: Folder;
 let region: Item;
 let amount: Item;
-let secretValue: Item;
+let _secretValue: Item;
 let salesLink: Item;
 let bridgeLink: Item;
 let bridgeLabel: Item;
@@ -369,7 +369,7 @@ beforeAll(async () => {
     dataType: 'NUMBER',
   });
   salesLink = await mkItem(salesFolder, 'Link Id', { columnName: 'LINK_ID' });
-  secretValue = await mkItem(secretFolder, 'Secret Value', {
+  _secretValue = await mkItem(secretFolder, 'Secret Value', {
     columnName: 'SECRET_VALUE',
     dataType: 'NUMBER',
   });

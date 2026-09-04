@@ -8,7 +8,7 @@ import {
   jest,
 } from '@jest/globals';
 import type { Connection } from 'oracledb';
-import { and, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { db } from '../../db/index.js';
 import {
   folders,
@@ -139,8 +139,8 @@ function execDeps(
 ): MapExecutionDeps {
   return {
     ...defaultDeps(),
-    getConnection: jest.fn(async () => conn) as MapExecutionDeps['getConnection'],
-    releaseConnection: jest.fn(async () => {}) as MapExecutionDeps['releaseConnection'],
+    getConnection: jest.fn(async () => conn),
+    releaseConnection: jest.fn(async () => {}),
     ...overrides,
   };
 }

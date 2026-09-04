@@ -14,17 +14,10 @@ import {
   getUserPermissionLevels,
 } from '../services/business-area.service.js';
 
-// Permission hierarchy — must match the service
-const PERMISSION_HIERARCHY = [
-  'VIEW',
-  'EXPORT',
-  'SCHEDULE',
-  'CREATE',
-  'EDIT',
-  'DELETE',
-] as const;
-
-export type PermissionLevel = (typeof PERMISSION_HIERARCHY)[number];
+// Re-exported rather than restated: the service owns the permission
+// hierarchy, and a second copy here could drift out of step with it.
+import type { PermissionLevel } from '../services/business-area.service.js';
+export type { PermissionLevel };
 
 declare module 'fastify' {
   interface FastifyInstance {

@@ -161,7 +161,7 @@ void oraclePoolConnections;
 void oraclePoolAcquisitionTimeouts;
 
 export default fp(
-  async (fastify) => {
+  (fastify) => {
     fastify.addHook('onResponse', (request, reply, done) => {
       // `routeOptions.url` is the route *pattern* ('/api/exports/:jobId'), not
       // the resolved path — labelling with the latter would mint a new time

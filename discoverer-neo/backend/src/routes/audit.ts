@@ -63,7 +63,7 @@ const errorResponse = {
 // Routes — admin-only: the audit trail covers every user's activity.
 // ---------------------------------------------------------------------------
 
-export default async function auditRoutes(fastify: FastifyInstance) {
+export default function auditRoutes(fastify: FastifyInstance) {
   const adminPreHandler = [fastify.authenticate, fastify.authorizeAdmin];
   const tags = ['Audit'];
   const security = [{ bearerAuth: [] }];

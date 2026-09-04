@@ -83,7 +83,7 @@ function handleExecutionError(reply: FastifyReply, err: unknown): boolean {
 // Routes
 // ---------------------------------------------------------------------------
 
-export default async function mapExecutionRoutes(fastify: FastifyInstance) {
+export default function mapExecutionRoutes(fastify: FastifyInstance) {
   // POST /api/maps/:id/execute — run synchronously, return the first page.
   fastify.post(
     '/api/maps/:id/execute',
