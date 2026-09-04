@@ -57,7 +57,10 @@
     "emptyMatchingItems": "No hay elementos coincidentes",
     "emptyItems": "No hay elementos",
     "roleMeasure": "Medida",
-    "roleDimension": "Dimensión"
+    "roleDimension": "Dimensión",
+    "addAria": "Añadir {{name}} al mapa",
+    "addedTitle": "Añadido al mapa",
+    "addedDescription": "\"{{name}}\" añadido al lienzo."
   },
   "canvas": {
     "title": "Columnas",

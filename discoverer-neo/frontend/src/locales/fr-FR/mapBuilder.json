@@ -57,7 +57,10 @@
     "emptyMatchingItems": "Aucun élément correspondant",
     "emptyItems": "Aucun élément",
     "roleMeasure": "Mesure",
-    "roleDimension": "Dimension"
+    "roleDimension": "Dimension",
+    "addAria": "Ajouter {{name}} à la carte",
+    "addedTitle": "Ajouté à la carte",
+    "addedDescription": "« {{name}} » ajouté au canevas."
   },
   "canvas": {
     "title": "Colonnes",

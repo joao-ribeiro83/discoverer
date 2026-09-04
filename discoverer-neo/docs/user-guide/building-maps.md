@@ -135,6 +135,22 @@ The map is now saved and available in your **My Maps** list.
 
 ## Map Builder Tips
 
+### Keyboard Shortcuts
+
+Every drag action in the map builder has a keyboard equivalent:
+
+- **Add a column** — Tab to an item in the source tree, then activate its
+  **Add** button (it names the field, e.g. "Add Customer Name to map"). The
+  column appears at the end of the canvas; a toast confirms it.
+- **Reorder a column** — Tab to a column's grip handle (labeled "Reorder
+  \<column\>"), press <kbd>Space</kbd> to pick it up, use the arrow keys to
+  move it, then press <kbd>Space</kbd> again to drop it (or <kbd>Esc</kbd> to
+  cancel). The same pattern reorders rows in the Sort and Calculated Fields
+  panels.
+- **Remove a column** — Tab to its **Remove** button and activate it.
+
+No step in building a map requires a mouse.
+
 ### Multi-Folder Queries
 
 To query data from multiple folders, you first need to define **Joins** between them. Contact your administrator.

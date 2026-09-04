@@ -57,7 +57,10 @@
     "emptyMatchingItems": "Nenhum item correspondente",
     "emptyItems": "Nenhum item",
     "roleMeasure": "Medida",
-    "roleDimension": "Dimensão"
+    "roleDimension": "Dimensão",
+    "addAria": "Adicionar {{name}} ao mapa",
+    "addedTitle": "Adicionado ao mapa",
+    "addedDescription": "\"{{name}}\" adicionado à tela."
   },
   "canvas": {
     "title": "Colunas",
