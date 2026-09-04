@@ -11,8 +11,36 @@
   "mapsList": {
     "title": "Maps",
     "description": "Browse and manage your visual maps.",
-    "placeholderTitle": "Placeholder",
-    "comingSoon": "This page is coming soon."
+    "createButton": "Create Map",
+    "searchPlaceholder": "Search maps by name…",
+    "businessAreaAllOption": "All business areas",
+    "sortRecency": "Recently updated",
+    "sortName": "Name (A–Z)",
+    "entityLabel": "map",
+    "rowCount": "{{shown}} of {{total}} maps",
+    "tabs": {
+      "mine": "Mine",
+      "shared": "Shared with me",
+      "all": "All"
+    },
+    "columns": {
+      "businessArea": "Business Area"
+    },
+    "actions": {
+      "open": "Open",
+      "share": "Share",
+      "schedule": "Schedule"
+    },
+    "toast": {
+      "deleted": "Map deleted",
+      "deleteFailed": "Failed to delete map"
+    },
+    "emptyNoneAtAll": "No maps exist yet. Create one to get started.",
+    "emptyNoMatches": "No maps match your search or filters.",
+    "emptyTabMine_one": "{{count}} worksheet exists; none are yours.",
+    "emptyTabMine_other": "{{count}} worksheets exist; none are yours.",
+    "emptyTabShared_one": "{{count}} worksheet exists; none are shared with you.",
+    "emptyTabShared_other": "{{count}} worksheets exist; none are shared with you."
   },
   "dashboard": {
     "welcome": "Welcome",
