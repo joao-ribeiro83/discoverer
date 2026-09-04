@@ -14,7 +14,7 @@
       "port": 5174,
       "env": {
         "FRONTEND_PORT": "5174",
-        "VITE_BACKEND_URL": "http://localhost:3001"
+        "VITE_BACKEND_URL": "http://localhost:3000"
       }
     },
     {
