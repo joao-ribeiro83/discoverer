@@ -12,6 +12,15 @@
     "CONNECT": "Could not connect to the data source.",
     "TIMEOUT": "The query timed out. Try narrowing the result set or adding conditions.",
     "QUERY": "The database rejected the query.",
-    "CANCELLED": "The execution was cancelled."
+    "CANCELLED": "The execution was cancelled.",
+    "FORBIDDEN": "You may open this worksheet, but you are not entitled to run it against this data source.",
+    "REFUSED": "This request was declined because it cannot be answered correctly."
+  },
+  "boundary": {
+    "title": "This page stopped working",
+    "description": "Something in this page failed while it was drawing. Nothing you did was saved or lost. Try again, or reload the page.",
+    "chunkTitle": "This page could not be loaded",
+    "chunkDescription": "Part of the application failed to download. This is usually a connection problem or a new version being deployed. Reload to fetch it again.",
+    "reload": "Reload page"
   }
 }

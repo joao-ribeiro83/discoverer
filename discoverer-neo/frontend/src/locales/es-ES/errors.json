@@ -12,6 +12,15 @@
     "CONNECT": "No se ha podido conectar con el origen de datos.",
     "TIMEOUT": "Se ha agotado el tiempo de espera de la consulta. Intente limitar el conjunto de resultados o agregar condiciones.",
     "QUERY": "La base de datos ha rechazado la consulta.",
-    "CANCELLED": "Se ha cancelado la ejecución."
+    "CANCELLED": "Se ha cancelado la ejecución.",
+    "FORBIDDEN": "Puede abrir esta hoja, pero no tiene autorización para ejecutarla sobre esta fuente de datos.",
+    "REFUSED": "Esta solicitud se ha rechazado porque no se puede responder correctamente."
+  },
+  "boundary": {
+    "title": "Esta página ha dejado de funcionar",
+    "description": "Algo de esta página ha fallado mientras se dibujaba. Nada de lo que hizo se ha guardado ni perdido. Inténtelo de nuevo o recargue la página.",
+    "chunkTitle": "No se ha podido cargar esta página",
+    "chunkDescription": "Una parte de la aplicación no se ha podido descargar. Suele ser un problema de conexión o una nueva versión en despliegue. Recargue para obtenerla de nuevo.",
+    "reload": "Recargar página"
   }
 }

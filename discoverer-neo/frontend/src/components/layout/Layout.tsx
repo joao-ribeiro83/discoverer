@@ -5,7 +5,7 @@ import { Loader2 } from 'lucide-react'
 import { Sidebar } from './Sidebar'
 import { Header } from './Header'
 
-function RouteFallback() {
+export function RouteFallback() {
   const { t } = useTranslation('nav')
   return (
     <div

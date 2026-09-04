@@ -12,6 +12,15 @@
     "CONNECT": "Impossible de se connecter à la source de données.",
     "TIMEOUT": "Le délai de la requête a été dépassé. Essayez de restreindre l'ensemble de résultats ou d'ajouter des conditions.",
     "QUERY": "La base de données a rejeté la requête.",
-    "CANCELLED": "L'exécution a été annulée."
+    "CANCELLED": "L'exécution a été annulée.",
+    "FORBIDDEN": "Vous pouvez ouvrir cette feuille, mais vous n'êtes pas autorisé à l'exécuter sur cette source de données.",
+    "REFUSED": "Cette demande a été refusée car elle ne peut pas recevoir de réponse correcte."
+  },
+  "boundary": {
+    "title": "Cette page a cessé de fonctionner",
+    "description": "Un élément de cette page a échoué pendant l'affichage. Rien de ce que vous avez fait n'a été enregistré ni perdu. Réessayez ou rechargez la page.",
+    "chunkTitle": "Impossible de charger cette page",
+    "chunkDescription": "Une partie de l'application n'a pas pu être téléchargée. Il s'agit généralement d'un problème de connexion ou d'une nouvelle version en cours de déploiement. Rechargez pour la récupérer.",
+    "reload": "Recharger la page"
   }
 }
