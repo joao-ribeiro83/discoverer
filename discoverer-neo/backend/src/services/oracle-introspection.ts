@@ -1,9 +1,10 @@
 import type { Redis } from 'ioredis';
+import type { Connection } from 'oracledb';
 import { eq } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { dataSources, type DataSource } from '../db/schema.js';
 import { decrypt } from '../lib/encryption.js';
-import { importOracleDb } from './oracle-driver.js';
+import { importOracleDb, type OracleDbModule } from './oracle-driver.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -75,7 +76,7 @@ export async function invalidateCache(
 // ---------------------------------------------------------------------------
 
 async function getOracleConnection(ds: DataSource) {
-  let oracledb: typeof import('oracledb');
+  let oracledb: OracleDbModule;
   try {
     oracledb = await importOracleDb();
   } catch {
@@ -147,11 +148,11 @@ export async function introspectSchema(
   }
 }
 
-async function fetchAllTables(conn: any): Promise<IntrospectedTable[]> {
+async function fetchAllTables(conn: Connection): Promise<IntrospectedTable[]> {
   // First, get all table names owned by the specified user (or accessible)
   const tableResult = await conn.execute(
     `SELECT TABLE_NAME, OWNER FROM ALL_TABLES WHERE OWNER = :owner ORDER BY TABLE_NAME`,
-    { owner: (conn as any).user?.toUpperCase() ?? '' },
+    { owner: conn.user?.toUpperCase() ?? '' },
     { outFormat: OUT_FORMAT_OBJECT },
   );
 

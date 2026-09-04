@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from '@jest/globals';
 import type { FastifyInstance } from 'fastify';
-import { eq, and } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { buildApp } from '../app.js';
 import { db } from '../db/index.js';
 import { users, businessAreas, folders, items } from '../db/schema.js';
@@ -747,7 +747,7 @@ describe('Hierarchical items', () => {
     const body = response.json();
     expect(Array.isArray(body.data)).toBe(true);
     expect(body.data.length).toBe(2);
-    const names = body.data.map((i: any) => i.name);
+    const names = body.data.map((i: { name: string }) => i.name);
     expect(names).toContain('Child');
     expect(names).toContain('Grandchild');
   });

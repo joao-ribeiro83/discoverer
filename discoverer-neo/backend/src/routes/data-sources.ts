@@ -71,7 +71,7 @@ const safeDataSourceSchema = {
 // Routes
 // ---------------------------------------------------------------------------
 
-export default async function dataSourcesRoutes(fastify: FastifyInstance) {
+export default function dataSourcesRoutes(fastify: FastifyInstance) {
   // GET /api/data-sources — list all (admin + manager)
   fastify.get(
     '/api/data-sources',

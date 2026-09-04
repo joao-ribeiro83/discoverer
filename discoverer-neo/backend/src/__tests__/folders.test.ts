@@ -1,11 +1,10 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach, jest } from '@jest/globals';
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from '@jest/globals';
 import type { FastifyInstance } from 'fastify';
-import { eq, and } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { buildApp } from '../app.js';
 import { db } from '../db/index.js';
 import { users, businessAreas, dataSources, folders, items } from '../db/schema.js';
 import { hashPassword } from '../lib/password.js';
-import type { Redis } from 'ioredis';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -151,14 +150,14 @@ beforeEach(async () => {
 
 describe('Folder CRUD', () => {
   let adminToken: string;
-  let managerToken: string;
+  let _managerToken: string;
 
   beforeEach(async () => {
     await createTestUser(TEST_ADMIN_EMAIL, TEST_PASSWORD, 'ADMIN');
     adminToken = await loginAndReturnToken(TEST_ADMIN_EMAIL, TEST_PASSWORD);
 
     await createTestUser(TEST_MANAGER_EMAIL, TEST_PASSWORD, 'MANAGER');
-    managerToken = await loginAndReturnToken(TEST_MANAGER_EMAIL, TEST_PASSWORD);
+    _managerToken = await loginAndReturnToken(TEST_MANAGER_EMAIL, TEST_PASSWORD);
   });
 
   it('creates a TABLE folder', async () => {

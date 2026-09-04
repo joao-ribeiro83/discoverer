@@ -4,11 +4,9 @@ import {
   create,
   update,
   getById,
-  listByFolder,
   listByBusinessArea,
   softDelete,
   autoSuggestJoins,
-  validateJoin,
 } from '../services/join.service.js';
 import {
   requireBusinessAreaAccess,
@@ -109,7 +107,7 @@ const joinSuggestionSchema = {
 // Routes
 // ---------------------------------------------------------------------------
 
-export default async function joinRoutes(fastify: FastifyInstance) {
+export default function joinRoutes(fastify: FastifyInstance) {
   // GET /api/business-areas/:baId/joins — list joins in a business area
   fastify.get(
     '/api/business-areas/:baId/joins',

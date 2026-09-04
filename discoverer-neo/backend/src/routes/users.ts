@@ -54,7 +54,7 @@ const errorResponse = {
 // Routes
 // ---------------------------------------------------------------------------
 
-export default async function userRoutes(fastify: FastifyInstance) {
+export default function userRoutes(fastify: FastifyInstance) {
   // All user-management endpoints are admin-only.
   const adminPreHandler = [fastify.authenticate, fastify.authorizeAdmin];
 
@@ -95,7 +95,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { q } = request.query as { q?: string };
-      const results = await search(q ?? '', request.user!.sub);
+      const results = await search(q ?? '', request.user.sub);
       return reply.code(200).send({ data: results });
     },
   );
@@ -300,7 +300,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
         return reply.code(400).send({ error: 'Invalid user ID format' });
       }
 
-      if (request.user!.sub === parsed.data.id) {
+      if (request.user.sub === parsed.data.id) {
         return reply.code(400).send({ error: 'You cannot delete your own account' });
       }
 

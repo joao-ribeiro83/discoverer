@@ -1,7 +1,6 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 
-const ROLES = ['ADMIN', 'MANAGER', 'USER', 'VIEWER'] as const;
-type Role = (typeof ROLES)[number];
+type Role = 'ADMIN' | 'MANAGER' | 'USER' | 'VIEWER';
 
 /**
  * Fastify preHandler that checks the user's role.
