@@ -17,15 +17,15 @@ import {
 } from '@jest/globals';
 import type { Redis } from 'ioredis';
 import { eq } from 'drizzle-orm';
-import { db } from '../db/index.js';
-import { dataSources } from '../db/schema.js';
+import { db } from '../../db/index.js';
+import { dataSources } from '../../db/schema.js';
 import {
   introspectSchema,
   getTableInfo,
   testTableExists,
   invalidateCache,
   type IntrospectedTable,
-} from '../services/oracle-introspection.js';
+} from '../../services/oracle-introspection.js';
 
 /** Minimal in-memory Redis supporting the get/setex/del the service uses. */
 class FakeRedis {

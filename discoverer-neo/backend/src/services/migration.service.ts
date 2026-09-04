@@ -385,6 +385,11 @@ export function startMigration(
         source,
         writer: target.writer,
         readOptions: { schemaOwner: options.schemaOwner },
+        // The data source we are reading FROM is the one every migrated folder
+        // must point at. This caller has always known it — it just never passed
+        // it on, which left 211 of 212 folders with no database behind them and
+        // every map on them unable to execute.
+        dataSourceId: options.dataSourceId,
         version: options.version ?? 'auto',
         dryRun: options.dryRun === true,
         onEvent,

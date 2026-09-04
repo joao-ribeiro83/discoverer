@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import { inArray, like, sql } from 'drizzle-orm';
 
 import {
+  dryRun,
   checkFormulaCompileRate,
   checkReconciliation,
   checkReferentialClosure,
@@ -19,6 +20,7 @@ import { getApp } from './test-helper.js';
 import { db } from '../../db/index.js';
 import {
   businessAreas,
+  dataSources,
   customFunctions,
   folders,
   hierarchies,
@@ -70,6 +72,12 @@ const FIXED_NOW = () => new Date('2026-09-03T00:00:00.000Z');
 const FIXTURE_BA_NAMES = ['Sales Analysis', 'Migrated Workbooks'];
 const FIXTURE_EMAILS = ['migration@migrated.local', 'jsmith@migrated.local', 'mjones@migrated.local'];
 
+// You migrate FROM a data source that already exists in the target — the
+// migrator never creates one. Every migrated folder points at it, and without
+// it no map on those folders can execute, however good its SQL.
+const DATA_SOURCE_ID = `${PREFIX}000000009001`;
+const DATA_SOURCE_NAME = 'seam-test source';
+
 const idLike = (col: unknown) => like(sql`${col}::text`, `${PREFIX}%`);
 
 function realTarget(): { writer: MigrationWriter; close: () => Promise<void> } {
@@ -100,6 +108,7 @@ async function cleanup(): Promise<void> {
   await db.delete(users).where(idLike(users.id));
   await db.delete(businessAreas).where(inArray(businessAreas.name, FIXTURE_BA_NAMES));
   await db.delete(users).where(inArray(users.email, FIXTURE_EMAILS));
+  await db.delete(dataSources).where(inArray(dataSources.name, [DATA_SOURCE_NAME]));
   try {
     await db.execute(sql`DELETE FROM migration_log WHERE run_id LIKE ${PREFIX + '%'}`);
   } catch {
@@ -111,11 +120,20 @@ describe('Migration seam tests', () => {
   beforeAll(async () => {
     await getApp(); // initialise the shared pool/schema
     await cleanup();
+    await db.insert(dataSources).values({
+      id: DATA_SOURCE_ID,
+      name: DATA_SOURCE_NAME,
+      connectionType: 'oracle',
+      host: 'localhost',
+      port: 1521,
+      serviceName: 'SEAMTEST',
+    });
     const { writer, close } = realTarget();
     try {
       await runMigration({
         source: mockExecutor(eul5Db()),
         writer,
+        dataSourceId: DATA_SOURCE_ID,
         deps: { genId: scopedIdFactory(), now: FIXED_NOW },
       });
     } finally {
@@ -290,18 +308,39 @@ describe('Migration seam tests', () => {
       expect(result.metrics.mapsWithNoColumns).toBe(0);
     });
 
-    it('reports that the migration writes no data source onto folders', async () => {
+    it('stamps every migrated folder with the data source it came from', async () => {
       const result = await checkReferentialClosure(db, { mapIdPrefix: PREFIX });
-      const { references = 0, folderWithoutDataSource = 0 } = result.metrics;
 
-      // Declared baseline, and a real defect: the migration leaves
-      // `folders.data_source_id` null, so `resolveDataSourceId` throws "no data
-      // source configured on its folders" for every map — even one whose SQL
-      // generates cleanly. 211 of 212 folders in the live estate are null.
-      // When the migration starts writing it, this becomes `toBe(0)`.
-      expect(folderWithoutDataSource).toBe(references);
-      expect(result.status).toBe('FAIL');
+      // This was the defect the seam found: the migration knew which data
+      // source it was reading and never wrote it down, so `resolveDataSourceId`
+      // threw "no data source configured on its folders" for every map — even
+      // one whose SQL generated cleanly. Gated at zero now, not pinned.
+      expect(result.metrics.folderWithoutDataSource).toBe(0);
+      expect(result.metrics.references).toBeGreaterThan(0);
     });
+
+    it('warns when no data source is supplied, rather than migrating quietly', async () => {
+      // The CLI can migrate metadata before the source is registered in the
+      // target. That is allowed, and it produces an estate where nothing runs,
+      // so the run has to say so — this warning is the only signal an operator
+      // gets before someone opens a map and finds it will not execute.
+      //
+      // A dry run, because Neo holds one migration per database and refuses a
+      // second: the warning is computed on both paths.
+      const { writer, close } = realTarget();
+      try {
+        const result = await dryRun({
+          source: mockExecutor(eul5Db()),
+          writer,
+          deps: { genId: scopedIdFactory(), now: FIXED_NOW },
+        });
+        const warning = result.warnings.find((w) => w.code === 'FOLDERS_WITHOUT_DATA_SOURCE');
+        expect(warning).toBeDefined();
+        expect(warning!.message).toContain('refuse to execute');
+      } finally {
+        await close();
+      }
+    }, 60_000);
 
     it('detects a map that is closed over nothing', async () => {
       // Negative control. A map with no columns satisfies every FK and can

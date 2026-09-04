@@ -84,13 +84,18 @@ whether the things a map references are reachable *together*, as one query.
 
 ```
 [FAIL   ] referential-closure — every map reference resolves inside the map's query scope
-            references=31565 folderWithoutDataSource=31405 mapsWithNoColumns=25
+            references=31565 folderWithoutDataSource=0 mapsWithNoColumns=25
 ```
 
 `folderWithoutDataSource` is the one to watch. A folder with no
 `data_source_id` has no database behind it, so the map cannot execute even if
-its SQL is perfect. `mapsSpanningDataSources` means a map's folders live in two
-physical databases, which cannot be one statement.
+its SQL is perfect — `resolveDataSourceId` refuses it before a query is ever
+sent. This seam found 31 405 of them: the migration knew which data source it
+was reading and never wrote it down. If you see a non-zero count here, the
+migration that produced the estate was run without `--data-source-id`.
+
+`mapsSpanningDataSources` means a map's folders live in two physical databases,
+which cannot be one statement.
 
 ### 4. `reconciliation` — do the counts match what was declared?
 
