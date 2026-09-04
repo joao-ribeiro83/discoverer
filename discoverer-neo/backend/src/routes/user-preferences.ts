@@ -52,7 +52,7 @@ const errorResponse = {
 // Routes
 // ---------------------------------------------------------------------------
 
-export default async function userPreferencesRoutes(
+export default function userPreferencesRoutes(
   fastify: FastifyInstance,
 ) {
   // GET /api/users/me/preferences
@@ -73,7 +73,7 @@ export default async function userPreferencesRoutes(
       },
     },
     async (request, reply) => {
-      const user = request.user!;
+      const user = request.user;
       const preferences = await getPreferences(user.sub);
       return reply.code(200).send({ data: preferences });
     },
@@ -114,7 +114,7 @@ export default async function userPreferencesRoutes(
         });
       }
 
-      const user = request.user!;
+      const user = request.user;
       const preferences = await updatePreferences(user.sub, parsed.data);
       return reply.code(200).send({ data: preferences });
     },

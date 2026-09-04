@@ -125,7 +125,7 @@ async function loadOwnJob(
  * *definition* as XML, not its data. Fastify allows a GET and a POST on the
  * same path, so the two coexist.
  */
-export default async function exportRoutes(fastify: FastifyInstance) {
+export default function exportRoutes(fastify: FastifyInstance) {
   // POST /api/maps/:id/export — queue a background export job.
   fastify.post(
     '/api/maps/:id/export',

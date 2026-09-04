@@ -49,6 +49,23 @@ export function cellValue(value: unknown): unknown {
 }
 
 /**
+ * Render a cell as text.
+ *
+ * A driver hands back more than scalars — a JSON column, an Oracle object
+ * type — and a bare `String()` writes those into the file as
+ * `[object Object]`. JSON keeps the content readable instead.
+ */
+export function cellText(value: unknown): string {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'bigint' || typeof value === 'boolean') {
+    return value.toString();
+  }
+  if (value instanceof Date) return value.toString();
+  return JSON.stringify(value) ?? '';
+}
+
+/**
  * Oracle DATA_TYPE substrings that denote a numeric column. Matches the
  * frontend's `item-utils.isNumericType` vocabulary so a column classified as a
  * measure in the builder formats as a number in the export.

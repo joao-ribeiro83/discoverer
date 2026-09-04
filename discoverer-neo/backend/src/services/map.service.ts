@@ -862,7 +862,7 @@ export async function duplicate(
       })),
       conditions: source.conditions.map((c) => ({
         itemId: c.itemId,
-        operator: c.operator as ConditionOperator,
+        operator: c.operator,
         value: c.value,
         paramName:
           c.paramName === null

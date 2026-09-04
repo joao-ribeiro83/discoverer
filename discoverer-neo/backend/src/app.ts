@@ -1,4 +1,4 @@
-import Fastify, { type FastifyInstance } from 'fastify';
+import Fastify, { type FastifyError, type FastifyInstance } from 'fastify';
 import cors from './plugins/cors.js';
 import helmet from './plugins/helmet.js';
 import sensible from './plugins/sensible.js';
@@ -44,7 +44,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   // Global error handler — must be set BEFORE routes are registered:
   // Fastify snapshots the active error handler into each route's context
   // at registration time, so a handler set afterwards never applies.
-  app.setErrorHandler((error: any, request, reply) => {
+  app.setErrorHandler((error: FastifyError, request, reply) => {
     const statusCode = error.statusCode ?? 500;
     request.log.error({ err: error }, 'Unhandled error');
 

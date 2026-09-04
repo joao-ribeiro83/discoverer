@@ -36,7 +36,7 @@ const ShareParamSchema = z.object({
 // user who merely received an EDIT share cannot re-share the map.
 // ---------------------------------------------------------------------------
 
-export default async function mapShareRoutes(fastify: FastifyInstance) {
+export default function mapShareRoutes(fastify: FastifyInstance) {
   // GET /api/maps/:id/shares — list shares
   fastify.get(
     '/api/maps/:id/shares',

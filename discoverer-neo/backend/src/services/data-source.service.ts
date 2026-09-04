@@ -1,8 +1,9 @@
+import type * as PgNamespace from 'pg';
 import { eq } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { dataSources, type DataSource, type NewDataSource } from '../db/schema.js';
 import { encrypt, decrypt } from '../lib/encryption.js';
-import { importOracleDb } from './oracle-driver.js';
+import { importOracleDb, type OracleDbModule } from './oracle-driver.js';
 
 // Shape returned to API clients — never includes the decrypted password.
 export type SafeDataSource = Omit<DataSource, 'passwordEnc' | 'connectionString'> & {
@@ -133,7 +134,7 @@ export async function testConnection(id: string): Promise<ConnectionTestResult> 
 
   return {
     success: false,
-    message: `Unsupported connection type: ${ds.connectionType}`,
+    message: `Unsupported connection type: ${ds.connectionType as string}`,
     latencyMs: 0,
   };
 }
@@ -142,7 +143,7 @@ async function testOracleConnection(
   ds: DataSource,
   start: number,
 ): Promise<ConnectionTestResult> {
-  let oracledb: typeof import('oracledb') | null = null;
+  let oracledb: OracleDbModule | null = null;
   try {
     oracledb = await importOracleDb();
   } catch {
@@ -192,7 +193,7 @@ async function testPostgresConnection(
   ds: DataSource,
   start: number,
 ): Promise<ConnectionTestResult> {
-  let pg: typeof import('pg') | null = null;
+  let pg: typeof PgNamespace | null = null;
   try {
     pg = await import('pg');
   } catch {

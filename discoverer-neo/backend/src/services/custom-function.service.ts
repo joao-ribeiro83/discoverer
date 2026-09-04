@@ -144,7 +144,7 @@ export async function create(
       name: data.name,
       description: data.description ?? null,
       functionType: data.functionType,
-      parameters: (data.parameters ?? null) as unknown as CustomFunction['parameters'],
+      parameters: data.parameters ?? null,
       returnType: data.returnType ?? null,
     })
     .returning();

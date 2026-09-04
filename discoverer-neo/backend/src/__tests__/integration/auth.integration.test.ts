@@ -10,8 +10,6 @@ import {
 
 let app: FastifyInstance;
 
-const ADMIN_EMAIL = `int-auth-admin@test.com`;
-const ADMIN_PASSWORD = 'AdminPass123!';
 const USER_EMAIL = `int-auth-user@test.com`;
 const USER_PASSWORD = 'UserPass123!';
 

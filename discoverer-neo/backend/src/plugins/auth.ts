@@ -46,7 +46,7 @@ declare module '@fastify/jwt' {
 }
 
 export default fp(
-  async (fastify) => {
+  (fastify) => {
     fastify.register(fastifyJwt, {
       secret: config.JWT_SECRET,
       sign: { expiresIn: config.JWT_EXPIRES_IN },
