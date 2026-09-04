@@ -6,11 +6,12 @@ import type { ReactNode } from 'react'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { apiClient } from '@/lib/api'
 import { useAuthStore } from '@/store/auth'
-import type { MapSummary } from '@/lib/types'
+import type { MapSummary, DashboardStats } from '@/lib/types'
 
 vi.mock('@/lib/api', () => ({
   apiClient: {
-    maps: { listMine: vi.fn() },
+    maps: { listAll: vi.fn() },
+    dashboard: { getStats: vi.fn() },
   },
   getErrorMessage: (err: unknown) => (err instanceof Error ? err.message : 'error'),
 }))
@@ -37,6 +38,10 @@ function mapSummary(over: Partial<MapSummary> = {}): MapSummary {
   }
 }
 
+function stats(over: Partial<DashboardStats> = {}): DashboardStats {
+  return { totalExecutions: 0, scheduledMaps: 0, scheduledResults: 0, ...over }
+}
+
 function renderWithProviders(ui: ReactNode) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return render(
@@ -54,23 +59,24 @@ beforeEach(() => {
     isAuthenticated: true,
     hasHydrated: true,
   })
+  mockedApi.dashboard.getStats.mockResolvedValue(envelope(stats()) as never)
 })
 
 describe('DashboardPage', () => {
   it('greets the authenticated user by name', async () => {
-    mockedApi.maps.listMine.mockResolvedValue(envelope({ mine: [], shared: [] }) as never)
+    mockedApi.maps.listAll.mockResolvedValue(envelope({ all: [] }) as never)
     renderWithProviders(<DashboardPage />)
     expect(await screen.findByText('Welcome, Jane')).toBeInTheDocument()
   })
 
   it('shows recent maps (most recently updated first), clickable through to the map', async () => {
-    mockedApi.maps.listMine.mockResolvedValue(
+    mockedApi.maps.listAll.mockResolvedValue(
       envelope({
-        mine: [
+        all: [
           mapSummary({ id: 'm1', name: 'Older Map', updatedAt: '2026-01-01T00:00:00.000Z' }),
           mapSummary({ id: 'm2', name: 'Newer Map', updatedAt: '2026-02-01T00:00:00.000Z' }),
+          mapSummary({ id: 'm3', name: 'Shared Map', createdBy: 'someone-else' }),
         ],
-        shared: [mapSummary({ id: 'm3', name: 'Shared Map' })],
       }) as never,
     )
     renderWithProviders(<DashboardPage />)
@@ -80,16 +86,40 @@ describe('DashboardPage', () => {
     expect(newerLink).toHaveAttribute('href', '/maps/m2')
     expect(olderLink).toHaveAttribute('href', '/maps/m1')
 
-    // Total maps counts both owned and shared.
+    // Total maps counts everything the user can see; only "Newer"/"Older" are theirs.
     expect(screen.getByText('3')).toBeInTheDocument()
     expect(screen.getByText('2 yours, 1 shared with you')).toBeInTheDocument()
   })
 
-  it('shows an empty state and degrades gracefully when there are no maps', async () => {
-    mockedApi.maps.listMine.mockResolvedValue(envelope({ mine: [], shared: [] }) as never)
+  it('renders real numbers, not placeholder prose, for the KPI cards', async () => {
+    mockedApi.maps.listAll.mockResolvedValue(envelope({ all: [] }) as never)
+    mockedApi.dashboard.getStats.mockResolvedValue(
+      envelope(stats({ totalExecutions: 42, scheduledMaps: 3, scheduledResults: 17 })) as never,
+    )
     renderWithProviders(<DashboardPage />)
 
-    expect(await screen.findByText(/No maps yet/)).toBeInTheDocument()
-    expect(screen.getByText(/Scheduling isn.t available yet/)).toBeInTheDocument()
+    expect(await screen.findByText('42')).toBeInTheDocument()
+    expect(screen.getByText('3')).toBeInTheDocument()
+    expect(screen.getByText('17')).toBeInTheDocument()
+
+    for (const heading of document.querySelectorAll('h1, h2, h3, h4, h5, h6')) {
+      expect(heading.textContent?.trim().split(/\s+/).length).toBeLessThanOrEqual(4)
+    }
+  })
+
+  it('shows a truthful empty state when the user owns no maps but others exist', async () => {
+    mockedApi.maps.listAll.mockResolvedValue(
+      envelope({ all: [mapSummary({ id: 'm1', createdBy: 'someone-else' })] }) as never,
+    )
+    renderWithProviders(<DashboardPage />)
+
+    expect(await screen.findByText('1 worksheet exists; none are yours.')).toBeInTheDocument()
+  })
+
+  it('shows a truthful empty state when no maps exist at all', async () => {
+    mockedApi.maps.listAll.mockResolvedValue(envelope({ all: [] }) as never)
+    renderWithProviders(<DashboardPage />)
+
+    expect(await screen.findByText('No maps exist yet. Create one to get started.')).toBeInTheDocument()
   })
 })

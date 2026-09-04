@@ -52,20 +52,12 @@
     "totalMaps": "Total de Mapas",
     "totalMapsBreakdown": "{{mine}} seus, {{shared}} partilhados consigo",
     "totalExecutions": "Total de Execuções",
-    "totalExecutionsTooltip": "Ainda não existe um endpoint de contagem de execuções para todo o espaço de trabalho — consulte o histórico de cada mapa para as suas próprias execuções.",
-    "perMapHistory": "O histórico por mapa está no visualizador de cada mapa.",
+    "totalExecutionsDescription": "Em todos os mapas que pode ver.",
     "scheduledMaps": "Mapas Agendados",
-    "scheduledMapsTooltip": "O agendamento ainda não foi implementado.",
-    "comingWithSchedules": "Chegará com a funcionalidade de Agendamentos.",
-    "dataSources": "Origens de Dados",
-    "dataSourcesTooltip": "Consulte Administração -> Origens de Dados para a lista completa.",
-    "manageConnections": "Faça a gestão das ligações em Administração.",
+    "viewSchedules": "Ver agendamentos",
     "recentMaps": "Mapas Recentes",
     "recentMapsDescription": "Os seus últimos 5 mapas atualizados.",
-    "noMapsYet": "Ainda não existem mapas. Crie um a partir da página Mapas.",
-    "scheduledResults": "Resultados Agendados",
-    "scheduledResultsDescription": "As últimas 5 execuções agendadas.",
-    "schedulingNotAvailable": "O agendamento ainda não está disponível — esta secção será preenchida assim que os agendamentos forem lançados."
+    "scheduledResults": "Resultados Agendados"
   },
   "resultsTable": {
     "nullValue": "NULL",

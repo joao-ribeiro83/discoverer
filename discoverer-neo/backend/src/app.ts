@@ -19,6 +19,7 @@ import customFunctionRoutes from './routes/custom-functions.js';
 import userRoutes from './routes/users.js';
 import userPreferencesRoutes from './routes/user-preferences.js';
 import mapRoutes from './routes/maps.js';
+import dashboardRoutes from './routes/dashboard.js';
 import mapShareRoutes from './routes/map-shares.js';
 import mapExecutionRoutes from './routes/map-execution.js';
 import exportRoutes from './routes/export.js';
@@ -90,6 +91,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(userRoutes);
   await app.register(userPreferencesRoutes);
   await app.register(mapRoutes);
+  await app.register(dashboardRoutes);
   await app.register(mapShareRoutes);
   await app.register(mapExecutionRoutes);
   await app.register(exportRoutes);

@@ -272,6 +272,12 @@ export interface MapSummary {
   updatedAt: string
 }
 
+export interface DashboardStats {
+  totalExecutions: number
+  scheduledMaps: number
+  scheduledResults: number
+}
+
 export interface MapWithDetails extends MapSummary {
   items: MapItem[]
   conditions: MapCondition[]

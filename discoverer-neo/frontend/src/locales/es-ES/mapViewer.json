@@ -52,20 +52,12 @@
     "totalMaps": "Total de mapas",
     "totalMapsBreakdown": "{{mine}} suyos, {{shared}} compartidos con usted",
     "totalExecutions": "Total de ejecuciones",
-    "totalExecutionsTooltip": "Aún no existe un punto de conexión de recuento de ejecuciones para todo el espacio de trabajo; consulte el historial de cada mapa para ver sus propias ejecuciones.",
-    "perMapHistory": "El historial por mapa se encuentra en el visor de cada mapa.",
+    "totalExecutionsDescription": "En todos los mapas que puede ver.",
     "scheduledMaps": "Mapas programados",
-    "scheduledMapsTooltip": "La programación aún no se ha implementado.",
-    "comingWithSchedules": "Disponible con la función de programaciones.",
-    "dataSources": "Orígenes de datos",
-    "dataSourcesTooltip": "Consulte Administración -> Orígenes de datos para ver la lista completa.",
-    "manageConnections": "Administre las conexiones en Administración.",
+    "viewSchedules": "Ver programaciones",
     "recentMaps": "Mapas recientes",
     "recentMapsDescription": "Sus últimos 5 mapas actualizados.",
-    "noMapsYet": "Aún no hay mapas. Cree uno desde la página Mapas.",
-    "scheduledResults": "Resultados programados",
-    "scheduledResultsDescription": "Las últimas 5 ejecuciones programadas.",
-    "schedulingNotAvailable": "La programación aún no está disponible; esta sección se rellenará cuando las programaciones estén disponibles."
+    "scheduledResults": "Resultados programados"
   },
   "resultsTable": {
     "nullValue": "NULL",
