@@ -6,7 +6,10 @@
     "executedTitle": "Map executed",
     "rowsReturned": "{{count}} row(s) returned.",
     "runFailedTitle": "Run failed",
-    "scheduleManagement": "Schedule management"
+    "scheduleManagement": "Schedule management",
+    "runRefusedTitle": "Worksheet not run",
+    "runRefusedDescription": "The query planner declined this request. The results panel explains why.",
+    "cannotRunNoColumns": "This worksheet has no output columns, so there is nothing to run. Open it in the builder and add at least one column."
   },
   "mapsList": {
     "title": "Maps",
@@ -102,7 +105,9 @@
       "CONNECT": "Connection error",
       "TIMEOUT": "Query timed out",
       "QUERY": "Query error",
-      "CANCELLED": "Cancelled"
+      "CANCELLED": "Cancelled",
+      "FORBIDDEN": "Not entitled to run",
+      "REFUSED": "Request declined"
     },
     "noRows": "Query returned no rows.",
     "runToSeeResults": "Run the map to see results.",
@@ -130,5 +135,18 @@
   "crosstab": {
     "noColumnEdge": "This crosstab has no column edge yet, so it is shown as a table. Discoverer does not record which columns went across the top — open a column and set its crosstab edge to \"Across the top\".",
     "tooLarge": "This crosstab would be {{rows}} x {{columns}}, over the {{max}} cell limit. Filter the report or group on fewer values."
+  },
+  "refusal": {
+    "folders": "Folders involved: {{folders}}",
+    "MULTI_FOLDER_AGGREGATE": {
+      "title": "This total cannot be trusted yet, so it was not run",
+      "why": "This worksheet totals a value across a one-to-many join. Each row on the \"one\" side is repeated once per matching row on the \"many\" side, so the total would count the same value several times and come out too high. Discoverer refused this shape too.",
+      "whatToChange": "Total a value from one folder only, or remove the columns that reach into the second folder. Multi-folder totals become available when the fan-trap planner ships."
+    },
+    "NO_JOIN_PATH": {
+      "title": "These folders are not connected, so the worksheet was not run",
+      "why": "The worksheet uses columns from folders that no chain of joins links together. Without a join, the database would pair every row of one folder with every row of the other and return a meaningless result.",
+      "whatToChange": "Remove the columns from the unconnected folder, or ask an administrator to define a join between them."
+    }
   }
 }

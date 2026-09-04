@@ -6,7 +6,10 @@
     "executedTitle": "Mapa ejecutado",
     "rowsReturned": "Se devolvieron {{count}} fila(s).",
     "runFailedTitle": "Error en la ejecución",
-    "scheduleManagement": "Administración de programaciones"
+    "scheduleManagement": "Administración de programaciones",
+    "runRefusedTitle": "Hoja no ejecutada",
+    "runRefusedDescription": "El planificador de consultas rechazó esta solicitud. El panel de resultados explica por qué.",
+    "cannotRunNoColumns": "Esta hoja no tiene columnas de salida, por lo que no hay nada que ejecutar. Ábrala en el generador y añada al menos una columna."
   },
   "mapsList": {
     "title": "Mapas",
@@ -102,7 +105,9 @@
       "CONNECT": "Error de conexión",
       "TIMEOUT": "Se agotó el tiempo de espera de la consulta",
       "QUERY": "Error de consulta",
-      "CANCELLED": "Cancelada"
+      "CANCELLED": "Cancelada",
+      "FORBIDDEN": "Sin autorización para ejecutar",
+      "REFUSED": "Solicitud rechazada"
     },
     "noRows": "La consulta no devolvió ninguna fila.",
     "runToSeeResults": "Ejecute el mapa para ver los resultados.",
@@ -130,5 +135,18 @@
   "crosstab": {
     "noColumnEdge": "Esta tabla cruzada aún no tiene columnas en la parte superior, por lo que se muestra como tabla. Discoverer no registra qué columnas iban arriba: abra una columna y defina su borde de tabla cruzada como «En la parte superior».",
     "tooLarge": "Esta tabla cruzada sería de {{rows}} x {{columns}}, por encima del límite de {{max}} celdas. Filtre el informe o agrupe por menos valores."
+  },
+  "refusal": {
+    "folders": "Carpetas implicadas: {{folders}}",
+    "MULTI_FOLDER_AGGREGATE": {
+      "title": "Este total todavía no es fiable, por eso no se ejecutó",
+      "why": "Esta hoja totaliza un valor a través de una unión de uno a muchos. Cada fila del lado «uno» se repite una vez por cada fila coincidente del lado «muchos», por lo que el total contaría el mismo valor varias veces y saldría demasiado alto. Discoverer también rechazaba esta forma.",
+      "whatToChange": "Totalice un valor de una sola carpeta, o quite las columnas que acceden a la segunda carpeta. Los totales entre carpetas estarán disponibles cuando se publique el planificador de fan-trap."
+    },
+    "NO_JOIN_PATH": {
+      "title": "Estas carpetas no están conectadas, por eso no se ejecutó la hoja",
+      "why": "La hoja usa columnas de carpetas que ninguna cadena de uniones enlaza. Sin una unión, la base de datos emparejaría cada fila de una carpeta con cada fila de la otra y devolvería un resultado sin sentido.",
+      "whatToChange": "Quite las columnas de la carpeta no conectada, o pida a un administrador que defina una unión entre ellas."
+    }
   }
 }

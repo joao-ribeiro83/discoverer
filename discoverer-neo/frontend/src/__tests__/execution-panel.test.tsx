@@ -33,6 +33,9 @@ vi.mock('@/lib/api', () => ({
   getErrorMessage: (err: unknown) =>
     (err as { message?: string } | undefined)?.message ?? 'error',
   getErrorKind: (err: unknown) => (err as { kind?: string } | undefined)?.kind,
+  getRefusalCode: (err: unknown) => (err as { code?: string } | undefined)?.code,
+  getRefusalDetails: (err: unknown) =>
+    (err as { details?: Record<string, unknown> } | undefined)?.details,
 }))
 
 const mockedApi = vi.mocked(apiClient, true)
@@ -182,5 +185,81 @@ describe('ExecutionPanel', () => {
       calculatedFields: undefined,
     }))
     await waitFor(() => expect(mockedApi.exports.download).toHaveBeenCalledWith('job-1'))
+  })
+
+  // --- Error surface (Phase 2.2) ----------------------------------------
+  //
+  // The point of these three is that the *shape* of the feedback differs by
+  // kind. A refusal that renders as a red error banner is the defect D-036
+  // exists to prevent, and a CONFIG error that reads like an ORACLE one tells
+  // the user to call the wrong person.
+
+  it('renders a CONFIG error and an ORACLE (QUERY) error with different headlines', () => {
+    const { unmount } = renderWithProviders(
+      <ExecutionPanel
+        mapId="map-1"
+        mapName="My Map"
+        result={null}
+        parameters={{}}
+        runError={{ kind: 'CONFIG', message: 'Unknown item reference' }}
+        onResultChange={() => {}}
+      />,
+    )
+    const configHeadline = screen.getByTestId('execution-error').textContent
+    unmount()
+
+    renderWithProviders(
+      <ExecutionPanel
+        mapId="map-1"
+        mapName="My Map"
+        result={null}
+        parameters={{}}
+        runError={{ kind: 'QUERY', message: 'table or view does not exist' }}
+        onResultChange={() => {}}
+      />,
+    )
+    const queryHeadline = screen.getByTestId('execution-error').textContent
+
+    expect(configHeadline).not.toEqual(queryHeadline)
+  })
+
+  it('renders a refusal as an explanation, not as the generic error banner', () => {
+    renderWithProviders(
+      <ExecutionPanel
+        mapId="map-1"
+        mapName="My Map"
+        result={null}
+        parameters={{}}
+        runError={{
+          kind: 'REFUSED',
+          code: 'MULTI_FOLDER_AGGREGATE',
+          details: { folders: ['Sales', 'Sales Lines'] },
+          message: 'Multi-folder aggregate queries are refused',
+        }}
+        onResultChange={() => {}}
+      />,
+    )
+
+    const refusal = screen.getByTestId('execution-refusal')
+    expect(refusal).toBeTruthy()
+    // The explanation names both folders and offers a next step.
+    expect(refusal.textContent).toContain('Sales Lines')
+    // And the red error banner must not also appear.
+    expect(screen.queryByTestId('execution-error')).toBeNull()
+  })
+
+  it('falls back to the error banner when a REFUSED response carries no code', () => {
+    renderWithProviders(
+      <ExecutionPanel
+        mapId="map-1"
+        mapName="My Map"
+        result={null}
+        parameters={{}}
+        runError={{ kind: 'REFUSED', message: 'declined' }}
+        onResultChange={() => {}}
+      />,
+    )
+    expect(screen.queryByTestId('execution-refusal')).toBeNull()
+    expect(screen.getByTestId('execution-error')).toBeTruthy()
   })
 })

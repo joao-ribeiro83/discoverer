@@ -43,7 +43,9 @@
     "crossBusinessAreaTitle": "Domaine d'activité différent",
     "crossBusinessAreaDescription": "Toutes les colonnes d'une carte doivent provenir du même domaine d'activité.",
     "collapsePanel": "Réduire le panneau",
-    "expandPanel": "Développer le panneau"
+    "expandPanel": "Développer le panneau",
+    "runRefusedTitle": "Feuille non exécutée",
+    "runRefusedDescription": "Le planificateur de requêtes a refusé cette demande. Le panneau de résultats explique pourquoi."
   },
   "tree": {
     "title": "Domaines d'activité",

@@ -18,18 +18,59 @@ Découvrez comment exécuter des cartes et consulter les résultats.
 
 ## Fournir des paramètres
 
-Si votre carte comporte des paramètres, un panneau de saisie s'affiche :
+Une feuille migrée depuis Discoverer porte souvent des paramètres — les titres
+d'origine les affichent sous la forme `&Dt Início`, `&Dt Fim`. Le parc en
+compte 7 521.
 
-1. Saisissez les valeurs de chaque paramètre **Obligatoire**
-2. Les paramètres facultatifs peuvent rester vides (la valeur par défaut est utilisée)
-3. Cliquez sur **Exécuter** pour lancer l'exécution
+Cliquez sur **Exécuter** : si la feuille a un paramètre sans valeur par défaut,
+une fenêtre **Paramètres d'exécution** s'ouvre avant tout envoi à la base de
+données :
 
-**Exemple :**
-```
-Start Date: [2026-01-01]
-End Date: [2026-12-31]
-Region: [EMEA]
-```
+1. Remplissez chaque champ marqué d'un `*` rouge. Ceux-là sont obligatoires.
+2. Laissez un champ facultatif vide pour utiliser sa valeur par défaut.
+3. Cliquez sur **Exécuter** dans la fenêtre.
+
+La fenêtre ne vous laisse pas continuer tant qu'un champ obligatoire est vide —
+elle signale le champ à la place. Rien ne s'exécute avant que la fenêtre soit
+remplie : une feuille qui semble ne pas réagir au bouton **Exécuter** attend
+généralement cette fenêtre derrière la page.
+
+Les valeurs saisies sont envoyées au serveur comme variables de liaison. Le
+navigateur ne construit jamais de SQL : une valeur contenant une apostrophe ou
+un point-virgule reste une donnée, jamais du code.
+
+Les listes de valeurs arriveront dans une version ultérieure ; pour l'instant
+tous les champs sont en texte libre.
+
+## Quand le bouton Exécuter est désactivé
+
+**Exécuter** est grisé lorsqu'il ne peut rien faire d'utile, et la raison est
+affichée sous le bouton. Aujourd'hui, la seule raison que la page peut
+connaître avant d'interroger le serveur est :
+
+- **Aucune colonne de sortie.** La feuille n'affiche rien. Ouvrez-la dans le
+  générateur et ajoutez au moins une colonne.
+
+Deux autres conditions ne sont connues que du serveur et arrivent donc sous
+forme de message après le clic :
+
+- **Exécution non autorisée.** Vous pouvez ouvrir la feuille mais pas
+  l'exécuter sur cette source de données.
+- **Connexion à la source de données impossible.** La connexion est absente ou
+  hors service.
+
+## Quand une feuille est refusée
+
+Parfois la réponse n'est ni une erreur ni un résultat — le planificateur de
+requêtes refuse d'exécuter la feuille, car il peut construire le SQL mais ne
+peut pas garantir que le chiffre est juste.
+
+Une feuille refusée affiche un panneau ambre, pas rouge. Il indique ce qui a
+été demandé, pourquoi cela ne peut pas recevoir de réponse, et quoi changer.
+Discoverer refusait les mêmes formes.
+
+Les raisons, et la marche à suivre, sont dans
+[Dépannage : pourquoi une feuille a été refusée](../troubleshooting/refusals.md).
 
 ## Consulter les résultats
 

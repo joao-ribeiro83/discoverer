@@ -43,7 +43,9 @@
     "crossBusinessAreaTitle": "Área de negocio diferente",
     "crossBusinessAreaDescription": "Todas las columnas de un mapa deben provenir de la misma área de negocio.",
     "collapsePanel": "Contraer panel",
-    "expandPanel": "Expandir panel"
+    "expandPanel": "Expandir panel",
+    "runRefusedTitle": "Hoja no ejecutada",
+    "runRefusedDescription": "El planificador de consultas rechazó esta solicitud. El panel de resultados explica por qué."
   },
   "tree": {
     "title": "Áreas de negocio",

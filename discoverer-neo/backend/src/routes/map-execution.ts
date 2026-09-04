@@ -73,6 +73,19 @@ function handleExecutionError(reply: FastifyReply, err: unknown): boolean {
     return true;
   }
   if (err instanceof SqlGenerationError) {
+    // A coded SqlGenerationError is a deliberate refusal, not a broken map
+    // (D-036). It ships its own `kind` so the client renders an explanation
+    // with a next step rather than a red error banner.
+    if (err.code) {
+      reply.code(400).send({
+        error: err.message,
+        statusCode: 400,
+        kind: 'REFUSED',
+        code: err.code,
+        details: err.details,
+      });
+      return true;
+    }
     reply.code(400).send({ error: err.message, statusCode: 400, kind: 'CONFIG' });
     return true;
   }

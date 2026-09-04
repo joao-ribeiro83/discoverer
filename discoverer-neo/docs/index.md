@@ -29,6 +29,12 @@ Learn how to use the Discoverer Neo interface to build and run queries.
 - **[Scheduling Maps](user-guide/scheduling.md)** — Creating scheduled runs, managing schedules
 - **[Sharing Maps](user-guide/sharing.md)** — Sharing maps with other users, permissions
 
+## Troubleshooting
+
+Why the product said no, and what to do about it.
+
+- **[Why a worksheet was declined](troubleshooting/refusals.md)** — the query shapes the planner refuses, why, and what to change
+
 ## Administrator Guide
 
 Configure and manage the Discoverer Neo system.

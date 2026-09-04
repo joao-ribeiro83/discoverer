@@ -16,9 +16,16 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
 import { useMapExport } from '@/hooks/useMapExport'
-import { apiClient, getErrorKind, getErrorMessage } from '@/lib/api'
+import {
+  apiClient,
+  getErrorKind,
+  getErrorMessage,
+  getRefusalCode,
+  getRefusalDetails,
+} from '@/lib/api'
 import { ResultsTable } from '@/components/data-table/ResultsTable'
 import { CrosstabTable, crosstabAxes } from '@/components/data-table/CrosstabTable'
+import { ExecutionRefusal } from '@/components/map-builder/ExecutionRefusal'
 import type {
   AsyncExecutionJob,
   AsyncJobStatus,
@@ -44,6 +51,9 @@ const ERROR_KIND_KEY: Record<ExecutionErrorKind, string> = {
   TIMEOUT: 'mapViewer:execution.errorKind.TIMEOUT',
   QUERY: 'mapViewer:execution.errorKind.QUERY',
   CANCELLED: 'mapViewer:execution.errorKind.CANCELLED',
+  FORBIDDEN: 'mapViewer:execution.errorKind.FORBIDDEN',
+  // REFUSED never reaches this banner — it renders as ExecutionRefusal.
+  REFUSED: 'mapViewer:execution.errorKind.REFUSED',
 }
 
 export interface ExecutionPanelProps {
@@ -180,7 +190,10 @@ export function ExecutionPanel({
   const bgRunning = bgRunMutation.isPending || (!!bgJob && !TERMINAL_JOB_STATUSES.includes(bgJob.status))
 
   const errorKind = runError ? getErrorKind(runError) : undefined
-  const errorText = runError ? getErrorMessage(runError) : null
+  // A refusal is a separate surface, not a red banner (D-036). Only fall back
+  // to the error banner when the backend sent no recognised refusal code.
+  const refusalCode = errorKind === 'REFUSED' ? getRefusalCode(runError) : undefined
+  const errorText = runError && !refusalCode ? getErrorMessage(runError) : null
 
   // A crosstab needs a column edge, and Discoverer records none — so a
   // migrated crosstab arrives with every axis column on the row edge and
@@ -276,8 +289,16 @@ export function ExecutionPanel({
         </pre>
       )}
 
+      {refusalCode && (
+        <ExecutionRefusal code={refusalCode} details={getRefusalDetails(runError)} />
+      )}
+
       {errorText && (
-        <div className="mx-4 mt-3 flex items-start gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm">
+        <div
+          role="alert"
+          data-testid="execution-error"
+          className="mx-4 mt-3 flex items-start gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm"
+        >
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
           <div>
             <p className="font-medium text-destructive">
