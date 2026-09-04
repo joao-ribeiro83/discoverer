@@ -40,6 +40,19 @@ npm run db:test:reset --workspace=backend
 If a test run ever hangs, kill it. A hung jest process holds an open connection
 and can still delete rows; leaving one running for hours is how data gets lost.
 
+**After a run that failed or was killed, reset before believing the next one.**
+The suites share one database and clean up in `afterAll`, which does not run
+when a process is interrupted. The rows left behind make the *next* run fail in
+unrelated suites — a global count assertion sees extra rows, a login finds a
+duplicate email — and it is easy to spend an hour blaming the change you just
+made. Three consecutive runs here failed 14, 9 and 10 suites for exactly that
+reason, each poisoned by the one before; a reset returned every one of them to
+green.
+
+```bash
+npm run db:test:reset --workspace=backend
+```
+
 ### Running Tests
 
 ```bash

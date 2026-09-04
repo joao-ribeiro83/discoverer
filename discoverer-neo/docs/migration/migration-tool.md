@@ -105,11 +105,26 @@ dn-migrate run   --connection '{"host":"oracle.example.com","user":"EUL5_US","pa
 
 **Flags:**
 - `--target` — target Postgres: connection URL, JSON config file, or inline JSON (required)
+- `--data-source-id` — the target `data_sources` UUID this EUL is being read from
 - `--dry-run` — run the whole pipeline and report, writing nothing
 - `--version` — override EUL auto-detection: `auto` (default), `eul4`, `eul5`
 - `--schema-owner` — schema owning the EUL tables
 
 **Use case:** Perform the actual migration into Neo.
+
+> **Supply `--data-source-id`, or nothing you migrate will run.** Every folder
+> is stamped with it, and a folder without one has no database behind it —
+> `resolveDataSourceId` refuses to execute any map that touches it, however
+> good the generated SQL. The migrator does not create the row: you migrate
+> *from* a data source already registered in the target, so take the id from
+> `data_sources`. Omitting it is allowed (you may be migrating metadata before
+> registering the source) and the run warns loudly; fix it afterwards with an
+> `UPDATE folders SET data_source_id = …`, then confirm with
+> [`dn-migrate verify`](verify.md), whose `folderWithoutDataSource` count is
+> exactly this.
+>
+> Migrations run through the admin API always set it — the API is given a data
+> source to migrate from.
 
 > **One migration per database.** The run mints a `migration@migrated.local`
 > service account and gives every migrated Oracle user a synthesized
