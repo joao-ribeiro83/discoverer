@@ -13,7 +13,11 @@ test.describe('Login', () => {
     await page.route('**/api/auth/login', (route) =>
       jsonRoute(route, { data: { token: makeFakeJwt(), user: AUTH_USER } }),
     )
-    await page.route('**/api/maps', (route) => jsonRoute(route, { data: { mine: [], shared: [] } }))
+    await page.route(/\/api\/maps(\?.*)?$/, (route) => jsonRoute(route, { data: { all: [] } }))
+    await page.route(
+      /\/api\/dashboard\/stats$/,
+      (route) => jsonRoute(route, { data: { totalExecutions: 0, scheduledMaps: 0, scheduledResults: 0 } }),
+    )
 
     await page.goto('/login')
     await page.getByLabel('Email').fill(AUTH_USER.email)
