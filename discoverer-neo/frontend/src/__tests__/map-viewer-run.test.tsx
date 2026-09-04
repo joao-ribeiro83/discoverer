@@ -119,6 +119,7 @@ describe('MapViewerPage — Run', () => {
               id: 'p-1',
               mapId: 'map-1',
               name: 'Dt Inicio',
+              bindName: 'p_dt_inicio',
               paramType: 'DATE',
               defaultValue: null,
               isRequired: true,
