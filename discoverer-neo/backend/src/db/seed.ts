@@ -30,27 +30,14 @@ async function seed() {
   if (!admin) throw new Error('Failed to create admin user');
   console.log(`  ✓ admin user: ${admin.email}`);
 
-  // 2. Sample data source (placeholder connection info)
-  const [ds] = await db
-    .insert(dataSources)
-    .values({
-      name: 'Sample Oracle DB',
-      description: 'Placeholder Oracle data source for development',
-      connectionType: 'oracle',
-      host: 'oracle-db.example.com',
-      port: 1521,
-      serviceName: 'ORCL',
-      sid: 'ORCL',
-      username: 'discoverer_readonly',
-      passwordEnc: 'PLACEHOLDER_ENCRYPTED_PASSWORD',
-      connectionString: '//oracle-db.example.com:1521/ORCL',
-      isActive: true,
-    })
-    .returning();
-  if (!ds) throw new Error('Failed to create data source');
-  console.log(`  ✓ data source: ${ds.name}`);
+  // No sample data source. The seed used to create an ACTIVE "Sample Oracle DB"
+  // whose password_enc held the literal string PLACEHOLDER_ENCRYPTED_PASSWORD —
+  // a row that looks like a working credential to everything that reads the
+  // table, and is not one. It blocked a key rotation, which correctly refuses
+  // to rewrite a set it cannot fully open. Register a real data source through
+  // the admin UI instead; the server encrypts the password on the way in.
 
-  // 3. Sample business area
+  // 2. Sample business area
   const [ba] = await db
     .insert(businessAreas)
     .values({
@@ -64,7 +51,7 @@ async function seed() {
   if (!ba) throw new Error('Failed to create business area');
   console.log(`  ✓ business area: ${ba.name}`);
 
-  // 4. Grant admin full access to the business area
+  // 3. Grant admin full access to the business area
   await db.insert(userBusinessAreaGrants).values([
     {
       userId: admin.id,
