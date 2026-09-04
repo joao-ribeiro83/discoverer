@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { Layout } from '@/components/layout/Layout'
+import { Layout, RouteFallback } from '@/components/layout/Layout'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { AuthLayout } from '@/components/auth/AuthLayout'
 import { LoginPage } from '@/pages/LoginPage'
@@ -64,7 +64,7 @@ export function App() {
         path="/change-password"
         element={
           <ProtectedRoute>
-            <Suspense fallback={null}>
+            <Suspense fallback={<RouteFallback />}>
               <ChangePasswordPage />
             </Suspense>
           </ProtectedRoute>

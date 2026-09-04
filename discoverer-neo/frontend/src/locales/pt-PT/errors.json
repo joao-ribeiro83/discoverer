@@ -12,6 +12,15 @@
     "CONNECT": "Não foi possível ligar à origem de dados.",
     "TIMEOUT": "A consulta excedeu o tempo limite. Tente restringir o conjunto de resultados ou adicionar condições.",
     "QUERY": "A base de dados rejeitou a consulta.",
-    "CANCELLED": "A execução foi cancelada."
+    "CANCELLED": "A execução foi cancelada.",
+    "FORBIDDEN": "Pode abrir esta folha de cálculo, mas não tem autorização para a executar sobre esta fonte de dados.",
+    "REFUSED": "Este pedido foi recusado porque não pode ser respondido corretamente."
+  },
+  "boundary": {
+    "title": "Esta página deixou de funcionar",
+    "description": "Algo nesta página falhou durante a apresentação. Nada do que fez foi guardado nem perdido. Tente novamente ou recarregue a página.",
+    "chunkTitle": "Não foi possível carregar esta página",
+    "chunkDescription": "Parte da aplicação não foi transferida. Normalmente é um problema de ligação ou uma nova versão a ser publicada. Recarregue para a obter novamente.",
+    "reload": "Recarregar página"
   }
 }

@@ -1,4 +1,5 @@
 import axios, { isAxiosError } from 'axios'
+import i18n from '@/i18n'
 import { useAuthStore } from '@/store/auth'
 import type {
   BusinessArea,
@@ -22,6 +23,7 @@ import type {
   AsyncExecutionJob,
   ExecutionHistoryEntry,
   ExecutionErrorKind,
+  RefusalCode,
   ExportJob,
   ExportJobStatus,
   ExportMapBody,
@@ -51,17 +53,57 @@ import type {
 
 type Envelope<T> = { data: T }
 
-export function getErrorMessage(err: unknown, fallback = 'Something went wrong'): string {
-  if (isAxiosError<{ error?: string }>(err)) {
-    return err.response?.data?.error ?? fallback
+/** Oracle server errors. Never shown to a user — logged, and reported by `kind` (SEC-07). */
+const ORACLE_ERROR_TEXT = /\bORA-\d{3,5}\b/
+
+/**
+ * A user-facing message for a failed request, always in the active locale.
+ *
+ * The default fallback is resolved through i18next rather than being an English
+ * literal: the failures with no server body — a dropped connection, a timeout,
+ * a non-JSON 5xx, a CORS rejection — are exactly the ones a Portuguese estate
+ * hits most, and 53 call sites were passing no fallback at all. Callers may
+ * still pass a more specific translated string.
+ */
+export function getErrorMessage(err: unknown, fallback = i18n.t('errors:generic')): string {
+  if (!isAxiosError<{ error?: string }>(err)) return fallback
+  // No response at all: the request never reached the server.
+  if (!err.response) return i18n.t('errors:network')
+
+  const message = err.response.data?.error
+  if (!message) return fallback
+
+  // SEC-07: an ORA- string names the schema and the failing construct. Report
+  // the kind instead and keep the detail in the console for support.
+  if (ORACLE_ERROR_TEXT.test(message)) {
+    // eslint-disable-next-line no-console -- the detail must reach support somewhere (SEC-07)
+    console.error('[api] suppressed Oracle error detail:', message)
+    const kind = getErrorKind(err)
+    return kind ? i18n.t(`errors:execution.${kind}`) : fallback
   }
-  return fallback
+  return message
 }
 
 /** Backend execution/export errors optionally carry a `kind` discriminant (see `ExecutionErrorKind`). */
 export function getErrorKind(err: unknown): ExecutionErrorKind | undefined {
   if (isAxiosError<{ kind?: ExecutionErrorKind }>(err)) {
     return err.response?.data?.kind
+  }
+  return undefined
+}
+
+/** The machine-readable reason behind a `REFUSED` execution (see `RefusalCode`). */
+export function getRefusalCode(err: unknown): RefusalCode | undefined {
+  if (isAxiosError<{ code?: RefusalCode }>(err)) {
+    return err.response?.data?.code
+  }
+  return undefined
+}
+
+/** Free-form context the backend attaches to a refusal — e.g. the folder names involved. */
+export function getRefusalDetails(err: unknown): Record<string, unknown> | undefined {
+  if (isAxiosError<{ details?: Record<string, unknown> }>(err)) {
+    return err.response?.data?.details
   }
   return undefined
 }
