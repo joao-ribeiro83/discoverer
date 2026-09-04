@@ -11,8 +11,36 @@
   "mapsList": {
     "title": "Cartes",
     "description": "Parcourez et gérez vos cartes visuelles.",
-    "placeholderTitle": "Espace réservé",
-    "comingSoon": "Cette page sera bientôt disponible."
+    "createButton": "Créer une carte",
+    "searchPlaceholder": "Rechercher des cartes par nom…",
+    "businessAreaAllOption": "Tous les domaines métier",
+    "sortRecency": "Récemment modifiés",
+    "sortName": "Nom (A–Z)",
+    "entityLabel": "carte",
+    "rowCount": "{{shown}} sur {{total}} cartes",
+    "tabs": {
+      "mine": "Mes cartes",
+      "shared": "Partagées avec moi",
+      "all": "Tous"
+    },
+    "columns": {
+      "businessArea": "Domaine Métier"
+    },
+    "actions": {
+      "open": "Ouvrir",
+      "share": "Partager",
+      "schedule": "Planifier"
+    },
+    "toast": {
+      "deleted": "Carte supprimée",
+      "deleteFailed": "Échec de la suppression de la carte"
+    },
+    "emptyNoneAtAll": "Aucune carte pour le moment. Créez-en une pour commencer.",
+    "emptyNoMatches": "Aucune carte ne correspond à votre recherche ou à vos filtres.",
+    "emptyTabMine_one": "{{count}} feuille existe ; aucune n'est à vous.",
+    "emptyTabMine_other": "{{count}} feuilles existent ; aucune n'est à vous.",
+    "emptyTabShared_one": "{{count}} feuille existe ; aucune n'est partagée avec vous.",
+    "emptyTabShared_other": "{{count}} feuilles existent ; aucune n'est partagée avec vous."
   },
   "dashboard": {
     "welcome": "Bienvenue",

@@ -11,8 +11,36 @@
   "mapsList": {
     "title": "Mapas",
     "description": "Explore e faça a gestão dos seus mapas visuais.",
-    "placeholderTitle": "Marcador de posição",
-    "comingSoon": "Esta página estará disponível brevemente."
+    "createButton": "Criar Mapa",
+    "searchPlaceholder": "Procurar mapas por nome…",
+    "businessAreaAllOption": "Todas as áreas de negócio",
+    "sortRecency": "Recentemente atualizado",
+    "sortName": "Nome (A–Z)",
+    "entityLabel": "mapa",
+    "rowCount": "{{shown}} de {{total}} mapas",
+    "tabs": {
+      "mine": "Meus",
+      "shared": "Partilhado comigo",
+      "all": "Todos"
+    },
+    "columns": {
+      "businessArea": "Área de Negócio"
+    },
+    "actions": {
+      "open": "Abrir",
+      "share": "Partilhar",
+      "schedule": "Agendar"
+    },
+    "toast": {
+      "deleted": "Mapa eliminado",
+      "deleteFailed": "Falha ao eliminar o mapa"
+    },
+    "emptyNoneAtAll": "Ainda não existem mapas. Crie um para começar.",
+    "emptyNoMatches": "Nenhum mapa corresponde à sua pesquisa ou filtros.",
+    "emptyTabMine_one": "Existe {{count}} folha de cálculo; nenhuma é sua.",
+    "emptyTabMine_other": "Existem {{count}} folhas de cálculo; nenhuma é sua.",
+    "emptyTabShared_one": "Existe {{count}} folha de cálculo; nenhuma é partilhada consigo.",
+    "emptyTabShared_other": "Existem {{count}} folhas de cálculo; nenhuma é partilhada consigo."
   },
   "dashboard": {
     "welcome": "Bem-vindo",
