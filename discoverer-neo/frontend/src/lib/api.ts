@@ -16,6 +16,7 @@ import type {
   AppUser,
   MapSummary,
   MapWithDetails,
+  DashboardStats,
   CreateMapInput,
   UpdateMapInput,
   ExecuteResult,
@@ -432,6 +433,9 @@ export const apiClient = {
       api.get<Envelope<AuditLogEntry[]>>(`/audit/entity/${entityType}/${entityId}`),
     userActivity: (userId: string, limit?: number) =>
       api.get<Envelope<AuditLogEntry[]>>(`/audit/user/${userId}`, { params: { limit } }),
+  },
+  dashboard: {
+    getStats: () => api.get<Envelope<DashboardStats>>('/dashboard/stats'),
   },
 }
 

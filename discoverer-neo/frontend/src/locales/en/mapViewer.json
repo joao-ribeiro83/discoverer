@@ -52,20 +52,12 @@
     "totalMaps": "Total Maps",
     "totalMapsBreakdown": "{{mine}} yours, {{shared}} shared with you",
     "totalExecutions": "Total Executions",
-    "totalExecutionsTooltip": "No workspace-wide execution count endpoint exists yet — see each map's history for its own runs.",
-    "perMapHistory": "Per-map history is on each map's viewer.",
+    "totalExecutionsDescription": "Across every map you can see.",
     "scheduledMaps": "Scheduled Maps",
-    "scheduledMapsTooltip": "Scheduling has not been built yet.",
-    "comingWithSchedules": "Coming with the Schedules feature.",
-    "dataSources": "Data Sources",
-    "dataSourcesTooltip": "See Admin -> Data Sources for the full list.",
-    "manageConnections": "Manage connections under Admin.",
+    "viewSchedules": "View schedules",
     "recentMaps": "Recent Maps",
     "recentMapsDescription": "Your last 5 updated maps.",
-    "noMapsYet": "No maps yet. Create one from the Maps page.",
-    "scheduledResults": "Scheduled Results",
-    "scheduledResultsDescription": "Last 5 scheduled runs.",
-    "schedulingNotAvailable": "Scheduling isn't available yet — this section will populate once schedules ship."
+    "scheduledResults": "Scheduled Results"
   },
   "resultsTable": {
     "nullValue": "NULL",

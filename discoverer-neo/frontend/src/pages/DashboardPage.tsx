@@ -14,13 +14,18 @@ export function DashboardPage() {
   const user = useAuthStore((s) => s.user)
 
   const mapsQuery = useQuery({
-    queryKey: ['maps', 'mine'],
-    queryFn: async () => (await apiClient.maps.listMine()).data.data,
+    queryKey: ['maps', 'all'],
+    queryFn: async () => (await apiClient.maps.listAll()).data.data.all,
+  })
+  const statsQuery = useQuery({
+    queryKey: ['dashboard', 'stats'],
+    queryFn: async () => (await apiClient.dashboard.getStats()).data.data,
   })
 
-  const mine = mapsQuery.data?.mine ?? []
-  const shared = mapsQuery.data?.shared ?? []
-  const totalMaps = mine.length + shared.length
+  const allMaps = mapsQuery.data ?? []
+  const totalMaps = allMaps.length
+  const mine = allMaps.filter((m) => m.createdBy === user?.id)
+  const sharedCount = totalMaps - mine.length
 
   const recentMaps = [...mine]
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
@@ -47,7 +52,7 @@ export function DashboardPage() {
             <p className="text-xs text-muted-foreground">
               {t('mapViewer:dashboard.totalMapsBreakdown', {
                 mine: mine.length,
-                shared: shared.length,
+                shared: sharedCount,
               })}
             </p>
           </CardContent>
@@ -56,89 +61,80 @@ export function DashboardPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>{t('mapViewer:dashboard.totalExecutions')}</CardDescription>
-            <CardTitle
-              className="text-3xl"
-              title={t('mapViewer:dashboard.totalExecutionsTooltip')}
-            >
-              —
+            <CardTitle className="text-3xl">
+              {statsQuery.isLoading ? '—' : statsQuery.data?.totalExecutions ?? 0}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-xs text-muted-foreground">{t('mapViewer:dashboard.perMapHistory')}</p>
+            <p className="text-xs text-muted-foreground">{t('mapViewer:dashboard.totalExecutionsDescription')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>{t('mapViewer:dashboard.scheduledMaps')}</CardDescription>
-            <CardTitle className="text-3xl" title={t('mapViewer:dashboard.scheduledMapsTooltip')}>
-              —
+            <CardTitle className="text-3xl">
+              {statsQuery.isLoading ? '—' : statsQuery.data?.scheduledMaps ?? 0}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-xs text-muted-foreground">{t('mapViewer:dashboard.comingWithSchedules')}</p>
+            <Link to="/schedules" className="text-xs text-muted-foreground hover:underline">
+              {t('mapViewer:dashboard.viewSchedules')}
+            </Link>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>{t('mapViewer:dashboard.dataSources')}</CardDescription>
-            <CardTitle className="text-3xl" title={t('mapViewer:dashboard.dataSourcesTooltip')}>
-              —
+            <CardDescription>{t('mapViewer:dashboard.scheduledResults')}</CardDescription>
+            <CardTitle className="text-3xl">
+              {statsQuery.isLoading ? '—' : statsQuery.data?.scheduledResults ?? 0}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-xs text-muted-foreground">{t('mapViewer:dashboard.manageConnections')}</p>
+            <Link to="/schedules" className="text-xs text-muted-foreground hover:underline">
+              {t('mapViewer:dashboard.viewSchedules')}
+            </Link>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{t('mapViewer:dashboard.recentMaps')}</CardTitle>
-            <CardDescription>{t('mapViewer:dashboard.recentMapsDescription')}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {mapsQuery.isLoading ? (
-              <p className="text-sm text-muted-foreground">{t('common:states.loading')}</p>
-            ) : recentMaps.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{t('mapViewer:dashboard.noMapsYet')}</p>
-            ) : (
-              <ul className="divide-y">
-                {recentMaps.map((m) => (
-                  <li key={m.id}>
-                    <Link
-                      to={`/maps/${m.id}`}
-                      className="flex items-center justify-between gap-2 py-2 text-sm hover:underline"
-                    >
-                      <span className="flex items-center gap-2 truncate">
-                        <MapIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
-                        {m.name}
-                      </span>
-                      <span className="shrink-0 text-xs text-muted-foreground">
-                        {formatDate(m.updatedAt, locale)}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{t('mapViewer:dashboard.scheduledResults')}</CardTitle>
-            <CardDescription>{t('mapViewer:dashboard.scheduledResultsDescription')}</CardDescription>
-          </CardHeader>
-          <CardContent>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{t('mapViewer:dashboard.recentMaps')}</CardTitle>
+          <CardDescription>{t('mapViewer:dashboard.recentMapsDescription')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {mapsQuery.isLoading ? (
+            <p className="text-sm text-muted-foreground">{t('common:states.loading')}</p>
+          ) : recentMaps.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              {t('mapViewer:dashboard.schedulingNotAvailable')}
+              {totalMaps === 0
+                ? t('mapViewer:mapsList.emptyNoneAtAll')
+                : t('mapViewer:mapsList.emptyTabMine', { count: totalMaps })}
             </p>
-          </CardContent>
-        </Card>
-      </div>
+          ) : (
+            <ul className="divide-y">
+              {recentMaps.map((m) => (
+                <li key={m.id}>
+                  <Link
+                    to={`/maps/${m.id}`}
+                    className="flex items-center justify-between gap-2 py-2 text-sm hover:underline"
+                  >
+                    <span className="flex items-center gap-2 truncate">
+                      <MapIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      {m.name}
+                    </span>
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {formatDate(m.updatedAt, locale)}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }
