@@ -263,7 +263,13 @@ export const apiClient = {
   // (POST /business-areas/:baId/maps), while get/update/delete are flat.
   maps: {
     listMine: () =>
-      api.get<Envelope<{ mine: MapSummary[]; shared: MapSummary[] }>>('/maps'),
+      api.get<Envelope<{ mine: MapSummary[]; shared: MapSummary[] }>>('/maps', {
+        params: { scope: 'owned' },
+      }),
+    // Every map the caller may see (Phase 2.1's "all" tab) — explicit `scope=all`
+    // rather than relying on the endpoint's role-based default.
+    listAll: () =>
+      api.get<Envelope<{ all: MapSummary[] }>>('/maps', { params: { scope: 'all' } }),
     listByBusinessArea: (businessAreaId: string) =>
       api.get<Envelope<MapSummary[]>>(`/business-areas/${businessAreaId}/maps`),
     get: (id: string) => api.get<Envelope<MapWithDetails>>(`/maps/${id}`),

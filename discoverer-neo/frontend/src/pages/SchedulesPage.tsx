@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
@@ -126,6 +127,7 @@ export function SchedulesPage() {
   const { locale } = useLocale()
   const queryClient = useQueryClient()
   const { toast } = useToast()
+  const [searchParams] = useSearchParams()
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<Schedule | null>(null)
@@ -196,6 +198,17 @@ export function SchedulesPage() {
     })
     setDialogOpen(true)
   }
+
+  // Maps list's "Schedule" row action links here with ?mapId= so the create
+  // dialog opens with that map already selected, instead of dropping the
+  // user on an empty form to find it again in the dropdown.
+  useEffect(() => {
+    const preselectMapId = searchParams.get('mapId')
+    if (preselectMapId) {
+      openCreate()
+      form.setValue('mapId', preselectMapId)
+    }
+  }, [searchParams])
 
   function openEdit(schedule: Schedule) {
     setEditing(schedule)
@@ -395,6 +408,13 @@ export function SchedulesPage() {
     ...(mapOptions?.mine ?? []).map((m) => ({ ...m, owned: true })),
     ...(mapOptions?.shared ?? []).map((m) => ({ ...m, owned: false })),
   ]
+  // The Maps list's "Schedule" row action can preselect a map the caller can see
+  // but neither owns nor was explicitly shared (e.g. via a business-area grant),
+  // which `listMine()` above never returns — without this it'd be a valid form
+  // value with nothing in the dropdown to show for it.
+  if (selectedMap && !allMapOptions.some((m) => m.id === selectedMap.id)) {
+    allMapOptions.push({ ...selectedMap, owned: true })
+  }
 
   return (
     <AdminPageWrapper
