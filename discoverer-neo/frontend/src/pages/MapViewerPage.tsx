@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { CalendarClock, Loader2, Play } from 'lucide-react'
-import { apiClient, getErrorMessage } from '@/lib/api'
+import { apiClient, getErrorKind, getErrorMessage } from '@/lib/api'
 import type { ExecuteResult } from '@/lib/types'
 import { useToast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
@@ -40,12 +40,18 @@ export function MapViewerPage() {
         description: t('mapViewer:viewer.rowsReturned', { count: res.rowCount }),
       })
     },
-    onError: (err) =>
+    onError: (err) => {
+      // A refusal is not a failure — the panel explains it in full, so the
+      // toast says "not run", never "failed", and is not destructive-styled.
+      const refused = getErrorKind(err) === 'REFUSED'
       toast({
-        title: t('mapViewer:viewer.runFailedTitle'),
-        description: getErrorMessage(err),
-        variant: 'destructive',
-      }),
+        title: refused
+          ? t('mapViewer:viewer.runRefusedTitle')
+          : t('mapViewer:viewer.runFailedTitle'),
+        description: refused ? t('mapViewer:viewer.runRefusedDescription') : getErrorMessage(err),
+        variant: refused ? 'default' : 'destructive',
+      })
+    },
   })
 
   function handleRun() {
@@ -91,6 +97,14 @@ export function MapViewerPage() {
 
   const map = mapQuery.data
 
+  // D-102: a disabled primary action must state its reason. The one condition
+  // the client can know before it asks the server is an empty column list — a
+  // migrated worksheet whose items did not resolve. Everything else that can
+  // stop a run (no data-source connection, no data entitlement) is only
+  // knowable server-side and comes back as a CONNECT/FORBIDDEN error kind.
+  const noOutputColumns = map.items.length === 0
+  const disabledReason = noOutputColumns ? t('mapViewer:viewer.cannotRunNoColumns') : null
+
   return (
     <div className="flex h-full flex-col space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
@@ -99,14 +113,26 @@ export function MapViewerPage() {
           {map.description && <p className="text-muted-foreground">{map.description}</p>}
         </div>
         <div className="flex items-center gap-2">
-          <Button onClick={handleRun} disabled={runMutation.isPending}>
-            {runMutation.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Play className="h-4 w-4" />
+          <div className="flex flex-col items-end gap-1">
+            <Button
+              onClick={handleRun}
+              disabled={runMutation.isPending || !!disabledReason}
+              title={disabledReason ?? undefined}
+              aria-describedby={disabledReason ? 'run-disabled-reason' : undefined}
+            >
+              {runMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Play className="h-4 w-4" />
+              )}
+              {runMutation.isPending ? t('common:actions.running') : t('common:actions.run')}
+            </Button>
+            {disabledReason && (
+              <p id="run-disabled-reason" className="text-xs text-muted-foreground">
+                {disabledReason}
+              </p>
             )}
-            {t('common:actions.run')}
-          </Button>
+          </div>
           <Button variant="outline" asChild>
             <Link to="/schedules">
               <CalendarClock className="h-4 w-4" /> {t('mapViewer:viewer.scheduleManagement')}

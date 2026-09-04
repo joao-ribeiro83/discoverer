@@ -15,7 +15,7 @@ import {
 } from '@dnd-kit/core'
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import { PanelRightClose, PanelRightOpen, Loader2 } from 'lucide-react'
-import { apiClient, getErrorMessage } from '@/lib/api'
+import { apiClient, getErrorKind, getErrorMessage } from '@/lib/api'
 import type { MapWithDetails, ExecuteResult } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import { useToast } from '@/hooks/use-toast'
@@ -207,12 +207,18 @@ export function MapBuilderPage() {
         description: t('mapBuilder:page.executedDescription', { count: res.rowCount }),
       })
     },
-    onError: (err) =>
+    onError: (err) => {
+      // Same rule as the viewer: a refusal is explained by the panel, so the
+      // toast must not call it a failure.
+      const refused = getErrorKind(err) === 'REFUSED'
       toast({
-        title: t('mapBuilder:page.runFailedTitle'),
-        description: getErrorMessage(err),
-        variant: 'destructive',
-      }),
+        title: refused
+          ? t('mapBuilder:page.runRefusedTitle')
+          : t('mapBuilder:page.runFailedTitle'),
+        description: refused ? t('mapBuilder:page.runRefusedDescription') : getErrorMessage(err),
+        variant: refused ? 'default' : 'destructive',
+      })
+    },
   })
 
   /** Only prompt when at least one declared parameter lacks a usable default. */
