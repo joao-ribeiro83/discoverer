@@ -21,7 +21,7 @@
  */
 
 import { createHash, randomUUID } from 'node:crypto';
-import { chmod, mkdir, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { isAbsolute, join, resolve } from 'node:path';
 
 import type { ProvisionedCredential } from '@discoverer-neo/core/migration';
@@ -117,4 +117,61 @@ export async function writeCredentialFile(
     accountCount: credentials.length,
     sha256: createHash('sha256').update(contents, 'utf8').digest('hex'),
   };
+}
+
+export interface CredentialSweepResult {
+  deleted: number;
+  /** Files that could not be inspected or removed — logged, never fatal. */
+  errors: number;
+}
+
+/**
+ * Delete credential files older than `CREDENTIAL_FILE_TTL_HOURS`.
+ *
+ * Runs at boot and hourly (see `app.ts`). "Delete it once you have handed the
+ * passwords out" was an instruction inside the file, and instructions inside a
+ * file are not a control — nine of them survived for weeks. This is the
+ * control.
+ *
+ * Only files this service writes are considered: an operator who parks
+ * something else in the directory keeps it. Age is taken from mtime, which for
+ * a write-once file is its creation time.
+ *
+ * `dir` and `now` are injectable so the TTL boundary is testable without
+ * waiting a day or writing into the real credentials directory.
+ */
+export async function sweepCredentialFiles(
+  options: { dir?: string; now?: () => Date } = {},
+): Promise<CredentialSweepResult> {
+  const dir = options.dir ?? credentialsDir();
+  const cutoff =
+    (options.now ?? (() => new Date()))().getTime() -
+    config.CREDENTIAL_FILE_TTL_HOURS * 60 * 60 * 1000;
+
+  let entries: string[];
+  try {
+    entries = await readdir(dir);
+  } catch {
+    // No directory yet — nothing has ever been written. Not an error.
+    return { deleted: 0, errors: 0 };
+  }
+
+  let deleted = 0;
+  let errors = 0;
+
+  for (const name of entries) {
+    if (!name.startsWith('credentials-') || !name.endsWith('.csv')) continue;
+
+    const path = join(dir, name);
+    try {
+      const info = await stat(path);
+      if (info.mtimeMs > cutoff) continue;
+      await rm(path, { force: true });
+      deleted += 1;
+    } catch {
+      errors += 1;
+    }
+  }
+
+  return { deleted, errors };
 }

@@ -240,7 +240,7 @@ chiffrés ; la chaîne telle quelle.
 Une règle par sous-chaîne attrape toutes les variantes préfixées, suffixées et
 en camelCase du même mot, sans que personne ait à les énumérer. Le texte en
 clair existant a été purgé par la migration
-`0010_purge_audit_log_credentials`, qui expurge les valeurs sur place plutôt
+`0011_purge_audit_log_credentials`, qui expurge les valeurs sur place plutôt
 que de supprimer des lignes — une piste d'audit dont les lignes disparaissent
 est une piste d'audit moins bonne.
 

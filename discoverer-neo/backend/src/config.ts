@@ -1,5 +1,19 @@
 import { z } from 'zod';
 
+/**
+ * The published development defaults for the two secrets that protect stored
+ * data. Both are printed in this repository, so a production deployment still
+ * running on either is running on a public secret.
+ *
+ * Held in one table so the schema defaults below and `assertProductionSecrets`
+ * cannot drift apart — a guard that checks a string the schema no longer uses
+ * passes for the wrong reason.
+ */
+export const INSECURE_DEFAULTS = {
+  JWT_SECRET: 'dev-only-insecure-secret-change-me',
+  ENCRYPTION_KEY: 'dev-only-insecure-encryption-key-change-me',
+} as const;
+
 const EnvSchema = z.object({
   NODE_ENV: z
     .enum(['development', 'production', 'test'])
@@ -49,7 +63,7 @@ const EnvSchema = z.object({
   /** Seconds a cached metadata entry survives without explicit invalidation. */
   METADATA_CACHE_TTL_SECONDS: z.coerce.number().int().positive().default(300),
 
-  JWT_SECRET: z.string().min(16).default('dev-only-insecure-secret-change-me'),
+  JWT_SECRET: z.string().min(16).default(INSECURE_DEFAULTS.JWT_SECRET),
   JWT_EXPIRES_IN: z.string().default('7d'),
 
   /**
@@ -139,12 +153,22 @@ const EnvSchema = z.object({
    */
   CREDENTIALS_DIR: z.string().default('storage/credentials'),
 
+  /**
+   * Hours a temporary-password file survives before the sweep deletes it.
+   *
+   * The file is meant to be read once, distributed, and deleted by hand. It
+   * never was: nine of them sat on disk for weeks. So the deletion is now the
+   * application's job, and this is the grace period an operator gets to
+   * collect one. Shorten it where credentials are distributed promptly.
+   */
+  CREDENTIAL_FILE_TTL_HOURS: z.coerce.number().int().positive().default(24),
+
   LOG_LEVEL: z
     .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
     .default('info'),
 
   // 32+ char key used for AES-256-GCM encryption of stored credentials.
-  ENCRYPTION_KEY: z.string().min(32).default('dev-only-insecure-encryption-key-change-me'),
+  ENCRYPTION_KEY: z.string().min(32).default(INSECURE_DEFAULTS.ENCRYPTION_KEY),
 })
   // oracledb rejects a pool whose min exceeds its max, but only when the first
   // pool is built — which may be hours after boot. Catch it at startup instead.
@@ -162,6 +186,41 @@ if (!parsed.success) {
   }
   process.exit(1);
 }
+
+/**
+ * Refuse to run in production on a secret published in this repository.
+ *
+ * Throws rather than warns: a warning in a container log is a warning nobody
+ * reads, and the failure it precedes is silent — every stored Oracle password
+ * protected by a key anyone can look up. Development is untouched, so the
+ * default stays frictionless where it belongs.
+ *
+ * A pure function over its input, so the test can assert each default in turn
+ * without booting a production process.
+ */
+export function assertProductionSecrets(env: {
+  NODE_ENV: string;
+  JWT_SECRET: string;
+  ENCRYPTION_KEY: string;
+}): void {
+  if (env.NODE_ENV !== 'production') return;
+
+  const offenders = (
+    Object.keys(INSECURE_DEFAULTS) as (keyof typeof INSECURE_DEFAULTS)[]
+  ).filter((name) => env[name] === INSECURE_DEFAULTS[name]);
+  if (offenders.length === 0) return;
+
+  throw new Error(
+    `Refusing to start in production: ${offenders.join(' and ')} ` +
+      `${offenders.length === 1 ? 'is' : 'are'} still set to the development ` +
+      'default published in this repository. Generate a replacement with ' +
+      "'openssl rand -hex 32' and set it in the environment. Changing " +
+      'ENCRYPTION_KEY on a deployment that already stores credentials also ' +
+      'needs a re-encryption pass first — see docs/deployment/configuration.md.',
+  );
+}
+
+assertProductionSecrets(parsed.data);
 
 export const config = {
   ...parsed.data,

@@ -38,29 +38,44 @@ const ACTION_SEGMENTS = new Set([
   'import',
 ]);
 
-// Keys redacted (case-insensitively, at any depth) before a request/response
-// body is stored — audit details must never carry credentials or bearer
-// tokens.
-const SENSITIVE_KEYS = new Set([
+// Substrings that make a key sensitive. Its values are replaced (at any
+// depth) before a request/response body is stored — audit details must never
+// carry credentials or bearer tokens.
+//
+// Substrings, not exact names: an exact list is a list of the names somebody
+// thought of, and two of them were missing. `passwordEnc` (the client sends
+// the Oracle password as plaintext; the server encrypts it) and `newPassword`
+// were both written to audit_log in the clear. `apikey` and `authorization`
+// are listed separately because they contain none of the other four.
+const SENSITIVE_KEY_SUBSTRINGS = [
   'password',
-  'passwordhash',
-  'token',
-  'refreshtoken',
-  'accesstoken',
   'secret',
+  'token',
+  'credential',
   'apikey',
   'authorization',
-]);
+];
+
+/**
+ * True when `key` names a value that must never be stored.
+ *
+ * Case-insensitive, and separators are stripped first so `api_key` and
+ * `api-key` match `apikey` the same way `apiKey` does.
+ */
+export function isSensitiveKey(key: string): boolean {
+  const normalized = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+  return SENSITIVE_KEY_SUBSTRINGS.some((needle) => normalized.includes(needle));
+}
 
 const MAX_DETAIL_CHARS = 8000;
 
-function redact(value: unknown, depth = 0): unknown {
+export function redact(value: unknown, depth = 0): unknown {
   if (depth > 6 || value === null || value === undefined) return value;
   if (Array.isArray(value)) return value.map((v) => redact(v, depth + 1));
   if (typeof value === 'object') {
     const out: Record<string, unknown> = {};
     for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
-      out[key] = SENSITIVE_KEYS.has(key.toLowerCase()) ? '[REDACTED]' : redact(val, depth + 1);
+      out[key] = isSensitiveKey(key) ? '[REDACTED]' : redact(val, depth + 1);
     }
     return out;
   }
