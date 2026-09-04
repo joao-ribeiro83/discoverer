@@ -237,7 +237,7 @@ and **174 Oracle data-source passwords and 5 user passwords were written to
 
 A substring rule catches every prefixed, suffixed and camel-cased variant of
 the same word without anyone having to enumerate them. The existing cleartext
-was purged by migration `0010_purge_audit_log_credentials`, which redacts the
+was purged by migration `0011_purge_audit_log_credentials`, which redacts the
 values in place rather than deleting rows — an audit trail whose rows vanish is
 a worse audit trail.
 

@@ -27,6 +27,7 @@ import securityRoutes from './routes/security.js';
 import migrationRoutes from './routes/migration.js';
 import auditRoutes from './routes/audit.js';
 import { closeAll as closeOraclePools } from './services/oracle-connection-pool.js';
+import { sweepCredentialFiles } from './services/credential-file.service.js';
 import { config } from './config.js';
 import { closeExportQueue } from './queues/export.queue.js';
 import { startExportWorker, type ExportWorkerHandle } from './workers/export.worker.js';
@@ -114,6 +115,26 @@ export async function buildApp(): Promise<FastifyInstance> {
     schedulerWorker = startSchedulerWorker(app.log);
   }
 
+  // Temporary-password files are the most sensitive artefact this application
+  // produces, and they were being left on disk indefinitely. Sweep at boot as
+  // well as hourly: an instance that is restarted more often than once an hour
+  // would otherwise never reach the timer.
+  const runCredentialSweep = () => {
+    void sweepCredentialFiles()
+      .then(({ deleted, errors }) => {
+        if (deleted || errors) {
+          app.log.info({ deleted, errors }, 'Credential file sweep finished');
+        }
+      })
+      .catch((err: unknown) => {
+        app.log.error({ err }, 'Credential file sweep failed');
+      });
+  };
+  runCredentialSweep();
+  // `unref` so a pending timer never holds the process open.
+  const credentialSweepTimer = setInterval(runCredentialSweep, 60 * 60 * 1000);
+  credentialSweepTimer.unref();
+
   app.addHook('onClose', async () => {
     // Order matters: let in-flight exports/scheduled runs finish (or at
     // least stop pulling new jobs) before tearing down what they depend on.
@@ -127,6 +148,8 @@ export async function buildApp(): Promise<FastifyInstance> {
     // ending the pool from a per-app hook would permanently break every
     // instance after the first close(). It is closed once, for the real
     // process only, in server.ts's shutdown handler.
+    clearInterval(credentialSweepTimer);
+
     app.log.info('Stopping export/scheduler workers...');
     await exportWorker?.close();
     await schedulerWorker?.close();

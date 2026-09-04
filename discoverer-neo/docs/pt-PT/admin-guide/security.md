@@ -239,7 +239,7 @@ Não cifradas; a cadeia de caracteres tal e qual.
 
 Uma regra por subcadeia apanha todas as variantes com prefixo, com sufixo e em
 camelCase da mesma palavra, sem ninguém ter de as enumerar. O texto simples
-existente foi expurgado pela migração `0010_purge_audit_log_credentials`, que
+existente foi expurgado pela migração `0011_purge_audit_log_credentials`, que
 redige os valores no lugar em vez de apagar linhas — um registo de auditoria
 cujas linhas desaparecem é um registo de auditoria pior.
 
