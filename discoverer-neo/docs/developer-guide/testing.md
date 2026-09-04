@@ -40,6 +40,19 @@ npm run db:test:reset --workspace=backend
 If a test run ever hangs, kill it. A hung jest process holds an open connection
 and can still delete rows; leaving one running for hours is how data gets lost.
 
+**After a run that failed or was killed, reset before believing the next one.**
+The suites share one database and clean up in `afterAll`, which does not run
+when a process is interrupted. The rows left behind make the *next* run fail in
+unrelated suites — a global count assertion sees extra rows, a login finds a
+duplicate email — and it is easy to spend an hour blaming the change you just
+made. Three consecutive runs here failed 14, 9 and 10 suites for exactly that
+reason, each poisoned by the one before; a reset returned every one of them to
+green.
+
+```bash
+npm run db:test:reset --workspace=backend
+```
+
 ### Running Tests
 
 ```bash
@@ -48,6 +61,9 @@ npm run test --workspace=backend
 
 # Watch mode (re-run on changes)
 npm run test:watch --workspace=backend
+
+# Only the suites that need no infrastructure — no Docker required
+npm run test:unit --workspace=backend
 
 # Integration tests only
 npm run test:integration --workspace=backend
@@ -63,8 +79,22 @@ npm run test -- --coverage --workspace=backend
 
 Located in `backend/src/__tests__/`:
 
-- `**/*.test.ts` — Unit tests
-- `integration/` — Integration tests (require services)
+- `*.test.ts` — suites needing **no** infrastructure. Pure functions and
+  fakes only; they run with Docker down.
+- `integration/` — everything that touches Postgres, Redis, a queue or the
+  Fastify app.
+
+The split is about what a suite **needs**, not how it is scheduled: the whole
+run is sequential either way, because every integration suite shares one
+database. Twenty-four suites lived in the top directory while requiring a live
+Postgres, which made `*.test.ts` look like a fast inner loop that did not
+exist.
+
+**It is still not a fast loop, and the reason is not the database.** A
+21-assertion pure-function suite takes ~15 s, essentially all of it ts-jest
+type-checking the program graph. Moving the infrastructure-bound suites made
+the directory honest; making the loop quick means addressing the transform
+(`isolatedModules`, swc, or a project-references split), not test placement.
 
 **Naming:** `<feature>.test.ts`
 

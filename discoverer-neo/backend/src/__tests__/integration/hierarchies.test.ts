@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from '@jest/globals';
 import type { FastifyInstance } from 'fastify';
 import { eq } from 'drizzle-orm';
-import { buildApp } from '../app.js';
-import { db } from '../db/index.js';
-import { users, businessAreas, folders, items, hierarchies, hierarchyLevels } from '../db/schema.js';
-import { hashPassword } from '../lib/password.js';
+import { buildApp } from '../../app.js';
+import { db } from '../../db/index.js';
+import { users, businessAreas, folders, items, hierarchies, hierarchyLevels } from '../../db/schema.js';
+import { hashPassword } from '../../lib/password.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -487,7 +487,7 @@ describe('Hierarchy permission enforcement', () => {
   });
 
   it('allows MANAGER with CREATE grant to create', async () => {
-    const { userBusinessAreaGrants } = await import('../db/schema.js');
+    const { userBusinessAreaGrants } = await import('../../db/schema.js');
     await db.insert(userBusinessAreaGrants).values({
       userId: (await db.select().from(users).where(eq(users.email, TEST_MANAGER_EMAIL)))[0]!.id,
       businessAreaId: testBusinessAreaId,

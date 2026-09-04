@@ -5,7 +5,7 @@
  */
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import type { FastifyInstance } from 'fastify';
-import { buildApp } from '../app.js';
+import { buildApp } from '../../app.js';
 
 let app: FastifyInstance;
 

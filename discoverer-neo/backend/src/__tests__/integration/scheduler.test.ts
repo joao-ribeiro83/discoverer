@@ -24,9 +24,9 @@ import {
   type ScheduleRecord,
   type ScheduledResultRecord,
   type CreateScheduleInput,
-} from '../services/scheduler.service.js';
-import type { PreparedQuery, ResultColumn } from '../services/map-execution.service.js';
-import type { ExportSource } from '../services/exporters/types.js';
+} from '../../services/scheduler.service.js';
+import type { PreparedQuery, ResultColumn } from '../../services/map-execution.service.js';
+import type { ExportSource } from '../../services/exporters/types.js';
 
 // ---------------------------------------------------------------------------
 // Fixtures & fakes.

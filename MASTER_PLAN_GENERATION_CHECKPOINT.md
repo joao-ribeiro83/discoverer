@@ -725,3 +725,101 @@ test files, 201 real). Core and frontend: 0.
 The data-source finding (2) is the one that blocks everything downstream: with
 `folders.data_source_id` null across the estate, no map executes regardless of
 what Phases 3 and 4 fix about SQL and formulas.
+
+### Phase 1.3 addendum — two measurements that corrected the audit
+
+**Backend branch coverage is 71.86%, not 56.10%.** Measured over the full
+48-suite, 1 123-test run on 2026-09-03 (87.23% lines). The 56.10% figure came
+from a committed `coverage/` artefact six weeks stale — which is the argument
+against committing one. The backend threshold is raised from 56 to **71** to
+match; core is at 71.02% against a 71 floor, frontend at its 78.
+
+**The unit suite was not slow because of the database.** The audit read ~250 s
+of DB-bound work filed as unit tests, and 24 suites did indeed require a live
+Postgres, Redis, a queue or the Fastify app while sitting in the top-level
+`__tests__/` directory. Those have moved to `__tests__/integration/`, and
+`npm run test:unit -w backend` now runs the 8 that genuinely need nothing —
+267 tests, no Docker.
+
+It still takes **5m21s**, and a single 21-assertion pure-function suite takes
+**15 s**. That is ts-jest type-checking the program graph per suite, not
+infrastructure. The move made the directory honest; a genuinely fast inner
+loop needs the transform addressed (`isolatedModules`, swc, or project
+references), and that is a separate piece of work this stage did not do.
+
+---
+
+## Folders data-source gap — fixed, 2026-09-04
+
+The finding Phase 1.3 called the one that blocks everything downstream.
+
+**Root cause.** `TransformedFolder` had no data-source field and
+`RunMigrationOptions` never received one. The backend's `migration.service.ts`
+has always known the data source — it is what you migrate *from*, and it loads
+the Oracle connection from that row — and simply never passed it on. Not a
+lookup that failed; a value that was never written down.
+
+**Code.** `RunMigrationOptions.dataSourceId` is stamped onto every folder row.
+The backend passes `options.dataSourceId`. `dn-migrate run` gained
+`--data-source-id`. Omitting it stays legal — metadata can be migrated before
+the source is registered — but raises `FOLDERS_WITHOUT_DATA_SOURCE`, a warning
+that names the consequence, because the alternative is an estate that looks
+migrated and runs nothing.
+
+**Data.** One statement against the live target, safe because SIID_TESTES is
+the only Oracle data source and 211 of 212 folders were NULL:
+
+```sql
+UPDATE folders SET data_source_id = 'c5ed9133-3e4c-4c0b-869e-6f62d6f8b194',
+       updated_at = now()
+WHERE data_source_id IS NULL;   -- UPDATE 211
+```
+
+The 211 ids were captured first; reverting is setting them back to NULL.
+
+**Measured after.**
+
+| | Before | After |
+| --- | --- | --- |
+| `folderWithoutDataSource` | 31 405 | **0** |
+| Maps generating SQL that also resolve a data source | **0** of 116 | **116** of 116 |
+| Closure invariants broken | 2 | 1 (`mapsWithNoColumns` = 25) |
+
+Seam 3's assertion moves from pinned (`folderWithoutDataSource === references`)
+to **gated at zero**, so a regression now fails the build. A second test pins
+the warning on the no-data-source path, using a dry run — Neo holds one
+migration per database and refuses a second.
+
+**What this does not fix.** Seam 1 is unchanged at 116 of 923 generating: those
+807 are the token renderer (Phase 4) and the join planner (Phase 3). The
+difference is that their fixes now lead somewhere. Before this, lifting
+generation to 923 would have changed nothing an operator could observe.
+
+### A trap worth naming: interrupted runs poison the next one
+
+Validating the data-source fix cost three confusing runs, and none of the
+failures were real. `npm run test:integration` had no `pretest` hook, so it
+never touched the database setup; and the suites clean up in `afterAll`, which
+does not run when a process is interrupted. So a run that failed or was killed
+left rows behind, and the *next* run failed in unrelated suites — a global
+count assertion seeing extra rows, a login finding a duplicate email.
+
+Three consecutive runs failed 14, 9 and 10 suites, each poisoned by the one
+before. `npm run db:test:reset -w backend` returned every one to green, and the
+three migration suites then passed 61/61.
+
+The suite order also differs run to run — jest's default sequencer orders by
+cached durations — and that was **not** the cause, though it looked like one
+for a while. Pinning the order alphabetically was tried and reverted: it is
+deterministic but a worse order, and turning a green build red as a side effect
+of an unrelated fix is not a trade worth making.
+
+Two changes came out of it: `test:integration` gained the same
+`pretest` database setup `test` already had, and the reset step is now
+documented as the first thing to do after an interrupted run rather than
+something you rediscover.
+
+What remains, unfixed and low priority: several suites assert **global** counts
+(`expect(body.data.length).toBe(2)`) against a shared database. On a clean
+database they pass. They are the reason residue is catastrophic rather than
+merely untidy, and scoping them would make the suites robust to it.
