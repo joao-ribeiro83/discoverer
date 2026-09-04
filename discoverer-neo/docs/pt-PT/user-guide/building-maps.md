@@ -26,8 +26,8 @@ O Discoverer Neo suporta quatro tipos de mapa:
 
 ### Passo 1: Iniciar o Construtor de Mapas
 
-1. Clique em **Áreas de Negócio** → selecione uma área de negócio
-2. Clique em **Criar Mapa** (ou **+ Novo Mapa**)
+1. Clique em **Mapas** na barra lateral, depois em **Criar Mapa**
+2. Escolha uma área de negócio para o novo mapa
 3. Introduza:
    - **Nome** — Título do mapa (obrigatório)
    - **Descrição** — Descrição opcional

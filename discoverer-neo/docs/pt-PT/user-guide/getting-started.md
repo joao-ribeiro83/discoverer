@@ -48,8 +48,8 @@ Após iniciar sessão, é apresentado o painel principal com as seguintes secç�
 **Barra lateral esquerda:**
 - **Painel** — Visão geral e ações rápidas
 - **Áreas de Negócio** — Coleções organizadas de dados
-- **Mapas** — Consultas e relatórios guardados que criou
-- **Partilhado Comigo** — Mapas que outros utilizadores partilharam consigo
+- **Mapas** — Todos os mapas acessíveis: os seus, os partilhados consigo,
+  ou (de acordo com as suas permissões) toda a coleção
 - **Definições** — Personalizar as preferências de idioma e tema
 - **Administração** (se tiver privilégios de administrador) — Gestão do sistema
 
@@ -77,9 +77,14 @@ Uma **Área de Negócio** é um agrupamento lógico de dados e consultas relacio
 ### Ver os Seus Mapas
 
 1. Clique em **Mapas** na barra lateral
-2. Surgem dois separadores:
-   - **Os Meus Mapas** — Mapas que criou
-   - **Partilhado Comigo** — Mapas que outros partilharam consigo
+2. Três separadores permitem alterar o âmbito:
+   - **Os Meus** — Mapas que criou
+   - **Partilhado comigo** — Mapas que outros partilharam explicitamente consigo
+   - **Todos** — Todos os mapas que pode ver, incluindo os migrados de
+     Discoverer que ninguém partilhou nem reatribuiu ainda
+3. Procure por nome, filtre por área de negócio e ordene por nome ou pela
+   última atualização de um mapa
+4. Clique em **Criar Mapa** para começar um novo
 
 ### Criar um Novo Mapa
 

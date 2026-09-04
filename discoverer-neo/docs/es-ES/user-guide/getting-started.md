@@ -48,8 +48,8 @@ Tras iniciar sesión, verá el panel principal con las siguientes secciones:
 **Barra lateral izquierda:**
 - **Panel** — Resumen y acciones rápidas
 - **Áreas de negocio** — Colecciones de datos organizadas
-- **Mapas** — Consultas e informes guardados que ha creado
-- **Compartidos conmigo** — Mapas que otros usuarios han compartido con usted
+- **Mapas** — Todos los mapas a los que puede acceder: los suyos, los
+  compartidos con usted, o (según sus permisos) toda la colección
 - **Configuración** — Personalice las preferencias de idioma y tema
 - **Administración** (si tiene privilegios de administrador) — Gestión del sistema
 
@@ -77,9 +77,14 @@ Un **área de negocio** es una agrupación lógica de datos y consultas relacion
 ### Ver sus mapas
 
 1. Haga clic en **Mapas** en la barra lateral
-2. Aparecen dos pestañas:
-   - **Mis mapas** — Mapas que ha creado
-   - **Compartidos conmigo** — Mapas que otros han compartido con usted
+2. Tres pestañas le permiten cambiar el alcance:
+   - **Mío** — Mapas que ha creado
+   - **Compartido conmigo** — Mapas que otros han compartido explícitamente con usted
+   - **Todos** — Todos los mapas que puede ver, incluyendo los migrados
+     de Discoverer que nadie ha compartido ni reasignado aún
+3. Busque por nombre, filtre por área de negocio y ordene por nombre o por
+   la última actualización de un mapa
+4. Haga clic en **Crear mapa** para empezar uno nuevo
 
 ### Crear un mapa nuevo
 
