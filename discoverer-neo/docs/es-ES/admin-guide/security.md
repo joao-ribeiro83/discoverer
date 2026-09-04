@@ -239,7 +239,7 @@ cadena tal cual.
 
 Una regla por subcadena captura todas las variantes con prefijo, con sufijo y en
 camelCase de la misma palabra, sin que nadie tenga que enumerarlas. El texto
-plano existente se purgó con la migración `0010_purge_audit_log_credentials`,
+plano existente se purgó con la migración `0011_purge_audit_log_credentials`,
 que redacta los valores en su sitio en lugar de borrar filas: un rastro de
 auditoría cuyas filas desaparecen es un rastro de auditoría peor.
 
