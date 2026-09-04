@@ -47,11 +47,11 @@ COPY migrate/package.json migrate/
 
 # ---- Dependencies (with dev deps — needed to compile) ----
 FROM manifests AS deps
-RUN npm ci --workspace @discoverer-neo/migrate --include-workspace-root
+RUN npm ci --workspace @discoverer-neo/core --include-workspace-root
 
 # ---- Dependencies (runtime only) ----
 FROM manifests AS prod-deps
-RUN npm ci --workspace @discoverer-neo/migrate --omit=dev
+RUN npm ci --workspace @discoverer-neo/core --omit=dev
 
 # ---- Build ----
 FROM base AS build
@@ -59,7 +59,7 @@ COPY --from=deps /app ./
 COPY tsconfig.json ./
 COPY migrate/tsconfig.json migrate/
 COPY migrate/src migrate/src
-RUN npm run build --workspace @discoverer-neo/migrate
+RUN npm run build --workspace @discoverer-neo/core
 
 # ---- Production ----
 FROM base AS production

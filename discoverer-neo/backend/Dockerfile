@@ -54,14 +54,14 @@ COPY migrate/package.json migrate/
 
 # ---- Dependencies (with dev deps — needed to compile) ----
 # The migrate workspace is installed alongside the backend: the backend depends
-# on @discoverer-neo/migrate (the EUL migration pipeline), which npm links as a
+# on @discoverer-neo/core (the EUL migration pipeline), which npm links as a
 # workspace symlink, so migrate's own runtime deps must be present too.
 FROM manifests AS deps
-RUN npm ci --workspace @discoverer-neo/backend --workspace @discoverer-neo/migrate --include-workspace-root
+RUN npm ci --workspace @discoverer-neo/backend --workspace @discoverer-neo/core --include-workspace-root
 
 # ---- Dependencies (runtime only) ----
 FROM manifests AS prod-deps
-RUN npm ci --workspace @discoverer-neo/backend --workspace @discoverer-neo/migrate --omit=dev
+RUN npm ci --workspace @discoverer-neo/backend --workspace @discoverer-neo/core --omit=dev
 
 # ---- Build ----
 FROM base AS build
@@ -76,7 +76,7 @@ COPY backend/tsconfig.json backend/
 COPY backend/src backend/src
 # migrate first: the backend imports it as a built package (dist/index.js +
 # dist/index.d.ts), so the backend's own tsc would fail without it.
-RUN npm run build --workspace @discoverer-neo/migrate \
+RUN npm run build --workspace @discoverer-neo/core \
   && npm run build --workspace @discoverer-neo/backend
 
 # ---- Production ----
@@ -101,8 +101,8 @@ COPY --from=oracle-builder /opt/oracle/instantclient /opt/oracle/instantclient
 # outside the container.
 COPY --from=prod-deps /app ./
 COPY --from=build /app/backend/dist ./backend/dist
-# The backend imports @discoverer-neo/migrate, which npm resolves through the
-# workspace symlink at node_modules/@discoverer-neo/migrate -> /app/migrate.
+# The backend imports @discoverer-neo/core, which npm resolves through the
+# workspace symlink at node_modules/@discoverer-neo/core -> /app/migrate.
 COPY --from=build /app/migrate/dist ./migrate/dist
 # The Drizzle migrations and their journal. `drizzle-kit migrate` reads these
 # from `out: './drizzle'` at RUNTIME, not at build time, so the image needs the

@@ -4,7 +4,7 @@
 # =============================================
 # Build context is the REPO ROOT, not backend/ — same reason as the production
 # backend/Dockerfile: this is an npm workspaces monorepo, the backend depends
-# on @discoverer-neo/migrate ("*", a workspace-only reference — see
+# on @discoverer-neo/core ("*", a workspace-only reference — see
 # backend/package.json), and the only lockfile is the root package-lock.json.
 # =============================================
 
@@ -44,7 +44,7 @@ COPY package.json package-lock.json ./
 COPY backend/package.json backend/
 COPY frontend/package.json frontend/
 COPY migrate/package.json migrate/
-RUN npm ci --workspace @discoverer-neo/backend --workspace @discoverer-neo/migrate --include-workspace-root
+RUN npm ci --workspace @discoverer-neo/backend --workspace @discoverer-neo/core --include-workspace-root
 
 # Both workspace tsconfigs extend this root one (skipLibCheck etc.) — without
 # it here, `tsc -p migrate/tsconfig.json` silently drops the extends and fully
@@ -62,7 +62,7 @@ COPY migrate/tsconfig.json migrate/
 # dev tooling and its tests (see migrate/src/scripts/README.md).
 COPY migrate/jest.config.js migrate/
 COPY migrate/src migrate/src
-RUN npm run build --workspace @discoverer-neo/migrate
+RUN npm run build --workspace @discoverer-neo/core
 
 COPY backend/tsconfig*.json backend/
 COPY backend/drizzle.config.ts backend/
