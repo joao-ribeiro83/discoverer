@@ -1,3 +1,5 @@
+import type * as OracleDbNamespace from 'oracledb';
+
 /**
  * Single entry point for loading the node-oracledb driver.
  *
@@ -11,9 +13,11 @@
  * The unwrap below is load-bearing, not cosmetic, and lives here so the two
  * call sites (connection pool, connection test) cannot drift apart.
  */
-export async function importOracleDb(): Promise<typeof import('oracledb')> {
+export type OracleDbModule = typeof OracleDbNamespace;
+
+export async function importOracleDb(): Promise<OracleDbModule> {
   const ns = (await import('oracledb')) as unknown as {
-    default?: typeof import('oracledb');
+    default?: OracleDbModule;
   };
-  return ns.default ?? (ns as unknown as typeof import('oracledb'));
+  return ns.default ?? (ns as unknown as OracleDbModule);
 }

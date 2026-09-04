@@ -8,7 +8,7 @@ declare module 'fastify' {
   }
 }
 
-export default fp(async (fastify) => {
+export default fp((fastify) => {
   const redis = new Redis(config.REDIS_URL);
 
   redis.on('error', (err) => {

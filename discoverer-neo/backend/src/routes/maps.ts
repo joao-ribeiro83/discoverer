@@ -180,7 +180,7 @@ function sendValidationError(reply: FastifyReply, err: unknown): boolean {
 // Routes
 // ---------------------------------------------------------------------------
 
-export default async function mapRoutes(fastify: FastifyInstance) {
+export default function mapRoutes(fastify: FastifyInstance) {
   // GET /api/business-areas/:baId/maps — list maps in a business area
   fastify.get(
     '/api/business-areas/:baId/maps',

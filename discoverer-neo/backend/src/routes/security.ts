@@ -132,7 +132,7 @@ function policyErrorStatus(err: SecurityPolicyError): 400 | 404 | 409 {
 // them is as sensitive as managing users.
 // ---------------------------------------------------------------------------
 
-export default async function securityRoutes(fastify: FastifyInstance) {
+export default function securityRoutes(fastify: FastifyInstance) {
   const adminPreHandler = [fastify.authenticate, fastify.authorizeAdmin];
   const tags = ['Security'];
   const security = [{ bearerAuth: [] }];

@@ -2,8 +2,8 @@ import ExcelJS from 'exceljs';
 import type { ResultColumn } from '../map-execution.service.js';
 import {
   cellValue,
+  cellText,
   isDateType,
-  isNumericType,
   PROGRESS_ROW_INTERVAL,
   type ExportSource,
   type ExportWriteOptions,
@@ -156,7 +156,7 @@ export function excelNumberFormat(column: ResultColumn): string | undefined {
 function displayLength(value: unknown): number {
   if (value == null) return 0;
   if (value instanceof Date) return DEFAULT_DATETIME_FMT.length;
-  return String(value).length;
+  return cellText(value).length;
 }
 
 /**
@@ -193,7 +193,7 @@ function computeWidths(
  * capped at 31 characters, `History` is reserved, and it may not be empty.
  */
 export function sheetNameFor(value: unknown, taken: Set<string>): string {
-  const raw = value == null || value === '' ? '(blank)' : String(value);
+  const raw = value == null || value === '' ? '(blank)' : cellText(value);
 
   const sanitize = (s: string): string => {
     const cleaned = s
@@ -295,7 +295,7 @@ export async function writeXlsx(
       return sheet;
     }
 
-    const key = String(row[options.sheetByColumn] ?? '');
+    const key = cellText(row[options.sheetByColumn]);
     const existing = sheets.get(key);
     if (existing) return existing;
 

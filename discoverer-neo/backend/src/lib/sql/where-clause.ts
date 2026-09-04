@@ -15,6 +15,17 @@ export interface WhereClauseResult {
 }
 
 /**
+ * A LIST or BETWEEN parameter arrives either already split into an array or as
+ * one comma-joined string. Anything else is a single value — splitting its
+ * `String()` form would only turn an object into `[object Object]`.
+ */
+function toValueList(provided: unknown): unknown[] {
+  if (Array.isArray(provided)) return provided as unknown[];
+  if (typeof provided === 'string') return provided.split(',').map((v) => v.trim());
+  return [provided];
+}
+
+/**
  * Build the WHERE clause.
  *
  * Safety contract: every runtime value — static condition values as well as
@@ -146,11 +157,7 @@ export function buildWhereClause(
         // LIST parameters expand to one bind per value when values are
         // available; otherwise a single bind placeholder is emitted.
         const values =
-          paramType === 'LIST' && provided !== undefined
-            ? Array.isArray(provided)
-              ? provided
-              : String(provided).split(',').map((v) => v.trim())
-            : undefined;
+          paramType === 'LIST' && provided !== undefined ? toValueList(provided) : undefined;
         if (values && values.length > 0) {
           const names = values.map((v, i) => {
             const bind = `${paramName}_${i}`;
@@ -166,9 +173,7 @@ export function buildWhereClause(
         const lo = `${paramName}_lo`;
         const hi = `${paramName}_hi`;
         if (provided !== undefined) {
-          const parts = Array.isArray(provided)
-            ? provided
-            : String(provided).split(',').map((v) => v.trim());
+          const parts = toValueList(provided);
           if (parts.length !== 2) {
             throw new SqlGenerationError(
               `Parameter "${paramLabel}" must supply two values for BETWEEN`,

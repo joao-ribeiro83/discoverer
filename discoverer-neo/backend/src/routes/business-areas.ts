@@ -1,4 +1,4 @@
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import {
   create,
@@ -91,13 +91,13 @@ const errorResponse = {
 // Routes
 // ---------------------------------------------------------------------------
 
-export default async function businessAreasRoutes(fastify: FastifyInstance) {
+export default function businessAreasRoutes(fastify: FastifyInstance) {
   // Ensure the decorator exists (idempotent if registered twice).
   if (!fastify.hasDecorator('requireBusinessAreaAccess')) {
     fastify.decorate(
       'requireBusinessAreaAccess',
       (permissionLevel: PermissionLevel) =>
-        async (request: import('fastify').FastifyRequest, reply: import('fastify').FastifyReply) => {
+        async (request: FastifyRequest, reply: FastifyReply) => {
           const user = request.user;
           if (!user) {
             return reply.code(401).send({ error: 'Unauthorized' });
@@ -150,7 +150,7 @@ export default async function businessAreasRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const user = request.user!;
+      const user = request.user;
 
       if (user.role === 'ADMIN') {
         // Only the admin branch is cached. It is the full active set, identical
@@ -236,7 +236,7 @@ export default async function businessAreasRoutes(fastify: FastifyInstance) {
         return reply.code(404).send({ error: 'Business area not found' });
       }
 
-      const user = request.user!;
+      const user = request.user;
       const permissions =
         user.role === 'ADMIN'
           ? ['CREATE', 'EDIT', 'DELETE', 'EXPORT', 'SCHEDULE', 'VIEW']
@@ -283,7 +283,7 @@ export default async function businessAreasRoutes(fastify: FastifyInstance) {
         });
       }
 
-      const user = request.user!;
+      const user = request.user;
       const area = await create(parsed.data, user.sub);
       await invalidate(fastify.redis, metadataKeys.businessAreaList());
       return reply.code(201).send({ data: area });
@@ -493,7 +493,7 @@ export default async function businessAreasRoutes(fastify: FastifyInstance) {
         return reply.code(404).send({ error: 'Business area not found' });
       }
 
-      const user = request.user!;
+      const user = request.user;
       const grant = await grantAccess(
         paramParsed.data.id,
         bodyParsed.data.userId,

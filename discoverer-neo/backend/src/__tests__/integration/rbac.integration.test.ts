@@ -7,7 +7,6 @@ import {
   loginAndGetToken,
   createTestBusinessArea,
   createTestFolder,
-  createTestItem,
   cleanupIntegrationUsers,
   grantTestPermission,
   authenticatedRequest,
@@ -41,7 +40,7 @@ beforeEach(async () => {
 
 describe('ADMIN role', () => {
   it('can create, read, update, delete business areas', async () => {
-    const admin = await createTestUser(ADMIN_EMAIL, PASSWORD, 'ADMIN');
+    const _admin = await createTestUser(ADMIN_EMAIL, PASSWORD, 'ADMIN');
     const token = await loginAndGetToken(app, ADMIN_EMAIL, PASSWORD);
 
     // Create
@@ -187,7 +186,7 @@ describe('MANAGER role', () => {
   });
 
   it('cannot delete business areas (admin only)', async () => {
-    const admin = await createTestUser(ADMIN_EMAIL, PASSWORD, 'ADMIN');
+    const _admin = await createTestUser(ADMIN_EMAIL, PASSWORD, 'ADMIN');
     const adminToken = await loginAndGetToken(app, ADMIN_EMAIL, PASSWORD);
 
     const createRes = await authenticatedRequest(app, 'POST', '/api/business-areas', adminToken, {
@@ -288,7 +287,7 @@ describe('Unauthenticated access', () => {
 describe('Business area permission enforcement on sub-resources', () => {
   it('VIEW grant allows reading folders but not creating', async () => {
     const admin = await createTestUser(ADMIN_EMAIL, PASSWORD, 'ADMIN');
-    const adminToken = await loginAndGetToken(app, ADMIN_EMAIL, PASSWORD);
+    const _adminToken = await loginAndGetToken(app, ADMIN_EMAIL, PASSWORD);
 
     const ba = await createTestBusinessArea('Folder Perm BA', admin.id);
     await createTestFolder(ba.id, 'Visible Folder', 'TABLE', admin.id);
@@ -336,7 +335,7 @@ describe('Business area permission enforcement on sub-resources', () => {
     expect(createRes.statusCode).toBe(201);
 
     // A regular user with no grant on the BA cannot delete items
-    const user = await createTestUser(USER_EMAIL, PASSWORD, 'USER');
+    const _user = await createTestUser(USER_EMAIL, PASSWORD, 'USER');
     const userToken = await loginAndGetToken(app, USER_EMAIL, PASSWORD);
     const itemId = createRes.json().data.id;
     const delRes = await authenticatedRequest(app, 'DELETE', `/api/items/${itemId}`, userToken);

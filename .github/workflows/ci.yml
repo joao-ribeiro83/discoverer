@@ -48,7 +48,15 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     env:
-      DATABASE_URL: postgres://discoverer:ci_password@localhost:5432/discoverer_neo
+      # Both point at the *_test* database on purpose. `src/__tests__/setup/
+      # test-database.ts` refuses to run a suite against a database whose name
+      # does not end in `_test` — the suites clean up with unscoped DELETEs —
+      # and `scripts/setup-test-db.mjs` reads TEST_DATABASE_URL, falling back
+      # to the local dev password when it is unset. Unset was the bug: every
+      # backend Test step so far died in `pretest` with a Postgres 28P01
+      # before a single test ran.
+      DATABASE_URL: postgres://discoverer:ci_password@localhost:5432/discoverer_neo_test
+      TEST_DATABASE_URL: postgres://discoverer:ci_password@localhost:5432/discoverer_neo_test
       REDIS_URL: redis://localhost:6379
       NODE_ENV: test
       JWT_SECRET: ci-test-secret-not-for-production-use-only
@@ -71,27 +79,16 @@ jobs:
       - name: Build migrate workspace
         run: npm run build --workspace @discoverer-neo/core
 
-      # Reported, not gating, and deliberately so — for now. This step fails on
-      # 1 030 pre-existing errors, none of them introduced by the code they
-      # guard: 829 are the `no-unsafe-*` family inside test files, where
-      # Fastify's `inject().json()` is `any` by design and asserting on it is
-      # the whole point; 201 are real (require-await, unused vars, unnecessary
-      # assertions) and spread across the backend.
-      #
-      # Gating on it today would mean the tests below never run at all, which
-      # is how a repository ends up with gates nobody executes. Clearing the
-      # 201 and scoping the type-aware rules off test files is its own job;
-      # remove this line in the commit that finishes it.
       - name: Lint
-        continue-on-error: true
         run: npm run lint --workspace @discoverer-neo/backend
 
       - name: Typecheck
         run: npm run typecheck --workspace @discoverer-neo/backend
 
-      - name: Apply database migrations
-        run: npm run db:migrate --workspace @discoverer-neo/backend
-
+      # No separate migrate step: `pretest` runs scripts/setup-test-db.mjs,
+      # which creates the test database and applies every migration to it.
+      # A `db:migrate` before that would target a database that does not
+      # exist yet.
       - name: Test
         run: npm test --workspace @discoverer-neo/backend -- --coverage
 
