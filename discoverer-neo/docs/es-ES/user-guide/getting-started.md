@@ -56,9 +56,11 @@ Tras iniciar sesión, verá el panel principal con las siguientes secciones:
 ### Panel
 
 El panel muestra:
-- **Mapas recientes** — Los mapas que ha visto o ejecutado recientemente
-- **Estadísticas rápidas** — Número de mapas, ejecuciones y elementos compartidos
-- **Trabajos programados** — Ejecuciones programadas activas y próximas
+- **Total de mapas** — Todos los mapas que puede ver (los suyos y los compartidos con usted)
+- **Total de ejecuciones** — Cuántas veces ha ejecutado una consulta, en todos los mapas que puede ver
+- **Mapas programados** — Cuántas de sus programaciones están activas
+- **Resultados programados** — Cuántos resultados han producido sus programaciones
+- **Mapas recientes** — Sus últimos 5 mapas actualizados, si tiene alguno propio
 
 ## Exploración de áreas de negocio
 

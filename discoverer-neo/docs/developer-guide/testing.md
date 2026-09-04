@@ -361,14 +361,18 @@ it('should accept authenticated requests', async () => {
 
 ## CI/CD Testing
 
-Tests run in CI/CD pipeline (GitHub Actions):
+`.github/workflows/ci.yml` (repo root — GitHub only discovers workflows
+there, not under `discoverer-neo/.github/`) runs four jobs on every push and
+PR to `master`: `backend`, `frontend`, `migrate`, and `e2e`. Each of the first
+three runs that workspace's own `lint`, `typecheck` and `test` scripts.
 
-```bash
-npm run lint          # ESLint
-npm run typecheck    # TypeScript type-check
-npm run test         # Jest + Vitest
-npm run e2e          # Playwright
-```
+The `e2e` job runs the full Playwright suite (`frontend/e2e/*.spec.ts`,
+including the axe-core accessibility sweep). It needs no Postgres or backend
+service: every spec mocks the API via `page.route()`, and Playwright's own
+`webServer` starts the frontend dev server. It installs the Chromium browser
+(`npx playwright install --with-deps chromium`) and runs with
+`FRONTEND_PORT=5174` — see the "Port 5173 is not safe" note in
+`discoverer-neo/CLAUDE.md` for why.
 
 Push to branch only if all pass locally:
 

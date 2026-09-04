@@ -56,9 +56,11 @@ Após iniciar sessão, é apresentado o painel principal com as seguintes secç�
 ### Painel
 
 O painel apresenta:
-- **Mapas Recentes** — Os mapas que visualizou ou executou recentemente
-- **Estatísticas Rápidas** — Número de mapas, execuções e itens partilhados
-- **Tarefas Agendadas** — Execuções agendadas ativas e futuras
+- **Total de Mapas** — Todos os mapas que pode ver (os seus e os partilhados consigo)
+- **Total de Execuções** — Quantas vezes executou uma consulta, em todos os mapas que pode ver
+- **Mapas Agendados** — Quantos dos seus agendamentos estão ativos
+- **Resultados Agendados** — Quantos resultados os seus agendamentos produziram
+- **Mapas Recentes** — Os seus últimos 5 mapas atualizados, se possuir algum
 
 ## Explorar Áreas de Negócio
 

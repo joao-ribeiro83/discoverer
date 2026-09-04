@@ -60,9 +60,11 @@ Une fois connecté, le tableau de bord principal s'affiche avec les sections sui
 ### Tableau de bord
 
 Le tableau de bord affiche :
-- **Cartes récentes** — Vos cartes récemment consultées ou exécutées
-- **Statistiques rapides** — Nombre de cartes, d'exécutions et d'éléments partagés
-- **Tâches planifiées** — Exécutions planifiées actives et à venir
+- **Nombre total de cartes** — Toutes les cartes que vous pouvez voir (les vôtres et celles partagées avec vous)
+- **Nombre total d'exécutions** — Le nombre de fois où vous avez exécuté une requête, sur toutes les cartes que vous pouvez voir
+- **Cartes planifiées** — Le nombre de vos planifications actives
+- **Résultats planifiés** — Le nombre de résultats produits par vos planifications
+- **Cartes récentes** — Vos 5 dernières cartes mises à jour, si vous en possédez
 
 ## Explorer les domaines d'activité
 
