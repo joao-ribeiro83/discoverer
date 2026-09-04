@@ -42,6 +42,16 @@ async function expandTree(page: Page) {
   await expect(page.getByTestId(`tree-item-${ITEM_DIMENSION.id}`)).toBeVisible()
 }
 
+/** Same as expandTree, but never dispatches a mouse click — Playwright's
+ * .click() moves the mouse and clicks, which is not a keyboard interaction. */
+async function expandTreeByKeyboard(page: Page) {
+  await page.getByRole('button', { name: BUSINESS_AREA.name }).focus()
+  await page.keyboard.press('Enter')
+  await page.getByRole('button', { name: FOLDER.name }).focus()
+  await page.keyboard.press('Enter')
+  await expect(page.getByTestId(`tree-item-${ITEM_DIMENSION.id}`)).toBeVisible()
+}
+
 /** A column chip on the canvas, matched by name — avoids ambiguity with the
  * same label appearing in the tree and (transiently, mid drop-animation) in
  * dnd-kit's DragOverlay portal. */
@@ -126,6 +136,78 @@ test.describe('Map Builder', () => {
 
     await page.keyboard.press('Escape')
     await expect(liveRegion).toContainText(/cancel/i)
+  })
+
+  test('builds a two-column map using only the keyboard (WCAG 2.5.7 non-drag equivalent)', async ({
+    page,
+  }) => {
+    await page.goto('/maps/new')
+    await expandTreeByKeyboard(page)
+
+    // Accessible names must identify which field each control acts on, not
+    // just say "Add" — a screen-reader user tabbing through many fields needs
+    // to tell them apart without extra context.
+    const addDimension = page.getByRole('button', { name: `Add ${ITEM_DIMENSION.name} to map` })
+    const addMeasure = page.getByRole('button', { name: `Add ${ITEM_MEASURE.name} to map` })
+    await expect(addDimension).toBeVisible()
+    await expect(addMeasure).toBeVisible()
+
+    await addDimension.focus()
+    await page.keyboard.press('Enter')
+    await expect(canvasColumn(page, ITEM_DIMENSION.name)).toBeVisible()
+
+    await addMeasure.focus()
+    await page.keyboard.press('Enter')
+    await expect(canvasColumn(page, ITEM_MEASURE.name)).toBeVisible()
+
+    await expect(page.getByTestId('canvas-column-row')).toHaveCount(2)
+  })
+
+  test('supports picking up a Sort-panel row via the keyboard', async ({ page }) => {
+    await page.goto('/maps/new')
+    await expandTree(page)
+    await dragTo(page, `tree-item-${ITEM_DIMENSION.id}`, page.getByTestId('map-canvas-dropzone'))
+    await dragTo(page, `tree-item-${ITEM_MEASURE.id}`, page.getByTestId('map-canvas-dropzone'))
+
+    await page.getByRole('tab', { name: 'Sort' }).click()
+    await page.getByLabel('Pick column to sort').click()
+    await page.getByRole('option', { name: ITEM_DIMENSION.name }).click()
+    await page.getByRole('button', { name: 'Add Sort' }).click()
+    await page.getByLabel('Pick column to sort').click()
+    await page.getByRole('option', { name: ITEM_MEASURE.name }).click()
+    await page.getByRole('button', { name: 'Add Sort' }).click()
+
+    // Scoped to the tabpanel: the page also has the canvas's own "Reorder
+    // column" grips, and (once this panel's DndContext mounts) its own
+    // separate live region alongside the canvas's — assert by text, not id,
+    // to avoid colliding with the other DndContext's region.
+    const panel = page.getByRole('tabpanel')
+    const grips = panel.getByRole('button', { name: /^Reorder /})
+    await expect(grips).toHaveCount(2)
+
+    // Two DndContexts are mounted here (the page's own, plus this panel's) so
+    // two live regions exist — filter to whichever one actually announced,
+    // rather than asserting on a single (now ambiguous) id-prefixed locator.
+    const liveRegions = page.locator('[id^="DndLiveRegion"]')
+    await grips.first().focus()
+    await page.keyboard.press('Space')
+    await expect(liveRegions.filter({ hasText: /picked up|moved over/i })).toHaveCount(1)
+  })
+
+  test('supports picking up a Calculated-Fields row via the keyboard', async ({ page }) => {
+    await page.goto('/maps/new')
+
+    await page.getByRole('tab', { name: 'Calculated Fields' }).click()
+    await page.getByRole('button', { name: /Add Calculated Field/ }).click()
+    await page.getByRole('button', { name: /Add Calculated Field/ }).click()
+
+    const grips = page.getByRole('button', { name: /^Reorder /})
+    await expect(grips).toHaveCount(2)
+
+    const liveRegions = page.locator('[id^="DndLiveRegion"]')
+    await grips.first().focus()
+    await page.keyboard.press('Space')
+    await expect(liveRegions.filter({ hasText: /picked up|moved over/i })).toHaveCount(1)
   })
 
   test('has no detectable accessibility violations', async ({ page }) => {

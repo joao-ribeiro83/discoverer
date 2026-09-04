@@ -57,7 +57,10 @@
     "emptyMatchingItems": "No matching items",
     "emptyItems": "No items",
     "roleMeasure": "Measure",
-    "roleDimension": "Dimension"
+    "roleDimension": "Dimension",
+    "addAria": "Add {{name}} to map",
+    "addedTitle": "Added to map",
+    "addedDescription": "\"{{name}}\" added to the canvas."
   },
   "canvas": {
     "title": "Columns",

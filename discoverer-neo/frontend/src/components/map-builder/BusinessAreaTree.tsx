@@ -12,12 +12,15 @@ import {
   Tag,
   Check,
   Loader2,
+  Plus,
 } from 'lucide-react'
 import { apiClient } from '@/lib/api'
 import type { BusinessArea, Folder, Item } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { useToast } from '@/hooks/use-toast'
 import { useMapBuilderStore } from '@/store/mapBuilder'
 import { itemRole } from './item-utils'
 
@@ -317,6 +320,7 @@ const ItemNode = memo(function ItemNode({
   businessAreaId: string
 }) {
   const { t } = useTranslation(['mapBuilder'])
+  const { toast } = useToast()
   const selected = useMapBuilderStore((s) =>
     s.selectedItems.some((c) => c.itemId === item.id),
   )
@@ -325,6 +329,44 @@ const ItemNode = memo(function ItemNode({
     dataType: item.dataType,
     aggFunction: item.aggFunction,
   })
+
+  // Keyboard/pointer route onto the canvas, alongside the drag route below.
+  // Both call the same guarded store action — see MapBuilderPage's
+  // onDragEnd for the drag-path equivalent of this outcome handling.
+  function handleAdd() {
+    const outcome = useMapBuilderStore.getState().addItem({
+      itemId: item.id,
+      source: {
+        name: item.name,
+        itemType: item.itemType,
+        dataType: item.dataType,
+        folderId: item.folderId,
+        folderName,
+        businessAreaId,
+      },
+      defaultAggFunction: item.aggFunction,
+      defaultFormatMask: item.formatMask,
+    })
+    if (outcome.ok) {
+      toast({
+        title: t('mapBuilder:tree.addedTitle'),
+        description: t('mapBuilder:tree.addedDescription', { name: item.name }),
+      })
+    } else {
+      toast(
+        outcome.reason === 'duplicate'
+          ? {
+              title: t('mapBuilder:page.duplicateTitle'),
+              description: t('mapBuilder:page.duplicateDescription', { name: item.name }),
+            }
+          : {
+              title: t('mapBuilder:page.crossBusinessAreaTitle'),
+              description: t('mapBuilder:page.crossBusinessAreaDescription'),
+              variant: 'destructive',
+            },
+      )
+    }
+  }
 
   const dragData: TreeItemDragData = {
     type: 'tree-item',
@@ -348,27 +390,48 @@ const ItemNode = memo(function ItemNode({
     data: dragData,
   })
 
+  // The draggable node below carries dnd-kit's own role="button" — nesting a
+  // real <button> inside it would be an invalid interactive-in-interactive
+  // pattern (and collapse both into one accessible name). The Add button is
+  // a sibling instead, sharing this row's padding and hover background.
   return (
     <div
-      ref={setNodeRef}
-      {...listeners}
-      {...attributes}
-      data-testid={`tree-item-${item.id}`}
       style={{ paddingLeft: 2 * INDENT + 8 }}
       className={cn(
-        'flex cursor-grab items-center gap-2 rounded-md py-1.5 pr-2 text-sm hover:bg-accent active:cursor-grabbing',
-        isDragging && 'opacity-40',
+        'flex items-center gap-1 rounded-md pr-2 hover:bg-accent',
         selected && 'text-muted-foreground',
       )}
-      title={role === 'measure' ? t('mapBuilder:tree.roleMeasure') : t('mapBuilder:tree.roleDimension')}
     >
-      {role === 'measure' ? (
-        <Sigma className="h-4 w-4 shrink-0 text-chart-1" />
-      ) : (
-        <Tag className="h-4 w-4 shrink-0 text-chart-2" />
-      )}
-      <span className="truncate">{item.name}</span>
-      {selected && <Check className="ml-auto h-3.5 w-3.5 shrink-0 text-muted-foreground" />}
+      <div
+        ref={setNodeRef}
+        {...listeners}
+        {...attributes}
+        data-testid={`tree-item-${item.id}`}
+        className={cn(
+          'flex min-w-0 flex-1 cursor-grab items-center gap-2 py-1.5 text-sm active:cursor-grabbing',
+          isDragging && 'opacity-40',
+        )}
+        title={role === 'measure' ? t('mapBuilder:tree.roleMeasure') : t('mapBuilder:tree.roleDimension')}
+      >
+        {role === 'measure' ? (
+          <Sigma className="h-4 w-4 shrink-0 text-chart-1" />
+        ) : (
+          <Tag className="h-4 w-4 shrink-0 text-chart-2" />
+        )}
+        <span className="truncate">{item.name}</span>
+        {selected && <Check className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />}
+      </div>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className="h-6 w-6 shrink-0"
+        aria-label={t('mapBuilder:tree.addAria', { name: item.name })}
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={handleAdd}
+      >
+        <Plus className="h-4 w-4" />
+      </Button>
     </div>
   )
 })

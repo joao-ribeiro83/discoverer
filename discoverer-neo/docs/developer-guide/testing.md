@@ -359,6 +359,24 @@ it('should accept authenticated requests', async () => {
 });
 ```
 
+## Accessibility: drag-and-drop
+
+Any new `useDraggable` or `useSortable` (`@dnd-kit`) ships with a non-drag
+equivalent — a real `<button>`, not a `role="button"` on a `<div>` — and a
+keyboard-only Playwright spec proving it (`.focus()` then `keyboard.press()`,
+no `dragTo` / mouse). `axe-core` cannot detect a drag-only interaction: it
+checks the DOM for violations, not whether a keyboard user can reach the
+action at all. Skipping the keyboard spec lets this regress silently behind a
+green accessibility sweep — see `frontend/e2e/map-builder.spec.ts` for the
+pattern (the source-tree "Add" button, and the Sort/Calculated-Fields
+reorder-pickup specs).
+
+If the control lives inside an element that dnd-kit already marks
+`role="button"` (a whole-row drag handle), make the new control a **sibling**
+of that element, not a child — nesting an interactive control inside another
+is an invalid interactive-in-interactive pattern, and it merges both into one
+accessible name.
+
 ## CI/CD Testing
 
 `.github/workflows/ci.yml` (repo root — GitHub only discovers workflows
