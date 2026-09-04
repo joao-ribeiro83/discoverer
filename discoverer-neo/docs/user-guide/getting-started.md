@@ -49,8 +49,8 @@ After logging in, you'll see the main dashboard with the following sections:
 **Left Sidebar:**
 - **Dashboard** — Overview and quick actions
 - **Business Areas** — Organized collections of data
-- **Maps** — Saved queries and reports you've created
-- **Shared with Me** — Maps other users have shared with you
+- **Maps** — Every map you can reach: yours, shared with you, or (per your
+  permissions) the whole estate
 - **Settings** — Customize language and theme preferences
 - **Admin** (if you have admin privileges) — System management
 
@@ -78,9 +78,14 @@ A **Business Area** is a logical grouping of related data and queries.
 ### View Your Maps
 
 1. Click **Maps** in the sidebar
-2. Two tabs appear:
-   - **My Maps** — Maps you created
-   - **Shared with Me** — Maps others shared with you
+2. Three tabs let you switch scope:
+   - **Mine** — Maps you created
+   - **Shared with me** — Maps others explicitly shared with you
+   - **All** — Every map you're permitted to see, including ones migrated
+     from Discoverer that nobody has shared or reassigned yet
+3. Search by name, filter by business area, and sort by name or by when a map
+   was last updated
+4. Click **Create Map** to start a new one
 
 ### Create a New Map
 

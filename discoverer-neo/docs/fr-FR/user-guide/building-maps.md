@@ -26,8 +26,8 @@ Discoverer Neo prend en charge quatre types de carte :
 
 ### Étape 1 : Lancer le générateur de cartes
 
-1. Cliquez sur **Domaines d'activité** → sélectionnez un domaine d'activité
-2. Cliquez sur **Créer une carte** (ou **+ Nouvelle carte**)
+1. Cliquez sur **Cartes** dans la barre latérale, puis sur **Créer une carte**
+2. Choisissez un domaine d'activité pour la nouvelle carte
 3. Saisissez :
    - **Nom** — Titre de la carte (obligatoire)
    - **Description** — Description facultative

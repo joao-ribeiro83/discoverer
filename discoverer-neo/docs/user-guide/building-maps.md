@@ -26,8 +26,8 @@ Discoverer Neo supports four map types:
 
 ### Step 1: Start the Map Builder
 
-1. Click **Business Areas** → select a business area
-2. Click **Create Map** (or **+ New Map**)
+1. Click **Maps** in the sidebar, then **Create Map**
+2. Choose a business area for the new map
 3. Enter:
    - **Name** — Map title (required)
    - **Description** — Optional description

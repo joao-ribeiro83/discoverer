@@ -52,8 +52,8 @@ Une fois connecté, le tableau de bord principal s'affiche avec les sections sui
 **Barre latérale gauche :**
 - **Tableau de bord** — Vue d'ensemble et actions rapides
 - **Domaines d'activité** — Collections de données organisées
-- **Cartes** — Requêtes et rapports enregistrés que vous avez créés
-- **Partagées avec moi** — Cartes que d'autres utilisateurs ont partagées avec vous
+- **Cartes** — Toutes les cartes accessibles : les vôtres, les partagées avec vous,
+  ou (selon vos permissions) l'ensemble du domaine
 - **Paramètres** — Personnaliser les préférences de langue et de thème
 - **Admin** (si vous disposez de privilèges d'administrateur) — Gestion du système
 
@@ -81,9 +81,15 @@ Un **domaine d'activité** est un regroupement logique de données et de requêt
 ### Consulter vos cartes
 
 1. Cliquez sur **Cartes** dans la barre latérale
-2. Deux onglets apparaissent :
-   - **Mes cartes** — Cartes que vous avez créées
-   - **Partagées avec moi** — Cartes que d'autres ont partagées avec vous
+2. Trois onglets vous permettent de changer le périmètre :
+   - **Mienne** — Cartes que vous avez créées
+   - **Partagée avec moi** — Cartes que d'autres ont explicitement partagées
+     avec vous
+   - **Toutes** — Toutes les cartes que vous êtes autorisé à voir, y compris
+     celles migrées de Discoverer que personne n'a partagées ou réassignées
+3. Recherchez par nom, filtrez par domaine d'activité et triez par nom ou par
+   la dernière mise à jour d'une carte
+4. Cliquez sur **Créer une carte** pour en commencer une nouvelle
 
 ### Créer une carte
 
