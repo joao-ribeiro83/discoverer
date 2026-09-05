@@ -119,6 +119,21 @@ const EXP_COLUMNS: ColumnSpec[] = [
 ];
 
 /**
+ * Probed on `EXPRESSIONS`.
+ *
+ * `IT_FUN_ID` is the item's **Default aggregate** — a foreign key to
+ * `FUNCTIONS.FUN_ID`, not a code. Identified on the live EUL4 by Phase 0.3's
+ * Q3 probe, which grouped every candidate: `110` = `Detail` ×8 152,
+ * `1` = `SUM` ×1 292, null ×353. `IT_PLACEMENT` was the runner-up and was
+ * ruled out — it groups `3`/`1`/`2`, a display-placement code.
+ *
+ * Probed rather than listed above because a column that is absent turns the
+ * whole item read into an `ORA-00904`, and no offline source confirms the
+ * spelling on EUL5.
+ */
+const EXP_OPTIONAL_COLUMNS = ['IT_FUN_ID'] as const;
+
+/**
  * `KEY_CONS` — joins, folder to folder.
  *
  * **Orientation: `KEY_OBJ_ID` is the DETAIL, `FK_OBJ_ID_REMOTE` is the MASTER.**
@@ -597,6 +612,33 @@ export const DEFAULT_ITEM_EXP_TYPES: readonly string[] = [
   EXP_TYPE_CREATED_ITEM,
 ];
 
+/**
+ * `FUNCTIONS.FUN_ID` → `FUN_NAME`, for resolving `IT_FUN_ID`.
+ *
+ * A separate read of a tiny table rather than a join, so the item read keeps
+ * the shape every other entity read has and an absent `FUNCTIONS` degrades to
+ * "no default aggregate anywhere" instead of failing the item read.
+ */
+async function readFunctionNames(
+  execute: OracleExecutor,
+  adapter: EulSchemaAdapter,
+): Promise<Map<number, string>> {
+  const byId = new Map<number, string>();
+  try {
+    const rows = await readEntity(execute, adapter, 'FUNCTIONS', adapter.getFunctionColumns(), {
+      orderBy: 'FUN_ID',
+    });
+    for (const row of rows) {
+      const id = row.sourceId as number | null;
+      const name = row.name as string | null;
+      if (id !== null && name !== null) byId.set(id, name);
+    }
+  } catch {
+    // An unreadable FUNCTIONS table costs the default aggregate, not the read.
+  }
+  return byId;
+}
+
 export async function readItems(
   adapter: EulSchemaAdapter,
   source: EulSource,
@@ -609,19 +651,47 @@ export async function readItems(
     binds[`t${i}`] = t;
     return `:t${i}`;
   });
-  const rows = await readEntity(execute, adapter, 'EXPRESSIONS', adapter.getExpressionColumns(), {
-    where: `EXP_TYPE IN (${placeholders.join(', ')})`,
-    binds,
-    // IT_OBJ_ID is the folder link; there is no EXP_SEQUENCE column.
-    orderBy: 'IT_OBJ_ID, EXP_ID',
-  });
+  const present = await probeColumns(
+    execute,
+    adapter.version.owner,
+    adapter.getTableName('EXPRESSIONS'),
+    EXP_OPTIONAL_COLUMNS,
+  );
+  const aggregateByFunctionId = present.has('IT_FUN_ID')
+    ? await readFunctionNames(execute, adapter)
+    : new Map<number, string>();
+  const rows = await readEntity(
+    execute,
+    adapter,
+    'EXPRESSIONS',
+    [
+      ...adapter.getExpressionColumns(),
+      ...optionalMappings(present, [
+        { name: 'IT_FUN_ID', type: 'number', mapsTo: 'functionId' },
+      ]),
+    ],
+    {
+      where: `EXP_TYPE IN (${placeholders.join(', ')})`,
+      binds,
+      // IT_OBJ_ID is the folder link; there is no EXP_SEQUENCE column.
+      orderBy: 'IT_OBJ_ID, EXP_ID',
+    },
+  );
   return rows.map((row, idx) => ({
     ...(row as unknown as Item),
     // Not present in the EUL expression table — supplied so downstream
     // ordering is stable and Neo's displayOrder is populated.
     sequence: idx,
     formula: null,
-    aggregation: null,
+    // The Default aggregate, named. `Detail` reaches this field as `Detail`
+    // and is turned into "no aggregation" one layer up, by
+    // `normalizeAggregation` — this layer reports what the EUL says, it does
+    // not decide what it means.
+    aggregation: ((): string | null => {
+      const functionId = (row as { functionId?: number | null }).functionId;
+      if (functionId === null || functionId === undefined) return null;
+      return aggregateByFunctionId.get(functionId) ?? null;
+    })(),
     nullsAllowed: true,
     parentItemId: null,
     createdBy: null,
