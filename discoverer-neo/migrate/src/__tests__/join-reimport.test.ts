@@ -10,7 +10,6 @@
 import { describe, it, expect } from '@jest/globals';
 
 import { eul5Db, mockExecutor } from '../testing/mock-eul.js';
-import type { MockDb } from '../testing/mock-eul.js';
 import {
   itemKey,
   reimportJoins,
@@ -41,19 +40,21 @@ function fakeDb(overrides: { folders?: string[]; items?: Array<[string, string]>
   };
 
   const db: JoinReimportDb = {
-    folderIdsByName: async () =>
-      new Map(folderNames.map((name, i) => [name, `folder-${i}`])),
-    itemIdsByFolderAndName: async () =>
-      new Map(itemPairs.map(([f, n], i) => [itemKey(f, n), `item-${i}`])),
-    replaceJoins: async (joins, predicates) => {
+    folderIdsByName: () =>
+      Promise.resolve(new Map(folderNames.map((name, i) => [name, `folder-${i}`]))),
+    itemIdsByFolderAndName: () =>
+      Promise.resolve(
+        new Map(itemPairs.map(([f, n], i) => [itemKey(f, n), `item-${i}`])),
+      ),
+    replaceJoins: (joins, predicates) => {
       written.joins = joins;
       written.predicates = predicates;
       written.deleted = 3; // pretend the target held three stale rows
-      return {
+      return Promise.resolve({
         joinsDeleted: 3,
         joinsInserted: joins.length,
         predicatesInserted: predicates.length,
-      };
+      });
     },
   };
   return { db, written };
@@ -171,7 +172,7 @@ describe('reimportJoins', () => {
     );
     const { db, written } = fakeDb();
     const result = await reimportJoins({
-      source: mockExecutor(source as MockDb),
+      source: mockExecutor(source),
       db,
       version: 'EUL5',
       deps,
