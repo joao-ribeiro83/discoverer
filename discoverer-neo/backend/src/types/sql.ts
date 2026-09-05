@@ -101,6 +101,12 @@ export interface SqlGenerationOptions {
    * folder-set check in `aliasFor` will catch.
    */
   plan?: QueryPlan;
+  /**
+   * Prefix for the names of static-condition binds. Set by the fan-trap rewrite,
+   * which builds one WHERE clause per branch and must not have two branches
+   * claim the same bind name for different values.
+   */
+  bindPrefix?: string;
 }
 
 /**

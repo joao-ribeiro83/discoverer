@@ -38,7 +38,7 @@ import {
  */
 export function planQuery(
   def: MapDefinition,
-  folderSet: EffectiveFolderSet = effectiveFolderSet(def),
+  folderSet: EffectiveFolderSet = deriveFolderSet(def),
 ): QueryPlan {
   const fromFolderIds = folderSet.columnBearingFolderIds;
   const folderIds = [
@@ -128,6 +128,16 @@ export function planQuery(
 
   if (candidates.length === 0) return flat('NO_FAN_CANDIDATE');
 
+  // -- Step 6, R1-R3 ------------------------------------------------------
+  // Tested in §1.5's own order, and across every candidate before R4 is
+  // considered: R1-R3 name a specific defect in a specific pair of folders,
+  // while R4 only says "more than one fan". A query that is both gets the
+  // message that tells the user what to change.
+  for (const candidate of candidates) {
+    const refusal = refuseR1toR3(candidate, graph, axisFolders, folderName);
+    if (refusal) return { ...base, ...refusal };
+  }
+
   // -- Step 6, R4 ---------------------------------------------------------
   // Two masters with detail branches is not one fan; branch identity is
   // undefined and there is no single key to join the branches back on.
@@ -156,65 +166,6 @@ export function planQuery(
       `The calculation "${aggregatingCalc.name}" already totals values, and this query ` +
         'summarises more than one set of detail rows. Neo cannot tell which set the ' +
         'calculation belongs to.',
-    );
-  }
-
-  // -- Step 6, R2 ---------------------------------------------------------
-  // A direct edge between two branch subtrees closes a cycle, and the branch
-  // decomposition stops being unique.
-  for (let i = 0; i < master.fanning.length; i += 1) {
-    for (let j = i + 1; j < master.fanning.length; j += 1) {
-      const a = master.fanning[i]!;
-      const b = master.fanning[j]!;
-      const crossing = graph.edges.find(
-        (e) =>
-          (a.subtree.has(e.masterFolderId) && b.subtree.has(e.detailFolderId)) ||
-          (b.subtree.has(e.masterFolderId) && a.subtree.has(e.detailFolderId)),
-      );
-      if (crossing) {
-        return refuse(
-          'R2',
-          [folderName(a.detailFolderId), folderName(b.detailFolderId)],
-          `"${folderName(a.detailFolderId)}" and "${folderName(b.detailFolderId)}" are joined ` +
-            `to each other as well as to "${masterName}". That makes the relationship ` +
-            'circular, and there is no one right way to summarise it.',
-        );
-      }
-    }
-  }
-
-  // -- Step 6, R3 ---------------------------------------------------------
-  // Two independent detail grains on the axis IS a cross-product. No rewrite
-  // restores it, so Discoverer stopped rather than inventing one.
-  const branchesWithAxis = master.fanning.filter((b) =>
-    [...b.subtree].some((id) => axisFolders.has(id)),
-  );
-  if (branchesWithAxis.length >= 2) {
-    return refuse(
-      'R3',
-      branchesWithAxis.map((b) => folderName(b.detailFolderId)),
-      'This query shows individual (non-totalled) values from more than one set of ' +
-        'detail rows. Those sets do not line up with each other, so every combination ' +
-        'would be shown rather than the rows you asked for.',
-    );
-  }
-
-  // -- Step 6, R1 ---------------------------------------------------------
-  // Branch aggregates on different master keys are not on a common grain, and
-  // the column the outer query would join them on does not exist.
-  const keySignature = (b: LiveBranch): string =>
-    b.predicate
-      .map((p) => p.master.columnName)
-      .sort()
-      .join(',');
-  const firstKey = keySignature(master.fanning[0]!);
-  const differing = master.fanning.find((b) => keySignature(b) !== firstKey);
-  if (differing) {
-    return refuse(
-      'R1',
-      [masterName, ...master.fanning.map((b) => folderName(b.detailFolderId))],
-      `The detail folders join "${masterName}" on different columns, so their totals ` +
-        'are not measured against the same thing and cannot be put side by side.',
     );
   }
 
@@ -251,6 +202,124 @@ export function planQuery(
   };
 }
 
+/**
+ * Refusal rules R1, R2 and R3 for one candidate master (`legacy-analysis.md`
+ * §1.5). Returns the first that fires, or null.
+ */
+function refuseR1toR3(
+  master: FanCandidate,
+  graph: Graph,
+  axisFolders: Set<string>,
+  folderName: (folderId: string) => string,
+): { kind: 'REFUSE'; rule: RefusalRule; folders: string[]; message: string; decision: string } | null {
+  const masterName = folderName(master.folderId);
+  const made = (
+    rule: RefusalRule,
+    folders: string[],
+    message: string,
+  ): { kind: 'REFUSE'; rule: RefusalRule; folders: string[]; message: string; decision: string } => ({
+    kind: 'REFUSE',
+    rule,
+    folders,
+    message,
+    decision: `REFUSE(${rule})`,
+  });
+
+  // R1 — branch aggregates on different master keys are not on a common grain,
+  // and the column the outer query would join them on does not exist.
+  const keySignature = (b: LiveBranch): string =>
+    b.predicate
+      .map((p) => p.master.columnName)
+      .sort()
+      .join(',');
+  const firstKey = keySignature(master.fanning[0]!);
+  if (master.fanning.some((b) => keySignature(b) !== firstKey)) {
+    return made(
+      'R1',
+      [masterName, ...master.fanning.map((b) => folderName(b.detailFolderId))],
+      `The detail folders join "${masterName}" on different columns, so their totals ` +
+        'are not measured against the same thing and cannot be put side by side.',
+    );
+  }
+
+  // R2 — a direct edge between two branch subtrees closes a cycle, and the
+  // branch decomposition stops being unique.
+  for (let i = 0; i < master.fanning.length; i += 1) {
+    for (let j = i + 1; j < master.fanning.length; j += 1) {
+      const a = master.fanning[i]!;
+      const b = master.fanning[j]!;
+      const crossing = graph.edges.some(
+        (e) =>
+          (a.subtree.has(e.masterFolderId) && b.subtree.has(e.detailFolderId)) ||
+          (b.subtree.has(e.masterFolderId) && a.subtree.has(e.detailFolderId)),
+      );
+      if (crossing) {
+        return made(
+          'R2',
+          [folderName(a.detailFolderId), folderName(b.detailFolderId)],
+          `"${folderName(a.detailFolderId)}" and "${folderName(b.detailFolderId)}" are joined ` +
+            `to each other as well as to "${masterName}". That makes the relationship ` +
+            'circular, and there is no one right way to summarise it.',
+        );
+      }
+    }
+  }
+
+  // R3 — two independent detail grains on the axis IS a cross-product. No
+  // rewrite restores it, so Discoverer stopped rather than inventing one.
+  const branchesWithAxis = master.fanning.filter((b) =>
+    [...b.subtree].some((id) => axisFolders.has(id)),
+  );
+  if (branchesWithAxis.length >= 2) {
+    return made(
+      'R3',
+      branchesWithAxis.map((b) => folderName(b.detailFolderId)),
+      'This query shows individual (non-totalled) values from more than one set of ' +
+        'detail rows. Those sets do not line up with each other, so every combination ' +
+        'would be shown rather than the rows you asked for.',
+    );
+  }
+
+  return null;
+}
+
+/**
+ * The folder set, derived with any un-emittable aggregate stripped.
+ *
+ * `effectiveFolderSet` runs the real clause builders, and the SELECT clause
+ * rejects an aggregate it cannot write — `COUNT DISTINCT`, `STDDEV`,
+ * `VARIANCE`. That error would fire before the planner ever saw the query, and
+ * the user would be told "unsupported aggregate function" instead of *why* the
+ * number cannot be produced across a fan (D-035).
+ *
+ * Blanking the aggregate cannot change which folders the query touches — the
+ * same column of the same item is still read — so the set is identical. The
+ * planner then classifies with the real aggregates and refuses in its own
+ * words. A single-folder query is untouched and still gets the SELECT clause's
+ * message, which is the right one there.
+ */
+function deriveFolderSet(def: MapDefinition): EffectiveFolderSet {
+  const blocked = new Set(
+    collectMeasures(def)
+      .filter((m) => UNREAGGREGATABLE.has(m.aggregate) || !RE_AGGREGATE[m.aggregate])
+      .map((m) => m.mapItemId),
+  );
+  if (blocked.size === 0) return effectiveFolderSet(def);
+
+  return effectiveFolderSet({
+    ...def,
+    items: def.items.map((entry) =>
+      blocked.has(entry.mapItem.id)
+        ? {
+            ...entry,
+            mapItem: { ...entry.mapItem, aggFunction: null },
+            item: { ...entry.item, aggFunction: null },
+          }
+        : entry,
+    ),
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Step 7 — branch construction
 // ---------------------------------------------------------------------------
@@ -275,12 +344,13 @@ function buildBranches(
     ...master.nonFanning.flatMap((b) => [...b.subtree]),
   ];
 
-  // Branch 0 carries the master's own measures (step 5a) and the master's axis
-  // columns. Oracle's example puts the master's descriptive column on exactly
-  // one branch; with a master-side branch present, that is the natural home.
+  // Branch 0 exists only when it has work to do: the master's own measures
+  // (step 5a), or a one-to-one neighbour that has to be joined somewhere. The
+  // master's AXIS columns alone do not justify one — Oracle's example carries
+  // `masterName` on `inner2`, a detail branch, and an extra inline view joined
+  // for a descriptive column is a join for nothing.
   const masterAxis = axisMapItemIds(def, new Set(masterSide));
-  const needsMasterBranch =
-    masterMeasureIds.size > 0 || masterAxis.length > 0 || master.nonFanning.length > 0;
+  const needsMasterBranch = masterMeasureIds.size > 0 || master.nonFanning.length > 0;
 
   if (needsMasterBranch) {
     branches.push({
@@ -307,7 +377,11 @@ function buildBranches(
   master.fanning.forEach((branch, index) => {
     const inBranch = new Set([master.folderId, ...branch.subtree]);
     const branchAxis = axisMapItemIds(def, branch.subtree);
-    const axis = needsMasterBranch ? branchAxis : [...masterAxis, ...branchAxis];
+    // The master's axis columns ride on ONE branch — b0 when it exists, else
+    // the first detail branch. Repeating them everywhere is harmless for
+    // correctness and pointless in the SQL.
+    const carriesMasterAxis = !needsMasterBranch && index === 0;
+    const axis = carriesMasterAxis ? [...masterAxis, ...branchAxis] : branchAxis;
     branches.push({
       id: `b${index + 1}`,
       folderIds: [master.folderId, ...branch.subtree],
@@ -546,8 +620,10 @@ function isConnected(graph: Graph, folderIds: string[]): boolean {
  * recovered the way the SELECT list recovers it, through `effectiveAggregate`,
  * so the guard can never analyse a query the emitter does not write.
  *
- * A hidden item still counts: it is named by the query and joins its folder in,
- * so its aggregate still expands across the fan even though no column is drawn.
+ * A hidden item is included here for completeness, but it only ever matters
+ * where its folder is column-bearing for another reason: Neo's SELECT clause
+ * skips hidden items entirely, so a folder reached ONLY by one is not in the
+ * query and cannot fan.
  */
 function collectMeasures(def: MapDefinition): PlanMeasure[] {
   return def.items.flatMap(({ mapItem, item, folder }) => {
