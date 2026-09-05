@@ -30,6 +30,7 @@ import { buildOrderByClause } from '../lib/sql/order-by-clause.js';
 import { buildPagination } from '../lib/sql/pagination.js';
 import { planTotals } from '../lib/sql/totals.js';
 import { planQuery, refusalError } from '../lib/sql/planner.js';
+import type { QueryPlan } from '../lib/sql/query-plan.js';
 
 export { SqlGenerationError } from '../types/sql.js';
 export { validateFormula } from '../lib/sql/formula-parser.js';
@@ -201,6 +202,40 @@ export async function loadMapDefinition(mapId: string): Promise<MapDefinition> {
     db.select().from(mapTotals).where(eq(mapTotals.mapId, mapId)),
   ]);
 
+  return assembleDefinition({
+    map,
+    mapItemRows,
+    conditionRows,
+    parameterRows,
+    calculatedFieldRows,
+    totalRows,
+  });
+}
+
+/**
+ * Turn a map's own rows into a `MapDefinition`, resolving the folders, items
+ * and joins the query can reach.
+ *
+ * Split out from `loadMapDefinition` so the validate-only planner (D-117) can
+ * plan a canvas that has never been saved: it supplies the same rows from the
+ * builder's draft and gets the same definition back, so a refusal is reported
+ * before Run rather than after a round trip to production Oracle.
+ */
+async function assembleDefinition({
+  map,
+  mapItemRows,
+  conditionRows,
+  parameterRows,
+  calculatedFieldRows,
+  totalRows,
+}: {
+  map: MapDefinition['map'];
+  mapItemRows: (typeof mapItems.$inferSelect)[];
+  conditionRows: (typeof mapConditions.$inferSelect)[];
+  parameterRows: (typeof mapParameters.$inferSelect)[];
+  calculatedFieldRows: (typeof mapCalculatedFields.$inferSelect)[];
+  totalRows: (typeof mapTotals.$inferSelect)[];
+}): Promise<MapDefinition> {
   // ---------------------------------------------------------------------
   // Derived query scope (D-013)
   //
@@ -349,6 +384,79 @@ export async function loadMapDefinition(mapId: string): Promise<MapDefinition> {
       return folder ? [{ item, folder }] : [];
     }),
   };
+}
+
+/** One column of a builder canvas, as the validate-only planner needs it. */
+export interface DraftItem {
+  itemId: string;
+  aggFunction?: string | null;
+  axisType?: 'AXIS' | 'MEASURE' | 'PAGE' | null;
+  isHidden?: boolean;
+}
+
+/**
+ * Plan a canvas that has not been saved (D-117).
+ *
+ * The builder calls this on change, so a refusal — "these two folders are
+ * joined to each other", "COUNT DISTINCT cannot be recalculated from partial
+ * totals" — is reported while the user is still composing, instead of after
+ * they press Run, wait for production Oracle, and read an explanation.
+ *
+ * Only the columns are needed. What the planner decides turns on which folders
+ * they live in, which of them aggregate, and the join metadata between those
+ * folders; a condition changes which branch it lands in, never whether the
+ * query refuses.
+ */
+export async function planDraft(items: DraftItem[]): Promise<QueryPlan> {
+  const now = new Date();
+  const map: MapDefinition['map'] = {
+    id: '00000000-0000-0000-0000-000000000000',
+    name: 'Draft',
+    description: null,
+    mapType: 'TABLE',
+    businessAreaId: null,
+    createdBy: '00000000-0000-0000-0000-000000000000',
+    isPublic: false,
+    isActive: true,
+    selectDistinct: false,
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  const def = await assembleDefinition({
+    map,
+    mapItemRows: items.map((item, index) => ({
+      id: `draft-${index}`,
+      mapId: map.id,
+      itemId: item.itemId,
+      displayOrder: index,
+      displayName: null,
+      formatMask: null,
+      aggFunction: item.aggFunction ?? null,
+      sortDirection: null,
+      sortOrder: null,
+      columnWidth: null,
+      axisType: item.axisType ?? null,
+      axisEdge: null,
+      axisOrder: null,
+      isHidden: item.isHidden ?? false,
+      dataType: null,
+      headingFormatMask: null,
+      alignment: null,
+      wordWrap: null,
+      sortRank: null,
+      sortGroup: false,
+      sourceElementId: null,
+      sourceAttrs: null,
+      createdAt: now,
+    })),
+    conditionRows: [],
+    parameterRows: [],
+    calculatedFieldRows: [],
+    totalRows: [],
+  });
+
+  return planQuery(def);
 }
 
 /** Generate SQL for a stored map. */

@@ -491,6 +491,35 @@ export type RefusalCode =
   | 'NO_JOIN_PATH'
   | 'JOIN_NO_PREDICATE'
   | 'JOIN_BOTH_OUTER'
+  /**
+   * The fan-trap planner refused. One code per rule, because the five say
+   * genuinely different things and each needs its own "what to change".
+   */
+  | 'FAN_TRAP_R1'
+  | 'FAN_TRAP_R2'
+  | 'FAN_TRAP_R3'
+  | 'FAN_TRAP_R4'
+  | 'FAN_TRAP_REAGG'
+
+/** One canvas column, as `POST /api/maps/plan` needs it. */
+export interface PlanDraftItem {
+  itemId: string
+  aggFunction?: string | null
+  axisType?: 'AXIS' | 'MEASURE' | 'PAGE' | null
+  isHidden?: boolean
+}
+
+/** What `POST /api/maps/plan` says about a canvas, before anything is run. */
+export interface QueryPlanSummary {
+  kind: 'FLAT' | 'REWRITE' | 'REFUSE'
+  /** `FLAT(NO_MEASURES)`, `REWRITE(2)`, `REFUSE(R3)`. */
+  decision: string
+  branches: number
+  /** Present on a REFUSE plan. */
+  rule?: 'R1' | 'R2' | 'R3' | 'R4' | 'REAGG'
+  folders?: string[]
+  message?: string
+}
 
 export type AsyncJobStatus = 'QUEUED' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'TIMEOUT' | 'CANCELLED'
 

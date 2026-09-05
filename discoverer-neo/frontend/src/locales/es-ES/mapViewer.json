@@ -150,6 +150,31 @@
       "title": "Una unión de esta hoja está configurada en ambos sentidos a la vez, por eso no se ejecutó",
       "why": "Esta unión conserva a la vez las filas maestras sin detalle Y las filas de detalle sin maestro. Discoverer 4.1 no podía escribir eso en SQL, y ninguna documentación de Oracle describe qué pretendía hacer. Adivinarlo cambiaría las cifras que informa esta hoja.",
       "whatToChange": "Pida a un administrador que abra esta unión y desactive una de sus dos opciones de unión externa."
+    },
+    "FAN_TRAP_R1": {
+      "title": "Estos totales se miden respecto a cosas distintas, por lo que la hoja no se ejecutó",
+      "why": "Esta hoja totaliza valores de dos conjuntos de filas de detalle, pero cada conjunto está unido a la carpeta principal por una columna diferente. Los dos totales no se cuentan respecto a lo mismo, así que ponerlos juntos compararía cifras que no se corresponden.",
+      "whatToChange": "Totalice valores de un solo conjunto de filas de detalle, o pregunte a un administrador si ambas uniones deberían coincidir en la misma columna."
+    },
+    "FAN_TRAP_R2": {
+      "title": "Estas carpetas están unidas en círculo, por lo que la hoja no se ejecutó",
+      "why": "Las dos carpetas de detalle están unidas entre sí y también a la carpeta principal. Eso hace la relación circular y hay más de una forma de sumar las filas, cada una con un resultado distinto. Discoverer también rechazaba esta forma.",
+      "whatToChange": "Use columnas de solo una de las dos carpetas de detalle, o pregunte a un administrador qué unión debe seguir la hoja."
+    },
+    "FAN_TRAP_R3": {
+      "title": "Esta hoja muestra valores individuales de dos conjuntos de filas de detalle, por lo que no se ejecutó",
+      "why": "Los totales a través de una unión uno-a-varios funcionan porque las filas de detalle solo se resumen. Esta hoja muestra además valores individuales (no totalizados) de dos conjuntos distintos de filas de detalle. Esos conjuntos no se corresponden entre sí, por lo que se listaría cada combinación en lugar de las filas que pidió.",
+      "whatToChange": "Totalice los valores en lugar de listarlos, o muestre valores individuales de un solo conjunto de filas de detalle."
+    },
+    "FAN_TRAP_R4": {
+      "title": "Esta hoja se expande desde más de una carpeta, por lo que no se ejecutó",
+      "why": "Las filas de detalle se resumen respecto a una carpeta principal. Esta hoja tiene dos carpetas que actúan ambas como principal, así que no hay un único conjunto de filas contra el que medir los totales.",
+      "whatToChange": "Divida esto en dos hojas, una por carpeta principal, o quite las columnas que alcanzan la segunda."
+    },
+    "FAN_TRAP_REAGG": {
+      "title": "Este tipo de total no puede calcularse a través de una unión, por lo que la hoja no se ejecutó",
+      "why": "Para totalizar a través de una unión uno-a-varios, cada conjunto de filas de detalle se resume primero y luego se combinan las partes. Sumar sumas da el resultado correcto, igual que el mínimo y el máximo. Los promedios, los recuentos de valores distintos, la desviación típica y la varianza no pueden reconstruirse a partir de partes: un promedio de promedios no es el promedio.",
+      "whatToChange": "Use Suma, Recuento, Mínimo o Máximo, o totalice esta columna en una hoja que use una sola carpeta."
     }
   }
 }

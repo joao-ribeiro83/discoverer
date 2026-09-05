@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { loadMapWithAccess } from './maps.js';
-import { SqlGenerationError } from '../services/sql-generator.js';
+import { SqlGenerationError, planDraft } from '../services/sql-generator.js';
 import {
   executeMap,
   executeMapAsync,
@@ -30,6 +30,24 @@ const ExecuteBodySchema = z.object({
   calculatedFields: z.array(CalculatedFieldSchema).max(50).optional(),
   /** Row offset for "load more" pagination (sync execute only). */
   offset: z.number().int().min(0).optional(),
+});
+
+/**
+ * A canvas as the builder holds it. Only the columns are needed: what the
+ * planner decides turns on which folders they live in and which of them
+ * aggregate, not on the conditions.
+ */
+const PlanBodySchema = z.object({
+  items: z
+    .array(
+      z.object({
+        itemId: z.string().uuid(),
+        aggFunction: z.string().max(64).nullable().optional(),
+        axisType: z.enum(['AXIS', 'MEASURE', 'PAGE']).nullable().optional(),
+        isHidden: z.boolean().optional(),
+      }),
+    )
+    .max(500),
 });
 
 const HistoryQuerySchema = z.object({
@@ -97,6 +115,54 @@ function handleExecutionError(reply: FastifyReply, err: unknown): boolean {
 // ---------------------------------------------------------------------------
 
 export default function mapExecutionRoutes(fastify: FastifyInstance) {
+  // POST /api/maps/plan — classify a canvas without running it (D-117).
+  //
+  // The builder calls this as the canvas changes, so a fan-trap refusal is
+  // reported while the user is still composing rather than after they press
+  // Run, wait for production Oracle, and read an explanation. It touches no
+  // data source and returns no rows, so any authenticated user may ask.
+  fastify.post(
+    '/api/maps/plan',
+    {
+      preHandler: [fastify.authenticate],
+      schema: {
+        tags: ['Map Execution'],
+        security: [{ bearerAuth: [] }],
+      },
+    },
+    async (request, reply) => {
+      const parsed = PlanBodySchema.safeParse(request.body ?? {});
+      if (!parsed.success) {
+        return reply
+          .code(400)
+          .send({ error: 'Invalid request body', details: parsed.error.issues });
+      }
+      if (parsed.data.items.length === 0) {
+        return { data: { kind: 'FLAT', decision: 'FLAT(NO_MEASURES)', branches: 0 } };
+      }
+
+      try {
+        const plan = await planDraft(parsed.data.items);
+        return {
+          data: {
+            kind: plan.kind,
+            decision: plan.decision,
+            branches: plan.kind === 'REWRITE' ? plan.branches.length : 0,
+            ...(plan.kind === 'REFUSE'
+              ? { rule: plan.rule, folders: plan.folders, message: plan.message }
+              : {}),
+          },
+        };
+      } catch (err) {
+        // A definition that cannot even be assembled — an item that no longer
+        // exists, a join Neo cannot express — is reported the same way a
+        // refusal is. The canvas is still being built; nothing here is fatal.
+        if (handleExecutionError(reply, err)) return;
+        throw err;
+      }
+    },
+  );
+
   // POST /api/maps/:id/execute — run synchronously, return the first page.
   fastify.post(
     '/api/maps/:id/execute',

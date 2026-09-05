@@ -140,6 +140,16 @@ export const queryExecutionLog = pgTable(
     sqlText: text('sql_text'),
     errorMessage: text('error_message'),
     status: executionStatusEnum('status').notNull(),
+    /**
+     * What the fan-trap planner decided for this run: `FLAT(NO_MEASURES)`,
+     * `REWRITE(2)`, `REFUSE(R3)` (`legacy-analysis.md` §1.11 step 10).
+     *
+     * **Not logging.** It is the only way to show the guard is live rather
+     * than present-but-inert: a corpus whose every row reads
+     * `FLAT(NO_MEASURES)` has an unpopulated measure set, and the guard has
+     * never once classified a real query.
+     */
+    planDecision: varchar('plan_decision', { length: 64 }),
   },
   (t) => [
     index('query_execution_log_map_idx').on(t.mapId),

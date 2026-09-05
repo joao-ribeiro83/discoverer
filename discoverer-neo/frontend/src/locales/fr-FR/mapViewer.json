@@ -150,6 +150,31 @@
       "title": "Une jointure de cette feuille est réglée dans les deux sens à la fois, elle n'a donc pas été exécutée",
       "why": "Cette jointure conserve à la fois les lignes maîtres sans détail ET les lignes de détail sans maître. Discoverer 4.1 ne pouvait pas écrire cela en SQL, et aucune documentation Oracle ne décrit ce qu'elle devait faire. Deviner modifierait les chiffres que cette feuille rapporte.",
       "whatToChange": "Demandez à un administrateur d'ouvrir cette jointure et de désactiver l'une de ses deux options de jointure externe."
+    },
+    "FAN_TRAP_R1": {
+      "title": "Ces totaux sont mesurés par rapport à des éléments différents, la feuille n’a donc pas été exécutée",
+      "why": "Cette feuille totalise des valeurs provenant de deux ensembles de lignes de détail, mais chaque ensemble est joint au dossier principal sur une colonne différente. Les deux totaux ne sont pas comptés par rapport à la même chose : les placer côte à côte comparerait des chiffres qui ne correspondent pas.",
+      "whatToChange": "Totalisez les valeurs d’un seul ensemble de lignes de détail, ou demandez à un administrateur si les deux jointures devraient porter sur la même colonne."
+    },
+    "FAN_TRAP_R2": {
+      "title": "Ces dossiers sont joints en cercle, la feuille n’a donc pas été exécutée",
+      "why": "Les deux dossiers de détail sont joints entre eux ainsi qu’au dossier principal. La relation devient circulaire et il existe plusieurs façons d’additionner les lignes, chacune donnant un résultat différent. Discoverer refusait également cette forme.",
+      "whatToChange": "Utilisez les colonnes d’un seul des deux dossiers de détail, ou demandez à un administrateur quelle jointure la feuille doit suivre."
+    },
+    "FAN_TRAP_R3": {
+      "title": "Cette feuille affiche des valeurs individuelles issues de deux ensembles de lignes de détail, elle n’a donc pas été exécutée",
+      "why": "Les totaux à travers une jointure un-à-plusieurs fonctionnent parce que les lignes de détail sont toujours résumées. Cette feuille affiche aussi des valeurs individuelles (non totalisées) provenant de deux ensembles différents de lignes de détail. Ces ensembles ne correspondent pas entre eux : chaque combinaison serait listée au lieu des lignes demandées.",
+      "whatToChange": "Totalisez les valeurs au lieu de les lister, ou n’affichez des valeurs individuelles que d’un seul ensemble de lignes de détail."
+    },
+    "FAN_TRAP_R4": {
+      "title": "Cette feuille se déploie à partir de plusieurs dossiers, elle n’a donc pas été exécutée",
+      "why": "Les lignes de détail sont résumées par rapport à un seul dossier principal. Cette feuille comporte deux dossiers qui jouent chacun ce rôle : il n’existe donc pas d’ensemble unique de lignes auquel rapporter les totaux.",
+      "whatToChange": "Séparez ceci en deux feuilles, une par dossier principal, ou retirez les colonnes qui atteignent le second."
+    },
+    "FAN_TRAP_REAGG": {
+      "title": "Ce type de total ne peut pas être calculé à travers une jointure, la feuille n’a donc pas été exécutée",
+      "why": "Pour totaliser à travers une jointure un-à-plusieurs, chaque ensemble de lignes de détail est d’abord résumé, puis les parties sont combinées. Additionner des sommes donne le bon résultat, tout comme le minimum et le maximum. Les moyennes, les comptages de valeurs distinctes, l’écart-type et la variance ne peuvent pas être reconstitués à partir de parties : une moyenne de moyennes n’est pas la moyenne.",
+      "whatToChange": "Utilisez Somme, Nombre, Minimum ou Maximum, ou totalisez cette colonne sur une feuille n’utilisant qu’un seul dossier."
     }
   }
 }

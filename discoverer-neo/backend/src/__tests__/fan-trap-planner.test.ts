@@ -315,7 +315,7 @@ const DDL = [
 
 async function run(statement: string): Promise<Record<string, unknown>[]> {
   const result = await db.execute(sql.raw(statement));
-  return result.rows as Record<string, unknown>[];
+  return result.rows;
 }
 
 /** Postgres folds unquoted aliases to lower case; the generator emits upper. */

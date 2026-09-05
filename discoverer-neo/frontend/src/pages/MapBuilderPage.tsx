@@ -31,6 +31,7 @@ import { MapCanvas, CANVAS_DROPPABLE_ID } from '@/components/map-builder/MapCanv
 import { ColumnConfigDialog } from '@/components/map-builder/ColumnConfigDialog'
 import { RightPanelTabs } from '@/components/map-builder/panels/RightPanelTabs'
 import { ExecutionPanel } from '@/components/map-builder/ExecutionPanel'
+import { PlanPreflight } from '@/components/map-builder/PlanPreflight'
 import { downloadXml } from '@/components/map-builder/export-utils'
 import {
   ParameterPromptDialog,
@@ -365,6 +366,7 @@ export function MapBuilderPage() {
           </aside>
 
           <div className="flex min-w-[360px] flex-1 flex-col">
+            <PlanPreflight />
             <div className="min-h-0 flex-1">
               <MapCanvas onConfigure={setConfigKey} />
             </div>

@@ -365,6 +365,7 @@ describe('report assembly', () => {
       'referential-closure',
       'reconciliation',
       'measure-set',
+      'planner-live',
     ]);
   });
 

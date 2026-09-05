@@ -1,7 +1,7 @@
 /**
  * Post-commit verification of a migrated target database (D-070).
  *
- * Five seam checks — the ones a suite of components-against-their-own-fixtures
+ * Six seam checks — the ones a suite of components-against-their-own-fixtures
  * structurally cannot make (`AUDIT_TESTING_ASSESSMENT.md` §2 and §6):
  *
  *   1. `sql-generation`      every migrated map loads and generates SQL
@@ -9,18 +9,19 @@
  *   3. `referential-closure` every map reference resolves inside the query scope
  *   4. `reconciliation`      target counts match source, minus declared losses
  *   5. `measure-set`         the estate has measures the fan-trap guard can see
+ *   6. `planner-live`        the fan-trap guard actually classifies real maps
  *
  * Runs AFTER the migration transaction commits, never inside it: a rollback
  * destroys the evidence needed to debug the failure, and one transaction over
  * 923 maps and 49 819 formulas is untenable. Everything here is read-only, so
  * an already-migrated estate can be verified repeatedly without re-importing.
  *
- * Two hooks are injected rather than imported. `generateSqlForMap` and
- * `compileFormula` both live in the backend workspace, which depends on this
- * one and not the reverse; importing them here would be a dependency cycle.
- * `dn-migrate verify` therefore reports those seams SKIPPED, and the backend's
- * own `npm run verify` supplies both and runs all five. A SKIPPED seam never
- * counts as a pass.
+ * Three hooks are injected rather than imported. `generateSqlForMap`,
+ * `compileFormula` and `planMap` all live in the backend workspace, which
+ * depends on this one and not the reverse; importing them here would be a
+ * dependency cycle. `dn-migrate verify` therefore reports those seams SKIPPED,
+ * and the backend's own `npm run verify` supplies all three and runs all six.
+ * A SKIPPED seam never counts as a pass.
  *
  * Output discipline (G-02): the reconciliation spans the whole estate, so a
  * seam returns counts plus at most `sampleLimit` example findings — never a
@@ -50,7 +51,8 @@ export type SeamId =
   | 'formula-compile'
   | 'referential-closure'
   | 'reconciliation'
-  | 'measure-set';
+  | 'measure-set'
+  | 'planner-live';
 
 /** SKIPPED is not a pass — it means the seam could not be evaluated here. */
 export type SeamStatus = 'PASS' | 'FAIL' | 'SKIPPED';
@@ -101,6 +103,13 @@ export interface VerifyHooks {
    * — the Phase 4 token renderer is what turns those into COMPILED.
    */
   compileFormula?: (formula: string) => CompileBucket | { bucket: CompileBucket; reason?: string };
+  /**
+   * Classify one stored map with the fan-trap planner, returning its decision
+   * string (`FLAT(NO_MEASURES)`, `REWRITE(2)`, `REFUSE(R3)`) and the size of
+   * the measure set it saw. Backend's `planQuery` over `loadMapDefinition`.
+   * Omitted here, seam 6 is SKIPPED.
+   */
+  planMap?: (mapId: string) => Promise<{ decision: string; measures: number }>;
 }
 
 export interface VerifyOptions extends VerifyHooks {
@@ -531,6 +540,99 @@ export async function checkMeasureSet(
 }
 
 // ---------------------------------------------------------------------------
+// Seam 6 — the fan-trap guard runs on real migrated maps
+// ---------------------------------------------------------------------------
+
+/**
+ * Plan real migrated maps and check the guard is not inert (Phase 3.3, D-031).
+ *
+ * Seam 5 proves the estate *carries* a measure set. This proves the planner
+ * *sees* one: it loads maps from the database, runs `planQuery` over each, and
+ * fails if not one of them classified with a non-empty `M`.
+ *
+ * **Why this seam and not another unit test.** Every SQL test in this
+ * repository runs against a hand-built `MapDefinition` fixture. A guard can
+ * therefore pass its whole suite while never having classified a migrated map
+ * — which is exactly how a fan-trap guard ships present, unit-tested and
+ * structurally inert: with `agg_function` null the measure set is empty, every
+ * query takes step 0's flat path, and every fixture-based assertion still
+ * passes. Only a migrated map, loaded from the database, can tell you.
+ */
+export async function checkPlannerLive(
+  db: VerifyDb,
+  options: VerifyOptions = {},
+): Promise<SeamResult> {
+  const name = 'the fan-trap planner classifies real migrated maps';
+  const limit = options.sampleLimit ?? 10;
+
+  if (!options.planMap) {
+    return {
+      id: 'planner-live',
+      name,
+      status: 'SKIPPED',
+      metrics: {},
+      findings: [],
+      reason:
+        'no planner injected — it lives in the backend workspace; run `npm run verify --workspace backend`',
+    };
+  }
+
+  const mapRows = await rows(
+    db,
+    sql`SELECT id::text AS id, name FROM maps
+        WHERE is_active AND ${mapScope(options.mapIdPrefix)}
+        ORDER BY name
+        ${options.maxMaps ? sql`LIMIT ${options.maxMaps}` : sql``}`,
+  );
+
+  const byDecision = new globalThis.Map<string, number>();
+  const findings: string[] = [];
+  let planned = 0;
+  let withMeasures = 0;
+
+  for (const row of mapRows) {
+    try {
+      const plan = await options.planMap(String(row.id));
+      planned += 1;
+      if (plan.measures > 0) withMeasures += 1;
+      // Only the decision KIND is counted: `REWRITE(2)` and `REWRITE(3)` are
+      // the same fact about the guard.
+      const kind = plan.decision.replace(/\(.*$/, '');
+      byDecision.set(kind, (byDecision.get(kind) ?? 0) + 1);
+    } catch (err) {
+      if (findings.length < limit) {
+        findings.push(`${String(row.name)} (${String(row.id)}): ${describe(err)}`);
+      }
+    }
+  }
+
+  const metrics: Record<string, number> = {
+    maps: mapRows.length,
+    planned,
+    mapsWithANonEmptyMeasureSet: withMeasures,
+  };
+  for (const [kind, count] of byDecision) metrics[kind.toLowerCase()] = count;
+
+  const blockers: string[] = [];
+  if (planned === 0) blockers.push('no map could be planned at all');
+  else if (withMeasures === 0) {
+    blockers.push('every planned map classified |M| = 0');
+  }
+
+  return {
+    id: 'planner-live',
+    name,
+    status: blockers.length === 0 ? 'PASS' : 'FAIL',
+    metrics,
+    findings,
+    reason:
+      blockers.length > 0
+        ? `the fan-trap guard is present but inert: ${blockers.join('; ')}`
+        : undefined,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Seam 4 — source <-> target reconciliation
 // ---------------------------------------------------------------------------
 
@@ -623,6 +725,7 @@ export async function verifyMigration(
     await checkReferentialClosure(db, options),
     await checkReconciliation(db, options),
     await checkMeasureSet(db, options),
+    await checkPlannerLive(db, options),
   ];
 
   return summarise(target, seams);
