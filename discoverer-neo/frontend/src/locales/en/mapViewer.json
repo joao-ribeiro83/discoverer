@@ -139,6 +139,17 @@
       "title": "These folders are not connected, so the worksheet was not run",
       "why": "The worksheet uses columns from folders that no chain of joins links together. Without a join, the database would pair every row of one folder with every row of the other and return a meaningless result.",
       "whatToChange": "Remove the columns from the unconnected folder, or ask an administrator to define a join between them."
+    },
+    "joins": "Joins involved: {{joins}}",
+    "JOIN_NO_PREDICATE": {
+      "title": "A join in this worksheet has no join condition, so it was not run",
+      "why": "This worksheet needs two folders joined together, but the join between them does not say which columns to match on. Without that condition the database would pair every row of one folder with every row of the other. The join was migrated from Discoverer with its condition missing or in a form Neo could not read.",
+      "whatToChange": "Ask an administrator to open this join and set the columns it matches on. Until then, use columns from one folder only."
+    },
+    "JOIN_BOTH_OUTER": {
+      "title": "A join in this worksheet is set both ways at once, so it was not run",
+      "why": "This join is set to keep master rows with no detail AND detail rows with no master. Discoverer 4.1 could not write that in SQL, and no Oracle documentation describes what it was meant to do. Guessing would change the numbers this worksheet reports.",
+      "whatToChange": "Ask an administrator to open this join and turn off one of its two outer-join settings."
     }
   }
 }

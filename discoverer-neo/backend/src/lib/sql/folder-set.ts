@@ -4,6 +4,7 @@ import { buildSelectClause } from './select-clause.js';
 import { buildWhereClause } from './where-clause.js';
 import { buildOrderByClause } from './order-by-clause.js';
 import { planTotals } from './totals.js';
+import { deriveJoinType } from './join-type.js';
 
 /**
  * The folders a map's query actually touches, and how each one got there.
@@ -64,12 +65,16 @@ export interface JoinPathEdge {
   joinType: string;
 }
 
-/** Flip LEFT/RIGHT when a join is traversed from its right side. */
+/**
+ * Flip LEFT/RIGHT when a join is traversed from its right (detail) side.
+ *
+ * No `FULL` entry: the flag combination that would produce it refuses in
+ * `deriveJoinType` before it can reach here (D-038).
+ */
 const FLIPPED_JOIN: Record<string, string> = {
   INNER: 'INNER',
   LEFT: 'RIGHT',
   RIGHT: 'LEFT',
-  FULL: 'FULL',
 };
 
 /**
@@ -101,16 +106,18 @@ export function spanningJoinPath(
   joins.forEach((j, joinIdx) => {
     const l = j.join.leftFolderId;
     const r = j.join.rightFolderId;
+    // Derived from the two outer-join flags, never read from a column
+    // (D-032). A join that sets both refuses here, before any folder set or
+    // FROM clause is built on top of a shape Neo cannot express (D-038).
+    const joinType = deriveJoinType(j.join, j.join.name);
     if (!adjacency.has(l)) adjacency.set(l, []);
     if (!adjacency.has(r)) adjacency.set(r, []);
-    adjacency
-      .get(l)!
-      .push({ joinIdx, from: l, to: r, joinType: j.join.joinType });
+    adjacency.get(l)!.push({ joinIdx, from: l, to: r, joinType });
     adjacency.get(r)!.push({
       joinIdx,
       from: r,
       to: l,
-      joinType: FLIPPED_JOIN[j.join.joinType] ?? j.join.joinType,
+      joinType: FLIPPED_JOIN[joinType] ?? joinType,
     });
   });
 

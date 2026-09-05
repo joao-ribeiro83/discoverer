@@ -4,13 +4,16 @@ import type { RefusalCode } from '@/lib/types'
 
 interface Props {
   code: RefusalCode
-  /** Context the backend attached — today, the folder names involved. */
+  /**
+   * Context the backend attached: the folder names involved, or — for a
+   * refusal about a join rather than a folder set — the join names.
+   */
   details?: Record<string, unknown>
 }
 
-function folderList(details: Props['details']): string {
-  const folders = details?.folders
-  return Array.isArray(folders) ? folders.filter((f) => typeof f === 'string').join(', ') : ''
+function nameList(details: Props['details'], key: 'folders' | 'joins'): string {
+  const names = details?.[key]
+  return Array.isArray(names) ? names.filter((n) => typeof n === 'string').join(', ') : ''
 }
 
 /**
@@ -29,7 +32,8 @@ function folderList(details: Props['details']): string {
  */
 export function ExecutionRefusal({ code, details }: Props) {
   const { t } = useTranslation('mapViewer')
-  const folders = folderList(details)
+  const folders = nameList(details, 'folders')
+  const joins = nameList(details, 'joins')
 
   return (
     <div
@@ -44,6 +48,7 @@ export function ExecutionRefusal({ code, details }: Props) {
         {folders && (
           <p className="text-muted-foreground">{t('refusal.folders', { folders })}</p>
         )}
+        {joins && <p className="text-muted-foreground">{t('refusal.joins', { joins })}</p>}
         <p>{t(`refusal.${code}.whatToChange`)}</p>
       </div>
     </div>

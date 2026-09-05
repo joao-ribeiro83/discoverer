@@ -1,6 +1,6 @@
 /**
  * The single Drizzle definition of every table shared by the migrator and the
- * backend — all 20 of them.
+ * backend — all 21 of them.
  *
  * This file is the one place those tables are declared.
  * `backend/src/db/schema.ts` re-exports it and adds the 10 runtime-only
@@ -104,12 +104,12 @@ export const permissionLevelEnum = pgEnum('permission_level', [
   'VIEW',
 ]);
 
-export const joinTypeEnum = pgEnum('join_type', [
-  'INNER',
-  'LEFT',
-  'RIGHT',
-  'FULL',
-]);
+// `join_type` was a pgEnum column on `joins` until Phase 3.2. It is now
+// DERIVED from `allow_master_no_detail` / `allow_detail_no_master` (D-032),
+// so neither the column nor the Postgres type exists any more. The derivation
+// and its `INNER | LEFT | RIGHT` range live in
+// `backend/src/lib/sql/join-type.ts`; there is deliberately no `FULL`, because
+// the combination that would produce it is a refusal (D-038).
 
 export const functionTypeEnum = pgEnum('function_type', [
   'SQL',
@@ -498,24 +498,71 @@ export const items = pgTable(
 // 7. joins
 // ---------------------------------------------------------------------------
 
+/**
+ * A join binds two FOLDERS and carries a predicate of one or more column
+ * pairs. `left` is the MASTER side, `right` the DETAIL side.
+ *
+ * **Orientation (D-040, measured on the live EUL4 2026-09-03).**
+ * `KEY_CONS.FK_OBJ_ID_REMOTE` is the master and reaches `left_folder_id`;
+ * `KEY_CONS.KEY_OBJ_ID` is the detail and reaches `right_folder_id`. Getting
+ * this backwards does not error — it pushes the wrong side into the fan-trap
+ * inline view and returns correct-looking wrong numbers.
+ *
+ * **`join_type` is derived, never stored (D-032).** Discoverer's Join Wizard
+ * offers four settings and the EUL DTD carries four attributes; three of them
+ * are the columns below, and the emitted SQL falls out of two of those:
+ *
+ * | `allow_master_no_detail` | `allow_detail_no_master` | emitted |
+ * | --- | --- | --- |
+ * | false | false | `INNER JOIN` |
+ * | true  | false | `LEFT JOIN` from master (detail side `(+)`) |
+ * | false | true  | `RIGHT JOIN` from master — "rare in real business scenarios" |
+ * | true  | true  | **refusal** (D-038) |
+ *
+ * The old `join_type` enum column was fed from `KEY_CONS.KEY_TYPE`, whose live
+ * domain is `FK`/`UK` — a *constraint kind*, not a join type. Every one of the
+ * estate's ten joins therefore read `INNER` by accident.
+ *
+ * `one_to_one` has **no** effect on emitted SQL: Oracle states fan-trap
+ * detection is its only consumer. `mandatory` has no join-type effect either
+ * — it is a referential-integrity assertion that unlocks join trimming and
+ * summary-folder eligibility. Both are stored and both stay out of the
+ * derivation.
+ */
 export const joins = pgTable(
   'joins',
   {
     id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
     name: varchar('name', { length: 255 }).notNull(),
+    /** MASTER folder — `KEY_CONS.FK_OBJ_ID_REMOTE`. */
     leftFolderId: uuid('left_folder_id')
       .notNull()
       .references(() => folders.id, { onDelete: 'cascade' }),
+    /** DETAIL folder — `KEY_CONS.KEY_OBJ_ID`. */
     rightFolderId: uuid('right_folder_id')
       .notNull()
       .references(() => folders.id, { onDelete: 'cascade' }),
-    leftItemId: uuid('left_item_id').references(() => items.id, {
-      onDelete: 'set null',
-    }),
-    rightItemId: uuid('right_item_id').references(() => items.id, {
-      onDelete: 'set null',
-    }),
-    joinType: joinTypeEnum('join_type').notNull(),
+    /** `FK_ONE_TO_ONE`. Default false = one-to-many = assume fanning (D-033). */
+    oneToOne: boolean('one_to_one').notNull().default(false),
+    /** `FK_MSTR_NO_DETAIL` — Administrator's "Outer join on detail". */
+    allowMasterNoDetail: boolean('allow_master_no_detail')
+      .notNull()
+      .default(false),
+    /** `FK_DTL_NO_MASTER` — Administrator's "Outer join on master". */
+    allowDetailNoMaster: boolean('allow_detail_no_master')
+      .notNull()
+      .default(false),
+    /** `FK_MANDATORY`. Referential integrity, not a join type. */
+    mandatory: boolean('mandatory').notNull().default(false),
+    /**
+     * The source `EXPRESSIONS.EXP_FORMULA1` token tree, verbatim (D-055).
+     *
+     * Provenance and escape hatch: a predicate that is not an `AND` of
+     * comparisons writes no `join_predicates` rows at all — the join then
+     * refuses loudly (D-039) — but the tree that could not be decomposed is
+     * still here to diagnose, and to re-decompose later without re-migrating.
+     */
+    predicateFormula: text('predicate_formula'),
     isActive: boolean('is_active').notNull().default(true),
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
@@ -524,8 +571,69 @@ export const joins = pgTable(
   (t) => [
     index('joins_left_folder_idx').on(t.leftFolderId),
     index('joins_right_folder_idx').on(t.rightFolderId),
-    index('joins_left_item_idx').on(t.leftItemId),
-    index('joins_right_item_idx').on(t.rightItemId),
+  ],
+);
+
+// ---------------------------------------------------------------------------
+// 7b. join_predicates
+// ---------------------------------------------------------------------------
+
+/**
+ * The domain of `join_predicates.operator` — the six comparison operators
+ * Discoverer's Join Wizard offers (`9.0.4/B10270_01.pdf` p. 24-91, verbatim).
+ *
+ * A CHECK, and a closed one, because this value is spliced straight into
+ * generated SQL. It is never interpolated from source data at generation
+ * time: the reader maps an `EUL4_FUNCTIONS.FUN_ID` onto one of these six and
+ * refuses anything else, and the database refuses it a second time.
+ */
+const JOIN_OPERATOR_CHECK = (name: string, column: AnyPgColumn) =>
+  check(name, sql`${column} IN ('=', '<', '>', '<=', '>=', '<>')`);
+
+/**
+ * One column pair of a join's predicate. Components are ANDed, in `seq` order.
+ *
+ * Multi-item joins are first-class in Discoverer — the Join Wizard has an
+ * explicit **Add** button for them, and this estate's ten joins run five
+ * single-column, four three-column and one four-column. The EUL stores all of
+ * them in ONE `EXPRESSIONS` row whose `EXP_FORMULA1` is an n-ary `AND` token
+ * tree, so the migrator parses that tree to fill this table; it cannot read
+ * components off separate rows.
+ *
+ * Item ids are nullable on purpose. A component whose item failed to migrate
+ * must still occupy a row: dropping it would silently shorten the `ON` clause
+ * from `a = b AND c = d` to `a = b`, which returns *more* rows than the source
+ * did — a wrong number that looks right. A null endpoint is a refusal at
+ * generation time instead (D-058).
+ */
+export const joinPredicates = pgTable(
+  'join_predicates',
+  {
+    id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+    joinId: uuid('join_id')
+      .notNull()
+      .references(() => joins.id, { onDelete: 'cascade' }),
+    /** 0-based position within the ANDed predicate. */
+    seq: integer('seq').notNull(),
+    /** MASTER-side item — belongs to `joins.left_folder_id`. */
+    leftItemId: uuid('left_item_id').references(() => items.id, {
+      onDelete: 'set null',
+    }),
+    /** DETAIL-side item — belongs to `joins.right_folder_id`. */
+    rightItemId: uuid('right_item_id').references(() => items.id, {
+      onDelete: 'set null',
+    }),
+    operator: varchar('operator', { length: 2 }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index('join_predicates_join_idx').on(t.joinId),
+    index('join_predicates_left_item_idx').on(t.leftItemId),
+    index('join_predicates_right_item_idx').on(t.rightItemId),
+    uniqueIndex('join_predicates_join_seq_uq').on(t.joinId, t.seq),
+    JOIN_OPERATOR_CHECK('join_predicates_operator_check', t.operator),
   ],
 );
 
