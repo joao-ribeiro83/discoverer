@@ -1401,6 +1401,60 @@ export function transformGrants(grants: Grant[], version: EulVersion): Transform
 }
 
 // ---------------------------------------------------------------------------
+// Writing a map's columns
+// ---------------------------------------------------------------------------
+
+/**
+ * EUL `EXP_ID` → the item's **Default aggregate**, normalized.
+ *
+ * Only items that resolve to a real function are in the map. `Detail`, and the
+ * 353 items with no `IT_FUN_ID` at all, are absent rather than present-and-null
+ * — a lookup miss and a stored "no aggregation" are the same answer here.
+ */
+export function defaultAggregateBySourceId(
+  items: ReadonlyArray<Pick<Item, 'sourceId' | 'aggregation'>>,
+): Map<number, string> {
+  const byId = new Map<number, string>();
+  for (const item of items) {
+    const agg = normalizeAggregation(item.aggregation);
+    if (agg !== null) byId.set(item.sourceId, agg);
+  }
+  return byId;
+}
+
+/**
+ * `map_items.agg_function` — the aggregate this column is actually run with.
+ *
+ * Two independent sources meet here, and neither alone is the answer:
+ *
+ * - **The workbook says which items are measures.** The `.DIS` query request
+ *   carries the split literally, as two vectors — `0x0123` axis and `0x0124`
+ *   measure (§7.8.3). It reaches this function as `axisType`, and it is given,
+ *   never inferred (D-031).
+ * - **The EUL says what to aggregate them with.** `EXPRESSIONS.IT_FUN_ID`, the
+ *   item's Default aggregate. The `.DIS` carries no per-item function; the only
+ *   aggregate code it holds is `0x0c1d`, which belongs to a *total*
+ *   (`map_totals.agg_function`) and is a different, richer channel.
+ *
+ * legacy-analysis §3.4's precedence: the default aggregate applies **when the
+ * item is on the measure axis**. An axis item projects its raw value, so it
+ * gets no aggregate here even when its EUL default names one.
+ *
+ * Where the pair does not produce a function, the column is null and stays
+ * null. It is never defaulted to `SUM`: a measure whose aggregate is guessed
+ * is a wrong number that looks right, and the estate has 8 152 items whose
+ * Default aggregate is explicitly `Detail`.
+ */
+export function mapItemAggFunction(
+  column: Pick<TransformedMapItem, 'axisType' | 'itemSourceId'>,
+  defaultAggregates: ReadonlyMap<number, string>,
+): string | null {
+  if (column.axisType !== 'MEASURE') return null;
+  if (column.itemSourceId === null) return null;
+  return defaultAggregates.get(column.itemSourceId) ?? null;
+}
+
+// ---------------------------------------------------------------------------
 // Writing a map's totals
 // ---------------------------------------------------------------------------
 
