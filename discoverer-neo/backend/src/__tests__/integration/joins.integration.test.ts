@@ -69,7 +69,8 @@ describe('POST /api/business-areas/:baId/joins', () => {
   });
 
   it('creates all join types', async () => {
-    const types = ['INNER', 'LEFT', 'RIGHT', 'FULL'] as const;
+    // No FULL: the flag pair that would mean it is a refusal (D-038).
+    const types = ['INNER', 'LEFT', 'RIGHT'] as const;
     for (const joinType of types) {
       const res = await authenticatedRequest(
         app,

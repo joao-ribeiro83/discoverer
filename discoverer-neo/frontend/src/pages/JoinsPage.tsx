@@ -25,7 +25,13 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-const JOIN_TYPES = ['INNER', 'LEFT', 'RIGHT', 'FULL'] as const
+/**
+ * No FULL. A join type is derived from two outer-join settings, and turning
+ * both on is a refusal rather than a full outer join (D-038): Discoverer 4.1
+ * could not express it and no Oracle documentation says what it should mean.
+ * The API rejects it, so offering it here would only produce a 400.
+ */
+const JOIN_TYPES = ['INNER', 'LEFT', 'RIGHT'] as const
 
 function buildFormSchema(t: (key: string) => string) {
   return z.object({
