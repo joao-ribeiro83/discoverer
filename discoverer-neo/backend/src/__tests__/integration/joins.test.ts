@@ -3,7 +3,15 @@ import type { FastifyInstance } from 'fastify';
 import { eq } from 'drizzle-orm';
 import { buildApp } from '../../app.js';
 import { db } from '../../db/index.js';
-import { users, businessAreas, folders, items, joins } from '../../db/schema.js';
+import {
+  users,
+  businessAreas,
+  folders,
+  items,
+  joins,
+  joinPredicates,
+} from '../../db/schema.js';
+import { FLAGS_FOR_JOIN_TYPE } from '../../services/join.service.js';
 import { hashPassword } from '../../lib/password.js';
 
 // ---------------------------------------------------------------------------
@@ -193,7 +201,9 @@ describe('Join CRUD', () => {
   });
 
   it('creates a join with all join types', async () => {
-    const joinTypes = ['INNER', 'LEFT', 'RIGHT', 'FULL'] as const;
+    // No `FULL`: the flag pair that would mean it is a refusal (D-038), so the
+    // API no longer accepts it — see the rejection test below.
+    const joinTypes = ['INNER', 'LEFT', 'RIGHT'] as const;
 
     for (const joinType of joinTypes) {
       // Clean up previous
@@ -214,6 +224,22 @@ describe('Join CRUD', () => {
       expect(response.statusCode).toBe(201);
       expect(response.json().data.joinType).toBe(joinType);
     }
+  });
+
+  it('rejects FULL — the both-outer combination is a refusal, not a join type', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: `/api/business-areas/${testBusinessAreaId}/joins`,
+      headers: { authorization: `Bearer ${adminToken}` },
+      payload: {
+        name: 'Full Join',
+        leftFolderId: testLeftFolderId,
+        rightFolderId: testRightFolderId,
+        joinType: 'FULL',
+      },
+    });
+
+    expect(response.statusCode).toBe(400);
   });
 
   it('returns 400 on invalid request body', async () => {
@@ -338,18 +364,20 @@ describe('Join listing', () => {
     await createTestUser(TEST_ADMIN_EMAIL, TEST_PASSWORD, 'ADMIN');
     adminToken = await loginAndReturnToken(TEST_ADMIN_EMAIL, TEST_PASSWORD);
 
+    // Direct inserts, so the shape is the STORED one: two flags, no
+    // `join_type` column (D-032).
     await db.insert(joins).values([
       {
         name: 'Join 1',
         leftFolderId: testLeftFolderId,
         rightFolderId: testRightFolderId,
-        joinType: 'INNER',
+        ...FLAGS_FOR_JOIN_TYPE.INNER,
       },
       {
         name: 'Join 2',
         leftFolderId: testRightFolderId,
         rightFolderId: testLeftFolderId,
-        joinType: 'LEFT',
+        ...FLAGS_FOR_JOIN_TYPE.LEFT,
       },
     ]);
   });
@@ -400,12 +428,18 @@ describe('Join get by ID', () => {
         name: 'Test Join',
         leftFolderId: testLeftFolderId,
         rightFolderId: testRightFolderId,
-        leftItemId: testLeftItemId,
-        rightItemId: testRightItemId,
-        joinType: 'INNER',
+        ...FLAGS_FOR_JOIN_TYPE.INNER,
       })
       .returning();
     joinId = join!.id;
+    // The columns a join matches on are their own rows now.
+    await db.insert(joinPredicates).values({
+      joinId,
+      seq: 0,
+      leftItemId: testLeftItemId,
+      rightItemId: testRightItemId,
+      operator: '=',
+    });
   });
 
   it('returns a join by ID with details', async () => {
@@ -461,7 +495,7 @@ describe('Join update', () => {
         name: 'Original Join',
         leftFolderId: testLeftFolderId,
         rightFolderId: testRightFolderId,
-        joinType: 'INNER',
+        ...FLAGS_FOR_JOIN_TYPE.INNER,
       })
       .returning();
     joinId = join!.id;
@@ -523,7 +557,7 @@ describe('Join soft delete', () => {
         name: 'To Delete',
         leftFolderId: testLeftFolderId,
         rightFolderId: testRightFolderId,
-        joinType: 'INNER',
+        ...FLAGS_FOR_JOIN_TYPE.INNER,
       })
       .returning();
     joinId = join!.id;

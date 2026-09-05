@@ -335,6 +335,63 @@ It returns two named sets:
 Row-level security resolves over the column-bearing set plus every row-changing
 bridge. The FROM clause spans the union.
 
+### The join model
+
+A join binds **two folders** and carries a **predicate of one or more column
+pairs**. It is not an item pair, and it does not store a join type.
+
+```
+joins                                join_predicates
+  left_folder_id   MASTER              join_id
+  right_folder_id  DETAIL              seq            0-based, ANDed in order
+  one_to_one                           left_item_id   master side, nullable
+  allow_master_no_detail               right_item_id  detail side, nullable
+  allow_detail_no_master               operator       = < > <= >= <>
+  mandatory
+  predicate_formula   source token tree, verbatim
+```
+
+**Orientation.** `left` is always the master and `right` the detail. In the
+EUL, `KEY_CONS.FK_OBJ_ID_REMOTE` is the master and `KEY_OBJ_ID` the detail —
+measured on the live source, not inferred (`docs/master-plan/research/eul-probe-results.md`
+Q1). An inversion here does not raise an error; it feeds the wrong side into
+the fan-trap rewrite and returns correct-looking wrong numbers, which is why
+`from-clause.test.ts` carries a named regression test for it.
+
+**`join_type` is derived, never stored** (`lib/sql/join-type.ts`):
+
+| `allow_master_no_detail` | `allow_detail_no_master` | emitted |
+| --- | --- | --- |
+| false | false | `INNER JOIN` |
+| true  | false | `LEFT OUTER JOIN` — keep master rows with no detail |
+| false | true  | `RIGHT OUTER JOIN` — keep detail rows with no master |
+| true  | true  | **refusal** (`JOIN_BOTH_OUTER`) |
+
+There is no `FULL`. No vendor text describes the both-outer combination, and it
+cannot be written in the Oracle 8 `(+)` syntax Discoverer 4.1 targeted, so Neo
+refuses rather than invent a semantic the source never had.
+
+The other two flags stay out of the derivation on purpose:
+
+- **`one_to_one`** changes no SQL. Oracle is explicit that fan-trap detection
+  is its only consumer. Unknown or false means *assume fanning*.
+- **`mandatory`** is a referential-integrity assertion about the data. It
+  unlocks join trimming and summary-folder eligibility; it is not a join type.
+
+**A join with no usable predicate refuses, by name.** It is loaded, not
+dropped. Dropping it — the behaviour before this model — left its folders
+unlinked and surfaced far away as *"No join path connects folder X…"*, blaming
+a folder that was fine. The same refusal fires when one component's item is
+missing: emitting only the components that resolved would shorten `a = b AND
+c = d` to `a = b`, and a shorter join condition returns **more** rows, not
+fewer.
+
+Operators come from a closed table in both the database (a CHECK constraint)
+and the emitter (a lookup, never interpolation), because the operator is the
+one part of a join that becomes SQL syntax rather than a quoted identifier or a
+bind. Column names go through the same `quoteIdentifier` validation as every
+other identifier — a name containing a quote is **rejected, not escaped**.
+
 ### Interim: multi-folder aggregates are refused
 
 `buildFromClause` refuses a query that spans more than one folder *and*

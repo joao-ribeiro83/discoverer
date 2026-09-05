@@ -209,7 +209,8 @@ Maps selecting this item become broken.
 
 ## Joins
 
-A **Join** defines a relationship between two folders.
+A **Join** defines a relationship between two folders. One folder is the
+**master** (the "one" side) and the other the **detail** (the "many" side).
 
 ### Create Join
 
@@ -217,11 +218,15 @@ A **Join** defines a relationship between two folders.
 2. Click **+ Create Join**
 3. Enter:
    - **Name** — Join name (e.g., "Customers to Orders")
-   - **Folder 1** — Left folder
-   - **Folder 2** — Right folder
-   - **Join Type** — INNER, LEFT, RIGHT, FULL
+   - **Folder 1** — the **master** folder
+   - **Folder 2** — the **detail** folder
+   - **Join Type** — INNER, LEFT, RIGHT
    - **Conditions** — Join predicates (see below)
 4. Click **Create**
+
+Which folder is master matters. It decides which side is protected when a
+total is calculated across the join, so a join created the wrong way round
+produces numbers that look plausible and are wrong.
 
 ### Join Conditions
 
@@ -229,24 +234,54 @@ Each join has one or more conditions linking columns:
 
 1. Click **+ Add Condition**
 2. Select:
-   - **Item 1** — Column in Folder 1
-   - **Operator** — = (equals)
-   - **Item 2** — Column in Folder 2
-3. Add more conditions if needed (AND chaining)
+   - **Item 1** — Column in the master folder
+   - **Operator** — one of `=`, `<`, `>`, `<=`, `>=`, `<>`
+   - **Item 2** — Column in the detail folder
+3. Add more conditions if needed — they are combined with AND
 
 **Example:** CUSTOMERS to ORDERS join:
 ```
 CUSTOMERS.CUSTOMER_ID = ORDERS.CUSTOMER_ID
 ```
 
-### Join Types
+Joins migrated from Discoverer often have several conditions. Four of the
+sample estate's ten joins match on three columns, and one on four.
 
-| Type | Result |
-|------|--------|
-| **INNER** | Only rows matching both folders |
-| **LEFT** | All Folder 1 rows, matching Folder 2 or NULL |
-| **RIGHT** | All Folder 2 rows, matching Folder 1 or NULL |
-| **FULL** | All rows from both folders (with NULLs) |
+**A join with no conditions cannot be used.** Any worksheet that needs it is
+refused, and the message names the join — it is not silently ignored, because
+joining two folders with no condition pairs every row of one with every row of
+the other. If you see that refusal, open the join and add its conditions.
+
+### The four join settings
+
+Beyond the columns it matches on, a join carries four settings. Two of them
+decide the SQL; two do not.
+
+| Setting | What it means | Effect |
+|---------|---------------|--------|
+| **Outer join on detail** | Keep master rows that have no matching detail rows | Emits `LEFT OUTER JOIN` |
+| **Outer join on master** | Keep detail rows that have no matching master row | Emits `RIGHT OUTER JOIN`. Rare in real business use |
+| **One to one** | Each master row matches at most one detail row | **No effect on the SQL.** It is read only by fan-trap detection — see below |
+| **Mandatory** | Every detail row is guaranteed to have a master row | **No effect on the join type.** It lets the query planner drop the join entirely when nothing selects from the master folder, and makes the join eligible for summary folders |
+
+**Join Type** in the create form is a shorthand for the first two settings:
+
+| Type | Outer on detail | Outer on master | Result |
+|------|-----------------|-----------------|--------|
+| **INNER** | off | off | Only rows matching in both folders |
+| **LEFT** | on | off | All master rows, matching detail or NULL |
+| **RIGHT** | off | on | All detail rows, matching master or NULL |
+
+There is no FULL join. Turning **both** outer settings on is refused rather
+than run: Discoverer could not express that combination either, and no Oracle
+documentation says what it should mean. Turn one of them off.
+
+**Why "one to one" matters even though it changes no SQL.** When a total is
+calculated over a join, a master value repeats once for every matching detail
+row, so the total counts it several times and comes out too high. Neo assumes
+every join can do this unless **One to one** says otherwise. Leaving the
+setting off is always safe; turning it on when it is not true produces
+overstated totals with no warning.
 
 ### Multi-Table Queries
 

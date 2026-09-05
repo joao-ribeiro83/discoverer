@@ -449,3 +449,289 @@ describe('buildFromClause — interim multi-folder aggregate refusal', () => {
     expect(sql).toMatch(/ON \w+\."ORDER_ID" = \w+\."ORDER_ID"/);
   });
 });
+
+// ---------------------------------------------------------------------------
+// 5. The join predicate — Phase 3.2
+// ---------------------------------------------------------------------------
+
+/** A two-folder query over SALES and LINES, with `joins` supplied by caller. */
+function twoFolderQuery(
+  f: ReturnType<typeof twoFolderFixture>,
+  joins: MapDefinition['joins'],
+): MapDefinition {
+  return mkDef({
+    items: [
+      { mapItem: mkMapItem(f.orderId), item: f.orderId, folder: f.sales },
+      { mapItem: mkMapItem(f.qty, 1), item: f.qty, folder: f.lines },
+    ],
+    joins,
+    formulaItems: f.formulaItems,
+  });
+}
+
+describe('buildFromClause — join predicates', () => {
+  it('ANDs a multi-column predicate in seq order', () => {
+    const f = twoFolderFixture();
+    const salesRegion = mkItem(f.sales, 'Sales Region', { columnName: 'REGION' });
+    const lineRegion = mkItem(f.lines, 'Line Region', { columnName: 'REGION' });
+    const j = f.join;
+    // Deliberately out of order, to prove `seq` is what orders the clause and
+    // not the array. A predicate's components must always emit in the order
+    // the source stated.
+    j.predicates = [
+      {
+        predicate: mkPredicate(j.join, 1, salesRegion, lineRegion),
+        leftItem: salesRegion,
+        rightItem: lineRegion,
+      },
+      {
+        predicate: mkPredicate(j.join, 0, f.orderId, f.lineOrderId),
+        leftItem: f.orderId,
+        rightItem: f.lineOrderId,
+      },
+    ];
+
+    const { sql } = fromClauseFor(twoFolderQuery(f, [j]));
+    expect(sql).toMatch(
+      /ON \w+\."ORDER_ID" = \w+\."ORDER_ID" AND \w+\."REGION" = \w+\."REGION"/,
+    );
+  });
+
+  it('emits each component with its own operator, from the closed set', () => {
+    const f = twoFolderFixture();
+    const j = f.join;
+    j.predicates = [
+      {
+        predicate: mkPredicate(j.join, 0, f.orderId, f.lineOrderId, '>='),
+        leftItem: f.orderId,
+        rightItem: f.lineOrderId,
+      },
+    ];
+    expect(fromClauseFor(twoFolderQuery(f, [j])).sql).toMatch(
+      /ON \w+\."ORDER_ID" >= \w+\."ORDER_ID"/,
+    );
+  });
+
+  it('refuses a join whose predicate carries an operator outside the closed set', () => {
+    // The operator becomes SQL syntax, not a quoted identifier or a bind, so
+    // it is looked up in a table rather than interpolated. The database has
+    // the same six as a CHECK; this is the second gate, not the only one.
+    const f = twoFolderFixture();
+    const j = f.join;
+    j.predicates = [
+      {
+        predicate: mkPredicate(j.join, 0, f.orderId, f.lineOrderId, "= 1 OR '1'"),
+        leftItem: f.orderId,
+        rightItem: f.lineOrderId,
+      },
+    ];
+    expect(() => fromClauseFor(twoFolderQuery(f, [j]))).toThrow(
+      /unsupported comparison/,
+    );
+  });
+
+  it('rejects a predicate column name carrying a quote, rather than escaping it', () => {
+    const f = twoFolderFixture();
+    const evil = mkItem(f.lines, 'Evil', { columnName: 'ID" FROM DUAL --' });
+    const j = f.join;
+    j.predicates = [
+      {
+        predicate: mkPredicate(j.join, 0, f.orderId, evil),
+        leftItem: f.orderId,
+        rightItem: evil,
+      },
+    ];
+    expect(() => fromClauseFor(twoFolderQuery(f, [j]))).toThrow(
+      /Invalid SQL identifier/,
+    );
+  });
+
+  it('refuses a join with NO predicate, naming the join (D-039)', () => {
+    const f = twoFolderFixture();
+    const j = f.join;
+    j.predicates = [];
+    try {
+      fromClauseFor(twoFolderQuery(f, [j]));
+      throw new Error('expected a refusal');
+    } catch (err) {
+      expect(err).toBeInstanceOf(SqlGenerationError);
+      const e = err as SqlGenerationError;
+      expect(e.code).toBe('JOIN_NO_PREDICATE');
+      // The join, not a folder. This is the whole point: the old behaviour
+      // dropped the join and blamed a folder for being unreachable.
+      expect(e.message).toContain('SALES -> LINES');
+      expect(e.details).toEqual({ joins: ['SALES -> LINES'] });
+    }
+  });
+
+  it('refuses a predicate whose item did not migrate, rather than shortening the clause', () => {
+    // Emitting only the component that resolved would turn `a = b AND c = d`
+    // into `a = b` — a WIDER join, returning more rows than the source did.
+    const f = twoFolderFixture();
+    const j = f.join;
+    j.predicates = [
+      {
+        predicate: mkPredicate(j.join, 0, f.orderId, f.lineOrderId),
+        leftItem: f.orderId,
+        rightItem: f.lineOrderId,
+      },
+      {
+        predicate: mkPredicate(j.join, 1, null, null),
+        leftItem: null,
+        rightItem: null,
+      },
+    ];
+    try {
+      fromClauseFor(twoFolderQuery(f, [j]));
+      throw new Error('expected a refusal');
+    } catch (err) {
+      const e = err as SqlGenerationError;
+      expect(e.code).toBe('JOIN_NO_PREDICATE');
+      expect(e.message).toContain('did not migrate');
+    }
+  });
+
+  it('a predicate-less join elsewhere in the business area does not affect a query that avoids it', () => {
+    // The refusal must fire where the join is USED, not where it is loaded.
+    // Refusing at load time would take down every single-folder map in a
+    // business area that happens to contain one broken join.
+    const f = twoFolderFixture();
+    const island = mkFolder('ISLAND');
+    const islandKey = mkItem(island, 'Island Key');
+    const broken = mkJoin(f.lines, f.lineOrderId, island, islandKey);
+    broken.predicates = [];
+
+    const def = mkDef({
+      items: [{ mapItem: mkMapItem(f.orderId), item: f.orderId, folder: f.sales }],
+      joins: [f.join, broken],
+      formulaItems: f.formulaItems,
+    });
+    expect(fromClauseFor(def).sql).toContain('FROM "APP"."SALES"');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 6. The derived join type reaching the emitted SQL
+// ---------------------------------------------------------------------------
+
+describe('buildFromClause — derived join type', () => {
+  it.each<[Partial<Join>, string]>([
+    [{ allowMasterNoDetail: false, allowDetailNoMaster: false }, 'INNER JOIN'],
+    [{ allowMasterNoDetail: true, allowDetailNoMaster: false }, 'LEFT OUTER JOIN'],
+    [{ allowMasterNoDetail: false, allowDetailNoMaster: true }, 'RIGHT OUTER JOIN'],
+  ])('%j emits %s', (flags, expected) => {
+    const f = twoFolderFixture();
+    const j = mkJoin(f.sales, f.orderId, f.lines, f.lineOrderId, flags);
+    expect(fromClauseFor(twoFolderQuery(f, [j])).sql).toContain(expected);
+  });
+
+  it('refuses both-outer before building any FROM clause at all (D-038)', () => {
+    const f = twoFolderFixture();
+    const j = mkJoin(f.sales, f.orderId, f.lines, f.lineOrderId, {
+      allowMasterNoDetail: true,
+      allowDetailNoMaster: true,
+    });
+    try {
+      fromClauseFor(twoFolderQuery(f, [j]));
+      throw new Error('expected a refusal');
+    } catch (err) {
+      const e = err as SqlGenerationError;
+      expect(e.code).toBe('JOIN_BOTH_OUTER');
+      expect(e.details).toEqual({ joins: ['SALES -> LINES'] });
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 7. Orientation regression — the estate's own folders (D-040)
+// ---------------------------------------------------------------------------
+
+/**
+ * Which side of a join is the master, carried by the live estate's own names.
+ *
+ * Measured, not inferred (Phase 0.3 Q1; raw output in
+ * `docs/master-plan/research/eul-probe-results.md`). `KEY_ID` 108451
+ * `M M111 -> M M111 1` is the ONLY join in that estate whose key is exactly
+ * unique on one side — `M_M111`, 1 830 rows over 1 830 distinct
+ * `(UE, PRODUTO, N_APOLICE)` tuples, which is what a master *is* — and that
+ * side sits on `FK_OBJ_ID_REMOTE`. Its partner `M_M111_1` has 216 rows over
+ * 94 keys. Three further joins (104698, 104706, 109828) put the heavier
+ * duplication on `KEY_OBJ_ID`, the last by 38x.
+ *
+ * So: `FK_OBJ_ID_REMOTE` -> master -> `joins.left_folder_id`;
+ * `KEY_OBJ_ID` -> detail -> `joins.right_folder_id`. `KEY_NAME` reads
+ * `master -> detail`, with `KEY_OBJ_ID` on the right of the arrow on all ten
+ * rows without exception.
+ *
+ * This test exists because an inversion does not error. It pushes the wrong
+ * side into the fan-trap rewrite and returns correct-looking wrong numbers.
+ */
+describe('join orientation — M M111 -> M M111 1 (D-040)', () => {
+  const masterFolder = mkFolder('M M111', { tableName: 'M_M111' });
+  const detailFolder = mkFolder('M M111 1', { tableName: 'M_M111_1' });
+  const masterKey = mkItem(masterFolder, 'N Apolice M', { columnName: 'N_APOLICE' });
+  const detailKey = mkItem(detailFolder, 'N Apolice D', { columnName: 'N_APOLICE' });
+
+  function estateDef(joins: MapDefinition['joins']): MapDefinition {
+    return mkDef({
+      items: [
+        {
+          mapItem: mkMapItem(masterKey),
+          item: masterKey,
+          folder: masterFolder,
+        },
+        {
+          mapItem: mkMapItem(detailKey, 1),
+          item: detailKey,
+          folder: detailFolder,
+        },
+      ],
+      joins,
+      formulaItems: [
+        { item: masterKey, folder: masterFolder },
+        { item: detailKey, folder: detailFolder },
+      ],
+    });
+  }
+
+  it('puts the master on left_folder_id and the detail on right_folder_id', () => {
+    const j = mkJoin(masterFolder, masterKey, detailFolder, detailKey);
+    expect(j.join.leftFolderId).toBe(masterFolder.id);
+    expect(j.join.rightFolderId).toBe(detailFolder.id);
+  });
+
+  it('a master-side outer join keeps the master rows — LEFT, detail side optional', () => {
+    // "Outer join on detail" returns all master rows that have no
+    // corresponding detail items. Rooted at the master, that is a LEFT join
+    // TO the detail. If the sides were inverted this would silently become a
+    // RIGHT join and drop the very rows the flag exists to keep.
+    const j = mkJoin(masterFolder, masterKey, detailFolder, detailKey, {
+      allowMasterNoDetail: true,
+    });
+    const sql = fromClauseFor(estateDef([j])).sql;
+    expect(sql).toContain('FROM "APP"."M_M111"');
+    expect(sql).toContain('LEFT OUTER JOIN "APP"."M_M111_1"');
+  });
+
+  it('flips to RIGHT when the same join is traversed from the detail side', () => {
+    // Same join, but the query names the detail's column first, so the BFS
+    // roots there. The emitted type must flip, or the outer side changes.
+    const j = mkJoin(masterFolder, masterKey, detailFolder, detailKey, {
+      allowMasterNoDetail: true,
+    });
+    const def = mkDef({
+      items: [
+        { mapItem: mkMapItem(detailKey), item: detailKey, folder: detailFolder },
+        { mapItem: mkMapItem(masterKey, 1), item: masterKey, folder: masterFolder },
+      ],
+      joins: [j],
+      formulaItems: [
+        { item: masterKey, folder: masterFolder },
+        { item: detailKey, folder: detailFolder },
+      ],
+    });
+    const sql = fromClauseFor(def).sql;
+    expect(sql).toContain('FROM "APP"."M_M111_1"');
+    expect(sql).toContain('RIGHT OUTER JOIN "APP"."M_M111"');
+  });
+});

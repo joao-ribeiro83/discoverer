@@ -380,7 +380,7 @@ The read layer has been rebuilt against this document. What changed:
 | --- | --- |
 | `types/eul-versions.ts` | Real `CORE_TABLES`; `EUL4_ONLY_TABLES` replaces the invented EUL5 markers; `EXP_TYPE`/`OBJ_TYPE` constants; `Join` is folder-to-folder; `HierarchyLevel` → `HierarchyNode` (tree + derived depth); `BusinessArea` loses `language`/`developerKey` |
 | `eul-version-detector.ts` | Marker is `<prefix>BAS`; identity reads `VERSIONS.VER_RELEASE`; the EUL5-marker warning became a retired-table check |
-| `eul-schema-adapter.ts` | Every `*_COLUMNS` spec re-derived; `readFolders` resolves the BA through `BA_OBJ_LINKS` and normalizes SOBJ/COBJ; `readItems` defaults to `CO`+`CI`; `readJoins` reads `KEY_CONS`; `readHierarchies` walks `HI_SEGMENTS`; `readGrants`/`readUsers` use `ACCESS_PRIVS` + `EUL_USERS`; new `probeColumns()` |
+| `eul-schema-adapter.ts` | Every `*_COLUMNS` spec re-derived; `readFolders` resolves the BA through `BA_OBJ_LINKS` and normalizes SOBJ/COBJ; `readItems` defaults to `CO`+`CI`; `readJoins` reads `KEY_CONS` plus the four cardinality flags and parses the `JP` predicate; `readHierarchies` walks `HI_SEGMENTS`; `readGrants`/`readUsers` use `ACCESS_PRIVS` + `EUL_USERS`; new `probeColumns()` |
 | `eul-reader.ts` | `CONDITION_EXP_TYPES`/`SECURITY_MANAGER_EXP_TYPES` emptied — `CO` was being read a second time and mislabelled as a condition |
 | `assessment.ts` | Orphan joins keyed to folders; calculated items count `CI`; folder types compared post-normalization |
 | `transform.ts` / `migration-runner.ts` | Joins carry folder ids; hierarchy levels come from node depth; workbook/EUL-wide grants reported and skipped |
@@ -398,7 +398,8 @@ whole read), unconfirmed columns go through `probeColumns()`, which asks
 
 | Table | Probed | If absent |
 | --- | --- | --- |
-| `KEY_CONS` | `KEY_ID`, `KEY_NAME`, `KEY_TYPE` | source id falls back to row index; type defaults to INNER |
+| `KEY_CONS` | `KEY_ID`, `KEY_NAME`, `FK_ONE_TO_ONE`, `FK_MSTR_NO_DETAIL`, `FK_DTL_NO_MASTER`, `FK_MANDATORY` | source id falls back to row index; every absent flag reads **false**, which is fanning + INNER + not-mandatory — the safe direction in all four cases |
+| `EXPRESSIONS` (for `JP`) | `JP_KEY_ID`, `EXP_FORMULA1` | no predicates are read at all, and every join then refuses **by name** at query time rather than being silently dropped |
 | `HIERARCHIES` | `HI_NAME`, `HI_DESCRIPTION`, `BA_ID` | synthesized name; hierarchy skipped if it has no BA (Neo requires one) |
 | `HI_NODES` | `HN_EXP_ID` / `HN_IT_EXP_ID`, `HN_NAME` | node keeps a null item; Neo skips that level with a warning |
 | `ACCESS_PRIVS` | `AP_ID`, `GD_DOC_ID`, `GBA_BA_ID`, `GO_OBJ_ID` | grant reported at level `EUL` |
@@ -418,8 +419,16 @@ whole read), unconfirmed columns go through `probeColumns()`, which asks
    they live in the workbook body, and that is where the migrator reads them.
 4. **The workbook body.** Answered: `DOC_DOCUMENT`, a `LONG RAW` holding the
    Discoverer container. See §3.6 and §7.
-5. **Item-level join keys.** `KEY_CONS` binds folders; if a real EUL carries
-   item columns, add them so Neo's nullable join item ids get populated.
+5. ~~**Item-level join keys.**~~ **Closed at Phase 3.2.** `KEY_CONS` has no
+   item columns and never will — the columns a join matches on live in its one
+   `EXPRESSIONS` row (`EXP_TYPE = 'JP'`, bound by `JP_KEY_ID`), as a token tree
+   in `EXP_FORMULA1`. `readJoins` parses that tree into `join_predicates`, one
+   row per column pair, and orients each pair by looking up each item's
+   `IT_OBJ_ID` against the join's two folders rather than trusting operand
+   order. A tree that is not an ANDed set of column comparisons yields no
+   components: the raw formula is kept verbatim on `joins.predicate_formula`
+   and the join refuses by name at query time. Half a predicate would be a
+   *wider* join than the source had.
 6. **`HIERARCHIES.BA_ID` does not exist.** Still open. The live EUL4
    `HIERARCHIES` has `HI_ID, HI_TYPE, HI_NAME, HI_DEVELOPER_KEY,
    HI_DESCRIPTION, HI_SYS_GENERATED, HI_EXT_HIERARCHY, DBH_DEFAULT,
