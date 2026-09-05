@@ -48,6 +48,7 @@ let baId: string;
 let mapId: string;
 let otherMapId: string;
 let execMapId: string;
+let planItemId: string;
 const DS_NAME = 'mx-exec-ds';
 
 async function createTestUser(email: string) {
@@ -143,6 +144,7 @@ beforeAll(async () => {
     })
     .returning();
   mapId = map!.id;
+  planItemId = item!.id;
   await db.insert(mapItems).values({ mapId, itemId: item!.id, displayOrder: 0 });
 
   const [otherMap] = await db
@@ -234,6 +236,77 @@ afterAll(async () => {
   await closeOraclePools();
   await cleanup();
   await app.close();
+});
+
+describe('POST /api/maps/plan', () => {
+  // D-117: the planner already emits a plan rather than a verdict, so the
+  // builder can ask what a canvas WOULD do before anything is run. Every
+  // assertion here is about that: an answer, no data source, no rows.
+  it('401s without a token', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/maps/plan',
+      payload: { items: [] },
+    });
+    expect(res.statusCode).toBe(401);
+  });
+
+  it('classifies a canvas without executing anything', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/maps/plan',
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload: { items: [{ itemId: planItemId, aggFunction: 'SUM' }] },
+    });
+
+    expect(res.statusCode).toBe(200);
+    // One folder carrying one measure: a deliberate flat plan, not a default.
+    expect(res.json().data).toMatchObject({
+      kind: 'FLAT',
+      decision: 'FLAT(SINGLE_FOLDER)',
+      branches: 0,
+    });
+
+    // Nothing ran: the plan endpoint touches no data source, so it writes no
+    // execution log row. (The folder above has none configured at all.)
+    const logged = await db
+      .select({ id: queryExecutionLog.id })
+      .from(queryExecutionLog)
+      .where(eq(queryExecutionLog.mapId, mapId));
+    expect(logged).toHaveLength(0);
+  });
+
+  it('reports a canvas with no aggregate as the flat path', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/maps/plan',
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload: { items: [{ itemId: planItemId }] },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().data.decision).toBe('FLAT(NO_MEASURES)');
+  });
+
+  it('answers an empty canvas without a database round trip', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/maps/plan',
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload: { items: [] },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().data.kind).toBe('FLAT');
+  });
+
+  it('400s on a malformed body rather than guessing', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/maps/plan',
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload: { items: [{ itemId: 'not-a-uuid' }] },
+    });
+    expect(res.statusCode).toBe(400);
+  });
 });
 
 describe('POST /api/maps/:id/execute', () => {
