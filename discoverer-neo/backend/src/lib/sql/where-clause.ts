@@ -61,6 +61,12 @@ export function buildWhereClause(
     def.parameters.map((p) => [p.bindName, p.name]),
   );
   const paramValues = options.parameterValues ?? {};
+  // Static-condition binds are numbered per call. The fan-trap rewrite calls
+  // this once per branch, so each branch prefixes its own — otherwise branch 2's
+  // `c0` would collide with branch 1's under a different value. Parameter binds
+  // keep the parameter's own name across branches, which is what makes one
+  // prompt fill every inline view that needs it.
+  const bindPrefix = options.bindPrefix ?? '';
   let staticBindCounter = 0;
 
   interface RenderedCondition {
@@ -111,7 +117,7 @@ export function buildWhereClause(
           `STATIC condition on "${item.name}" has no value`,
         );
       }
-      const base = `c${staticBindCounter++}`;
+      const base = validateBindName(`${bindPrefix}c${staticBindCounter++}`);
 
       if (op === 'IN') {
         const values = condition.value.split(',').map((v) => v.trim());
