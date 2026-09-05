@@ -1070,8 +1070,16 @@ describe('worksheet model', () => {
     const query = worksheet.queries[0]!;
     expect(query.number).toBe(1);
     expect(query.distinct).toBe(true);
+    // The axis/measure split, read from the request's two literal vectors —
+    // `0x0123` axis and `0x0124` measure (§7.8.3). It is the input the
+    // fan-trap guard's measure set is built from, and it is given by the
+    // workbook, never inferred (D-031), so the two lists are asserted as the
+    // disjoint sets they are rather than only counted.
     expect(query.axisItemRefs).toHaveLength(2); // Regiao + the hidden Taxa Cambio
     expect(query.measureItemRefs).toHaveLength(1);
+    expect(query.measureItemRefs[0]).toBe(worksheet.columns[1]!.itemElementRef);
+    expect(query.axisItemRefs).toContain(worksheet.columns[0]!.itemElementRef);
+    expect(query.axisItemRefs).not.toContain(query.measureItemRefs[0]);
     expect(query.sortRefs).toHaveLength(2);
     expect(query.filterRefs).toHaveLength(1);
     expect(query.joinRefs).toHaveLength(1);

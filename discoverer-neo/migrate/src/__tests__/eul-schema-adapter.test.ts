@@ -310,6 +310,73 @@ describe('unified read functions', () => {
       expect(created[0]?.name).toBe('Amount With Tax');
     });
 
+    // The Default aggregate — legacy-analysis §3.2 recorded its column as
+    // UNKNOWN and `readItems` hardcoded null, which is why `agg_function` was
+    // null on all 9 626 items. Phase 0.3's Q3 probe settled it: `IT_FUN_ID`, a
+    // foreign key to `FUNCTIONS.FUN_ID`, grouping 110 `Detail` / 1 `SUM` / null
+    // on the live EUL4. The fixture uses those exact ids.
+    describe('the Default aggregate (IT_FUN_ID)', () => {
+      function dbWithAggregates(): MockDb {
+        const db = eul4Db();
+        db.tables.EUL4_EXPRESSIONS = [
+          { ...db.tables.EUL4_EXPRESSIONS![0]!, IT_FUN_ID: 1 }, // SUM
+          { ...db.tables.EUL4_EXPRESSIONS![1]!, IT_FUN_ID: 110 }, // Detail
+          {
+            EXP_ID: 32,
+            IT_OBJ_ID: 20,
+            EXP_NAME: 'Account Code',
+            EXP_DESCRIPTION: null,
+            EXP_TYPE: 'CO',
+            IT_EXT_COLUMN: 'CODE_COMBINATION_ID',
+            EXP_DATA_TYPE: 'VARCHAR2',
+            IT_FORMAT_MASK: null,
+            IT_HEADING: null,
+            IT_FUN_ID: null, // the estate's 353 items with no default at all
+          },
+        ];
+        db.tables.EUL4_FUNCTIONS = [
+          ...db.tables.EUL4_FUNCTIONS!,
+          { FUN_ID: 1, FUN_NAME: 'SUM', FUN_DESCRIPTION: null },
+          { FUN_ID: 110, FUN_NAME: 'Detail', FUN_DESCRIPTION: null },
+        ];
+        return db;
+      }
+
+      it('resolves it through FUNCTIONS rather than storing the id', async () => {
+        const { adapter, execute } = await adapterFor(dbWithAggregates());
+        const items = await readItems(adapter, execute);
+
+        expect(items.map((i) => [i.sourceId, i.aggregation])).toEqual([
+          [30, 'SUM'],
+          [31, 'Detail'],
+          [32, null],
+        ]);
+      });
+
+      // `Detail` reaches this layer as `Detail`. Turning it into "no
+      // aggregation" is `normalizeAggregation`'s job — this layer reports what
+      // the EUL says, it does not decide what it means.
+      it('reports Detail as the EUL spells it, without interpreting it', async () => {
+        const { adapter, execute } = await adapterFor(dbWithAggregates());
+        const items = await readItems(adapter, execute);
+        expect(items.find((i) => i.sourceId === 31)?.aggregation).toBe('Detail');
+      });
+
+      // A column absent from the source must not reach the SELECT: one
+      // ORA-00904 kills the whole item read, and no offline source confirms
+      // the spelling on EUL5.
+      it('is probed — an EUL without the column still reads its items', async () => {
+        const { adapter, execute, db } = await adapterFor(eul4Db());
+        const items = await readItems(adapter, execute);
+
+        expect(items).toHaveLength(2);
+        expect(items.every((i) => i.aggregation === null)).toBe(true);
+        expect(db.executed.find((sql) => sql.includes('EUL4_EXPRESSIONS'))).not.toContain(
+          'IT_FUN_ID',
+        );
+      });
+    });
+
     it('never selects columns that do not exist on EXPRESSIONS', async () => {
       const { adapter, execute, db } = await adapterFor(eul4Db());
       const items = await readItems(adapter, execute);

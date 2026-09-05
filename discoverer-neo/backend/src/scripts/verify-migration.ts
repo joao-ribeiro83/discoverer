@@ -1,5 +1,5 @@
 /**
- * Run the four seam checks against an already-migrated database (D-070).
+ * Run the five seam checks against an already-migrated database (D-070).
  *
  *   npm run verify --workspace @discoverer-neo/backend
  *   npx tsx src/scripts/verify-migration.ts [--json] [--max-maps N] [--samples N]

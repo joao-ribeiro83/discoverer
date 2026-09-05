@@ -1,13 +1,14 @@
 /**
  * Post-commit verification of a migrated target database (D-070).
  *
- * Four seam checks — the ones a suite of components-against-their-own-fixtures
+ * Five seam checks — the ones a suite of components-against-their-own-fixtures
  * structurally cannot make (`AUDIT_TESTING_ASSESSMENT.md` §2 and §6):
  *
  *   1. `sql-generation`      every migrated map loads and generates SQL
  *   2. `formula-compile`     every calculated field compiles or is quarantined
  *   3. `referential-closure` every map reference resolves inside the query scope
  *   4. `reconciliation`      target counts match source, minus declared losses
+ *   5. `measure-set`         the estate has measures the fan-trap guard can see
  *
  * Runs AFTER the migration transaction commits, never inside it: a rollback
  * destroys the evidence needed to debug the failure, and one transaction over
@@ -18,7 +19,7 @@
  * `compileFormula` both live in the backend workspace, which depends on this
  * one and not the reverse; importing them here would be a dependency cycle.
  * `dn-migrate verify` therefore reports those seams SKIPPED, and the backend's
- * own `npm run verify` supplies both and runs all four. A SKIPPED seam never
+ * own `npm run verify` supplies both and runs all five. A SKIPPED seam never
  * counts as a pass.
  *
  * Output discipline (G-02): the reconciliation spans the whole estate, so a
@@ -31,7 +32,7 @@ import { sql } from 'drizzle-orm';
 import { EXPECTED_LOSS_ALLOWANCES, type ExpectedLossAllowance } from '../verify/expected-loss.js';
 
 /**
- * All four seams are raw SQL, so the verifier asks only for something that can
+ * All five seams are raw SQL, so the verifier asks only for something that can
  * run a statement. That admits both this workspace's `TargetDatabase` and the
  * backend's own drizzle handle, whose generic carries extra runtime-only
  * tables and would otherwise not be assignable.
@@ -48,7 +49,8 @@ export type SeamId =
   | 'sql-generation'
   | 'formula-compile'
   | 'referential-closure'
-  | 'reconciliation';
+  | 'reconciliation'
+  | 'measure-set';
 
 /** SKIPPED is not a pass — it means the seam could not be evaluated here. */
 export type SeamStatus = 'PASS' | 'FAIL' | 'SKIPPED';
@@ -441,6 +443,94 @@ export async function checkReferentialClosure(
 }
 
 // ---------------------------------------------------------------------------
+// Seam 5 — the measure set the fan-trap guard reads
+// ---------------------------------------------------------------------------
+
+/**
+ * The fan-trap guard's step 0 is `if |M| = 0: emit the flat plan, STOP`
+ * (legacy-analysis §1.11). `M` is the measures carrying an aggregate function.
+ * An estate where no map column has one classifies every query as `|M| = 0`,
+ * and the guard ships **present, unit-tested and structurally inert** — passing
+ * its own tests while never running on real data.
+ *
+ * That is the failure this seam exists to make loud, and it is not
+ * hypothetical: `agg_function` was null on all 25 964 map items before Phase
+ * 3.1, because `readItems` never selected `EXPRESSIONS.IT_FUN_ID`.
+ *
+ * Both halves of the split are asserted, because either one alone can be
+ * satisfied while the guard stays blind:
+ *
+ * - **the axis/measure split**, from the workbook's `0x0123`/`0x0124` vectors.
+ *   Without it every column looks like an axis.
+ * - **the aggregate**, from the EUL's Default aggregate. Without it a measure
+ *   is a column the guard cannot re-aggregate, so step 8 has nothing to key on.
+ *
+ * `measuresWithoutAggregate` is reported, never failed on. It is the estate's
+ * real shape rather than a defect: 8 152 of its items carry Oracle's `Detail`
+ * marker — explicitly *no* aggregation — and 353 carry no default at all. A
+ * measure column over one of those is correctly null, and defaulting it to
+ * `SUM` would turn a tracked gap into a wrong number.
+ */
+export async function checkMeasureSet(
+  db: VerifyDb,
+  options: VerifyOptions = {},
+): Promise<SeamResult> {
+  const name = 'the estate carries a non-empty measure set for the fan-trap guard';
+  const scope = mapScope(options.mapIdPrefix);
+
+  const [counts] = await rows(
+    db,
+    sql`SELECT
+          count(*)::int AS columns,
+          count(*) FILTER (WHERE mi.axis_type = 'AXIS')::int AS axis,
+          count(*) FILTER (WHERE mi.axis_type = 'MEASURE')::int AS measure,
+          count(*) FILTER (WHERE mi.axis_type = 'PAGE')::int AS page,
+          count(*) FILTER (WHERE mi.axis_type IS NULL)::int AS unclassified,
+          count(*) FILTER (WHERE mi.agg_function IS NOT NULL)::int AS with_aggregate,
+          count(*) FILTER (WHERE mi.axis_type = 'MEASURE' AND mi.agg_function IS NULL)::int
+            AS measures_without_aggregate,
+          count(DISTINCT mi.map_id) FILTER (WHERE mi.agg_function IS NOT NULL)::int
+            AS maps_with_a_measure
+        FROM map_items mi
+        JOIN maps ON maps.id = mi.map_id
+        WHERE maps.is_active AND ${scope}`,
+  );
+
+  const num = (row: Row | undefined, key: string): number => Number(row?.[key] ?? 0);
+
+  const metrics: Record<string, number> = {
+    columns: num(counts, 'columns'),
+    axis: num(counts, 'axis'),
+    measure: num(counts, 'measure'),
+    page: num(counts, 'page'),
+    unclassified: num(counts, 'unclassified'),
+    withAggregate: num(counts, 'with_aggregate'),
+    measuresWithoutAggregate: num(counts, 'measures_without_aggregate'),
+    mapsWithAMeasure: num(counts, 'maps_with_a_measure'),
+  };
+
+  const blockers: string[] = [];
+  if (metrics.columns === 0) {
+    blockers.push('no map columns to classify');
+  } else {
+    if (metrics.measure === 0) blockers.push('no column is on the measure vector');
+    if (metrics.withAggregate === 0) blockers.push('no column carries an aggregate function');
+  }
+
+  return {
+    id: 'measure-set',
+    name,
+    status: blockers.length === 0 ? 'PASS' : 'FAIL',
+    metrics,
+    findings: blockers,
+    reason:
+      blockers.length > 0
+        ? `the fan-trap guard would classify every query as |M| = 0: ${blockers.join('; ')}`
+        : undefined,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Seam 4 — source <-> target reconciliation
 // ---------------------------------------------------------------------------
 
@@ -532,6 +622,7 @@ export async function verifyMigration(
     await checkFormulaCompileRate(db, options),
     await checkReferentialClosure(db, options),
     await checkReconciliation(db, options),
+    await checkMeasureSet(db, options),
   ];
 
   return summarise(target, seams);
