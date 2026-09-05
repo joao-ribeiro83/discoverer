@@ -1,7 +1,7 @@
 # Verifying a migration
 
 A migration that finished is not a migration that worked. `dn-migrate verify`
-runs four checks against an already-migrated database and tells you which.
+runs five checks against an already-migrated database and tells you which.
 
 This exists because the alternative failed. Three separate mechanisms — a
 readiness score, a 1 654-test suite and a coverage report — all reported success
@@ -14,8 +14,8 @@ them ever looked at what the migration produced.
 npx dn-migrate verify --target postgres://user:pass@host:5432/discoverer_neo
 ```
 
-Two of the four checks need the SQL generator and the formula parser, which live
-in the backend workspace. For all four:
+Two of the five checks need the SQL generator and the formula parser, which live
+in the backend workspace. For all five:
 
 ```bash
 npm run verify --workspace @discoverer-neo/backend
@@ -116,6 +116,34 @@ declaration was left stale.
 `unexplainedAllowances` counts gaps that are recorded but not understood. Today
 that is 1: 78 of 138 business-area grants produced no target row, and nobody has
 established whether that is correct de-duplication or 78 people losing access.
+
+### 5. `measure-set` — can the fan-trap guard see anything to guard?
+
+```
+[PASS   ] measure-set — the estate carries a non-empty measure set for the fan-trap guard
+            columns=25962 axis=20014 measure=5920 page=26 unclassified=2
+            withAggregate=1760 measuresWithoutAggregate=4161 mapsWithAMeasure=402
+```
+
+The fan-trap guard's first step is *if there are no measures, emit the flat plan
+and stop* — fan traps are an aggregation defect, so a query with nothing
+aggregated cannot have one. An estate where no column carries an aggregate
+classifies **every** query that way. The guard would pass its own tests and
+never run on real data.
+
+That is not hypothetical: before Phase 3.1 `agg_function` was null on all 25 964
+map items, because the item read never selected `EXPRESSIONS.IT_FUN_ID`. Nothing
+could see it. This seam is what makes it visible.
+
+Both halves must be present, because either alone leaves the guard blind:
+`measure` is the split the workbook gives (`0x0123`/`0x0124`), and
+`withAggregate` is the EUL's Default aggregate on top of it. A zero in either
+fails the check.
+
+`measuresWithoutAggregate` is **reported, never failed on**. Oracle's `Detail` is
+the marker for *do not aggregate* and 8 152 of this estate's items carry it, so a
+null there is the source's own answer. Defaulting those to `SUM` would replace a
+tracked gap with a wrong number.
 
 ## Reading the bottom line
 

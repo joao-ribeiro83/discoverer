@@ -444,7 +444,7 @@ Load test setup (see `backend/src/__tests__/integration/`):
 npm run test:integration -- performance.test.ts --workspace=backend
 ```
 
-## The four seam tests
+## The five seam tests
 
 Every other suite here checks one component against its own fixtures. That is
 worth having, and it is not enough: in September 2026 this repository had 1 654
@@ -452,7 +452,7 @@ tests at 99.94% passing over an estate where 807 of 923 migrated worksheets
 could not produce SQL at all. No test spanned two components, so no test could
 see it.
 
-Four tests close that gap. They live in
+Five tests close that gap. They live in
 `backend/src/__tests__/integration/migration-seams.test.ts` and drive the shared
 verifier in `migrate/src/services/migration-verify.ts` — the same code
 `dn-migrate verify` runs against a real target.
@@ -463,6 +463,7 @@ verifier in `migrate/src/services/migration-verify.ts` — the same code
 | `formula-compile` | Does every calculated field compile, or carry a stated quarantine reason? | Formula support silently going backwards |
 | `referential-closure` | Does every reference resolve to an item, folder and data source in the map's scope? | Rows that satisfy every foreign key and still cannot run |
 | `reconciliation` | Do target counts match what the declared allowances say? | A regression disguised as a known gap |
+| `measure-set` | Does any map column carry an aggregate the fan-trap guard can see? | A guard that ships present, unit-tested and structurally inert |
 
 ### Two of them need the backend, and say so
 
@@ -470,7 +471,7 @@ verifier in `migrate/src/services/migration-verify.ts` — the same code
 `@discoverer-neo/core` and not the reverse. The verifier takes both as injected
 hooks. `dn-migrate verify` reports those seams **SKIPPED** — never PASS — and
 `npm run verify --workspace @discoverer-neo/backend` supplies both and runs all
-four. A SKIPPED seam is not a pass anywhere.
+five. A SKIPPED seam is not a pass anywhere.
 
 ### Declared baselines, not green lights
 
