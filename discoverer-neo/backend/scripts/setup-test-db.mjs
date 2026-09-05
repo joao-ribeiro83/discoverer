@@ -66,15 +66,16 @@ async function ensureDatabase() {
     if (rowCount === 0) {
       await admin.query(`CREATE DATABASE "${dbName}"`);
       console.log(`created ${dbName}`);
-    } else {
-      console.log(`${dbName} already exists`);
+      return true;
     }
+    console.log(`${dbName} already exists`);
+    return false;
   } finally {
     await admin.end();
   }
 }
 
-async function applyMigrations() {
+async function applyMigrations(isFresh) {
   const files = (await readdir(MIGRATIONS_DIR))
     .filter((f) => f.endsWith('.sql'))
     .sort(); // 0000_, 0001_, … lexicographic order is migration order
@@ -101,12 +102,27 @@ async function applyMigrations() {
           // Re-running migrations against an existing database is normal here,
           // so "already exists" is expected. Anything else is a real failure.
           const code = err?.code;
-          const benign =
+          let benign =
             code === '42P07' || // duplicate_table
             code === '42710' || // duplicate_object (type, constraint)
             code === '42701' || // duplicate_column
             code === '42P16' || // invalid_table_definition (PK already there)
             code === '23505'; // unique_violation on a seed-ish insert
+
+          // Replay-only: an early migration can name a column that a LATER one
+          // drops. `0000` adds a foreign key on `joins.left_item_id`; `0014`
+          // removes that column, because a join's columns moved to
+          // `join_predicates`. Replayed over an already-migrated database, 0000
+          // then fails on a column the database is correct not to have.
+          //
+          // Tolerated ONLY when the database already existed. On a fresh
+          // database the files run in order, so a statement naming a column
+          // that is not there yet is a genuine ordering bug in a new migration
+          // — and CI always starts fresh, which is where that must be caught.
+          if (!isFresh && (code === '42703' || code === '42704')) {
+            benign = true; // undefined_column / undefined_object
+          }
+
           if (!benign) {
             console.error(`\n${file} failed:\n  ${err.message}\n`);
             throw err;
@@ -121,7 +137,7 @@ async function applyMigrations() {
   }
 }
 
-await ensureDatabase();
+const isFresh = await ensureDatabase();
 console.log('applying migrations…');
-await applyMigrations();
+await applyMigrations(isFresh);
 console.log(`\ntest database ready: ${dbName}`);

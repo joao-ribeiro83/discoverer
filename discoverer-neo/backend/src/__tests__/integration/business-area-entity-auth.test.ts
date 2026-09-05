@@ -13,6 +13,7 @@ import {
   hierarchyLevels,
   userBusinessAreaGrants,
 } from '../../db/schema.js';
+import { FLAGS_FOR_JOIN_TYPE } from '../../services/join.service.js';
 import { hashPassword } from '../../lib/password.js';
 
 // ---------------------------------------------------------------------------
@@ -153,7 +154,7 @@ async function setupTestData() {
       name: 'Entity Auth Join',
       leftFolderId: testFolderId,
       rightFolderId: secondFolderId,
-      joinType: 'INNER',
+      ...FLAGS_FOR_JOIN_TYPE.INNER,
     })
     .returning();
   testJoinId = join!.id;

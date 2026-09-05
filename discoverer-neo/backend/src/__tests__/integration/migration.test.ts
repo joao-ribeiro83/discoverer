@@ -355,8 +355,14 @@ describe('startMigration', () => {
 
     expect(job.status).toBe('COMPLETED');
     expect(job.detectedVersion).toBe('EUL4');
-    // KEY_CONS has no confirmed join-type column, so joins default to INNER.
-    expect(fake.state.tables.joins[0]?.joinType).toBe('INNER');
+    // `KEY_CONS` has no join-type column at all — `KEY_TYPE` holds `FK`/`UK`,
+    // a constraint kind — so what is stored are the four DTD flags, and the
+    // join type is derived from two of them at query time (D-032).
+    expect(fake.state.tables.joins[0]).not.toHaveProperty('joinType');
+    expect(fake.state.tables.joins[0]).toMatchObject({
+      oneToOne: false,
+      allowDetailNoMaster: false,
+    });
   });
 
   it('honours a dry run — nothing is written', async () => {

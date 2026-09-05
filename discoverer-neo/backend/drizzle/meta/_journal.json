@@ -99,6 +99,13 @@
       "when": 1789300000000,
       "tag": "0013_join_predicates_and_flags",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1789300100000,
+      "tag": "0014_drop_stored_join_type",
+      "breakpoints": true
     }
   ]
 }

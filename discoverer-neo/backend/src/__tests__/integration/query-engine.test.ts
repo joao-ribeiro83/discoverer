@@ -14,6 +14,7 @@ import {
   folders,
   items,
   joins,
+  joinPredicates,
   maps,
   mapItems,
   mapConditions,
@@ -23,6 +24,10 @@ import {
   type Item,
   type Folder,
 } from '../../db/schema.js';
+import {
+  FLAGS_FOR_JOIN_TYPE,
+  type JoinType,
+} from '../../services/join.service.js';
 import {
   executeMap,
   executeMapAsync,
@@ -239,15 +244,25 @@ async function insertJoin(cfg: {
   leftItem: Item;
   right: Folder;
   rightItem: Item;
-  joinType?: 'INNER' | 'LEFT' | 'RIGHT' | 'FULL';
+  joinType?: JoinType;
 }): Promise<void> {
-  await db.insert(joins).values({
-    name: cfg.name,
-    leftFolderId: cfg.left.id,
-    rightFolderId: cfg.right.id,
+  // `join_type` is derived from the two outer-join flags, not stored (D-032),
+  // and the columns a join matches on live in `join_predicates`.
+  const [row] = await db
+    .insert(joins)
+    .values({
+      name: cfg.name,
+      leftFolderId: cfg.left.id,
+      rightFolderId: cfg.right.id,
+      ...FLAGS_FOR_JOIN_TYPE[cfg.joinType ?? 'INNER'],
+    })
+    .returning();
+  await db.insert(joinPredicates).values({
+    joinId: row!.id,
+    seq: 0,
     leftItemId: cfg.leftItem.id,
     rightItemId: cfg.rightItem.id,
-    joinType: cfg.joinType ?? 'INNER',
+    operator: '=',
   });
 }
 

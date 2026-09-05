@@ -11,6 +11,7 @@ import {
   folders,
   items,
   joins,
+  joinPredicates,
   mapItems,
   maps,
   securityPolicies,
@@ -22,6 +23,7 @@ import {
   type Item,
 } from '../../db/schema.js';
 import { hashPassword } from '../../lib/password.js';
+import { FLAGS_FOR_JOIN_TYPE, type JoinType } from '../../services/join.service.js';
 import { loadMapDefinition } from '../../services/sql-generator.js';
 import {
   defaultDeps,
@@ -309,6 +311,38 @@ async function mkItem(
   return item!;
 }
 
+/**
+ * A folder-to-folder join with one equality predicate.
+ *
+ * `join_type` is derived from the two outer-join flags (D-032) and the
+ * columns matched on live in `join_predicates`, so a join is two inserts.
+ */
+async function mkJoin(
+  name: string,
+  master: Folder,
+  masterItem: Item,
+  detail: Folder,
+  detailItem: Item,
+  joinType: JoinType,
+): Promise<void> {
+  const [row] = await db
+    .insert(joins)
+    .values({
+      name,
+      leftFolderId: master.id,
+      rightFolderId: detail.id,
+      ...FLAGS_FOR_JOIN_TYPE[joinType],
+    })
+    .returning();
+  await db.insert(joinPredicates).values({
+    joinId: row!.id,
+    seq: 0,
+    leftItemId: masterItem.id,
+    rightItemId: detailItem.id,
+    operator: '=',
+  });
+}
+
 async function mkMap(
   name: string,
   businessAreaId: string | null,
@@ -385,26 +419,12 @@ beforeAll(async () => {
 
   // SALES -> BRIDGE, INNER. The bridge FILTERS the result set, which is why
   // its policy has to apply even when the map draws no column from it.
-  await db.insert(joins).values({
-    name: 'SALES to BRIDGE',
-    leftFolderId: salesFolder.id,
-    leftItemId: salesLink.id,
-    rightFolderId: bridgeFolder.id,
-    rightItemId: bridgeLink.id,
-    joinType: 'INNER',
-  });
+  await mkJoin('SALES to BRIDGE', salesFolder, salesLink, bridgeFolder, bridgeLink, 'INNER');
 
   // SALES -> SECRETS, LEFT OUTER. Deliberately NOT row-changing: SECRETS
   // enters the security set because a formula puts its COLUMN in the SELECT
   // list, not because the join filters anything.
-  await db.insert(joins).values({
-    name: 'SALES to SECRETS',
-    leftFolderId: salesFolder.id,
-    leftItemId: salesLink.id,
-    rightFolderId: secretFolder.id,
-    rightItemId: secretLink.id,
-    joinType: 'LEFT',
-  });
+  await mkJoin('SALES to SECRETS', salesFolder, salesLink, secretFolder, secretLink, 'LEFT');
 
   // A calculated ITEM in SALES whose formula names an item in SECRETS. The map
   // selects only this item, so SECRETS appears in neither map_items nor

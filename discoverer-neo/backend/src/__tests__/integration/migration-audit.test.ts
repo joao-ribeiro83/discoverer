@@ -112,6 +112,7 @@ async function countPrefixed(table: TargetTable): Promise<number> {
     folder_business_areas: sql`SELECT count(*)::int AS c FROM folder_business_areas WHERE folder_id::text LIKE ${PREFIX + '%'}`,
     items: sql`SELECT count(*)::int AS c FROM items WHERE id::text LIKE ${PREFIX + '%'}`,
     joins: sql`SELECT count(*)::int AS c FROM joins WHERE id::text LIKE ${PREFIX + '%'}`,
+    join_predicates: sql`SELECT count(*)::int AS c FROM join_predicates WHERE id::text LIKE ${PREFIX + '%'}`,
     hierarchies: sql`SELECT count(*)::int AS c FROM hierarchies WHERE id::text LIKE ${PREFIX + '%'}`,
     hierarchy_levels: sql`SELECT count(*)::int AS c FROM hierarchy_levels WHERE id::text LIKE ${PREFIX + '%'}`,
     custom_functions: sql`SELECT count(*)::int AS c FROM custom_functions WHERE id::text LIKE ${PREFIX + '%'}`,
@@ -219,14 +220,23 @@ describe('EUL migration into REAL Postgres', () => {
       expect.arrayContaining(['Invoice Headers', 'Sales Summary']),
     );
 
+    // Outer-join-ness lives in `FK_MSTR_NO_DETAIL` / `FK_DTL_NO_MASTER`, which
+    // the reader now interprets — and the join type is derived from them
+    // rather than stored (D-032). The fixture sets master-no-detail, mirroring
+    // the estate's one real outer join.
     const migratedJoins = await db
-      .select({ joinType: joins.joinType })
+      .select({
+        oneToOne: joins.oneToOne,
+        allowMasterNoDetail: joins.allowMasterNoDetail,
+        allowDetailNoMaster: joins.allowDetailNoMaster,
+      })
       .from(joins)
       .where(like(sql`${joins.id}::text`, `${PREFIX}%`));
-    // KEY_CONS carries no confirmed join-type column, so joins default to
-    // INNER. Outer-join-ness lives in FK_MSTR_NO_DETAIL / FK_DTL_NO_MASTER,
-    // which the reader does not yet interpret.
-    expect(migratedJoins[0]?.joinType).toBe('INNER');
+    expect(migratedJoins[0]).toEqual({
+      oneToOne: false,
+      allowMasterNoDetail: true,
+      allowDetailNoMaster: false,
+    });
   });
 
   it('re-running into the now-populated target is rejected (fresh-target invariant)', async () => {

@@ -28,6 +28,9 @@ import type { EulVersion } from './types/eul-versions.js';
 import { isEulVersion } from './types/eul-versions.js';
 import type { TargetConnectionConfig } from './db/client.js';
 import { createTargetDb } from './db/client.js';
+import type { TargetDatabase } from './db/client.js';
+import { reimportJoins } from './services/join-reimport.js';
+import { createJoinReimportDb, joinSummary } from './services/join-reimport-db.js';
 import type { MigrationWriter } from './services/migration-writer.js';
 import { createMigrationWriter } from './services/migration-writer.js';
 import type {
@@ -574,6 +577,68 @@ export async function commandValidateMigration(
  *
  * Exit code 1 on COMPLETED_WITH_BLOCKERS, so a cutover runbook can gate on it.
  */
+/**
+ * `reimport-joins` — re-read `KEY_CONS` and rewrite the target's joins.
+ *
+ * A Neo database accepts exactly one full migration, so a modelling fix to the
+ * joins alone cannot be delivered by re-running `run`. This replaces every
+ * `joins` and `join_predicates` row from the source and touches nothing else.
+ *
+ * It is destructive to joins authored in Neo's own admin UI, because the
+ * target has no column recording where a join came from. `--dry-run` reports
+ * what would change first, and prints the same summary without writing.
+ */
+export async function commandReimportJoins(
+  source: EulSource,
+  db: TargetDatabase,
+  options: {
+    readOptions: ReadEulOptions;
+    version?: EulVersion;
+    dryRun: boolean;
+    json: boolean;
+  },
+  io: CliIO,
+): Promise<number> {
+  const result = await reimportJoins({
+    source,
+    db: createJoinReimportDb(db),
+    readOptions: options.readOptions,
+    version: options.version,
+    dryRun: options.dryRun,
+  });
+  const summary = options.dryRun ? [] : await joinSummary(db);
+
+  if (options.json) {
+    io.out(JSON.stringify({ ...result, summary }, null, 2));
+  } else {
+    io.out(`${options.dryRun ? 'DRY RUN — ' : ''}joins read: ${result.read}`);
+    io.out(`${pad('  written')}${result.written}`);
+    io.out(`${pad('  predicates')}${result.predicates}`);
+    io.out(`${pad('  replaced')}${result.joinsDeleted}`);
+    for (const s of result.skipped) {
+      io.out(`  SKIPPED ${s.name} (${s.sourceId}): ${s.reason}`);
+    }
+    // Named, not counted. A join that cannot generate SQL refuses by name at
+    // query time (D-039), so the operator should learn its name here first.
+    for (const j of result.withoutPredicate) {
+      io.out(`  NO PREDICATE ${j.name} (${j.sourceId}) — queries needing it will refuse`);
+    }
+    for (const row of summary) {
+      io.out(
+        `  ${row.name}: ${row.masterFolder} -> ${row.detailFolder}, ` +
+          `${row.predicates} predicate(s), ` +
+          `1:1=${row.oneToOne} outerDetail=${row.allowMasterNoDetail} ` +
+          `outerMaster=${row.allowDetailNoMaster} mandatory=${row.mandatory}`,
+      );
+    }
+  }
+
+  // A join with no predicate is a real gap, not a warning: it cannot run.
+  return result.withoutPredicate.length === 0 && result.skipped.length === 0
+    ? EXIT_OK
+    : EXIT_ERROR;
+}
+
 export async function commandVerify(
   db: VerifyDb,
   options: { json: boolean; sampleLimit?: number },
@@ -646,6 +711,10 @@ function parseArgs(argv: string[]) {
     .command('validate', 'Validate EUL referential integrity (add --target to reconcile a migration)')
     .command('run', 'Migrate the EUL into a Discoverer Neo Postgres database')
     .command('verify', 'Run the five seam checks against an already-migrated --target (D-070)')
+    .command(
+      'reimport-joins',
+      'Re-read KEY_CONS and rewrite --target joins and their predicates (Phase 3.2)',
+    )
     .demandCommand(1, 'Specify a command: analyze, export, validate, run, or verify')
     .strict()
     .exitProcess(false)
@@ -825,6 +894,21 @@ export async function runCli(argv: string[], deps: CliDeps = {}): Promise<number
           return await commandValidateMigration(source, await resolveWriter(), runOptions, io);
         }
         return await commandValidate(source, options, io);
+      case 'reimport-joins': {
+        const target = createTargetDb(await loadTargetConfig(targetArg, readFile));
+        writerCleanup.push(target.close);
+        return await commandReimportJoins(
+          source,
+          target.db,
+          {
+            readOptions: options,
+            version: versionOverride === 'auto' ? undefined : versionOverride,
+            dryRun: parsed.dryRun === true,
+            json: parsed.json === true,
+          },
+          io,
+        );
+      }
       case 'run':
         return await commandRun(
           source,

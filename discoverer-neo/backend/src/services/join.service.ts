@@ -29,7 +29,7 @@ export type JoinType = 'INNER' | 'LEFT' | 'RIGHT';
  * outer-join flags. This is the inverse, for the admin API, which still lets
  * a person pick a join type by name rather than set two booleans.
  */
-const FLAGS_FOR_JOIN_TYPE: Record<
+export const FLAGS_FOR_JOIN_TYPE: Record<
   JoinType,
   { allowMasterNoDetail: boolean; allowDetailNoMaster: boolean }
 > = {
@@ -155,7 +155,7 @@ export async function validateJoin(
 /**
  * Create a join. Validates that items belong to correct folders.
  */
-export async function create(data: CreateJoinInput): Promise<Join> {
+export async function create(data: CreateJoinInput): Promise<JoinWithDetails> {
   // Validate folders exist
   const [leftFolder] = await db
     .select({ id: folders.id })
@@ -203,7 +203,9 @@ export async function create(data: CreateJoinInput): Promise<Join> {
 
   const join = row as Join;
   await writePredicate(join.id, data.leftItemId ?? null, data.rightItemId ?? null);
-  return join;
+  // Read back rather than returning the inserted row: `joinType` and the
+  // predicate items are DERIVED, so the stored row alone is not the API shape.
+  return (await getById(join.id))!;
 }
 
 /**
@@ -278,7 +280,7 @@ async function readPredicateSummary(joinId: string): Promise<{
 export async function update(
   id: string,
   data: UpdateJoinInput,
-): Promise<Join | null> {
+): Promise<JoinWithDetails | null> {
   const [current] = await db
     .select()
     .from(joins)
@@ -324,17 +326,12 @@ export async function update(
     await writePredicate(id, leftItemId, rightItemId);
   }
 
-  if (Object.keys(values).length === 0) {
-    return current;
+  if (Object.keys(values).length > 0) {
+    await db.update(joins).set(values).where(eq(joins.id, id));
   }
 
-  const [row] = await db
-    .update(joins)
-    .set(values)
-    .where(eq(joins.id, id))
-    .returning();
-
-  return row ?? null;
+  // Same as `create`: the response shape is the derived one.
+  return getById(id);
 }
 
 /**
