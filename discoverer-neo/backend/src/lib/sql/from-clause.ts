@@ -3,6 +3,7 @@ import { SqlGenerationError, type MapDefinition } from '../../types/sql.js';
 import type { GenerationContext } from './context.js';
 import { spanningJoinPath } from './folder-set.js';
 import { quoteIdentifier } from './identifiers.js';
+import type { QueryPlan } from './query-plan.js';
 
 /**
  * Emitted SQL per derived join type. No `FULL`: the flag combination that
@@ -77,19 +78,36 @@ export interface FromClauseOptions {
    * Only used by the interim multi-folder refusal below.
    */
   hasAggregates?: boolean;
+  /**
+   * The query plan. **Required, and the only source of the folder set.**
+   *
+   * Until Phase 3.3 this clause read the folders back out of the generation
+   * context — an accumulator filled in as a side effect of whichever clause
+   * builder ran first — and took the first key as its FROM root. So the root
+   * folder was decided by clause ordering, and a planner placed ahead of
+   * generation had nothing to plan over.
+   */
+  plan: Pick<QueryPlan, 'fromFolderIds'>;
 }
 
 /**
- * Build the FROM clause. When the query spans multiple folders, a join path
- * connecting them is computed from the join metadata (BFS spanning tree,
- * pruned to the folders the query actually uses).
+ * Build the FLAT shape: the plan's folders, spanned by a join path computed
+ * from the join metadata (BFS spanning tree, pruned to those folders).
+ *
+ * **This function no longer decides anything (D-018).** It used to
+ * short-circuit on a single required folder before any other test ran, which
+ * made FLAT the emitter's default and left fan-trap detection with something to
+ * remember to override. Oracle's own model requires the opposite: *"a
+ * deliberate fast path with an explicit predicate, not a default that fan-trap
+ * detection has to remember to override."* One folder now simply produces a
+ * spanning tree with no edges.
  */
 export function buildFromClause(
   def: MapDefinition,
   ctx: GenerationContext,
-  options: FromClauseOptions = {},
+  options: FromClauseOptions,
 ): string {
-  const required = ctx.usedFolderIds();
+  const required = options.plan.fromFolderIds;
   if (required.length === 0) {
     throw new SqlGenerationError('The query references no folders');
   }
@@ -114,11 +132,6 @@ export function buildFromClause(
   }
 
   const rootId = required[0]!;
-  if (required.length === 1) {
-    const folder = ctx.getFolder(rootId);
-    return `FROM ${folderTableRef(folder)} ${ctx.aliasFor(rootId)}`;
-  }
-
   const { edges, unreachable } = spanningJoinPath(required, def.joins);
   if (unreachable.length > 0) {
     const folder = ctx.getFolder(unreachable[0]!);

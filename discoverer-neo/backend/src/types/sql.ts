@@ -1,3 +1,4 @@
+import type { QueryPlan } from '../lib/sql/query-plan.js';
 import type {
   Map,
   MapItem,
@@ -92,6 +93,14 @@ export interface SqlGenerationOptions {
   rowLimit?: number;
   /** OFFSET for pagination. */
   offset?: number;
+  /**
+   * A plan already computed for this definition. Supplied by callers that plan
+   * first — the execution service (which needs `plan.folderSet` for row-level
+   * security) and `POST /api/maps/plan`. Omit it and the generator plans for
+   * itself; passing a plan built from a DIFFERENT definition is a bug the
+   * folder-set check in `aliasFor` will catch.
+   */
+  plan?: QueryPlan;
 }
 
 /**
@@ -256,7 +265,13 @@ export type RefusalCode =
   /** A join the query needs carries no usable predicate (D-039). */
   | 'JOIN_NO_PREDICATE'
   /** A join sets both outer-join flags, which 4.1 could not express (D-038). */
-  | 'JOIN_BOTH_OUTER';
+  | 'JOIN_BOTH_OUTER'
+  /**
+   * The fan-trap planner refused (§1.5 R1-R4, or a measure that cannot
+   * re-aggregate across the fan). `details.rule` names which, and
+   * `details.folders` names the folders — the UI translates from the rule.
+   */
+  | 'FAN_TRAP';
 
 export class SqlGenerationError extends Error {
   constructor(

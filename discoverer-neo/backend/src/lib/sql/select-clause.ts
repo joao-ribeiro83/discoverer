@@ -1,3 +1,4 @@
+import type { Item, MapItem } from '../../db/schema.js';
 import {
   SqlGenerationError,
   type GeneratedColumn,
@@ -56,6 +57,30 @@ export interface SelectClauseResult {
  * as SQL. A total may still name a hidden calculation — `totals.ts` resolves
  * it from the definition, not from this list.
  */
+/**
+ * The aggregate a selected column actually carries, or '' when it is a
+ * grouping column.
+ *
+ * `items.agg_function` is the EUL item's *default* aggregation, which
+ * Discoverer applies when the item is used as a measure. A column the worksheet
+ * placed on the axis is a grouping column, so that default does not apply to it
+ * — otherwise a migrated break column would arrive as `SUM(REGION)`, and the
+ * group sort ORDER BY would sort an aggregate. An aggregate set on the map item
+ * itself is a deliberate choice and still wins; `axis_type` is null on every map
+ * authored in Neo, which therefore behaves exactly as before.
+ *
+ * **The planner's measure set `M` and this SELECT list must agree**, or the
+ * guard analyses a query the emitter does not write. So they read it here.
+ */
+export function effectiveAggregate(
+  mapItem: Pick<MapItem, 'aggFunction' | 'axisType'>,
+  item: Pick<Item, 'aggFunction'>,
+): string {
+  const defaultAgg = mapItem.axisType === 'AXIS' ? null : item.aggFunction;
+  const agg = (mapItem.aggFunction ?? defaultAgg ?? '').trim().toUpperCase();
+  return agg === 'NONE' || agg === 'DETAIL' ? '' : agg;
+}
+
 export function buildSelectClause(
   def: MapDefinition,
   ctx: GenerationContext,
@@ -85,17 +110,8 @@ export function buildSelectClause(
     let expr = ctx.itemExpression(item, folder);
     let isAggregate = false;
 
-    // `items.agg_function` is the EUL item's *default* aggregation, which
-    // Discoverer applies when the item is used as a measure. A column the
-    // worksheet placed on the axis is a grouping column, so that default does
-    // not apply to it — otherwise a migrated break column would arrive as
-    // `SUM(REGION)`, and the group sort ORDER BY would sort an aggregate.
-    // An aggregate set on the map item itself is a deliberate choice and still
-    // wins; `axis_type` is null on every map authored in Neo, which therefore
-    // behaves exactly as before.
-    const defaultAgg = mapItem.axisType === 'AXIS' ? null : item.aggFunction;
-    const agg = (mapItem.aggFunction ?? defaultAgg ?? '').trim().toUpperCase();
-    if (agg && agg !== 'NONE' && agg !== 'DETAIL') {
+    const agg = effectiveAggregate(mapItem, item);
+    if (agg) {
       if (!AGGREGATE_FUNCTIONS.has(agg)) {
         throw new SqlGenerationError(
           `Unsupported aggregate function "${agg}" on item "${item.name}"`,
