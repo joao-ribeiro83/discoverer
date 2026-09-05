@@ -167,6 +167,20 @@ export function mockExecutor(db: MockDb): OracleExecutor {
       );
       result = rows.filter((row) => wanted.has(dbString(row.EXP_TYPE)));
     }
+    // `readJoinPredicates` selects the single `JP` row per join.
+    if (lower.includes('exp_type = :jp') && binds) {
+      const wanted = dbString(binds.jp);
+      result = rows.filter((row) => dbString(row.EXP_TYPE) === wanted);
+    }
+    // `readItemFolders` resolves the items a join predicate names.
+    if (lower.includes('exp_id in') && binds) {
+      const wanted = new Set(
+        Object.entries(binds)
+          .filter(([k]) => /^e\d+$/.test(k))
+          .map(([, v]) => Number(v)),
+      );
+      result = result.filter((row) => wanted.has(Number(row.EXP_ID)));
+    }
 
     // Return copies so tests can't accidentally mutate fixture rows.
     return Promise.resolve(result.map((row) => ({ ...row })));
@@ -336,15 +350,44 @@ export function eul5Db(): MockDb {
           IT_FORMAT_MASK: null,
           IT_HEADING: null,
         },
+        // The join's predicate. `EXP_TYPE = 'JP'` is the third and last value
+        // the live EUL4 uses; the row binds through `JP_KEY_ID`, and its
+        // `IT_OBJ_ID`/`IT_EXT_COLUMN` are null exactly as they are on all ten
+        // live rows.
+        //
+        // The operands are written DETAIL-first (`[6,300]` is on folder 200,
+        // the `KEY_OBJ_ID` side) so the reader has to reorder them onto the
+        // master/detail axis rather than trusting token order.
+        {
+          EXP_ID: 303,
+          IT_OBJ_ID: null,
+          EXP_NAME: 'Predicado de Junção',
+          EXP_DESCRIPTION: null,
+          EXP_TYPE: 'JP',
+          JP_KEY_ID: 400,
+          EXP_FORMULA1: '[1,81]([6,300],[6,302])',
+          IT_EXT_COLUMN: null,
+          EXP_DATA_TYPE: 'NUMBER',
+          IT_FORMAT_MASK: null,
+          IT_HEADING: null,
+        },
       ],
       // Folder-to-folder join. KEY_ID is included here so the probe finds it;
       // drop it from a fixture to exercise the "no KEY_ID" fallback.
+      //
+      // `FK_MSTR_NO_DETAIL = 1` mirrors the one real outer join in the live
+      // estate (`109828 M M32 -> M M32 1`), so the fixture exercises a derived
+      // LEFT rather than only the INNER default.
       EUL5_KEY_CONS: [
         {
           KEY_ID: 400,
           KEY_OBJ_ID: 200,
           FK_OBJ_ID_REMOTE: 201,
           KEY_DESCRIPTION: 'Invoices to Summary',
+          FK_ONE_TO_ONE: 0,
+          FK_MSTR_NO_DETAIL: 1,
+          FK_DTL_NO_MASTER: 0,
+          FK_MANDATORY: 1,
         },
       ],
       EUL5_HIERARCHIES: [

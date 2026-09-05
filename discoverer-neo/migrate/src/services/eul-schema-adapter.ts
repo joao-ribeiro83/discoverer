@@ -43,10 +43,17 @@ import type {
 import {
   EXP_TYPE_CREATED_ITEM,
   EXP_TYPE_DATABASE_ITEM,
+  EXP_TYPE_JOIN_PREDICATE,
   FOLDER_TYPE_COMPLEX,
   FOLDER_TYPE_SIMPLE,
   VERSION_FEATURES,
 } from '../types/eul-versions.js';
+// A `JP` predicate is written in the same token language as a workbook
+// condition — `[1,81](a,b)` for `=`, `[1,98](…)` for `AND`, `[6,n]` for an
+// item — so it is read with the same parser rather than a second one. The
+// only difference is what `[6,n]` names: an `EXPRESSIONS.EXP_ID` here, a
+// workbook element id there.
+import { parseConditionTree, type ConditionNode } from './workbook-parser.js';
 
 // ---------------------------------------------------------------------------
 // Column specs (canonical = EUL5 shape)
@@ -158,8 +165,27 @@ const JOIN_COLUMNS: ColumnSpec[] = [
   { name: 'KEY_DESCRIPTION', type: 'string', required: false, mapsTo: 'description', defaultValue: null },
 ];
 
-/** `KEY_CONS` columns to probe for — absent ones are simply not selected. [?] */
-const JOIN_OPTIONAL_COLUMNS = ['KEY_ID', 'KEY_NAME', 'KEY_TYPE'] as const;
+/**
+ * `KEY_CONS` columns to probe for — absent ones are simply not selected.
+ *
+ * The four `FK_*` flags are the DTD's `OneToOne`, `AllowMasterNoDetail`,
+ * `AllowDetailNoMaster` and `Mandatory` (`EUL.dtd:197-200`), confirmed present
+ * and populated on all ten live rows by Phase 0.3's Q2. They are probed rather
+ * than required because an absent column would take the whole join read down
+ * with an ORA-00904, and because they are unconfirmed on EUL5.
+ *
+ * `KEY_TYPE` is deliberately NOT read. It was mapped to `joinType` until Phase
+ * 3.2, but its live domain is `FK`/`UK` — a *constraint kind*. The join type
+ * comes from the two outer-join flags and is derived, not stored (D-032).
+ */
+const JOIN_OPTIONAL_COLUMNS = [
+  'KEY_ID',
+  'KEY_NAME',
+  'FK_ONE_TO_ONE',
+  'FK_MSTR_NO_DETAIL',
+  'FK_DTL_NO_MASTER',
+  'FK_MANDATORY',
+] as const;
 
 /**
  * `HIERARCHIES` — the drill path itself. PK is `HI_ID`, not `HIER_ID`.
@@ -701,10 +727,184 @@ export async function readItems(
   }));
 }
 
-/** EUL4's single OUTER join type normalizes to LEFT (reference §3.4). */
-function normalizeJoinType(joinType: unknown): string {
-  const t = dbString(joinType ?? 'INNER').toUpperCase();
-  return t === 'OUTER' ? 'LEFT' : t;
+/**
+ * `EUL4_FUNCTIONS.FUN_ID` → the six comparison operators a join predicate may
+ * use (`9.0.4/B10270_01.pdf` p. 24-91, the Join Wizard's verbatim list).
+ *
+ * A CLOSED table. A `[1,n]` at a comparison position whose `n` is not here is
+ * not an operator to pass through — it means the tree is something other than
+ * an ANDed set of column comparisons, and the whole predicate is refused
+ * rather than half-read (D-058).
+ *
+ * `104` (`!=`) and `105` (`^=`) are Oracle's own spellings of `<>` — the same
+ * operator, not an approximation of it — so they normalize onto `<>`.
+ */
+const JOIN_PREDICATE_OPERATORS: Record<number, string> = {
+  81: '=',
+  82: '<>',
+  83: '>',
+  84: '<',
+  85: '<=',
+  86: '>=',
+  104: '<>',
+  105: '<>',
+};
+
+/** `AND` (`FUN_FUNCTION_TYPE` 3) — the n-ary combiner of a multi-column join. */
+const FUN_ID_AND = 98;
+/** `()` — a bracket node, transparent to the predicate's shape. */
+const FUN_ID_BRACKET = 106;
+
+/** One comparison lifted out of a `JP` token tree, still in token order. */
+interface RawJoinPredicate {
+  leftExpId: number;
+  rightExpId: number;
+  operator: string;
+}
+
+/**
+ * Decompose a `JP` token tree into its column comparisons.
+ *
+ * The grammar accepted is deliberately narrow: an optional n-ary `AND` over
+ * comparison nodes, each comparing exactly two item references. Everything
+ * else — a literal, a function call, a parameter, an `OR`, a nested
+ * arithmetic expression — returns null, and the join then carries no
+ * predicate and refuses by name at generation time (D-039). Emitting the part
+ * that was understood would produce a shorter condition than the source had,
+ * and a shorter join condition returns MORE rows, not fewer.
+ *
+ * Returns null rather than throwing: one undecodable join must not fail the
+ * whole EUL read.
+ */
+export function parseJoinPredicate(formula: string | null): RawJoinPredicate[] | null {
+  const { tree } = parseConditionTree(formula);
+  if (!tree) return null;
+
+  const unwrap = (node: ConditionNode): ConditionNode =>
+    node.type === 'call' && node.code === FUN_ID_BRACKET && node.args.length === 1
+      ? unwrap(node.args[0]!)
+      : node;
+
+  const comparison = (node: ConditionNode): RawJoinPredicate | null => {
+    const n = unwrap(node);
+    if (n.type !== 'call') return null;
+    const operator = JOIN_PREDICATE_OPERATORS[n.code];
+    if (!operator || n.args.length !== 2) return null;
+    const [left, right] = [unwrap(n.args[0]!), unwrap(n.args[1]!)];
+    if (left.type !== 'item' || right.type !== 'item') return null;
+    return { leftExpId: left.elementId, rightExpId: right.elementId, operator };
+  };
+
+  const root = unwrap(tree);
+  const nodes =
+    root.type === 'call' && root.code === FUN_ID_AND ? root.args : [root];
+  if (nodes.length === 0) return null;
+
+  const parsed = nodes.map(comparison);
+  return parsed.every((p): p is RawJoinPredicate => p !== null) ? parsed : null;
+}
+
+/**
+ * Every join's predicate, keyed by `KEY_CONS.KEY_ID`.
+ *
+ * One `EXPRESSIONS` row per join — Phase 0.3 Q0 measured exactly ten `JP`
+ * rows against ten `KEY_CONS` rows, one each — so a multi-column join is a
+ * compound formula inside a single row, never several rows. The components
+ * come from parsing `EXP_FORMULA1`; they cannot be read off separate rows.
+ *
+ * Degrades to an empty map when `JP_KEY_ID` or `EXP_FORMULA1` is absent, or
+ * the read fails. A join without a predicate is a loud refusal later, which is
+ * the point — it is never a silently dropped join.
+ */
+async function readJoinPredicates(
+  execute: OracleExecutor,
+  adapter: EulSchemaAdapter,
+): Promise<Map<number, { formula: string | null; components: RawJoinPredicate[] }>> {
+  const byKeyId = new Map<
+    number,
+    { formula: string | null; components: RawJoinPredicate[] }
+  >();
+  const present = await probeColumns(
+    execute,
+    adapter.version.owner,
+    adapter.getTableName('EXPRESSIONS'),
+    ['JP_KEY_ID', 'EXP_FORMULA1'],
+  );
+  if (!present.has('JP_KEY_ID') || !present.has('EXP_FORMULA1')) return byKeyId;
+
+  try {
+    const rows = await readEntity(
+      execute,
+      adapter,
+      'EXPRESSIONS',
+      [
+        { name: 'JP_KEY_ID', type: 'number', required: true, mapsTo: 'keyId', existsInSource: true },
+        { name: 'EXP_FORMULA1', type: 'string', required: false, mapsTo: 'formula', defaultValue: null, existsInSource: true },
+      ],
+      {
+        where: 'EXP_TYPE = :jp',
+        binds: { jp: EXP_TYPE_JOIN_PREDICATE },
+        orderBy: 'JP_KEY_ID',
+      },
+    );
+    for (const row of rows) {
+      const keyId = row.keyId as number | null;
+      if (keyId === null) continue;
+      const formula = (row.formula as string | null) ?? null;
+      byKeyId.set(keyId, {
+        formula,
+        components: parseJoinPredicate(formula) ?? [],
+      });
+    }
+  } catch {
+    // An unreadable JP read costs the predicates, not the join read. Every
+    // join then refuses by name, which is diagnosable; a failed read is not.
+  }
+  return byKeyId;
+}
+
+/**
+ * `EXPRESSIONS.EXP_ID` → `IT_OBJ_ID`, for the items a join predicate names.
+ *
+ * Orientation is settled by measurement, not by token order: each side of a
+ * comparison is placed on master or detail by looking up which folder its item
+ * belongs to. Nothing in the token language says the left operand is the
+ * master, and getting it backwards is invisible — it produces correct-looking
+ * wrong numbers rather than an error.
+ */
+async function readItemFolders(
+  execute: OracleExecutor,
+  adapter: EulSchemaAdapter,
+  expIds: number[],
+): Promise<Map<number, number>> {
+  const byExpId = new Map<number, number>();
+  if (expIds.length === 0) return byExpId;
+  const binds: Record<string, unknown> = {};
+  const placeholders = expIds.map((id, i) => {
+    binds[`e${i}`] = id;
+    return `:e${i}`;
+  });
+  try {
+    const rows = await readEntity(
+      execute,
+      adapter,
+      'EXPRESSIONS',
+      [
+        { name: 'EXP_ID', type: 'number', required: true, mapsTo: 'expId', existsInSource: true },
+        { name: 'IT_OBJ_ID', type: 'number', required: false, mapsTo: 'folderId', defaultValue: null, existsInSource: true },
+      ],
+      { where: `EXP_ID IN (${placeholders.join(', ')})`, binds },
+    );
+    for (const row of rows) {
+      const expId = row.expId as number | null;
+      const folderId = row.folderId as number | null;
+      if (expId !== null && folderId !== null) byExpId.set(expId, folderId);
+    }
+  } catch {
+    // Unresolvable folders leave every component unoriented, and the join
+    // refuses rather than guessing which side is which.
+  }
+  return byExpId;
 }
 
 /**
@@ -735,7 +935,10 @@ export async function readJoins(
     ...optionalMappings(present, [
       { name: 'KEY_ID', type: 'number', mapsTo: 'sourceId' },
       { name: 'KEY_NAME', type: 'string', mapsTo: 'name' },
-      { name: 'KEY_TYPE', type: 'string', mapsTo: 'joinType' },
+      { name: 'FK_ONE_TO_ONE', type: 'number', mapsTo: 'oneToOne' },
+      { name: 'FK_MSTR_NO_DETAIL', type: 'number', mapsTo: 'allowMasterNoDetail' },
+      { name: 'FK_DTL_NO_MASTER', type: 'number', mapsTo: 'allowDetailNoMaster' },
+      { name: 'FK_MANDATORY', type: 'number', mapsTo: 'mandatory' },
     ]),
   ];
 
@@ -743,11 +946,24 @@ export async function readJoins(
     orderBy: present.has('KEY_ID') ? 'KEY_ID' : 'KEY_OBJ_ID',
   });
 
+  const predicatesByKeyId = await readJoinPredicates(execute, adapter);
+  const referencedExpIds = [
+    ...new Set(
+      [...predicatesByKeyId.values()].flatMap((p) =>
+        p.components.flatMap((c) => [c.leftExpId, c.rightExpId]),
+      ),
+    ),
+  ];
+  const folderByExpId = await readItemFolders(execute, adapter, referencedExpIds);
+
   return rows.map((row, idx) => {
     const master = (row.masterFolderId as number | null) ?? null;
     const detail = (row.detailFolderId as number | null) ?? null;
+    const sourceId = (row.sourceId as number | null) ?? idx;
+    const predicate = predicatesByKeyId.get(sourceId);
+
     return {
-      sourceId: (row.sourceId as number | null) ?? idx,
+      sourceId,
       name:
         (row.name as string | null) ??
         (row.description as string | null) ??
@@ -755,12 +971,75 @@ export async function readJoins(
       description: (row.description as string | null) ?? null,
       masterFolderId: master,
       detailFolderId: detail,
-      joinType: normalizeJoinType(row.joinType),
-      // Item-level key columns are not confirmed offline; folder-level is
-      // enough for Neo, whose join item ids are nullable.
-      components: [] as JoinComponent[],
+      // `FK_ONE_TO_ONE` absent or null means one-to-many, which is
+      // "assume fanning" (D-033) — the safe direction, and the one Oracle's
+      // own default takes.
+      oneToOne: dbFlag(row.oneToOne),
+      allowMasterNoDetail: dbFlag(row.allowMasterNoDetail),
+      allowDetailNoMaster: dbFlag(row.allowDetailNoMaster),
+      mandatory: dbFlag(row.mandatory),
+      predicateFormula: predicate?.formula ?? null,
+      components: orientComponents(
+        predicate?.components ?? [],
+        master,
+        folderByExpId,
+      ),
       createdBy: null,
       createdAt: null,
+    };
+  });
+}
+
+/** A `NUMBER` flag column: 1 is true, everything else (0, null) is false. */
+function dbFlag(raw: unknown): boolean {
+  if (typeof raw === 'number') return raw === 1;
+  if (typeof raw === 'string') return raw.trim() === '1';
+  return false;
+}
+
+/**
+ * The operator that means the same thing with its operands swapped.
+ *
+ * Only `=` and `<>` are symmetric. `a < b` is not `b < a` — it is `b > a` —
+ * so a component reordered onto the master/detail axis must have its operator
+ * reversed with it, or the condition silently changes meaning.
+ */
+const REVERSED_OPERATOR: Record<string, string> = {
+  '=': '=',
+  '<>': '<>',
+  '<': '>',
+  '>': '<',
+  '<=': '>=',
+  '>=': '<=',
+};
+
+/**
+ * Put each comparison's two items on the master and detail sides, by folder.
+ *
+ * The token tree's operand order carries no orientation of its own — nothing
+ * in the language says the left operand is the master — so the side is
+ * decided by looking up which folder each item belongs to. A component whose
+ * items cannot be placed (neither is on the master folder, or both are) keeps
+ * its token order. The row exists either way, so the predicate always keeps
+ * its true width and can never silently shorten.
+ */
+function orientComponents(
+  raw: RawJoinPredicate[],
+  masterFolderId: number | null,
+  folderByExpId: Map<number, number>,
+): JoinComponent[] {
+  return raw.map((c, sequence) => {
+    const leftFolder = folderByExpId.get(c.leftExpId);
+    const rightFolder = folderByExpId.get(c.rightExpId);
+    const swap =
+      masterFolderId !== null &&
+      rightFolder === masterFolderId &&
+      leftFolder !== masterFolderId;
+    return {
+      masterItemId: swap ? c.rightExpId : c.leftExpId,
+      detailItemId: swap ? c.leftExpId : c.rightExpId,
+      operator: swap ? (REVERSED_OPERATOR[c.operator] ?? c.operator) : c.operator,
+      sequence,
     };
   });
 }

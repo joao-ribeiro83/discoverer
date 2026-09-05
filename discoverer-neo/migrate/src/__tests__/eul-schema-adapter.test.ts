@@ -409,11 +409,154 @@ describe('unified read functions', () => {
         masterFolderId: 201,
         description: 'Invoices to Summary',
       });
-      // Joins bind folders; item-level keys are unconfirmed and stay empty.
-      expect(joins[0]?.components).toEqual([]);
       // And it must actually query KEY_CONS, not a fabricated JOINS table.
       expect(db.executed.some((sql) => sql.includes('EUL5_KEY_CONS'))).toBe(true);
       expect(db.executed.some((sql) => /EUL5_JOINS|EUL5_JOI_COMP/.test(sql))).toBe(false);
+    });
+
+    it('reads the four cardinality flags, and defaults an absent one to false', async () => {
+      const { adapter, execute } = await adapterFor(eul5Db());
+      const joins = await readJoins(adapter, execute);
+
+      // The fixture mirrors the live estate's one real outer join
+      // (`109828 M M32 -> M M32 1`): master-no-detail set, the rest clear.
+      expect(joins[0]).toMatchObject({
+        oneToOne: false,
+        allowMasterNoDetail: true,
+        allowDetailNoMaster: false,
+        mandatory: true,
+      });
+    });
+
+    it('treats an absent flag column as false — that is "assume fanning" (D-033)', async () => {
+      const db = eul5Db();
+      db.tables.EUL5_KEY_CONS = (db.tables.EUL5_KEY_CONS ?? []).map((row) => {
+        const {
+          FK_ONE_TO_ONE: _a,
+          FK_MSTR_NO_DETAIL: _b,
+          FK_DTL_NO_MASTER: _c,
+          FK_MANDATORY: _d,
+          ...rest
+        } = row;
+        return rest;
+      });
+      const { adapter, execute } = await adapterFor(db);
+      const joins = await readJoins(adapter, execute);
+
+      // Every default is the safe one: fanning, INNER, not mandatory. An
+      // unknown one-to-one must never read as "safe to aggregate over".
+      expect(joins[0]).toMatchObject({
+        oneToOne: false,
+        allowMasterNoDetail: false,
+        allowDetailNoMaster: false,
+        mandatory: false,
+      });
+    });
+
+    describe('the JP predicate', () => {
+      it('reads EXP_TYPE=JP and binds it to its join through JP_KEY_ID', async () => {
+        const { adapter, execute } = await adapterFor(eul5Db());
+        const joins = await readJoins(adapter, execute);
+
+        expect(joins[0]?.predicateFormula).toBe('[1,81]([6,300],[6,302])');
+        expect(joins[0]?.components).toHaveLength(1);
+      });
+
+      /**
+       * Orientation regression for the PREDICATE, distinct from the folder
+       * orientation tested below.
+       *
+       * The fixture writes the predicate DETAIL-first — `[6,300]` is on folder
+       * 200, which is `KEY_OBJ_ID` and therefore the detail. Nothing in the
+       * token language marks a side, so the reader must place each item by
+       * looking up its `IT_OBJ_ID`, not by trusting the operand order. Getting
+       * this backwards does not error; it feeds the wrong side into the
+       * fan-trap rewrite later.
+       */
+      it('places each operand by its folder, not by its position in the tree', async () => {
+        const { adapter, execute } = await adapterFor(eul5Db());
+        const joins = await readJoins(adapter, execute);
+
+        expect(joins[0]?.components[0]).toEqual({
+          // 302 lives on folder 201 = FK_OBJ_ID_REMOTE = the MASTER.
+          masterItemId: 302,
+          // 300 lives on folder 200 = KEY_OBJ_ID = the DETAIL.
+          detailItemId: 300,
+          operator: '=',
+          sequence: 0,
+        });
+      });
+
+      it('decomposes an n-ary AND into one ordered component per column pair', async () => {
+        const db = eul5Db();
+        db.tables.EUL5_EXPRESSIONS = (db.tables.EUL5_EXPRESSIONS ?? []).map((row) =>
+          row.EXP_TYPE === 'JP'
+            ? {
+                ...row,
+                EXP_FORMULA1:
+                  '[1,98]([1,81]([6,300],[6,302]),[1,81]([6,301],[6,302]))',
+              }
+            : row,
+        );
+        const { adapter, execute } = await adapterFor(db);
+        const joins = await readJoins(adapter, execute);
+
+        // Four of the live estate's ten joins are three-column and one is
+        // four-column, all inside ONE expression row — the components cannot
+        // be read off separate rows.
+        expect(joins[0]?.components.map((c) => c.sequence)).toEqual([0, 1]);
+        expect(joins[0]?.components.map((c) => c.detailItemId)).toEqual([300, 301]);
+      });
+
+      it('reverses the operator when it reorders a non-equi comparison', async () => {
+        const db = eul5Db();
+        db.tables.EUL5_EXPRESSIONS = (db.tables.EUL5_EXPRESSIONS ?? []).map((row) =>
+          // detail < master, written detail-first; reordering it master-first
+          // must turn `<` into `>` or the condition changes meaning.
+          row.EXP_TYPE === 'JP'
+            ? { ...row, EXP_FORMULA1: '[1,84]([6,300],[6,302])' }
+            : row,
+        );
+        const { adapter, execute } = await adapterFor(db);
+        const joins = await readJoins(adapter, execute);
+
+        expect(joins[0]?.components[0]).toMatchObject({
+          masterItemId: 302,
+          detailItemId: 300,
+          operator: '>',
+        });
+      });
+
+      it('refuses a tree that is not an ANDed set of column comparisons', async () => {
+        const db = eul5Db();
+        db.tables.EUL5_EXPRESSIONS = (db.tables.EUL5_EXPRESSIONS ?? []).map((row) =>
+          // `[6,300] IN ('7')` — a filter, not a column-to-column join.
+          row.EXP_TYPE === 'JP'
+            ? { ...row, EXP_FORMULA1: '[1,88]([6,300],[5,1,"7"])' }
+            : row,
+        );
+        const { adapter, execute } = await adapterFor(db);
+        const joins = await readJoins(adapter, execute);
+
+        // No components — so the join refuses by name later — but the formula
+        // survives verbatim, so the refusal is diagnosable and the tree can be
+        // decoded later without re-migrating.
+        expect(joins[0]?.components).toEqual([]);
+        expect(joins[0]?.predicateFormula).toBe('[1,88]([6,300],[5,1,"7"])');
+      });
+
+      it('leaves a join with no JP row predicate-less rather than failing the read', async () => {
+        const db = eul5Db();
+        db.tables.EUL5_EXPRESSIONS = (db.tables.EUL5_EXPRESSIONS ?? []).filter(
+          (row) => row.EXP_TYPE !== 'JP',
+        );
+        const { adapter, execute } = await adapterFor(db);
+        const joins = await readJoins(adapter, execute);
+
+        expect(joins).toHaveLength(1);
+        expect(joins[0]?.components).toEqual([]);
+        expect(joins[0]?.predicateFormula).toBeNull();
+      });
     });
 
     it('falls back to a row-index source id when KEY_ID is absent', async () => {
@@ -437,7 +580,11 @@ describe('unified read functions', () => {
 
       expect(joins).toHaveLength(1);
       expect(joins[0]?.detailFolderId).toBe(20);
-      expect(joins[0]?.joinType).toBe('INNER');
+      // No `joinType`: it was read from `KEY_TYPE`, whose live domain is
+      // `FK`/`UK` — a constraint kind, not a join type. It is derived from the
+      // two outer-join flags at query time instead (D-032).
+      expect(joins[0]?.allowMasterNoDetail).toBe(false);
+      expect(joins[0]?.allowDetailNoMaster).toBe(false);
     });
 
     /**

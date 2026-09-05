@@ -25,13 +25,11 @@ import {
   folderTypeMapFor,
   GRANT_PERMISSION_MAP,
   ITEM_TYPE_MAP,
-  JOIN_TYPE_MAP,
   MIGRATED_USER_PASSWORD_HASH,
   NEO_FOLDER_TYPES,
   normalizeAggregation,
   type NeoFolderType,
   type NeoItemType,
-  type NeoJoinType,
   type TransformedBusinessArea,
   type TransformedCustomFunction,
   type TransformedFolder,
@@ -256,21 +254,32 @@ export function transformItem(item: Item, _version: EulVersion): TransformedItem
 
 export function transformJoin(join: Join, _version: EulVersion): TransformedJoin {
   const warnings: TransformWarning[] = [];
-  const rawType = (join.joinType ?? 'INNER').toUpperCase();
-  const joinType: NeoJoinType = JOIN_TYPE_MAP[rawType] ?? 'INNER';
-  if (!JOIN_TYPE_MAP[rawType]) {
-    warnings.push({
-      code: 'JOIN_TYPE_UNKNOWN',
-      message: `Join ${join.sourceId} has unrecognized type "${join.joinType}"; defaulted to INNER.`,
-      sourceId: join.sourceId,
-    });
-  }
 
+  // `left` is the MASTER side, `right` the DETAIL side (D-040), matching the
+  // folder columns below. The join TYPE is not transformed at all any more:
+  // it is derived from the two outer-join flags at query time (D-032), and the
+  // column it used to come from (`KEY_TYPE`) never carried one.
   const components = join.components.map((c) => ({
     leftItemSourceId: c.masterItemId,
     rightItemSourceId: c.detailItemId,
     operator: c.operator,
+    sequence: c.sequence,
   }));
+
+  // A join with no predicate is migrated, not skipped — but it is announced.
+  // It cannot generate SQL, and the refusal a user eventually sees names this
+  // join (D-039); the migration report is where an administrator finds out
+  // first.
+  if (components.length === 0) {
+    warnings.push({
+      code: 'JOIN_NO_PREDICATE',
+      message:
+        `Join "${join.name}" (${join.sourceId}) has no readable join condition` +
+        `${join.predicateFormula ? ` — its formula ${JSON.stringify(join.predicateFormula)} is not an ANDed set of column comparisons` : ''}. ` +
+        'Queries needing this join will refuse until it is given one.',
+      sourceId: join.sourceId,
+    });
+  }
 
   // A join in the EUL binds two FOLDERS (KEY_CONS.KEY_OBJ_ID /
   // FK_OBJ_ID_REMOTE); item-level key columns are optional and often absent.
@@ -293,7 +302,11 @@ export function transformJoin(join: Join, _version: EulVersion): TransformedJoin
     name: clamp(name, NAME_MAX),
     leftFolderSourceId: join.masterFolderId,
     rightFolderSourceId: join.detailFolderId,
-    joinType,
+    oneToOne: join.oneToOne,
+    allowMasterNoDetail: join.allowMasterNoDetail,
+    allowDetailNoMaster: join.allowDetailNoMaster,
+    mandatory: join.mandatory,
+    predicateFormula: join.predicateFormula,
     isActive: true,
     createdAt: join.createdAt,
     components,
