@@ -194,6 +194,7 @@ export const TARGET_TABLE_ORDER: readonly TargetTable[] = [
   'folder_business_areas',
   'items',
   'joins',
+  'join_predicates',
   'hierarchies',
   'hierarchy_levels',
   'custom_functions',
@@ -216,6 +217,7 @@ const EMPTY_COUNTS = (): TableCounts => ({
   folder_business_areas: 0,
   items: 0,
   joins: 0,
+  join_predicates: 0,
   hierarchies: 0,
   hierarchy_levels: 0,
   custom_functions: 0,
@@ -782,6 +784,7 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
   // Neo's joins table matches that shape, so the folders drive the row and the
   // items only fill in when the source actually carried them.
   const joinRows: Record<string, unknown>[] = [];
+  const joinPredicateRows: Record<string, unknown>[] = [];
   // A workbook's `0x0118` join reference (§7.8.9) names this same EUL join id,
   // so a worksheet's `Join Usage` resolves against this index once it is
   // built — a join that failed to migrate (folder(s) not migrated, skipped
@@ -808,56 +811,51 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
       continue;
     }
 
-    const emitted: Array<Record<string, unknown>> = [];
-    if (t.components.length === 0) {
-      // Folder-level join with no item keys — the common case.
-      emitted.push({
+    // ONE row per EUL join. Until Phase 3.2 a multi-component join exploded
+    // into one `joins` row per component, because Neo could only hold a single
+    // item pair — which turned one three-column join into three separate
+    // two-folder joins, each with a third of the condition. The components now
+    // live in `join_predicates` and the join stays one join.
+    const joinId = deps.genId();
+    joinRows.push({
+      id: joinId,
+      name: t.name,
+      leftFolderId,
+      rightFolderId,
+      oneToOne: t.oneToOne,
+      allowMasterNoDetail: t.allowMasterNoDetail,
+      allowDetailNoMaster: t.allowDetailNoMaster,
+      mandatory: t.mandatory,
+      predicateFormula: t.predicateFormula,
+      isActive: t.isActive,
+      createdAt: t.createdAt ?? deps.now(),
+    });
+
+    // Every component becomes a row, including one whose item did not migrate.
+    // A missing row would shorten the emitted `ON` clause and return MORE rows
+    // than the source did; a null endpoint refuses instead (D-058).
+    for (const comp of t.components) {
+      joinPredicateRows.push({
         id: deps.genId(),
-        name: t.name,
-        leftFolderId,
-        rightFolderId,
-        leftItemId: null,
-        rightItemId: null,
-        joinType: t.joinType,
-        isActive: t.isActive,
+        joinId,
+        seq: comp.sequence,
+        leftItemId:
+          comp.leftItemSourceId !== null
+            ? (itemIdBySource.get(comp.leftItemSourceId) ?? null)
+            : null,
+        rightItemId:
+          comp.rightItemSourceId !== null
+            ? (itemIdBySource.get(comp.rightItemSourceId) ?? null)
+            : null,
+        operator: comp.operator,
         createdAt: t.createdAt ?? deps.now(),
       });
-    } else {
-      // Neo models a single item pair per row, so each component becomes one.
-      t.components.forEach((comp) => {
-        emitted.push({
-          id: deps.genId(),
-          name: t.name,
-          leftFolderId,
-          rightFolderId,
-          leftItemId:
-            comp.leftItemSourceId !== null
-              ? (itemIdBySource.get(comp.leftItemSourceId) ?? null)
-              : null,
-          rightItemId:
-            comp.rightItemSourceId !== null
-              ? (itemIdBySource.get(comp.rightItemSourceId) ?? null)
-              : null,
-          joinType: t.joinType,
-          isActive: t.isActive,
-          createdAt: t.createdAt ?? deps.now(),
-        });
-      });
     }
-    // Only disambiguate when this join actually produced more than one row —
-    // suffixing a lone row with "(#1)" would imply siblings that don't exist.
-    if (emitted.length > 1) {
-      emitted.forEach((row, idx) => {
-        row.name = `${t.name} (#${idx + 1})`;
-      });
-    }
-    joinIdsBySourceId.set(
-      t.sourceId,
-      emitted.map((row) => row.id as string),
-    );
-    joinRows.push(...emitted);
+
+    joinIdsBySourceId.set(t.sourceId, [joinId]);
   }
   planned.joins = joinRows.length;
+  planned.join_predicates = joinPredicateRows.length;
 
   // --- 6. hierarchies + levels ----------------------------------------------
   const hierarchyRows: Record<string, unknown>[] = [];
@@ -1287,6 +1285,7 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     ['folder_business_areas', folderShareRows],
     ['items', itemRows],
     ['joins', joinRows],
+    ['join_predicates', joinPredicateRows],
     ['hierarchies', hierarchyRows],
     ['hierarchy_levels', levelRows],
     ['custom_functions', functionRows],

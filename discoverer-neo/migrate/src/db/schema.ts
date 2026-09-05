@@ -1313,6 +1313,7 @@ export const TARGET_TABLES = {
   folder_business_areas: folderBusinessAreas,
   items,
   joins,
+  join_predicates: joinPredicates,
   hierarchies,
   hierarchy_levels: hierarchyLevels,
   custom_functions: customFunctions,

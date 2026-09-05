@@ -109,7 +109,11 @@ function join(
     // Joins bind folders; the defaults point at the fixture folders.
     masterFolderId: folders.master === undefined ? 10 : folders.master,
     detailFolderId: folders.detail === undefined ? 10 : folders.detail,
-    joinType: 'INNER',
+    oneToOne: false,
+    allowMasterNoDetail: false,
+    allowDetailNoMaster: false,
+    mandatory: true,
+    predicateFormula: null,
     components,
     createdBy: null,
     createdAt: null,
@@ -190,7 +194,7 @@ describe('findOrphans', () => {
         businessAreas: [ba(100)],
         folders: [folder(10, 100)],
         items: [item(1, 10), item(2, 999), item(3, null)],
-        joins: [join(20, [], { detail: null }), join(21, [{ masterItemId: 1, detailItemId: 1, operator: '=' }])],
+        joins: [join(20, [], { detail: null }), join(21, [{ masterItemId: 1, detailItemId: 1, operator: '=', sequence: 0 }])],
         hierarchies: [hierarchy(30, 999)],
       }),
     );
@@ -503,7 +507,7 @@ describe('validateEulData', () => {
         businessAreas: [ba(100)],
         folders: [folder(10, 100)],
         items: [item(1, 10), item(2, 10)],
-        joins: [join(20, [{ masterItemId: 1, detailItemId: 2, operator: '=' }])],
+        joins: [join(20, [{ masterItemId: 1, detailItemId: 2, operator: '=', sequence: 0 }])],
       }),
     );
     expect(result.valid).toBe(true);
@@ -516,7 +520,7 @@ describe('validateEulData', () => {
         businessAreas: [ba(100)],
         folders: [folder(10, 100)],
         items: [item(1, 10)],
-        joins: [join(20, [{ masterItemId: 1, detailItemId: 999, operator: '=' }])],
+        joins: [join(20, [{ masterItemId: 1, detailItemId: 999, operator: '=', sequence: 0 }])],
       }),
     );
     expect(result.valid).toBe(false);

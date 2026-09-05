@@ -32,7 +32,9 @@ export interface TransformWarning {
 
 export type NeoFolderType = 'TABLE' | 'VIEW' | 'DERIVED' | 'COMPLEX' | 'JOIN' | 'SUMMARY';
 export type NeoItemType = 'CI' | 'CU' | 'CO' | 'JI' | 'HI' | 'AG' | 'FU';
-export type NeoJoinType = 'INNER' | 'LEFT' | 'RIGHT' | 'FULL';
+// `NeoJoinType` was here. There is no `join_type` column any more (D-032) and
+// nothing in this package writes one; the derived type lives on the query side,
+// in `backend/src/lib/sql/join-type.ts`.
 export type NeoFunctionType = 'SQL' | 'PLSQL' | 'PACKAGE';
 export type NeoMapType = 'TABLE' | 'CROSSTAB' | 'PAGE_DETAIL' | 'CHART';
 /** `map_items.axis_type` / `map_calculated_fields.axis_type` — Oracle's `EDCBAxisType`. */
@@ -125,18 +127,10 @@ export const ITEM_TYPE_MAP: Record<string, NeoItemType> = {
   FU: 'FU',
 };
 
-/**
- * Join type → Neo join_type. The reader already normalizes EUL4's single
- * `OUTER` to `LEFT` (reference §3.4); the explicit `OUTER` key here is
- * belt-and-braces for a raw value that somehow reaches the transformer.
- */
-export const JOIN_TYPE_MAP: Record<string, NeoJoinType> = {
-  INNER: 'INNER',
-  LEFT: 'LEFT',
-  RIGHT: 'RIGHT',
-  FULL: 'FULL',
-  OUTER: 'LEFT',
-};
+// `JOIN_TYPE_MAP` lived here until Phase 3.2. There is no join type to map any
+// more: it was read from `KEY_CONS.KEY_TYPE`, whose live domain is `FK`/`UK`,
+// and it is now DERIVED at query time from `allow_master_no_detail` /
+// `allow_detail_no_master` (D-032). See `backend/src/lib/sql/join-type.ts`.
 
 /**
  * EUL ELEM_ACCESS privilege type → Neo permission level. ELEM_ACCESS records
@@ -215,24 +209,36 @@ export interface TransformedItem {
 }
 
 /**
- * Item-level join keys. Nullable because the EUL's `KEY_CONS` binds folders;
- * the item-level key columns are optional (and not yet confirmed) — matching
- * Neo's `joins.left_item_id`/`right_item_id`, which are nullable too.
+ * One column pair of a join's predicate — a `join_predicates` row.
+ *
+ * Item ids are nullable because the item may not have migrated. The row is
+ * still emitted: dropping it would shorten the ON clause and return MORE rows
+ * than the source did, so an unresolvable component refuses at query time
+ * instead (D-058).
  */
 export interface TransformedJoinComponent {
+  /** MASTER-side item (D-040). */
   leftItemSourceId: number | null;
+  /** DETAIL-side item (D-040). */
   rightItemSourceId: number | null;
+  /** One of `=`, `<`, `>`, `<=`, `>=`, `<>`. */
   operator: string;
+  /** 0-based position within the ANDed predicate. */
+  sequence: number;
 }
 
 export interface TransformedJoin {
   sourceId: number;
   name: string;
-  /** `KEY_CONS.KEY_OBJ_ID` — required by Neo's `joins.left_folder_id`. */
+  /** MASTER folder, `KEY_CONS.FK_OBJ_ID_REMOTE` — Neo's `joins.left_folder_id`. */
   leftFolderSourceId: number | null;
-  /** `KEY_CONS.FK_OBJ_ID_REMOTE` — required by Neo's `joins.right_folder_id`. */
+  /** DETAIL folder, `KEY_CONS.KEY_OBJ_ID` — Neo's `joins.right_folder_id`. */
   rightFolderSourceId: number | null;
-  joinType: NeoJoinType;
+  oneToOne: boolean;
+  allowMasterNoDetail: boolean;
+  allowDetailNoMaster: boolean;
+  mandatory: boolean;
+  predicateFormula: string | null;
   isActive: boolean;
   createdAt: Date | null;
   components: TransformedJoinComponent[];

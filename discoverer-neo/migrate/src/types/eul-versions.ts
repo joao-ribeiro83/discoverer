@@ -182,6 +182,15 @@ export const VERSION_FEATURES: Record<EulVersion, EulFeatureFlags> = {
  */
 export const EXP_TYPE_DATABASE_ITEM = 'CO';
 export const EXP_TYPE_CREATED_ITEM = 'CI';
+/**
+ * A join predicate. One row per `KEY_CONS` join, linked by `JP_KEY_ID`, whose
+ * `EXP_FORMULA1` holds the whole (possibly multi-column) condition as a token
+ * tree. `IT_OBJ_ID` and `IT_EXT_COLUMN` are null on these rows.
+ *
+ * The third and last value `EXP_TYPE` takes on the live EUL4: `CO` 6 967,
+ * `CI` 2 830, `JP` 10.
+ */
+export const EXP_TYPE_JOIN_PREDICATE = 'JP';
 
 export const EXP_TYPES_BY_VERSION: Record<EulVersion, readonly string[]> = {
   EUL3: [EXP_TYPE_DATABASE_ITEM, EXP_TYPE_CREATED_ITEM],
@@ -314,30 +323,61 @@ export interface Item {
 }
 
 /**
- * A join in the EUL binds two FOLDERS, not two items: `KEY_CONS.KEY_OBJ_ID`
- * is the local folder and `FK_OBJ_ID_REMOTE` the remote one. This matches
- * Neo's `joins` table, whose folder ids are NOT NULL and item ids nullable.
+ * One column pair of a join's predicate, ANDed with the others in `sequence`
+ * order.
  *
- * `masterItemId`/`detailItemId` are the optional item-level key columns. The
- * `KEY_CONS` column names carrying them are NOT yet confirmed against a live
- * EUL (see EUL_SCHEMA_GROUND_TRUTH.md §3.4), so they stay null until they are.
+ * The pair does NOT come from `KEY_CONS`, which carries no item columns at
+ * all. It comes from the join's single `EXPRESSIONS` row — `EXP_TYPE = 'JP'`,
+ * linked by `JP_KEY_ID` — whose `EXP_FORMULA1` holds the whole predicate as
+ * one token tree: `[1,81](a,b)` for a single equality, `[1,98](…,…,…)` for an
+ * n-ary AND. This estate runs five single-column joins, four three-column and
+ * one four-column, all with `=`.
+ *
+ * `masterItemId`/`detailItemId` are `EXPRESSIONS.EXP_ID`s, oriented by looking
+ * each one's `IT_OBJ_ID` up against the join's two folders — not by assuming
+ * the token order matches the folder order.
  */
 export interface JoinComponent {
+  /** `EXP_ID` of the item on the MASTER folder's side. */
   masterItemId: number | null;
+  /** `EXP_ID` of the item on the DETAIL folder's side. */
   detailItemId: number | null;
+  /** One of `=`, `<`, `>`, `<=`, `>=`, `<>`. */
   operator: string;
+  /** 0-based position within the ANDed predicate. */
+  sequence: number;
 }
 
+/**
+ * A join in the EUL binds two FOLDERS, not two items — `KEY_CONS` has no item
+ * columns. This matches Neo's `joins` table, whose folder ids are NOT NULL.
+ *
+ * **Orientation (D-040, measured 2026-09-03):** `FK_OBJ_ID_REMOTE` is the
+ * MASTER and `KEY_OBJ_ID` is the DETAIL. This was the other way round here
+ * until Phase 0.3 measured it on the live EUL4.
+ */
 export interface Join {
   sourceId: number;
   name: string;
   description: string | null;
-  /** Local/detail folder — `KEY_CONS.KEY_OBJ_ID`. */
+  /** MASTER folder — `KEY_CONS.FK_OBJ_ID_REMOTE`. */
   masterFolderId: number | null;
-  /** Remote/master folder — `KEY_CONS.FK_OBJ_ID_REMOTE`. */
+  /** DETAIL folder — `KEY_CONS.KEY_OBJ_ID`. */
   detailFolderId: number | null;
-  /** Normalized: INNER | LEFT | RIGHT | FULL (EUL4's OUTER maps to LEFT). */
-  joinType: string;
+  /** `FK_ONE_TO_ONE`. Fan-trap detection only; never affects emitted SQL. */
+  oneToOne: boolean;
+  /** `FK_MSTR_NO_DETAIL` — "Outer join on detail". */
+  allowMasterNoDetail: boolean;
+  /** `FK_DTL_NO_MASTER` — "Outer join on master". */
+  allowDetailNoMaster: boolean;
+  /** `FK_MANDATORY`. Referential integrity; not a join type. */
+  mandatory: boolean;
+  /**
+   * `EXPRESSIONS.EXP_FORMULA1` verbatim, or null when the join has no `JP`
+   * row. Kept as provenance and as the escape hatch for a tree this reader
+   * could not decompose.
+   */
+  predicateFormula: string | null;
   components: JoinComponent[];
   createdBy: string | null;
   createdAt: Date | null;

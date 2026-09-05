@@ -16,7 +16,6 @@ import {
   FOLDER_TYPE_MAP_EUL4,
   FOLDER_TYPE_MAP_EUL5,
   ITEM_TYPE_MAP,
-  JOIN_TYPE_MAP,
   makeBindName,
   transformBusinessArea,
   transformCustomFunction,
@@ -119,8 +118,12 @@ function join(overrides: Partial<Join> = {}): Join {
     // A join binds folders; item-level keys are optional.
     masterFolderId: 200,
     detailFolderId: 201,
-    joinType: 'INNER',
-    components: [{ masterItemId: 300, detailItemId: 301, operator: '=' }],
+    oneToOne: false,
+    allowMasterNoDetail: false,
+    allowDetailNoMaster: false,
+    mandatory: true,
+    predicateFormula: '[1,81]([6,300],[6,301])',
+    components: [{ masterItemId: 300, detailItemId: 301, operator: '=', sequence: 0 }],
     createdBy: 'DISCO_ADMIN',
     createdAt: CREATED,
     ...overrides,
@@ -228,13 +231,11 @@ describe('version-aware type maps', () => {
     expect(ITEM_TYPE_MAP).not.toHaveProperty('SM');
   });
 
-  it('join type map sends EUL4 OUTER to LEFT', () => {
-    expect(JOIN_TYPE_MAP.OUTER).toBe('LEFT');
-    expect(JOIN_TYPE_MAP.INNER).toBe('INNER');
-    expect(JOIN_TYPE_MAP.LEFT).toBe('LEFT');
-    expect(JOIN_TYPE_MAP.RIGHT).toBe('RIGHT');
-    expect(JOIN_TYPE_MAP.FULL).toBe('FULL');
-  });
+  // `JOIN_TYPE_MAP` was tested here. There is no join-type map any more: the
+  // column it fed came from `KEY_CONS.KEY_TYPE`, whose live domain is `FK`/`UK`
+  // — a constraint kind, not a join type — and the join type is now derived
+  // from the two outer-join flags at query time (D-032). The derivation's own
+  // truth table is tested in `backend/src/__tests__/join-type.test.ts`.
 });
 
 // ---------------------------------------------------------------------------
@@ -422,34 +423,46 @@ describe('transformItem', () => {
 // ---------------------------------------------------------------------------
 
 describe('transformJoin', () => {
-  it('maps master/detail components to left/right', () => {
+  it('maps master/detail components to left/right, carrying the sequence', () => {
     const t = transformJoin(join(), 'EUL5');
-    expect(t.components).toEqual([{ leftItemSourceId: 300, rightItemSourceId: 301, operator: '=' }]);
-    expect(t.joinType).toBe('INNER');
+    expect(t.components).toEqual([
+      { leftItemSourceId: 300, rightItemSourceId: 301, operator: '=', sequence: 0 },
+    ]);
   });
 
-  it('maps a raw OUTER join type to LEFT (EUL4 semantics)', () => {
-    const t = transformJoin(join({ joinType: 'OUTER' }), 'EUL4');
-    expect(t.joinType).toBe('LEFT');
+  it('carries the four flags through unchanged, and derives no join type', () => {
+    const t = transformJoin(
+      join({ oneToOne: true, allowMasterNoDetail: true, mandatory: false }),
+      'EUL5',
+    );
+    expect(t.oneToOne).toBe(true);
+    expect(t.allowMasterNoDetail).toBe(true);
+    expect(t.allowDetailNoMaster).toBe(false);
+    expect(t.mandatory).toBe(false);
+    // The transform layer does not decide join type; it is derived at query
+    // time from the two outer-join flags above (D-032).
+    expect('joinType' in t).toBe(false);
   });
 
-  it.each(['INNER', 'LEFT', 'RIGHT', 'FULL'])('passes through normalized type %s', (type) => {
-    expect(transformJoin(join({ joinType: type }), 'EUL5').joinType).toBe(type);
+  it('keeps the source predicate formula as provenance', () => {
+    expect(transformJoin(join(), 'EUL5').predicateFormula).toBe(
+      '[1,81]([6,300],[6,301])',
+    );
   });
 
-  it('defaults an unknown join type to INNER with a warning', () => {
-    const t = transformJoin(join({ joinType: 'SIDEWAYS' }), 'EUL5');
-    expect(t.joinType).toBe('INNER');
-    expect(codes(t.warnings)).toContain('JOIN_TYPE_UNKNOWN');
-  });
-
-  it('does NOT warn about a component-less join — folder-level is the norm', () => {
-    // KEY_CONS binds folders; item-level keys are optional, and Neo's join
-    // item ids are nullable. A join with no components is fully migratable.
-    const t = transformJoin(join({ components: [] }), 'EUL4');
+  it('warns about a predicate-less join, naming it (D-039)', () => {
+    // Migrated, not skipped — but announced. It cannot generate SQL, and the
+    // refusal a user eventually meets names this join; the migration report is
+    // where an administrator should find out first.
+    const t = transformJoin(
+      join({ components: [], predicateFormula: '[1,88]([6,300],[5,2,"7"])' }),
+      'EUL4',
+    );
     expect(t.components).toHaveLength(0);
-    expect(codes(t.warnings)).not.toContain('JOIN_NO_COMPONENTS');
-    expect(codes(t.warnings)).not.toContain('JOIN_NO_FOLDERS');
+    expect(codes(t.warnings)).toContain('JOIN_NO_PREDICATE');
+    const warning = t.warnings.find((w) => w.code === 'JOIN_NO_PREDICATE');
+    expect(warning?.message).toContain('Invoices to Suppliers');
+    expect(warning?.message).toContain('[1,88]([6,300],[5,2,\\"7\\"])');
   });
 
   it('warns when a join is missing a folder on either side', () => {
@@ -467,8 +480,8 @@ describe('transformJoin', () => {
     const t = transformJoin(
       join({
         components: [
-          { masterItemId: 300, detailItemId: 301, operator: '=' },
-          { masterItemId: 300, detailItemId: 302, operator: '=' },
+          { masterItemId: 300, detailItemId: 301, operator: '=', sequence: 0 },
+          { masterItemId: 300, detailItemId: 302, operator: '=', sequence: 1 },
         ],
       }),
       'EUL5',

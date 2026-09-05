@@ -92,7 +92,7 @@ describe('runMigration — EUL5 source, end to end', () => {
     );
   });
 
-  it('migrates a folder-to-folder join with null item ids', async () => {
+  it('migrates a folder-to-folder join, and its predicate as its own rows', async () => {
     const { writer, state } = createFakeWriter();
     await runMigration({
       source: mockExecutor(eul5Db()),
@@ -100,13 +100,31 @@ describe('runMigration — EUL5 source, end to end', () => {
       deps: deterministicDeps(),
     });
 
-    // KEY_CONS 400 binds folder 200 to folder 201. Neo's join folder ids are
-    // NOT NULL and its item ids nullable, which is exactly this shape.
+    // KEY_CONS 400 binds folder 200 to folder 201, and its predicate — however
+    // many columns wide — lives in `join_predicates`, never on the join row.
     const joins = rowsOf(state, 'joins');
     expect(joins).toHaveLength(1);
-    expect(first(joins).leftItemId).toBeNull();
-    expect(first(joins).rightItemId).toBeNull();
     expect(first(joins).leftFolderId).not.toBe(first(joins).rightFolderId);
+    // The four flags always land, even when the source has none of them: the
+    // defaults are the safe ones (fanning, inner, not mandatory).
+    expect(first(joins).oneToOne).toBe(false);
+    expect(first(joins).allowMasterNoDetail).toBe(true);
+    expect(first(joins).allowDetailNoMaster).toBe(false);
+
+    // The predicate lands as its own row, oriented onto the master/detail
+    // axis and carrying its own operator. Its `join_id` points back at the one
+    // join, so a three-column join stays ONE join with three components rather
+    // than becoming three two-folder joins with a third of the condition each.
+    const predicates = rowsOf(state, 'join_predicates');
+    expect(predicates).toHaveLength(1);
+    expect(first(predicates)).toMatchObject({
+      joinId: first(joins).id,
+      seq: 0,
+      operator: '=',
+    });
+    expect(first(predicates).leftItemId).not.toBeNull();
+    expect(first(predicates).rightItemId).not.toBeNull();
+    expect(first(predicates).leftItemId).not.toBe(first(predicates).rightItemId);
   });
 
   it('preserves a folder shared across business areas (BA_OBJ_LINKS is m:n)', async () => {
@@ -832,7 +850,7 @@ describe('runMigration — EUL5 source, end to end', () => {
 });
 
 describe('runMigration — EUL4 source, end to end', () => {
-  it('migrates an EUL4 source and maps OUTER joins to LEFT', async () => {
+  it('migrates an EUL4 source, storing join flags rather than a join type', async () => {
     const { writer, state } = createFakeWriter();
     const result = await runMigration({
       source: mockExecutor(eul4Db()),
@@ -852,11 +870,20 @@ describe('runMigration — EUL4 source, end to end', () => {
     expect(rowsOf(state, 'user_business_area_grants')).toHaveLength(1);
     expect(result.validation?.valid).toBe(true);
 
-    // KEY_CONS carries no confirmed join-type column, so joins default to
-    // INNER until one is identified against a live EUL.
+    // `KEY_CONS` carries no join-type column at all. `KEY_TYPE` was read as
+    // one until Phase 3.2, but its live domain is `FK`/`UK` — a constraint
+    // kind — so "all joins are INNER" was a default masquerading as a reading.
+    // What is stored now are the four DTD flags; the type is derived from two
+    // of them at query time (D-032).
     const joins = rowsOf(state, 'joins');
     expect(joins).toHaveLength(1);
-    expect(first(joins).joinType).toBe('INNER');
+    expect(first(joins)).not.toHaveProperty('joinType');
+    expect(first(joins)).toMatchObject({
+      oneToOne: false,
+      allowMasterNoDetail: false,
+      allowDetailNoMaster: false,
+      mandatory: false,
+    });
   });
 
   it('maps the EUL4 folder type and keeps table/owner metadata', async () => {
