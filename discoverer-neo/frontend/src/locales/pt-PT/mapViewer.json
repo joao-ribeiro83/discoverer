@@ -150,6 +150,31 @@
       "title": "Uma junção desta folha está definida nos dois sentidos ao mesmo tempo, por isso não foi executada",
       "why": "Esta junção guarda ao mesmo tempo as linhas mestre sem detalhe E as linhas de detalhe sem mestre. O Discoverer 4.1 não conseguia escrever isso em SQL, e nenhuma documentação da Oracle descreve o que pretendia fazer. Adivinhar mudaria os números que esta folha reporta.",
       "whatToChange": "Peça a um administrador para abrir esta junção e desligar uma das duas opções de junção externa."
+    },
+    "FAN_TRAP_R1": {
+      "title": "Estes totais são medidos em relação a coisas diferentes, por isso a folha não foi executada",
+      "why": "Esta folha totaliza valores de dois conjuntos de linhas de detalhe, mas cada conjunto está ligado à pasta principal por uma coluna diferente. Os dois totais não são contados em relação à mesma coisa, pelo que colocá-los lado a lado compararia números que não correspondem.",
+      "whatToChange": "Totalize valores de um só conjunto de linhas de detalhe, ou pergunte a um administrador se ambas as ligações deveriam corresponder na mesma coluna."
+    },
+    "FAN_TRAP_R2": {
+      "title": "Estas pastas estão ligadas em círculo, por isso a folha não foi executada",
+      "why": "As duas pastas de detalhe estão ligadas entre si e também à pasta principal. Isso torna a relação circular e existe mais do que uma forma de somar as linhas, cada uma com um resultado diferente. O Discoverer também recusava esta forma.",
+      "whatToChange": "Utilize colunas de apenas uma das duas pastas de detalhe, ou pergunte a um administrador qual a ligação que a folha deve seguir."
+    },
+    "FAN_TRAP_R3": {
+      "title": "Esta folha mostra valores individuais de dois conjuntos de linhas de detalhe, por isso não foi executada",
+      "why": "Os totais através de uma ligação um-para-muitos funcionam porque as linhas de detalhe são sempre resumidas. Esta folha mostra também valores individuais (não totalizados) de dois conjuntos diferentes de linhas de detalhe. Esses conjuntos não correspondem entre si, pelo que seria listada cada combinação em vez das linhas que pediu.",
+      "whatToChange": "Totalize os valores em vez de os listar, ou mostre valores individuais de apenas um conjunto de linhas de detalhe."
+    },
+    "FAN_TRAP_R4": {
+      "title": "Esta folha expande-se a partir de mais do que uma pasta, por isso não foi executada",
+      "why": "As linhas de detalhe são resumidas em relação a uma pasta principal. Esta folha tem duas pastas que funcionam ambas como principal, pelo que não existe um único conjunto de linhas contra o qual medir os totais.",
+      "whatToChange": "Divida isto em duas folhas, uma por pasta principal, ou remova as colunas que alcançam a segunda."
+    },
+    "FAN_TRAP_REAGG": {
+      "title": "Este tipo de total não pode ser calculado através de uma ligação, por isso a folha não foi executada",
+      "why": "Para totalizar através de uma ligação um-para-muitos, cada conjunto de linhas de detalhe é resumido primeiro e as partes são depois combinadas. Somar somas dá o resultado certo, tal como o mínimo e o máximo. Médias, contagens de valores distintos, desvio padrão e variância não podem ser reconstruídos a partir de partes: uma média de médias não é a média.",
+      "whatToChange": "Utilize Soma, Contagem, Mínimo ou Máximo, ou totalize esta coluna numa folha que utilize apenas uma pasta."
     }
   }
 }

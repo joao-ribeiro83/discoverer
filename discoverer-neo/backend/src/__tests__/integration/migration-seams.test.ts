@@ -7,6 +7,7 @@ import {
   checkReconciliation,
   checkReferentialClosure,
   checkMeasureSet,
+  checkPlannerLive,
   EXPECTED_LOSS_ALLOWANCES,
   type ExpectedLossAllowance,
   checkSqlGeneration,
@@ -39,7 +40,11 @@ import {
   userBusinessAreaGrants,
   users,
 } from '../../db/schema.js';
-import { generateSqlForMap } from '../../services/sql-generator.js';
+import {
+  generateSqlForMap,
+  loadMapDefinition,
+  planQuery,
+} from '../../services/sql-generator.js';
 import { bucketFormula } from '../../services/formula-bucket.js';
 
 // ===========================================================================
@@ -540,6 +545,81 @@ describe('Migration seam tests', () => {
         .from(mapItems)
         .where(inArray(mapItems.id, [column.id]));
       expect(after?.agg).toBeNull();
+    });
+  });
+
+  // =========================================================================
+  // Seam 6 — the fan-trap guard runs on MIGRATED maps, not fixtures
+  // =========================================================================
+  //
+  // This is the test that keeps Phase 3.3 from shipping present-but-inert.
+  //
+  // Every other fan-trap test in this repository builds its `MapDefinition` by
+  // hand. A guard can pass all of them and still have classified nothing real:
+  // with `map_items.agg_function` null the measure set is empty, every query
+  // takes step 0's flat path, and the whole decision procedure is dead code
+  // that looks alive (D-031).
+  //
+  // So this one plans maps that came out of a MIGRATION, loaded from the
+  // database through `loadMapDefinition` — the same path production uses.
+  describe('seam 6 — the planner classifies migrated maps', () => {
+    it('is SKIPPED without an injected planner, and never counts as a pass', async () => {
+      const result = await checkPlannerLive(db, { mapIdPrefix: PREFIX });
+      expect(result.status).toBe('SKIPPED');
+      expect(result.reason).toContain('backend workspace');
+    });
+
+    it('reports the inert estate as a FAIL, naming why', async () => {
+      const result = await checkPlannerLive(db, {
+        mapIdPrefix: PREFIX,
+        planMap: async (mapId) => {
+          const plan = planQuery(await loadMapDefinition(mapId));
+          return { decision: plan.decision, measures: plan.measures.length };
+        },
+      });
+
+      // The fixture migration writes no aggregates, which is exactly the state
+      // the guard must not be allowed to ship in.
+      expect(result.status).toBe('FAIL');
+      expect(result.reason).toContain('inert');
+      expect(result.metrics.planned).toBeGreaterThan(0);
+      expect(result.metrics.mapsWithANonEmptyMeasureSet).toBe(0);
+    });
+
+    it('classifies |M| >= 1 once a migrated column carries its aggregate', async () => {
+      const [column] = await db
+        .select({ id: mapItems.id, mapId: mapItems.mapId })
+        .from(mapItems)
+        .where(idLike(mapItems.id))
+        .limit(1);
+      if (!column) throw new Error('fixture wrote no map columns');
+
+      try {
+        await db
+          .update(mapItems)
+          .set({ axisType: 'MEASURE', aggFunction: 'SUM' })
+          .where(inArray(mapItems.id, [column.id]));
+
+        // The map is loaded from Postgres, not assembled in the test.
+        const plan = planQuery(await loadMapDefinition(column.mapId));
+        expect(plan.measures.length).toBeGreaterThanOrEqual(1);
+        expect(plan.decision).not.toBe('FLAT(NO_MEASURES)');
+
+        const result = await checkPlannerLive(db, {
+          mapIdPrefix: PREFIX,
+          planMap: async (mapId) => {
+            const p = planQuery(await loadMapDefinition(mapId));
+            return { decision: p.decision, measures: p.measures.length };
+          },
+        });
+        expect(result.status).toBe('PASS');
+        expect(result.metrics.mapsWithANonEmptyMeasureSet).toBeGreaterThanOrEqual(1);
+      } finally {
+        await db
+          .update(mapItems)
+          .set({ axisType: 'AXIS', aggFunction: null })
+          .where(inArray(mapItems.id, [column.id]));
+      }
     });
   });
 

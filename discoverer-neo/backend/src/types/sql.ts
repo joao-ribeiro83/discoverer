@@ -273,11 +273,18 @@ export type RefusalCode =
   /** A join sets both outer-join flags, which 4.1 could not express (D-038). */
   | 'JOIN_BOTH_OUTER'
   /**
-   * The fan-trap planner refused (§1.5 R1-R4, or a measure that cannot
-   * re-aggregate across the fan). `details.rule` names which, and
-   * `details.folders` names the folders — the UI translates from the rule.
+   * The fan-trap planner refused (`legacy-analysis.md` §1.5). One code per
+   * rule, because the five say genuinely different things and each needs its
+   * own "what to change": R1 the branches key on different columns, R2 the
+   * detail folders are joined to each other, R3 non-totalled values from two
+   * details, R4 more than one fan, REAGG an aggregate that cannot be
+   * recalculated from partial totals. `details.folders` names the folders.
    */
-  | 'FAN_TRAP';
+  | 'FAN_TRAP_R1'
+  | 'FAN_TRAP_R2'
+  | 'FAN_TRAP_R3'
+  | 'FAN_TRAP_R4'
+  | 'FAN_TRAP_REAGG';
 
 export class SqlGenerationError extends Error {
   constructor(

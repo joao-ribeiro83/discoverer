@@ -21,7 +21,11 @@
 import { verifyMigration, formatVerifyReport } from '@discoverer-neo/core/migration';
 
 import { db, pool } from '../db/index.js';
-import { generateSqlForMap } from '../services/sql-generator.js';
+import {
+  generateSqlForMap,
+  loadMapDefinition,
+  planQuery,
+} from '../services/sql-generator.js';
 import { bucketFormula } from '../services/formula-bucket.js';
 
 function numericFlag(name: string): number | undefined {
@@ -35,6 +39,13 @@ async function main(): Promise<void> {
   const report = await verifyMigration(db, {
     generateSqlForMap: (mapId) => generateSqlForMap(mapId),
     compileFormula: bucketFormula,
+    // Seam 6: the guard is only real if it classifies migrated maps. A run
+    // whose every decision is `FLAT(NO_MEASURES)` means the measure set is
+    // empty and the fan-trap guard has never once fired (D-031).
+    planMap: async (mapId) => {
+      const plan = planQuery(await loadMapDefinition(mapId));
+      return { decision: plan.decision, measures: plan.measures.length };
+    },
     maxMaps: numericFlag('--max-maps'),
     sampleLimit: numericFlag('--samples'),
   });

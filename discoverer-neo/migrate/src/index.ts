@@ -182,6 +182,7 @@ export {
   checkReferentialClosure,
   checkReconciliation,
   checkMeasureSet,
+  checkPlannerLive,
   EXPECTED_LOSS_ALLOWANCES,
   summarise,
   formatVerifyReport,

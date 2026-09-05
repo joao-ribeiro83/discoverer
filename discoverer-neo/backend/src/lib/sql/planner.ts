@@ -706,6 +706,6 @@ export function refusalError(plan: {
   return new SqlGenerationError(
     plan.message,
     { rule: plan.rule, folders: plan.folders },
-    'FAN_TRAP',
+    `FAN_TRAP_${plan.rule}`,
   );
 }

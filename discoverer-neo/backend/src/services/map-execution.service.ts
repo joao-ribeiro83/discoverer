@@ -12,6 +12,7 @@ import {
 import {
   generateSql,
   loadMapDefinition,
+  planQuery,
   validateSql,
 } from './sql-generator.js';
 import type {
@@ -31,6 +32,7 @@ import {
 import {
   effectiveFolderSet,
   securityRelevantFolderIds,
+  type EffectiveFolderSet,
 } from '../lib/sql/folder-set.js';
 import * as pool from './oracle-connection-pool.js';
 import {
@@ -158,6 +160,12 @@ export interface PreparedQuery {
   totals?: GeneratedTotalsQuery[];
   /** Advisories from generation; carried through to `ExecuteResult`. */
   warnings?: string[];
+  /**
+   * What the fan-trap planner decided — `FLAT(NO_MEASURES)`, `REWRITE(2)`,
+   * `REFUSE(R3)`. Recorded against every execution (§1.11 step 10), because a
+   * log of nothing but `FLAT(NO_MEASURES)` is how an inert guard looks.
+   */
+  planDecision?: string;
 }
 
 export type ExecutionErrorKind =
@@ -212,6 +220,8 @@ export interface ExecutionLogEntry {
   sqlText: string | null;
   errorMessage: string | null;
   status: 'SUCCESS' | 'FAILED' | 'TIMEOUT';
+  /** The query plan's decision for this run (§1.11 step 10). */
+  planDecision?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -306,6 +316,7 @@ export interface ResolvedRowSecurity {
 export async function resolveSecurityPredicates(
   def: MapDefinition,
   userId: string,
+  folderSet: EffectiveFolderSet = effectiveFolderSet(def),
 ): Promise<ResolvedRowSecurity> {
   const [user] = await db
     .select({ id: users.id, email: users.email, role: users.role })
@@ -319,7 +330,7 @@ export async function resolveSecurityPredicates(
     );
   }
 
-  const usedFolderIds = securityRelevantFolderIds(effectiveFolderSet(def));
+  const usedFolderIds = securityRelevantFolderIds(folderSet);
   if (usedFolderIds.length === 0) return { predicates: [], bindParams: {} };
 
   const baByFolder = await businessAreasForFolders(usedFolderIds);
@@ -526,15 +537,29 @@ async function defaultPrepareQuery(
   const def = await loadMapDefinition(mapId);
   const dataSourceId = resolveDataSourceId(def);
 
+  // The plan comes before anything that needs a folder set — which is the
+  // entitlement check, the security predicates and the generator, all three of
+  // which used to derive one for themselves. `plan.folderSet` is now the single
+  // derivation they share (D-115).
+  //
+  // A REFUSE plan still runs the entitlement check first: the refusal names
+  // folders, and someone who may not read those folders should not learn their
+  // names from an error message.
+  const plan = planQuery(def);
+
   // GATE 2 of 2 (D-016). `canAccessMap` upstream answered "may you see this
   // map object"; this answers "may you read the data it touches". It runs on
   // every execute and export path — they all come through here — because four
   // of canAccessMap's five grant paths return before any business-area check,
   // so a shared or public map would otherwise be a grant escalation.
+  //
+  // The security set is `plan.folderSet`, NOT the plan's join path: the planner
+  // deliberately adds folders to FROM that carry no selected item, and only a
+  // folder that can change the rows the user sees needs a policy (Phase 1.1).
   try {
     await assertDataEntitlement(
       userId,
-      securityRelevantFolderIds(effectiveFolderSet(def)),
+      securityRelevantFolderIds(plan.folderSet),
     );
   } catch (err) {
     if (err instanceof DataEntitlementError) {
@@ -543,10 +568,11 @@ async function defaultPrepareQuery(
     throw err;
   }
 
-  const security = await resolveSecurityPredicates(def, userId);
+  const security = await resolveSecurityPredicates(def, userId, plan.folderSet);
   const resolvedParams = resolveParametersForQuery(def, parameterValues);
 
   const generated = generateSql(def, {
+    plan,
     parameterValues: resolvedParams,
     securityPredicates: security.predicates,
     securityBindParams: security.bindParams,
@@ -578,6 +604,7 @@ async function defaultPrepareQuery(
     groupBreakAliases: generated.groupBreakAliases,
     totals: generated.totals,
     warnings: generated.warnings,
+    planDecision: plan.decision,
   };
 }
 
@@ -631,6 +658,7 @@ async function defaultRecordExecution(entry: ExecutionLogEntry): Promise<void> {
     sqlText: entry.sqlText,
     errorMessage: entry.errorMessage,
     status: entry.status,
+    planDecision: entry.planDecision,
   });
 }
 
@@ -775,6 +803,7 @@ export async function executeMap(
       executionTimeMs: Date.now() - start,
       rowCount: null,
       sqlText: prepared.sql,
+      planDecision: prepared.planDecision,
       errorMessage: errorMessage(err),
       status: 'FAILED',
     });
@@ -818,6 +847,7 @@ export async function executeMap(
       executionTimeMs,
       rowCount: rows.length,
       sqlText: prepared.sql,
+      planDecision: prepared.planDecision,
       errorMessage: null,
       status: 'SUCCESS',
     });
@@ -843,6 +873,7 @@ export async function executeMap(
       executionTimeMs: Date.now() - start,
       rowCount: null,
       sqlText: prepared.sql,
+      planDecision: prepared.planDecision,
       errorMessage: errorMessage(err),
       status: timedOut ? 'TIMEOUT' : 'FAILED',
     });
@@ -1054,6 +1085,7 @@ async function runAsyncJob(
       executionTimeMs: job.executionTimeMs,
       rowCount: null,
       sqlText: prepared.sql,
+      planDecision: prepared.planDecision,
       errorMessage: job.error,
       status: 'FAILED',
     });
@@ -1067,6 +1099,7 @@ async function runAsyncJob(
     finalizeFailure(job, deps, {
       userId,
       sqlText: prepared.sql,
+      planDecision: prepared.planDecision,
       err,
       elapsed: Date.now() - start,
     });
@@ -1118,6 +1151,7 @@ async function runAsyncJob(
       executionTimeMs,
       rowCount: rows.length,
       sqlText: prepared.sql,
+      planDecision: prepared.planDecision,
       errorMessage: null,
       status: 'SUCCESS',
     });
@@ -1134,6 +1168,7 @@ async function runAsyncJob(
         executionTimeMs: elapsed,
         rowCount: null,
         sqlText: prepared.sql,
+      planDecision: prepared.planDecision,
         errorMessage: job.error,
         status: 'FAILED',
       });
@@ -1146,6 +1181,7 @@ async function runAsyncJob(
         executionTimeMs: elapsed,
         rowCount: null,
         sqlText: prepared.sql,
+      planDecision: prepared.planDecision,
         errorMessage: job.error,
         status: 'TIMEOUT',
       });
@@ -1158,6 +1194,7 @@ async function runAsyncJob(
         executionTimeMs: elapsed,
         rowCount: null,
         sqlText: prepared.sql,
+      planDecision: prepared.planDecision,
         errorMessage: job.error,
         status: 'FAILED',
       });
@@ -1176,7 +1213,13 @@ async function runAsyncJob(
 function finalizeFailure(
   job: AsyncJob,
   deps: MapExecutionDeps,
-  args: { userId: string; sqlText: string | null; err: unknown; elapsed: number },
+  args: {
+    userId: string;
+    sqlText: string | null;
+    planDecision?: string;
+    err: unknown;
+    elapsed: number;
+  },
 ): void {
   const timedOut = isTimeoutError(args.err);
   job.status = timedOut ? 'TIMEOUT' : 'FAILED';
@@ -1189,6 +1232,7 @@ function finalizeFailure(
     executionTimeMs: args.elapsed,
     rowCount: null,
     sqlText: args.sqlText,
+    planDecision: args.planDecision,
     errorMessage: job.error,
     status: timedOut ? 'TIMEOUT' : 'FAILED',
   });

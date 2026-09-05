@@ -25,6 +25,8 @@ import type {
   ExecutionHistoryEntry,
   ExecutionErrorKind,
   RefusalCode,
+  QueryPlanSummary,
+  PlanDraftItem,
   ExportJob,
   ExportJobStatus,
   ExportMapBody,
@@ -323,6 +325,15 @@ export const apiClient = {
     delete: (id: string) => api.delete<Envelope<{ deleted: boolean }>>(`/maps/${id}`),
     duplicate: (id: string, name?: string) =>
       api.post<Envelope<MapWithDetails>>(`/maps/${id}/duplicate`, { name }),
+    /**
+     * Classify a canvas without running it (D-117).
+     *
+     * Called as the builder's canvas changes, so a fan-trap refusal is shown
+     * while the user is still composing — rather than after they press Run,
+     * wait for production Oracle, and read an explanation.
+     */
+    plan: (items: PlanDraftItem[]) =>
+      api.post<Envelope<QueryPlanSummary>>('/maps/plan', { items }),
     execute: (id: string, body: ExecuteMapBody = {}) =>
       api.post<Envelope<ExecuteResult>>(`/maps/${id}/execute`, body),
     executeAsync: (id: string, body: ExecuteMapBody = {}) =>

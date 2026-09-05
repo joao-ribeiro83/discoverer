@@ -80,7 +80,7 @@ export function renderRewrite(
       `The calculation "${drawnCalcField.name}" cannot yet be shown on a worksheet that ` +
         'summarises more than one set of detail rows.',
       { calculations: [drawnCalcField.name] },
-      'FAN_TRAP',
+      'FAN_TRAP_REAGG',
     );
   }
 

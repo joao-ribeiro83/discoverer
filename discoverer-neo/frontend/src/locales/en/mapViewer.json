@@ -150,6 +150,31 @@
       "title": "A join in this worksheet is set both ways at once, so it was not run",
       "why": "This join is set to keep master rows with no detail AND detail rows with no master. Discoverer 4.1 could not write that in SQL, and no Oracle documentation describes what it was meant to do. Guessing would change the numbers this worksheet reports.",
       "whatToChange": "Ask an administrator to open this join and turn off one of its two outer-join settings."
+    },
+    "FAN_TRAP_R1": {
+      "title": "These totals are measured against different things, so the worksheet was not run",
+      "why": "This worksheet totals values from two sets of detail rows, but each set is joined to the main folder on a different column. The two totals are not counted against the same thing, so putting them side by side would compare figures that do not line up.",
+      "whatToChange": "Total values from one set of detail rows, or ask an administrator whether both joins should match on the same column."
+    },
+    "FAN_TRAP_R2": {
+      "title": "These folders are joined in a circle, so the worksheet was not run",
+      "why": "The two detail folders are joined to each other as well as to the main folder. That makes the relationship circular, and there is more than one way to add up the rows, each giving a different answer. Discoverer refused this shape too.",
+      "whatToChange": "Use columns from one of the two detail folders, or ask an administrator which join the worksheet should follow."
+    },
+    "FAN_TRAP_R3": {
+      "title": "This worksheet shows individual values from two sets of detail rows, so it was not run",
+      "why": "Totals across a one-to-many join work because the detail rows are only ever summarised. This worksheet also shows individual (non-totalled) values from two different sets of detail rows. Those sets do not line up with each other, so every combination of them would be listed rather than the rows you asked for.",
+      "whatToChange": "Total the values instead of listing them, or show individual values from one set of detail rows only."
+    },
+    "FAN_TRAP_R4": {
+      "title": "This worksheet fans out from more than one folder, so it was not run",
+      "why": "Detail rows are summarised against one main folder. This worksheet has two folders that each act as the main one, so there is no single set of rows to measure the totals against.",
+      "whatToChange": "Split this into two worksheets, one per main folder, or remove the columns that reach into the second one."
+    },
+    "FAN_TRAP_REAGG": {
+      "title": "This kind of total cannot be worked out across a join, so the worksheet was not run",
+      "why": "To total across a one-to-many join, each set of detail rows is summarised first and the parts are then combined. Adding up sums gives the right answer, and so do smallest and largest. Averages, counts of distinct values, standard deviation and variance cannot be rebuilt from parts: an average of averages is not the average.",
+      "whatToChange": "Use Sum, Count, Minimum or Maximum, or total this column on a worksheet that uses one folder only."
     }
   }
 }
