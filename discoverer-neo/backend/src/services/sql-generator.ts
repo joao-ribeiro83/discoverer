@@ -29,9 +29,11 @@ import { buildGroupByClause } from '../lib/sql/group-by-clause.js';
 import { buildOrderByClause } from '../lib/sql/order-by-clause.js';
 import { buildPagination } from '../lib/sql/pagination.js';
 import { planTotals } from '../lib/sql/totals.js';
+import { planQuery, refusalError } from '../lib/sql/planner.js';
 
 export { SqlGenerationError } from '../types/sql.js';
 export { validateFormula } from '../lib/sql/formula-parser.js';
+export { planQuery } from '../lib/sql/planner.js';
 
 // ---------------------------------------------------------------------------
 // Pure generator (unit-testable without a database)
@@ -50,7 +52,14 @@ export function generateSql(
   def: MapDefinition,
   options: SqlGenerationOptions = {},
 ): GeneratedSql {
-  const ctx = new GenerationContext(def);
+  // The plan comes first, always. It is what decides FLAT (D-018), and it
+  // carries the folder set the whole generation is scoped to — the emitter
+  // never re-derives one. Callers that have already planned (the execution
+  // service, the `/plan` endpoint) pass theirs in rather than planning twice.
+  const plan = options.plan ?? planQuery(def);
+  if (plan.kind === 'REFUSE') throw refusalError(plan);
+
+  const ctx = new GenerationContext(def, plan.folderIds);
 
   // SELECT first: it assigns folder aliases in display order and detects
   // aggregates (including those hidden inside formulas).
@@ -61,12 +70,13 @@ export function generateSql(
   // folders nothing else has aliased yet, and FROM joins whatever has been
   // aliased by the time it runs.
   const orderBy = buildOrderByClause(def, ctx, select);
-  const totalsPlan = planTotals(def, ctx, select);
-  // FROM is built last so it sees every folder the query touches. It also
-  // carries the interim multi-folder aggregate refusal (D-014), so it has to
-  // be told whether the statement aggregates — including through a totals
-  // query, which reuses this very FROM clause.
+  const totalsPlan = planTotals(def, ctx, select, plan);
+  // FROM is built last so every folder already has its alias. It also carries
+  // the interim multi-folder aggregate refusal (D-014), so it has to be told
+  // whether the statement aggregates — including through a totals query, which
+  // reuses this very FROM clause.
   const from = buildFromClause(def, ctx, {
+    plan,
     hasAggregates: select.hasAggregates || totalsPlan.entries.length > 0,
   });
   const groupBy = buildGroupByClause(select.hasAggregates, select.nonAggregateExprs);

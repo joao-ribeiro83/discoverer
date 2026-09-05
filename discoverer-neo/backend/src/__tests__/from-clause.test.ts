@@ -29,6 +29,7 @@ import { GenerationContext } from '../lib/sql/context.js';
 import { buildFromClause, type FromClauseOptions } from '../lib/sql/from-clause.js';
 import { buildSelectClause } from '../lib/sql/select-clause.js';
 import { effectiveFolderSet, spanningJoinPath } from '../lib/sql/folder-set.js';
+import { planQuery } from '../lib/sql/planner.js';
 
 // ---------------------------------------------------------------------------
 // Fixtures — deliberately local. The generator's own suite keeps its own set;
@@ -208,19 +209,21 @@ function mkDef(partial: Partial<MapDefinition>): MapDefinition {
 const norm = (sql: string) => sql.replace(/\s+/g, ' ').trim();
 
 /**
- * Build the FROM clause the way `generateSql` does — SELECT first.
+ * Build the FROM clause the way `generateSql` does — plan first, then SELECT.
  *
- * A folder only becomes "used" when something asks for its alias, and it is
- * the SELECT clause that does the asking. Calling `buildFromClause` on a fresh
- * context alone would always see an empty folder set.
+ * Before Phase 3.3 the folder set was whatever the SELECT clause had aliased by
+ * the time FROM ran, so this helper had to call `buildSelectClause` to make the
+ * clause see anything at all. The plan now supplies the set; SELECT is still
+ * run so the aliases are assigned in the same order the generator assigns them.
  */
 function fromClauseFor(
   def: MapDefinition,
-  options: FromClauseOptions = {},
+  options: Omit<FromClauseOptions, 'plan'> = {},
 ): { sql: string; ctx: GenerationContext } {
-  const ctx = new GenerationContext(def);
+  const plan = planQuery(def);
+  const ctx = new GenerationContext(def, plan.folderIds);
   buildSelectClause(def, ctx);
-  return { sql: norm(buildFromClause(def, ctx, options)), ctx };
+  return { sql: norm(buildFromClause(def, ctx, { ...options, plan })), ctx };
 }
 
 /**
@@ -249,10 +252,14 @@ function twoFolderFixture() {
 }
 
 // ---------------------------------------------------------------------------
-// 1. The single-folder short-circuit (from-clause.ts)
+// 1. The one-folder shape (from-clause.ts)
+//
+// Phase 3.3 removed the `required.length === 1` short-circuit that used to run
+// before every other test. One folder now takes the same path as any other and
+// simply produces a spanning tree with no edges (D-018).
 // ---------------------------------------------------------------------------
 
-describe('buildFromClause — single-folder short-circuit', () => {
+describe('buildFromClause — the one-folder shape', () => {
   it('emits one table reference and consults no join metadata', () => {
     const f = twoFolderFixture();
     const def = mkDef({
@@ -265,7 +272,7 @@ describe('buildFromClause — single-folder short-circuit', () => {
     expect(sql).toBe(`FROM "APP"."SALES" ${ctx.aliasFor(f.sales.id)}`);
   });
 
-  it('short-circuits even for an aggregate query — the refusal needs 2+ folders', () => {
+  it('stays flat for an aggregate query — the refusal needs 2+ folders', () => {
     const f = twoFolderFixture();
     const def = mkDef({
       items: [{ mapItem: mkMapItem(f.total), item: f.total, folder: f.sales }],
@@ -277,11 +284,13 @@ describe('buildFromClause — single-folder short-circuit', () => {
     );
   });
 
-  it('refuses when the query references no folder at all', () => {
+  it('refuses when the plan admits no folder at all', () => {
     const def = mkDef({});
-    expect(() => buildFromClause(def, new GenerationContext(def))).toThrow(
-      /references no folders/,
-    );
+    expect(() =>
+      buildFromClause(def, new GenerationContext(def), {
+        plan: { fromFolderIds: [] },
+      }),
+    ).toThrow(/references no folders/);
   });
 });
 

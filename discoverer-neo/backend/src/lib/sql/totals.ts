@@ -4,6 +4,23 @@ import type { GenerationContext } from './context.js';
 import { makeColumnAlias } from './identifiers.js';
 import { parseFormula, AGGREGATE_FUNCTIONS } from './formula-parser.js';
 import type { SelectClauseResult } from './select-clause.js';
+import type { QueryPlan } from './query-plan.js';
+
+/**
+ * `map_items.id` -> the plan branch its rows come from, or null when the plan
+ * is not a rewrite and every column is at one grain.
+ */
+function branchLookup(plan?: QueryPlan): (mapItemId: string) => string | null {
+  if (plan?.kind !== 'REWRITE') return () => null;
+  const byMapItem = new globalThis.Map<string, string>();
+  for (const branch of plan.branches) {
+    for (const measure of branch.measures) byMapItem.set(measure.mapItemId, branch.id);
+    for (const key of branch.groupKeys) {
+      if (key.kind === 'AXIS') byMapItem.set(key.mapItemId, branch.id);
+    }
+  }
+  return (mapItemId) => byMapItem.get(mapItemId) ?? null;
+}
 
 /**
  * One totals statement, minus the FROM and WHERE it shares with the main
@@ -60,10 +77,13 @@ export function planTotals(
   def: MapDefinition,
   ctx: GenerationContext,
   select: SelectClauseResult,
+  plan?: QueryPlan,
 ): TotalsPlan {
   const warnings: string[] = [];
   const totals = def.totals ?? [];
   if (totals.length === 0) return { entries: [], warnings };
+
+  const branchOf = branchLookup(plan);
 
   const mapItemById = new globalThis.Map(
     def.items.map((entry) => [entry.mapItem.id, entry]),
@@ -171,6 +191,8 @@ export function planTotals(
     }
 
     const planned: GeneratedTotal[] = [];
+    /** SELECT-list index and branch of each total, for the §1.6 suppression. */
+    const placed: Array<{ index: number; branchId: string | null }> = [];
     const bucket = [...(byBreak.get(breakKey) ?? [])].sort(
       (a, b) => a.displayOrder - b.displayOrder,
     );
@@ -212,6 +234,10 @@ export function planTotals(
         `${aggFunction === 'INLINE' ? 'TOTAL' : aggFunction}_${target.label}`,
         taken,
       );
+      placed.push({
+        index: selectParts.length,
+        branchId: total.mapItemId ? branchOf(total.mapItemId) : null,
+      });
       selectParts.push(`${expr} AS ${alias}`);
       planned.push({
         id: total.id,
@@ -228,6 +254,34 @@ export function planTotals(
     // A break whose every total was skipped would select nothing but the
     // break column — a list of values, not a total. Drop it.
     if (planned.length === 0) continue;
+
+    // -- §1.6 / §1.11 step 9 --------------------------------------------
+    // The second guard, at the presentation layer:
+    //
+    //   "If a worksheet displays values of items from both the master folder
+    //    and the detail folder, Discoverer will not total the values
+    //    together. Instead, Discoverer will display a null to prevent
+    //    incorrect or unexpected results."
+    //
+    // Once a query is rewritten into branches, the rows behind two columns
+    // can be at different grains. A number totalled across them would be
+    // arithmetically meaningless, and the wrong number is the whole failure
+    // mode this stage exists to prevent. So it renders NULL.
+    const spanned = new Set(placed.map((p) => p.branchId).filter((b) => b !== null));
+    if (spanned.size > 1) {
+      // `placed` and `planned` are pushed in lockstep, so they index together.
+      placed.forEach(({ index }, k) => {
+        selectParts[index] = `NULL AS ${planned[k]!.alias}`;
+        planned[k]!.aggFunction = 'SUPPRESSED';
+      });
+      warnings.push(
+        breakLabel
+          ? `Subtotals by "${breakLabel}" are shown blank: this worksheet totals columns that ` +
+            'come from different sets of rows, and adding them together would give a wrong number.'
+          : 'Totals are shown blank: this worksheet totals columns that come from different ' +
+            'sets of rows, and adding them together would give a wrong number.',
+      );
+    }
 
     entries.push({
       breakAlias,
