@@ -66,6 +66,10 @@ A declined worksheet shows an amber panel, not a red one. It says what was
 asked, why it cannot be answered, and what to change. Discoverer refused the
 same shapes.
 
+**You are told before you press Run.** The map builder classifies the worksheet
+as you compose it, so the panel appears on the canvas as soon as the columns
+make an unanswerable query — not after a round trip to the database.
+
 The reasons, and what to do, are in
 [Troubleshooting: why a worksheet was declined](../troubleshooting/refusals.md).
 
@@ -106,6 +110,32 @@ currently loaded. Loading more rows does not change them.
 sense in the order the query returned. Click a column header to sort and the
 results become a plain list; clear the sort to get the layout back. The footer
 tells you when the layout is paused.
+
+### Why some totals come out blank
+
+A total can appear **empty** rather than as a number. That is deliberate, and
+it is not a bug.
+
+It happens when one worksheet totals columns whose rows come from different
+places — one from the main folder, one from its detail rows. Those two sets of
+rows are counted differently, and adding them together would produce a number
+that answers no question. Rather than print it, Neo leaves the cell blank and
+says so in the footer.
+
+Discoverer did exactly the same: *"Discoverer will not total the values
+together. Instead, Discoverer will display a null to prevent incorrect or
+unexpected results."*
+
+To get the numbers, total each column on a worksheet of its own — or total only
+the columns that come from the same folder.
+
+### Why a worksheet sometimes refuses to total at all
+
+`AVG`, `COUNT DISTINCT`, `STDDEV` and `VARIANCE` cannot be worked out across a
+one-to-many join. Neo declines rather than showing a wrong number; the amber
+panel explains, and
+[Troubleshooting: why a worksheet was declined](../troubleshooting/refusals.md)
+lists what to use instead.
 
 ## Crosstabs
 

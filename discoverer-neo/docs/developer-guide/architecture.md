@@ -392,14 +392,125 @@ one part of a join that becomes SQL syntax rather than a quoted identifier or a
 bind. Column names go through the same `quoteIdentifier` validation as every
 other identifier — a name containing a quote is **rejected, not escaped**.
 
+### The query planner (fan-trap guard)
+
+**Every query is planned before any SQL is written.** `planQuery(def)`
+(`lib/sql/planner.ts`) implements Oracle's own decision procedure — the one
+documented across four Discoverer releases and distilled in
+`docs/master-plan/research/legacy-analysis.md` §1.11 — and returns a `QueryPlan`
+(`lib/sql/query-plan.ts`). The emitters render that plan. **Neither decides
+anything for itself.**
+
+#### Why a plan and not a verdict
+
+A `{ kind, branches: number }` enum can report a decision. It cannot execute
+one, because the rewrite changes the *arity* of three things the generator
+treats as singular:
+
+- **WHERE goes from one clause to n+1.** Each branch's conditions and
+  parameters live inside that branch's inline view. A filter on branch *i*
+  placed in the outer query silently drops master rows that branch *j* still
+  matches — the arithmetic forces the placement, not taste.
+- **Folder aliases stop being 1:1.** The rewrite repeats the master folder
+  inside every branch, so a folder needs one alias per branch.
+- **GROUP BY goes per branch.** Each inline view groups by the master key
+  before anything else sees it, and the axis columns ride on exactly one
+  branch.
+
+So the plan carries: branches, each branch's folders, its join predicate, its
+branch-local conditions and parameters, its group keys, its per-measure
+aggregate **and** re-aggregate, and the outer key set.
+
+#### The decision procedure
+
+```
+ 0. |M| = 0            -> FLAT(NO_MEASURES).  A fan trap is an aggregation
+                          defect only; nothing can be inflated.
+ 1. one folder         -> FLAT(SINGLE_FOLDER)
+    disconnected       -> FLAT(DISCONNECTED). The FROM clause refuses by name.
+ 2. orient every edge master -> detail from METADATA, never traversal order
+ 3. FANNING := one_to_one is not true            (assume fanning)
+ 4. live branches(f) = fanning edges off f whose subtree contributes a column
+ 5. candidate(f) <=> >= 2 live branches carry a measure
+                  OR f carries a measure itself and has >= 1 live branch  (5a)
+ 6. R1  branches key on different master columns
+    R2  a direct join between two branch subtrees
+    R3  >= 2 branches contribute a non-aggregated column
+    R4  >= 2 candidate masters
+    REAGG  a measure that cannot be recalculated from partial totals
+ 7. one inline view per branch, detail side OUTER, GROUP BY the master key
+ 8. outer query joins the branches on that key and RE-AGGREGATES
+ 9. a total spanning branches renders NULL, not a number
+10. the decision is recorded on `query_execution_log.plan_decision`
+```
+
+**Assume fanning (D-033).** `OneToOne` defaults to `False` in Oracle's own
+export DTD, and Oracle states its *only* effect is fan-trap detection. Unknown
+or absent therefore means FANNING. Treating a missing flag as safe inverts
+Discoverer's bias and under-detects — and every one of this estate's ten joins
+is in exactly that state.
+
+**The single-branch trap (D-034, step 5a).** A master-side measure selected
+alongside *one* live fanning branch repeats once per detail row. This is the
+`M M67 1 -> M M67` case, header to lines, where a £2.4M quarter reports as
+£9.6M. A guard keyed on "two or more branches" walks straight past it. The
+master's own measures form their own branch, aggregated at master grain.
+
+**Re-aggregation (D-035).** `SUM->SUM`, `COUNT->SUM`, `MIN->MIN`, `MAX->MAX`.
+`AVG`, `COUNT DISTINCT`, `STDDEV` and `VARIANCE` **refuse**: they cannot be
+rebuilt from parts, Oracle's documentation does not say how Discoverer handled
+them across a fan, and a guessed decomposition is a wrong number that looks
+right. The estate carries 282 `COUNT DISTINCT` totals, so this is ordinary user
+behaviour and the refusal has to explain itself.
+
+**Every refusal names its rule and its folders**, and each rule has its own
+`RefusalCode` (`FAN_TRAP_R1` … `FAN_TRAP_REAGG`) because the five need
+genuinely different "what to change" copy. `POST /api/maps/plan` classifies an
+unsaved canvas, so the builder reports a refusal before Run rather than after a
+round trip to Oracle.
+
+#### FLAT is a decision, not a default
+
+`buildFromClause` used to short-circuit on `required.length === 1` before
+anything else ran, which made FLAT the emitter's default and left fan-trap
+detection with something to remember to override. Oracle's model requires the
+opposite: *"a deliberate fast path with an explicit predicate, not a default
+that fan-trap detection has to remember to override."* One folder now takes the
+same path and produces a spanning tree with no edges.
+
+The same change made the folder set a **value**. `aliasFor` used to decide
+membership as a side effect of generation, so the FROM root was whichever
+clause builder aliased a folder first. It now only *names* a folder the plan
+already admits.
+
+#### Two invariants recorded beside the plan type
+
+**The summary/RLS bypass (D-021).** A materialised view, rollup or cached
+result derived from an RLS-bearing folder contains only its creator's rows —
+*the fastest path through the system is also the one that leaks*. Nothing leaks
+today because Neo has **no result cache**. The note exists so the first person
+to add one finds the rule: a cache key for a query over an RLS-bearing folder
+must include the resolved security predicates and their bind values, or the
+cache must not exist.
+
+**The security set is not the join path.** The planner deliberately adds
+folders to FROM that carry no selected item. Do not widen the security set to
+match — `securityRelevantFolderIds` already draws the line at "can this folder
+change the rows the user sees".
+
 ### Interim: multi-folder aggregates are refused
 
 `buildFromClause` refuses a query that spans more than one folder *and*
 aggregates, naming the folders. A flat inner join across a master/detail pair
 multiplies every master measure by its detail count — Oracle's own worked
 example shows 2x-3x inflation on two measures at once — and a wrong number that
-looks right is worse than a refusal. The guard is removed when the fan-trap
-planner lands; until then, multi-folder maps without aggregates are unaffected.
+looks right is worse than a refusal.
+
+The planner above now *classifies* those queries correctly and `renderRewrite`
+(`lib/sql/rewrite.ts`) writes the inline-view shape, proven against Oracle's own
+numbers in `fan-trap-planner.test.ts`. **Multi-folder generation is still
+switched off**: this refusal stays until Phase 3.4 removes it. Multi-folder maps
+without aggregates are unaffected.
 
 ## Data Flow Examples
 
