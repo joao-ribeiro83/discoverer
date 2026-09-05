@@ -8,6 +8,7 @@ import type {
   Item,
   Folder,
   Join,
+  JoinPredicate,
 } from '../db/schema.js';
 
 /**
@@ -30,11 +31,25 @@ export interface MapDefinition {
    * queries and behaves exactly as it did before.
    */
   totals?: MapTotal[];
-  /** All joins available in the business area (with side items/folders). */
+  /**
+   * All joins available in the business area, each with its folders and the
+   * 1..n column pairs of its predicate.
+   *
+   * `leftFolder` is the MASTER side and `rightFolder` the DETAIL side (D-040).
+   * `predicates` may be EMPTY — a join whose source predicate was missing or
+   * could not be decomposed is still loaded, so that a query needing it can
+   * refuse by NAME (D-039) instead of vanishing and surfacing later as an
+   * unattributable "no join path connects…".
+   */
   joins: Array<{
     join: Join;
-    leftItem: Item;
-    rightItem: Item;
+    predicates: Array<{
+      predicate: JoinPredicate;
+      /** MASTER-side item; null when it did not migrate. */
+      leftItem: Item | null;
+      /** DETAIL-side item; null when it did not migrate. */
+      rightItem: Item | null;
+    }>;
     leftFolder: Folder;
     rightFolder: Folder;
   }>;
@@ -235,7 +250,13 @@ export interface ExplainPlan {
  * code so the client can explain it instead of showing the message as an
  * error — the copy belongs to the UI and has to translate (D-036).
  */
-export type RefusalCode = 'MULTI_FOLDER_AGGREGATE' | 'NO_JOIN_PATH';
+export type RefusalCode =
+  | 'MULTI_FOLDER_AGGREGATE'
+  | 'NO_JOIN_PATH'
+  /** A join the query needs carries no usable predicate (D-039). */
+  | 'JOIN_NO_PREDICATE'
+  /** A join sets both outer-join flags, which 4.1 could not express (D-038). */
+  | 'JOIN_BOTH_OUTER';
 
 export class SqlGenerationError extends Error {
   constructor(

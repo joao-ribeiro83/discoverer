@@ -201,27 +201,50 @@ function mkTotal(overrides: Partial<MapTotal> = {}): MapTotal {
   };
 }
 
+/**
+ * `left` is the MASTER side, `right` the DETAIL side (D-040).
+ *
+ * `joinType` is DERIVED from the two outer-join flags and is no longer a
+ * column (D-032), so this factory takes the name and sets the flags that
+ * produce it. There is no `FULL`: that flag pair is a refusal (D-038).
+ */
 function mkJoin(
   leftFolder: Folder,
   leftItem: Item,
   rightFolder: Folder,
   rightItem: Item,
-  joinType: Join['joinType'] = 'INNER',
+  joinType: 'INNER' | 'LEFT' | 'RIGHT' = 'INNER',
 ): MapDefinition['joins'][number] {
+  const join: Join = {
+    id: uid(),
+    name: `${leftFolder.name}_${rightFolder.name}`,
+    leftFolderId: leftFolder.id,
+    rightFolderId: rightFolder.id,
+    oneToOne: false,
+    allowMasterNoDetail: joinType === 'LEFT',
+    allowDetailNoMaster: joinType === 'RIGHT',
+    mandatory: true,
+    predicateFormula: null,
+    isActive: true,
+    createdAt: NOW,
+  };
   return {
-    join: {
-      id: uid(),
-      name: `${leftFolder.name}_${rightFolder.name}`,
-      leftFolderId: leftFolder.id,
-      rightFolderId: rightFolder.id,
-      leftItemId: leftItem.id,
-      rightItemId: rightItem.id,
-      joinType,
-      isActive: true,
-      createdAt: NOW,
-    },
-    leftItem,
-    rightItem,
+    join,
+    predicates: [
+      {
+        predicate: {
+          id: uid(),
+          joinId: join.id,
+          seq: 0,
+          leftItemId: leftItem.id,
+          rightItemId: rightItem.id,
+          operator: '=',
+          createdAt: NOW,
+        },
+        leftItem,
+        rightItem,
+      },
+    ],
     leftFolder,
     rightFolder,
   };
@@ -1597,7 +1620,9 @@ describe('SQL generator', () => {
       expectParsable(generateSql(def).sql);
     });
 
-    it.each(['INNER', 'LEFT', 'RIGHT', 'FULL'] as const)(
+    // No `FULL`: it is no longer a value the model can hold. The flag pair
+    // that would mean it refuses instead (D-038).
+    it.each(['INNER', 'LEFT', 'RIGHT'] as const)(
       '%s join query parses',
       (joinType) => {
         const f = salesFixture();

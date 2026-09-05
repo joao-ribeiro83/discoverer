@@ -15,7 +15,14 @@
  */
 
 import { describe, it, expect } from '@jest/globals';
-import type { Folder, Item, Join, Map, MapItem } from '../db/schema.js';
+import type {
+  Folder,
+  Item,
+  Join,
+  JoinPredicate,
+  Map,
+  MapItem,
+} from '../db/schema.js';
 import type { MapDefinition } from '../types/sql.js';
 import { SqlGenerationError } from '../types/sql.js';
 import { GenerationContext } from '../lib/sql/context.js';
@@ -138,23 +145,50 @@ function mkJoin(
   detailItem: Item,
   overrides: Partial<Join> = {},
 ): MapDefinition['joins'][number] {
+  const join: Join = {
+    id: uid(),
+    name: `${master.name} -> ${detail.name}`,
+    leftFolderId: master.id,
+    rightFolderId: detail.id,
+    oneToOne: false,
+    allowMasterNoDetail: false,
+    allowDetailNoMaster: false,
+    mandatory: true,
+    predicateFormula: null,
+    isActive: true,
+    createdAt: NOW,
+    ...overrides,
+  };
   return {
-    join: {
-      id: uid(),
-      name: `${master.name} -> ${detail.name}`,
-      leftFolderId: master.id,
-      rightFolderId: detail.id,
-      leftItemId: masterItem.id,
-      rightItemId: detailItem.id,
-      joinType: 'INNER',
-      isActive: true,
-      createdAt: NOW,
-      ...overrides,
-    },
-    leftItem: masterItem,
-    rightItem: detailItem,
+    join,
+    predicates: [
+      {
+        predicate: mkPredicate(join, 0, masterItem, detailItem),
+        leftItem: masterItem,
+        rightItem: detailItem,
+      },
+    ],
     leftFolder: master,
     rightFolder: detail,
+  };
+}
+
+/** One column pair of a join's predicate. Nulls model an item that did not migrate. */
+function mkPredicate(
+  join: Join,
+  seq: number,
+  masterItem: Item | null,
+  detailItem: Item | null,
+  operator = '=',
+): JoinPredicate {
+  return {
+    id: uid(),
+    joinId: join.id,
+    seq,
+    leftItemId: masterItem?.id ?? null,
+    rightItemId: detailItem?.id ?? null,
+    operator,
+    createdAt: NOW,
   };
 }
 
@@ -297,7 +331,7 @@ describe('spanningJoinPath — BFS spanning tree', () => {
   it('flips a LEFT join traversed from its right side, and reports the flip', () => {
     const f = twoFolderFixture();
     const left = mkJoin(f.sales, f.orderId, f.lines, f.lineOrderId, {
-      joinType: 'LEFT',
+      allowMasterNoDetail: true,
     });
     // Root at the DETAIL folder, so the edge is walked right-to-left.
     const { edges } = spanningJoinPath([f.lines.id, f.sales.id], [left]);

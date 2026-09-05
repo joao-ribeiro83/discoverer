@@ -4,6 +4,7 @@ import {
   items,
   folders,
   joins,
+  joinPredicates,
   maps,
   mapItems,
   mapConditions,
@@ -260,6 +261,31 @@ export async function loadMapDefinition(mapId: string): Promise<MapDefinition> {
         .where(inArray(joins.leftFolderId, folderIds))
     : [];
 
+  // A join's predicate: 1..n column pairs, ANDed in `seq` order. Loaded even
+  // when a component's item is missing, because a short `ON` clause returns
+  // MORE rows than the source did — the FROM clause refuses instead (D-039).
+  const predicateRows = joinRows.length
+    ? await db
+        .select()
+        .from(joinPredicates)
+        .where(
+          inArray(
+            joinPredicates.joinId,
+            joinRows.map((j) => j.id),
+          ),
+        )
+        .orderBy(joinPredicates.joinId, joinPredicates.seq)
+    : [];
+  const predicatesByJoinId = new globalThis.Map<
+    string,
+    (typeof predicateRows)[number][]
+  >();
+  for (const row of predicateRows) {
+    const list = predicatesByJoinId.get(row.joinId);
+    if (list) list.push(row);
+    else predicatesByJoinId.set(row.joinId, [row]);
+  }
+
   function itemWithFolder(itemId: string): { item: Item; folder: Folder } {
     const item = itemById.get(itemId);
     if (!item) {
@@ -289,15 +315,24 @@ export async function loadMapDefinition(mapId: string): Promise<MapDefinition> {
     parameters: parameterRows,
     calculatedFields: calculatedFieldRows,
     totals: totalRows,
+    // A join is kept whenever both its FOLDERS are in scope. It is NOT dropped
+    // for a missing predicate or a missing predicate item: that was the old
+    // behaviour, and it turned every one of the estate's ten joins into an
+    // absent edge, which then surfaced far away as an unattributable "No join
+    // path connects folder X…". The predicate travels with the join, empty if
+    // that is what the source gave, and `buildFromClause` refuses BY NAME when
+    // a query actually needs it (D-039).
     joins: joinRows.flatMap((j) => {
-      if (!j.leftItemId || !j.rightItemId) return [];
-      const leftItem = itemById.get(j.leftItemId);
-      const rightItem = itemById.get(j.rightItemId);
       const leftFolder = folderById.get(j.leftFolderId);
       const rightFolder = folderById.get(j.rightFolderId);
-      // Skip joins whose endpoints fall outside the business area.
-      if (!leftItem || !rightItem || !leftFolder || !rightFolder) return [];
-      return [{ join: j, leftItem, rightItem, leftFolder, rightFolder }];
+      // Skip joins whose folders fall outside the business area.
+      if (!leftFolder || !rightFolder) return [];
+      const predicates = (predicatesByJoinId.get(j.id) ?? []).map((p) => ({
+        predicate: p,
+        leftItem: p.leftItemId ? (itemById.get(p.leftItemId) ?? null) : null,
+        rightItem: p.rightItemId ? (itemById.get(p.rightItemId) ?? null) : null,
+      }));
+      return [{ join: j, predicates, leftFolder, rightFolder }];
     }),
     formulaItems: itemRows.flatMap((item) => {
       const folder = folderById.get(item.folderId);

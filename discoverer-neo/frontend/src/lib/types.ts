@@ -95,7 +95,11 @@ export interface Item {
   isActive: boolean
 }
 
-export type JoinType = 'INNER' | 'LEFT' | 'RIGHT' | 'FULL'
+/**
+ * No `FULL`: the flag combination that would mean a full outer join is a
+ * refusal, not a join type Neo emits (D-038).
+ */
+export type JoinType = 'INNER' | 'LEFT' | 'RIGHT'
 
 export interface Join {
   id: string
@@ -108,7 +112,16 @@ export interface Join {
   rightItemId: string | null
   leftItemName: string | null
   rightItemName: string | null
+  /** Derived from the join's outer-join flags, not a stored column (D-032). */
   joinType: JoinType
+  /** Fan-trap detection only. Never affects the emitted SQL. */
+  oneToOne: boolean
+  allowMasterNoDetail: boolean
+  allowDetailNoMaster: boolean
+  /** Referential-integrity assertion; unlocks join trimming, not a join type. */
+  mandatory: boolean
+  /** How many column pairs the predicate has. 0 means the join cannot run. */
+  predicateCount: number
 }
 
 export interface JoinSuggestion {
@@ -473,7 +486,11 @@ export type ExecutionErrorKind =
   | 'REFUSED'
 
 /** Machine-readable reason behind a `REFUSED` execution. Keys the explanation copy. */
-export type RefusalCode = 'MULTI_FOLDER_AGGREGATE' | 'NO_JOIN_PATH'
+export type RefusalCode =
+  | 'MULTI_FOLDER_AGGREGATE'
+  | 'NO_JOIN_PATH'
+  | 'JOIN_NO_PREDICATE'
+  | 'JOIN_BOTH_OUTER'
 
 export type AsyncJobStatus = 'QUEUED' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'TIMEOUT' | 'CANCELLED'
 

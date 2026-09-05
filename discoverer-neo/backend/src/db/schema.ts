@@ -1,7 +1,7 @@
 /**
  * The backend's view of the database.
  *
- * The 20 tables shared with the migrator are **not declared here**. They live
+ * The 21 tables shared with the migrator are **not declared here**. They live
  * in `@discoverer-neo/core/db/schema` as their single definition and are
  * re-exported below, so the two workspaces cannot drift: there is only one
  * declaration to drift from. Adding a `pgTable` call here for any of them
@@ -42,6 +42,7 @@ import {
   folders,
   items,
   joins,
+  joinPredicates,
   hierarchies,
   hierarchyLevels,
   maps,
@@ -433,24 +434,36 @@ export const itemsRelations = relations(items, ({ one, many }) => ({
   hierarchyLevels: many(hierarchyLevels),
 }));
 
-export const joinsRelations = relations(joins, ({ one }) => ({
+export const joinsRelations = relations(joins, ({ one, many }) => ({
+  /** MASTER side (D-040). */
   leftFolder: one(folders, {
     fields: [joins.leftFolderId],
     references: [folders.id],
     relationName: 'join_left_folder',
   }),
+  /** DETAIL side (D-040). */
   rightFolder: one(folders, {
     fields: [joins.rightFolderId],
     references: [folders.id],
     relationName: 'join_right_folder',
   }),
+  predicates: many(joinPredicates),
+}));
+
+export const joinPredicatesRelations = relations(joinPredicates, ({ one }) => ({
+  join: one(joins, {
+    fields: [joinPredicates.joinId],
+    references: [joins.id],
+  }),
   leftItem: one(items, {
-    fields: [joins.leftItemId],
+    fields: [joinPredicates.leftItemId],
     references: [items.id],
+    relationName: 'join_predicate_left_item',
   }),
   rightItem: one(items, {
-    fields: [joins.rightItemId],
+    fields: [joinPredicates.rightItemId],
     references: [items.id],
+    relationName: 'join_predicate_right_item',
   }),
 }));
 
@@ -674,6 +687,9 @@ export type NewFolder = typeof folders.$inferInsert;
 export type Item = typeof items.$inferSelect;
 export type NewItem = typeof items.$inferInsert;
 export type Join = typeof joins.$inferSelect;
+export type NewJoin = typeof joins.$inferInsert;
+export type JoinPredicate = typeof joinPredicates.$inferSelect;
+export type NewJoinPredicate = typeof joinPredicates.$inferInsert;
 export type Hierarchy = typeof hierarchies.$inferSelect;
 export type HierarchyLevel = typeof hierarchyLevels.$inferSelect;
 export type CustomFunction = typeof customFunctions.$inferSelect;

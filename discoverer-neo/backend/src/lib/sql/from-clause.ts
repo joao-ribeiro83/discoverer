@@ -1,14 +1,35 @@
-import type { Folder } from '../../db/schema.js';
+import type { Folder, Item } from '../../db/schema.js';
 import { SqlGenerationError, type MapDefinition } from '../../types/sql.js';
 import type { GenerationContext } from './context.js';
 import { spanningJoinPath } from './folder-set.js';
 import { quoteIdentifier } from './identifiers.js';
 
+/**
+ * Emitted SQL per derived join type. No `FULL`: the flag combination that
+ * would mean it refuses instead (D-038), so it never reaches here.
+ */
 const JOIN_SQL: Record<string, string> = {
   INNER: 'INNER JOIN',
   LEFT: 'LEFT OUTER JOIN',
   RIGHT: 'RIGHT OUTER JOIN',
-  FULL: 'FULL OUTER JOIN',
+};
+
+/**
+ * The operators a join predicate may emit — a CLOSED set, looked up by key.
+ *
+ * The operator is the one part of a join that becomes SQL syntax rather than
+ * a quoted identifier or a bind, so it is never interpolated from stored data:
+ * a value outside this table is an error, not a string to splice. The database
+ * carries the same six as a CHECK constraint, so this is the second of two
+ * gates, not the only one.
+ */
+const PREDICATE_OPERATOR_SQL: Record<string, string> = {
+  '=': '=',
+  '<': '<',
+  '>': '>',
+  '<=': '<=',
+  '>=': '>=',
+  '<>': '<>',
 };
 
 /**
@@ -116,18 +137,75 @@ export function buildFromClause(
     const j = def.joins[edge.joinIdx]!;
     const joinSql = JOIN_SQL[edge.joinType];
     if (!joinSql) {
-      throw new SqlGenerationError(`Unknown join type "${j.join.joinType}"`);
+      throw new SqlGenerationError(`Unknown join type "${edge.joinType}"`);
     }
 
     const newFolder = ctx.getFolder(edge.to);
     const newAlias = ctx.aliasFor(edge.to);
-    const leftExpr = ctx.itemExpression(j.leftItem, j.leftFolder);
-    const rightExpr = ctx.itemExpression(j.rightItem, j.rightFolder);
 
     parts.push(
-      `${joinSql} ${folderTableRef(newFolder)} ${newAlias} ON ${leftExpr} = ${rightExpr}`,
+      `${joinSql} ${folderTableRef(newFolder)} ${newAlias} ON ${joinOnClause(j, ctx)}`,
     );
   }
 
   return parts.join('\n');
+}
+
+/**
+ * The `ON` clause for one join: every component of its predicate, ANDed in
+ * `seq` order.
+ *
+ * **A join with no usable predicate refuses, by name (D-039).** Until Phase
+ * 3.2 such a join was dropped silently by the loader, which left its folders
+ * unlinked and surfaced — later, and somewhere else — as "No join path
+ * connects folder X to the rest of the query". The folders were fine; the
+ * predicate was missing. Every one of the estate's ten joins was in that
+ * state, and the message never once said which join was at fault.
+ *
+ * A component whose item endpoint did not migrate refuses for the same reason
+ * the row is stored at all: emitting only the components that DID resolve
+ * would shorten `a = b AND c = d` to `a = b`, which returns MORE rows than the
+ * source did (D-058 — refuse rather than distort).
+ */
+function joinOnClause(
+  j: MapDefinition['joins'][number],
+  ctx: GenerationContext,
+): string {
+  const { join, predicates, leftFolder, rightFolder } = j;
+  if (predicates.length === 0) {
+    throw new SqlGenerationError(
+      `Join "${join.name}" has no join condition, so the folders it connects cannot be queried together.`,
+      { joins: [join.name] },
+      'JOIN_NO_PREDICATE',
+    );
+  }
+
+  const folderOf = (item: Item): Folder =>
+    item.folderId === leftFolder.id ? leftFolder : rightFolder;
+
+  return [...predicates]
+    .sort((a, b) => a.predicate.seq - b.predicate.seq)
+    .map(({ predicate, leftItem, rightItem }) => {
+      if (!leftItem || !rightItem) {
+        throw new SqlGenerationError(
+          `Join "${join.name}" has a join condition whose column did not migrate, ` +
+            'so the condition would be incomplete and would return too many rows.',
+          { joins: [join.name] },
+          'JOIN_NO_PREDICATE',
+        );
+      }
+      const operator = PREDICATE_OPERATOR_SQL[predicate.operator];
+      if (!operator) {
+        throw new SqlGenerationError(
+          `Join "${join.name}" uses an unsupported comparison ${JSON.stringify(predicate.operator)}`,
+        );
+      }
+      // Both sides go through `itemExpression`, which validates and quotes the
+      // identifier or throws — a column name carrying a quote is rejected, not
+      // escaped.
+      const left = ctx.itemExpression(leftItem, folderOf(leftItem));
+      const right = ctx.itemExpression(rightItem, folderOf(rightItem));
+      return `${left} ${operator} ${right}`;
+    })
+    .join(' AND ');
 }

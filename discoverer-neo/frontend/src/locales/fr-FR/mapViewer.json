@@ -139,6 +139,17 @@
       "title": "Ces dossiers ne sont pas reliés, la feuille n'a donc pas été exécutée",
       "why": "La feuille utilise des colonnes de dossiers qu'aucune chaîne de jointures ne relie. Sans jointure, la base de données associerait chaque ligne d'un dossier à chaque ligne de l'autre et renverrait un résultat dénué de sens.",
       "whatToChange": "Retirez les colonnes du dossier non relié, ou demandez à un administrateur de définir une jointure entre eux."
+    },
+    "joins": "Jointures concernées : {{joins}}",
+    "JOIN_NO_PREDICATE": {
+      "title": "Une jointure de cette feuille n'a pas de condition, elle n'a donc pas été exécutée",
+      "why": "Cette feuille doit relier deux dossiers, mais la jointure entre eux n'indique pas quelles colonnes doivent correspondre. Sans cette condition, la base de données associerait chaque ligne d'un dossier à chaque ligne de l'autre. La jointure a été migrée depuis Discoverer sans sa condition, ou sous une forme que Neo n'a pas su lire.",
+      "whatToChange": "Demandez à un administrateur d'ouvrir cette jointure et d'indiquer les colonnes à faire correspondre. En attendant, utilisez les colonnes d'un seul dossier."
+    },
+    "JOIN_BOTH_OUTER": {
+      "title": "Une jointure de cette feuille est réglée dans les deux sens à la fois, elle n'a donc pas été exécutée",
+      "why": "Cette jointure conserve à la fois les lignes maîtres sans détail ET les lignes de détail sans maître. Discoverer 4.1 ne pouvait pas écrire cela en SQL, et aucune documentation Oracle ne décrit ce qu'elle devait faire. Deviner modifierait les chiffres que cette feuille rapporte.",
+      "whatToChange": "Demandez à un administrateur d'ouvrir cette jointure et de désactiver l'une de ses deux options de jointure externe."
     }
   }
 }

@@ -2,7 +2,7 @@
  * BE-10 / D-011 — the shared tables have exactly one declaration.
  *
  * Before this, `backend/src/db/schema.ts` and `migrate/src/db/schema.ts` each
- * declared the same 20 tables, and nothing made them agree. They didn't: the
+ * declared the same 21 tables, and nothing made them agree. They didn't: the
  * migrator's `map_conditions` had no `group_id`, so 5 605 imported conditions
  * lost their parenthesisation, and its `maps.business_area_id` was still
  * `notNull()` a phase after the backend made it advisory.
@@ -25,6 +25,7 @@ const SHARED_TABLES = [
   'folder_business_areas',
   'items',
   'joins',
+  'join_predicates',
   'hierarchies',
   'hierarchy_levels',
   'custom_functions',

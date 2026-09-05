@@ -18,7 +18,10 @@ import {
 // Validation schemas
 // ---------------------------------------------------------------------------
 
-const JoinTypeEnum = z.enum(['INNER', 'LEFT', 'RIGHT', 'FULL']);
+// No `FULL`. It was only ever reachable because `join_type` was stored, and it
+// was stored from a column that does not carry a join type. The flag pair that
+// would mean a full outer join is a refusal (D-038).
+const JoinTypeEnum = z.enum(['INNER', 'LEFT', 'RIGHT']);
 
 const CreateBodySchema = z.object({
   name: z.string().min(1).max(255),
@@ -63,7 +66,7 @@ const joinSchema = {
     rightFolderId: { type: 'string' },
     leftItemId: { type: ['string', 'null'] },
     rightItemId: { type: ['string', 'null'] },
-    joinType: { type: 'string', enum: ['INNER', 'LEFT', 'RIGHT', 'FULL'] },
+    joinType: { type: 'string', enum: ['INNER', 'LEFT', 'RIGHT'] },
     isActive: { type: 'boolean' },
     createdAt: { type: 'string' },
   },
@@ -78,7 +81,7 @@ const joinWithDetailsSchema = {
     rightFolderId: { type: 'string' },
     leftItemId: { type: ['string', 'null'] },
     rightItemId: { type: ['string', 'null'] },
-    joinType: { type: 'string', enum: ['INNER', 'LEFT', 'RIGHT', 'FULL'] },
+    joinType: { type: 'string', enum: ['INNER', 'LEFT', 'RIGHT'] },
     isActive: { type: 'boolean' },
     createdAt: { type: 'string' },
     leftFolderName: { type: 'string' },
@@ -98,7 +101,7 @@ const joinSuggestionSchema = {
     rightItemId: { type: 'string' },
     leftColumnName: { type: 'string' },
     rightColumnName: { type: 'string' },
-    suggestedJoinType: { type: 'string', enum: ['INNER', 'LEFT', 'RIGHT', 'FULL'] },
+    suggestedJoinType: { type: 'string', enum: ['INNER', 'LEFT', 'RIGHT'] },
     reason: { type: 'string' },
   },
 } as const;
@@ -208,7 +211,7 @@ export default function joinRoutes(fastify: FastifyInstance) {
             rightFolderId: { type: 'string', format: 'uuid' },
             leftItemId: { type: ['string', 'null'], format: 'uuid' },
             rightItemId: { type: ['string', 'null'], format: 'uuid' },
-            joinType: { type: 'string', enum: ['INNER', 'LEFT', 'RIGHT', 'FULL'] },
+            joinType: { type: 'string', enum: ['INNER', 'LEFT', 'RIGHT'] },
           },
         },
         response: {
@@ -287,7 +290,7 @@ export default function joinRoutes(fastify: FastifyInstance) {
             rightFolderId: { type: 'string', format: 'uuid' },
             leftItemId: { type: ['string', 'null'], format: 'uuid' },
             rightItemId: { type: ['string', 'null'], format: 'uuid' },
-            joinType: { type: 'string', enum: ['INNER', 'LEFT', 'RIGHT', 'FULL'] },
+            joinType: { type: 'string', enum: ['INNER', 'LEFT', 'RIGHT'] },
           },
         },
         response: {

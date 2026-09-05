@@ -139,6 +139,17 @@
       "title": "Estas pastas não estão ligadas, por isso a folha não foi executada",
       "why": "A folha usa colunas de pastas que nenhuma cadeia de junções liga entre si. Sem uma junção, a base de dados combinaria cada linha de uma pasta com cada linha da outra e devolveria um resultado sem sentido.",
       "whatToChange": "Remova as colunas da pasta não ligada, ou peça a um administrador para definir uma junção entre elas."
+    },
+    "joins": "Junções envolvidas: {{joins}}",
+    "JOIN_NO_PREDICATE": {
+      "title": "Uma junção desta folha não tem condição, por isso não foi executada",
+      "why": "Esta folha precisa de ligar duas pastas, mas a junção entre elas não diz que colunas devem corresponder. Sem essa condição, a base de dados combinaria cada linha de uma pasta com cada linha da outra. A junção foi migrada do Discoverer sem a condição, ou numa forma que o Neo não conseguiu ler.",
+      "whatToChange": "Peça a um administrador para abrir esta junção e definir as colunas que devem corresponder. Até lá, use colunas de apenas uma pasta."
+    },
+    "JOIN_BOTH_OUTER": {
+      "title": "Uma junção desta folha está definida nos dois sentidos ao mesmo tempo, por isso não foi executada",
+      "why": "Esta junção guarda ao mesmo tempo as linhas mestre sem detalhe E as linhas de detalhe sem mestre. O Discoverer 4.1 não conseguia escrever isso em SQL, e nenhuma documentação da Oracle descreve o que pretendia fazer. Adivinhar mudaria os números que esta folha reporta.",
+      "whatToChange": "Peça a um administrador para abrir esta junção e desligar uma das duas opções de junção externa."
     }
   }
 }

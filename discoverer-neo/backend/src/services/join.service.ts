@@ -1,20 +1,61 @@
 import { eq, and, or, inArray } from 'drizzle-orm';
 import { db } from '../db/index.js';
-import { joins, items, folders, type Join } from '../db/schema.js';
+import {
+  joins,
+  joinPredicates,
+  items,
+  folders,
+  type Join,
+} from '../db/schema.js';
+import { deriveJoinType } from '../lib/sql/join-type.js';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-export type JoinType = 'INNER' | 'LEFT' | 'RIGHT' | 'FULL';
+/**
+ * The join types Neo can emit.
+ *
+ * No `FULL`. It was never reachable: `join_type` came from
+ * `EUL4_KEY_CONS.KEY_TYPE`, whose live domain is `FK`/`UK`, and the flag
+ * combination that would mean a full outer join is a refusal (D-038) —
+ * inexpressible in the Oracle 8 `(+)` syntax Discoverer 4.1 targeted, and
+ * described by no vendor text.
+ */
+export type JoinType = 'INNER' | 'LEFT' | 'RIGHT';
+
+/**
+ * `join_type` is no longer stored (D-032); it is derived from the two
+ * outer-join flags. This is the inverse, for the admin API, which still lets
+ * a person pick a join type by name rather than set two booleans.
+ */
+const FLAGS_FOR_JOIN_TYPE: Record<
+  JoinType,
+  { allowMasterNoDetail: boolean; allowDetailNoMaster: boolean }
+> = {
+  INNER: { allowMasterNoDetail: false, allowDetailNoMaster: false },
+  LEFT: { allowMasterNoDetail: true, allowDetailNoMaster: false },
+  RIGHT: { allowMasterNoDetail: false, allowDetailNoMaster: true },
+};
 
 export interface CreateJoinInput {
   name: string;
+  /** MASTER folder (D-040). */
   leftFolderId: string;
+  /** DETAIL folder (D-040). */
   rightFolderId: string;
+  /**
+   * The single column pair a join authored here uses. Stored as one
+   * `join_predicates` row with operator `=`. Multi-column predicates come from
+   * the EUL migration; the admin UI does not build them yet.
+   */
   leftItemId?: string | null;
   rightItemId?: string | null;
   joinType: JoinType;
+  /** Fan-trap detection only — never affects the emitted SQL. */
+  oneToOne?: boolean;
+  /** Referential-integrity assertion. Unlocks join trimming; not a join type. */
+  mandatory?: boolean;
 }
 
 export interface UpdateJoinInput {
@@ -24,13 +65,22 @@ export interface UpdateJoinInput {
   leftItemId?: string | null;
   rightItemId?: string | null;
   joinType?: JoinType;
+  oneToOne?: boolean;
+  mandatory?: boolean;
 }
 
 export interface JoinWithDetails extends Join {
   leftFolderName: string;
   rightFolderName: string;
+  /** Derived from the flags, for display. Never a stored column. */
+  joinType: JoinType;
+  /** First predicate component's items — what the admin UI shows today. */
+  leftItemId: string | null;
+  rightItemId: string | null;
   leftItemName: string | null;
   rightItemName: string | null;
+  /** How many column pairs the predicate has. 0 means the join cannot run. */
+  predicateCount: number;
   businessAreaId: string;
 }
 
@@ -145,13 +195,81 @@ export async function create(data: CreateJoinInput): Promise<Join> {
       name: data.name,
       leftFolderId: data.leftFolderId,
       rightFolderId: data.rightFolderId,
-      leftItemId: data.leftItemId ?? null,
-      rightItemId: data.rightItemId ?? null,
-      joinType: data.joinType,
+      ...FLAGS_FOR_JOIN_TYPE[data.joinType],
+      oneToOne: data.oneToOne ?? false,
+      mandatory: data.mandatory ?? false,
     })
     .returning();
 
-  return row as Join;
+  const join = row as Join;
+  await writePredicate(join.id, data.leftItemId ?? null, data.rightItemId ?? null);
+  return join;
+}
+
+/**
+ * Replace a join's predicate with the single `=` pair the admin API carries.
+ *
+ * A join authored in Neo has one column pair; the multi-column shape comes
+ * from the EUL, whose predicate is an n-ary `AND` token tree. Passing two
+ * nulls clears the predicate, which leaves the join present but unrunnable —
+ * and `buildFromClause` then refuses by name (D-039) rather than silently
+ * dropping it.
+ */
+async function writePredicate(
+  joinId: string,
+  leftItemId: string | null,
+  rightItemId: string | null,
+): Promise<void> {
+  await db.delete(joinPredicates).where(eq(joinPredicates.joinId, joinId));
+  if (!leftItemId && !rightItemId) return;
+  await db.insert(joinPredicates).values({
+    joinId,
+    seq: 0,
+    leftItemId,
+    rightItemId,
+    operator: '=',
+  });
+}
+
+/**
+ * A join's predicate, flattened to what the admin API shows: the FIRST
+ * component's two items, plus how many components there are in total.
+ *
+ * The count matters. A migrated three-column join shows one pair in the UI,
+ * and `predicateCount` is what says the other two exist rather than letting
+ * the screen imply the join is simpler than it is.
+ */
+async function readPredicateSummary(joinId: string): Promise<{
+  leftItemId: string | null;
+  rightItemId: string | null;
+  leftItemName: string | null;
+  rightItemName: string | null;
+  predicateCount: number;
+}> {
+  const rows = await db
+    .select()
+    .from(joinPredicates)
+    .where(eq(joinPredicates.joinId, joinId))
+    .orderBy(joinPredicates.seq);
+
+  const first = rows[0];
+  const nameOf = async (itemId: string | null | undefined) => {
+    if (!itemId) return null;
+    const [row] = await db
+      .select({ name: items.name })
+      .from(items)
+      .where(eq(items.id, itemId))
+      .limit(1);
+    return row?.name ?? null;
+  };
+
+  return {
+    leftItemId: first?.leftItemId ?? null,
+    rightItemId: first?.rightItemId ?? null,
+    leftItemName: await nameOf(first?.leftItemId),
+    rightItemName: await nameOf(first?.rightItemId),
+    predicateCount: rows.length,
+  };
 }
 
 /**
@@ -161,40 +279,53 @@ export async function update(
   id: string,
   data: UpdateJoinInput,
 ): Promise<Join | null> {
-  const values: Record<string, unknown> = {
-    ...data,
-  };
+  const [current] = await db
+    .select()
+    .from(joins)
+    .where(eq(joins.id, id))
+    .limit(1);
+  if (!current) return null;
 
-  // Remove fields that shouldn't be overwritten
-  delete values.id;
-  delete values.createdAt;
+  const values: Record<string, unknown> = {};
+  if (data.name !== undefined) values.name = data.name;
+  if (data.leftFolderId !== undefined) values.leftFolderId = data.leftFolderId;
+  if (data.rightFolderId !== undefined) values.rightFolderId = data.rightFolderId;
+  if (data.oneToOne !== undefined) values.oneToOne = data.oneToOne;
+  if (data.mandatory !== undefined) values.mandatory = data.mandatory;
+  // `join_type` is not a column any more — it sets the two flags it derives
+  // from (D-032).
+  if (data.joinType !== undefined) {
+    Object.assign(values, FLAGS_FOR_JOIN_TYPE[data.joinType]);
+  }
 
-  // If items are being updated, validate them
-  if (data.leftItemId || data.rightItemId) {
-    // Get the current join to resolve folder IDs
-    const [current] = await db
-      .select()
-      .from(joins)
-      .where(eq(joins.id, id))
-      .limit(1);
+  const leftFolderId = data.leftFolderId ?? current.leftFolderId;
+  const rightFolderId = data.rightFolderId ?? current.rightFolderId;
 
-    if (!current) {
-      return null;
-    }
-
-    const leftFolderId = data.leftFolderId ?? current.leftFolderId;
-    const rightFolderId = data.rightFolderId ?? current.rightFolderId;
+  // The predicate is only touched when the caller names an item, so an update
+  // that only renames the join leaves a migrated multi-column predicate alone.
+  const touchesPredicate =
+    data.leftItemId !== undefined || data.rightItemId !== undefined;
+  if (touchesPredicate) {
+    const existing = await readPredicateSummary(id);
+    const leftItemId =
+      data.leftItemId !== undefined ? data.leftItemId : existing.leftItemId;
+    const rightItemId =
+      data.rightItemId !== undefined ? data.rightItemId : existing.rightItemId;
 
     const validation = await validateJoin(
-      data.leftItemId ?? current.leftItemId,
-      data.rightItemId ?? current.rightItemId,
+      leftItemId,
+      rightItemId,
       leftFolderId,
       rightFolderId,
     );
-
     if (!validation.valid) {
       throw new Error(validation.error);
     }
+    await writePredicate(id, leftItemId, rightItemId);
+  }
+
+  if (Object.keys(values).length === 0) {
+    return current;
   }
 
   const [row] = await db
@@ -216,9 +347,11 @@ export async function getById(id: string): Promise<JoinWithDetails | null> {
       name: joins.name,
       leftFolderId: joins.leftFolderId,
       rightFolderId: joins.rightFolderId,
-      leftItemId: joins.leftItemId,
-      rightItemId: joins.rightItemId,
-      joinType: joins.joinType,
+      oneToOne: joins.oneToOne,
+      allowMasterNoDetail: joins.allowMasterNoDetail,
+      allowDetailNoMaster: joins.allowDetailNoMaster,
+      mandatory: joins.mandatory,
+      predicateFormula: joins.predicateFormula,
       isActive: joins.isActive,
       createdAt: joins.createdAt,
       leftFolderName: folders.name,
@@ -237,34 +370,12 @@ export async function getById(id: string): Promise<JoinWithDetails | null> {
     .where(eq(folders.id, row.rightFolderId))
     .limit(1);
 
-  // Fetch item names
-  let leftItemName: string | null = null;
-  let rightItemName: string | null = null;
-
-  if (row.leftItemId) {
-    const [li] = await db
-      .select({ name: items.name })
-      .from(items)
-      .where(eq(items.id, row.leftItemId))
-      .limit(1);
-    leftItemName = li?.name ?? null;
-  }
-
-  if (row.rightItemId) {
-    const [ri] = await db
-      .select({ name: items.name })
-      .from(items)
-      .where(eq(items.id, row.rightItemId))
-      .limit(1);
-    rightItemName = ri?.name ?? null;
-  }
-
   return {
     ...row,
+    ...(await readPredicateSummary(row.id)),
+    joinType: deriveJoinType(row, row.name),
     leftFolderName: row.leftFolderName,
     rightFolderName: rightFolder?.name ?? '',
-    leftItemName,
-    rightItemName,
     businessAreaId: rightFolder?.businessAreaId ?? '',
   };
 }
@@ -279,9 +390,11 @@ export async function listByFolder(folderId: string): Promise<JoinWithDetails[]>
       name: joins.name,
       leftFolderId: joins.leftFolderId,
       rightFolderId: joins.rightFolderId,
-      leftItemId: joins.leftItemId,
-      rightItemId: joins.rightItemId,
-      joinType: joins.joinType,
+      oneToOne: joins.oneToOne,
+      allowMasterNoDetail: joins.allowMasterNoDetail,
+      allowDetailNoMaster: joins.allowDetailNoMaster,
+      mandatory: joins.mandatory,
+      predicateFormula: joins.predicateFormula,
       isActive: joins.isActive,
       createdAt: joins.createdAt,
     })
@@ -308,33 +421,12 @@ export async function listByFolder(folderId: string): Promise<JoinWithDetails[]>
       .where(eq(folders.id, row.rightFolderId))
       .limit(1);
 
-    let leftItemName: string | null = null;
-    let rightItemName: string | null = null;
-
-    if (row.leftItemId) {
-      const [li] = await db
-        .select({ name: items.name })
-        .from(items)
-        .where(eq(items.id, row.leftItemId))
-        .limit(1);
-      leftItemName = li?.name ?? null;
-    }
-
-    if (row.rightItemId) {
-      const [ri] = await db
-        .select({ name: items.name })
-        .from(items)
-        .where(eq(items.id, row.rightItemId))
-        .limit(1);
-      rightItemName = ri?.name ?? null;
-    }
-
     enriched.push({
       ...row,
+      ...(await readPredicateSummary(row.id)),
+      joinType: deriveJoinType(row, row.name),
       leftFolderName: leftFolder?.name ?? '',
       rightFolderName: rightFolder?.name ?? '',
-      leftItemName,
-      rightItemName,
       businessAreaId: rightFolder?.businessAreaId ?? '',
     });
   }
@@ -364,9 +456,11 @@ export async function listByBusinessArea(businessAreaId: string): Promise<JoinWi
       name: joins.name,
       leftFolderId: joins.leftFolderId,
       rightFolderId: joins.rightFolderId,
-      leftItemId: joins.leftItemId,
-      rightItemId: joins.rightItemId,
-      joinType: joins.joinType,
+      oneToOne: joins.oneToOne,
+      allowMasterNoDetail: joins.allowMasterNoDetail,
+      allowDetailNoMaster: joins.allowDetailNoMaster,
+      mandatory: joins.mandatory,
+      predicateFormula: joins.predicateFormula,
       isActive: joins.isActive,
       createdAt: joins.createdAt,
     })
@@ -393,33 +487,12 @@ export async function listByBusinessArea(businessAreaId: string): Promise<JoinWi
       .where(eq(folders.id, row.rightFolderId))
       .limit(1);
 
-    let leftItemName: string | null = null;
-    let rightItemName: string | null = null;
-
-    if (row.leftItemId) {
-      const [li] = await db
-        .select({ name: items.name })
-        .from(items)
-        .where(eq(items.id, row.leftItemId))
-        .limit(1);
-      leftItemName = li?.name ?? null;
-    }
-
-    if (row.rightItemId) {
-      const [ri] = await db
-        .select({ name: items.name })
-        .from(items)
-        .where(eq(items.id, row.rightItemId))
-        .limit(1);
-      rightItemName = ri?.name ?? null;
-    }
-
     enriched.push({
       ...row,
+      ...(await readPredicateSummary(row.id)),
+      joinType: deriveJoinType(row, row.name),
       leftFolderName: leftFolder?.name ?? '',
       rightFolderName: rightFolder?.name ?? '',
-      leftItemName,
-      rightItemName,
       businessAreaId,
     });
   }
@@ -530,20 +603,23 @@ export async function autoSuggestJoins(folderId: string): Promise<JoinSuggestion
       if (
         sourceItem.columnName.toUpperCase() === targetItem.columnName.toUpperCase()
       ) {
-        // Check if a join already exists for this pair
+        // Check if a join already exists for this pair. The pair now lives on
+        // `join_predicates`, so the lookup goes through it — a join with a
+        // multi-column predicate matches if ANY of its components is this pair.
         const [existing] = await db
           .select({ id: joins.id })
           .from(joins)
+          .innerJoin(joinPredicates, eq(joinPredicates.joinId, joins.id))
           .where(
             and(
               or(
                 and(
-                  eq(joins.leftItemId, sourceItem.id),
-                  eq(joins.rightItemId, targetItem.id),
+                  eq(joinPredicates.leftItemId, sourceItem.id),
+                  eq(joinPredicates.rightItemId, targetItem.id),
                 ),
                 and(
-                  eq(joins.leftItemId, targetItem.id),
-                  eq(joins.rightItemId, sourceItem.id),
+                  eq(joinPredicates.leftItemId, targetItem.id),
+                  eq(joinPredicates.rightItemId, sourceItem.id),
                 ),
               ),
               eq(joins.isActive, true),
