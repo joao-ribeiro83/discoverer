@@ -164,6 +164,51 @@ as anomalous.
 
 ---
 
+## Decision 5 — a measure is named by the workbook, its aggregate by the EUL
+
+**Date:** 2026-09-05 · Phase 3.1
+
+**Discoverer.** Two facts, in two places, and neither file holds both.
+
+The `.DIS` workbook says which items are measures. Its query request carries the
+split as two literal vectors — `0x0123` axis, `0x0124` measure
+(`EUL_SCHEMA_GROUND_TRUTH.md` §7.8.3). It is **given, not inferred** (D-031),
+which is why nothing tries to guess it from a datatype.
+
+The EUL says what to aggregate a measure with. `EXPRESSIONS.IT_FUN_ID` is the
+item's **Default aggregate**, a foreign key to `FUNCTIONS` (§3.2). The `.DIS`
+holds no per-item aggregate function at all; its one aggregate code (`0x0c1d`)
+belongs to a *total*, which is a different and richer channel and lands in
+`map_totals.agg_function`.
+
+**Decision: read both, and write the aggregate only where the workbook says the
+item is a measure.** That is legacy-analysis §3.4's precedence — the default
+aggregate applies when the item is on the measure axis — so an axis column
+projects its raw value and carries no aggregate even when its item names one.
+
+Two consequences worth stating plainly, because both look like bugs and are not:
+
+- **Most measures have no aggregate, and that is the source's answer.** `Detail`
+  is Oracle's marker for *do not aggregate*, and 8 152 of the estate's items
+  carry it; 353 more carry no default. 4 161 of 5 920 measure columns are
+  therefore null. Defaulting them to `SUM` would replace a tracked gap with a
+  wrong number — quietly, and in money.
+- **The vocabulary is Neo's, not Discoverer's.** `agg_function` is constrained to
+  `SUM|COUNT|AVG|MIN|MAX` or NULL, the set `lib/sql/formula-parser.ts` accepts.
+  Oracle's `/aggregate` grammar has six values and `EDCBAggregateType` sixteen
+  members. A name outside the five is not a label Neo displays; it is one
+  `select-clause.ts` throws on, and one the fan-trap guard would read as a
+  measure it cannot re-aggregate. Free text feeding a correctness guard is the
+  hazard the CHECK closes.
+
+**Why it mattered enough to be a phase.** The fan-trap guard's first step is
+`if |M| = 0: flat plan, STOP`, and `M` is defined by aggregation. With
+`agg_function` null on all 25 964 map items, every query classified as `|M| = 0`
+and the guard would have shipped present, unit-tested and structurally inert.
+`migration-verify`'s seam 5 now fails on that state rather than staying green.
+
+---
+
 ## What still needs a live EUL
 
 These are open because no offline source answers them, not because they were

@@ -181,6 +181,13 @@ It is a foreign key to `EUL4_FUNCTIONS`, not a code. Live distribution over
 `IT_PLACEMENT` was ruled out as the carrier — it groups `3`/`1`/`2`, a display
 placement code.
 
+**Read since Phase 3.1.** `readItems` selects it — probed, not listed, because a
+column that is absent turns the whole item read into an `ORA-00904` and no
+offline source confirms the spelling on EUL5 — and resolves it through
+`FUNCTIONS` rather than storing the id. `Detail` reaches the transform layer as
+`Detail` and becomes null there, alongside every name outside Neo's five
+(`normalizeAggregation`). The column it lands in is described in §7.9.1.
+
 ### 3.3 Hierarchies — a node tree, not numbered levels **[SQL — `Lineage.sql`]**
 
 | Table | Real columns |
@@ -1630,6 +1637,7 @@ before it. A worksheet that uses none of §7.8 migrates exactly as it did.
 | `0x02be` `EDCBAxisType` | `map_items.axis_type` |
 | crosstab row/column edge | `map_items.axis_edge` — **no source field**, see below |
 | `0x0123` / `0x0124` axis & measure order | `map_items.axis_order` |
+| `0x0123` / `0x0124` measure vector + `IT_FUN_ID` | `map_items.agg_function` — see below |
 | query item with no column | `map_items.is_hidden` |
 | `0x0642` value type | `map_items.data_type` |
 | `0x064a` display mask | `map_items.format_mask` (already existed) |
@@ -1650,6 +1658,23 @@ before it. A worksheet that uses none of §7.8 migrates exactly as it did.
 | `0x0127` → `0x0118` join usage | `map_layouts.source_attrs.joins` — no dedicated column, see §7.9.2 |
 | every element's own id | `source_element_id` on each of the above |
 | `[UNCONFIRMED]` flags, style chain | `source_attrs` jsonb on each of the above |
+
+**`map_items.agg_function` is the one column with two sources, and it needs
+both.** The workbook says *which* items are measures — `0x0124`, a literal
+vector, and the only place that answer exists. It says nothing about *what to
+aggregate them with*: the `.DIS` carries no per-item aggregate function at all,
+and its one aggregate code (`0x0c1d`) belongs to a total, not an item. That half
+comes from the EUL's Default aggregate, `EXPRESSIONS.IT_FUN_ID` (§3.2).
+legacy-analysis §3.4's precedence puts them together: the default aggregate
+applies **when the item is on the measure axis**, so an axis column projects raw
+and gets nothing here.
+
+Where the pair yields no function the column stays null — 4 161 of the estate's
+5 920 measure columns, because 8 152 items carry Oracle's `Detail` marker and
+353 carry no default. Defaulting those to `SUM` would turn a tracked gap into a
+wrong number. Live after Phase 3.1: **1 760 columns carry `SUM`, across 402 of
+923 maps.** `agg_function` is constrained to `SUM|COUNT|AVG|MIN|MAX` or NULL by
+`0012_constrain_agg_function.sql`.
 
 ### 7.9.2 The four judgement calls, and why
 
@@ -1747,6 +1772,7 @@ maps-only re-import) — from the same `transformWorkbook` output.
 | `maps.select_distinct` | `0x0128` `Distinct` (§7.8.3) | **[DUMP]** — the differ's per-sheet `Distinct` tally |
 | `map_items.axis_type` | `0x02be` `EDCBAxisType` (§7.8.8), falling back to the query list that names the item | **[DUMP]** — the differ rebuilds `Axis Item Usage` / `Measure Item Usage` from this field and compares |
 | `map_items.axis_order` | index within `0x0123` / `0x0124` | **[DUMP]** — same tally; the lists are ordered |
+| `map_items.agg_function` | `EXPRESSIONS.IT_FUN_ID` (§3.2), on `0x0124` measures only | **[LIVE EUL4]** — the probe that named the column; the dump prints no aggregate for an item |
 | `map_items.is_hidden` | a query item no column displays (§7.8.4) | **[DUMP]** — the differ's `Items :-` minus the sheet's columns |
 | `map_calculated_fields.axis_type` | `0x00e2` `Placement` (§7.8.13) | **[DUMP]** 41 982/41 982 |
 | `map_calculated_fields.is_hidden` | `0x00e6` `Hidden` (§7.8.13) | **[DUMP]** 41 982/41 982 |
