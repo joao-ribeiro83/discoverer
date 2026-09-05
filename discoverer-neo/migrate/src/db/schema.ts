@@ -18,6 +18,7 @@
 import { sql } from 'drizzle-orm';
 import {
   boolean,
+  check,
   index,
   integer,
   jsonb,
@@ -36,6 +37,22 @@ import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 // ---------------------------------------------------------------------------
 // Enums
 // ---------------------------------------------------------------------------
+
+/**
+ * The domain of every `agg_function` column: the five functions Neo's SQL
+ * generator accepts (`backend/src/lib/sql/formula-parser.ts`), or NULL for
+ * "no aggregation".
+ *
+ * A CHECK rather than a `pgEnum` because the column already exists as
+ * `varchar(64)` on three tables with live data, and because the set is Neo's
+ * own capability, not Discoverer's — Oracle's `EDCBAggregateType` has sixteen
+ * members and its `/aggregate` grammar six. A value outside this set is not a
+ * label Neo displays; it is one `select-clause.ts` throws on, and one the
+ * fan-trap guard would read as a measure it cannot re-aggregate. Free text
+ * feeding a correctness guard is the hazard this closes.
+ */
+const AGG_FUNCTION_CHECK = (name: string, column: AnyPgColumn) =>
+  check(name, sql`${column} IS NULL OR ${column} IN ('SUM', 'COUNT', 'AVG', 'MIN', 'MAX')`);
 
 export const userRoleEnum = pgEnum('user_role', [
   'ADMIN',
@@ -473,6 +490,7 @@ export const items = pgTable(
     index('items_folder_idx').on(t.folderId),
     index('items_parent_idx').on(t.parentItemId),
     index('items_created_by_idx').on(t.createdBy),
+    AGG_FUNCTION_CHECK('items_agg_function_check', t.aggFunction),
   ],
 );
 
@@ -689,6 +707,19 @@ export const mapItems = pgTable(
     displayOrder: integer('display_order').notNull().default(0),
     displayName: varchar('display_name', { length: 255 }),
     formatMask: varchar('format_mask', { length: 255 }),
+    /**
+     * The aggregate this column is run with — the EUL item's Default aggregate
+     * (`EXPRESSIONS.IT_FUN_ID`), written only where the workbook's query
+     * request puts the item on the measure vector (`0x0124`). `select-clause.ts`
+     * falls back to `items.agg_function` when this is null, so the column is an
+     * override, not the only home for the value; the migration fills it so the
+     * fan-trap guard can read one map's measure set without re-deriving it.
+     *
+     * Null on every axis column, and on any measure whose item resolves to
+     * `Detail` (8 152 of the estate's items) or carries no default at all
+     * (353). It is never defaulted to `SUM`: a guessed aggregate is a wrong
+     * number that looks right.
+     */
     aggFunction: varchar('agg_function', { length: 64 }),
     sortDirection: sortDirectionEnum('sort_direction'),
     sortOrder: integer('sort_order'),
@@ -761,6 +792,7 @@ export const mapItems = pgTable(
   (t) => [
     index('map_items_map_idx').on(t.mapId),
     index('map_items_item_idx').on(t.itemId),
+    AGG_FUNCTION_CHECK('map_items_agg_function_check', t.aggFunction),
   ],
 );
 

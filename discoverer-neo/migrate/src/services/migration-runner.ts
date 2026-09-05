@@ -31,6 +31,8 @@ import {
   buildMapLayoutRow,
   buildMapPageSetupRow,
   buildMapTotalRow,
+  defaultAggregateBySourceId,
+  mapItemAggFunction,
   transformBusinessArea,
   transformCustomFunction,
   transformFolder,
@@ -690,6 +692,10 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
   }
 
   // --- 4. items (plain/calculated CI-CU + conditions CO) --------------------
+  // `EXP_ID` → Default aggregate, for §8's map columns. Built from the EUL
+  // rather than from `itemRows` because a map column names its item by
+  // `EXP_ID`, which is the key the EUL read still has.
+  const defaultAggregates = defaultAggregateBySourceId(eul.data.items);
   const transformedItems = [...eul.data.items, ...eul.data.conditions].map((it) =>
     transformItem(it, version.version),
   );
@@ -1028,6 +1034,10 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
           displayOrder: mi.displayOrder,
           displayName: mi.displayName,
           formatMask: mi.formatMask,
+          // The workbook's measure vector meeting the EUL's Default aggregate
+          // — see `mapItemAggFunction`. Null on every axis column, and on any
+          // measure whose item resolves to `Detail` or to no default at all.
+          aggFunction: mapItemAggFunction(mi, defaultAggregates),
           axisType: mi.axisType,
           axisOrder: mi.axisOrder,
           isHidden: mi.isHidden,
