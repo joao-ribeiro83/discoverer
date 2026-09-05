@@ -670,12 +670,31 @@ export interface TransformedGrant {
  */
 export const MIGRATED_USER_PASSWORD_HASH = '!migrated-no-login';
 
-/** Normalize an aggregation function: EUL 'NONE'/'' means "no aggregation". */
+/**
+ * The domain of every `agg_function` column — the five functions Neo's SQL
+ * generator accepts (`backend/src/lib/sql/formula-parser.ts`;
+ * `select-clause.ts` throws on anything else). Enforced in the database by
+ * `0012_constrain_agg_function.sql`.
+ */
+export const NEO_AGGREGATE_FUNCTIONS = ['SUM', 'COUNT', 'AVG', 'MIN', 'MAX'] as const;
+
+/**
+ * Normalize an EUL **Default aggregate** to that domain.
+ *
+ * Oracle's own grammar is `SUM|MAX|MIN|COUNT|AVG|DETAIL`
+ * (`/aggregate`, `9.0.4\B10270_01.pdf` p. 5-171). `DETAIL` is the marker for
+ * *no* aggregation, not a function — 8 152 of the live estate's items carry it
+ * — so it normalizes to null, exactly like an absent value.
+ *
+ * Anything outside the domain also becomes null rather than reaching the
+ * column. This is a correctness input, not a label: an unnamed function read
+ * as an aggregate is a wrong number, and `agg_function` feeds both the
+ * fan-trap guard's measure set and the SELECT list.
+ */
 export function normalizeAggregation(value: string | null): string | null {
   if (value === null) return null;
-  const trimmed = value.trim();
-  if (trimmed === '' || trimmed.toUpperCase() === 'NONE') return null;
-  return trimmed;
+  const upper = value.trim().toUpperCase();
+  return (NEO_AGGREGATE_FUNCTIONS as readonly string[]).includes(upper) ? upper : null;
 }
 
 /** Coalesce an empty/whitespace string to null; pass through real content. */
