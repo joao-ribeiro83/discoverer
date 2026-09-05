@@ -11,6 +11,8 @@ import {
   buildMapLayoutRow,
   buildMapPageSetupRow,
   buildMapTotalRow,
+  defaultAggregateBySourceId,
+  mapItemAggFunction,
   FOLDER_TYPE_MAP_EUL4,
   FOLDER_TYPE_MAP_EUL5,
   ITEM_TYPE_MAP,
@@ -34,6 +36,7 @@ import { parseWorkbookContent, summarizeWorkbookDocument } from '../services/eul
 import { buildWorkbookFixture } from '../testing/workbook-fixture.js';
 import type {
   TransformedMapCondition,
+  TransformedMapItem,
   TransformedMapTotal,
 } from '../services/transformers/index.js';
 import type {
@@ -378,6 +381,24 @@ describe('transformItem', () => {
 
   it('keeps a real aggregation function', () => {
     expect(transformItem(item({ aggregation: 'SUM' }), 'EUL5').aggFunction).toBe('SUM');
+  });
+
+  // Oracle's `/aggregate` grammar is SUM|MAX|MIN|COUNT|AVG|DETAIL. `Detail` is
+  // the marker for *no* aggregation and 8 152 of the estate's items carry it,
+  // so it must not reach a column the SQL generator reads as a function.
+  it("treats Oracle's Detail marker as no aggregation", () => {
+    expect(transformItem(item({ aggregation: 'Detail' }), 'EUL4').aggFunction).toBeNull();
+  });
+
+  it('normalizes case rather than storing whatever the EUL spells', () => {
+    expect(transformItem(item({ aggregation: 'sum' }), 'EUL4').aggFunction).toBe('SUM');
+  });
+
+  // `agg_function` feeds `select-clause.ts` and the fan-trap guard's measure
+  // set. A name outside Neo's five is not a label to display; it is a throw or
+  // a measure that cannot be re-aggregated.
+  it('drops a function Neo cannot run instead of passing it through', () => {
+    expect(transformItem(item({ aggregation: 'STDDEV' }), 'EUL4').aggFunction).toBeNull();
   });
 
   it('transforms an EUL4 item that has no nulls-allowed / parent metadata', () => {
@@ -1450,6 +1471,51 @@ describe('transformWorkbook', () => {
   it('has no joins when the worksheet forces none', () => {
     const [map] = transformWorkbook(workbook(), 'EUL5');
     expect(map?.joins).toEqual([]);
+  });
+});
+
+describe('mapItemAggFunction — the split meeting the aggregate', () => {
+  // 300 aggregates, 301 is Oracle's `Detail` (no aggregation), 302 has no
+  // default at all — the three shapes the live EUL4 actually holds.
+  const defaults = defaultAggregateBySourceId([
+    { sourceId: 300, aggregation: 'SUM' },
+    { sourceId: 301, aggregation: 'Detail' },
+    { sourceId: 302, aggregation: null },
+  ]);
+
+  const column = (
+    over: Partial<Pick<TransformedMapItem, 'axisType' | 'itemSourceId'>> = {},
+  ): Pick<TransformedMapItem, 'axisType' | 'itemSourceId'> => ({
+    axisType: 'MEASURE',
+    itemSourceId: 300,
+    ...over,
+  });
+
+  it('drops Detail and no-default items from the lookup entirely', () => {
+    expect([...defaults]).toEqual([[300, 'SUM']]);
+  });
+
+  // The whole point of the phase: the workbook's `0x0124` measure vector and
+  // the EUL's `IT_FUN_ID` are both required, and each is useless alone.
+  it('writes the aggregate on a measure column', () => {
+    expect(mapItemAggFunction(column(), defaults)).toBe('SUM');
+  });
+
+  // legacy-analysis §3.4: the default aggregate applies when the item is on
+  // the measure axis. An axis column projects its raw value.
+  it('writes nothing on an axis or page column, even when the item aggregates', () => {
+    expect(mapItemAggFunction(column({ axisType: 'AXIS' }), defaults)).toBeNull();
+    expect(mapItemAggFunction(column({ axisType: 'PAGE' }), defaults)).toBeNull();
+    expect(mapItemAggFunction(column({ axisType: null }), defaults)).toBeNull();
+  });
+
+  // Never SUM by default. 8 152 items say Detail and 353 say nothing; guessing
+  // an aggregate for them is a wrong number that looks right.
+  it('leaves a measure null when its item states no aggregate', () => {
+    expect(mapItemAggFunction(column({ itemSourceId: 301 }), defaults)).toBeNull();
+    expect(mapItemAggFunction(column({ itemSourceId: 302 }), defaults)).toBeNull();
+    expect(mapItemAggFunction(column({ itemSourceId: null }), defaults)).toBeNull();
+    expect(mapItemAggFunction(column({ itemSourceId: 999 }), defaults)).toBeNull();
   });
 });
 

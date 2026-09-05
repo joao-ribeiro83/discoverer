@@ -183,6 +183,7 @@ export {
   checkFormulaCompileRate,
   checkReferentialClosure,
   checkReconciliation,
+  checkMeasureSet,
   EXPECTED_LOSS_ALLOWANCES,
   summarise,
   formatVerifyReport,

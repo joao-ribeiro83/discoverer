@@ -566,7 +566,7 @@ export async function commandValidateMigration(
  * a transaction: a rollback over 923 maps would destroy the evidence needed to
  * debug the failure, and the estate is already migrated in any case.
  *
- * Two of the four seams need the SQL generator and the formula parser, which
+ * Two of the five seams need the SQL generator and the formula parser, which
  * live in the backend workspace. That workspace depends on this one and not the
  * reverse, so those seams report SKIPPED here — never PASS — and name the
  * command that runs them. `npm run verify --workspace @discoverer-neo/backend`
@@ -645,7 +645,7 @@ function parseArgs(argv: string[]) {
     .command('export', 'Export the EUL metadata as normalized JSON')
     .command('validate', 'Validate EUL referential integrity (add --target to reconcile a migration)')
     .command('run', 'Migrate the EUL into a Discoverer Neo Postgres database')
-    .command('verify', 'Run the four seam checks against an already-migrated --target (D-070)')
+    .command('verify', 'Run the five seam checks against an already-migrated --target (D-070)')
     .demandCommand(1, 'Specify a command: analyze, export, validate, run, or verify')
     .strict()
     .exitProcess(false)

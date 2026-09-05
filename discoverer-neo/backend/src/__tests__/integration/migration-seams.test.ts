@@ -6,6 +6,7 @@ import {
   checkFormulaCompileRate,
   checkReconciliation,
   checkReferentialClosure,
+  checkMeasureSet,
   EXPECTED_LOSS_ALLOWANCES,
   type ExpectedLossAllowance,
   checkSqlGeneration,
@@ -42,7 +43,7 @@ import { generateSqlForMap } from '../../services/sql-generator.js';
 import { bucketFormula } from '../../services/formula-bucket.js';
 
 // ===========================================================================
-// The four seam tests (Phase 1.3).
+// The five seam tests (Phase 1.3; seam 5 added by Phase 3.1).
 //
 // Every other suite in this repository verifies one component against its own
 // fixtures. None spans migration and execution, which is how 1 654 passing
@@ -441,6 +442,108 @@ describe('Migration seam tests', () => {
       ).rejects.toThrow('not a bare table name');
     });
 
+    it('keeps the checked-in declaration well formed', () => {
+      expect(EXPECTED_LOSS_ALLOWANCES.length).toBeGreaterThan(0);
+      for (const a of EXPECTED_LOSS_ALLOWANCES) {
+        expect(a.table).toMatch(/^[a-z_][a-z0-9_]*$/);
+        expect(a.expectedTarget).toBeGreaterThanOrEqual(0);
+        // Every gap carries a stated reason, whether or not it is understood.
+        expect(a.why.length).toBeGreaterThan(10);
+        // A loss of more than 1% of the source names the phase that recovers
+        // it. Below that the rows are genuinely gone (7 unattributable totals),
+        // and inventing a recovery phase for them would be a lie.
+        const lost = a.sourceCount === null ? 0 : a.sourceCount - a.expectedTarget;
+        if (a.sourceCount !== null && lost > a.sourceCount * 0.01) {
+          expect(a.recoveredBy).toBeTruthy();
+        }
+      }
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Seam 5 — the measure set the fan-trap guard reads
+  // -------------------------------------------------------------------------
+  describe('seam 5: the estate carries a measure set the fan-trap guard can see', () => {
+    /**
+     * The guard's step 0 is `if |M| = 0: flat plan, STOP`. An estate where no
+     * column carries an aggregate classifies every query that way, and the
+     * guard ships present, unit-tested and structurally inert. This seam is
+     * what makes that state loud instead of green.
+     *
+     * The fixture worksheet is deliberately two axis items over no measure —
+     * the same shape seam 3 relies on — so it is exactly the inert estate, and
+     * the seam must say so. That is asserted first, against real Postgres, so
+     * the FILTER-and-enum SQL is exercised on both verdicts.
+     */
+    it('reports the inert estate as a FAIL, naming why', async () => {
+      const result = await checkMeasureSet(db, { mapIdPrefix: PREFIX });
+
+      expect(result.status).toBe('FAIL');
+      expect(result.reason).toContain('|M| = 0');
+      expect(result.metrics.columns).toBeGreaterThan(0);
+      expect(result.metrics.withAggregate).toBe(0);
+    });
+
+    it('passes once a column is a measure carrying an aggregate', async () => {
+      const [column] = await db
+        .select({ id: mapItems.id })
+        .from(mapItems)
+        .where(idLike(mapItems.id))
+        .limit(1);
+      if (!column) throw new Error('fixture wrote no map columns');
+
+      // Restored in `finally`: every other seam in this file reads these rows,
+      // and a test that leaves the fixture altered is a test that breaks its
+      // neighbours depending on run order.
+      try {
+        await db
+          .update(mapItems)
+          .set({ axisType: 'MEASURE', aggFunction: 'SUM' })
+          .where(inArray(mapItems.id, [column.id]));
+
+        const result = await checkMeasureSet(db, { mapIdPrefix: PREFIX });
+        expect(result.status).toBe('PASS');
+        expect(result.metrics).toMatchObject({ measure: 1, withAggregate: 1, mapsWithAMeasure: 1 });
+        expect(result.metrics.measuresWithoutAggregate).toBe(0);
+      } finally {
+        await db
+          .update(mapItems)
+          .set({ axisType: 'AXIS', aggFunction: null })
+          .where(inArray(mapItems.id, [column.id]));
+      }
+    });
+
+    // 0012_constrain_agg_function.sql. `agg_function` feeds `select-clause.ts`
+    // and the guard's measure set; a name outside Neo's five is a throw or a
+    // measure that cannot be re-aggregated, so the database refuses it rather
+    // than storing free text.
+    it('refuses an aggregate function Neo cannot run', async () => {
+      const [column] = await db
+        .select({ id: mapItems.id })
+        .from(mapItems)
+        .where(idLike(mapItems.id))
+        .limit(1);
+      if (!column) throw new Error('fixture wrote no map columns');
+
+      // Drizzle rewraps the driver error, so the constraint name is on the
+      // cause rather than the message — assert the write is refused AND that
+      // nothing landed, which is the property that matters either way.
+      await expect(
+        db
+          .update(mapItems)
+          .set({ aggFunction: 'COUNT DISTINCT' })
+          .where(inArray(mapItems.id, [column.id])),
+      ).rejects.toThrow();
+
+      const [after] = await db
+        .select({ agg: mapItems.aggFunction })
+        .from(mapItems)
+        .where(inArray(mapItems.id, [column.id]));
+      expect(after?.agg).toBeNull();
+    });
+  });
+
+  describe('declared losses', () => {
     it('keeps the checked-in declaration well formed', () => {
       expect(EXPECTED_LOSS_ALLOWANCES.length).toBeGreaterThan(0);
       for (const a of EXPECTED_LOSS_ALLOWANCES) {

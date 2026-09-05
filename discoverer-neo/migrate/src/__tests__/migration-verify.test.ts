@@ -2,6 +2,7 @@ import { describe, it, expect } from '@jest/globals';
 
 import {
   checkFormulaCompileRate,
+  checkMeasureSet,
   checkReconciliation,
   checkReferentialClosure,
   checkSqlGeneration,
@@ -223,6 +224,65 @@ describe('seam 4 — reconciliation', () => {
   });
 });
 
+describe('seam 5 — measure set', () => {
+  /** One estate-shaped row; each case overrides only what it is about. */
+  const estate = (over: Record<string, number> = {}) => [
+    [
+      {
+        columns: 25_965,
+        axis: 20_014,
+        measure: 5_920,
+        page: 26,
+        unclassified: 5,
+        with_aggregate: 1_842,
+        measures_without_aggregate: 4_078,
+        maps_with_a_measure: 610,
+        ...over,
+      },
+    ],
+  ];
+
+  it('passes when the estate has measures carrying an aggregate', async () => {
+    const result = await checkMeasureSet(fakeDb(estate()));
+    expect(result.status).toBe('PASS');
+    expect(result.metrics).toMatchObject({ measure: 5_920, withAggregate: 1_842 });
+    expect(result.reason).toBeUndefined();
+  });
+
+  it('fails when nothing is on the measure vector', async () => {
+    const result = await checkMeasureSet(fakeDb(estate({ measure: 0 })));
+    expect(result.status).toBe('FAIL');
+    expect(result.reason).toContain('|M| = 0');
+    expect(result.findings).toContain('no column is on the measure vector');
+  });
+
+  // The state this whole phase existed to leave behind: the split decoded,
+  // every aggregate null, and a guard that would run on nothing.
+  it('fails when the split exists but no column carries an aggregate', async () => {
+    const result = await checkMeasureSet(
+      fakeDb(estate({ with_aggregate: 0, measures_without_aggregate: 5_920, maps_with_a_measure: 0 })),
+    );
+    expect(result.status).toBe('FAIL');
+    expect(result.findings).toContain('no column carries an aggregate function');
+  });
+
+  // `Detail` is Oracle's marker for "do not aggregate" and 8 152 items carry
+  // it. A measure over one is correctly null, so the count is tracked and
+  // never failed on — the alternative is defaulting to SUM, which is a wrong
+  // number wearing a passing test.
+  it('reports measures without an aggregate rather than failing on them', async () => {
+    const result = await checkMeasureSet(fakeDb(estate({ measures_without_aggregate: 5_919 })));
+    expect(result.status).toBe('PASS');
+    expect(result.metrics.measuresWithoutAggregate).toBe(5_919);
+  });
+
+  it('fails on an estate with no map columns at all', async () => {
+    const result = await checkMeasureSet(fakeDb([[]]));
+    expect(result.status).toBe('FAIL');
+    expect(result.findings).toEqual(['no map columns to classify']);
+  });
+});
+
 describe('fixture scoping', () => {
   // Every seam accepts a map-id prefix so a test fixture's own rows can be
   // verified inside a database that also holds a real estate. Without it the
@@ -247,6 +307,12 @@ describe('fixture scoping', () => {
       ],
     });
     expect(reconciliation.status).toBe('PASS');
+
+    const measures = await checkMeasureSet(
+      fakeDb([[{ columns: 2, measure: 1, with_aggregate: 1 }]]),
+      { mapIdPrefix: '5ea11e57-' },
+    );
+    expect(measures.status).toBe('PASS');
   });
 });
 
@@ -288,6 +354,7 @@ describe('report assembly', () => {
         [], // seam 1: no maps
         [], // seam 2: no formulas
         [{}], [{}], [{}], [{}], // seam 3
+        [{ columns: 1, measure: 1, with_aggregate: 1 }], // seam 5
       ]),
       { allowances: [] },
     );
@@ -297,6 +364,7 @@ describe('report assembly', () => {
       'formula-compile',
       'referential-closure',
       'reconciliation',
+      'measure-set',
     ]);
   });
 
