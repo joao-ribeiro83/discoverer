@@ -18,10 +18,25 @@ export class GenerationContext {
   >();
   /** Guards against circular formula references. */
   private resolutionStack: string[] = [];
+  /**
+   * The folders the plan admits, or null when this context is deriving that
+   * set in the first place (`effectiveFolderSet`).
+   */
+  private admitted: Set<string> | null;
 
   containsAggregate = false;
 
-  constructor(private def: MapDefinition) {
+  /**
+   * @param admittedFolderIds the query plan's folder set. When given, `aliasFor`
+   * may only NAME a folder the plan already contains — it stops being the thing
+   * that decides membership (D-018). Omit it only where the set is still being
+   * derived.
+   */
+  constructor(
+    private def: MapDefinition,
+    admittedFolderIds?: readonly string[],
+  ) {
+    this.admitted = admittedFolderIds ? new Set(admittedFolderIds) : null;
     for (const { folder } of def.items) this.registerFolder(folder);
     for (const { folder } of def.conditions) this.registerFolder(folder);
     for (const entry of def.formulaItems) {
@@ -48,17 +63,38 @@ export class GenerationContext {
     return folder;
   }
 
-  /** Assign (or return) the alias for a folder; marks the folder as used. */
+  /**
+   * Assign (or return) the alias for a folder.
+   *
+   * **Naming only.** Before Phase 3.3 this method also decided which folders
+   * the query touched: the FROM clause read the accumulated keys back out and
+   * took the first one as its root, so the root was whichever clause builder
+   * happened to alias a folder first. A planner placed ahead of generation then
+   * had no folder set to plan over, and re-derived one by its own means — which
+   * is how the two derivations that produced the Phase 1.1 RLS bypass came to
+   * disagree. The plan now supplies the set; this only hands out names.
+   */
   aliasFor(folderId: string): string {
     const existing = this.aliases.get(folderId);
     if (existing) return existing;
-    this.getFolder(folderId);
+    const folder = this.getFolder(folderId);
+    if (this.admitted && !this.admitted.has(folderId)) {
+      throw new SqlGenerationError(
+        `Folder "${folder.name}" is not in the query plan's folder set`,
+      );
+    }
     const alias = `f${this.aliases.size + 1}`;
     this.aliases.set(folderId, alias);
     return alias;
   }
 
-  /** Folders referenced by the query, in first-use order. */
+  /**
+   * Folders that have been given an alias so far, in first-use order.
+   *
+   * This is generation state, not a property of the map. `effectiveFolderSet`
+   * reads it to DERIVE the plan's folder set; nothing downstream of the planner
+   * should ask a half-built context which folders the query uses.
+   */
   usedFolderIds(): string[] {
     return [...this.aliases.keys()];
   }
