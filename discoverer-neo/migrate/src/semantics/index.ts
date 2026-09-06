@@ -39,12 +39,14 @@ export {
   createBindCollector,
   displayDateLiteral,
   FITTED_CODES,
+  DISPLAY_NAME_MARK,
   displayMatches,
   Quarantined,
   renderDisplay,
   renderSql,
 } from './render.js';
 export type {
+  FunctionBinding,
   ItemBinding,
   QuarantineReason,
   RenderedFormula,

@@ -292,11 +292,49 @@ export interface ItemBinding {
   column: string;
 }
 
+/**
+ * What a `[2,n]` resolves to: one row of `custom_functions`.
+ *
+ * The `[2,n]` id is a workbook-local `IoId`, not an EUL id — the dumps carry
+ * `IoId = 16` beside `Id = 114404` — so the caller reaches the row through the
+ * workbook element table exactly as it does for `[6,n]` and `[8,n]`. This
+ * renderer never looks a function up; it is handed one or it refuses.
+ */
+export interface FunctionBinding {
+  /**
+   * `custom_functions.name`, emitted verbatim as the call's identifier once
+   * validated. Never quoted: an unquoted Oracle identifier folds to upper
+   * case and matches a function created the ordinary way, where quoting it
+   * would make the call case-sensitive and miss.
+   */
+  name: string;
+  /**
+   * Inclusive `[min, max]` argument count from `custom_functions.parameters`,
+   * or **null when the row carries no signature at all**.
+   *
+   * Null is the estate's normal case, not an edge one. `transformCustomFunction`
+   * writes `parameters: null` for every row and raises
+   * `FUNCTION_SIGNATURE_DEFAULTED`, because the EUL's normalized `FUNCTIONS`
+   * read carries no argument list. So the arity check below is real and
+   * enforced, and today it has nothing to bite on until somebody completes a
+   * signature in Neo. Refusing every call for want of a signature would make
+   * all 593 migrated functions permanently uncallable, which is not what the
+   * missing column means.
+   */
+  arity: readonly [number, number] | null;
+}
+
 export interface SqlRenderContext {
   /** `[6,n]` → the column it names, or null when the element table lacks it. */
   resolveItem(elementId: number): ItemBinding | null;
   /** `[8,n]` → the bind NAME (no colon) the parameter binds to, or null. */
   resolveParameter(elementId: number): string | null;
+  /**
+   * `[2,n]` → the migrated `custom_functions` row, or null when nothing
+   * resolves. Null is a refusal (D-057), never a pass-through: a call this
+   * system cannot name is a call it must not emit.
+   */
+  resolveFunction(elementId: number): FunctionBinding | null;
   /** Register a runtime value; returns the placeholder to write, e.g. `:v1`. */
   bind(value: string): string;
 }
@@ -353,10 +391,7 @@ class SqlEmitter {
       case 'parameter':
         return this.parameter(node.elementId);
       case 'function':
-        // D-057: a `[2,n]` becomes callable only against a migrated
-        // `custom_functions` row. The aligned corpus attests zero of them, so
-        // there is no evidence for the shape and none is invented here.
-        throw new Quarantined('UNRESOLVED_FUNCTION', `[2,${node.elementId}]`);
+        return this.customFunction(node);
       case 'literal':
         return this.literal(node.literalKind, node.value);
       case 'unknown':
@@ -389,6 +424,57 @@ class SqlEmitter {
     }
     this.referencedItems.push(binding.name);
     return sql;
+  }
+
+  /**
+   * A registered PL/SQL function call — the largest new SQL surface in this
+   * phase, and the one place a name from migrated metadata reaches SQL text.
+   *
+   * Four gates, in this order, and every one of them refuses rather than
+   * repairs:
+   *
+   * 1. **It must resolve.** A `[2,n]` with no `custom_functions` row is
+   *    `UNRESOLVED_FUNCTION` (D-057). Never a pass-through — emitting an
+   *    unknown name would either fail at run time or, worse, hit a different
+   *    function that happens to exist.
+   * 2. **The name must be an identifier.** `isValidIdentifier` is the same
+   *    predicate the column path uses, so a name carrying a quote, a bracket,
+   *    a space or a semicolon is rejected outright. It is never escaped and
+   *    never quoted into safety: a hostile `custom_functions.name` is a
+   *    metadata defect or an attack, and quoting it would hide both.
+   * 3. **The arity must match** any signature the row carries.
+   * 4. **The arguments go through the ordinary emitter**, so every literal
+   *    inside the call is still a bind. There is no path here that splices a
+   *    runtime value into text.
+   *
+   * The one thing this cannot check: the aligned corpus attests zero `[2,n]`
+   * occurrences (decoder spec §9), so `NAME(args)` is Oracle's SQL form read
+   * back, not a fitted display shape. It is marked `[INFER]` there and the
+   * display renderer still marks the name as an unknown span rather than
+   * claiming to reproduce it.
+   */
+  private customFunction(node: Extract<FormulaNode, { type: 'function' }>): string {
+    const binding = this.ctx.resolveFunction(node.elementId);
+    if (binding === null) {
+      throw new Quarantined('UNRESOLVED_FUNCTION', `[2,${node.elementId}]`);
+    }
+    if (!isValidIdentifier(binding.name)) {
+      throw new Quarantined(
+        'INVALID_IDENTIFIER',
+        `[2,${node.elementId}] function ${JSON.stringify(binding.name)}`,
+      );
+    }
+    if (binding.arity !== null) {
+      const [min, max] = binding.arity;
+      if (node.args.length < min || node.args.length > max) {
+        throw new Quarantined(
+          'BAD_ARITY',
+          `[2,${node.elementId}] ${binding.name} with ${node.args.length} arguments`,
+        );
+      }
+    }
+    const args = node.args.map((arg) => this.emit(arg));
+    return `${binding.name}(${args.join(', ')})`;
   }
 
   private parameter(elementId: number): string {
