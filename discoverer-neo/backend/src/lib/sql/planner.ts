@@ -79,7 +79,18 @@ export function planQuery(
   // every query would take this path, and the whole guard would ship present,
   // unit-tested and structurally inert (D-031). `checkPlannerLive` in the
   // migration verifier exists to catch exactly that.
-  if (measures.length === 0) return flat('NO_MEASURES');
+  //
+  // `M` is built from the map's COLUMNS, and a drawn calculation is not one:
+  // its aggregate lives in a formula. Until Phase 3.4 that gap was covered by
+  // D-014's interim refusal, which read `select.hasAggregates` and so saw the
+  // formula. With the refusal gone, a map whose only aggregate is inside a
+  // calculation would fall through step 0 to the flat path and print the
+  // inflated number — the exact defect this guard exists to prevent. So the
+  // formula counts here, and refuses below.
+  const aggregatingCalc = def.calculatedFields.find(
+    (f) => !f.isHidden && containsAggregateCall(f.formula),
+  );
+  if (measures.length === 0 && !aggregatingCalc) return flat('NO_MEASURES');
 
   // -- Step 1 -------------------------------------------------------------
   // The join subgraph over the folders the query actually uses.
@@ -100,10 +111,14 @@ export function planQuery(
   /** Every folder that could be the single master of a fan (step 5 + 5a). */
   const candidates: FanCandidate[] = [];
 
+  /** Set by any folder with a fanning branch, whether or not it bears a measure. */
+  let anyFan = false;
+
   for (const folderId of folderIds) {
     const live = liveBranchesOf(graph, folderId, columnBearing);
     const fanning = live.filter((b) => b.fanning);
     if (fanning.length === 0) continue;
+    anyFan = true;
 
     const withMeasure = fanning.filter((b) =>
       [...b.subtree].some((id) => measureFolders.has(id)),
@@ -124,6 +139,20 @@ export function planQuery(
         nonFanning: live.filter((b) => !b.fanning),
       });
     }
+  }
+
+  // A calculation that aggregates cannot be attributed to a branch: its formula
+  // may read columns from several, and there is no rule for which one owns the
+  // total. Tested before the candidates are triaged, because `M` does not
+  // contain it and so it cannot make a folder a candidate on its own.
+  if (aggregatingCalc && anyFan) {
+    return refuse(
+      'REAGG',
+      fromFolderIds.map(folderName),
+      `The calculation "${aggregatingCalc.name}" already totals values, and this query ` +
+        'summarises more than one set of detail rows. Neo cannot tell which set the ' +
+        'calculation belongs to.',
+    );
   }
 
   if (candidates.length === 0) return flat('NO_FAN_CANDIDATE');
@@ -152,22 +181,6 @@ export function planQuery(
 
   const master = candidates[0]!;
   const masterName = folderName(master.folderId);
-
-  // A calculation that aggregates cannot be attributed to a branch: its
-  // formula may read columns from several. Refusing is the honest answer —
-  // no map in this estate has one on a multi-folder worksheet.
-  const aggregatingCalc = def.calculatedFields.find(
-    (f) => !f.isHidden && containsAggregateCall(f.formula),
-  );
-  if (aggregatingCalc) {
-    return refuse(
-      'REAGG',
-      [masterName],
-      `The calculation "${aggregatingCalc.name}" already totals values, and this query ` +
-        'summarises more than one set of detail rows. Neo cannot tell which set the ' +
-        'calculation belongs to.',
-    );
-  }
 
   // -- Step 8, re-aggregation ---------------------------------------------
   // Checked before the branches are built: a measure that cannot cross the fan

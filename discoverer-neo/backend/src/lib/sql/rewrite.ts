@@ -5,7 +5,8 @@ import {
   type SqlGenerationOptions,
 } from '../../types/sql.js';
 import { GenerationContext } from './context.js';
-import { folderTableRef } from './from-clause.js';
+import { folderTableRef, joinOnClause } from './from-clause.js';
+import { spanningJoinPath } from './folder-set.js';
 import { makeColumnAlias, quoteIdentifier } from './identifiers.js';
 import { buildWhereClause } from './where-clause.js';
 import { effectiveAggregate } from './select-clause.js';
@@ -96,6 +97,7 @@ export function renderRewrite(
   const selectParts: string[] = [];
   const columns: GeneratedColumn[] = [];
   const groupByExprs: string[] = [];
+  const aliasByMapItemId = new globalThis.Map<string, string>();
 
   const drawn = [...def.items]
     .filter(({ mapItem }) => !mapItem.isHidden)
@@ -114,6 +116,7 @@ export function renderRewrite(
 
     const label = mapItem.displayName || item.name;
     const alias = makeColumnAlias(label, takenAliases);
+    aliasByMapItemId.set(mapItem.id, alias);
     selectParts.push(`${expr} AS ${alias}`);
     columns.push({
       alias,
@@ -153,11 +156,51 @@ export function renderRewrite(
     `SELECT ${selectParts.join(',\n       ')}`,
     fromParts.join('\n'),
     groupByExprs.length ? `GROUP BY ${groupByExprs.join(', ')}` : '',
+    orderByAliases(def, aliasByMapItemId),
   ]
     .filter(Boolean)
     .join('\n');
 
   return { sql, bindParams, columns };
+}
+
+/**
+ * The outer `ORDER BY`, written against the SELECT-list aliases.
+ *
+ * The flat clause sorts on the item expression; here that expression lives one
+ * level down, inside an inline view, so the only name in scope at this level is
+ * the alias. Oracle resolves an `ORDER BY` alias against the select list, so
+ * the two say the same thing.
+ *
+ * A sort on a HIDDEN item is dropped rather than emitted: the outer query
+ * groups by the drawn columns only, so a hidden one is not in scope to sort on.
+ * Narrower than the flat shape, and recorded in `docs/troubleshooting/`.
+ */
+function orderByAliases(
+  def: MapDefinition,
+  aliasByMapItemId: globalThis.Map<string, string>,
+): string {
+  const LAST = Number.MAX_SAFE_INTEGER;
+  const parts = [...def.items]
+    .filter(({ mapItem }) => mapItem.sortDirection && aliasByMapItemId.has(mapItem.id))
+    .sort((a, b) => {
+      const ga = a.mapItem.sortGroup ? 0 : 1;
+      const gb = b.mapItem.sortGroup ? 0 : 1;
+      if (ga !== gb) return ga - gb;
+      const ra = a.mapItem.sortRank ?? LAST;
+      const rb = b.mapItem.sortRank ?? LAST;
+      if (ra !== rb) return ra - rb;
+      const oa = a.mapItem.sortOrder ?? LAST;
+      const ob = b.mapItem.sortOrder ?? LAST;
+      if (oa !== ob) return oa - ob;
+      return a.mapItem.displayOrder - b.mapItem.displayOrder;
+    })
+    .map(({ mapItem }) => {
+      const direction = mapItem.sortDirection === 'DESC' ? 'DESC' : 'ASC';
+      return `${aliasByMapItemId.get(mapItem.id)!} ${direction}`;
+    });
+
+  return parts.length ? `ORDER BY ${parts.join(', ')}` : '';
 }
 
 interface RenderedBranch {
@@ -190,38 +233,39 @@ function renderBranch(
   const selectParts: string[] = [];
   const groupByExprs: string[] = [];
 
-  const masterAlias = ctx.aliasFor(plan.masterFolderId);
-  const masterFolder = ctx.getFolder(plan.masterFolderId);
+  const masterFolderId = plan.masterFolderId;
+  const masterAlias = ctx.aliasFor(masterFolderId);
+  const masterFolder = ctx.getFolder(masterFolderId);
 
   const columnRef = (column: PlanColumn): string =>
     `${ctx.aliasFor(column.folderId)}.${quoteIdentifier(column.columnName)}`;
 
-  // The FROM: the master, then the branch's detail side — outer, always.
+  // The FROM: the master, then EVERY folder this branch carries — outer,
+  // always (§1.4 property 2).
+  //
+  // A branch is a whole subtree, not one hop. `M M67 1 -> M M67 -> LOOKUP` is
+  // one branch with two edges, and a branch that emitted only its first edge
+  // would alias `LOOKUP` in the SELECT while never naming it in the FROM: an
+  // unbound alias, so Oracle rejects the statement — or, where the alias is
+  // reachable another way, a cross join. Spanning the branch's own folder set
+  // is the same computation the flat clause does, rooted at the master.
+  const spanning = spanningJoinPath([masterFolderId, ...branch.folderIds.filter((id) => id !== masterFolderId)], def.joins);
+  if (spanning.unreachable.length > 0) {
+    const folder = ctx.getFolder(spanning.unreachable[0]!);
+    throw new SqlGenerationError(
+      `No join path connects folder "${folder.name}" to the rest of the query`,
+      { folders: spanning.unreachable.map((id) => ctx.getFolder(id).name) },
+      'NO_JOIN_PATH',
+    );
+  }
+
   const fromParts = [`FROM ${folderTableRef(masterFolder)} ${masterAlias}`];
-  if (branch.detailFolderId !== null) {
-    if (branch.predicate.length === 0) {
-      throw new SqlGenerationError(
-        `The join into "${ctx.getFolder(branch.detailFolderId).name}" has no join ` +
-          'condition, so the folders it connects cannot be queried together.',
-        { folders: [ctx.getFolder(branch.detailFolderId).name] },
-        'JOIN_NO_PREDICATE',
-      );
-    }
-    const detailFolder = ctx.getFolder(branch.detailFolderId);
-    const detailAlias = ctx.aliasFor(branch.detailFolderId);
-    const on = branch.predicate
-      .map((p) => {
-        const operator = PREDICATE_OPERATOR_SQL[p.operator];
-        if (!operator) {
-          throw new SqlGenerationError(
-            `Unsupported comparison ${JSON.stringify(p.operator)} in a join predicate`,
-          );
-        }
-        return `${columnRef(p.master)} ${operator} ${columnRef(p.detail)}`;
-      })
-      .join(' AND ');
+  for (const edge of spanning.edges) {
+    // `joinOnClause` refuses BY NAME when the join carries no usable
+    // predicate (D-039) — the same message the flat shape gives.
     fromParts.push(
-      `LEFT OUTER JOIN ${folderTableRef(detailFolder)} ${detailAlias} ON ${on}`,
+      `LEFT OUTER JOIN ${folderTableRef(ctx.getFolder(edge.to))} ${ctx.aliasFor(edge.to)} ` +
+        `ON ${joinOnClause(def.joins[edge.joinIdx]!, ctx)}`,
     );
   }
 
@@ -290,19 +334,6 @@ function renderBranch(
 
   return { branch, alias: branch.id, sql, outputByMapItemId };
 }
-
-/**
- * The operators a join predicate may emit — the same closed set the flat FROM
- * clause uses, looked up by key so stored data is never spliced into syntax.
- */
-const PREDICATE_OPERATOR_SQL: Record<string, string> = {
-  '=': '=',
-  '<': '<',
-  '>': '>',
-  '<=': '<=',
-  '>=': '>=',
-  '<>': '<>',
-};
 
 function indent(sql: string): string {
   return `\n  ${sql.split('\n').join('\n  ')}\n`;

@@ -266,7 +266,6 @@ export interface ExplainPlan {
  * error — the copy belongs to the UI and has to translate (D-036).
  */
 export type RefusalCode =
-  | 'MULTI_FOLDER_AGGREGATE'
   | 'NO_JOIN_PATH'
   /** A join the query needs carries no usable predicate (D-039). */
   | 'JOIN_NO_PREDICATE'

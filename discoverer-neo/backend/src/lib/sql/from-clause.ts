@@ -72,13 +72,6 @@ export function folderTableRef(folder: Folder): string {
 
 export interface FromClauseOptions {
   /**
-   * Whether the statement aggregates — a SELECT-list aggregate, an aggregate
-   * hidden in a formula, or a totals query planned over the same FROM.
-   *
-   * Only used by the interim multi-folder refusal below.
-   */
-  hasAggregates?: boolean;
-  /**
    * The query plan. **Required, and the only source of the folder set.**
    *
    * Until Phase 3.3 this clause read the folders back out of the generation
@@ -110,25 +103,6 @@ export function buildFromClause(
   const required = options.plan.fromFolderIds;
   if (required.length === 0) {
     throw new SqlGenerationError('The query references no folders');
-  }
-
-  // INTERIM REFUSAL — D-014. Delete in Phase 3.4, when the fan-trap planner
-  // lands, and not before.
-  //
-  // Until this commit, multi-folder maps failed earlier, at the "No join path
-  // connects..." check below. That failure was an accidental fan-trap guard:
-  // deriving the query scope from the referenced items (D-013) makes those
-  // maps loadable, and a flat inner join across a master/detail pair then
-  // returns every master measure multiplied by its detail count. Oracle's own
-  // worked example puts the inflation at 2x-3x on two measures at once. A
-  // wrong number that looks right is worse than a refusal.
-  if (required.length > 1 && options.hasAggregates) {
-    const names = required.map((id) => ctx.getFolder(id).name);
-    throw new SqlGenerationError(
-      `Multi-folder aggregate queries are refused until the fan-trap planner lands. Folders: ${names.join(', ')}`,
-      { folders: names },
-      'MULTI_FOLDER_AGGREGATE',
-    );
   }
 
   const rootId = required[0]!;
@@ -180,7 +154,7 @@ export function buildFromClause(
  * would shorten `a = b AND c = d` to `a = b`, which returns MORE rows than the
  * source did (D-058 — refuse rather than distort).
  */
-function joinOnClause(
+export function joinOnClause(
   j: MapDefinition['joins'][number],
   ctx: GenerationContext,
 ): string {

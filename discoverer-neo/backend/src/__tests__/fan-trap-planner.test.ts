@@ -222,16 +222,17 @@ function mkDef(partial: Partial<MapDefinition>): MapDefinition {
 }
 
 /**
- * The SQL Neo would emit with no guard at all: the real clause builders, with
- * the interim multi-folder refusal stepped around by telling the FROM clause
- * the statement does not aggregate. Everything else — the SELECT list, the
- * inner join, the GROUP BY — is exactly what production writes.
+ * The SQL Neo would emit with no guard at all: the real clause builders,
+ * driven straight past the planner's verdict. The SELECT list, the inner join
+ * and the GROUP BY are exactly what production writes for a FLAT plan — which
+ * is the point: this is the control path that must return Oracle's own WRONG
+ * numbers, so a passing golden-number test cannot be passing vacuously.
  */
 function unguardedFlatSql(def: MapDefinition): string {
   const plan = planQuery(def);
   const ctx = new GenerationContext(def, plan.folderIds);
   const select = buildSelectClause(def, ctx);
-  const from = buildFromClause(def, ctx, { plan, hasAggregates: false });
+  const from = buildFromClause(def, ctx, { plan });
   const groupBy = buildGroupByClause(select.hasAggregates, select.nonAggregateExprs);
   return [select.sql, from, groupBy].filter(Boolean).join('\n');
 }
