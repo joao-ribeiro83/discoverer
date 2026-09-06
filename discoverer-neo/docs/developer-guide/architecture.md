@@ -135,6 +135,54 @@ Two `no-restricted-imports` rules in `eslint.config.js` enforce it:
   tests. The shared schema (`@discoverer-neo/core/db/schema`) is free to
   import anywhere; the EUL pipeline is not request-path code.
 
+#### The formula renderer, and why it lives in core
+
+**Location:** `migrate/src/semantics/`, published as
+`@discoverer-neo/core/semantics`.
+
+Discoverer stores a formula as a token tree — `[1,95]([1,58]([5,4,…]),[5,2,"200"])`
+— not as text. Turning that into SQL is what `semantics/` does, and it sits in
+the migrator for the same reason the schema does: **the edge points backend →
+core**, so anything both halves need has exactly one declaration here.
+
+Three things moved with it, and they moved to stop them being copied:
+
+| Module | What it holds | Backend consumer |
+| --- | --- | --- |
+| `allowlist.ts` | `AGGREGATE_FUNCTIONS`, `SCALAR_FUNCTIONS` | `lib/sql/formula-parser.ts` re-exports them |
+| `identifiers.ts` | the identifier and bind-name patterns | `lib/sql/identifiers.ts` re-exports `isValidIdentifier` |
+| `builtin-codes.ts` | the `[1,n]` codes, their fixity and their SQL | renderer only |
+
+The allowlist is the security contract for every generated expression. A second
+copy of it in the migrator was defect **BE-09**: two lists that nothing forces
+to agree, one of which eventually allows a function the other rejects.
+Re-exporting from one declaration is the same fix, and the same shape, as the
+shared schema above.
+
+**Why it parenthesises everything.** Every infix node is emitted as
+`((a) OP (b))`, unconditionally, so a nested one picks up a redundant pair:
+`(((a) - (b))) * (c)`. This is deliberate (D-051). Precedence only matters when
+re-emitting un-parenthesised infix, so parenthesising unconditionally removes
+the problem rather than solving it — there is no operator-precedence table
+anywhere in this codebase, and none is needed for any of Discoverer's codes.
+The cost is uglier generated SQL. That is the right trade for a system whose
+failure mode is a silently wrong number in a report people have trusted for
+fifteen years.
+
+**Two renderings, and they are not the same.** `renderDisplay` reproduces
+Discoverer's own on-screen string and is the *fidelity oracle*: it is measured
+against 37 971 real (stored, displayed) pairs, and a mismatch means the tree
+was read wrongly. `renderSql` emits the executable expression. The display form
+is evidence for **structure only** — arity, fixity, argument order. It is not
+the SQL: `[1,117]` displays `COUNT_DISTINCT(a)` and means `COUNT(DISTINCT a)`.
+Where the two disagree, the allowlist wins or the formula is refused.
+
+**It refuses rather than approximates** (D-058). An unfitted code, an
+unimplemented one, an unresolvable element, a date literal carrying a time —
+each returns a `QuarantineReason`, never a best-effort render. Run
+`npm run render-corpus -w @discoverer-neo/core` for the current exact-match
+rate and the refusal histogram.
+
 ### Redis Cache & Job Queue
 
 **Cache:**

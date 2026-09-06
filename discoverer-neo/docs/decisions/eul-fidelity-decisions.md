@@ -209,6 +209,71 @@ and the guard would have shipped present, unit-tested and structurally inert.
 
 ---
 
+## Decision 6 — formulas are rendered from the token tree, never re-parsed from the display form
+
+**Discoverer:** stores a calculation or a condition as a token tree in
+`IOFormula` — `[1,95]([1,58]([5,4,"20011201000000"]),[5,2,"200"])` — and stores
+what it showed the user beside it in `DisplayFormula` —
+`TO_DATE('01.12.01')-200`. Conditions and calculations are one language: same
+five namespaces, same grammar, same parser.
+
+**Neo:** compiles SQL **from the tree**. `DisplayFormula` is used only as an
+oracle to check the result, never as an input.
+
+**Why.** The display language is ambiguous and cannot be parsed back. A real
+corpus line reads:
+
+```
+NVL(R Com Tx Com Vig/100,0)
+```
+
+`R Com Tx Com Vig` is a bare item name containing spaces, immediately followed
+by `/`. Nothing can reliably tell where the name ends and the operator begins —
+not a tokeniser, not a grammar, not a heuristic. An item name may also contain
+brackets and commas. So the display form is a lossy projection of the tree, and
+a renderer that consumed it would be guessing on every formula that has a
+multi-word item name, which is most of them in this estate.
+
+The tree, by contrast, is unambiguous by construction. `parseFormulaTree` reads
+all 22 748 distinct corpus formulas with zero parse failures and zero unknown
+nodes.
+
+**What this bought.** Because the pairing is 1:1, `DisplayFormula` becomes a
+*measurable* oracle rather than a second input: render the tree under a
+hypothesis and ask whether Oracle's own text could have come out of it. That is
+how Phase 4.1 fitted 42 of the 56 attested `[1,n]` codes — arity, fixity and
+argument order — from evidence instead of from documentation that does not
+exist for a product desupported in 2012.
+
+**And the cost.** Every infix node is parenthesised unconditionally: `((a) OP (b))`,
+which nests to `(((a) - (b))) * (c)`. Uglier SQL, and worth it — precedence only
+matters when re-emitting un-parenthesised infix, so this removes the entire
+operator-precedence problem rather than solving it. There is no precedence table
+in Neo and none is needed.
+
+**Where it stops.** Anything the evidence does not settle is refused with a
+stated reason, never approximated (D-058) — an unfitted code, an unresolvable
+element, a `[5,4]` date literal carrying a time. This is the same instinct that
+maps `NOT IN` to null rather than to `IN`: migrating a negated filter as its
+complement inverts it, and a reviewer looking at row counts would not notice.
+A quarantined formula is a visible gap. A wrongly rendered one is a wrong number
+in a report whose users have fifteen years of trained trust in it.
+
+Measured against the aligned corpus (37 971 pairs from 547 workbooks):
+
+| | weighted | distinct |
+| --- | ---: | ---: |
+| exact | 93.19 % | 93.55 % |
+| refused, with a reason | 4.31 % | 3.88 % |
+| mismatch the anonymiser explains | 2.47 % | 2.52 % |
+| **mismatch nothing explains** | **0.03 %** | **0.04 %** |
+
+The last row is the one that matters: 12 occurrences, and all twelve are the
+comparator's own strictness rather than the renderer's reading. See
+`docs/master-plan/checkpoints/PHASE_4.2_CHECKPOINT.md`.
+
+---
+
 ## What still needs a live EUL
 
 These are open because no offline source answers them, not because they were
