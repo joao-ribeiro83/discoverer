@@ -119,6 +119,43 @@ export async function importOracleDb(): Promise<OracleDbModule> {
 }
 
 let oracledbModule: OracleDbModule | null = null;
+let clientInitialized = false;
+
+/**
+ * Switch the driver into thick mode when `ORACLE_THICK_MODE` says to.
+ *
+ * Thin mode is the default and needs no Oracle Instant Client, but it cannot
+ * authenticate against every password verifier: a 12c-era account raises
+ * `NJS-116: password verifier type 0x939 is not supported by node-oracledb in
+ * Thin mode`. This estate's EUL account is one of those, so without thick mode
+ * `dn-migrate` cannot read the source at all — the migration itself only ever
+ * ran because the backend's own pool initialises the client and this one did
+ * not.
+ *
+ * Same contract as `backend/src/services/oracle-connection-pool.ts`, kept here
+ * rather than shared because that module reads the backend's validated config
+ * and this workspace has none — the CLI is configured by flags and `.env`.
+ */
+function initThickModeOnce(oracledb: OracleDbModule): void {
+  if (clientInitialized) return;
+  clientInitialized = true;
+
+  if (process.env.ORACLE_THICK_MODE !== 'true') return;
+
+  try {
+    const libDir = process.env.ORACLE_CLIENT_PATH;
+    oracledb.initOracleClient(libDir ? { libDir } : {});
+  } catch (err) {
+    // A second init in the same process throws, and that is harmless.
+    if (/already been initialized/i.test(String(err))) return;
+    throw new EulConnectionError(
+      'ORACLE_THICK_MODE is enabled but the Oracle Instant Client could not be ' +
+        `loaded: ${err instanceof Error ? err.message : String(err)}. Set ` +
+        'ORACLE_CLIENT_PATH to the client directory, or unset ORACLE_THICK_MODE ' +
+        'to use thin mode (which cannot authenticate every password verifier).',
+    );
+  }
+}
 
 async function loadOracleDb(): Promise<OracleDbModule> {
   if (oracledbModule) return oracledbModule;
@@ -127,6 +164,7 @@ async function loadOracleDb(): Promise<OracleDbModule> {
   } catch {
     throw new EulConnectionError('Oracle driver (oracledb) is not installed');
   }
+  initThickModeOnce(oracledbModule);
   // Driver-global (not a per-execute option): EUL workbook XML lives in
   // LONG/CLOB columns — fetch them as strings instead of Lob streams.
   oracledbModule.fetchAsString = [oracledbModule.CLOB];
