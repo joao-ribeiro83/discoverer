@@ -11,6 +11,7 @@ import {
 import {
   createBindCollector,
   displayMatches,
+  FITTED_CODES,
   renderDisplay,
   renderSql,
   type ItemBinding,
@@ -95,6 +96,15 @@ describe('the implemented code table', () => {
       if (entry.sql.kind === 'function') expect(SCALAR_FUNCTIONS.has(entry.sql.name)).toBe(true);
       if (entry.sql.kind === 'aggregate') expect(AGGREGATE_FUNCTIONS.has(entry.sql.name)).toBe(true);
     }
+  });
+
+  it('knows which codes the fit settled, so a refusal names the right gap', () => {
+    // CODE_NOT_IMPLEMENTED is Phase 4.3's worklist; UNFITTED_CODE is not — it
+    // needs the evidence rule widened or the corpus rebuilt. A drifted set
+    // would file the second as the first and send someone after work that
+    // cannot be done.
+    const settled = fitted.codes.filter((c) => c.state === 'FITTED').map((c) => c.code);
+    expect([...FITTED_CODES].sort((a, b) => a - b)).toEqual(settled.sort((a, b) => a - b));
   });
 
   it('implements exactly the codes it says it does', () => {

@@ -35,6 +35,7 @@ export type { BuiltinCode, DisplayShape, SqlForm } from './builtin-codes.js';
 export {
   createBindCollector,
   displayDateLiteral,
+  FITTED_CODES,
   displayMatches,
   Quarantined,
   renderDisplay,
