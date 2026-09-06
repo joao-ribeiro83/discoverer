@@ -88,7 +88,7 @@ export class Quarantined extends Error {
  * Phase 4.3 will implement, or one the evidence refuses to settle at all.
  * Pinned to `corpus/builtin-code-table.json` by `formula-renderer.test.ts`.
  */
-const FITTED_CODES = new Set([
+export const FITTED_CODES: ReadonlySet<number> = new Set([
   1, 11, 12, 18, 23, 28, 32, 42, 43, 44, 48, 49, 55, 58, 61, 68, 73, 79, 81, 82, 83, 84, 85,
   86, 87, 88, 91, 92, 94, 95, 96, 97, 98, 99, 102, 103, 104, 106, 114, 115, 117, 126,
 ]);
