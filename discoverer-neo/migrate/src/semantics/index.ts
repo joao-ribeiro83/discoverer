@@ -30,6 +30,7 @@ export {
   PHASE_4_2_GATE_CLOSERS,
   PHASE_4_2_TOP_TEN,
   PHASE_4_3_BATCH_A,
+  PHASE_4_3_BATCH_B,
   PHASE_4_3_CODES,
 } from './builtin-codes.js';
 export type { BuiltinCode, DisplayShape, SqlForm } from './builtin-codes.js';
