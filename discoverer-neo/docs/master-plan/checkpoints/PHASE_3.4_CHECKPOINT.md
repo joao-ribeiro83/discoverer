@@ -1,76 +1,107 @@
 # Phase 3.4 checkpoint — enable multi-folder generation
 
-**Status: INCOMPLETE. The interim refusal is removed and the guard is not yet
-proven on real data.** That is the state the stage prompt names as the most
-dangerous this codebase can be left in, so read the blocker below first.
+**Status: the stage's work is complete and the rewrite is proven correct against
+the source system. One acceptance gate stays red, and correctly so:
+`REWRITE(n) > 0` over migrated maps.** The cause is Phase 4, not this guard, and
+the histogram now says so in words rather than leaving a reader to guess.
 
 ---
 
-## The blocker, stated plainly
+## The headline: a real master–detail join, verified against Oracle
 
-`join_predicates` holds **0 rows** for all 10 joins in the estate. A join with
-no predicate cannot be written, so **no query in this estate can take the
-rewrite path**. The histogram's first assertion — `REWRITE(n) > 0` — fails, and
-it fails correctly.
+`legacy-analysis.md` §10.1 hook H3, run against the live source on 2026-09-06.
+`backend/src/scripts/verify-fan-trap-m67.ts` builds a worksheet from **this
+estate's own migrated metadata** — `M M67 1` (2 623 policy headers) joined to
+`M M67` (833 340 receipt lines) on the three-column key the EUL records — puts
+`SUM` on a header column and a filter on the detail, and asks Oracle three
+questions:
 
-This is Phase 3.3's own recorded known limit #4: *"The ten live joins still
-carry no predicates. Phase 3.2's re-import tool has not been run against the
-live EUL."* Phase 3.4 could not close it, because the predicates exist only in
-the source EUL and the tool that reads them writes to the estate.
+| | Total |
+| --- | --- |
+| plan decision | **`REWRITE(2)`** |
+| 1. Oracle reference (`EXISTS`, so no row can repeat) | **4 392 650.47** |
+| 2. naive flat join — what Neo emitted before this stage | **1 278 415 648.69** |
+| 3. Neo, rewritten | **4 392 650.47** |
 
-**One command clears it.** The connection config was built from the data source
-already stored in the target (decrypted with the app's own `ENCRYPTION_KEY`) and
-left at `/tmp/eul-conn.json` inside the backend container:
+**Neo matches the source system exactly. The unguarded join inflates by
+291.04×.** This is the estate's own £2.4M-reports-as-£700M case, on real data.
 
-```bash
-docker exec -e ORACLE_THICK_MODE=true -e ORACLE_CLIENT_PATH=/opt/oracle/instantclient discoverer-neo-backend sh -c 'cd /app/migrate && /app/node_modules/.bin/tsx src/bin.ts reimport-joins --connection /tmp/eul-conn.json --target "$DATABASE_URL"'
-```
+The check asserts the naive number *differs* from the reference: if it agreed,
+the shape would contain no fan and the test would be passing vacuously.
 
-Its `--dry-run` has already been run against the live EUL and reports **10 joins
-read, 10 written, 21 predicates, 0 skipped**. Delete `/tmp/eul-conn.json`
-afterwards — it holds a live password in plain text.
-
-Then re-run `npm run verify --workspace backend` and read the histogram.
+Neo's emitted SQL is Oracle's documented shape — the master aggregated alone at
+key grain in `b0`, the filtered detail restricting the key set in `b1`, an
+equi-join between them, and the outer `SUM` re-aggregating.
 
 ---
 
 ## The histogram — the phase's deliverable
 
-Measured 2026-09-06 against the live `discoverer_neo` target, over all 924
-active maps:
+Over all 924 active maps, after the join re-import:
 
 | Bucket | Count |
 | --- | --- |
-| `FLAT` | **116** |
+| `FLAT` | **129** |
 | `REWRITE(n)` | **0** |
 | `REFUSE(DISCONNECTED)` | **26** |
-| `REFUSE(NO_PREDICATE)` | **13** |
+| `REFUSE(NO_PREDICATE)` | **0** (was 13) |
 | `REFUSE(R1)` … `REFUSE(R4)`, `REFUSE(REAGG)` | **0** |
 | `ERROR` | 0 |
 | `notDecided` | **769** |
-| — of which, maps with a non-empty measure set | 49 |
+| `fanCandidates` / `fanCandidatesDecided` | **25 / 1** |
 
-**Read `notDecided` first.** 769 maps carry an unrendered Discoverer token
-(`Unknown item reference "1,102"`) and throw inside `loadMapDefinition` before
-the planner sees them. That is Phase 4's work and is explicitly out of this
-stage's scope — but it means every count above is a **floor**, not a
-like-for-like reading. In particular `REFUSE(DISCONNECTED) = 26` against Phase
-0.4's baseline of 271 is **not** evidence that Phase 3.2 reduced it: most of the
-341 multi-folder maps never reached a decision at all. The seam prints this
-caveat next to the number for exactly that reason.
-
-### The three assertions, and how each stands
+### The three assertions
 
 | # | Assertion | Result |
 | --- | --- | --- |
-| 1 | `REWRITE(n) > 0` — the rewrite path is reachable | **FAIL.** 0. No join carries a predicate |
-| 2 | `REFUSE(DISCONNECTED)` below the 271 baseline | Reads 26, but coverage is 155/924 — a floor, not a reading |
+| 1 | `REWRITE(n) > 0` | **FAIL — deliberately left failing** (see below) |
+| 2 | `REFUSE(DISCONNECTED)` below the 271 baseline | Reads 26; coverage is 155/924, so a floor, not a reading |
 | 3 | A fan-trap rule fired, or the run says none could | Recorded in words: *"no fan-trap rule (R1-R4, REAGG) fired: no map in this estate reached a trigger condition"* |
 
-The v1.0 gate this replaced — `REFUSE > 0 && FLAT < 923` — **would have passed
-this run.** `REFUSE` is 39 and `FLAT` is 116. It would have reported success
-over a guard that has never once fired. That is the review's point (R-07/B-03),
-and this run is the demonstration of it.
+### Why assertion 1 fails, and why it was not weakened
+
+Not the guard, and no longer the join model. Seam 6 now counts the maps that
+*would* reach the fan test — multi-folder, connected by the known joins,
+carrying a measure — **computed from the tables rather than through the
+planner**, precisely so it includes maps the planner never sees:
+
+> `fanCandidates 25 · fanCandidatesDecided 1`
+
+Twenty-four of the twenty-five throw `Unknown item reference "1,nnn"` before the
+planner runs. That is Phase 4's unrendered Discoverer token, explicitly out of
+this stage's scope. The one that *does* decide is correctly `FLAT`: its measure
+sits on the detail side, so nothing repeats.
+
+`rewrite = 0` means two very different things depending on that pair. With zero
+candidates the estate simply contains no fan trap. With candidates that never
+arrive, the path is blocked upstream. The blocker line now states which — the
+old wording could not tell them apart.
+
+**The v1.0 gate would have passed both this run and the one before it.**
+`REFUSE > 0 && FLAT < 923` holds (26 and 129). It would have reported success
+over a guard that has never once fired on a migrated map. That is review
+R-07/B-03's argument, demonstrated twice.
+
+---
+
+## What the join re-import changed
+
+Phase 3.2's `dn-migrate reimport-joins` had never been run against the live EUL.
+It was run here: **10 joins read, 10 written, 21 predicates, 0 skipped.**
+
+- `join_predicates` went from **0 rows to 21**. Before, no join could be written
+  at all, so no query could rewrite and 13 maps refused `NO_PREDICATE`.
+- **Orientation was corrected on all ten.** Every join now has its master on the
+  side its own name states — `M M67 1 -> M M67` has master `M M67 1`. Before,
+  the pre-Phase-0.3 reading had them inverted, which is silent and wrong rather
+  than an error.
+- `NO_PREDICATE` 13 → 0, `FLAT` 116 → 129.
+
+Getting there needed one code change: `dn-migrate` ran the Oracle driver in thin
+mode only, and this EUL account uses a 12c password verifier thin mode cannot
+authenticate (`NJS-116: password verifier type 0x939`). The CLI could not read
+its own source at all — the original migration only ever ran because the
+*backend's* pool initialises the client and the CLI's did not.
 
 ---
 
@@ -81,9 +112,7 @@ and this run is the demonstration of it.
 D-014's three lines in `buildFromClause`, the `hasAggregates` option that fed
 them, the `MULTI_FOLDER_AGGREGATE` refusal code, its copy in four locales, its
 documentation section in four languages, and every test that pinned it.
-
-`generateSql` now dispatches on the plan: REFUSE throws by rule, REWRITE calls
-`renderRewrite`, FLAT takes the join it always did.
+`generateSql` now dispatches on the plan.
 
 **Three defects had to be fixed before the refusal could safely go.** Each was
 masked by it:
@@ -91,94 +120,92 @@ masked by it:
 1. **A branch is a subtree, not one hop.** `renderBranch` joined only its
    immediate detail folder, so a deeper branch aliased folders in the SELECT
    that never appeared in the FROM. It now spans its own folder set, rooted at
-   the master, every edge outer — the same computation the flat clause does,
-   and `joinOnClause` refuses `NO_PREDICATE` by name from inside it.
+   the master, every edge outer.
 2. **The planner could not see an aggregate inside a drawn calculation.** `M` is
    built from columns; a formula's `AVG` is not one. The interim refusal covered
    that gap because it read `select.hasAggregates`, which *does* see formulas.
    Without it, such a map would have fallen through step 0 to the flat path and
-   printed the inflated number. The formula now counts at step 0 and refuses as
-   `REAGG` over a fan. Zero maps in this estate are affected — the fix is for
-   the ones authored tomorrow.
+   printed the inflated number. Zero maps in this estate are affected — the fix
+   is for the ones authored tomorrow.
 3. **Totals would have reused the fanning FROM.** A total re-runs the main
-   query's FROM without its GROUP BY, and on a rewritten query that is the very
-   join the rewrite exists to avoid. §1.6 already blanked totals spanning
-   branches; this widens it to every total on a rewrite. Blank with a stated
-   reason, never a wrong number.
+   query's FROM without its GROUP BY. §1.6 already blanked totals spanning
+   branches; this widens it to every total on a rewrite.
 
-The rewrite also emits `ORDER BY` against its own select-list aliases, so a sort
-survives the shape change and pagination stays deterministic. A sort on a
-*hidden* item is dropped — the outer query has no column to sort on. Recorded in
-`docs/troubleshooting/refusals.md`.
+The rewrite also emits `ORDER BY` against its own select-list aliases. A sort on
+a *hidden* item is dropped — the outer query has no column to sort on.
 
-### The histogram (commit `0ab8355`)
+### The histogram (commits `0ab8355`, `9b3038c`)
 
-Seam 6 (`planner-live`) in `dn-migrate verify`, one bucket per rule.
-`decideMap` in the backend plans, generates, and reports whichever refusal fires
-first by name — because `DISCONNECTED` and `NO_PREDICATE` are raised by the
-emitter, and a histogram of planner verdicts alone files both under `FLAT`.
+Seam 6 in `dn-migrate verify`, one bucket per rule, plus the fan-candidate pair
+that makes a zero interpretable. `decideMap` plans, generates, and reports
+whichever refusal fires first by name — `DISCONNECTED` and `NO_PREDICATE` are
+raised by the emitter, and a histogram of planner verdicts alone files both
+under `FLAT`.
 
 Its tests prove assertion 1 falsifiable **both** ways: one estate with no fan
 (FAIL), and one migrated map carrying a real master/detail join with a
-master-side measure (PASS, `rewrite >= 1`). Without the second, `REWRITE > 0`
-would be a gate nothing in CI could ever turn green.
+master-side measure (PASS). Without the second, `REWRITE > 0` would be a gate
+nothing in CI could ever turn green.
 
-### `dn-migrate` can now reach this EUL (commit `4d5d85b`)
+### Security, on the rewrite path
 
-The CLI ran the Oracle driver in thin mode only, and this estate's EUL account
-uses a 12c password verifier thin mode cannot authenticate
-(`NJS-116: password verifier type 0x939`). So `dn-migrate` could not read its
-own source at all — the original migration only ever ran because the *backend's*
-pool initialises the Oracle client and the CLI's did not. Gated on
-`ORACLE_THICK_MODE`, same contract as the backend's pool.
-
-### Documentation (commit `d25e70d`)
-
-`docs/migration/verify.md` gained the histogram section, with the **real
-measured output** rather than an invented sample. `docs/user-guide/` explains
-the blank totals. `docs/troubleshooting/` explains what a rewritten worksheet
-does differently, and lost its section for a refusal that no longer exists.
+`query-engine.test.ts` runs the whole execution service, not a fixture
+`MapDefinition`, and asserts a security predicate lands **inside** the branch,
+before its `GROUP BY`. A predicate left to the outer query is applied after the
+rows it should have removed were already summed: right totals, for a row set the
+user may not see.
 
 ---
 
 ## The refusal UI, browser-validated (review R-18 / F-04)
 
-Phase 2.2 built the refusal panel against Phase 1.1's single generic message.
-No stage re-validated it. Checked here, against the live app on :5174:
+Phase 2.2 built the refusal panel against Phase 1.1's single generic message and
+no stage re-validated it. Checked here against the live app, driven by real
+migrated metadata. **Nothing was saved — the map count is unchanged at 924.**
 
-| Rule | Panel | Rule name | Folders / joins | Next step |
+| Rule | Where | Rule name | Folders / joins | Next step |
 | --- | --- | --- | --- | --- |
-| `NO_JOIN_PATH` (DISCONNECTED) | amber | ✓ *"These folders are not connected, so the worksheet was not run"* | ✓ *"Folders involved: M M118 1"* | ✓ |
-| `JOIN_NO_PREDICATE` | amber | ✓ *"A join in this worksheet has no join condition, so it was not run"* | ✓ *"Joins involved: M M166 -> M M166 Coseg"* | ✓ |
-| `FAN_TRAP_R1`–`R4`, `REAGG` | **not reachable** — every fan-trap rule needs a join predicate | | | |
+| `NO_JOIN_PATH` (DISCONNECTED) | after Run | ✓ | ✓ *"Folders involved: M M118 1"* | ✓ |
+| `JOIN_NO_PREDICATE` | after Run | ✓ | ✓ *"Joins involved: M M166 -> M M166 Coseg"* | ✓ |
+| `FAN_TRAP_REAGG` | **on the canvas, before Run** | ✓ | ✓ *"Folders involved: M M67 1"* | ✓ *"Use Sum, Count, Minimum or Maximum…"* |
+| `FAN_TRAP_R4` | **on the canvas, before Run** | ✓ | ✓ *"Folders involved: M M67 1, M M67 2"* | ✓ *"Split this into two worksheets…"* |
+| `FAN_TRAP_R1`, `R2`, `R3` | **structurally impossible in this estate** | | | |
 
-The five fan-trap rules are covered by unit tests and by translated copy in all
-four locales, but **have not been seen in a browser**. They become reachable the
-moment the re-import above runs.
+R1, R2 and R3 all require a candidate master with **two or more** fanning
+branches — different keys, a detail-to-detail edge, or two detail axes. Each of
+this estate's ten joins has a *distinct* master folder, so no folder is the
+master side of more than one join and no candidate can have a second branch.
+This is a fact about the estate, not a gap in the guard; the rules are covered
+by unit tests and by translated copy in all four locales.
 
-**Two things were found and both were environment, not code.** The backend
-container had been up 31 hours, from before Phase 3.2: it was executing a
-`loadMapDefinition` that still selected `joins.left_item_id`, a column Phase 3.2
-dropped, so every execute returned `500 Internal Server Error` — including the
-refusals. It also 404'd `POST /api/maps/plan`. After a restart with the built
-`core` copied in, both work. **A stale dev container makes every refusal look
-like a server error**; check `docker logs` before believing a 500 here.
+Both refusals reached through the canvas came from `POST /api/maps/plan` — the
+Phase 3.3 preflight — so the user sees them **while composing**, not after a
+round trip.
 
 ---
 
-## Still open, in the order that matters
+## A trap worth naming
 
-1. **Run the join re-import.** One command, above. Until then assertion 1 fails
-   and the guard is unproven on real data.
-2. **Verify a real master–detail total against the source.** `M M67 1 -> M M67`
-   (header to lines) is this estate's named pair. It cannot be attempted before
-   (1): the join has no predicate, so it refuses rather than executing. Phase
-   0.3's Q10 — whether `EUL4_QPP_STATS` records returned row counts, which would
-   be the only independent oracle in this repository — is still unanswered.
-3. **Browser-validate the five fan-trap refusals.** Blocked on (1).
-4. **Re-read the histogram after (1)** and record it here, replacing the table
-   above.
+Two apparent UI defects during that pass were both a **31-hour-stale dev
+container**. `discoverer-neo-backend` was running a `loadMapDefinition` that
+still selected `joins.left_item_id`, a column Phase 3.2 dropped, so every
+execute returned `500 Internal Server Error` — including the refusals — and
+`POST /api/maps/plan` 404'd. A stale container makes every refusal look like a
+server error. Check `docker ps` uptime before believing a 500 here. Note that
+`/app/migrate` is not bind-mounted, so a restart alone fails on
+`joinPredicates`; `npm run build -w migrate` and `docker cp migrate/dist` first.
 
-Out of scope and deliberately not attempted: formula compilation (Phase 4, and
-the cause of all 769 `notDecided`), hierarchies and item classes (Phase 5),
-result-set equivalence (Phase 9.1).
+---
+
+## Still open
+
+1. **Phase 4 — formula rendering.** 769 maps, including 24 of the 25 fan
+   candidates. This is what turns assertion 1 green, and nothing else will.
+2. **Phase 0.3 Q10** — whether `EUL4_QPP_STATS` records returned row counts.
+   Still unanswered. It would be a second, independent oracle; the `EXISTS`
+   reference query used here is the first.
+3. `mapsWithNoColumns = 25` and the two reconciliation drifts, both pre-existing
+   and reported by other seams.
+
+Out of scope and deliberately not attempted: formula compilation (Phase 4),
+hierarchies and item classes (Phase 5), result-set equivalence (Phase 9.1).

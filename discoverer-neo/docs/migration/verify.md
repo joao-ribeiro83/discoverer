@@ -147,15 +147,19 @@ tracked gap with a wrong number.
 
 ### 6. `planner-live` — the planner-decision histogram
 
-Real output, from this estate on 2026-09-06:
+Real output, from this estate on 2026-09-06, after the join re-import:
 
 ```
 [FAIL   ] planner-live — the planner-decision histogram, over every migrated map
             maps=924 decided=155 mapsWithANonEmptyMeasureSet=49
-            flat=116 rewrite=0 refuse=39 fanTrapRefusals=0 error=0 notDecided=769
-            refuseNO_PREDICATE=13 refuseDISCONNECTED=26
+            flat=129 rewrite=0 refuse=26 fanTrapRefusals=0 error=0
+            notDecided=769 fanCandidates=25 fanCandidatesDecided=1
+            refuseDISCONNECTED=26
             REWRITE fired zero times: the rewrite path is unreachable, so the
-            guard has not been shown to work — only shown to have no input
+            guard has not been shown to work — only shown to have no input.
+            25 map(s) WOULD reach the fan test, and 1 of them reached a
+            decision — the rest throw before the planner runs, so the blockage
+            is upstream of this guard, not in it
             · no fan-trap rule (R1-R4, REAGG) fired: no map in this estate
               reached a trigger condition.
             · REFUSE(DISCONNECTED) = 26 against a baseline of 271, over 155 of
@@ -164,9 +168,13 @@ Real output, from this estate on 2026-09-06:
               like-for-like reading of the baseline.
 ```
 
-That is a FAIL, and it reads correctly: 769 maps carry an unrendered formula
-token and never reach the planner, and `join_predicates` was empty, so no join
-could be written and no query could rewrite.
+That is a FAIL, and it reads correctly. 769 maps carry an unrendered formula
+token and never reach the planner — 24 of the 25 that would otherwise reach the
+fan test are among them. The one that does decide is correctly `FLAT`: its
+measure sits on the detail side, so nothing repeats.
+
+The rewrite path itself is proven separately, against Oracle, by
+`backend/src/scripts/verify-fan-trap-m67.ts` — see below.
 
 Every map is decided, and the decision counted. One line per map, one bucket
 per outcome:
@@ -181,6 +189,8 @@ per outcome:
 | `refuseR1`…`refuseR4`, `refuseREAGG` | one of the five fan-trap rules |
 | `error` | generation failed for a reason that is not a refusal — an unrendered formula, for instance. **Counted apart from refusals on purpose** |
 | `notDecided` | the map could not be loaded at all. Absent from every bucket above |
+| `fanCandidates` | maps that WOULD reach the fan test — multi-folder, connected, carrying a measure — counted from the tables, so maps the planner never sees are included |
+| `fanCandidatesDecided` | how many of those actually reached a decision |
 
 **Why it exists.** A guard that fires zero times is indistinguishable from a
 guard that was never wired in. Every other fan-trap test in this project runs
@@ -204,11 +214,38 @@ the guard never once having fired.
    in this estate reaches a trigger condition" is an acceptable answer, and it
    is printed as a finding. Silence is not an answer.
 
+**`rewrite = 0` means two different things.** With `fanCandidates = 0`, this
+estate simply contains no fan trap, and nothing downstream can change that. With
+candidates that did not get decided, the rewrite path is blocked *upstream* — the
+guard is fine, its work never arrives. The blocker line says which.
+
 **Read `notDecided` before you read anything else.** A map that could not be
 loaded is in no bucket, so it cannot be counted as `refuseDISCONNECTED` either
 — and that count falls for a reason that has nothing to do with the join model.
 The check prints the coverage next to the number for exactly this reason. While
 `notDecided` is large, treat every count here as a floor.
+
+### Proving the rewrite path itself
+
+The histogram can only report what the estate lets the planner see. When
+`rewrite` is 0 because its candidates do not load,
+`backend/src/scripts/verify-fan-trap-m67.ts` proves the path directly against
+Oracle. It builds a worksheet from the migrated metadata for `M M67 1` (2 623
+policy headers) joined to `M M67` (833 340 receipt lines), and asks the source
+system three questions:
+
+```
+plan decision              REWRITE(2)
+1. Oracle reference        4 392 650.47
+2. naive flat join     1 278 415 648.69
+3. Neo (rewritten)         4 392 650.47
+```
+
+Neo matches the source system exactly; the unguarded join inflates by 291.04x.
+The script asserts the naive number *differs* from the reference — if it agreed,
+the shape would contain no fan and the check would be passing vacuously.
+
+Run it inside the backend container, where the Oracle Instant Client lives.
 
 ## Reading the bottom line
 
