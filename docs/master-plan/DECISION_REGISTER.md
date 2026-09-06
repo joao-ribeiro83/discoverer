@@ -203,3 +203,32 @@ need their wording corrected against what the code does.
 | **F-23 was a defect, not a flake** | Every terminal branch of async execution set `job.status` before awaiting the execution-log write, so a caller polling to COMPLETED could read the history and find nothing. Fixed in all four terminal states. The "leaked handles" are the deliberate module-level `pg` Pool, already documented in `jest.config.js`; `forceExit` stays |
 | **NEW — the EUL5 fixture's own map cannot generate SQL** | Multi-folder aggregate, refused pending the fan-trap planner. The fixture every migration test depends on produces an inert map, and nothing had ever asked |
 | **NEW — `folder_business_areas` holds 0 rows** | Folder-to-business-area links come only from `folders.business_area_id`. Recorded, not acted on |
+
+---
+
+## Phase 4.1 execution — amendments, 2026-09-06
+
+The `[1,n]` fixity table exists, fitted against the corpus rather than assumed:
+`discoverer-neo/migrate/corpus/builtin-code-table.json`, with
+`docs/master-plan/research/formula-decoder-spec.md` as the specification (D-004
+discharged). 42 of the 56 codes fitted, carrying 99.78 % of built-in uses; the
+other 14 are refuse-only and named.
+
+| ID | Amendment | Evidence |
+| -- | --------- | -------- |
+| **D-052** | **Executed.** Fitting works, and the settling rule had to be stated precisely: a row counts against a shape *only if some other candidate shape explains it*. A row no hypothesis can produce is a damaged row, counted and reported, not a vote — otherwise one invisible casualty vetoes a shape 15 000 rows attest | `fit-builtin-codes.ts`; `builtin-code-table.test.ts` |
+| **D-054** | **Confirmed, with a trap the decision did not name.** A fitted `Shape` is how Oracle *displays* a node, not the SQL to emit: `[1,117]` displays `COUNT_DISTINCT(a)` but the SQL is `COUNT(DISTINCT a)`, and `[1,111]` `ROWCOUNT` displays `COUNT(*)`. Take arity and fixity from the table, the SQL name from the allowlist — never both from the same place | spec §3; `formula-parser.ts:21,29` |
+| **D-055** | **Amended in scope, and the pattern already exists.** `joins.predicate_formula` keeps the token tree beside the decomposed form and cites D-055 in its own docblock — that is dual storage done right. The formula columns do not: `items.formula` and `map_calculated_fields.formula` each have ONE column and it holds the token string. So 4.2 **adds** `formula_tokens`, it does not overwrite `formula` — overwriting destroys the only copy of what a re-render needs | `migrate/src/db/schema.ts:469,565,1002`; `formula-bucket.ts` |
+| **D-057** | **Confirmed, with a new caveat that bites 4.3.** The aligned corpus attests **zero** `[2,n]` occurrences — every custom-function use in the estate sits in the unrendered `IOFormula` remainder. So there is no evidence for how Oracle renders a custom-function call, and its shape must be labelled `[INFER]` | `grep -c '\[2,' formula-corpus.tsv` = 0 |
+| **D-114** | **Confirmed, with a defect the build did not foresee.** A Discoverer private filter's `Name` is frequently its own `DisplayFormula` verbatim, so the identifier map replaced whole display strings wholesale: `a AND b` came back as `a ZCK b`, keyword destroyed, punctuation intact. **917 rows (4.03 %, 1 456 occurrences) are damaged**, which caps 4.2's and 4.3's exact-match gates at about 96 % on the committed corpus. Fix: exclude a filter's `Name` from the map when it equals that entry's `DisplayFormula`, and rebuild | spec §11.1; `d4wkdmp-dump-parser.test.ts:46-53` |
+
+### New findings from this stage
+
+| Finding | Detail |
+| --- | --- |
+| **`[5,4]` settled** | `YYYYMMDDHHMISS` -> `'YY.MM.DD'`. Fitted by running the whole fit once per candidate format: 846 date rows reproduced against 184 for the nearest rival. **Not one of the 7 670 date literals carries a time component**, so nothing is lost by dropping the six trailing digits — but a non-midnight payload must be refused, not truncated |
+| **Encoding settled** | The corpus is not valid UTF-8; all 62 distinct non-ASCII bytes lie in 0xC0–0xFF, so latin1 and cp1252 agree on every byte present and the `latin1` read is exact. `Prémio`-class text occurs as a **string literal**, not only as an item name, and survives byte-for-byte on both sides of a pair |
+| **The 7 371 remainder is bounded, not classified** | `d4dumps/` is **gone from this machine** — 547 dumps and their `.DIS` sources — so it cannot be run. Established without them: all 7 371 are `EulPrivateItem` or `EulPrivateFilter`; "they are conditions" is **refuted** (fitted condition operators come from aligned condition rows); and every `[2,n]` in the estate is inside the remainder. `build-formula-corpus.ts` now emits `ioWithoutDisplayByKind`, so one rebuild on a machine with the dumps answers it outright |
+| **12 codes are `UNTESTED`, not contradicted** | 445 uses. They never appeared in a row whose other codes were settled — `CASE`/`WHEN`/`ELSE` block each other, and the analytic family occurs only inside itself. Fitting a *pair* of unknown codes jointly is the cheapest win available to 4.3 |
+| **Analytic functions: do not implement from this evidence** | `OVER`/`PARTITION`/`ORDER`/`NPASSORDERCOMP`/`FIRST_VALUE`/`ROW_NUMBER` total 38 uses from a single workbook pattern, and its spacing is under-determined by one attestation |
+| **A-10 done** | `parseConditionTree`/`ConditionNode` renamed to `parseFormulaTree`/`FormulaNode`. Conditions and calculations are one language; the old name meant a reader grepping for a formula parser concluded there wasn't one |

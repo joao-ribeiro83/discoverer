@@ -602,7 +602,19 @@ resolved through the column's own style chain
 positional rule on all 21 978 columns it resolves and finds one more. The
 positional rule remains the fallback for an element that could not be framed.
 
-### 7.5 The condition token language
+### 7.5 The token language — conditions *and* calculations
+
+**One language, not two.** The same five namespaces, the same grammar and the
+same parser cover both, which is why the reader is `parseFormulaTree` and its
+node type is `FormulaNode` rather than anything named for conditions.
+
+```
+node    ::= '[' field { ',' field } ']' [ '(' [ node { ',' node } ] ')' ]
+field   ::= integer | '"' string '"'
+```
+
+A string field honours backslash escapes. No workbook in the source EUL
+exercises one, so that is tolerance, not a confirmed encoding.
 
 Every condition is stored twice: as the text Discoverer displays (`0x00fc`) and
 as a token tree (`0x00ff`).
@@ -627,6 +639,20 @@ A node is `[kind,…]`, optionally followed by a parenthesised argument list:
 | `[5,k,"…"]` | literal; `k` is 1 string, 2 number, 4 date |
 | `[6,n]` | item element `n` |
 | `[8,n]` | parameter element `n` |
+
+**How each one reaches the screen** was fitted at Phase 4.1 against 37 971
+`(IOFormula, DisplayFormula)` pairs — Oracle rendering its own token string —
+and is recorded in `corpus/builtin-code-table.json` and
+`docs/master-plan/research/formula-decoder-spec.md`. 42 of the 56 `[1,n]` codes
+the estate uses are fitted, carrying 99.78 % of built-in uses; the rest are
+refuse-only. Two results worth having here:
+
+- `[5,2]` prints verbatim and unquoted; `[5,1]` prints single-quoted; `[5,4]`
+  carries `YYYYMMDDHHMISS` and prints as `'YY.MM.DD'` — and **not one of the
+  estate's 7 670 date literals has a time component**.
+- The dumps and the corpus are single-byte cp1252. Every non-ASCII byte falls
+  in 0xC0–0xFF, so latin1 and cp1252 agree on all of them; read as UTF-8 the
+  corpus is invalid. Read every dump and `.DIS` body as `latin1`.
 
 `parseFormulaTree` reads this as a real tree and **fails rather than
 half-reading**: a malformed token string is reported, not scanned for whatever
