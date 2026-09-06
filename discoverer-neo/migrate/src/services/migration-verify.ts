@@ -602,6 +602,79 @@ function decisionArgument(decision: string): string | null {
  * `ERROR` is reported and never gated on: an unrendered formula token is Phase
  * 4's problem and must be counted separately from a planner refusal.
  */
+
+/**
+ * Maps that would reach the planner's fan test if they loaded: more than one
+ * folder, connected by the known joins, and carrying at least one measure.
+ *
+ * Counted straight from the tables rather than through the planner, because
+ * the whole point is to include maps the planner never sees. `REWRITE = 0`
+ * means two very different things depending on this number:
+ *
+ * - **zero candidates** — this estate contains no fan trap. An honest reading,
+ *   and nothing downstream can change it.
+ * - **candidates, none of them decided** — the rewrite path is blocked
+ *   upstream, not absent. Today that upstream is Phase 4: every candidate here
+ *   carries an unrendered Discoverer formula token and throws before the
+ *   planner runs.
+ *
+ * Without the distinction a reader cannot tell a guard with no work to do from
+ * a guard whose work never arrives.
+ */
+async function fanCandidates(
+  db: VerifyDb,
+  prefix: string | undefined,
+): Promise<{ total: number; ids: Set<string> }> {
+  const mapRows = await rows(
+    db,
+    sql`WITH mf AS (
+          SELECT mi.map_id, i.folder_id FROM map_items mi JOIN items i ON i.id = mi.item_id
+          UNION
+          SELECT mc.map_id, i.folder_id FROM map_conditions mc JOIN items i ON i.id = mc.item_id
+        )
+        SELECT maps.id::text AS id,
+               array_agg(DISTINCT mf.folder_id::text) AS folders,
+               (SELECT count(*) FROM map_items x
+                 WHERE x.map_id = maps.id AND x.agg_function IS NOT NULL)::int AS measures
+        FROM maps JOIN mf ON mf.map_id = maps.id
+        WHERE maps.is_active AND ${mapScope(prefix)}
+        GROUP BY maps.id`,
+  );
+
+  const edgeRows = await rows(
+    db,
+    sql`SELECT left_folder_id::text AS l, right_folder_id::text AS r FROM joins`,
+  );
+  const edges = edgeRows.map((e) => [String(e.l), String(e.r)] as const);
+
+  const ids = new Set<string>();
+  for (const row of mapRows) {
+    const folders = Array.isArray(row.folders) ? (row.folders as string[]) : [];
+    if (folders.length <= 1 || Number(row.measures ?? 0) === 0) continue;
+
+    // Union-find over the edges whose BOTH endpoints the map uses.
+    const parent = new globalThis.Map(folders.map((f) => [f, f]));
+    const find = (x: string): string => {
+      let cur = x;
+      while (parent.get(cur) !== cur) {
+        parent.set(cur, parent.get(parent.get(cur)!)!);
+        cur = parent.get(cur)!;
+      }
+      return cur;
+    };
+    const inMap = new Set(folders);
+    for (const [a, b] of edges) {
+      if (!inMap.has(a) || !inMap.has(b)) continue;
+      const ra = find(a);
+      const rb = find(b);
+      if (ra !== rb) parent.set(ra, rb);
+    }
+    if (new Set(folders.map(find)).size === 1) ids.add(String(row.id));
+  }
+
+  return { total: ids.size, ids };
+}
+
 export async function checkPlannerLive(
   db: VerifyDb,
   options: VerifyOptions = {},
@@ -635,10 +708,14 @@ export async function checkPlannerLive(
   let decided = 0;
   let withMeasures = 0;
 
+  const candidates = await fanCandidates(db, options.mapIdPrefix);
+  let candidatesDecided = 0;
+
   for (const row of mapRows) {
     try {
       const outcome = await options.planMap(String(row.id));
       decided += 1;
+      if (candidates.ids.has(String(row.id))) candidatesDecided += 1;
       if (outcome.measures > 0) withMeasures += 1;
       histogram.set(outcome.decision, (histogram.get(outcome.decision) ?? 0) + 1);
     } catch (err) {
@@ -678,6 +755,8 @@ export async function checkPlannerLive(
     fanTrapRefusals,
     error: count('ERROR'),
     notDecided: mapRows.length - decided,
+    fanCandidates: candidates.total,
+    fanCandidatesDecided: candidatesDecided,
   };
   for (const [rule, n] of refusals) metrics[`refuse${rule}`] = n;
   // The branch-count breakdown, so `REWRITE(2)` and `REWRITE(3)` stay visible.
@@ -720,7 +799,13 @@ export async function checkPlannerLive(
     if (rewrites === 0) {
       blockers.push(
         'REWRITE fired zero times: the rewrite path is unreachable, so the guard has ' +
-          'not been shown to work — only shown to have no input',
+          'not been shown to work — only shown to have no input' +
+          (candidates.total === 0
+            ? '. No map in this estate is multi-folder, connected and carrying a ' +
+              'measure, so there is nothing here that could fan'
+            : `. ${candidates.total} map(s) WOULD reach the fan test, and ` +
+              `${candidatesDecided} of them reached a decision — the rest throw before ` +
+              'the planner runs, so the blockage is upstream of this guard, not in it'),
       );
     }
     // 2 — Phase 3.2's claim, measured.
