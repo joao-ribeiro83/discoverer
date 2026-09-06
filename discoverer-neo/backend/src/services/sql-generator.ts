@@ -499,6 +499,61 @@ export async function planDraft(items: DraftItem[]): Promise<QueryPlan> {
   return planQuery(def);
 }
 
+/**
+ * One map's FINAL decision, for the planner-decision histogram (D-037, B-7).
+ *
+ * The planner's own verdict is not the whole answer. Two of the outcomes a user
+ * actually meets are raised by the emitter, not the planner:
+ *
+ * - **DISCONNECTED** — the folders the map uses are not linked by any join.
+ *   The planner records `FLAT(DISCONNECTED)` and leaves the refusal to the FROM
+ *   clause, which names the folder. 271 of this estate's 341 multi-folder maps
+ *   are in this state (`research/baseline-counts.md`).
+ * - **NO_PREDICATE** — a join exists but carries no usable condition (D-039).
+ *
+ * A histogram that counted only planner verdicts would put both in `FLAT` and
+ * report a guard doing work it never did. So the decision is taken after
+ * generation: whatever refusal fires first, by name.
+ *
+ * Anything else generation throws is NOT a planner outcome — an unrendered
+ * formula token is Phase 4's problem — and is reported as `ERROR` so it is
+ * counted separately rather than diluting the histogram.
+ */
+export function decideMap(def: MapDefinition): { decision: string; measures: number } {
+  const plan = planQuery(def);
+  const measures = plan.measures.length;
+  if (plan.kind === 'REFUSE') return { decision: `REFUSE(${plan.rule})`, measures };
+
+  try {
+    generateSql(def, { plan });
+  } catch (err) {
+    const code = err instanceof SqlGenerationError ? err.code : undefined;
+    if (code) return { decision: `REFUSE(${HISTOGRAM_RULE[code] ?? code})`, measures };
+    return { decision: 'ERROR', measures };
+  }
+
+  return {
+    decision: plan.kind === 'REWRITE' ? `REWRITE(${plan.branches.length})` : 'FLAT',
+    measures,
+  };
+}
+
+/**
+ * Refusal codes renamed for the histogram, so its vocabulary reads as the
+ * decision procedure states it rather than as the emitter spells it
+ * (`legacy-analysis.md` §1.11 step 10, extended by review R-07/B-03).
+ */
+const HISTOGRAM_RULE: Record<string, string> = {
+  NO_JOIN_PATH: 'DISCONNECTED',
+  JOIN_NO_PREDICATE: 'NO_PREDICATE',
+  JOIN_BOTH_OUTER: 'BOTH_OUTER',
+  FAN_TRAP_R1: 'R1',
+  FAN_TRAP_R2: 'R2',
+  FAN_TRAP_R3: 'R3',
+  FAN_TRAP_R4: 'R4',
+  FAN_TRAP_REAGG: 'REAGG',
+};
+
 /** Generate SQL for a stored map. */
 export async function generateSqlForMap(
   mapId: string,
