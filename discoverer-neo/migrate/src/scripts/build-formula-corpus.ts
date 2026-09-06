@@ -342,6 +342,21 @@ function main(): void {
   const names = new Set<string>();
   const rawPairs: Pair[] = [];
   let ioOnly = 0;
+  /**
+   * The `IOFormula`-without-`DisplayFormula` remainder, split by what it
+   * actually is (Phase 4.1, open question 1). Only two entry kinds carry
+   * these fields at all, and `DisplayFormula` can be absent from the dump or
+   * present and empty — different findings, so they are counted apart.
+   * `calc` / `notCalc` is the private item's own `IsACalc` flag.
+   */
+  const ioOnlyByKind: Record<string, number> = {
+    'PrivateItem/calc/absent': 0,
+    'PrivateItem/calc/empty': 0,
+    'PrivateItem/notCalc/absent': 0,
+    'PrivateItem/notCalc/empty': 0,
+    'PrivateFilter/absent': 0,
+    'PrivateFilter/empty': 0,
+  };
 
   for (const file of files) {
     const text = readFileSync(join(dumpsDir, file), 'latin1');
@@ -365,6 +380,12 @@ function main(): void {
         !e.displayFormula
       ) {
         ioOnly += 1;
+        const where = e.displayFormula === null ? 'absent' : 'empty';
+        const key =
+          e.type === 'EulPrivateFilter'
+            ? `PrivateFilter/${where}`
+            : `PrivateItem/${e.isACalc === true ? 'calc' : 'notCalc'}/${where}`;
+        ioOnlyByKind[key] = (ioOnlyByKind[key] ?? 0) + 1;
       }
       rawPairs.push(...p);
     }
@@ -412,6 +433,7 @@ function main(): void {
     alignedPairs: rawPairs.length,
     distinctPairs: rows.length,
     ioWithoutDisplay: ioOnly,
+    ioWithoutDisplayByKind: ioOnlyByKind,
     distinctIdentifiers: map.size,
     /**
      * Harvested names left in place: Oracle's own function names, names with

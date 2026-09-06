@@ -16,7 +16,7 @@ import {
   countWorkbookColumns,
   EUL_FUNCTION_NAMES,
   parseConditionTokens,
-  parseConditionTree,
+  parseFormulaTree,
   parseWorkbookDocument,
   planCondition,
   readWorkbookElements,
@@ -129,9 +129,9 @@ describe('parseConditionTokens', () => {
   });
 });
 
-describe('parseConditionTree', () => {
+describe('parseFormulaTree', () => {
   it('reads a nested tree, not a flat scan', () => {
-    const { tree, error } = parseConditionTree(
+    const { tree, error } = parseFormulaTree(
       '[1,98]([1,92]([6,26],[8,58],[8,59]),[1,81]([6,48],[5,1,"V"]))',
     );
     expect(error).toBeNull();
@@ -164,23 +164,23 @@ describe('parseConditionTree', () => {
   });
 
   it('keeps a comma inside a quoted literal out of the argument list', () => {
-    const { tree } = parseConditionTree('[1,81]([6,1],[5,1,"A,B"])');
+    const { tree } = parseFormulaTree('[1,81]([6,1],[5,1,"A,B"])');
     expect(tree).toMatchObject({
       args: [{ type: 'item' }, { type: 'literal', value: 'A,B' }],
     });
-    const escaped = parseConditionTree(`[1,81]([6,1],[5,1,"say \\"hi\\""])`);
+    const escaped = parseFormulaTree(`[1,81]([6,1],[5,1,"say \\"hi\\""])`);
     expect(escaped.tree).toMatchObject({ args: [{}, { value: 'say "hi"' }] });
   });
 
   it('reads a zero-argument code and a custom function reference', () => {
     // [1,48] is SYSDATE, [1,115] NULL — both written with an empty list.
-    expect(parseConditionTree('[1,48]()').tree).toEqual({
+    expect(parseFormulaTree('[1,48]()').tree).toEqual({
       type: 'call',
       code: 48,
       name: 'SYSDATE',
       args: [],
     });
-    expect(parseConditionTree('[2,20]([6,3])').tree).toMatchObject({
+    expect(parseFormulaTree('[2,20]([6,3])').tree).toMatchObject({
       type: 'function',
       elementId: 20,
     });
@@ -188,7 +188,7 @@ describe('parseConditionTree', () => {
 
   it('fails rather than half-reading a malformed tree', () => {
     for (const bad of ['[1,81]([6,1]', '[1,81]([6,1],)', 'garbage', '[1,81]([6,1]) trailing']) {
-      const { tree, error } = parseConditionTree(bad);
+      const { tree, error } = parseFormulaTree(bad);
       expect(tree).toBeNull();
       expect(error).not.toBeNull();
     }
@@ -205,7 +205,7 @@ describe('parseConditionTree', () => {
 
 describe('planCondition', () => {
   const plan = (tokens: string): ReturnType<typeof planCondition> =>
-    planCondition(parseConditionTree(tokens).tree);
+    planCondition(parseFormulaTree(tokens).tree);
 
   it('makes a single test one group of one predicate', () => {
     const result = plan('[1,81]([6,4],[5,1,"V"])');

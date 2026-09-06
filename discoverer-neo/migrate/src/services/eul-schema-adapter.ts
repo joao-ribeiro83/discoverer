@@ -53,7 +53,7 @@ import {
 // item — so it is read with the same parser rather than a second one. The
 // only difference is what `[6,n]` names: an `EXPRESSIONS.EXP_ID` here, a
 // workbook element id there.
-import { parseConditionTree, type ConditionNode } from './workbook-parser.js';
+import { parseFormulaTree, type FormulaNode } from './workbook-parser.js';
 
 // ---------------------------------------------------------------------------
 // Column specs (canonical = EUL5 shape)
@@ -777,15 +777,15 @@ interface RawJoinPredicate {
  * whole EUL read.
  */
 export function parseJoinPredicate(formula: string | null): RawJoinPredicate[] | null {
-  const { tree } = parseConditionTree(formula);
+  const { tree } = parseFormulaTree(formula);
   if (!tree) return null;
 
-  const unwrap = (node: ConditionNode): ConditionNode =>
+  const unwrap = (node: FormulaNode): FormulaNode =>
     node.type === 'call' && node.code === FUN_ID_BRACKET && node.args.length === 1
       ? unwrap(node.args[0]!)
       : node;
 
-  const comparison = (node: ConditionNode): RawJoinPredicate | null => {
+  const comparison = (node: FormulaNode): RawJoinPredicate | null => {
     const n = unwrap(node);
     if (n.type !== 'call') return null;
     const operator = JOIN_PREDICATE_OPERATORS[n.code];

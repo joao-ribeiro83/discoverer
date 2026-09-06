@@ -628,7 +628,7 @@ A node is `[kind,…]`, optionally followed by a parenthesised argument list:
 | `[6,n]` | item element `n` |
 | `[8,n]` | parameter element `n` |
 
-`parseConditionTree` reads this as a real tree and **fails rather than
+`parseFormulaTree` reads this as a real tree and **fails rather than
 half-reading**: a malformed token string is reported, not scanned for whatever
 can be recognized. All 3 395 conditions of the live source parse with no
 failures and no trailing input.
