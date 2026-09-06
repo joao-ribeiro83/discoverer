@@ -35,7 +35,11 @@ export type DisplayShape =
   | 'zeroBare' // NAME
   | 'infixTight' // a-b
   | 'infixSpaced' // a = b
-  | 'bracketSpaced'; // ( a )
+  | 'bracketSpaced' // ( a )
+  | 'unaryTight' // -a
+  | 'between' // a BETWEEN b AND c
+  | 'inList' // a IN (b,c)  /  a NOT IN (b,c)
+  | 'passthrough'; // a — the code leaves no mark on the rendering
 
 /** How the node is emitted into SQL. Independent of `DisplayShape`. */
 export type SqlForm =
@@ -48,7 +52,20 @@ export type SqlForm =
   /** A bare SQL keyword taking no arguments. */
   | { kind: 'keyword'; text: string }
   /** `(a)` — an explicit bracket the author wrote. */
-  | { kind: 'group' };
+  | { kind: 'group' }
+  /** `(OP (a))` — a one-argument operator, D-051 parenthesised like the rest. */
+  | { kind: 'unary'; op: string }
+  /** `((a) BETWEEN (b) AND (c))`. */
+  | { kind: 'between' }
+  /** `((a) IN ((b),(c)))`, or `NOT IN` when `not`. */
+  | { kind: 'inList'; not: boolean }
+  /** `COUNT(DISTINCT a)` — refused today, see `UNREAGGREGABLE_FUNCTIONS`. */
+  | { kind: 'aggregateDistinct'; name: string }
+  /**
+   * The rendering does not show what the node computes, so no SQL can be
+   * derived from it. Displays fine; refuses on the SQL side with `reason`.
+   */
+  | { kind: 'displayOnly'; reason: 'UNKNOWN_SEMANTICS' };
 
 export interface BuiltinCode {
   code: number;
@@ -101,6 +118,27 @@ export const PHASE_4_2_CODES: readonly number[] = [
   ...PHASE_4_2_GATE_CLOSERS,
 ];
 
+/**
+ * Phase 4.3's tail, batch A — every remaining `FITTED` code above 100 uses.
+ *
+ * Worked in descending frequency because the exact-match percentage is the
+ * progress signal, and these nine carry 1 611 of the 1 637 occurrences 4.2
+ * left quarantined.
+ *
+ * `[1,88]` `IN` and `[1,91]` `NOT IN` are a caveat worth stating. The fitter
+ * hard-codes `' IN ('` for the `inList` shape and ignores the code's name, so
+ * `[1,91]` "fits" only because its strict placeholder swallows the word `NOT`
+ * — `Xkzoub Krwa NOT` is a legal identifier under that class. The rendering
+ * itself is not in doubt: the attested row reads `Xkzoub Krwa NOT IN ('M','A')`
+ * and `EUL_FUNCTION_NAMES[91]` is `NOT IN`. So this renderer writes the code's
+ * own name into the list form, which is what the corpus shows, not what the
+ * fitter's regex happened to accept.
+ */
+export const PHASE_4_3_BATCH_A: readonly number[] = [92, 88, 98, 48, 18, 11, 42, 99, 103];
+
+/** Everything 4.3 adds. */
+export const PHASE_4_3_CODES: readonly number[] = [...PHASE_4_3_BATCH_A];
+
 const TABLE: readonly BuiltinCode[] = [
   // --- the ten ------------------------------------------------------------
   { code: 102, displayName: 'DECODE', shape: 'prefix', arity: [3, 60], sql: { kind: 'function', name: 'DECODE' } },
@@ -125,6 +163,16 @@ const TABLE: readonly BuiltinCode[] = [
   { code: 83, displayName: '>', shape: 'infixSpaced', arity: [2, 2], sql: { kind: 'operator', op: '>' } },
   { code: 84, displayName: '<', shape: 'infixSpaced', arity: [2, 2], sql: { kind: 'operator', op: '<' } },
   { code: 104, displayName: '!=', shape: 'infixSpaced', arity: [2, 2], sql: { kind: 'operator', op: '!=' } },
+  // --- Phase 4.3, batch A: every remaining FITTED code above 100 uses ------
+  { code: 92, displayName: 'BETWEEN', shape: 'between', arity: [3, 3], sql: { kind: 'between' } },
+  { code: 88, displayName: 'IN', shape: 'inList', arity: [2, 13], sql: { kind: 'inList', not: false } },
+  { code: 98, displayName: 'AND', shape: 'infixSpaced', arity: [2, 7], sql: { kind: 'operator', op: 'AND' } },
+  { code: 48, displayName: 'SYSDATE', shape: 'zeroBare', arity: [0, 0], sql: { kind: 'keyword', text: 'SYSDATE' } },
+  { code: 18, displayName: 'TRUNC', shape: 'prefix', arity: [1, 1], sql: { kind: 'function', name: 'TRUNC' } },
+  { code: 11, displayName: 'ROUND', shape: 'prefix', arity: [1, 2], sql: { kind: 'function', name: 'ROUND' } },
+  { code: 42, displayName: 'ADD_MONTHS', shape: 'prefix', arity: [2, 2], sql: { kind: 'function', name: 'ADD_MONTHS' } },
+  { code: 99, displayName: 'OR', shape: 'infixSpaced', arity: [2, 7], sql: { kind: 'operator', op: 'OR' } },
+  { code: 103, displayName: '||', shape: 'infixTight', arity: [2, 2], sql: { kind: 'operator', op: '||' } },
 ];
 
 const BY_CODE = new Map(TABLE.map((entry) => [entry.code, entry]));

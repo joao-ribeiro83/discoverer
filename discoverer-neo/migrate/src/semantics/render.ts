@@ -68,6 +68,12 @@ export type QuarantineReason =
   | 'NOT_IN_ALLOWLIST'
   /** An aggregate the fan-trap planner cannot re-aggregate. */
   | 'UNREAGGREGABLE'
+  /**
+   * The code renders, but its rendering does not show what it computes, so no
+   * SQL can be derived from it. `[1,126]` `2_Pass_Percentage` displays as its
+   * argument alone and is the whole population of this reason.
+   */
+  | 'UNKNOWN_SEMANTICS'
   /** The token string is not a readable tree. */
   | 'PARSE_FAILED';
 
@@ -141,7 +147,9 @@ export function displayDateLiteral(payload: string): string {
  * U+0001 cannot occur in a display formula, so it can never be mistaken for
  * content.
  */
-const MARK = '\u0001';
+export const DISPLAY_NAME_MARK = '\u0001';
+/** Shorthand, used heavily just below. */
+const MARK = DISPLAY_NAME_MARK;
 
 /** Render the tree as Discoverer would have displayed it, with marked names. */
 export function renderDisplay(node: FormulaNode): string {
@@ -185,6 +193,16 @@ export function renderDisplay(node: FormulaNode): string {
           return parts.join(` ${name} `);
         case 'bracketSpaced':
           return `( ${parts[0]} )`;
+        case 'unaryTight':
+          return `${name}${parts[0]}`;
+        case 'between':
+          return `${parts[0]} ${name} ${parts[1]} AND ${parts[2]}`;
+        case 'inList':
+          return `${parts[0]} ${name} (${parts.slice(1).join(',')})`;
+        case 'passthrough':
+          // `[1,126]` leaves no mark on the rendering at all. Its argument is
+          // the whole display form — which is exactly why it has no SQL.
+          return parts[0]!;
       }
     }
   }
@@ -195,12 +213,37 @@ const REGEX_SPECIALS = /[.*+?^${}()|[\]\\]/g;
 /**
  * A name the corpus anonymised away.
  *
- * Verbatim from the fitter's `strict` class, and its constraints are load
- * bearing: no bracket or comma, so a placeholder cannot swallow structure and
- * make a wrong shape "match"; and no leading or trailing space, which is the
- * only thing separating `a<b` from `a < b`.
+ * The second branch is the fitter's `strict` class verbatim, and its
+ * constraints are load bearing: no bracket or comma, so a placeholder cannot
+ * swallow structure and make a wrong shape "match"; and no leading or trailing
+ * space, which is the only thing separating `a<b` from `a < b`.
+ *
+ * The first branch is this phase's one addition, and the corpus forced it.
+ * Discoverer wraps a name that needs it in double quotes — a parameter as
+ * `:"Prazo Restante (M/A)"`, an item as `"P TOTAL (BRUTO)"` — and those names
+ * genuinely contain brackets. Under the bare strict class they can never
+ * match, which is why nineteen otherwise-clean rows were being filed as
+ * renderer defects. A quoted branch is safe where a widened strict class would
+ * not be: the closing quote bounds the span, so it still cannot run past its
+ * own name and eat the structure around it.
  */
-const NAME_PATTERN = '[A-Za-z_:"\\u0080-\\u00ff](?:[^(),]*?[^(), ])?';
+const NAME_PATTERN = ':?"[^"]*"|[A-Za-z_:"\\u0080-\\u00ff](?:[^(),]*?[^(), ])?';
+
+/**
+ * Discoverer brackets a whole *condition* when it shows it — `( a OR b )` —
+ * even though nothing in the token tree says so.
+ *
+ * Phase 4.1 established this and deliberately kept it out of every code's
+ * shape: it is a property of the root position, not of the operator. Folding
+ * it into `[1,99]` would fit `OR` as an operator that brackets itself, and
+ * `[1,98]` `AND`, which also occurs unbracketed inside a `CASE`, could then
+ * not be fitted at all. `fit-builtin-codes.ts:rootUnwrapped` is the same
+ * function; the comparator has to know it too, or nine attested condition rows
+ * read as renderer defects.
+ */
+function rootUnwrapped(display: string): string | null {
+  return display.startsWith('( ') && display.endsWith(' )') ? display.slice(2, -2) : null;
+}
 
 /**
  * Does `template` reproduce `display`, treating marked spans as unknown names?
@@ -229,7 +272,10 @@ export function displayMatches(template: string, display: string): boolean {
       }
     }
   }
-  return new RegExp(`${pattern}$`).test(display);
+  const regex = new RegExp(`${pattern}$`);
+  if (regex.test(display)) return true;
+  const inner = rootUnwrapped(display);
+  return inner !== null && regex.test(inner);
 }
 
 // ---------------------------------------------------------------------------
@@ -404,6 +450,30 @@ class SqlEmitter {
         }
         this.containsAggregate = true;
         return `${sql.name}(${args.join(', ')})`;
+      case 'unary':
+        return `(${sql.op}(${args[0]}))`;
+      case 'between':
+        return `((${args[0]}) BETWEEN (${args[1]}) AND (${args[2]}))`;
+      case 'inList':
+        return `((${args[0]}) ${sql.not ? 'NOT IN' : 'IN'} (${args
+          .slice(1)
+          .map((arg) => `(${arg})`)
+          .join(', ')}))`;
+      case 'aggregateDistinct':
+        // `COUNT(DISTINCT a)`. The fan-trap planner cannot re-aggregate it
+        // (D-058, §10), so it refuses before it can be emitted. The emission
+        // is written out anyway, so that lifting the restriction later is one
+        // edit rather than a fresh guess about what `[1,117]` means.
+        if (UNREAGGREGABLE_FUNCTIONS.has(`${sql.name}_DISTINCT`)) {
+          throw new Quarantined('UNREAGGREGABLE', `${sql.name}_DISTINCT`);
+        }
+        if (!AGGREGATE_FUNCTIONS.has(sql.name)) {
+          throw new Quarantined('NOT_IN_ALLOWLIST', sql.name);
+        }
+        this.containsAggregate = true;
+        return `${sql.name}(DISTINCT ${args[0]})`;
+      case 'displayOnly':
+        throw new Quarantined(sql.reason, `[1,${node.code}] ${entry.displayName}`);
     }
   }
 }

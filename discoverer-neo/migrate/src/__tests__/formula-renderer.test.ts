@@ -7,6 +7,7 @@ import {
   IMPLEMENTED_CODES,
   PHASE_4_2_CODES,
   PHASE_4_2_TOP_TEN,
+  PHASE_4_3_CODES,
 } from '../semantics/builtin-codes.js';
 import {
   createBindCollector,
@@ -109,7 +110,7 @@ describe('the implemented code table', () => {
 
   it('implements exactly the codes it says it does', () => {
     expect([...IMPLEMENTED_CODES].map((e) => e.code).sort((a, b) => a - b)).toEqual(
-      [...PHASE_4_2_CODES].sort((a, b) => a - b),
+      [...PHASE_4_2_CODES, ...PHASE_4_3_CODES].sort((a, b) => a - b),
     );
   });
 });
@@ -131,7 +132,7 @@ describe('the implemented code table', () => {
  */
 const CASE_BY_CODE = (() => {
   const rows = readFormulaCorpus(resolve(process.cwd(), 'corpus', 'formula-corpus.tsv'));
-  const implemented = new Set(PHASE_4_2_CODES);
+  const implemented = new Set(IMPLEMENTED_CODES.map((entry) => entry.code));
   const best = new Map<number, { io: string; display: string; occurrences: number }>();
   for (const row of rows) {
     const parsed = parseFormulaTree(row.io);
@@ -145,7 +146,13 @@ const CASE_BY_CODE = (() => {
     };
     walk(parsed.tree);
     if (codes.size === 0 || [...codes].some((c) => !implemented.has(c))) continue;
-    if (isAnonymiserDamage(parsed.tree, row.display)) continue;
+    let rendered: string;
+    try {
+      rendered = renderDisplay(parsed.tree);
+    } catch {
+      continue;
+    }
+    if (isAnonymiserDamage(rendered, row.display)) continue;
     for (const code of codes) {
       const seen = best.get(code);
       if (seen === undefined || row.occurrences > seen.occurrences) {
@@ -293,10 +300,10 @@ describe('containsAggregate — the fan-trap planner depends on it', () => {
 
 describe('refusal (D-058) — never a best-effort render', () => {
   it('quarantines a FITTED code this phase has not implemented', () => {
-    // [1,42] ADD_MONTHS is fitted and real; Phase 4.3 lands it.
-    const result = renderSql(tree('[1,42]([6,1],[5,2,"-1"])'), ctx());
+    // [1,79] ABS is fitted and real; batch B lands it.
+    const result = renderSql(tree('[1,79]([6,1])'), ctx());
     expect(result).toMatchObject({ ok: false, reason: 'CODE_NOT_IMPLEMENTED' });
-    expect(result.ok ? '' : result.detail).toBe('[1,42]');
+    expect(result.ok ? '' : result.detail).toBe('[1,79]');
   });
 
   it('quarantines a code the fit could not settle', () => {
@@ -309,7 +316,7 @@ describe('refusal (D-058) — never a best-effort render', () => {
   it('quarantines rather than rendering an unimplemented code best-effort', () => {
     // The display renderer refuses on the same terms, so an unimplemented
     // code can never reach the fidelity comparison as a near-miss either.
-    expect(() => renderDisplay(tree('[1,42]([6,1],[5,2,"-1"])'))).toThrow('CODE_NOT_IMPLEMENTED');
+    expect(() => renderDisplay(tree('[1,79]([6,1])'))).toThrow('CODE_NOT_IMPLEMENTED');
   });
 
   it('quarantines an unknown node', () => {
