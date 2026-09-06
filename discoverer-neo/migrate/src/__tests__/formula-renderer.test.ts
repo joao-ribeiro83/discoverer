@@ -64,6 +64,7 @@ function ctx(overrides: Partial<SqlRenderContext> = {}): SqlRenderContext {
   return {
     resolveItem: (id) => ({ name: `ITEM_${id}`, qualifier: 'T1', column: `COL_${id}` }),
     resolveParameter: (id) => `P_${id}`,
+    resolveFunction: (id) => ({ name: `FN_${id}`, arity: null }),
     bind: binder.bind,
     ...overrides,
   };
@@ -271,6 +272,92 @@ describe('SQL emission', () => {
 });
 
 /**
+ * `[2,n]` — registered PL/SQL functions, the largest new SQL surface here.
+ *
+ * The aligned corpus attests zero `[2,n]` occurrences (decoder spec §9), so
+ * there is no fidelity case to harvest and nothing below claims one. What is
+ * tested is the security contract, which does not depend on the corpus:
+ * resolve or refuse, validate or reject, never splice.
+ */
+describe('custom functions', () => {
+  it('renders a call when the element resolves to a migrated row', () => {
+    const result = renderSql(
+      tree('[2,17]([6,1],[5,2,"3"])'),
+      ctx({ resolveFunction: () => ({ name: 'CALC_PREMIO', arity: [2, 2] }) }),
+    );
+    if (!result.ok) throw new Error('expected a render');
+    expect(result.sql).toBe('CALC_PREMIO("T1"."COL_1", :v1)');
+  });
+
+  it('binds the arguments of a call rather than splicing them', () => {
+    const binder = createBindCollector();
+    const result = renderSql(
+      tree("[2,17]([5,1,\"'); DROP TABLE items;--\"])"),
+      ctx({
+        bind: binder.bind,
+        resolveFunction: () => ({ name: 'CALC_PREMIO', arity: null }),
+      }),
+    );
+    if (!result.ok) throw new Error('expected a render');
+    expect(result.sql).toBe('CALC_PREMIO(:v1)');
+    expect(binder.values.v1).toBe("'); DROP TABLE items;--");
+  });
+
+  it('rejects a function name carrying a quote, and does not escape it', () => {
+    // A hostile custom_functions.name is either an attack or a metadata
+    // defect. Quoting it into safety would hide both, so it is refused.
+    const hostile = 'X"); DROP TABLE items; --';
+    const result = renderSql(
+      tree('[2,17]([6,1])'),
+      ctx({ resolveFunction: () => ({ name: hostile, arity: null }) }),
+    );
+    expect(result).toMatchObject({ ok: false, reason: 'INVALID_IDENTIFIER' });
+    expect(result.ok ? '' : result.detail).toContain('DROP TABLE');
+  });
+
+  it('rejects a package-qualified name, which is not one identifier', () => {
+    const result = renderSql(
+      tree('[2,17]([6,1])'),
+      ctx({ resolveFunction: () => ({ name: 'PKG.CALC', arity: null }) }),
+    );
+    expect(result).toMatchObject({ ok: false, reason: 'INVALID_IDENTIFIER' });
+  });
+
+  it('quarantines a call whose arity does not match the migrated signature', () => {
+    const result = renderSql(
+      tree('[2,17]([6,1],[6,2],[6,3])'),
+      ctx({ resolveFunction: () => ({ name: 'CALC_PREMIO', arity: [1, 2] }) }),
+    );
+    expect(result).toMatchObject({ ok: false, reason: 'BAD_ARITY' });
+  });
+
+  it('accepts any arity when the migrated row carries no signature', () => {
+    // Every row this estate migrated has parameters: null and a
+    // FUNCTION_SIGNATURE_DEFAULTED warning — the EUL read carries no argument
+    // list. Refusing on that would make all 593 permanently uncallable.
+    const result = renderSql(
+      tree('[2,17]([6,1],[6,2],[6,3])'),
+      ctx({ resolveFunction: () => ({ name: 'CALC_PREMIO', arity: null }) }),
+    );
+    expect(result).toMatchObject({ ok: true });
+  });
+
+  it('leaves the built-in allowlist alone', () => {
+    // The custom-function path is separate from the built-in one by design.
+    // A registered function must not become a way to call anything the
+    // built-in allowlist refuses.
+    expect(SCALAR_FUNCTIONS.has('CALC_PREMIO')).toBe(false);
+    expect(AGGREGATE_FUNCTIONS.has('CALC_PREMIO')).toBe(false);
+    const result = renderSql(
+      tree('[2,17]([6,1])'),
+      ctx({ resolveFunction: () => ({ name: 'CALC_PREMIO', arity: null }) }),
+    );
+    expect(result).toMatchObject({ ok: true });
+    expect(result.ok && result.containsAggregate).toBe(false);
+  });
+});
+
+/**
  * The SQL forms Phase 4.3 adds. The display side of each is already pinned by
  * a real corpus pair above; these pin what actually executes, which the
  * display form cannot tell you (see `builtin-codes.ts`, "the one trap").
@@ -374,8 +461,8 @@ describe('refusal (D-058) — never a best-effort render', () => {
     expect(result).toMatchObject({ ok: false, reason: 'UNKNOWN_NODE' });
   });
 
-  it('quarantines a custom function, which the aligned corpus cannot attest', () => {
-    const result = renderSql(tree('[2,20]([6,1])'), ctx());
+  it('quarantines a custom function nothing resolves', () => {
+    const result = renderSql(tree('[2,20]([6,1])'), ctx({ resolveFunction: () => null }));
     expect(result).toMatchObject({ ok: false, reason: 'UNRESOLVED_FUNCTION' });
   });
 
