@@ -129,6 +129,16 @@ unexpected results."*
 To get the numbers, total each column on a worksheet of its own — or total only
 the columns that come from the same folder.
 
+**Every total on a worksheet that summarises two or more sets of detail rows is
+blank, for the same reason.** A total is worked out by running the worksheet's
+own join again without its grouping — and on a worksheet like this, that join is
+the very one that repeats rows and would inflate the answer. The rows in the
+table above the total are correct; only the total is withheld. The footer says
+how many were left blank.
+
+To get one, put the total on a worksheet that uses one folder, or export the
+rows and total them there.
+
 ### Why a worksheet sometimes refuses to total at all
 
 `AVG`, `COUNT DISTINCT`, `STDDEV` and `VARIANCE` cannot be worked out across a

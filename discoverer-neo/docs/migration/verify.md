@@ -145,6 +145,71 @@ the marker for *do not aggregate* and 8 152 of this estate's items carry it, so 
 null there is the source's own answer. Defaulting those to `SUM` would replace a
 tracked gap with a wrong number.
 
+### 6. `planner-live` — the planner-decision histogram
+
+Real output, from this estate on 2026-09-06:
+
+```
+[FAIL   ] planner-live — the planner-decision histogram, over every migrated map
+            maps=924 decided=155 mapsWithANonEmptyMeasureSet=49
+            flat=116 rewrite=0 refuse=39 fanTrapRefusals=0 error=0 notDecided=769
+            refuseNO_PREDICATE=13 refuseDISCONNECTED=26
+            REWRITE fired zero times: the rewrite path is unreachable, so the
+            guard has not been shown to work — only shown to have no input
+            · no fan-trap rule (R1-R4, REAGG) fired: no map in this estate
+              reached a trigger condition.
+            · REFUSE(DISCONNECTED) = 26 against a baseline of 271, over 155 of
+              924 maps that reached a decision. The 769 that did not are absent
+              from every bucket, so this count is a floor and not yet a
+              like-for-like reading of the baseline.
+```
+
+That is a FAIL, and it reads correctly: 769 maps carry an unrendered formula
+token and never reach the planner, and `join_predicates` was empty, so no join
+could be written and no query could rewrite.
+
+Every map is decided, and the decision counted. One line per map, one bucket
+per outcome:
+
+| Bucket | Meaning |
+| --- | --- |
+| `flat` | a plain join. Either nothing aggregates, or nothing fans |
+| `rewrite` | the fan-trap rewrite ran: each set of detail rows summarised in its own inline view, then combined |
+| `rewriteN` | of those, how many had N branches |
+| `refuseDISCONNECTED` | the folders the map uses are not linked by any join |
+| `refuseNO_PREDICATE` | a join exists but says nothing about which columns to match |
+| `refuseR1`…`refuseR4`, `refuseREAGG` | one of the five fan-trap rules |
+| `error` | generation failed for a reason that is not a refusal — an unrendered formula, for instance. **Counted apart from refusals on purpose** |
+| `notDecided` | the map could not be loaded at all. Absent from every bucket above |
+
+**Why it exists.** A guard that fires zero times is indistinguishable from a
+guard that was never wired in. Every other fan-trap test in this project runs
+against a hand-built fixture, so the guard can pass its whole suite while having
+classified nothing real. This is the only check that reads migrated maps.
+
+**Why it counts each rule, not each kind.** The first version of this check
+asserted `REFUSE > 0`. That cannot tell the fan-trap guard from a failure that
+predates it: 271 of this estate's 341 multi-folder maps refuse because their
+folders are not connected, a rule Neo has had since long before the planner
+existed. Those alone satisfy `REFUSE > 0`, so the check would have passed with
+the guard never once having fired.
+
+**The three things it asserts:**
+
+1. **`rewrite` is above zero.** The one that matters. A guard that only ever
+   refuses has not been shown to work — it has been shown to have no input.
+2. **`refuseDISCONNECTED` is below the recorded baseline of 271.** Otherwise the
+   join model did not fix what it claimed to.
+3. **A fan-trap rule fired, or the run says in words that none could.** "No map
+   in this estate reaches a trigger condition" is an acceptable answer, and it
+   is printed as a finding. Silence is not an answer.
+
+**Read `notDecided` before you read anything else.** A map that could not be
+loaded is in no bucket, so it cannot be counted as `refuseDISCONNECTED` either
+— and that count falls for a reason that has nothing to do with the join model.
+The check prints the coverage next to the number for exactly this reason. While
+`notDecided` is large, treat every count here as a floor.
+
 ## Reading the bottom line
 
 ```
