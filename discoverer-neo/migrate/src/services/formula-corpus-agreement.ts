@@ -272,6 +272,27 @@ export interface RenderReport extends AgreementResult {
   weightedMismatchedUnexplained: number;
   /** Bounded sample of the unexplained ones, highest-occurrence first. */
   unexplainedSamples: AgreementSample[];
+  /**
+   * The same two rates over the rows the anonymiser left intact.
+   *
+   * This is the denominator Phase 4.3's `>= 99 %` gate is stated against, and
+   * it is the decoder spec's own instruction rather than a convenience: a
+   * clobbered row can never match whatever the renderer does, so the committed
+   * corpus has a hard ceiling of about 96 % raw (§11.1). The spec says "state
+   * the gates against the clean subset, or rebuild the corpus", and rebuilding
+   * needs `d4dumps/`, which is not on this machine.
+   *
+   * Reported *beside* the raw rates, never instead of them. Excluding rows
+   * from a denominator is exactly how a measurement flatters itself, so the
+   * exclusion is one function — `isAnonymiserDamage` — with its limits written
+   * down, and `weightedMismatchedUnexplained` stays the check on it: if the
+   * classifier were quietly absorbing real defects, that number would not be
+   * zero.
+   */
+  cleanWeightedRate: number;
+  cleanDistinctRate: number;
+  cleanTotalOccurrences: number;
+  cleanDistinctPairs: number;
 }
 
 /**
@@ -327,8 +348,17 @@ export function reportRendering(rows: readonly CorpusRow[], sampleLimit = 10): R
     }
   }
 
+  const cleanTotalOccurrences = agreement.totalOccurrences - weightedMismatchedDamaged;
+  const cleanDistinctPairs = agreement.distinctPairs - distinctMismatchedDamaged;
+  const rate = (part: number, whole: number): number =>
+    whole === 0 ? 0 : Math.round((part / whole) * 10_000) / 100;
+
   return {
     ...agreement,
+    cleanTotalOccurrences,
+    cleanDistinctPairs,
+    cleanWeightedRate: rate(agreement.weightedAgreed, cleanTotalOccurrences),
+    cleanDistinctRate: rate(agreement.distinctAgreed, cleanDistinctPairs),
     distinctMismatched,
     weightedMismatched,
     distinctMismatchedDamaged,

@@ -39,10 +39,18 @@ interface Baseline {
   phaseGate: number;
   distinctPairs: number;
   totalOccurrences: number;
+  /** The same rates over the rows the anonymiser left intact. */
+  cleanDistinctRate: number;
+  cleanWeightedRate: number;
+  cleanDistinctPairs: number;
+  cleanTotalOccurrences: number;
+  /** The Phase 4.3 acceptance criterion, against the clean subset. */
+  cleanPhaseGate: number;
   renderer: string;
   measuredAt: string;
   comparison: string;
   ceiling: string;
+  gate: string;
   note: string;
 }
 
@@ -63,6 +71,9 @@ describe('formula corpus agreement gate', () => {
 
     expect(result.distinctRate).toBeGreaterThanOrEqual(baseline.distinctRate);
     expect(result.weightedRate).toBeGreaterThanOrEqual(baseline.weightedRate);
+    const report = reportRendering(rows, 0);
+    expect(report.cleanDistinctRate).toBeGreaterThanOrEqual(baseline.cleanDistinctRate);
+    expect(report.cleanWeightedRate).toBeGreaterThanOrEqual(baseline.cleanWeightedRate);
     // An unhandled path is a bug; a stated "I do not do this yet" is not.
     expect(result.distinctThrew).toBe(0);
   });
@@ -78,19 +89,49 @@ describe('formula corpus agreement gate', () => {
     expect(result.distinctRate).toBeGreaterThanOrEqual(baseline.phaseGate);
   });
 
-  it('renders nothing wrongly that the corpus itself did not destroy', () => {
-    // The number that matters. A quarantine is a gap a later phase closes; an
-    // unexplained mismatch means the tree was read wrongly, and a formula the
-    // migrator already wrote may be a wrong number in a real report.
+  it('clears the Phase 4.3 gate on the clean subset, on both denominators', () => {
+    // >= 99%, and it has to be stated against the clean subset because the raw
+    // denominator cannot reach it: Phase 0.5's anonymiser destroyed 912 rows
+    // outright and a destroyed row can never match. That is the decoder spec's
+    // own instruction (§11.1) and not a convenience — the alternative it
+    // offers, rebuilding the corpus, needs `d4dumps/`, which is not on this
+    // machine.
     //
-    // The twelve that remain are the comparator's strictness, not the
-    // renderer's: an anonymised parameter name such as
-    // `:"Dciagkksqq Ossywidgtek (N/Q)"` carries brackets, and the placeholder
-    // class deliberately forbids them so a wrong shape cannot swallow
-    // structure and match anyway.
+    // The exclusion is only honest while the test below holds. Read them as
+    // one gate.
     const report = reportRendering(rows, 0);
-    expect(report.weightedMismatchedUnexplained).toBeLessThanOrEqual(12);
+    expect(report.cleanWeightedRate).toBeGreaterThanOrEqual(baseline.cleanPhaseGate);
+    expect(report.cleanDistinctRate).toBeGreaterThanOrEqual(baseline.cleanPhaseGate);
+    expect(report.cleanTotalOccurrences).toBe(baseline.cleanTotalOccurrences);
+    expect(report.cleanDistinctPairs).toBe(baseline.cleanDistinctPairs);
+  });
+
+  it('renders nothing wrongly that the corpus itself did not destroy', () => {
+    // The number that matters, and the one that keeps the clean-subset gate
+    // above honest. A quarantine is a gap a later phase closes; an unexplained
+    // mismatch means the tree was read wrongly, and a formula the migrator
+    // already wrote may be a wrong number in a real report.
+    //
+    // Zero, exactly. Every remaining mismatch on the whole 37 971-occurrence
+    // corpus is a row `isAnonymiserDamage` can account for. If the damage
+    // classifier were quietly absorbing renderer defects to flatter the clean
+    // denominator, this is where it would show, so it is asserted as an
+    // equality rather than a ceiling.
+    const report = reportRendering(rows, 0);
+    expect(report.weightedMismatchedUnexplained).toBe(0);
+    expect(report.distinctMismatchedUnexplained).toBe(0);
+  });
+
+  it('has no FAILED formula — every row compiles or refuses with a reason', () => {
+    // D-059's fourth bucket. A renderer that throws has hit a path nobody
+    // wrote, which is a bug in this code; a renderer that quarantines has met
+    // something it can name, which is a gap in the evidence. The two are
+    // never added together, and the first must be empty.
+    const report = reportRendering(rows, 0);
     expect(report.distinctThrew).toBe(0);
+    for (const entry of report.quarantineHistogram) {
+      expect(entry.reason).not.toBe('');
+    }
   });
 
   it('measures both rates, because they answer different questions', () => {
