@@ -186,3 +186,22 @@ This is **ordinary**, not an edge case — the migrated estate carries 282
   aggregate is computed directly and every one of the above works.
 - For a distinct count across folders, an administrator can add a calculated
   item in the folder itself that already carries the distinct value.
+
+---
+
+## Not a refusal: what changes on a worksheet that was rewritten
+
+A worksheet that summarises detail rows from a one-to-many join is **rewritten**
+rather than refused. Each set of detail rows is summarised on its own first, and
+the parts are combined afterwards, so nothing is counted twice.
+
+The rows you get back are correct. Two smaller things behave differently, and
+neither is an error:
+
+- **Totals are left blank.** A total re-runs the worksheet's own join without
+  its grouping, and that join is the one that would inflate the answer. See
+  [Executing maps](../user-guide/executing-maps.md#why-some-totals-come-out-blank).
+- **A sort on a column you have hidden is dropped.** The rewritten worksheet can
+  only sort on columns it actually shows. Show the column to sort by it.
+
+If you need a total, put it on a worksheet that uses one folder.
