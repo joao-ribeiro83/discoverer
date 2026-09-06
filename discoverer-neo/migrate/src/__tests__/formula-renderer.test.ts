@@ -471,11 +471,15 @@ describe('refusal (D-058) — never a best-effort render', () => {
     expect(result).toMatchObject({ ok: false, reason: 'BAD_ARITY' });
   });
 
-  it('refuses a date literal rather than emitting a two-digit year', () => {
-    // 'TO_DATE(''01.12.01'')' would make the century depend on
-    // NLS_DATE_FORMAT. 4.3 emits an explicit mask.
-    const result = renderSql(tree('[1,58]([5,4,"20011201000000"])'), ctx());
-    expect(result).toMatchObject({ ok: false, reason: 'DATE_LITERAL_NOT_IMPLEMENTED' });
+  it('emits a date literal with a four-digit year and an explicit mask', () => {
+    // Emitting the display form, 'TO_DATE(''01.12.01'')', would make the
+    // century depend on NLS_DATE_FORMAT. The mask is a constant in the
+    // renderer and the value is still a bind.
+    const binder = createBindCollector();
+    const result = renderSql(tree('[5,4,"20011201000000"]'), ctx({ bind: binder.bind }));
+    if (!result.ok) throw new Error('expected a render');
+    expect(result.sql).toBe("TO_DATE(:v1, 'YYYYMMDD')");
+    expect(binder.values.v1).toBe('20011201');
   });
 
   it('refuses a date carrying a time rather than truncating it', () => {

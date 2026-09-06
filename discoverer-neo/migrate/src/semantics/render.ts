@@ -56,8 +56,6 @@ export type QuarantineReason =
   | 'UNRESOLVED_ELEMENT'
   /** A `[5,4]` date payload that is not midnight — truncating it would lose data. */
   | 'DATE_WITH_TIME'
-  /** A `[5,4]` date literal. Deferred to Phase 4.3 with an explicit format mask. */
-  | 'DATE_LITERAL_NOT_IMPLEMENTED'
   /** A `[5,k]` literal kind outside 1, 2 and 4. */
   | 'UNKNOWN_LITERAL_KIND'
   /** An argument count no attestation supports for that code. */
@@ -491,12 +489,24 @@ class SqlEmitter {
     // a "number" here is whatever bytes the workbook happened to store.
     if (kind === 1 || kind === 2) return this.ctx.bind(value);
     if (kind === 4) {
-      // The display form is `'01.12.01'`. Emitting that as SQL would make the
-      // century depend on NLS_DATE_FORMAT. Phase 4.3 emits an explicit mask.
-      // Validate first, so a payload carrying a time is reported as the data
-      // defect it is rather than as a scope gap.
+      // A `[5,4]` payload is `YYYYMMDDHHMISS` and Discoverer showed it
+      // `'01.12.01'`. Emitting *that* would make the century depend on
+      // NLS_DATE_FORMAT, so the display form is not the SQL here either.
+      //
+      // What goes out instead is the four-digit date with its mask spelled
+      // out. The mask is a constant in this file, never taken from the data,
+      // and the value is still a bind — so this adds no new splicing surface.
+      //
+      // The trailing six digits are dropped, and only because they are proven
+      // to be zero: `displayDateLiteral` refuses a non-midnight payload rather
+      // than truncating it. That refusal is kept for SQL too, even though a
+      // 14-digit mask could carry a time — the year, month and day positions
+      // are fitted (846 rows against 184 for the runner-up) and the time
+      // positions are not, because not one of the estate's 7 670 date literals
+      // exercises them. Emitting an unattested reading of six digits is the
+      // guess this phase exists to refuse.
       displayDateLiteral(value);
-      throw new Quarantined('DATE_LITERAL_NOT_IMPLEMENTED', `[5,4,"${value}"]`);
+      return `TO_DATE(${this.ctx.bind(value.slice(0, 8))}, 'YYYYMMDD')`;
     }
     throw new Quarantined('UNKNOWN_LITERAL_KIND', `[5,${kind}]`);
   }
