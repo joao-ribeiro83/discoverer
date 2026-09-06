@@ -16,6 +16,10 @@
     "./testing": {
       "types": "./dist/testing/index.d.ts",
       "default": "./dist/testing/index.js"
+    },
+    "./semantics": {
+      "types": "./dist/semantics/index.d.ts",
+      "default": "./dist/semantics/index.js"
     }
   },
   "bin": {
@@ -30,7 +34,8 @@
     "start": "node dist/index.js",
     "cli": "tsx src/bin.ts",
     "rebuild-corpus": "tsx src/scripts/build-formula-corpus.ts",
-    "fit-codes": "tsx src/scripts/fit-builtin-codes.ts"
+    "fit-codes": "tsx src/scripts/fit-builtin-codes.ts",
+    "render-corpus": "tsx src/scripts/render-corpus.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.2",

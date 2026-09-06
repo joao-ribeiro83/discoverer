@@ -41,6 +41,7 @@ export default {
     '^@discoverer-neo/core/db/schema$': '<rootDir>/../migrate/src/db/schema.ts',
     '^@discoverer-neo/core/testing$': '<rootDir>/../migrate/src/testing/index.ts',
     '^@discoverer-neo/core/migration$': '<rootDir>/../migrate/src/index.ts',
+    '^@discoverer-neo/core/semantics$': '<rootDir>/../migrate/src/semantics/index.ts',
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
   transform: {
@@ -65,6 +66,7 @@ export default {
             '@discoverer-neo/core/db/schema': ['../migrate/src/db/schema.ts'],
             '@discoverer-neo/core/migration': ['../migrate/src/index.ts'],
             '@discoverer-neo/core/testing': ['../migrate/src/testing/index.ts'],
+            '@discoverer-neo/core/semantics': ['../migrate/src/semantics/index.ts'],
           },
         },
       },
