@@ -834,7 +834,11 @@ describe('Scenario 7: complex combined map', () => {
       ],
     });
 
-    const result = await executeTestMap(mapId, {}, { rows: [] });
+    const { result, sql } = await executeTestMap(mapId, {}, { rows: [] });
+    // SALES is the master and carries the SUM; CUSTOMERS is the fanning
+    // detail. Step 5a applies, so the sum is taken in its own inline view
+    // below the join rather than after it.
+    assertSqlContains(sql, 'LEFT OUTER JOIN "APP"."CUSTOMERS"');
     expect(result.rowCount).toBe(0);
   });
 });
@@ -1028,5 +1032,54 @@ describe('Scenario 12: row-level security predicate', () => {
     // Both the map's own condition and the security predicate are present.
     assertSqlContains(sql, 'f1."REGION" = :c0');
     assertSqlContains(sql, 'AND (f1."REGION" = \'EMEA\')');
+  });
+
+  // Phase 3.4. The rewrite aggregates INSIDE an inline view, so a predicate
+  // left to the outer query is applied after the rows it should have removed
+  // were already summed — the totals would be right for a row set the user is
+  // not allowed to see. This runs the whole execution service, not a fixture
+  // MapDefinition, and asserts the predicate lands below the GROUP BY.
+  it('applies a security predicate inside the branch on a rewritten query', async () => {
+    const mapId = await createTestMap({
+      items: [
+        { item: fx.custName, displayOrder: 0 },
+        { item: fx.amount, displayOrder: 1, aggFunction: 'SUM' },
+      ],
+    });
+
+    const predicate = 'f1."REGION" = \'EMEA\'';
+    const prepareQuery: MapExecutionDeps['prepareQuery'] = async (
+      id,
+      params,
+      _userId,
+      rowLimit,
+    ) => {
+      const def = await loadMapDefinition(id);
+      const generated = generateSql(def, {
+        parameterValues: params,
+        securityPredicates: [predicate],
+        rowLimit,
+      });
+      return {
+        sql: generated.sql,
+        bindParams: generated.bindParams,
+        columns: generated.columns,
+        dataSourceId: resolveDataSourceId(def),
+      };
+    };
+
+    const { conn, execute } = makeRowsConn([]);
+    await executeMap(mapId, {}, adminId, {}, execDeps(conn, { prepareQuery }));
+
+    const sql = execute.mock.calls[0]![0] as string;
+    assertSqlContains(sql, 'LEFT OUTER JOIN "APP"."CUSTOMERS"');
+
+    // The predicate must appear BEFORE the branch's own GROUP BY, and the
+    // statement must not end with a bare outer WHERE carrying it instead.
+    const predicateAt = sql.indexOf('f1."REGION" = \'EMEA\'');
+    const groupByAt = sql.indexOf('GROUP BY');
+    expect(predicateAt).toBeGreaterThan(-1);
+    expect(groupByAt).toBeGreaterThan(-1);
+    expect(predicateAt).toBeLessThan(groupByAt);
   });
 });
