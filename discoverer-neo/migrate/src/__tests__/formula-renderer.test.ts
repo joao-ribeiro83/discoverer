@@ -270,6 +270,54 @@ describe('SQL emission', () => {
   });
 });
 
+/**
+ * The SQL forms Phase 4.3 adds. The display side of each is already pinned by
+ * a real corpus pair above; these pin what actually executes, which the
+ * display form cannot tell you (see `builtin-codes.ts`, "the one trap").
+ */
+describe('SQL emission — the Phase 4.3 forms', () => {
+  it('emits BETWEEN with both bounds parenthesised', () => {
+    const result = renderSql(tree('[1,92]([6,1],[5,2,"1"],[5,2,"9"])'), ctx());
+    if (!result.ok) throw new Error('expected a render');
+    expect(result.sql).toBe('(("T1"."COL_1") BETWEEN (:v1) AND (:v2))');
+  });
+
+  it('emits IN with every list member bound', () => {
+    const result = renderSql(tree('[1,88]([6,1],[5,1,"M"],[5,1,"D"])'), ctx());
+    if (!result.ok) throw new Error('expected a render');
+    expect(result.sql).toBe('(("T1"."COL_1") IN ((:v1), (:v2)))');
+  });
+
+  it('emits NOT IN as NOT IN, never as IN', () => {
+    // D-058's founding example: migrating NOT IN as IN inverts the filter and
+    // the number it produces is wrong, not missing.
+    const result = renderSql(tree('[1,91]([6,1],[5,1,"3"],[5,1,"5"])'), ctx());
+    if (!result.ok) throw new Error('expected a render');
+    expect(result.sql).toBe('(("T1"."COL_1") NOT IN ((:v1), (:v2)))');
+  });
+
+  it('emits unary minus parenthesised, so it cannot bind wrongly', () => {
+    const result = renderSql(tree('[1,96]([1,114]([6,1]),[6,2])'), ctx());
+    if (!result.ok) throw new Error('expected a render');
+    expect(result.sql).toBe('(((-("T1"."COL_1"))) * ("T1"."COL_2"))');
+  });
+
+  it('refuses COUNT_DISTINCT, which the fan-trap planner cannot re-aggregate', () => {
+    const result = renderSql(tree('[1,117]([6,1])'), ctx());
+    expect(result).toMatchObject({ ok: false, reason: 'UNREAGGREGABLE' });
+  });
+
+  it('refuses a code whose rendering does not show what it computes', () => {
+    // [1,126] 2_Pass_Percentage displays as its argument alone. It renders
+    // perfectly and can never be compiled from that evidence.
+    expect(displayMatches(renderDisplay(tree('[1,126]([6,7])')), 'Alpha')).toBe(true);
+    expect(renderSql(tree('[1,126]([6,1])'), ctx())).toMatchObject({
+      ok: false,
+      reason: 'UNKNOWN_SEMANTICS',
+    });
+  });
+});
+
 describe('containsAggregate — the fan-trap planner depends on it', () => {
   it('is true when the tree carries an aggregate', () => {
     const result = renderSql(tree('[1,1]([6,1])'), ctx());
@@ -299,11 +347,13 @@ describe('containsAggregate — the fan-trap planner depends on it', () => {
 });
 
 describe('refusal (D-058) — never a best-effort render', () => {
-  it('quarantines a FITTED code this phase has not implemented', () => {
-    // [1,79] ABS is fitted and real; batch B lands it.
-    const result = renderSql(tree('[1,79]([6,1])'), ctx());
-    expect(result).toMatchObject({ ok: false, reason: 'CODE_NOT_IMPLEMENTED' });
-    expect(result.ok ? '' : result.detail).toBe('[1,79]');
+  it('has no FITTED code left unimplemented', () => {
+    // Phase 4.3 closes the FITTED set, so CODE_NOT_IMPLEMENTED now has no
+    // population. The reason stays in the union because a re-fit that settles
+    // a new code re-opens it — but until then, a refusal citing it would mean
+    // the table and the fit had drifted apart.
+    const implemented = new Set(IMPLEMENTED_CODES.map((entry) => entry.code));
+    expect([...FITTED_CODES].filter((code) => !implemented.has(code))).toEqual([]);
   });
 
   it('quarantines a code the fit could not settle', () => {
@@ -313,10 +363,10 @@ describe('refusal (D-058) — never a best-effort render', () => {
     expect(result).toMatchObject({ ok: false, reason: 'UNFITTED_CODE' });
   });
 
-  it('quarantines rather than rendering an unimplemented code best-effort', () => {
-    // The display renderer refuses on the same terms, so an unimplemented
-    // code can never reach the fidelity comparison as a near-miss either.
-    expect(() => renderDisplay(tree('[1,79]([6,1])'))).toThrow('CODE_NOT_IMPLEMENTED');
+  it('quarantines rather than rendering an unsettled code best-effort', () => {
+    // The display renderer refuses on the same terms, so an unfitted code can
+    // never reach the fidelity comparison as a near-miss either.
+    expect(() => renderDisplay(tree('[1,89]([6,1])'))).toThrow('UNFITTED_CODE');
   });
 
   it('quarantines an unknown node', () => {

@@ -136,8 +136,33 @@ export const PHASE_4_2_CODES: readonly number[] = [
  */
 export const PHASE_4_3_BATCH_A: readonly number[] = [92, 88, 98, 48, 18, 11, 42, 99, 103];
 
+/**
+ * Phase 4.3's tail, batch B — every `FITTED` code that remains.
+ *
+ * With these twelve, all 42 codes Phase 4.1 settled are implemented and
+ * `CODE_NOT_IMPLEMENTED` has no population left. What still refuses is the
+ * `UNTESTED` and `AMBIGUOUS` set, which is a different problem: it needs
+ * evidence, not code.
+ *
+ * Two of them are only half implemented, and deliberately so — the display
+ * side is fitted, the SQL side is not derivable from it:
+ *
+ * - `[1,117]` `COUNT_DISTINCT` means `COUNT(DISTINCT a)`, which the fan-trap
+ *   planner cannot re-aggregate, so it refuses `UNREAGGREGABLE` (§10).
+ * - `[1,126]` `2_Pass_Percentage` displays as its argument alone. Whatever it
+ *   computes is not visible in the rendering, so it refuses
+ *   `UNKNOWN_SEMANTICS` — the one code here that renders perfectly and can
+ *   never be compiled from this evidence.
+ */
+export const PHASE_4_3_BATCH_B: readonly number[] = [
+  79, 44, 82, 43, 28, 73, 114, 126, 91, 23, 32, 117,
+];
+
 /** Everything 4.3 adds. */
-export const PHASE_4_3_CODES: readonly number[] = [...PHASE_4_3_BATCH_A];
+export const PHASE_4_3_CODES: readonly number[] = [
+  ...PHASE_4_3_BATCH_A,
+  ...PHASE_4_3_BATCH_B,
+];
 
 const TABLE: readonly BuiltinCode[] = [
   // --- the ten ------------------------------------------------------------
@@ -173,6 +198,19 @@ const TABLE: readonly BuiltinCode[] = [
   { code: 42, displayName: 'ADD_MONTHS', shape: 'prefix', arity: [2, 2], sql: { kind: 'function', name: 'ADD_MONTHS' } },
   { code: 99, displayName: 'OR', shape: 'infixSpaced', arity: [2, 7], sql: { kind: 'operator', op: 'OR' } },
   { code: 103, displayName: '||', shape: 'infixTight', arity: [2, 2], sql: { kind: 'operator', op: '||' } },
+  // --- Phase 4.3, batch B: the FITTED tail, 3 to 83 uses each --------------
+  { code: 79, displayName: 'ABS', shape: 'prefix', arity: [1, 1], sql: { kind: 'function', name: 'ABS' } },
+  { code: 44, displayName: 'MONTHS_BETWEEN', shape: 'prefix', arity: [2, 2], sql: { kind: 'function', name: 'MONTHS_BETWEEN' } },
+  { code: 82, displayName: '<>', shape: 'infixSpaced', arity: [2, 2], sql: { kind: 'operator', op: '<>' } },
+  { code: 43, displayName: 'LAST_DAY', shape: 'prefix', arity: [1, 1], sql: { kind: 'function', name: 'LAST_DAY' } },
+  { code: 28, displayName: 'REPLACE', shape: 'prefix', arity: [3, 3], sql: { kind: 'function', name: 'REPLACE' } },
+  { code: 73, displayName: 'COUNT', shape: 'prefix', arity: [1, 1], sql: { kind: 'aggregate', name: 'COUNT' } },
+  { code: 114, displayName: '-', shape: 'unaryTight', arity: [1, 1], sql: { kind: 'unary', op: '-' } },
+  { code: 126, displayName: '2_Pass_Percentage', shape: 'passthrough', arity: [1, 1], sql: { kind: 'displayOnly', reason: 'UNKNOWN_SEMANTICS' } },
+  { code: 91, displayName: 'NOT IN', shape: 'inList', arity: [3, 3], sql: { kind: 'inList', not: true } },
+  { code: 23, displayName: 'LPAD', shape: 'prefix', arity: [3, 3], sql: { kind: 'function', name: 'LPAD' } },
+  { code: 32, displayName: 'SUBSTR', shape: 'prefix', arity: [3, 3], sql: { kind: 'function', name: 'SUBSTR' } },
+  { code: 117, displayName: 'COUNT_DISTINCT', shape: 'prefix', arity: [1, 1], sql: { kind: 'aggregateDistinct', name: 'COUNT' } },
 ];
 
 const BY_CODE = new Map(TABLE.map((entry) => [entry.code, entry]));
