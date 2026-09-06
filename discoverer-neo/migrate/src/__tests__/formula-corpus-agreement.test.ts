@@ -6,9 +6,12 @@ import { tmpdir } from 'node:os';
 import {
   measureAgreement,
   readFormulaCorpus,
+  reportRendering,
   NO_RENDERER,
+  TOKEN_RENDERER,
   type FormulaRenderer,
 } from '../services/formula-corpus-agreement.js';
+import { displayMatches } from '../semantics/render.js';
 
 /**
  * The corpus agreement gate (item 7 of Phase 1.3).
@@ -32,10 +35,14 @@ const BASELINE_PATH = resolve(process.cwd(), 'corpus', 'agreement-baseline.json'
 interface Baseline {
   distinctRate: number;
   weightedRate: number;
+  /** The Phase 4.2 acceptance criterion, as a percentage. */
+  phaseGate: number;
   distinctPairs: number;
   totalOccurrences: number;
   renderer: string;
   measuredAt: string;
+  comparison: string;
+  ceiling: string;
   note: string;
 }
 
@@ -52,12 +59,38 @@ describe('formula corpus agreement gate', () => {
   });
 
   it('does not fall below the recorded agreement baseline', () => {
-    const result = measureAgreement(rows, NO_RENDERER);
+    const result = measureAgreement(rows, TOKEN_RENDERER, 10, displayMatches);
 
     expect(result.distinctRate).toBeGreaterThanOrEqual(baseline.distinctRate);
     expect(result.weightedRate).toBeGreaterThanOrEqual(baseline.weightedRate);
     // An unhandled path is a bug; a stated "I do not do this yet" is not.
     expect(result.distinctThrew).toBe(0);
+  });
+
+  it('clears the Phase 4.2 gate on both denominators', () => {
+    // The ratchet above only refuses a regression. This is the acceptance
+    // criterion itself, so a future baseline edit cannot lower the bar by
+    // accident: >= 93% of the aligned corpus renders exactly as Discoverer
+    // rendered it, stated separately as weighted and distinct because they
+    // are different numbers and a gate must say which it means.
+    const result = measureAgreement(rows, TOKEN_RENDERER, 0, displayMatches);
+    expect(result.weightedRate).toBeGreaterThanOrEqual(baseline.phaseGate);
+    expect(result.distinctRate).toBeGreaterThanOrEqual(baseline.phaseGate);
+  });
+
+  it('renders nothing wrongly that the corpus itself did not destroy', () => {
+    // The number that matters. A quarantine is a gap a later phase closes; an
+    // unexplained mismatch means the tree was read wrongly, and a formula the
+    // migrator already wrote may be a wrong number in a real report.
+    //
+    // The twelve that remain are the comparator's strictness, not the
+    // renderer's: an anonymised parameter name such as
+    // `:"Dciagkksqq Ossywidgtek (N/Q)"` carries brackets, and the placeholder
+    // class deliberately forbids them so a wrong shape cannot swallow
+    // structure and match anyway.
+    const report = reportRendering(rows, 0);
+    expect(report.weightedMismatchedUnexplained).toBeLessThanOrEqual(12);
+    expect(report.distinctThrew).toBe(0);
   });
 
   it('measures both rates, because they answer different questions', () => {
