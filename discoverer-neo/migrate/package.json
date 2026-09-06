@@ -29,7 +29,8 @@
     "test": "jest",
     "start": "node dist/index.js",
     "cli": "tsx src/bin.ts",
-    "rebuild-corpus": "tsx src/scripts/build-formula-corpus.ts"
+    "rebuild-corpus": "tsx src/scripts/build-formula-corpus.ts",
+    "fit-codes": "tsx src/scripts/fit-builtin-codes.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.2",

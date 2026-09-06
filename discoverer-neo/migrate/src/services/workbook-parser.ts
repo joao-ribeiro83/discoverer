@@ -1050,12 +1050,20 @@ export const CONDITION_COMBINERS: Record<number, 'AND' | 'OR'> = {
 
 // --- the tree --------------------------------------------------------------
 
-/** A node of a parsed condition (or calculation) token tree. */
-export type ConditionNode =
+/**
+ * A node of a parsed token tree.
+ *
+ * Conditions and calculations are **one language** — the same five namespaces,
+ * the same grammar, the same parser — so this type carries both. It is named
+ * for the formula rather than the condition because the renderer Phase 4
+ * builds on it is a formula renderer; a reader grepping for one would
+ * otherwise conclude it does not exist.
+ */
+export type FormulaNode =
   /** `[1,code](…)` — a built-in operator or function. */
-  | { type: 'call'; code: number; name: string | null; args: ConditionNode[] }
+  | { type: 'call'; code: number; name: string | null; args: FormulaNode[] }
   /** `[2,n](…)` — a custom function, `n` an element id in this workbook. */
-  | { type: 'function'; elementId: number; args: ConditionNode[] }
+  | { type: 'function'; elementId: number; args: FormulaNode[] }
   /** `[5,kind,"…"]` — a literal; kind 1 string, 2 number, 4 date. */
   | { type: 'literal'; literalKind: number; value: string }
   /** `[6,n]` — item element `n`. */
@@ -1066,11 +1074,11 @@ export type ConditionNode =
    * A node whose leading field is none of the above. Kept rather than dropped,
    * so an unrecognized construct is reported instead of silently ignored.
    */
-  | { type: 'unknown'; fields: number[]; args: ConditionNode[] };
+  | { type: 'unknown'; fields: number[]; args: FormulaNode[] };
 
-export interface ConditionTreeResult {
+export interface FormulaTreeResult {
   /** The parsed tree, or null when the token string could not be read. */
-  tree: ConditionNode | null;
+  tree: FormulaNode | null;
   /** Why it could not be read; null on success. */
   error: string | null;
 }
@@ -1083,7 +1091,7 @@ export interface ConditionTreeResult {
  * cannot fail, and so cannot tell a condition it understood from one it did
  * not, which is how compound conditions came to be silently flattened.
  */
-export function parseConditionTree(tokens: string | null): ConditionTreeResult {
+export function parseFormulaTree(tokens: string | null): FormulaTreeResult {
   if (tokens === null || tokens.trim() === '') {
     return { tree: null, error: 'the condition stores no token tree' };
   }
@@ -1094,7 +1102,7 @@ export function parseConditionTree(tokens: string | null): ConditionTreeResult {
     throw new SyntaxError(`${what} at offset ${at} of ${JSON.stringify(source)}`);
   }
 
-  function readNode(): ConditionNode {
+  function readNode(): FormulaNode {
     if (source[at] !== '[') fail('expected "["');
     at += 1;
 
@@ -1138,7 +1146,7 @@ export function parseConditionTree(tokens: string | null): ConditionTreeResult {
       fail('expected "," or "]"');
     }
 
-    const args: ConditionNode[] = [];
+    const args: FormulaNode[] = [];
     if (source[at] === '(') {
       at += 1;
       if (source[at] === ')') {
@@ -1193,8 +1201,8 @@ export function parseConditionTree(tokens: string | null): ConditionTreeResult {
 }
 
 /** Render a node back to something a person can read, for warning text. */
-export function describeConditionNode(node: ConditionNode): string {
-  const list = (args: ConditionNode[]): string => args.map(describeConditionNode).join(', ');
+export function describeFormulaNode(node: FormulaNode): string {
+  const list = (args: FormulaNode[]): string => args.map(describeFormulaNode).join(', ');
   switch (node.type) {
     case 'call': {
       const name = node.name ?? `EUL_FUNCTIONS ${node.code}`;
@@ -1266,7 +1274,7 @@ export interface ConditionPlan {
 }
 
 /** How deep the AND/OR/NOT spine of a tree goes. */
-function booleanDepth(node: ConditionNode): number {
+function booleanDepth(node: FormulaNode): number {
   if (node.type !== 'call') return 0;
   const operator = CONDITION_OPERATOR_TABLE[node.code];
   if (operator?.kind !== 'logical') return 0;
@@ -1284,9 +1292,9 @@ function booleanDepth(node: ConditionNode): number {
  * Returns a list because one test is occasionally two rows: see the BETWEEN
  * expansion below, which is an identity rather than an approximation.
  */
-function readPredicates(node: ConditionNode): ConditionPredicate[] | string {
+function readPredicates(node: FormulaNode): ConditionPredicate[] | string {
   if (node.type !== 'call') {
-    return `the test is ${describeConditionNode(node)}, not a comparison`;
+    return `the test is ${describeFormulaNode(node)}, not a comparison`;
   }
   const operator = CONDITION_OPERATOR_TABLE[node.code];
   if (operator === undefined) {
@@ -1311,14 +1319,14 @@ function readPredicates(node: ConditionNode): ConditionPredicate[] | string {
   const [left, ...right] = node.args;
   if (left === undefined) return `${operator.name} has no operands`;
   if (left.type !== 'item') {
-    return `${operator.name} is applied to ${describeConditionNode(left)}, not to a plain item`;
+    return `${operator.name} is applied to ${describeFormulaNode(left)}, not to a plain item`;
   }
 
   /** One row against the item on the left. */
   const row = (
     neoOperator: NeoConditionOperator,
     name: string,
-    operands: ConditionNode[],
+    operands: FormulaNode[],
   ): ConditionPredicate => ({
     operator: name,
     operatorCode: node.code,
@@ -1338,7 +1346,7 @@ function readPredicates(node: ConditionNode): ConditionPredicate[] | string {
   const expression = right.find((arg) => arg.type !== 'literal' && arg.type !== 'parameter');
   if (expression !== undefined) {
     return (
-      `${operator.name} compares against ${describeConditionNode(expression)}, ` +
+      `${operator.name} compares against ${describeFormulaNode(expression)}, ` +
       'which is an expression rather than a value'
     );
   }
@@ -1349,7 +1357,7 @@ function readPredicates(node: ConditionNode): ConditionPredicate[] | string {
 
   if (operator.neo === 'BETWEEN') {
     if (right.length !== 2) return 'BETWEEN does not carry exactly two bounds';
-    const [low, high] = right as [ConditionNode, ConditionNode];
+    const [low, high] = right as [FormulaNode, FormulaNode];
 
     // One BETWEEN row when Neo can hold both bounds: two literals in the
     // `low,high` value, or one parameter supplying both.
@@ -1404,7 +1412,7 @@ function readPredicates(node: ConditionNode): ConditionPredicate[] | string {
  * reported instead, rather than being reshaped into something that reads the
  * same and filters differently.
  */
-export function planCondition(tree: ConditionNode | null): ConditionPlan {
+export function planCondition(tree: FormulaNode | null): ConditionPlan {
   if (tree === null) return { groups: [], unsupported: 'the condition has no token tree', depth: 0 };
 
   const depth = booleanDepth(tree);
@@ -1482,7 +1490,7 @@ export interface ConditionTokenInfo {
   /** Literal values appearing in the tree, in order. */
   literals: string[];
   /** The parsed tree, or null when the token string could not be read. */
-  tree: ConditionNode | null;
+  tree: FormulaNode | null;
   /** Why the tree could not be read; null on success. */
   parseError: string | null;
   /** The tree flattened onto Neo's condition model, or the reason it cannot be. */
@@ -1490,7 +1498,7 @@ export interface ConditionTokenInfo {
 }
 
 /** Collect every reference and literal in a tree, depth first, in order. */
-function collectRefs(node: ConditionNode, info: ConditionTokenInfo): void {
+function collectRefs(node: FormulaNode, info: ConditionTokenInfo): void {
   switch (node.type) {
     case 'item':
       info.itemRefs.push(node.elementId);
@@ -1514,7 +1522,7 @@ function collectRefs(node: ConditionNode, info: ConditionTokenInfo): void {
  * to the elements it names; `plan` is what decides whether it migrates.
  */
 export function parseConditionTokens(tokens: string | null): ConditionTokenInfo {
-  const { tree, error } = parseConditionTree(tokens);
+  const { tree, error } = parseFormulaTree(tokens);
   const info: ConditionTokenInfo = {
     operator: null,
     combiner: null,

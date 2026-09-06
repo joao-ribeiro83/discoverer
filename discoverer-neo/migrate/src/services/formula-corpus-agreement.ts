@@ -135,7 +135,7 @@ export function measureAgreement(
 
 /**
  * The renderer as it stands today: there is not one. `[class,id]` tokens are
- * parsed into a tree (`parseConditionTokens`) but never rendered back into
+ * parsed into a tree (`parseFormulaTree`) but never rendered back into
  * Discoverer's display form, which is why 49 027 of 49 819 stored formulas sit
  * in the verifier's QUARANTINED bucket. Phase 4 replaces this.
  *
