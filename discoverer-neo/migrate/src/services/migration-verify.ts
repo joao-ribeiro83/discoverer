@@ -104,10 +104,15 @@ export interface VerifyHooks {
    */
   compileFormula?: (formula: string) => CompileBucket | { bucket: CompileBucket; reason?: string };
   /**
-   * Classify one stored map with the fan-trap planner, returning its decision
-   * string (`FLAT(NO_MEASURES)`, `REWRITE(2)`, `REFUSE(R3)`) and the size of
-   * the measure set it saw. Backend's `planQuery` over `loadMapDefinition`.
-   * Omitted here, seam 6 is SKIPPED.
+   * One stored map's FINAL decision, and the size of the measure set the
+   * planner saw. Backend's `decideMap` over `loadMapDefinition`. Omitted here,
+   * seam 6 is SKIPPED.
+   *
+   * `decision` is one of `FLAT`, `REWRITE(n)`, `REFUSE(<RULE>)` or `ERROR`.
+   * **Final, not the planner's verdict alone**: two of the outcomes a user
+   * meets — DISCONNECTED and NO_PREDICATE — are raised by the emitter, and a
+   * histogram counting only planner verdicts would file both under `FLAT` and
+   * report a guard doing work it never did (review R-07/B-03).
    */
   planMap?: (mapId: string) => Promise<{ decision: string; measures: number }>;
 }
@@ -540,29 +545,68 @@ export async function checkMeasureSet(
 }
 
 // ---------------------------------------------------------------------------
-// Seam 6 — the fan-trap guard runs on real migrated maps
+// Seam 6 — the planner-decision histogram
 // ---------------------------------------------------------------------------
 
 /**
- * Plan real migrated maps and check the guard is not inert (Phase 3.3, D-031).
+ * Phase 0.4's measured baseline (`research/baseline-counts.md`), asserted
+ * against rather than restated as a literal at the point of use.
  *
- * Seam 5 proves the estate *carries* a measure set. This proves the planner
- * *sees* one: it loads maps from the database, runs `planQuery` over each, and
- * fails if not one of them classified with a non-empty `M`.
+ * `DISCONNECTED_BASELINE` is the count of multi-folder maps whose folder set no
+ * chain of the ten known joins connects — 271 of 341, matching
+ * `legacy-analysis.md` §1.11 step 1 exactly. Phase 3.2 set out to reduce it. If
+ * this run does not come in below it, Phase 3.2 did not fix what it claimed.
+ */
+export const DISCONNECTED_BASELINE = 271;
+
+/** The fan-trap rules. One of these firing is what "the guard fired" means. */
+const FAN_TRAP_RULES = ['R1', 'R2', 'R3', 'R4', 'REAGG'] as const;
+
+/** `REFUSE(R3)` -> `R3`; `REWRITE(2)` -> `2`. Null when there is no `(...)`. */
+function decisionArgument(decision: string): string | null {
+  const match = /\(([^)]*)\)/.exec(decision);
+  return match ? match[1]! : null;
+}
+
+/**
+ * The planner-decision histogram over every migrated map (D-037, B-7).
  *
- * **Why this seam and not another unit test.** Every SQL test in this
- * repository runs against a hand-built `MapDefinition` fixture. A guard can
- * therefore pass its whole suite while never having classified a migrated map
- * — which is exactly how a fan-trap guard ships present, unit-tested and
- * structurally inert: with `agg_function` null the measure set is empty, every
- * query takes step 0's flat path, and every fixture-based assertion still
- * passes. Only a migrated map, loaded from the database, can tell you.
+ * **A guard that fires zero times is indistinguishable from a guard that is not
+ * wired in**, and this project's documented failure mode is three mechanisms
+ * reporting success over a non-functional system. Every SQL test in this
+ * repository runs against a hand-built `MapDefinition`, so a guard can pass its
+ * whole suite while never having classified a migrated map. Only a real map,
+ * loaded from the database, can tell you.
+ *
+ * ## Why the histogram is per rule
+ *
+ * The gate this seam was first given was `REFUSE > 0 && FLAT < 923`. It cannot
+ * tell the fan-trap guard from a failure that predates it. 271 of this estate's
+ * 341 multi-folder maps refuse on DISCONNECTED — a rule Neo has had since
+ * before the planner existed. Those refusals alone satisfy `REFUSE > 0`, and
+ * `FLAT` is comfortably below the total, so the original gate would pass with
+ * the guard never having fired once (review R-07/B-03).
+ *
+ * So the histogram counts each rule separately, and three assertions replace
+ * the one:
+ *
+ *  1. **`REWRITE(n) > 0`** — the rewrite path is reachable at all. This is the
+ *     assertion that matters. A guard that only ever refuses has not been shown
+ *     to work; it has been shown to have no input.
+ *  2. **`REFUSE(DISCONNECTED)` below Phase 3.2's baseline** — otherwise 3.2 did
+ *     not fix what it claimed.
+ *  3. **A fan-trap rule fired, or the run says in words that none could.**
+ *     "No map in this estate meets the trigger condition" is an acceptable
+ *     answer. Silence is not.
+ *
+ * `ERROR` is reported and never gated on: an unrendered formula token is Phase
+ * 4's problem and must be counted separately from a planner refusal.
  */
 export async function checkPlannerLive(
   db: VerifyDb,
   options: VerifyOptions = {},
 ): Promise<SeamResult> {
-  const name = 'the fan-trap planner classifies real migrated maps';
+  const name = 'the planner-decision histogram, over every migrated map';
   const limit = options.sampleLimit ?? 10;
 
   if (!options.planMap) {
@@ -585,38 +629,108 @@ export async function checkPlannerLive(
         ${options.maxMaps ? sql`LIMIT ${options.maxMaps}` : sql``}`,
   );
 
-  const byDecision = new globalThis.Map<string, number>();
+  /** Histogram bucket -> count. `FLAT`, `REWRITE(2)`, `REFUSE(R3)`, `ERROR`. */
+  const histogram = new globalThis.Map<string, number>();
   const findings: string[] = [];
-  let planned = 0;
+  let decided = 0;
   let withMeasures = 0;
 
   for (const row of mapRows) {
     try {
-      const plan = await options.planMap(String(row.id));
-      planned += 1;
-      if (plan.measures > 0) withMeasures += 1;
-      // Only the decision KIND is counted: `REWRITE(2)` and `REWRITE(3)` are
-      // the same fact about the guard.
-      const kind = plan.decision.replace(/\(.*$/, '');
-      byDecision.set(kind, (byDecision.get(kind) ?? 0) + 1);
+      const outcome = await options.planMap(String(row.id));
+      decided += 1;
+      if (outcome.measures > 0) withMeasures += 1;
+      histogram.set(outcome.decision, (histogram.get(outcome.decision) ?? 0) + 1);
     } catch (err) {
+      // The map could not even be loaded. Not a decision, so not in the
+      // histogram — it is a hole in it, and reported as one.
       if (findings.length < limit) {
         findings.push(`${String(row.name)} (${String(row.id)}): ${describe(err)}`);
       }
     }
   }
 
+  const count = (bucket: string): number => histogram.get(bucket) ?? 0;
+  /** Every `REWRITE(n)` summed — the branch count varies, the fact does not. */
+  let rewrites = 0;
+  const refusals = new globalThis.Map<string, number>();
+  for (const [bucket, n] of histogram) {
+    if (bucket.startsWith('REWRITE')) rewrites += n;
+    if (bucket.startsWith('REFUSE')) {
+      const rule = decisionArgument(bucket) ?? 'UNNAMED';
+      refusals.set(rule, (refusals.get(rule) ?? 0) + n);
+    }
+  }
+
+  const fanTrapRefusals = FAN_TRAP_RULES.reduce(
+    (total, rule) => total + (refusals.get(rule) ?? 0),
+    0,
+  );
+  const disconnected = refusals.get('DISCONNECTED') ?? 0;
+
   const metrics: Record<string, number> = {
     maps: mapRows.length,
-    planned,
+    decided,
     mapsWithANonEmptyMeasureSet: withMeasures,
+    flat: count('FLAT'),
+    rewrite: rewrites,
+    refuse: [...refusals.values()].reduce((a, b) => a + b, 0),
+    fanTrapRefusals,
+    error: count('ERROR'),
+    notDecided: mapRows.length - decided,
   };
-  for (const [kind, count] of byDecision) metrics[kind.toLowerCase()] = count;
+  for (const [rule, n] of refusals) metrics[`refuse${rule}`] = n;
+  // The branch-count breakdown, so `REWRITE(2)` and `REWRITE(3)` stay visible.
+  for (const [bucket, n] of histogram) {
+    if (bucket.startsWith('REWRITE')) metrics[bucket.toLowerCase().replace(/[()]/g, '')] = n;
+  }
+
+  // Assertion 3 is a statement, not a gate: "no map triggers it" is an
+  // acceptable answer, but the run has to say so in words.
+  findings.push(
+    fanTrapRefusals > 0
+      ? `fan-trap rules fired ${fanTrapRefusals} time(s): ${FAN_TRAP_RULES.filter(
+          (r) => refusals.get(r),
+        )
+          .map((r) => `${r}x${refusals.get(r)}`)
+          .join(', ')}`
+      : 'no fan-trap rule (R1-R4, REAGG) fired: no map in this estate reached a ' +
+          'trigger condition. Recorded deliberately — silence would not be an answer.',
+  );
+
+  // Assertion 2's number is a FLOOR, not a like-for-like comparison, until
+  // every map reaches a decision. A map that throws before the planner runs is
+  // absent from the histogram, so it cannot be counted as DISCONNECTED either,
+  // and the count falls for a reason that has nothing to do with Phase 3.2.
+  // Say so next to the number rather than letting the gate imply otherwise.
+  findings.push(
+    `REFUSE(DISCONNECTED) = ${disconnected} against a baseline of ${DISCONNECTED_BASELINE}, ` +
+      `over ${decided} of ${mapRows.length} maps that reached a decision. ` +
+      (decided < mapRows.length
+        ? `The ${mapRows.length - decided} that did not are absent from every bucket, so ` +
+          'this count is a floor and not yet a like-for-like reading of the baseline.'
+        : 'Full coverage, so this is a like-for-like reading.'),
+  );
 
   const blockers: string[] = [];
-  if (planned === 0) blockers.push('no map could be planned at all');
-  else if (withMeasures === 0) {
-    blockers.push('every planned map classified |M| = 0');
+  if (decided === 0) {
+    blockers.push('no map could be decided at all');
+  } else {
+    // 1 — the assertion that matters.
+    if (rewrites === 0) {
+      blockers.push(
+        'REWRITE fired zero times: the rewrite path is unreachable, so the guard has ' +
+          'not been shown to work — only shown to have no input',
+      );
+    }
+    // 2 — Phase 3.2's claim, measured.
+    if (disconnected >= DISCONNECTED_BASELINE) {
+      blockers.push(
+        `REFUSE(DISCONNECTED) is ${disconnected}, not below Phase 0.4's baseline of ` +
+          `${DISCONNECTED_BASELINE}: Phase 3.2 did not reduce what it claimed to`,
+      );
+    }
+    if (withMeasures === 0) blockers.push('every decided map classified |M| = 0');
   }
 
   return {
@@ -625,10 +739,7 @@ export async function checkPlannerLive(
     status: blockers.length === 0 ? 'PASS' : 'FAIL',
     metrics,
     findings,
-    reason:
-      blockers.length > 0
-        ? `the fan-trap guard is present but inert: ${blockers.join('; ')}`
-        : undefined,
+    reason: blockers.length > 0 ? blockers.join('; ') : undefined,
   };
 }
 

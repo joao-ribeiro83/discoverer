@@ -1,5 +1,5 @@
 /**
- * Run the five seam checks against an already-migrated database (D-070).
+ * Run the six seam checks against an already-migrated database (D-070).
  *
  *   npm run verify --workspace @discoverer-neo/backend
  *   npx tsx src/scripts/verify-migration.ts [--json] [--max-maps N] [--samples N]
@@ -12,7 +12,7 @@
  * `dn-migrate verify` runs the same verifier, but reports the generator-backed
  * seams SKIPPED: the SQL generator lives in this workspace, which depends on
  * `@discoverer-neo/core` and not the reverse. This entry point is the one that
- * runs all four.
+ * runs all six.
  *
  * Exit code is 0 when the report is VERIFIED and 1 when it is
  * COMPLETED_WITH_BLOCKERS, so CI or a cutover runbook can gate on it.
@@ -22,9 +22,9 @@ import { verifyMigration, formatVerifyReport } from '@discoverer-neo/core/migrat
 
 import { db, pool } from '../db/index.js';
 import {
+  decideMap,
   generateSqlForMap,
   loadMapDefinition,
-  planQuery,
 } from '../services/sql-generator.js';
 import { bucketFormula } from '../services/formula-bucket.js';
 
@@ -39,13 +39,11 @@ async function main(): Promise<void> {
   const report = await verifyMigration(db, {
     generateSqlForMap: (mapId) => generateSqlForMap(mapId),
     compileFormula: bucketFormula,
-    // Seam 6: the guard is only real if it classifies migrated maps. A run
-    // whose every decision is `FLAT(NO_MEASURES)` means the measure set is
-    // empty and the fan-trap guard has never once fired (D-031).
-    planMap: async (mapId) => {
-      const plan = planQuery(await loadMapDefinition(mapId));
-      return { decision: plan.decision, measures: plan.measures.length };
-    },
+    // Seam 6: the planner-decision histogram. The decision is taken AFTER
+    // generation, because DISCONNECTED and NO_PREDICATE are raised by the
+    // emitter — a histogram of planner verdicts alone would file both under
+    // FLAT and report a guard doing work it never did (D-031, R-07/B-03).
+    planMap: async (mapId) => decideMap(await loadMapDefinition(mapId)),
     maxMaps: numericFlag('--max-maps'),
     sampleLimit: numericFlag('--samples'),
   });

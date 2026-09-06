@@ -28,6 +28,7 @@ import {
   hierarchies,
   hierarchyLevels,
   items,
+  joinPredicates,
   joins,
   mapCalculatedFields,
   mapConditions,
@@ -41,6 +42,7 @@ import {
   users,
 } from '../../db/schema.js';
 import {
+  decideMap,
   generateSqlForMap,
   loadMapDefinition,
   planQuery,
@@ -549,10 +551,10 @@ describe('Migration seam tests', () => {
   });
 
   // =========================================================================
-  // Seam 6 — the fan-trap guard runs on MIGRATED maps, not fixtures
+  // Seam 6 — the planner-decision histogram, over MIGRATED maps
   // =========================================================================
   //
-  // This is the test that keeps Phase 3.3 from shipping present-but-inert.
+  // This is the test that keeps the guard from shipping present-but-inert.
   //
   // Every other fan-trap test in this repository builds its `MapDefinition` by
   // hand. A guard can pass all of them and still have classified nothing real:
@@ -560,30 +562,44 @@ describe('Migration seam tests', () => {
   // takes step 0's flat path, and the whole decision procedure is dead code
   // that looks alive (D-031).
   //
-  // So this one plans maps that came out of a MIGRATION, loaded from the
+  // So this one decides maps that came out of a MIGRATION, loaded from the
   // database through `loadMapDefinition` — the same path production uses.
-  describe('seam 6 — the planner classifies migrated maps', () => {
+  describe('seam 6 — the planner-decision histogram', () => {
+    const decide = async (mapId: string) => decideMap(await loadMapDefinition(mapId));
+
     it('is SKIPPED without an injected planner, and never counts as a pass', async () => {
       const result = await checkPlannerLive(db, { mapIdPrefix: PREFIX });
       expect(result.status).toBe('SKIPPED');
       expect(result.reason).toContain('backend workspace');
     });
 
-    it('reports the inert estate as a FAIL, naming why', async () => {
+    it('fails an estate where the rewrite path was never reached', async () => {
       const result = await checkPlannerLive(db, {
         mapIdPrefix: PREFIX,
-        planMap: async (mapId) => {
-          const plan = planQuery(await loadMapDefinition(mapId));
-          return { decision: plan.decision, measures: plan.measures.length };
-        },
+        planMap: decide,
       });
 
-      // The fixture migration writes no aggregates, which is exactly the state
-      // the guard must not be allowed to ship in.
+      // The fixture migration writes no aggregates and no fanning join, which
+      // is exactly the state the guard must not be allowed to ship in. The
+      // gate that catches it is REWRITE = 0, not REFUSE > 0: a guard that only
+      // ever refuses has not been shown to work, only shown to have no input
+      // (review R-07/B-03).
       expect(result.status).toBe('FAIL');
-      expect(result.reason).toContain('inert');
-      expect(result.metrics.planned).toBeGreaterThan(0);
+      expect(result.reason).toContain('REWRITE fired zero times');
+      expect(result.metrics.decided).toBeGreaterThan(0);
+      expect(result.metrics.rewrite).toBe(0);
       expect(result.metrics.mapsWithANonEmptyMeasureSet).toBe(0);
+    });
+
+    it('says in words that no fan-trap rule fired, rather than staying silent', async () => {
+      const result = await checkPlannerLive(db, {
+        mapIdPrefix: PREFIX,
+        planMap: decide,
+      });
+      expect(result.findings.some((f) => f.includes('no fan-trap rule'))).toBe(true);
+      // And the DISCONNECTED count carries its coverage caveat, so a fall
+      // caused by maps failing earlier cannot read as a Phase 3.2 win.
+      expect(result.findings.some((f) => f.includes('REFUSE(DISCONNECTED)'))).toBe(true);
     });
 
     it('classifies |M| >= 1 once a migrated column carries its aggregate', async () => {
@@ -604,22 +620,83 @@ describe('Migration seam tests', () => {
         const plan = planQuery(await loadMapDefinition(column.mapId));
         expect(plan.measures.length).toBeGreaterThanOrEqual(1);
         expect(plan.decision).not.toBe('FLAT(NO_MEASURES)');
-
-        const result = await checkPlannerLive(db, {
-          mapIdPrefix: PREFIX,
-          planMap: async (mapId) => {
-            const p = planQuery(await loadMapDefinition(mapId));
-            return { decision: p.decision, measures: p.measures.length };
-          },
-        });
-        expect(result.status).toBe('PASS');
-        expect(result.metrics.mapsWithANonEmptyMeasureSet).toBeGreaterThanOrEqual(1);
       } finally {
         await db
           .update(mapItems)
           .set({ axisType: 'AXIS', aggFunction: null })
           .where(inArray(mapItems.id, [column.id]));
       }
+    });
+
+    // The assertion that matters has to be falsifiable BOTH ways. The test
+    // above proves it fails on an estate with no fan; this proves it passes on
+    // one with a real master/detail pair — a join with a predicate, and a
+    // measure on the master side (§1.11 step 5a). Without it, `REWRITE > 0`
+    // is a gate nothing in CI can ever turn green.
+    it('goes PASS once a migrated map actually rewrites', async () => {
+      const ids = scopedIdFactory();
+      const [ds] = await db.select({ id: dataSources.id }).from(dataSources).where(idLike(dataSources.id)).limit(1);
+      const [ba] = await db.select({ id: businessAreas.id }).from(businessAreas).where(idLike(businessAreas.id)).limit(1);
+      const [user] = await db.select({ id: users.id }).from(users).where(idLike(users.id)).limit(1);
+      if (!ds || !ba || !user) throw new Error('fixture wrote no data source / business area / user');
+
+      const header = ids();
+      const lines = ids();
+      const headerKey = ids();
+      const lineKey = ids();
+      const headerAmount = ids();
+      const lineQty = ids();
+      const joinId = ids();
+      const mapId = ids();
+
+      await db.insert(folders).values([
+        { id: header, businessAreaId: ba.id, name: 'FAN HEADER', folderType: 'TABLE', tableName: 'FAN_HEADER', tableOwner: 'APP', dataSourceId: ds.id, createdBy: user.id },
+        { id: lines, businessAreaId: ba.id, name: 'FAN LINES', folderType: 'TABLE', tableName: 'FAN_LINES', tableOwner: 'APP', dataSourceId: ds.id, createdBy: user.id },
+      ]);
+      await db.insert(items).values([
+        { id: headerKey, folderId: header, name: 'Order Id', itemType: 'CI', columnName: 'ORDER_ID', dataType: 'NUMBER', createdBy: user.id },
+        { id: headerAmount, folderId: header, name: 'Order Value', itemType: 'CI', columnName: 'ORDER_VALUE', dataType: 'NUMBER', createdBy: user.id },
+        { id: lineKey, folderId: lines, name: 'Line Order Id', itemType: 'CI', columnName: 'ORDER_ID', dataType: 'NUMBER', createdBy: user.id },
+        { id: lineQty, folderId: lines, name: 'Line Qty', itemType: 'CI', columnName: 'QTY', dataType: 'NUMBER', createdBy: user.id },
+      ]);
+      // Header is the MASTER (left), lines the fanning DETAIL (right) — D-040.
+      await db.insert(joins).values({
+        id: joinId,
+        name: 'FAN HEADER -> FAN LINES',
+        leftFolderId: header,
+        rightFolderId: lines,
+        allowMasterNoDetail: false,
+        allowDetailNoMaster: false,
+        oneToOne: false,
+      });
+      await db.insert(joinPredicates).values({
+        joinId,
+        seq: 0,
+        leftItemId: headerKey,
+        rightItemId: lineKey,
+        operator: '=',
+      });
+      await db.insert(maps).values({
+        id: mapId,
+        businessAreaId: ba.id,
+        name: 'Fan trap fixture',
+        mapType: 'TABLE',
+        isActive: true,
+        createdBy: user.id,
+      });
+      // The master carries the measure and the detail an axis column: step 5a,
+      // the single-branch trap. A flat join would repeat ORDER_VALUE once per
+      // line and inflate the sum.
+      await db.insert(mapItems).values([
+        { id: ids(), mapId, itemId: lineQty, displayOrder: 0, axisType: 'AXIS' },
+        { id: ids(), mapId, itemId: headerAmount, displayOrder: 1, axisType: 'MEASURE', aggFunction: 'SUM' },
+      ]);
+
+      const result = await checkPlannerLive(db, { mapIdPrefix: PREFIX, planMap: decide });
+
+      expect(result.metrics.rewrite).toBeGreaterThanOrEqual(1);
+      expect(result.metrics.mapsWithANonEmptyMeasureSet).toBeGreaterThanOrEqual(1);
+      expect(result.status).toBe('PASS');
     });
   });
 
