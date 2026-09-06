@@ -102,6 +102,46 @@ Use functions to create smart filters:
    discount_rate(CUSTOMER_TYPE, ORDER_AMOUNT) > 0.10
    ```
 
+### In a migrated Discoverer formula
+
+Functions registered here are also callable from formulas that came across
+from Discoverer. A Discoverer workbook stored a call to a registered function
+as a token — `[2,17](...)` — and until now those formulas were quarantined
+even though the function itself had migrated. They now compile.
+
+The function is resolved through the workbook, not by name matching:
+
+1. The token's id is workbook-local. It is looked up in the workbook's own
+   element table, which yields the EUL function id.
+2. That id must match a row in this registry.
+3. The row's **Name** becomes the identifier in the generated SQL.
+
+Every step must succeed. If any of them does not, the formula is declined with
+a stated reason rather than compiled to something approximate — see
+[Why a worksheet was declined](../troubleshooting/refusals.md).
+
+### What is checked before a call is generated
+
+| Check | If it fails |
+| --- | --- |
+| The token resolves to a row in this registry | Declined — the function is not registered |
+| The **Name** is a plain identifier: a letter, then letters, digits, `_`, `$` or `#`, up to 128 characters | Declined — the name is rejected, never quoted or escaped into safety |
+| The argument count matches the **Parameters** you defined | Declined — the call and the signature disagree |
+
+Two consequences worth knowing:
+
+- **A package-qualified name is declined.** `PKG.CALC` is two identifiers, not
+  one. Register the function under a single name, or create a wrapper.
+- **A function with no Parameters defined accepts any argument count.** Every
+  function migrated from an EUL arrives this way: Discoverer's `FUNCTIONS`
+  metadata carries no argument list, so the migrator records the function and
+  raises a `FUNCTION_SIGNATURE_DEFAULTED` warning against it. Filling in
+  **Parameters** (Step 3) turns the arity check on for that function. Until you
+  do, nothing checks it.
+
+Arguments are always passed as bind variables. A value inside a call is never
+written into the SQL text, whatever it contains.
+
 ## SQL vs PLSQL Functions
 
 | Aspect | SQL | PLSQL |
