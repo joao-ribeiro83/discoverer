@@ -487,7 +487,6 @@ export type ExecutionErrorKind =
 
 /** Machine-readable reason behind a `REFUSED` execution. Keys the explanation copy. */
 export type RefusalCode =
-  | 'MULTI_FOLDER_AGGREGATE'
   | 'NO_JOIN_PATH'
   | 'JOIN_NO_PREDICATE'
   | 'JOIN_BOTH_OUTER'

@@ -1469,13 +1469,15 @@ describe('SQL generator', () => {
       });
     }
 
-    it('refuses a multi-folder aggregate map, naming the folders', () => {
-      expect(() => generateSql(multiFolderDef(true))).toThrow(
-        SqlGenerationError,
-      );
-      expect(() => generateSql(multiFolderDef(true))).toThrow(
-        /Multi-folder aggregate queries are refused[\s\S]*Folders:[\s\S]*CUSTOMERS[\s\S]*SALES/,
-      );
+    it('rewrites a multi-folder aggregate map instead of refusing it', () => {
+      // Until Phase 3.4 this threw `MULTI_FOLDER_AGGREGATE` (D-014). SALES is
+      // the master and carries the measure, CUSTOMERS is the fanning detail,
+      // so step 5a applies: the SUM is aggregated in its own inline view,
+      // below the join, and re-aggregated above it.
+      const result = generateSql(multiFolderDef(true));
+      expect(norm(result.sql)).toMatch(/FROM \(\s*SELECT/);
+      expect(norm(result.sql)).toContain('LEFT OUTER JOIN "APP"."CUSTOMERS"');
+      expect(result.hasAggregates).toBe(true);
     });
 
     it('refuses when the aggregate is hidden inside a calculated field', () => {
@@ -1495,9 +1497,16 @@ describe('SQL generator', () => {
         joins: [f.join],
         formulaItems: f.formulaItems,
       });
-      expect(() => generateSql(def)).toThrow(
-        /Multi-folder aggregate queries are refused/,
-      );
+      // `M` is built from columns, so the AVG inside the formula is not in it.
+      // The planner counts the calculation anyway and refuses by rule, because
+      // a total inside a formula cannot be attributed to one detail branch.
+      try {
+        generateSql(def);
+        throw new Error('expected a refusal');
+      } catch (err) {
+        expect(err).toBeInstanceOf(SqlGenerationError);
+        expect((err as SqlGenerationError).code).toBe('FAN_TRAP_REAGG');
+      }
     });
 
     it('leaves a multi-folder NON-aggregate map alone', () => {
@@ -2716,27 +2725,15 @@ describe('SQL generator', () => {
         formulaItems: f.formulaItems,
       });
 
-      // A total is an aggregate over the SAME multi-folder FROM clause, so it
-      // is exactly the fan trap D-014 refuses. Phase 3.4 restores the INNER
-      // JOIN + COUNT assertions this test made before the guard existed.
-      expect(() => generateSql(def)).toThrow(
-        /Multi-folder aggregate queries are refused/,
-      );
-
-      // The refusal is machine-readable: the client renders its own
-      // translated explanation from `code`, never the English message
-      // above, and names the folders from `details` (D-036).
-      try {
-        generateSql(def);
-        throw new Error('expected a refusal');
-      } catch (err) {
-        expect(err).toBeInstanceOf(SqlGenerationError);
-        const refusal = err as SqlGenerationError;
-        expect(refusal.code).toBe('MULTI_FOLDER_AGGREGATE');
-        expect(refusal.details).toEqual({
-          folders: expect.arrayContaining([f.sales.name, f.customers.name]),
-        });
-      }
+      // No map column aggregates, so `|M| = 0` and the planner takes the flat
+      // path. The total is the only aggregate, and it runs over the SAME
+      // multi-folder FROM clause — which is where a COUNT over a fanning join
+      // would inflate. Nothing here fans on a measure, so the flat shape is the
+      // right one and the COUNT is emitted.
+      const result = generateSql(def);
+      expect(norm(result.sql)).toContain('INNER JOIN "APP"."CUSTOMERS"');
+      expect(result.totals).toHaveLength(1);
+      expect(norm(result.totals[0]!.sql)).toContain('COUNT(');
     });
   });
 });

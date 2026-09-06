@@ -3,8 +3,9 @@
  *
  * READ ONLY. Loads every active map's definition and calls the pure generator;
  * it never writes and never opens an Oracle connection. Phase 1.1 recorded its
- * output as the baseline; Phase 3.4 re-runs it to show the fan-trap planner
- * moved maps out of `MULTI_FOLDER_AGGREGATE` and into `OK`.
+ * output as the baseline. The planner-decision histogram in `dn-migrate verify`
+ * is the authoritative reading now; this stays for the failure-cause breakdown,
+ * which the seams do not bucket.
  *
  *   npx tsx src/scripts/measure-map-generation.ts
  */
@@ -16,10 +17,6 @@ import { effectiveFolderSet } from '../lib/sql/folder-set.js';
 
 /** Buckets, most specific first — the first matching pattern wins. */
 const REASONS: Array<{ bucket: string; test: RegExp }> = [
-  {
-    bucket: 'MULTI_FOLDER_AGGREGATE',
-    test: /Multi-folder aggregate queries are refused/,
-  },
   { bucket: 'NO_JOIN_PATH', test: /No join path connects/ },
   { bucket: 'UNKNOWN_ITEM_REFERENCE', test: /Unknown item reference/ },
   {

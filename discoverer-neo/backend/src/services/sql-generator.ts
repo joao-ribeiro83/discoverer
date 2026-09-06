@@ -30,7 +30,8 @@ import { buildOrderByClause } from '../lib/sql/order-by-clause.js';
 import { buildPagination } from '../lib/sql/pagination.js';
 import { planTotals } from '../lib/sql/totals.js';
 import { planQuery, refusalError } from '../lib/sql/planner.js';
-import type { QueryPlan } from '../lib/sql/query-plan.js';
+import { renderRewrite } from '../lib/sql/rewrite.js';
+import type { QueryPlan, RewritePlan } from '../lib/sql/query-plan.js';
 
 export { SqlGenerationError } from '../types/sql.js';
 export { validateFormula } from '../lib/sql/formula-parser.js';
@@ -59,6 +60,7 @@ export function generateSql(
   // service, the `/plan` endpoint) pass theirs in rather than planning twice.
   const plan = options.plan ?? planQuery(def);
   if (plan.kind === 'REFUSE') throw refusalError(plan);
+  if (plan.kind === 'REWRITE') return generateRewrite(def, plan, options);
 
   const ctx = new GenerationContext(def, plan.folderIds);
 
@@ -72,14 +74,8 @@ export function generateSql(
   // aliased by the time it runs.
   const orderBy = buildOrderByClause(def, ctx, select);
   const totalsPlan = planTotals(def, ctx, select, plan);
-  // FROM is built last so every folder already has its alias. It also carries
-  // the interim multi-folder aggregate refusal (D-014), so it has to be told
-  // whether the statement aggregates — including through a totals query, which
-  // reuses this very FROM clause.
-  const from = buildFromClause(def, ctx, {
-    plan,
-    hasAggregates: select.hasAggregates || totalsPlan.entries.length > 0,
-  });
+  // FROM is built last so every folder already has its alias.
+  const from = buildFromClause(def, ctx, { plan });
   const groupBy = buildGroupByClause(select.hasAggregates, select.nonAggregateExprs);
   const pagination = buildPagination(options);
 
@@ -119,6 +115,50 @@ export function generateSql(
     }),
     totals,
     warnings: [...orderBy.warnings, ...totalsPlan.warnings],
+  };
+}
+
+/**
+ * The fan-trap rewrite path: one inline view per branch, joined back on the
+ * master key (`legacy-analysis.md` §1.4, emitted by `renderRewrite`).
+ *
+ * **Totals are suppressed here, deliberately.** A total is emitted by re-running
+ * the main query's FROM and WHERE without its GROUP BY — and the flat FROM is
+ * exactly the fanning join the rewrite exists to avoid, so reusing it would
+ * print the inflated number the whole guard was built to prevent. §1.6 already
+ * blanks a total whose columns span branches; this widens that to every total on
+ * a rewritten query, which is the same honest answer for the same reason. The
+ * user sees a blank cell and the explanation in `docs/troubleshooting/`, never a
+ * wrong number.
+ */
+function generateRewrite(
+  def: MapDefinition,
+  plan: RewritePlan,
+  options: SqlGenerationOptions,
+): GeneratedSql {
+  const { sql, bindParams, columns } = renderRewrite(def, plan, options);
+  const pagination = buildPagination(options);
+
+  const totalCount = def.totals?.length ?? 0;
+  const warnings = totalCount
+    ? [
+        `${totalCount} total${totalCount === 1 ? '' : 's'} left blank: this ` +
+          'worksheet summarises more than one set of detail rows, and a total across them ' +
+          'cannot be calculated without double-counting.',
+      ]
+    : [];
+
+  return {
+    sql: [sql, pagination.sql].filter(Boolean).join('\n'),
+    bindParams: { ...bindParams, ...pagination.bindParams },
+    // A rewrite exists only because the query aggregates — step 0 sends
+    // `|M| = 0` down the flat path.
+    hasAggregates: true,
+    columns,
+    distinct: false,
+    groupBreakAliases: [],
+    totals: [],
+    warnings,
   };
 }
 

@@ -130,11 +130,6 @@
   },
   "refusal": {
     "folders": "Pastas envolvidas: {{folders}}",
-    "MULTI_FOLDER_AGGREGATE": {
-      "title": "Este total ainda não é fiável, por isso não foi executado",
-      "why": "Esta folha totaliza um valor através de uma junção de um-para-muitos. Cada linha do lado \"um\" é repetida uma vez por cada linha correspondente do lado \"muitos\", por isso o total contaria o mesmo valor várias vezes e ficaria demasiado alto. O Discoverer também recusava esta forma.",
-      "whatToChange": "Totalize um valor de apenas uma pasta, ou remova as colunas que vão buscar dados à segunda pasta. Os totais entre pastas ficam disponíveis quando o planeador de fan-trap for publicado."
-    },
     "NO_JOIN_PATH": {
       "title": "Estas pastas não estão ligadas, por isso a folha não foi executada",
       "why": "A folha usa colunas de pastas que nenhuma cadeia de junções liga entre si. Sem uma junção, a base de dados combinaria cada linha de uma pasta com cada linha da outra e devolveria um resultado sem sentido.",

@@ -130,11 +130,6 @@
   },
   "refusal": {
     "folders": "Folders involved: {{folders}}",
-    "MULTI_FOLDER_AGGREGATE": {
-      "title": "This total cannot be trusted yet, so it was not run",
-      "why": "This worksheet totals a value across a one-to-many join. Each row on the \"one\" side is repeated once per matching row on the \"many\" side, so the total would count the same value several times and come out too high. Discoverer refused this shape too.",
-      "whatToChange": "Total a value from one folder only, or remove the columns that reach into the second folder. Multi-folder totals become available when the fan-trap planner ships."
-    },
     "NO_JOIN_PATH": {
       "title": "These folders are not connected, so the worksheet was not run",
       "why": "The worksheet uses columns from folders that no chain of joins links together. Without a join, the database would pair every row of one folder with every row of the other and return a meaningless result.",

@@ -232,9 +232,9 @@ describe('ExecutionPanel', () => {
         parameters={{}}
         runError={{
           kind: 'REFUSED',
-          code: 'MULTI_FOLDER_AGGREGATE',
+          code: 'FAN_TRAP_R4',
           details: { folders: ['Sales', 'Sales Lines'] },
-          message: 'Multi-folder aggregate queries are refused',
+          message: 'This query fans out from more than one folder at once',
         }}
         onResultChange={() => {}}
       />,

@@ -11,41 +11,10 @@ Un rechazo se muestra como un panel **ámbar** con un título, un motivo y un
 paso siguiente. Un panel rojo es un error real y significa otra cosa; consulte
 [Ejecución de mapas](../user-guide/executing-maps.md).
 
-La fase 3.3 ampliará esta página conforme el planificador de consultas gane
-nuevas comprobaciones.
-
----
-
-## Este total todavía no es fiable, por eso no se ejecutó
-
-**Código:** `MULTI_FOLDER_AGGREGATE`
-
-### Qué se pidió
-
-La hoja totaliza un valor — `SUM`, `AVG`, `COUNT`, `COUNT DISTINCT` — sobre
-columnas que vienen de más de una carpeta.
-
-### Por qué no se puede responder
-
-Las carpetas están unidas de uno a muchos. Cada fila del lado «uno» se repite
-una vez por cada fila coincidente del lado «muchos». Sumar después de esa
-unión cuenta el mismo valor una vez por repetición, así que el total sale
-demasiado alto.
-
-Esto se llama **fan trap** (trampa de abanico). El propio ejemplo de Oracle
-sitúa la inflación en dos o tres veces, sobre dos medidas a la vez. Nada en la
-pantalla le diría que la cifra estaba mal.
-
-### Qué cambiar
-
-- Totalice un valor de **una sola carpeta**. Quite las columnas que acceden a
-  la segunda carpeta, o elimine el total.
-- O divida la hoja en dos, una por carpeta.
-- O conserve las filas de detalle y totalícelas fuera del producto.
-
-Los totales entre carpetas estarán disponibles cuando se publique el
-planificador de fan-trap (fase 3.4). Su hoja no necesitará ningún cambio: la
-misma hoja simplemente empezará a devolver una cifra correcta.
+El planificador de consultas rechaza además cinco formas de trampa de abanico
+(`FAN_TRAP_R1` a `FAN_TRAP_R4` y `FAN_TRAP_REAGG`). Esas cinco están descritas
+por ahora solo en la [página en inglés](../../troubleshooting/refusals.md); el
+panel de rechazo sí está traducido.
 
 ---
 

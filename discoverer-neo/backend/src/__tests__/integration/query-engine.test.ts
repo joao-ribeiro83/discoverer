@@ -823,7 +823,10 @@ describe('Scenario 7: complex combined map', () => {
     expect(result.rowCount).toBe(1);
   });
 
-  it('refuses the same map end to end once it aggregates (D-014)', async () => {
+  it('runs the same map end to end once it aggregates (Phase 3.4)', async () => {
+    // Until Phase 3.4 this refused unconditionally (D-014). The planner now
+    // decides: this shape has one fanning branch and one master-side measure,
+    // so it takes a real path and executes rather than throwing.
     const mapId = await createTestMap({
       items: [
         { item: fx.custName, displayOrder: 0 },
@@ -831,9 +834,8 @@ describe('Scenario 7: complex combined map', () => {
       ],
     });
 
-    await expect(
-      executeTestMap(mapId, {}, { rows: [] }),
-    ).rejects.toThrow(/Multi-folder aggregate queries are refused/);
+    const result = await executeTestMap(mapId, {}, { rows: [] });
+    expect(result.rowCount).toBe(0);
   });
 });
 

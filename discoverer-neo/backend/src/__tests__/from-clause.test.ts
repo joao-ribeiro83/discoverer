@@ -272,16 +272,14 @@ describe('buildFromClause — the one-folder shape', () => {
     expect(sql).toBe(`FROM "APP"."SALES" ${ctx.aliasFor(f.sales.id)}`);
   });
 
-  it('stays flat for an aggregate query — the refusal needs 2+ folders', () => {
+  it('stays flat for a single-folder aggregate query', () => {
     const f = twoFolderFixture();
     const def = mkDef({
       items: [{ mapItem: mkMapItem(f.total), item: f.total, folder: f.sales }],
       joins: [f.join],
       formulaItems: f.formulaItems,
     });
-    expect(fromClauseFor(def, { hasAggregates: true }).sql).toContain(
-      'FROM "APP"."SALES"',
-    );
+    expect(fromClauseFor(def).sql).toContain('FROM "APP"."SALES"');
   });
 
   it('refuses when the plan admits no folder at all', () => {
@@ -418,31 +416,12 @@ describe('buildFromClause — disconnection refusal', () => {
 });
 
 // ---------------------------------------------------------------------------
-// 4. The interim multi-folder aggregate refusal (D-014, deleted in Phase 3.4)
+// 4. Multi-folder queries — the flat shape, now that D-014's interim refusal
+//    is gone (Phase 3.4)
 // ---------------------------------------------------------------------------
 
-describe('buildFromClause — interim multi-folder aggregate refusal', () => {
-  it('refuses a multi-folder aggregate and names every folder', () => {
-    const f = twoFolderFixture();
-    const def = mkDef({
-      items: [
-        { mapItem: mkMapItem(f.orderId), item: f.orderId, folder: f.sales },
-        { mapItem: mkMapItem(f.qty, 1), item: f.qty, folder: f.lines },
-      ],
-      joins: [f.join],
-      formulaItems: f.formulaItems,
-    });
-    try {
-      fromClauseFor(def, { hasAggregates: true });
-      throw new Error('expected a refusal');
-    } catch (err) {
-      const e = err as SqlGenerationError;
-      expect(e.code).toBe('MULTI_FOLDER_AGGREGATE');
-      expect(e.details).toEqual({ folders: ['SALES', 'LINES'] });
-    }
-  });
-
-  it('a non-aggregate multi-folder query still generates a flat join', () => {
+describe('buildFromClause — multi-folder', () => {
+  it('a multi-folder NON-aggregate query generates a flat join', () => {
     const f = twoFolderFixture();
     const def = mkDef({
       items: [
@@ -456,6 +435,22 @@ describe('buildFromClause — interim multi-folder aggregate refusal', () => {
     expect(sql).toContain('FROM "APP"."SALES"');
     expect(sql).toContain('INNER JOIN "APP"."LINES"');
     expect(sql).toMatch(/ON \w+\."ORDER_ID" = \w+\."ORDER_ID"/);
+  });
+
+  it('a multi-folder AGGREGATE query is no longer refused here', () => {
+    // Until Phase 3.4 this threw `MULTI_FOLDER_AGGREGATE` unconditionally. The
+    // planner now owns that decision: this clause emits the shape it is given
+    // and refuses nothing on aggregation grounds.
+    const f = twoFolderFixture();
+    const def = mkDef({
+      items: [
+        { mapItem: mkMapItem(f.orderId), item: f.orderId, folder: f.sales },
+        { mapItem: mkMapItem(f.qty, 1), item: f.qty, folder: f.lines },
+      ],
+      joins: [f.join],
+      formulaItems: f.formulaItems,
+    });
+    expect(fromClauseFor(def).sql).toContain('INNER JOIN "APP"."LINES"');
   });
 });
 
