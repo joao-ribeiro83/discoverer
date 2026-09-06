@@ -34,6 +34,7 @@ Learn how to use the Discoverer Neo interface to build and run queries.
 Why the product said no, and what to do about it.
 
 - **[Why a worksheet was declined](troubleshooting/refusals.md)** — the query shapes the planner refuses, why, and what to change
+- **[Why a calculation was declined](troubleshooting/formula-refusals.md)** — the reasons a single migrated formula does not compile, and what to change
 
 ## Administrator Guide
 

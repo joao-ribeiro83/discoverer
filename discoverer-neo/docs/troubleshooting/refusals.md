@@ -6,6 +6,11 @@ SQL, but cannot promise the number would be right — so it does not run it.
 Discoverer refused the same shapes. A wrong number that looks right is worse
 than no number.
 
+This page is about a **worksheet** that was not run. A single migrated
+calculation can also be declined while the worksheet around it runs normally —
+those reasons are on
+[Why a calculation was declined](formula-refusals.md).
+
 A refusal shows as an **amber** panel with a title, a reason and a next step.
 A red panel is a genuine error and means something different; see
 [Executing Maps](../user-guide/executing-maps.md).
