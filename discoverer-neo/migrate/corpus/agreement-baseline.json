@@ -1,12 +1,18 @@
 {
-  "renderer": "TOKEN_RENDERER — the Phase 4.2 token renderer (migrate/src/semantics/), 20 built-in codes, compared with displayMatches.",
+  "renderer": "TOKEN_RENDERER — the Phase 4.3 token renderer (migrate/src/semantics/), all 42 FITTED built-in codes, compared with displayMatches.",
   "measuredAt": "2026-09-06",
   "distinctPairs": 22748,
   "totalOccurrences": 37971,
-  "distinctRate": 93.55,
-  "weightedRate": 93.19,
+  "distinctRate": 95.66,
+  "weightedRate": 95.71,
   "phaseGate": 93,
-  "comparison": "displayMatches — exact byte comparison outside item and parameter name spans, which the anonymised corpus (D-114) cannot supply and which unify with a back-reference instead. NOT plain string equality: 99.77% of corpus rows carry an anonymised name, so a === comparison caps at 4.60% weighted however correct the renderer is.",
-  "ceiling": "About 96%. 917 rows (4.03%) were destroyed by the Phase 0.5 anonymiser and can never match — a private filter's Name is frequently its own DisplayFormula, so whole display strings were replaced wholesale. formula-decoder-spec.md §11.1 states the one-line fix.",
-  "note": "A ratchet AND a gate. formula-corpus-agreement.test.ts fails if a change lowers either rate, and separately if either falls under phaseGate. Raise these by hand when a change lifts them, in the same commit that lifts them. Both rates are reported because they answer different questions: distinct is how much of the formula language is covered, weighted is how many real formulas in a real estate would render."
+  "cleanDistinctPairs": 21836,
+  "cleanTotalOccurrences": 36484,
+  "cleanDistinctRate": 99.65,
+  "cleanWeightedRate": 99.61,
+  "cleanPhaseGate": 99,
+  "comparison": "displayMatches — exact byte comparison outside item, parameter and custom-function name spans, which the anonymised corpus (D-114) cannot supply and which unify with a back-reference instead. NOT plain string equality: 99.77% of corpus rows carry an anonymised name, so a === comparison caps at 4.60% weighted however correct the renderer is.",
+  "ceiling": "About 96% raw. 912 distinct rows (1 487 occurrences) were destroyed by the Phase 0.5 anonymiser and can never match — a private filter's Name is frequently its own DisplayFormula, so whole display strings were replaced wholesale. formula-decoder-spec.md §11.1 states the one-line fix and needs d4dumps/, which is not on this machine.",
+  "gate": "Phase 4.3's acceptance is >= 99% and the raw denominator cannot reach it, so the gate is stated against the clean subset — the spec's own instruction in §11.1, 'state the gates against the clean subset, or rebuild the corpus'. The raw rates stay in this file and stay ratcheted, so the exclusion is visible rather than assumed, and weightedMismatchedUnexplained = 0 is the check that the exclusion is not absorbing real defects.",
+  "note": "A ratchet AND a gate. formula-corpus-agreement.test.ts fails if a change lowers any rate, and separately if the clean rates fall under cleanPhaseGate or the raw rates under phaseGate. Raise these by hand when a change lifts them, in the same commit that lifts them. Both denominators are reported because they answer different questions: distinct is how much of the formula language is covered, weighted is how many real formulas in a real estate would render."
 }
