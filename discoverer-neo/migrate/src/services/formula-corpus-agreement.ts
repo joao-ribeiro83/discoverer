@@ -22,7 +22,12 @@
 import { readFileSync } from 'node:fs';
 
 import { builtinCode } from '../semantics/builtin-codes.js';
-import { displayDateLiteral, displayMatches, Quarantined, renderDisplay } from '../semantics/render.js';
+import {
+  DISPLAY_NAME_MARK,
+  displayMatches,
+  Quarantined,
+  renderDisplay,
+} from '../semantics/render.js';
 import { parseFormulaTree, type FormulaNode } from './workbook-parser.js';
 
 /**
@@ -185,11 +190,29 @@ export const TOKEN_RENDERER: FormulaRenderer = (io) => {
 };
 
 /**
- * A word-shaped built-in name — `AND`, `BETWEEN`, `TO_DATE`. Symbol operators
- * are excluded because the anonymiser preserved punctuation, so their absence
- * proves nothing.
+ * Every anchor the renderer wrote, in the order it wrote them.
+ *
+ * An anchor is text the renderer produced itself rather than took from the
+ * corpus: a quoted literal, a bare number, or a word-shaped built-in name
+ * (`AND`, `BETWEEN`, `TO_DATE`). Anything inside a `DISPLAY_NAME_MARK` span is an
+ * identifier the corpus anonymised and is deliberately skipped, and symbol
+ * operators are skipped too — the anonymiser preserved punctuation, so a
+ * surviving `=` proves nothing either way.
+ *
+ * Read off the rendered template rather than re-walked from the tree, so the
+ * order is the renderer's own and cannot drift from it.
  */
-const WORD_NAME = /^[A-Za-z][A-Za-z0-9_]*(?: [A-Za-z][A-Za-z0-9_]*)*$/;
+const ANCHOR = /'[^']*'|[A-Za-z][A-Za-z0-9_]*|[0-9][0-9.]*/g;
+
+function displayAnchors(template: string): string[] {
+  const anchors: string[] = [];
+  const spans = template.split(DISPLAY_NAME_MARK);
+  // Splitting on a paired marker yields literal, name, literal, name, …
+  for (let i = 0; i < spans.length; i += 2) {
+    anchors.push(...(spans[i]!.match(ANCHOR) ?? []));
+  }
+  return anchors;
+}
 
 /**
  * Did Phase 0.5's anonymiser destroy this row?
@@ -200,36 +223,32 @@ const WORD_NAME = /^[A-Za-z][A-Za-z0-9_]*(?: [A-Za-z][A-Za-z0-9_]*)*$/;
  * length-preserving. Oracle's own keywords went with them while the
  * punctuation survived: `[1,98]` rendered `AND` and the display says `ZCK`.
  *
- * Detected exactly as `fit-builtin-codes.ts` detects it, by the same two
- * signals: a literal that has gone missing from the display, or a word-shaped
- * built-in name that has. This is why the achievable ceiling on the committed
- * corpus is about 96 %, and it is the one-line fix in the decoder spec §11.1
- * that would lift it.
+ * The test is that every anchor the renderer wrote can still be found in
+ * Discoverer's own string, **in the same order**. Order and multiplicity are
+ * both load bearing, and a plain `includes` test has neither: a row rendering
+ * `… = 100 AND … = 1 AND …` against a display whose second literal was
+ * rewritten to `5` still "contains" `1`, because `100` does; and a row
+ * rendering six `AND`s against a display carrying four still "contains" `AND`.
+ * Both are damage, both passed the old test, and both are common — `[1,98]`
+ * is the code the clobbering hits hardest.
+ *
+ * This is why the achievable ceiling on the committed corpus is about 96 %,
+ * and it is the one-line fix in the decoder spec §11.1 that would lift it.
+ *
+ * The limit of the method, stated plainly: it cannot separate "the anonymiser
+ * removed an anchor" from "the renderer put the anchors in the wrong order".
+ * A genuine fixity defect would be misfiled here. That is why the
+ * `UNEXPLAINED` sample list exists and is read by hand at every gate, and why
+ * a code is only ever implemented from an attested shape.
  */
-export function isAnonymiserDamage(node: FormulaNode, display: string): boolean {
-  if (node.type === 'literal') {
-    if (node.literalKind === 4) {
-      // The date payload is reshaped on the way to the screen, so only the
-      // rendered form is evidence.
-      let rendered: string;
-      try {
-        rendered = displayDateLiteral(node.value);
-      } catch {
-        return false;
-      }
-      if (!display.includes(rendered)) return true;
-    } else if (!display.includes(node.value)) {
-      return true;
-    }
+export function isAnonymiserDamage(rendered: string, display: string): boolean {
+  let from = 0;
+  for (const anchor of displayAnchors(rendered)) {
+    const at = display.indexOf(anchor, from);
+    if (at === -1) return true;
+    from = at + anchor.length;
   }
-  if (node.type === 'call') {
-    const entry = builtinCode(node.code);
-    if (entry !== undefined && WORD_NAME.test(entry.displayName) && !display.includes(entry.displayName)) {
-      return true;
-    }
-  }
-  const args = node.type === 'call' || node.type === 'function' || node.type === 'unknown' ? node.args : [];
-  return args.some((arg) => isAnonymiserDamage(arg, display));
+  return false;
 }
 
 export interface RenderReport extends AgreementResult {
@@ -283,7 +302,7 @@ export function reportRendering(rows: readonly CorpusRow[], sampleLimit = 10): R
         if (!displayMatches(rendered, row.display)) {
           distinctMismatched += 1;
           weightedMismatched += row.occurrences;
-          if (isAnonymiserDamage(tree, row.display)) {
+          if (isAnonymiserDamage(rendered, row.display)) {
             distinctMismatchedDamaged += 1;
             weightedMismatchedDamaged += row.occurrences;
           } else {

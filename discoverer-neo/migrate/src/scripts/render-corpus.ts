@@ -54,6 +54,22 @@ function main(): void {
     `  UNEXPLAINED      ${String(report.weightedMismatchedUnexplained).padStart(8)} ${pc(report.weightedMismatchedUnexplained, w).padStart(8)}` +
       `   ${String(report.distinctMismatchedUnexplained).padStart(7)} ${pc(report.distinctMismatchedUnexplained, d).padStart(8)}`,
   );
+  // The gate the phase brief states is >= 99 %, and the committed corpus
+  // cannot reach it: Phase 0.5's anonymiser clobbered rows outright (decoder
+  // spec §11.1), and a clobbered row can never match whatever the renderer
+  // does. The spec's own instruction is to "state the gates against the clean
+  // subset, or rebuild the corpus", and `d4dumps/` is not on this machine, so
+  // the clean subset it is — printed beside the raw rate, never instead of it.
+  const cleanW = w - report.weightedMismatchedDamaged;
+  const cleanD = d - report.distinctMismatchedDamaged;
+  console.log(
+    `\nclean subset (damaged rows excluded)\n` +
+      `exact              ${String(report.weightedAgreed).padStart(8)} ${pc(report.weightedAgreed, cleanW).padStart(8)}` +
+      `   ${String(report.distinctAgreed).padStart(7)} ${pc(report.distinctAgreed, cleanD).padStart(8)}\n` +
+      `denominator        ${String(cleanW).padStart(8)}          ` +
+      `   ${String(cleanD).padStart(7)}`,
+  );
+
   console.log(`\nthrew (a bug):     ${report.distinctThrew}`);
 
   console.log('\nquarantine reasons');
