@@ -1,3 +1,8 @@
+import {
+  AGGREGATE_FUNCTIONS,
+  SCALAR_FUNCTIONS,
+} from '@discoverer-neo/core/semantics';
+
 import { SqlGenerationError } from '../../types/sql.js';
 
 /**
@@ -18,55 +23,20 @@ import { SqlGenerationError } from '../../types/sql.js';
 // Allowlists
 // ---------------------------------------------------------------------------
 
-export const AGGREGATE_FUNCTIONS = new Set([
-  'SUM',
-  'COUNT',
-  'AVG',
-  'MIN',
-  'MAX',
-]);
-
-export const SCALAR_FUNCTIONS = new Set([
-  // string
-  'SUBSTR',
-  'LENGTH',
-  'UPPER',
-  'LOWER',
-  'TRIM',
-  'LTRIM',
-  'RTRIM',
-  'INSTR',
-  'REPLACE',
-  'LPAD',
-  'RPAD',
-  'CONCAT',
-  'INITCAP',
-  // numeric
-  'ROUND',
-  'TRUNC',
-  'FLOOR',
-  'CEIL',
-  'ABS',
-  'MOD',
-  'POWER',
-  'SQRT',
-  'SIGN',
-  // date
-  'ADD_MONTHS',
-  'MONTHS_BETWEEN',
-  'LAST_DAY',
-  'NEXT_DAY',
-  // conversion / null handling
-  'TO_CHAR',
-  'TO_NUMBER',
-  'TO_DATE',
-  'NVL',
-  'NVL2',
-  'COALESCE',
-  'DECODE',
-  'GREATEST',
-  'LEAST',
-]);
+/**
+ * The allowlist is declared once, in `@discoverer-neo/core/semantics`, and
+ * re-exported here so every existing importer is unchanged.
+ *
+ * It moved because Phase 4.2's token renderer needs the same list and lives in
+ * the migrator, which cannot import from this workspace. Copying it there
+ * would have produced two lists that drift — defect BE-09, and the reason the
+ * move happened at all. Do not re-declare a `new Set([...])` of function
+ * names in this file.
+ */
+export {
+  AGGREGATE_FUNCTIONS,
+  SCALAR_FUNCTIONS,
+} from '@discoverer-neo/core/semantics';
 
 /** Zero-argument pseudo-columns allowed as bare references. */
 const SQL_CONSTANTS = new Set(['SYSDATE', 'CURRENT_DATE', 'CURRENT_TIMESTAMP']);

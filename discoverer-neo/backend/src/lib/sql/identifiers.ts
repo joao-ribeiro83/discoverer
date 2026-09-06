@@ -1,3 +1,5 @@
+import { isValidBindName, isValidIdentifier } from '@discoverer-neo/core/semantics';
+
 import { SqlGenerationError } from '../../types/sql.js';
 
 /**
@@ -10,17 +12,13 @@ import { SqlGenerationError } from '../../types/sql.js';
  * through this path; they are always bind variables.
  */
 
-const IDENTIFIER_PATTERN = /^[A-Za-z][A-Za-z0-9_$#]*$/;
-const MAX_IDENTIFIER_LENGTH = 128;
-
-export function isValidIdentifier(name: string): boolean {
-  return (
-    typeof name === 'string' &&
-    name.length > 0 &&
-    name.length <= MAX_IDENTIFIER_LENGTH &&
-    IDENTIFIER_PATTERN.test(name)
-  );
-}
+/**
+ * The pattern itself lives in `@discoverer-neo/core/semantics`, so the Phase
+ * 4.2 token renderer validates identifiers against the same rule rather than
+ * against a copy of it. Re-exported here; the throwing wrappers below stay on
+ * this side, because `SqlGenerationError` is a backend type.
+ */
+export { isValidIdentifier } from '@discoverer-neo/core/semantics';
 
 /** Validate and double-quote an Oracle identifier. */
 export function quoteIdentifier(name: string): string {
@@ -34,7 +32,7 @@ export function quoteIdentifier(name: string): string {
 
 /** Validate a bind parameter name (used after a leading colon). */
 export function validateBindName(name: string): string {
-  if (!/^[A-Za-z][A-Za-z0-9_]*$/.test(name) || name.length > 100) {
+  if (!isValidBindName(name)) {
     throw new SqlGenerationError(
       `Invalid bind parameter name: ${JSON.stringify(name)}`,
     );
