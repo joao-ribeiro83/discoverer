@@ -41,10 +41,14 @@
  */
 
 import type { ParsedDump, DumpEntry, DumpItemUsage } from './d4wkdmp-dump-parser.js';
+import { calculationResolver, expandCalculations } from '../semantics/expand.js';
+import { Quarantined } from '../semantics/render.js';
 import {
   CLASS,
   TAG,
   TAG_ITEM_SOURCE_ID,
+  formatFormulaTree,
+  parseFormulaTree,
   readWorkbookElements,
   type RawElement,
   type ParsedWorkbookDocument,
@@ -129,6 +133,33 @@ export interface SectionReport {
   unmatchedParser: string[];
   fields: Record<string, FieldTally>;
   examples: Mismatch[];
+}
+
+/**
+ * What calculation-reference expansion did to this section (D-056).
+ *
+ * `d4wkdmp` prints `IOFormula` with every referenced calculation's formula
+ * already substituted, so comparing the parser's stored tokens against it
+ * without expanding first counts the *design* as a disagreement — which is
+ * exactly what WB-04's 2 536 "formula disagreements" were.
+ *
+ * `maxDepth` is the deepest chain actually walked across the whole corpus. It
+ * is the number that says whether `MAX_EXPANSION_DEPTH` is a real bound or an
+ * arbitrary one, so it is reported rather than assumed.
+ */
+export interface ExpansionTally {
+  /** Calculations whose formula contained at least one reference. */
+  expanded: number;
+  /** References substituted. */
+  substitutions: number;
+  /** Deepest chain walked. */
+  maxDepth: number;
+  /** Refused — a cycle, or past a bound. Keyed by reason. */
+  refused: Record<string, number>;
+}
+
+export function emptyExpansionTally(): ExpansionTally {
+  return { expanded: 0, substitutions: 0, maxDepth: 0, refused: {} };
 }
 
 const MAX_EXAMPLES_PER_SECTION = 20;
@@ -293,10 +324,40 @@ function diffCalculations(
   dump: ParsedDump,
   doc: ParsedWorkbookDocument,
   byId: Map<number, RawElement>,
-): SectionReport & { matchedVia: { rawId: number; name: number } } {
+): SectionReport & { matchedVia: { rawId: number; name: number }; expansion: ExpansionTally } {
   const dumpCalcs = dump.entries.filter((e): e is Extract<DumpEntry, { type: 'EulPrivateItem' }> =>
     e.type === 'EulPrivateItem',
   );
+
+  // The document's own calculations are what a `[6,n]` may name. Element ids
+  // are document-unique, so a document-wide resolver is exact, not a widening.
+  const resolve = calculationResolver(doc.calculations);
+  const expansion = emptyExpansionTally();
+
+  /**
+   * The parser's tokens, expanded the way the dump printed them.
+   *
+   * A refusal falls back to the unexpanded tokens rather than dropping the
+   * row: the comparison then shows a real disagreement, which is what a cycle
+   * in customer data should look like in a fidelity report.
+   */
+  function expandedTokens(tokens: string | null): string | null {
+    if (tokens === null) return null;
+    const { tree } = parseFormulaTree(tokens);
+    if (tree === null) return tokens;
+    try {
+      const result = expandCalculations(tree, resolve);
+      if (result.substitutions === 0) return tokens;
+      expansion.expanded += 1;
+      expansion.substitutions += result.substitutions;
+      if (result.maxDepth > expansion.maxDepth) expansion.maxDepth = result.maxDepth;
+      return formatFormulaTree(result.node);
+    } catch (err) {
+      if (!(err instanceof Quarantined)) throw err;
+      expansion.refused[err.reason] = (expansion.refused[err.reason] ?? 0) + 1;
+      return tokens;
+    }
+  }
 
   const byRawId = new Map<number, ParsedWorkbookDocument['calculations'][number]>();
   const byName = new Map<string, ParsedWorkbookDocument['calculations'][number]>();
@@ -330,7 +391,7 @@ function diffCalculations(
     else matchedViaName += 1;
     matchedElementIds.add(parserCalc.elementId);
     const key = calc.name ? `${calc.name} (Id=${calc.id})` : `Id=${calc.id}`;
-    tallyField(fields, examples, 'ioFormula', key, calc.ioFormula, parserCalc.tokens, MAX_EXAMPLES_PER_SECTION);
+    tallyField(fields, examples, 'ioFormula', key, calc.ioFormula, expandedTokens(parserCalc.tokens), MAX_EXAMPLES_PER_SECTION);
     // The dump prints the name as written; the parser's `name` may carry a
     // disambiguating `#<elementId>` suffix when worksheet siblings collide
     // (`EUL_SCHEMA_GROUND_TRUTH.md` §7.7), so the raw label is what compares.
@@ -357,6 +418,7 @@ function diffCalculations(
     fields,
     examples,
     matchedVia: { rawId: matchedViaRawId, name: matchedViaName },
+    expansion,
   };
 }
 
@@ -1030,7 +1092,10 @@ export const FIELDS_NOT_YET_PRODUCED: Readonly<Record<string, readonly string[]>
 export interface DumpDiffReport {
   items: SectionReport;
   functions: SectionReport;
-  calculations: SectionReport & { matchedVia: { rawId: number; name: number } };
+  calculations: SectionReport & {
+    matchedVia: { rawId: number; name: number };
+    expansion: ExpansionTally;
+  };
   privateFilters: SectionReport & { matchedVia: { sql: number; name: number } };
   parameters: SectionReport;
   /** `EUL Sort Item Reference` — direction and the item sorted on. */
@@ -1087,5 +1152,17 @@ export function mergeFieldTallies(
     t.disagree += tally.disagree;
     t.onlyInDump += tally.onlyInDump;
     t.onlyInParser += tally.onlyInParser;
+  }
+}
+
+/** Fold one workbook's expansion tally into a corpus-wide one. */
+export function mergeExpansionTallies(into: ExpansionTally, from: ExpansionTally): void {
+  into.expanded += from.expanded;
+  into.substitutions += from.substitutions;
+  // Depth is a maximum across the corpus, not a sum — it answers "how deep did
+  // this ever have to go", which is the number the bound is checked against.
+  if (from.maxDepth > into.maxDepth) into.maxDepth = from.maxDepth;
+  for (const [reason, count] of Object.entries(from.refused)) {
+    into.refused[reason] = (into.refused[reason] ?? 0) + count;
   }
 }

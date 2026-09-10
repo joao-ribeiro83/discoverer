@@ -472,3 +472,96 @@ describe('diffWorkbookDump — an item the query names but no column draws', () 
     expect(sheet.distinct).toEqual({ agree: 1, disagree: 0, onlyInDump: 0, onlyInParser: 0 });
   });
 });
+
+/**
+ * A calculation that names another calculation (D-056, WB-04).
+ *
+ * `d4wkdmp` prints `IOFormula` with the referenced calculation's formula
+ * already substituted, recursively. Comparing the parser's stored tokens
+ * against that without expanding first counts Oracle's own design as a
+ * disagreement — which is all 2 536 of WB-04's "formula disagreements" were.
+ */
+describe('diffWorkbookDump — a calculation that references another calculation', () => {
+  const rawBytes = (() => {
+    const b = new WorkbookFixtureBuilder();
+    b.element(FIXTURE_CLASS.ITEM_REF) // #1
+      .string(FIXTURE_TAG.ITEM_NAME, 'WIDGET_PRICE')
+      .string(FIXTURE_TAG.ITEM_LABEL, 'Widget Price')
+      .string(FIXTURE_TAG.FOLDER_NAME, 'F_WIDGETS')
+      .string(FIXTURE_TAG.FOLDER_LABEL, 'F Widgets');
+
+    b.element(FIXTURE_CLASS.CALCULATION) // #2 — WITH TAX = price * 1.23
+      .string(FIXTURE_TAG.ITEM_LABEL, 'WITH TAX')
+      .string(FIXTURE_TAG.CALC_FORMULA, '[1,96]([6,1],[5,2,"1.23"])')
+      .int32(FIXTURE_NUMBER.ITEM_SOURCE_ID.type, FIXTURE_NUMBER.ITEM_SOURCE_ID.tag, -901);
+
+    b.element(FIXTURE_CLASS.CALCULATION) // #3 — ROUNDED = TRUNC(WITH TAX)
+      .string(FIXTURE_TAG.ITEM_LABEL, 'ROUNDED')
+      .string(FIXTURE_TAG.CALC_FORMULA, '[1,49]([6,2])')
+      .int32(FIXTURE_NUMBER.ITEM_SOURCE_ID.type, FIXTURE_NUMBER.ITEM_SOURCE_ID.tag, -902);
+
+    // A worksheet, so the calculations belong to one — the parser reads them
+    // per worksheet, not off the element table alone.
+    b.element(FIXTURE_CLASS.COLUMN) // #4 — shows calc #3
+      .int32(FIXTURE_NUMBER.COLUMN_ITEM_REF.type, FIXTURE_NUMBER.COLUMN_ITEM_REF.tag, 3)
+      .number(FIXTURE_TYPE.INT32, FIXTURE_TAG.COLUMN_AXIS_TYPE, 0);
+    b.element(FIXTURE_CLASS.QUERY_REQUEST) // #5
+      .number(FIXTURE_TYPE.UINT8_ALT, FIXTURE_TAG.QUERY_DISTINCT, 0)
+      .refVector(FIXTURE_TAG.QUERY_AXIS_ITEMS, [1])
+      .refVector(FIXTURE_TAG.QUERY_MEASURE_ITEMS, [2, 3]);
+    b.element(FIXTURE_CLASS.QUERY_LINK).ref(FIXTURE_TAG.QUERY_LINK_REF, 5); // #6
+    b.element(FIXTURE_CLASS.SHEET_LAYOUT) // #7
+      .refVector(FIXTURE_TAG.LAYOUT_COLUMNS, [4])
+      .vector(FIXTURE_TYPE.INT32_ALT, FIXTURE_TAG.LAYOUT_QUERY_LINKS, [6]);
+    b.element(FIXTURE_CLASS.VIEW_TABLE); // #8
+    b.element(FIXTURE_CLASS.WORKSHEET) // #9
+      .string(FIXTURE_TAG.WORKSHEET_NAME, 'Tax')
+      .number(FIXTURE_TYPE.INT32_ALT, FIXTURE_TAG.WORKSHEET_LAYOUT_REF, 7)
+      .number(FIXTURE_TYPE.INT32_ALT, FIXTURE_TAG.WORKSHEET_VIEW_REF, 8);
+
+    return b.build();
+  })();
+
+  const dumpText = [
+    ' EUL Item Reference',
+    '\t\tIoId = 1',
+    '\t\tId = 100812',
+    '\t\tIdentifier = WIDGET_PRICE',
+    '\t\tName = Widget Price',
+    '\t\tFolder Identifier = F_WIDGETS',
+    '\t\tFolder Name = F Widgets',
+    ' EUL Private Item',
+    '\t\tId = -901',
+    '\t\tName = WITH TAX',
+    '\t\tIOFormula = [1,96]([6,1],[5,2,"1.23"])',
+    ' EUL Private Item',
+    '\t\tId = -902',
+    '\t\tName = ROUNDED',
+    // Oracle substituted WITH TAX's formula in place of the `[6,2]` reference.
+    '\t\tIOFormula = [1,49]([1,96]([6,1],[5,2,"1.23"]))',
+    '',
+  ].join('\n');
+
+  const report = diffWorkbookDump(
+    parseD4wkdmpDump(dumpText),
+    parseWorkbookDocument(rawBytes),
+    rawBytes,
+  );
+
+  it('agrees on the formula once the reference is expanded, as Oracle expanded it', () => {
+    expect(report.calculations.matched).toBe(2);
+    expect(report.calculations.fields.ioFormula).toEqual({
+      agree: 2,
+      disagree: 0,
+      onlyInDump: 0,
+      onlyInParser: 0,
+    });
+  });
+
+  it('reports what expansion did, and how deep it had to go', () => {
+    expect(report.calculations.expansion.expanded).toBe(1);
+    expect(report.calculations.expansion.substitutions).toBe(1);
+    expect(report.calculations.expansion.maxDepth).toBe(1);
+    expect(report.calculations.expansion.refused).toEqual({});
+  });
+});
