@@ -29,7 +29,14 @@ import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { parseD4wkdmpDump } from '../services/d4wkdmp-dump-parser.js';
-import { diffWorkbookDump, mergeFieldTallies, type FieldTally } from '../services/d4wkdmp-differ.js';
+import {
+  diffWorkbookDump,
+  emptyExpansionTally,
+  mergeExpansionTallies,
+  mergeFieldTallies,
+  type FieldTally,
+} from '../services/d4wkdmp-differ.js';
+import { MAX_EXPANSION_DEPTH } from '../semantics/expand.js';
 import { parseWorkbookDocument } from '../services/workbook-parser.js';
 import {
   createExecutor,
@@ -176,7 +183,14 @@ async function main(): Promise<void> {
   const aggregate = {
     items: { fields: {} as Record<string, FieldTally>, dumpTotal: 0, matched: 0 },
     functions: { fields: {} as Record<string, FieldTally>, dumpTotal: 0, matched: 0 },
-    calculations: { fields: {} as Record<string, FieldTally>, dumpTotal: 0, matched: 0, viaRawId: 0, viaName: 0 },
+    calculations: {
+      fields: {} as Record<string, FieldTally>,
+      dumpTotal: 0,
+      matched: 0,
+      viaRawId: 0,
+      viaName: 0,
+      expansion: emptyExpansionTally(),
+    },
     privateFilters: { fields: {} as Record<string, FieldTally>, dumpTotal: 0, matched: 0, viaSql: 0, viaName: 0 },
     parameters: { fields: {} as Record<string, FieldTally>, dumpTotal: 0, matched: 0 },
     sorts: { fields: {} as Record<string, FieldTally>, dumpTotal: 0, matched: 0 },
@@ -232,6 +246,7 @@ async function main(): Promise<void> {
       aggregate.calculations.matched += report.calculations.matched;
       aggregate.calculations.viaRawId += report.calculations.matchedVia.rawId;
       aggregate.calculations.viaName += report.calculations.matchedVia.name;
+      mergeExpansionTallies(aggregate.calculations.expansion, report.calculations.expansion);
       mergeFieldTallies(aggregate.calculations.fields, report.calculations.fields);
 
       aggregate.privateFilters.dumpTotal += report.privateFilters.dumpCount;
@@ -307,6 +322,20 @@ async function main(): Promise<void> {
   printSectionSummary('Custom functions (EUL Function Reference, IoId-correlated)', aggregate.functions.dumpTotal, aggregate.functions.matched, aggregate.functions.fields);
   console.log(`  matched via raw synthetic id: ${aggregate.calculations.viaRawId}, via name: ${aggregate.calculations.viaName}`);
   printSectionSummary('Calculations (EUL Private Item, id-correlated)', aggregate.calculations.dumpTotal, aggregate.calculations.matched, aggregate.calculations.fields);
+  // The `ioFormula` tally above is measured against EXPANDED tokens (D-056).
+  // These three numbers are what makes that comparison auditable: how much
+  // expansion did, how deep it actually had to go, and what it refused.
+  const exp = aggregate.calculations.expansion;
+  console.log(
+    `  expansion: ${exp.expanded} calculation(s) expanded, ${exp.substitutions} reference(s) substituted, ` +
+      `deepest chain ${exp.maxDepth} (bound ${MAX_EXPANSION_DEPTH})`,
+  );
+  const refusals = Object.entries(exp.refused);
+  console.log(
+    refusals.length === 0
+      ? '  expansion refused: none'
+      : `  expansion refused: ${refusals.map(([r, n]) => `${r} x${n}`).join(', ')}`,
+  );
   console.log(`  matched via sql text: ${aggregate.privateFilters.viaSql}, via name: ${aggregate.privateFilters.viaName}`);
   printSectionSummary('Private filters (EUL Private Filter, name-correlated)', aggregate.privateFilters.dumpTotal, aggregate.privateFilters.matched, aggregate.privateFilters.fields);
   printSectionSummary('Parameters (name-correlated)', aggregate.parameters.dumpTotal, aggregate.parameters.matched, aggregate.parameters.fields);
