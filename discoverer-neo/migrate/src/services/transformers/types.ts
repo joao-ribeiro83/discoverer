@@ -574,6 +574,22 @@ export interface TransformedMapCalculatedField {
    * uncompilable once the `.DIS` is out of reach.
    */
   sourceAttrs: Record<string, unknown> | null;
+  /**
+   * WB-05 — `map_calculated_fields.data_type`, the calculation's own `DataType`
+   * (`0x00e3`): `TEXT` | `NUMBER` | `DATE`.
+   *
+   * Four columns of this table were declared, documented and then never
+   * written, because the mapper that builds these rows listed only the fields
+   * it happened to need. A calculated field with no data type renders with no
+   * format and exports as text, and nothing failed to say so.
+   */
+  dataType: string | null;
+  /** `map_calculated_fields.description` — `Desc` (`0x00df`). */
+  description: string | null;
+  /** `map_calculated_fields.format_mask` — the calculation's own `0x00e8`. */
+  formatMask: string | null;
+  /** `map_calculated_fields.source_identifier` — `Identifier` (`0x0fa0`). */
+  sourceIdentifier: string | null;
   displayOrder: number;
   /**
    * `map_calculated_fields.axis_type` — the calculation's own `Placement`
