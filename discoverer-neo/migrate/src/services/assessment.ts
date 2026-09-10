@@ -127,6 +127,13 @@ export interface MigrationEstimate {
  * The fix is not to teach it about the target. It is to stop it speaking about
  * one. Every rating names the source, and `dn-migrate verify` is the gate on
  * whether a migration is usable.
+ *
+ * Phase 4.5 is where that gate acquired teeth about formulas, and it went into
+ * the verifier rather than here for the same reason. `VerifyReport.blockers`
+ * carries both seam failures and readiness blockers — a `FAILED` formula and a
+ * `QUARANTINED` one both stop the report reading VERIFIED — so the question
+ * "is this migration ready" has exactly one answer, computed where the target
+ * is actually in scope. See `migration-verify.ts`, seam 2.
  */
 export type SourceReadinessRating =
   | 'source-clean'
