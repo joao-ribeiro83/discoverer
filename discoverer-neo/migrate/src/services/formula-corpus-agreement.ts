@@ -21,14 +21,13 @@
 
 import { readFileSync } from 'node:fs';
 
-import { builtinCode } from '../semantics/builtin-codes.js';
 import {
   DISPLAY_NAME_MARK,
   displayMatches,
   Quarantined,
   renderDisplay,
 } from '../semantics/render.js';
-import { parseFormulaTree, type FormulaNode } from './workbook-parser.js';
+import { parseFormulaTree } from './workbook-parser.js';
 
 /**
  * Render a stored formula into its display form, or return null for "I do not
@@ -251,7 +250,52 @@ export function isAnonymiserDamage(rendered: string, display: string): boolean {
   return false;
 }
 
+/**
+ * The D-059 bucket vocabulary, applied to the committed corpus.
+ *
+ * The gate is a partition with reasons, not a percentage. A bare compile rate
+ * is this project's signature failure mode — three separate mechanisms have
+ * reported success over a system that did not work — so every corpus row lands
+ * in exactly one of four buckets and the counts must sum to the whole.
+ *
+ * Read against what the corpus actually is:
+ *
+ * - `COMPILED` — rendered, and it reproduces the string Discoverer showed.
+ *   This corpus *has* a reference rendering for every row, which is why the
+ *   bucket is reachable here at all; the verifier's own partition over the
+ *   49 819 stored formulas has no reference and so tops out at
+ *   `COMPILED_UNVERIFIED` until the Phase 9.1 Oracle contract tests exist.
+ * - `COMPILED_UNVERIFIED` — rendered, but Phase 0.5's anonymiser destroyed the
+ *   reference (`isAnonymiserDamage`), so there is nothing left to check it
+ *   against. Not a pass and not a defect: an unverifiable row.
+ * - `QUARANTINED` — refused, with one of the enumerated reasons.
+ * - `FAILED` — **must be zero.** Two ways in, and both are our bug rather than
+ *   the data's: an exception that is not a stated refusal, and a rendering
+ *   that contradicts a reference the anonymiser left intact. The second is the
+ *   dangerous one — it means a tree was read wrongly, and something already
+ *   migrated may be a wrong number.
+ *
+ * Calculation-reference expansion (D-056) does not appear here: a corpus row
+ * is one formula with no worksheet around it, so there is no calculation set
+ * for a `[6,n]` to resolve into. Expansion is measured by the differ, against
+ * dumps, where the reference set exists.
+ */
+export type FormulaBucket = 'COMPILED' | 'COMPILED_UNVERIFIED' | 'QUARANTINED' | 'FAILED';
+
+export interface BucketCounts {
+  rows: number;
+  occurrences: number;
+}
+
+export type BucketPartition = Record<FormulaBucket, BucketCounts>;
+
 export interface RenderReport extends AgreementResult {
+  /**
+   * Every row in exactly one bucket. `rows` sums to `distinctPairs` and
+   * `occurrences` to `totalOccurrences`; `formula-corpus-agreement.test.ts`
+   * asserts both, so a bucket cannot be quietly dropped from the partition.
+   */
+  buckets: BucketPartition;
   /** Weighted occurrences behind each refusal reason, largest first. */
   quarantineHistogram: { reason: string; rows: number; occurrences: number }[];
   /** Rendered, but not the string Discoverer showed. */
@@ -312,6 +356,17 @@ export function reportRendering(rows: readonly CorpusRow[], sampleLimit = 10): R
   let weightedMismatchedDamaged = 0;
   const unexplained: AgreementSample[] = [];
 
+  const buckets: BucketPartition = {
+    COMPILED: { rows: 0, occurrences: 0 },
+    COMPILED_UNVERIFIED: { rows: 0, occurrences: 0 },
+    QUARANTINED: { rows: 0, occurrences: 0 },
+    FAILED: { rows: 0, occurrences: 0 },
+  };
+  const put = (bucket: FormulaBucket, occurrences: number): void => {
+    buckets[bucket].rows += 1;
+    buckets[bucket].occurrences += occurrences;
+  };
+
   for (const row of rows) {
     const { tree } = parseFormulaTree(row.io);
     let reason: string | null = null;
@@ -320,13 +375,19 @@ export function reportRendering(rows: readonly CorpusRow[], sampleLimit = 10): R
     } else {
       try {
         const rendered = renderDisplay(tree);
-        if (!displayMatches(rendered, row.display)) {
+        if (displayMatches(rendered, row.display)) {
+          put('COMPILED', row.occurrences);
+        } else {
           distinctMismatched += 1;
           weightedMismatched += row.occurrences;
           if (isAnonymiserDamage(rendered, row.display)) {
             distinctMismatchedDamaged += 1;
             weightedMismatchedDamaged += row.occurrences;
+            // Rendered, but the reference it would be checked against is gone.
+            put('COMPILED_UNVERIFIED', row.occurrences);
           } else {
+            // Rendered, and it contradicts an intact reference. That is a bug.
+            put('FAILED', row.occurrences);
             unexplained.push({
               ioFormula: row.io,
               expected: row.display,
@@ -336,11 +397,18 @@ export function reportRendering(rows: readonly CorpusRow[], sampleLimit = 10): R
           }
         }
       } catch (err) {
-        if (!(err instanceof Quarantined)) throw err;
-        reason = err.reason;
+        if (err instanceof Quarantined) {
+          reason = err.reason;
+        } else {
+          // An unhandled path. Bucketed rather than rethrown, so the report
+          // stays a partition and CI fails on the assertion that says why,
+          // instead of on a stack trace that says where.
+          put('FAILED', row.occurrences);
+        }
       }
     }
     if (reason !== null) {
+      put('QUARANTINED', row.occurrences);
       const seen = byReason.get(reason) ?? { rows: 0, occurrences: 0 };
       seen.rows += 1;
       seen.occurrences += row.occurrences;
@@ -355,6 +423,7 @@ export function reportRendering(rows: readonly CorpusRow[], sampleLimit = 10): R
 
   return {
     ...agreement,
+    buckets,
     cleanTotalOccurrences,
     cleanDistinctPairs,
     cleanWeightedRate: rate(agreement.weightedAgreed, cleanTotalOccurrences),
