@@ -81,25 +81,12 @@ export const RE_AGGREGATE: Readonly<Record<string, 'SUM' | 'MIN' | 'MAX'>> = {
  * Aggregates that cannot cross a fan and are refused rather than approximated
  * (D-035, `legacy-analysis.md` §1.9.1).
  *
- * `AVG` cannot re-aggregate at all without carrying `SUM` and `COUNT`
- * separately — Oracle says Discoverer decomposed it internally, but says so
- * about a different feature, so reproducing it here would be a guess about
- * money. `COUNT DISTINCT` is not re-aggregatable by any decomposition:
- * distinct counts of overlapping sets do not add. `STDDEV` and `VARIANCE` are
- * the same problem with more arithmetic.
- *
- * **This is ordinary user behaviour, not an edge case** — the estate carries
- * 282 `COUNT DISTINCT` totals. The refusal has to explain itself (D-036).
+ * Declared once, in `@discoverer-neo/core/semantics`, where the reasoning for
+ * each name lives — the renderer refuses the same set with the same reason and
+ * a second copy here is how the two drift apart (BE-09). Re-exported under the
+ * name the planner has always used.
  */
-export const UNREAGGREGATABLE: ReadonlySet<string> = new Set([
-  'AVG',
-  'COUNT DISTINCT',
-  'COUNT_DISTINCT',
-  'STDDEV',
-  'VARIANCE',
-  'VAR',
-  'MEDIAN',
-]);
+export { UNREAGGREGABLE_FUNCTIONS as UNREAGGREGATABLE } from '@discoverer-neo/core/semantics';
 
 /** One measure, with the aggregate it applies and the one that re-applies. */
 export interface PlanMeasure {

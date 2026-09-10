@@ -26,7 +26,7 @@
  *   docker exec -e ORACLE_THICK_MODE=true discoverer-neo-backend \
  *     sh -c 'cd /app/backend && /app/node_modules/.bin/tsx src/scripts/verify-fan-trap-m67.ts'
  */
-import { and, eq, inArray } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 
 import { db, pool } from '../db/index.js';
 import { folders, items, joins, joinPredicates } from '../db/schema.js';
@@ -120,7 +120,7 @@ const condition = {
   logicOperator: 'AND',
   displayOrder: 0,
   createdAt: now,
-} as unknown as MapDefinition['conditions'][number]['condition'];
+};
 
 const def: MapDefinition = {
   map: {

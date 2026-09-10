@@ -64,12 +64,30 @@ export const SCALAR_FUNCTIONS = new Set([
  * Aggregates the fan-trap planner cannot re-aggregate over a rewritten
  * sub-query. A formula carrying one is refused (`UNREAGGREGABLE`, D-058)
  * rather than rewritten into a wrong number.
+ *
+ * `AVG` cannot re-aggregate at all without carrying `SUM` and `COUNT`
+ * separately — Oracle says Discoverer decomposed it internally, but says so
+ * about a different feature, so reproducing it here would be a guess about
+ * money. `COUNT DISTINCT` is not re-aggregatable by any decomposition:
+ * distinct counts of overlapping sets do not add. `STDDEV`, `VARIANCE` and
+ * `MEDIAN` are the same problem with more arithmetic. This is ordinary user
+ * behaviour, not an edge case — the estate carries 282 `COUNT DISTINCT`
+ * totals — so the refusal has to explain itself (D-035, D-036).
+ *
+ * Both spellings of `COUNT DISTINCT` are here, and the abbreviated `VAR`,
+ * because a measure's stored aggregate reaches this set as free text and both
+ * forms occur. This list used to be declared twice, differing in exactly those
+ * three names — defect BE-09 again — with `query-plan.ts` holding the fuller
+ * one. That one won, and `query-plan.ts` now re-exports this.
  */
 export const UNREAGGREGABLE_FUNCTIONS = new Set([
   'AVG',
+  'COUNT DISTINCT',
   'COUNT_DISTINCT',
   'STDDEV',
   'VARIANCE',
+  'VAR',
+  'MEDIAN',
 ]);
 
 /** True when `name` may be emitted into SQL at all. */
