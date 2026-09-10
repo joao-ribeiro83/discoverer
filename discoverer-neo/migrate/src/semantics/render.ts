@@ -73,7 +73,21 @@ export type QuarantineReason =
    */
   | 'UNKNOWN_SEMANTICS'
   /** The token string is not a readable tree. */
-  | 'PARSE_FAILED';
+  | 'PARSE_FAILED'
+  /**
+   * A `[6,n]` calculation reference that reaches itself, directly or through
+   * other calculations. Refused with the chain named, never a stack overflow.
+   */
+  | 'CALCULATION_CYCLE'
+  /** A calculation-reference chain longer than the expansion bound allows. */
+  | 'EXPANSION_TOO_DEEP'
+  /**
+   * Expansion produced more nodes than the bound allows. A reference graph may
+   * be acyclic and still expand exponentially — the diamond `d -> c -> b -> a`
+   * where each level names the one below it twice — so depth alone does not
+   * bound the work.
+   */
+  | 'EXPANSION_TOO_LARGE';
 
 export class Quarantined extends Error {
   constructor(
