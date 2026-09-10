@@ -1110,6 +1110,11 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
           sourceTokens: calc.sourceTokens,
           sourceElementId: calc.sourceElementId,
           sourceAttrs: calc.sourceAttrs,
+          // WB-05 — four declared columns the mapper used to drop.
+          dataType: calc.dataType,
+          description: calc.description,
+          formatMask: calc.formatMask,
+          sourceIdentifier: calc.sourceIdentifier,
           displayOrder: calc.displayOrder,
           axisType: calc.axisType,
           isHidden: calc.isHidden,

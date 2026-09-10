@@ -892,7 +892,18 @@ describe('transformWorkbook', () => {
         { folderLabel: 'Vendas', itemLabel: 'Custo', sourceId: 104 },
       ],
       calculations: [
-        { name: 'Margem', formula: '[1,1]([6,3])', placement: 1, hidden: false },
+        {
+          name: 'Margem',
+          formula: '[1,1]([6,3])',
+          placement: 1,
+          hidden: false,
+          // WB-05 / D-055: all four of these were read by the parser and
+          // dropped by the transformer before Phase 4.5.
+          dataType: 2,
+          description: 'Margem bruta',
+          formatMask: '999G999D00',
+          identifier: '41',
+        },
         { name: 'Nao Usada', formula: '[1,1]([6,4])', placement: 0, hidden: true },
       ],
       worksheets: [
@@ -960,6 +971,34 @@ describe('transformWorkbook', () => {
       // it is not a third axis.
       expect.objectContaining({ name: 'Nao Usada', axisType: null, isHidden: true }),
     ]);
+  });
+
+  it('keeps the token form beside the readable one, with its element bindings', () => {
+    // D-055. `formula` has names substituted into it and cannot be re-parsed,
+    // so without these two a formula can only be compiled by the run that
+    // read the `.DIS` — and improving the renderer would mean re-migrating.
+    const [map] = transformWorkbook(workbook({ content: layoutWorkbook() }), 'EUL4');
+    expect(map?.calculatedFields[0]).toMatchObject({
+      // `[1,1]` is SUM and is left as a code — which is exactly why `formula`
+      // is a reader's string and not a compilable one.
+      formula: '[1,1](Regiao)',
+      sourceTokens: '[1,1]([6,3])',
+      sourceAttrs: {
+        elementBindings: { items: { '3': 'Regiao' }, parameters: {}, functions: {} },
+      },
+    });
+  });
+
+  it('writes the four calculated-field columns the transformer used to drop (WB-05)', () => {
+    const [map] = transformWorkbook(workbook({ content: layoutWorkbook() }), 'EUL4');
+    expect(map?.calculatedFields[0]).toMatchObject({
+      // `data_type` was NULL on all 49 819 rows: a calculated column with no
+      // data type renders unformatted and exports as text.
+      dataType: 'NUMBER',
+      description: 'Margem bruta',
+      formatMask: '999G999D00',
+      sourceIdentifier: '41',
+    });
   });
 
   it('migrates a worksheet whose layout did not decode exactly as it did before', () => {

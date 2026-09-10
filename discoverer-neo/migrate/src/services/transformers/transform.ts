@@ -1040,6 +1040,15 @@ export function transformWorkbook(
         sourceTokens: calculation.tokens,
         sourceElementId: calculation.elementId,
         sourceAttrs: { elementBindings: calculation.elementBindings },
+        // WB-05. These four columns were declared and documented on
+        // `map_calculated_fields` and then never written, because this mapper
+        // listed only the fields it happened to need. The parser has read all
+        // four all along — `data_type` decides whether a calculated column
+        // renders as a number, a date or plain text.
+        dataType: calculation.dataType,
+        description: calculation.description,
+        formatMask: calculation.formatMask,
+        sourceIdentifier: calculation.identifier,
         displayOrder: index,
         // `Placement` and `Hidden` are the calculation element's own fields —
         // both printed by `d4wkdmp -f` and agreeing with it on all 41 982
