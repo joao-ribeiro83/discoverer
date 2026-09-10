@@ -27,6 +27,7 @@ import {
   Quarantined,
   renderDisplay,
 } from '../semantics/render.js';
+import type { FormulaBucket } from './formula-compile.js';
 import { parseFormulaTree } from './workbook-parser.js';
 
 /**
@@ -280,7 +281,12 @@ export function isAnonymiserDamage(rendered: string, display: string): boolean {
  * for a `[6,n]` to resolve into. Expansion is measured by the differ, against
  * dumps, where the reference set exists.
  */
-export type FormulaBucket = 'COMPILED' | 'COMPILED_UNVERIFIED' | 'QUARANTINED' | 'FAILED';
+/**
+ * The D-059 vocabulary itself lives in `formula-compile.ts`, beside the
+ * classifier that assigns it. One declaration, for BE-09's reason: three
+ * copies of the same union is three things that can drift apart.
+ */
+export type { FormulaBucket };
 
 export interface BucketCounts {
   rows: number;
