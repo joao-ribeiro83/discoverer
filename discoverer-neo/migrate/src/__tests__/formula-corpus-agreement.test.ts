@@ -9,6 +9,7 @@ import {
   reportRendering,
   NO_RENDERER,
   TOKEN_RENDERER,
+  type BucketPartition,
   type FormulaRenderer,
 } from '../services/formula-corpus-agreement.js';
 import { displayMatches } from '../semantics/render.js';
@@ -46,6 +47,8 @@ interface Baseline {
   cleanTotalOccurrences: number;
   /** The Phase 4.3 acceptance criterion, against the clean subset. */
   cleanPhaseGate: number;
+  /** The Phase 4.4 gate: the D-059 partition, ratcheted per bucket. */
+  buckets: BucketPartition;
   renderer: string;
   measuredAt: string;
   comparison: string;
@@ -132,6 +135,86 @@ describe('formula corpus agreement gate', () => {
     for (const entry of report.quarantineHistogram) {
       expect(entry.reason).not.toBe('');
     }
+  });
+
+  describe('the D-059 four-bucket partition — the gate CI runs', () => {
+    const report = reportRendering(rows, 0);
+
+    it('puts every row in exactly one bucket', () => {
+      // The property that makes the partition a gate rather than a summary. If
+      // a row could fall out of all four, `FAILED = 0` would be satisfiable by
+      // losing the failures instead of fixing them.
+      const rowSum = Object.values(report.buckets).reduce((n, b) => n + b.rows, 0);
+      const occSum = Object.values(report.buckets).reduce((n, b) => n + b.occurrences, 0);
+      expect(rowSum).toBe(report.distinctPairs);
+      expect(occSum).toBe(report.totalOccurrences);
+    });
+
+    it('asserts FAILED = 0', () => {
+      // Not a ceiling. A FAILED row is either an unhandled path or a rendering
+      // that contradicts an intact reference, and both are our bug.
+      expect(report.buckets.FAILED).toEqual({ rows: 0, occurrences: 0 });
+    });
+
+    it('agrees with the rates measured independently', () => {
+      // COMPILED is the same population `measureAgreement` calls agreed. The
+      // two are computed by different loops, so they cross-check each other.
+      expect(report.buckets.COMPILED.rows).toBe(report.distinctAgreed);
+      expect(report.buckets.COMPILED.occurrences).toBe(report.weightedAgreed);
+      // Unverifiable is exactly the anonymiser's damage, by construction.
+      expect(report.buckets.COMPILED_UNVERIFIED.rows).toBe(report.distinctMismatchedDamaged);
+      // Quarantined is exactly the histogram it reports reasons for.
+      expect(report.buckets.QUARANTINED.occurrences).toBe(
+        report.quarantineHistogram.reduce((n, e) => n + e.occurrences, 0),
+      );
+    });
+
+    it('does not regress against the recorded bucket baseline', () => {
+      // The ratchet, in the direction each bucket is allowed to move: more
+      // COMPILED and fewer of everything else. Raise the baseline by hand in
+      // the same commit that improves it, exactly as the rates above.
+      expect(report.buckets.COMPILED.occurrences).toBeGreaterThanOrEqual(
+        baseline.buckets.COMPILED.occurrences,
+      );
+      expect(report.buckets.QUARANTINED.occurrences).toBeLessThanOrEqual(
+        baseline.buckets.QUARANTINED.occurrences,
+      );
+      expect(report.buckets.COMPILED_UNVERIFIED.occurrences).toBeLessThanOrEqual(
+        baseline.buckets.COMPILED_UNVERIFIED.occurrences,
+      );
+    });
+
+    it('fails a deliberate regression rather than absorbing it', () => {
+      // The gate is only worth running if it bites. Two rows, hand-made:
+      //
+      //   1+2 against "1+2"    — renders and matches            -> COMPILED
+      //   1+2 against "1+2+9"  — renders, every anchor the      -> FAILED
+      //                          renderer wrote is present and
+      //                          in order, so the anonymiser
+      //                          cannot account for the extra
+      //                          text; something was read wrongly
+      //
+      // That second row is exactly what a renderer defect looks like, and it
+      // must land in FAILED, not be filed as unverifiable damage.
+      const regressed = reportRendering(
+        [
+          { occurrences: 5, io: '[1,94]([5,2,"1"],[5,2,"2"])', display: '1+2' },
+          { occurrences: 7, io: '[1,94]([5,2,"1"],[5,2,"2"])', display: '1+2+9' },
+        ],
+        0,
+      );
+      expect(regressed.buckets.COMPILED).toEqual({ rows: 1, occurrences: 5 });
+      expect(regressed.buckets.FAILED).toEqual({ rows: 1, occurrences: 7 });
+      // And the assertion CI runs would reject it.
+      expect(regressed.buckets.FAILED).not.toEqual(baseline.buckets.FAILED);
+    });
+
+    it('names a reason for every quarantined row', () => {
+      // `QUARANTINED(reason)`, not `QUARANTINED`. A refusal with no stated
+      // reason is indistinguishable from a failure nobody looked at.
+      const named = report.quarantineHistogram.reduce((n, e) => n + e.rows, 0);
+      expect(named).toBe(report.buckets.QUARANTINED.rows);
+    });
   });
 
   it('measures both rates, because they answer different questions', () => {

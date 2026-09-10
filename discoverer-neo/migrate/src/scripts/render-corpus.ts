@@ -72,6 +72,36 @@ function main(): void {
 
   console.log(`\nthrew (a bug):     ${report.distinctThrew}`);
 
+  // The D-059 partition. This is the gate, and it is deliberately printed as
+  // four counts that sum to the whole rather than as one rate.
+  console.log('\nbuckets (D-059)         rows              occurrences');
+  for (const name of ['COMPILED', 'COMPILED_UNVERIFIED', 'QUARANTINED', 'FAILED'] as const) {
+    const b = report.buckets[name];
+    console.log(
+      `  ${name.padEnd(22)}${String(b.rows).padStart(6)} ${pc(b.rows, d).padStart(8)}` +
+        `   ${String(b.occurrences).padStart(8)} ${pc(b.occurrences, w).padStart(8)}`,
+    );
+  }
+  const bucketRows = Object.values(report.buckets).reduce((n, b) => n + b.rows, 0);
+  const bucketOcc = Object.values(report.buckets).reduce((n, b) => n + b.occurrences, 0);
+  console.log(
+    `  ${'(sum)'.padEnd(22)}${String(bucketRows).padStart(6)} of ${d}` +
+      `   ${String(bucketOcc).padStart(8)} of ${w}`,
+  );
+
+  // The script is a gate as well as a report, so CI fails on the step rather
+  // than only on a test somebody has to go and read. Both conditions matter:
+  // a non-empty FAILED bucket is a bug, and a partition that does not sum is a
+  // FAILED bucket somebody could have emptied by losing rows out of it.
+  if (report.buckets.FAILED.rows > 0) {
+    console.error(`\nFAILED bucket is not empty: ${report.buckets.FAILED.rows} row(s). D-059.`);
+    process.exitCode = 1;
+  }
+  if (bucketRows !== d || bucketOcc !== w) {
+    console.error(`\nbuckets do not partition the corpus: ${bucketRows}/${d}, ${bucketOcc}/${w}.`);
+    process.exitCode = 1;
+  }
+
   console.log('\nquarantine reasons');
   for (const entry of report.quarantineHistogram) {
     console.log(
