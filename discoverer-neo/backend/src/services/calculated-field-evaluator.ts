@@ -18,6 +18,12 @@
  * SYSDATE (which would be non-deterministic) — those belong in SQL.
  */
 
+import {
+  AGGREGATE_FUNCTIONS,
+  SCALAR_FUNCTIONS,
+  UNREAGGREGABLE_FUNCTIONS,
+} from '@discoverer-neo/core/semantics';
+
 // ---------------------------------------------------------------------------
 // Errors
 // ---------------------------------------------------------------------------
@@ -36,58 +42,34 @@ export class CalculatedFieldError extends Error {
 // Allowlists
 // ---------------------------------------------------------------------------
 
-/** Aggregates are meaningless row-by-row; named explicitly for a clear error. */
-const AGGREGATE_FUNCTIONS = new Set([
-  'SUM',
-  'COUNT',
-  'AVG',
-  'MIN',
-  'MAX',
-  'STDDEV',
-  'VARIANCE',
-  'MEDIAN',
-]);
+/**
+ * The allowlist, and it is not declared here.
+ *
+ * This evaluator used to carry its own copy of both sets, and they had drifted
+ * from the ones the SQL path enforces — defect BE-09. A calculated field is
+ * one language whether it is evaluated in this process or emitted as Oracle
+ * SQL, so it gets one allowlist: `@discoverer-neo/core/semantics`, the same
+ * declaration `formula-parser.ts` re-exports.
+ *
+ * Every name in `SCALAR_FUNCTIONS` must have a case in `apply` below. That is
+ * what makes the single list honest rather than aspirational — a name the
+ * parser admits and the evaluator cannot compute would reach the "unreachable"
+ * branch at the bottom of `apply` at runtime, in a user's report.
+ * `calculated-field-evaluator.test.ts` asserts the two agree.
+ */
 
-const SCALAR_FUNCTIONS = new Set([
-  // string
-  'UPPER',
-  'LOWER',
-  'INITCAP',
-  'LENGTH',
-  'SUBSTR',
-  'TRIM',
-  'LTRIM',
-  'RTRIM',
-  'INSTR',
-  'REPLACE',
-  'CONCAT',
-  'LPAD',
-  'RPAD',
-  // numeric
-  'ROUND',
-  'TRUNC',
-  'FLOOR',
-  'CEIL',
-  'ABS',
-  'MOD',
-  'POWER',
-  'SQRT',
-  'SIGN',
-  'GREATEST',
-  'LEAST',
-  // date
-  'TO_CHAR',
-  'TO_DATE',
-  'ADD_MONTHS',
-  'MONTHS_BETWEEN',
-  'LAST_DAY',
-  // conversion / null handling
-  'TO_NUMBER',
-  'NVL',
-  'NVL2',
-  'COALESCE',
-  'DECODE',
-]);
+/**
+ * Names rejected with "not valid in a row-level calculated field" rather than
+ * with a bare "not allowed".
+ *
+ * The union, because `AGGREGATE_FUNCTIONS` is the narrower question — what may
+ * be *emitted* as an aggregate — while `STDDEV`, `VARIANCE` and `MEDIAN` are
+ * aggregates this system knows about and refuses for a different reason. Both
+ * sets are canonical; neither is restated here.
+ */
+function isAggregateName(name: string): boolean {
+  return AGGREGATE_FUNCTIONS.has(name) || UNREAGGREGABLE_FUNCTIONS.has(name);
+}
 
 const KEYWORDS = new Set([
   'CASE',
@@ -104,6 +86,17 @@ const KEYWORDS = new Set([
 ]);
 
 const DAY_MS = 86_400_000;
+
+/** Day names `NEXT_DAY` accepts, indexed by `Date.getUTCDay()`. */
+const WEEKDAYS: readonly (readonly string[])[] = [
+  ['SUNDAY', 'SUN'],
+  ['MONDAY', 'MON'],
+  ['TUESDAY', 'TUE', 'TUES'],
+  ['WEDNESDAY', 'WED'],
+  ['THURSDAY', 'THU', 'THUR', 'THURS'],
+  ['FRIDAY', 'FRI'],
+  ['SATURDAY', 'SAT'],
+];
 
 // ---------------------------------------------------------------------------
 // Tokenizer
@@ -433,7 +426,7 @@ class Parser {
   }
 
   private functionCall(name: string, pos: number): Node {
-    if (AGGREGATE_FUNCTIONS.has(name)) {
+    if (isAggregateName(name)) {
       throw new CalculatedFieldError(
         `Aggregate function "${name}" cannot be used in a row-level calculated field`,
       );
@@ -840,6 +833,23 @@ function callFunction(name: string, args: unknown[]): unknown {
       need(name, args, 1);
       const d = coerceToDate(args[0]);
       return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0));
+    }
+    case 'NEXT_DAY': {
+      // Oracle: the first weekday named by `args[1]` strictly AFTER the date.
+      // "Strictly after" is the part worth being careful about — NEXT_DAY of a
+      // Monday asking for Monday is the following week, not the same day.
+      // English day names only; Oracle resolves them against NLS_DATE_LANGUAGE
+      // and this evaluator has no session language to resolve against, so an
+      // unrecognised name is refused rather than guessed at.
+      need(name, args, 2);
+      const from = coerceToDate(args[0]);
+      const wanted = toText(args[1]).trim().toUpperCase();
+      const day = WEEKDAYS.findIndex((names) => names.some((n) => n === wanted));
+      if (day === -1) {
+        throw new CalculatedFieldError(`NEXT_DAY does not recognise the day "${toText(args[1])}"`);
+      }
+      const ahead = ((day - from.getUTCDay() + 7 - 1) % 7) + 1;
+      return new Date(from.getTime() + ahead * DAY_MS);
     }
 
     // ----- conversion / null handling -----

@@ -5,6 +5,7 @@ import {
   CalculatedFieldError,
   type ColumnRef,
 } from '../services/calculated-field-evaluator.js';
+import { SCALAR_FUNCTIONS } from '@discoverer-neo/core/semantics';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -496,5 +497,93 @@ describe('function arity validation', () => {
   it('rejects the wrong number of arguments', () => {
     expect(() => evalOne('ABS(1, 2)')).toThrow(CalculatedFieldError);
     expect(() => evalOne('MOD(1)')).toThrow(CalculatedFieldError);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// BE-09 — one allowlist, two consumers
+// ---------------------------------------------------------------------------
+
+describe('the allowlist is shared with the SQL path, not copied', () => {
+  it('admits every name the canonical scalar list carries, and computes it', () => {
+    // The defect BE-09 names is two lists that drift. Sharing the declaration
+    // fixes half of it; this test fixes the other half, because a name the
+    // parser now admits and `apply` cannot compute would fail at runtime in a
+    // user's report rather than here. One representative call per name, chosen
+    // only to be well-formed — the semantics of each are tested above.
+    const call: Record<string, string> = {
+      SUBSTR: "SUBSTR('abcdef', 2, 3)",
+      LENGTH: "LENGTH('abc')",
+      UPPER: "UPPER('a')",
+      LOWER: "LOWER('A')",
+      TRIM: "TRIM('  a  ')",
+      LTRIM: "LTRIM('  a')",
+      RTRIM: "RTRIM('a  ')",
+      INSTR: "INSTR('abc', 'b')",
+      REPLACE: "REPLACE('abc', 'b', 'x')",
+      LPAD: "LPAD('a', 3, '0')",
+      RPAD: "RPAD('a', 3, '0')",
+      CONCAT: "CONCAT('a', 'b')",
+      INITCAP: "INITCAP('ab cd')",
+      ROUND: 'ROUND(1.234, 1)',
+      TRUNC: 'TRUNC(1.234, 1)',
+      FLOOR: 'FLOOR(1.7)',
+      CEIL: 'CEIL(1.2)',
+      ABS: 'ABS(-3)',
+      MOD: 'MOD(7, 3)',
+      POWER: 'POWER(2, 3)',
+      SQRT: 'SQRT(9)',
+      SIGN: 'SIGN(-2)',
+      ADD_MONTHS: "ADD_MONTHS(TO_DATE('2024-01-31', 'YYYY-MM-DD'), 1)",
+      MONTHS_BETWEEN:
+        "MONTHS_BETWEEN(TO_DATE('2024-03-01', 'YYYY-MM-DD'), TO_DATE('2024-01-01', 'YYYY-MM-DD'))",
+      LAST_DAY: "LAST_DAY(TO_DATE('2024-02-05', 'YYYY-MM-DD'))",
+      NEXT_DAY: "NEXT_DAY(TO_DATE('2024-02-05', 'YYYY-MM-DD'), 'FRIDAY')",
+      TO_CHAR: 'TO_CHAR(1)',
+      TO_NUMBER: "TO_NUMBER('1')",
+      TO_DATE: "TO_DATE('2024-01-01', 'YYYY-MM-DD')",
+      NVL: 'NVL(NULL, 1)',
+      NVL2: 'NVL2(NULL, 1, 2)',
+      COALESCE: 'COALESCE(NULL, 1)',
+      DECODE: "DECODE(1, 1, 'a', 'b')",
+      GREATEST: 'GREATEST(1, 2)',
+      LEAST: 'LEAST(1, 2)',
+    };
+
+    const missingFixture = [...SCALAR_FUNCTIONS].filter((name) => !(name in call));
+    expect(missingFixture).toEqual([]);
+
+    for (const [name, formula] of Object.entries(call)) {
+      expect(SCALAR_FUNCTIONS.has(name)).toBe(true);
+      // Neither a parse refusal nor the "unreachable" branch in `apply`.
+      expect(() => evalOne(formula)).not.toThrow();
+    }
+  });
+
+  it('still rejects an aggregate by name, including the ones only the planner knows', () => {
+    for (const name of ['SUM', 'AVG', 'STDDEV', 'VARIANCE', 'MEDIAN']) {
+      expect(() => evalOne(`${name}(1)`)).toThrow(/row-level calculated field/);
+    }
+  });
+
+  it('rejects a function that is in neither list', () => {
+    expect(() => evalOne('SYS_CONTEXT(1)')).toThrow(CalculatedFieldError);
+  });
+});
+
+describe('NEXT_DAY', () => {
+  const monday = "TO_DATE('2024-02-05', 'YYYY-MM-DD')";
+
+  it('finds the named weekday after the date', () => {
+    expect(evalOne(`TO_CHAR(NEXT_DAY(${monday}, 'FRIDAY'), 'YYYY-MM-DD')`)).toBe('2024-02-09');
+  });
+
+  it('goes to the following week when the date is already that weekday', () => {
+    // Oracle is strictly after, never the same day.
+    expect(evalOne(`TO_CHAR(NEXT_DAY(${monday}, 'MON'), 'YYYY-MM-DD')`)).toBe('2024-02-12');
+  });
+
+  it('refuses a day name it does not recognise rather than guessing', () => {
+    expect(() => evalOne(`NEXT_DAY(${monday}, 'segunda')`)).toThrow(/does not recognise/);
   });
 });
