@@ -1104,6 +1104,12 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
           mapId,
           name: calc.name,
           formula: calc.formula,
+          // D-055 dual storage — provenance the compile run reads and never
+          // overwrites. `compile_status` is left null on purpose: a row no
+          // compile run has seen must not read as a clean one.
+          sourceTokens: calc.sourceTokens,
+          sourceElementId: calc.sourceElementId,
+          sourceAttrs: calc.sourceAttrs,
           displayOrder: calc.displayOrder,
           axisType: calc.axisType,
           isHidden: calc.isHidden,

@@ -113,6 +113,13 @@
       "when": 1789600000000,
       "tag": "0015_record_plan_decision",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1789900000000,
+      "tag": "0016_calculated_field_dual_storage",
+      "breakpoints": true
     }
   ]
 }

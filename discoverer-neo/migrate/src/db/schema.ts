@@ -999,7 +999,38 @@ export const mapCalculatedFields = pgTable(
       .notNull()
       .references(() => maps.id, { onDelete: 'cascade' }),
     name: varchar('name', { length: 255 }).notNull(),
+    /**
+     * What a reader sees: the token form with `[6,n]`/`[8,n]` replaced by the
+     * names they point at. **Not runnable and not re-parseable** — a
+     * substituted name carrying spaces or brackets destroys the tree structure
+     * (decoder analysis C-8) — so nothing compiles from this column. It is the
+     * human-facing string, and `source_tokens` is what the renderer reads.
+     */
     formula: text('formula').notNull(),
+    /**
+     * D-055 dual storage — the verbatim `[class,id]` token form, lossless.
+     *
+     * The compiled expression is derived, so it can be re-derived: keeping the
+     * token form means improving the renderer never requires re-migrating the
+     * estate. Null on a calculated field authored in Neo, which has no token
+     * form to keep, and on any row migrated before Phase 4.5.
+     */
+    sourceTokens: text('source_tokens'),
+    /**
+     * The Oracle expression the Phase 4 renderer emitted from `source_tokens`,
+     * or null when it refused. Written by `dn-migrate verify --compile`, never
+     * by the migration itself, and safe to overwrite: `source_tokens` is the
+     * provenance and this is only ever a function of it.
+     */
+    compiledSql: text('compiled_sql'),
+    /**
+     * The D-059 bucket this row's formula landed in. Null means "no compile
+     * run has seen this row" — deliberately a fifth state, so an unvisited row
+     * can never be read as a clean one.
+     */
+    compileStatus: varchar('compile_status', { length: 32 }),
+    /** Why the row is quarantined or failed. Null on a compiled row. */
+    compileReason: text('compile_reason'),
     displayOrder: integer('display_order').notNull().default(0),
     /** `Desc` (`0x00df`) — the description the author typed. */
     description: text('description'),
@@ -1026,6 +1057,12 @@ export const mapCalculatedFields = pgTable(
     /**
      * Source detail with no typed column — e.g. `IsACalc`, whose meaning
      * §7.8.13 decodes value for value but deliberately leaves unnamed.
+     *
+     * Also carries `elementBindings` (D-055): the element table's own lookup
+     * for the `[6,n]`, `[8,n]` and `[2,n]` ids inside `source_tokens`, shaped
+     * `{ items: { "<id>": "<name>" }, parameters: …, functions: … }`. Without
+     * it a token form is uncompilable outside the migration run that read the
+     * `.DIS`, and the renderer could only be improved by re-migrating.
      */
     sourceAttrs: jsonb('source_attrs'),
     createdAt: timestamp('created_at', { withTimezone: true })

@@ -558,6 +558,22 @@ export interface TransformedMapTotal {
 export interface TransformedMapCalculatedField {
   name: string;
   formula: string;
+  /**
+   * D-055 — `map_calculated_fields.source_tokens`, the verbatim token form.
+   *
+   * `formula` is that string with names substituted in, which cannot be
+   * re-parsed. Keeping the original is what lets `dn-migrate verify --compile`
+   * re-render the estate whenever the renderer improves, with no re-migration.
+   */
+  sourceTokens: string | null;
+  /** `map_calculated_fields.source_element_id`. */
+  sourceElementId: number | null;
+  /**
+   * `map_calculated_fields.source_attrs` — carries `elementBindings`, the name
+   * lookup for the ids inside `sourceTokens`. Without it the token form is
+   * uncompilable once the `.DIS` is out of reach.
+   */
+  sourceAttrs: Record<string, unknown> | null;
   displayOrder: number;
   /**
    * `map_calculated_fields.axis_type` — the calculation's own `Placement`
