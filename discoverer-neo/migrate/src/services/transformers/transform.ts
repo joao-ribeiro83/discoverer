@@ -1029,12 +1029,17 @@ export function transformWorkbook(
     const calculatedFields: TransformedMapCalculatedField[] = worksheet.calculations.map(
       (calculation, index) => ({
         name: clamp(calculation.name, NAME_MAX),
-        // The token form is the only formula the workbook stores. It is kept
-        // verbatim (with item/parameter references resolved to names) rather
-        // than machine-translated to SQL: Oracle's function-code table is not
-        // available, and a half-translated formula would look runnable when it
-        // is not.
+        // The reader-facing string: the token form with item and parameter
+        // references resolved to names, function codes left alone. Not
+        // runnable, and not re-parseable either — a substituted name carrying
+        // spaces destroys the tree structure (decoder analysis C-8).
         formula: calculation.readableFormula ?? calculation.tokens ?? '',
+        // D-055 dual storage. The token form and the element table's own name
+        // lookup are what `dn-migrate verify --compile` recompiles from, so
+        // improving the renderer never requires re-migrating the estate.
+        sourceTokens: calculation.tokens,
+        sourceElementId: calculation.elementId,
+        sourceAttrs: { elementBindings: calculation.elementBindings },
         displayOrder: index,
         // `Placement` and `Hidden` are the calculation element's own fields —
         // both printed by `d4wkdmp -f` and agreeing with it on all 41 982

@@ -2044,6 +2044,73 @@ export interface WorkbookCalculation {
   formatMask: string | null;
   /** Element ids of the items the formula references, in first-use order. */
   itemRefs: number[];
+  /**
+   * D-055 — the element table's own name lookup for every id `tokens` cites.
+   *
+   * This is what makes `tokens` compilable after the `.DIS` is gone. Without
+   * it, `[6,4711]` can only be resolved by the migration run that had the
+   * element table open, so improving the renderer would mean re-migrating the
+   * estate. Persisted to `map_calculated_fields.source_attrs.elementBindings`.
+   */
+  elementBindings: ElementBindings;
+}
+
+/**
+ * `[6,n]` / `[8,n]` / `[2,n]` element id → the name it stands for.
+ *
+ * Keyed by the id as a string, because this is stored as JSON and a JSON
+ * object key is a string whatever it went in as; reading it back through a
+ * number key would silently miss on every row.
+ */
+export interface ElementBindings {
+  /** `[6,n]` — an EUL item, or a sibling calculation named rather than expanded. */
+  items: Record<string, string>;
+  /** `[8,n]` — a workbook parameter's bind NAME, with no leading colon. */
+  parameters: Record<string, string>;
+  /** `[2,n]` — a registered custom (PL/SQL) function. */
+  functions: Record<string, string>;
+}
+
+/**
+ * Collect the bindings for one token string.
+ *
+ * Deliberately the same lookups, in the same order, that `humanizeFormula`
+ * uses — a second reading of the element table would be a second thing to keep
+ * in step, which is how `formula` and the renderer came apart in the first
+ * place. An id that resolves to nothing is simply absent, and the renderer
+ * quarantines it as `UNRESOLVED_ELEMENT` rather than guessing.
+ */
+function collectElementBindings(
+  tokens: string | null,
+  byId: Map<number, RawElement>,
+  calcNameById: ReadonlyMap<number, string>,
+): ElementBindings {
+  const bindings: ElementBindings = { items: {}, parameters: {}, functions: {} };
+  if (tokens === null) return bindings;
+
+  for (const match of tokens.matchAll(/\[([268]),(\d+)\]/g)) {
+    const kind = match[1]!;
+    const key = match[2]!;
+    const element = byId.get(Number(key));
+
+    if (kind === '8') {
+      const name = firstString(element, TAG.PARAMETER_NAME);
+      if (name !== null) bindings.parameters[key] = name;
+      continue;
+    }
+    if (kind === '2') {
+      const name = firstString(element, TAG.FUNCTION_NAME);
+      if (name !== null) bindings.functions[key] = name;
+      continue;
+    }
+    const name =
+      element?.cls === CLASS.CALCULATION
+        ? (calcNameById.get(Number(key)) ?? firstString(element, TAG.ITEM_LABEL))
+        : (firstString(element, TAG.ITEM_LABEL) ?? firstString(element, TAG.ITEM_NAME));
+    if (name !== null) bindings.items[key] = name;
+  }
+
+  return bindings;
 }
 
 export interface ParsedWorksheet {
@@ -3076,6 +3143,7 @@ function readCalculation(
     isACalc: firstFlag(element, TAG.CALC_IS_A_CALC),
     formatMask: firstString(element, TAG.CALC_FORMAT_MASK),
     itemRefs: numberVector(element, TAG.CALC_ITEM_REFS),
+    elementBindings: collectElementBindings(tokens, byId, calcNameById),
   };
 }
 
