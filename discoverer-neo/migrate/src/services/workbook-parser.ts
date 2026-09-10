@@ -1200,6 +1200,42 @@ export function parseFormulaTree(tokens: string | null): FormulaTreeResult {
   }
 }
 
+/**
+ * Serialise a tree back into the token language `parseFormulaTree` reads.
+ *
+ * The inverse of the parser, and it exists for one job: Phase 4.4 expands a
+ * calculation-references-calculation chain on the *tree* (D-056), while the
+ * `d4wkdmp` dump prints `IOFormula` as *text*. Comparing the two needs the
+ * expanded tree written back out in Oracle's own notation.
+ *
+ * A `[1,n]` or `[2,n]` always carries its argument list, `()` included when it
+ * takes none; every other node never does. `formula-expansion.test.ts` re-reads
+ * all 22 748 committed corpus token strings through parse -> format and
+ * requires the text back byte for byte, so the convention is measured, not
+ * assumed.
+ */
+export function formatFormulaTree(node: FormulaNode): string {
+  const call = (head: string, args: FormulaNode[]): string =>
+    `${head}(${args.map(formatFormulaTree).join(',')})`;
+  switch (node.type) {
+    case 'call':
+      return call(`[1,${node.code}]`, node.args);
+    case 'function':
+      return call(`[2,${node.elementId}]`, node.args);
+    case 'literal':
+      // The parser honours backslash escapes, so the writer must produce them.
+      return `[5,${node.literalKind},"${node.value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"]`;
+    case 'item':
+      return `[6,${node.elementId}]`;
+    case 'parameter':
+      return `[8,${node.elementId}]`;
+    case 'unknown': {
+      const head = `[${node.fields.join(',')}]`;
+      return node.args.length === 0 ? head : call(head, node.args);
+    }
+  }
+}
+
 /** Render a node back to something a person can read, for warning text. */
 export function describeFormulaNode(node: FormulaNode): string {
   const list = (args: FormulaNode[]): string => args.map(describeFormulaNode).join(', ');

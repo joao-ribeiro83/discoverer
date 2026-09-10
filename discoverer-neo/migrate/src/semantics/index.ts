@@ -36,6 +36,14 @@ export {
 export type { BuiltinCode, DisplayShape, SqlForm } from './builtin-codes.js';
 
 export {
+  calculationResolver,
+  expandCalculations,
+  MAX_EXPANSION_DEPTH,
+  MAX_EXPANSION_NODES,
+} from './expand.js';
+export type { ExpansionLimits, ExpansionResult, ResolveCalculation } from './expand.js';
+
+export {
   createBindCollector,
   displayDateLiteral,
   FITTED_CODES,
