@@ -487,7 +487,7 @@ describe('report assembly', () => {
     const report = await verifyMigration(
       fakeDb([
         [{ db: 'discoverer_neo' }],
-        [], // seam 1: no maps
+        // Seam 1 issues no query without a generator.
         [], // seam 2: no custom functions
         [], // seam 2: no formulas
         [{}], [{}], [{}], [{}], // seam 3
@@ -504,6 +504,35 @@ describe('report assembly', () => {
       'measure-set',
       'planner-live',
     ]);
+  });
+
+  it('refuses VERIFIED while FAILED > 0 — the defining assertion of this stage', async () => {
+    // Forced with a fixture, because on the real estate FAILED is 0 and an
+    // assertion that only ever sees the happy path proves nothing.
+    const report = await verifyMigration(
+      fakeDb([
+        [{ db: 'discoverer_neo' }],
+        // Seam 1 issues no query at all without a generator, so seam 2's
+        // reads come straight after the database name.
+        [], // seam 2: no custom functions
+        [{ id: 'f1', map_id: 'm1', formula: 'x', source_tokens: null }],
+        [], // seam 2: end of pages
+        [{}], [{}], [{}], [{}], // seam 3
+        [{ columns: 1, measure: 1, with_aggregate: 1 }], // seam 5
+      ]),
+      {
+        allowances: [],
+        compileFormula: () => {
+          throw new Error('a path we do not handle');
+        },
+      },
+    );
+
+    const seam = report.seams.find((s) => s.id === 'formula-compile')!;
+    expect(seam.metrics.failed).toBe(1);
+    expect(seam.status).toBe('FAIL');
+    expect(report.status).toBe('COMPLETED_WITH_BLOCKERS');
+    expect(report.blockers.join(' ')).toContain('formula-compile');
   });
 
   it('says "unknown" rather than guessing when the database will not name itself', async () => {
