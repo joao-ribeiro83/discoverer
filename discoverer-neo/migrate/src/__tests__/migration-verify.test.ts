@@ -81,18 +81,31 @@ describe('seam 1 — sql generation', () => {
 });
 
 describe('seam 2 — formula compile rate', () => {
-  const page = [{ id: 'f1', formula: 'SUM(A)' }, { id: 'f2', formula: '[1,1](x)' }];
+  // Seam 2 now reads `custom_functions` first, then pages the formulas. Rows
+  // with no `source_tokens` never trigger a per-map scope load, so two pages
+  // behind the function table is the whole fixture for the hook path.
+  const readable = [
+    { id: 'f1', map_id: 'm1', formula: 'SUM(A)', source_tokens: null, source_attrs: null },
+    { id: 'f2', map_id: 'm1', formula: '[1,1](x)', source_tokens: null, source_attrs: null },
+  ];
+  const hookPages = (page: Array<Record<string, unknown>>) => [[], page, []];
 
-  it('is SKIPPED without a compiler, but still counts', async () => {
-    const result = await checkFormulaCompileRate(fakeDb([page, []]));
-    expect(result.status).toBe('SKIPPED');
+  it('quarantines a row with no token form even with no hook, and still counts', async () => {
+    const result = await checkFormulaCompileRate(fakeDb(hookPages(readable)));
     expect(result.metrics.formulas).toBe(2);
     expect(result.metrics.quarantined).toBe(2);
+    expect(result.findings.join(' ')).toContain('NO_SOURCE_TOKENS');
+    // The compiler is in this workspace now, so the seam reports rather than
+    // skipping. Quarantines are not a compiler defect, so it PASSes and
+    // blocks readiness instead.
+    expect(result.status).toBe('PASS');
+    expect(result.readinessBlocker).toContain('do not compile');
   });
 
-  it('accepts a bare bucket as well as one with a reason', async () => {
-    const result = await checkFormulaCompileRate(fakeDb([page, []]), {
-      compileFormula: (f) => (f.startsWith('SUM') ? 'COMPILED_UNVERIFIED' : { bucket: 'QUARANTINED', reason: 'token' }),
+  it('accepts a bare bucket as well as one with a reason, from the hook', async () => {
+    const result = await checkFormulaCompileRate(fakeDb(hookPages(readable)), {
+      compileFormula: (f) =>
+        f.startsWith('SUM') ? 'COMPILED_UNVERIFIED' : { bucket: 'QUARANTINED', reason: 'TOKEN' },
     });
     expect(result.metrics.compiledUnverified).toBe(1);
     expect(result.metrics.quarantined).toBe(1);
@@ -100,16 +113,16 @@ describe('seam 2 — formula compile rate', () => {
   });
 
   it('never leaves a quarantine unexplained', async () => {
-    const result = await checkFormulaCompileRate(fakeDb([page, []]), {
+    const result = await checkFormulaCompileRate(fakeDb(hookPages(readable)), {
       compileFormula: () => 'QUARANTINED',
     });
     // A bucket handed back with no reason still gets one, so the count and the
     // explanation can never drift apart.
-    expect(result.findings.join(' ')).toContain('no reason given');
+    expect(result.findings.join(' ')).toContain('NO_REASON_GIVEN');
   });
 
-  it('counts a throwing classifier as FAILED and fails the seam', async () => {
-    const result = await checkFormulaCompileRate(fakeDb([page, []]), {
+  it('counts a throwing compiler as FAILED and fails the seam', async () => {
+    const result = await checkFormulaCompileRate(fakeDb(hookPages(readable)), {
       compileFormula: () => {
         throw new Error('unhandled shape');
       },
@@ -120,10 +133,103 @@ describe('seam 2 — formula compile rate', () => {
   });
 
   it('treats a non-string formula column as empty rather than crashing', async () => {
-    const result = await checkFormulaCompileRate(fakeDb([[{ id: 'f1', formula: null }], []]), {
-      compileFormula: (f) => (f === '' ? { bucket: 'QUARANTINED', reason: 'empty' } : 'COMPILED_UNVERIFIED'),
-    });
+    const result = await checkFormulaCompileRate(
+      fakeDb(hookPages([{ id: 'f1', map_id: 'm1', formula: null, source_tokens: null }])),
+      {
+        compileFormula: (f) =>
+          f === '' ? { bucket: 'QUARANTINED', reason: 'EMPTY' } : 'COMPILED_UNVERIFIED',
+      },
+    );
     expect(result.metrics.quarantined).toBe(1);
+  });
+
+  it('partitions every row exactly once, and says so', async () => {
+    const result = await checkFormulaCompileRate(fakeDb(hookPages(readable)), {
+      compileFormula: (f) => (f.startsWith('SUM') ? 'COMPILED_UNVERIFIED' : 'QUARANTINED'),
+    });
+    // The sum is asserted, not decorative. Without it, `FAILED = 0` is
+    // satisfiable by losing rows out of the partition rather than fixing them.
+    expect(result.metrics.partitioned).toBe(result.metrics.formulas);
+    const m = result.metrics;
+    expect(m.compiled! + m.compiledUnverified! + m.quarantined! + m.failed!).toBe(2);
+  });
+
+  it('reports every quarantine reason, not just the sampled ones', async () => {
+    const many = Array.from({ length: 30 }, (_, i) => ({
+      id: `f${i}`,
+      map_id: 'm1',
+      formula: `F${i}`,
+      source_tokens: null,
+    }));
+    const result = await checkFormulaCompileRate(fakeDb(hookPages(many)), {
+      sampleLimit: 2,
+      compileFormula: (f) => ({ bucket: 'QUARANTINED', reason: `REASON_${f}` }),
+    });
+    expect(result.findings).toHaveLength(2);
+    // The histogram is the backlog, so it is unbounded where findings are not.
+    expect(Object.keys(result.histogram ?? {})).toHaveLength(30);
+  });
+
+  // --- the compile run itself ------------------------------------------------
+
+  /** `[6,27]` -> AMOUNT, on a map that carries an AMOUNT column. */
+  const tokenRow = {
+    id: '11111111-1111-1111-1111-111111111111',
+    map_id: '22222222-2222-2222-2222-222222222222',
+    formula: 'SUM(Amount)',
+    source_tokens: '[1,1]([6,27])',
+    source_attrs: { elementBindings: { items: { '27': 'AMOUNT' } } },
+  };
+  /**
+   * Function table, page 1, then the map's items and calculations, then the
+   * empty page that ends the loop.
+   */
+  const tokenPages = [
+    [],
+    [tokenRow],
+    [{ name: 'AMOUNT', column_name: 'AMOUNT', display_name: null }],
+    [{ name: 'Margin', source_tokens: '[1,1]([6,27])', source_attrs: tokenRow.source_attrs }],
+    [],
+  ];
+
+  it('compiles a stored token formula with no hook injected at all', async () => {
+    const result = await checkFormulaCompileRate(fakeDb(tokenPages));
+    expect(result.metrics).toMatchObject({
+      formulas: 1,
+      compiledUnverified: 1,
+      quarantined: 0,
+      failed: 0,
+    });
+    expect(result.status).toBe('PASS');
+    // Nothing quarantined, so nothing blocks readiness either.
+    expect(result.readinessBlocker).toBeUndefined();
+  });
+
+  it('writes the partition back only when asked, and never over the provenance', async () => {
+    const seen: unknown[] = [];
+    const recorder = {
+      execute: (query: unknown) => {
+        seen.push(query);
+        return Promise.resolve({ rows: tokenPages[seen.length - 1] ?? [] });
+      },
+    };
+
+    const readOnly = await checkFormulaCompileRate(recorder);
+    expect(readOnly.metrics.compiledUnverified).toBe(1);
+    // Five reads, no write: pointing the verifier at a live estate must not
+    // change it.
+    expect(JSON.stringify(seen)).not.toContain('UPDATE map_calculated_fields');
+
+    seen.length = 0;
+    await checkFormulaCompileRate(recorder, { writeCompileStatus: true });
+    const statements = JSON.stringify(seen);
+    expect(statements).toContain('UPDATE map_calculated_fields');
+    expect(statements).toContain('compile_status');
+    expect(statements).toContain('compiled_sql');
+    // D-055: the compiled expression is derived, so the write must never reach
+    // the two columns it was derived from.
+    expect(statements).not.toContain('SET source_tokens');
+    expect(statements).not.toContain('formula =');
   });
 });
 
@@ -329,6 +435,36 @@ describe('report assembly', () => {
     expect(summarise('db', [pass, fail]).status).toBe('COMPLETED_WITH_BLOCKERS');
   });
 
+  it('refuses VERIFIED while a seam blocks readiness, even though it passed', () => {
+    // F-12's shape exactly: the component worked, refused honestly, and the
+    // estate is still unusable. Reporting that as a note is how a target with
+    // 923 dead maps once scored 75 with no blockers listed.
+    const quarantined: SeamResult = {
+      ...pass,
+      id: 'formula-compile',
+      status: 'PASS',
+      readinessBlocker: '76 of 49819 calculated field(s) do not compile',
+    };
+    const report = summarise('db', [quarantined]);
+    expect(report.status).toBe('COMPLETED_WITH_BLOCKERS');
+    expect(report.blockers).toEqual([
+      'formula-compile: 76 of 49819 calculated field(s) do not compile',
+    ]);
+  });
+
+  it('lists a failure and a readiness blocker from the same seam', () => {
+    const both: SeamResult = {
+      ...fail,
+      id: 'formula-compile',
+      reason: '3 formula(s) hit a compiler path we do not handle',
+      readinessBlocker: '76 do not compile',
+    };
+    expect(summarise('db', [both]).blockers).toEqual([
+      'formula-compile: 3 formula(s) hit a compiler path we do not handle',
+      'formula-compile: 76 do not compile',
+    ]);
+  });
+
   it('lists one blocker per failing seam', () => {
     const report = summarise('db', [fail, pass]);
     expect(report.blockers).toEqual(['referential-closure: 7 broken']);
@@ -352,6 +488,7 @@ describe('report assembly', () => {
       fakeDb([
         [{ db: 'discoverer_neo' }],
         [], // seam 1: no maps
+        [], // seam 2: no custom functions
         [], // seam 2: no formulas
         [{}], [{}], [{}], [{}], // seam 3
         [{ columns: 1, measure: 1, with_aggregate: 1 }], // seam 5

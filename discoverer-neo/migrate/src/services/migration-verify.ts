@@ -32,6 +32,18 @@ import { sql } from 'drizzle-orm';
 
 import { EXPECTED_LOSS_ALLOWANCES, type ExpectedLossAllowance } from '../verify/expected-loss.js';
 
+import type { FunctionBinding, ItemBinding } from '../semantics/render.js';
+
+import {
+  compileStoredFormula,
+  EMPTY_BINDINGS,
+  NO_SOURCE_TOKENS,
+  type CompileScope,
+  type CompileVerdict,
+  type FormulaBucket,
+} from './formula-compile.js';
+import { parseFormulaTree, type ElementBindings, type FormulaNode } from './workbook-parser.js';
+
 /**
  * All five seams are raw SQL, so the verifier asks only for something that can
  * run a statement. That admits both this workspace's `TargetDatabase` and the
@@ -62,7 +74,7 @@ export type SeamStatus = 'PASS' | 'FAIL' | 'SKIPPED';
  * hit a path it does not handle — a bug in us, not a data problem — so CI
  * asserts `FAILED === 0` while quarantine counts are only reported.
  */
-export type CompileBucket = 'COMPILED' | 'COMPILED_UNVERIFIED' | 'QUARANTINED' | 'FAILED';
+export type CompileBucket = FormulaBucket;
 
 export interface SeamResult {
   id: SeamId;
@@ -75,6 +87,23 @@ export interface SeamResult {
   findings: string[];
   /** Present when status is SKIPPED, or when FAIL needs one line of context. */
   reason?: string;
+  /**
+   * Every reason behind a refusal, weighted, largest first — unbounded, unlike
+   * `findings`. Reasons are codes, so this stays small however large the
+   * estate is, and it is the backlog any future fidelity work is drawn from.
+   */
+  histogram?: Record<string, number>;
+  /**
+   * A reason this seam stops the report reading VERIFIED **without** failing.
+   *
+   * Some refusals are correct behaviour and still mean the migration is not
+   * usable — a quarantined formula is refused honestly and cannot be executed.
+   * Reporting those as notes is how F-12 happened, where a target with 923
+   * unusable maps scored 75 and listed no blockers. Reporting them as seam
+   * failures would instead say the compiler is broken, which it is not, so
+   * they get their own line.
+   */
+  readinessBlocker?: string;
 }
 
 export interface VerifyReport {
@@ -82,7 +111,10 @@ export interface VerifyReport {
   target: string;
   ranAt: string;
   seams: SeamResult[];
-  /** One line per failing seam, in seam order. */
+  /**
+   * One line per failing seam and per readiness blocker, in seam order. A
+   * non-empty list is the whole definition of "not ready".
+   */
   blockers: string[];
   status: 'VERIFIED' | 'COMPLETED_WITH_BLOCKERS';
 }
@@ -127,6 +159,17 @@ export interface VerifyOptions extends VerifyHooks {
   mapIdPrefix?: string;
   /** Stop seam 1 after this many maps. Unset means the whole estate. */
   maxMaps?: number;
+  /**
+   * Write seam 2's verdict back to `compile_status` / `compile_reason` /
+   * `compiled_sql` — `dn-migrate verify --compile`.
+   *
+   * Off by default, so the verifier stays read-only and can be pointed at a
+   * live estate without changing it. On, it is still safe to re-run: the
+   * compiled expression is a function of `source_tokens`, which it never
+   * touches, so a later run with a better renderer simply overwrites a derived
+   * value (D-055, D-070).
+   */
+  writeCompileStatus?: boolean;
   /**
    * Override the declared allowances. Tests pass their own fixture-scoped set;
    * everything else uses the checked-in declaration.
@@ -233,14 +276,100 @@ function describe(err: unknown): string {
 const FORMULA_PAGE = 5_000;
 
 /**
+ * One map's resolution scope, over the estate-wide function table.
+ *
+ * Loaded per map rather than per formula: the page is ordered by `map_id`, so
+ * each map's scope is built once and every formula on it shares the reads.
+ */
+async function loadMapScope(
+  db: VerifyDb,
+  mapId: string,
+  functionByName: ReadonlyMap<string, FunctionBinding>,
+): Promise<CompileScope> {
+  const columnByItemName = new globalThis.Map<string, ItemBinding>();
+  for (const row of await rows(
+    db,
+    sql`SELECT i.name AS name, i.column_name AS column_name, mi.display_name AS display_name
+        FROM map_items mi
+        JOIN items i ON i.id = mi.item_id
+        WHERE mi.map_id = ${mapId}::uuid`,
+  )) {
+    const column = typeof row.column_name === 'string' ? row.column_name : null;
+    if (column === null) continue;
+    // A `[6,n]` binding is a label, and Discoverer shows whichever label the
+    // worksheet chose. Both the EUL name and the worksheet's override are
+    // registered so either spelling resolves; neither is guessed at.
+    for (const key of [row.name, row.display_name]) {
+      if (typeof key === 'string' && key !== '') {
+        columnByItemName.set(key.toLowerCase(), { name: key, column });
+      }
+    }
+  }
+
+  const treeByCalcName = new globalThis.Map<string, FormulaNode>();
+  // One merged binding table per map. Expansion substitutes a sibling's tree,
+  // and that subtree's `[6,n]` ids were written against the sibling's own
+  // bindings; element ids are workbook-scoped, so merging is sound — and the
+  // alternative is every expanded formula quarantining as UNRESOLVED_ELEMENT.
+  const mapBindings: ElementBindings = { items: {}, parameters: {}, functions: {} };
+  for (const row of await rows(
+    db,
+    sql`SELECT name, source_tokens, source_attrs
+        FROM map_calculated_fields
+        WHERE map_id = ${mapId}::uuid AND source_tokens IS NOT NULL`,
+  )) {
+    if (typeof row.name !== 'string' || typeof row.source_tokens !== 'string') continue;
+    const { tree } = parseFormulaTree(row.source_tokens);
+    if (tree !== null) treeByCalcName.set(row.name.toLowerCase(), tree);
+    const own = readBindings(row.source_attrs);
+    Object.assign(mapBindings.items, own.items);
+    Object.assign(mapBindings.parameters, own.parameters);
+    Object.assign(mapBindings.functions, own.functions);
+  }
+
+  return { columnByItemName, treeByCalcName, mapBindings, functionByName };
+}
+
+/**
+ * `custom_functions`, once for the whole run. 593 rows on the live estate, and
+ * a `[2,n]` on any map can name any of them.
+ */
+async function loadFunctionTable(db: VerifyDb): Promise<ReadonlyMap<string, FunctionBinding>> {
+  const byName = new globalThis.Map<string, FunctionBinding>();
+  for (const row of await rows(db, sql`SELECT name, parameters FROM custom_functions`)) {
+    if (typeof row.name !== 'string') continue;
+    // `parameters` is null on every migrated row — the EUL's normalized
+    // FUNCTIONS read carries no argument list — so arity is left unenforced
+    // rather than defaulted. Refusing every call for want of a signature would
+    // make all 593 migrated functions permanently uncallable.
+    const arity = Array.isArray(row.parameters)
+      ? ([row.parameters.length, row.parameters.length] as const)
+      : null;
+    byName.set(row.name.toUpperCase(), { name: row.name, arity });
+  }
+  return byName;
+}
+
+/**
  * Every stored formula must land in a named bucket (D-059). A formula that
  * neither compiles nor carries a stated quarantine reason is the unknown this
  * seam exists to delete: F-02 was "we do not know how many formulas work", and
  * a number with a reason attached is the whole deliverable.
  *
- * `FAILED` means the classifier hit a path it does not handle — our bug — so
- * that is the only bucket gated on. Quarantine counts are reported and shrink
- * as the Phase 4 token renderer lands.
+ * Phase 4.5 made this seam the compile run itself. It reads `source_tokens`
+ * and renders it with the Phase 4 renderer, which lives in this workspace, so
+ * `dn-migrate verify` now reports the seam instead of skipping it. The
+ * injected `compileFormula` hook is still honoured and now covers only the
+ * rows with no token form — a calculated field authored in Neo, whose formula
+ * is readable text the backend's parser owns.
+ *
+ * `FAILED` means the compiler hit a path it does not handle — our bug — so
+ * that is the only bucket the seam's PASS/FAIL turns on. `QUARANTINED` is a
+ * readiness blocker instead: the estate is not ready while formulas do not
+ * compile, but a stated refusal is not a defect in the compiler.
+ *
+ * Security: reasons are codes and findings are counts. No formula body, item
+ * label or map name reaches the report or the audit trail.
  */
 export async function checkFormulaCompileRate(
   db: VerifyDb,
@@ -258,17 +387,28 @@ export async function checkFormulaCompileRate(
   const reasons = new globalThis.Map<string, number>();
   const tally = (reason: string) => reasons.set(reason, (reasons.get(reason) ?? 0) + 1);
 
+  const functionByName = await loadFunctionTable(db);
+  let scopeMapId: string | null = null;
+  let scope: CompileScope = {
+    columnByItemName: new globalThis.Map(),
+    treeByCalcName: new globalThis.Map(),
+    mapBindings: EMPTY_BINDINGS,
+    functionByName,
+  };
+
   const compile = options.compileFormula;
+  const writes: { id: string; verdict: CompileVerdict }[] = [];
   let total = 0;
   let offset = 0;
   for (;;) {
     const page = await rows(
       db,
-      sql`SELECT f.id::text AS id, f.formula
+      sql`SELECT f.id::text AS id, f.map_id::text AS map_id, f.formula,
+                 f.source_tokens, f.source_attrs
           FROM map_calculated_fields f
           JOIN maps ON maps.id = f.map_id
           WHERE ${mapScope(options.mapIdPrefix)}
-          ORDER BY f.id
+          ORDER BY f.map_id, f.id
           LIMIT ${FORMULA_PAGE} OFFSET ${offset}`,
     );
     if (page.length === 0) break;
@@ -276,36 +416,67 @@ export async function checkFormulaCompileRate(
     total += page.length;
 
     for (const row of page) {
-      const formula = typeof row.formula === 'string' ? row.formula : '';
-      if (!compile) {
-        // No compiler here. Still a real, reportable bucket — but the seam
-        // itself reports SKIPPED below, so this can never read as success.
-        buckets.QUARANTINED += 1;
-        tally('no formula compiler injected');
-        continue;
-      }
+      const id = typeof row.id === 'string' ? row.id : '';
+      const mapId = typeof row.map_id === 'string' ? row.map_id : '';
+      const tokens = typeof row.source_tokens === 'string' ? row.source_tokens : null;
+
+      let verdict: CompileVerdict;
       try {
-        const verdict = compile(formula);
-        const bucket = typeof verdict === 'string' ? verdict : verdict.bucket;
-        const reason = typeof verdict === 'string' ? undefined : verdict.reason;
-        buckets[bucket] += 1;
-        if (bucket === 'QUARANTINED' || bucket === 'FAILED') {
-          tally(reason ?? 'no reason given');
+        if (tokens === null) {
+          // No token form: either a Neo-authored formula, which the injected
+          // backend parser owns, or a row migrated before dual storage landed.
+          verdict = compile
+            ? widenHookVerdict(compile(typeof row.formula === 'string' ? row.formula : ''))
+            : {
+                bucket: 'QUARANTINED',
+                reason: NO_SOURCE_TOKENS,
+                sql: null,
+                containsAggregate: false,
+              };
+        } else {
+          if (mapId !== scopeMapId) {
+            scope = await loadMapScope(db, mapId, functionByName);
+            scopeMapId = mapId;
+          }
+          verdict = compileStoredFormula(
+            { id, sourceTokens: tokens, bindings: readBindings(row.source_attrs) },
+            scope,
+          );
         }
       } catch (err) {
-        // The classifier threw. An unhandled path is a bug in us, not a data
+        // The compiler threw. An unhandled path is a bug in us, not a data
         // problem — which is exactly what FAILED is reserved for.
-        buckets.FAILED += 1;
-        tally(`classifier threw: ${describe(err)}`);
+        verdict = {
+          bucket: 'FAILED',
+          reason: `compiler threw: ${describe(err)}`,
+          sql: null,
+          containsAggregate: false,
+        };
       }
+
+      buckets[verdict.bucket] += 1;
+      if (verdict.bucket === 'QUARANTINED' || verdict.bucket === 'FAILED') {
+        tally(verdict.reason ?? 'NO_REASON_GIVEN');
+      }
+      if (options.writeCompileStatus === true && id !== '') writes.push({ id, verdict });
+    }
+
+    if (writes.length > 0) {
+      await persistVerdicts(db, writes);
+      writes.length = 0;
     }
   }
 
+  // Per reason, largest first, and the whole histogram rather than a sample:
+  // this is the backlog any future fidelity work is drawn from.
+  const histogram = Object.fromEntries([...reasons.entries()].sort((a, b) => b[1] - a[1]));
   const findings = [...reasons.entries()]
     .sort((a, b) => b[1] - a[1])
     .slice(0, limit)
     .map(([reason, count]) => `${count}x ${reason}`);
 
+  const partitioned =
+    buckets.COMPILED + buckets.COMPILED_UNVERIFIED + buckets.QUARANTINED + buckets.FAILED;
   const metrics: Record<string, number> = {
     formulas: total,
     compiled: buckets.COMPILED,
@@ -313,17 +484,20 @@ export async function checkFormulaCompileRate(
     quarantined: buckets.QUARANTINED,
     failed: buckets.FAILED,
     distinctReasons: reasons.size,
+    // The partition must sum. Without this, `FAILED = 0` is satisfiable by
+    // losing rows out of the partition rather than by fixing them.
+    partitioned,
   };
 
-  if (!compile) {
+  if (partitioned !== total) {
     return {
       id: 'formula-compile',
       name,
-      status: 'SKIPPED',
+      status: 'FAIL',
       metrics,
+      histogram,
       findings,
-      reason:
-        'no formula compiler injected — it lives in the backend workspace; run `npm run verify --workspace backend`',
+      reason: `partition sums to ${partitioned} of ${total} formulas — a row escaped every bucket`,
     };
   }
 
@@ -332,12 +506,71 @@ export async function checkFormulaCompileRate(
     name,
     status: buckets.FAILED === 0 ? 'PASS' : 'FAIL',
     metrics,
+    histogram,
     findings,
     reason:
       buckets.FAILED > 0
-        ? `${buckets.FAILED} formula(s) hit a classifier path we do not handle`
+        ? `${buckets.FAILED} formula(s) hit a compiler path we do not handle`
+        : undefined,
+    // Quarantines do not fail the seam, and they do stop the report reading
+    // VERIFIED. A migration whose formulas cannot compile is not ready,
+    // however cleanly it refused them.
+    readinessBlocker:
+      buckets.QUARANTINED > 0
+        ? `${buckets.QUARANTINED} of ${total} calculated field(s) do not compile — see the per-reason histogram`
         : undefined,
   };
+}
+
+/** Widen the injected hook's narrower return shape into a full verdict. */
+function widenHookVerdict(
+  verdict: CompileBucket | { bucket: CompileBucket; reason?: string },
+): CompileVerdict {
+  return typeof verdict === 'string'
+    ? { bucket: verdict, sql: null, containsAggregate: false }
+    : { bucket: verdict.bucket, reason: verdict.reason, sql: null, containsAggregate: false };
+}
+
+/**
+ * Read `source_attrs.elementBindings` without trusting the driver's typing.
+ *
+ * A row whose bindings are missing or malformed resolves nothing, and the
+ * renderer quarantines it as `UNRESOLVED_ELEMENT`. Never a guess.
+ */
+function readBindings(value: unknown): ElementBindings {
+  if (typeof value !== 'object' || value === null) return EMPTY_BINDINGS;
+  const held = (value as { elementBindings?: unknown }).elementBindings;
+  if (typeof held !== 'object' || held === null) return EMPTY_BINDINGS;
+  const part = (key: 'items' | 'parameters' | 'functions'): Record<string, string> => {
+    const inner = (held as Record<string, unknown>)[key];
+    return typeof inner === 'object' && inner !== null ? (inner as Record<string, string>) : {};
+  };
+  return { items: part('items'), parameters: part('parameters'), functions: part('functions') };
+}
+
+/**
+ * Write one page's verdicts back, as a single statement.
+ *
+ * `source_tokens` and `formula` are never touched: the compiled expression is
+ * a function of the token form, and destroying the provenance to store a
+ * derived value is the exact mistake D-055 exists to prevent.
+ */
+async function persistVerdicts(
+  db: VerifyDb,
+  writes: readonly { id: string; verdict: CompileVerdict }[],
+): Promise<void> {
+  const values = writes.map(
+    (w) => sql`(${w.id}::uuid, ${w.verdict.bucket}, ${w.verdict.reason ?? null}, ${w.verdict.sql})`,
+  );
+  await db.execute(
+    sql`UPDATE map_calculated_fields AS f
+        SET compile_status = v.status,
+            compile_reason = v.reason,
+            compiled_sql = v.compiled
+        FROM (VALUES ${sql.join(values, sql`, `)})
+             AS v(id, status, reason, compiled)
+        WHERE f.id = v.id`,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -927,11 +1160,22 @@ export async function verifyMigration(
   return summarise(target, seams);
 }
 
-/** Turn seam results into a status and a blocker list. Pure — easy to test. */
+/**
+ * Turn seam results into a status and a blocker list. Pure — easy to test.
+ *
+ * Two kinds of blocker, one list. A FAIL says a component is broken; a
+ * `readinessBlocker` says the component worked and the estate still is not
+ * usable. Both stop the report saying VERIFIED, because "ready" is a claim
+ * about the migration, not about our code.
+ */
 export function summarise(target: string, seams: SeamResult[]): VerifyReport {
-  const blockers = seams
-    .filter((s) => s.status === 'FAIL')
-    .map((s) => `${s.id}: ${s.reason ?? s.name}`);
+  const blockers: string[] = [];
+  for (const seam of seams) {
+    if (seam.status === 'FAIL') blockers.push(`${seam.id}: ${seam.reason ?? seam.name}`);
+    if (seam.readinessBlocker !== undefined) {
+      blockers.push(`${seam.id}: ${seam.readinessBlocker}`);
+    }
+  }
 
   return {
     target,
@@ -960,6 +1204,14 @@ export function formatVerifyReport(report: VerifyReport): string {
     if (metrics) lines.push(`            ${metrics}`);
     if (seam.reason) lines.push(`            ${seam.reason}`);
     for (const finding of seam.findings) lines.push(`            · ${finding}`);
+    // Per reason, in full — this is what tells the next person which single
+    // renderer improvement buys the most rows back.
+    if (seam.histogram && Object.keys(seam.histogram).length > seam.findings.length) {
+      lines.push('            by reason:');
+      for (const [reason, count] of Object.entries(seam.histogram)) {
+        lines.push(`              ${String(count).padStart(8)}  ${reason}`);
+      }
+    }
   }
 
   lines.push('', `Status: ${report.status}`);

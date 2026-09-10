@@ -710,7 +710,10 @@ function parseArgs(argv: string[]) {
     .command('export', 'Export the EUL metadata as normalized JSON')
     .command('validate', 'Validate EUL referential integrity (add --target to reconcile a migration)')
     .command('run', 'Migrate the EUL into a Discoverer Neo Postgres database')
-    .command('verify', 'Run the five seam checks against an already-migrated --target (D-070)')
+    .command(
+      'verify',
+      'Run the six seam checks against an already-migrated --target (D-070); add --compile to publish the formula partition',
+    )
     .command(
       'reimport-joins',
       'Re-read KEY_CONS and rewrite --target joins and their predicates (Phase 3.2)',

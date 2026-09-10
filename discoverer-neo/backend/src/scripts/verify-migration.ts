@@ -2,7 +2,7 @@
  * Run the six seam checks against an already-migrated database (D-070).
  *
  *   npm run verify --workspace @discoverer-neo/backend
- *   npx tsx src/scripts/verify-migration.ts [--json] [--max-maps N] [--samples N]
+ *   npx tsx src/scripts/verify-migration.ts [--json] [--max-maps N] [--samples N] [--compile]
  *
  * The target is whatever `DATABASE_URL` points at — this reads only, and never
  * re-imports, so it is safe to re-run against a live estate as often as you
