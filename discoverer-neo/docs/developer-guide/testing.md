@@ -495,6 +495,44 @@ reason is the unknown these tests exist to delete, so a classifier that returns
 one gets `no reason given` counted against it in the report — visible, rather
 than blending into the quarantine total.
 
+The vocabulary is applied in **two places, over two different populations**, and
+the same bucket name means a different thing in each. Read the population first:
+
+| | Seam 2 of the verifier | The formula corpus |
+| --- | --- | --- |
+| Population | the 49 819 **stored** formulas | 37 971 aligned (stored, displayed) pairs |
+| Needs | a migrated database | nothing — the corpus is committed |
+| Runs in CI | no | **yes** |
+| Reference rendering | none | Discoverer's own `DisplayFormula`, per row |
+| `COMPILED` | unreachable — nothing may claim a formula works until the Phase 9.1 Oracle contract tests can prove it | rendered, and it reproduces what Discoverer showed |
+| `COMPILED_UNVERIFIED` | parses; never run anywhere | rendered, but the Phase 0.5 anonymiser destroyed the reference, so nothing is left to check it against |
+
+The corpus side is the gate CI runs, because it is the one that needs no
+infrastructure:
+
+```bash
+npm run render-corpus --workspace @discoverer-neo/core
+```
+
+It prints the histogram rather than a percentage — a bare compile rate is this
+project's signature failure mode — and exits non-zero on either of two things:
+a non-empty `FAILED` bucket, or four buckets that stop summing to the whole
+corpus. **The sum is asserted for a reason**: without it, `FAILED = 0` is
+satisfiable by losing rows out of the partition instead of fixing them.
+
+Two ways into `FAILED` on the corpus side, and both are our bug rather than the
+data's:
+
+- an exception that is not a stated refusal, and
+- a rendering that **contradicts a reference the anonymiser left intact**. This
+  is the dangerous one: it means a tree was read wrongly, and a formula the
+  migrator has already written may be a wrong number in a real report.
+
+Each bucket is ratcheted in the direction it is allowed to move — `COMPILED` up,
+the other three down — against `migrate/corpus/agreement-baseline.json`. Raise
+the baseline by hand, in the commit that earns it. `FAILED` is asserted as an
+equality, never a ceiling.
+
 ### The expected-loss allowance file
 
 A migration drops things, and some of that is understood and accepted. Left as

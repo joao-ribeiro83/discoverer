@@ -274,6 +274,53 @@ comparator's own strictness rather than the renderer's reading. See
 
 ---
 
+## Decision 7 — a calculation that names another calculation is expanded at render time
+
+**Discoverer:** a `[6,n]` leaf usually names a plain EUL item, but `n` is
+sometimes another worksheet calculation. Oracle's own dump tool substitutes
+*that calculation's formula* in place of the reference, recursively, so
+`d4wkdmp` prints an `IOFormula` for a two-level chain with the whole tree
+already spliced in.
+
+**Neo:** stores the token string exactly as Discoverer stored it, references
+and all, and expands the chain **when something is rendered** — never at
+migration time (D-056).
+
+**Why render time.** Expansion is a function of the tree plus the worksheet's
+calculation set. Both are already in the database, so nothing is lost by
+deferring it — and improving the renderer then never means re-migrating an
+estate. Expanding on the way in would bake today's understanding into the
+stored data, which is the mistake this whole phase's ordering avoids.
+
+**What this resolved.** The differ compared the parser's stored tokens against
+the dump's expanded `IOFormula` without expanding first, so every chain counted
+as a disagreement. That is all 2 536 of WB-04's "formula disagreements": they
+were Oracle's design being read as our defect. The differ now expands before
+comparing, and reports what expansion did — how many references were
+substituted, the deepest chain it walked, and any refusals by reason.
+
+**The bounds are part of the decision, not an implementation detail.** The
+reference graph comes from customer data, so traversal is bounded in three
+directions before it walks anything:
+
+- **A cycle is refused with the chain named** — `QUARANTINED(CALCULATION_CYCLE)`,
+  never a stack overflow. An unhandled recursion in a request path is an
+  availability defect, and a refusal that cannot say why is not much better than
+  a crash.
+- **Depth is capped** (16), and the deepest chain actually walked is *reported*,
+  so the cap can be checked against what an estate really contains rather than
+  defended as a guess.
+- **Size is capped separately** (20 000 nodes), because depth alone does not
+  bound the work. An acyclic diamond — `d` names `c` twice, `c` names `b` twice,
+  `b` names `a` twice — is four deep and expands to eight leaves; twenty levels
+  of it expands to a million. Substitution turns a DAG into a tree, and a tree
+  is exponential in the DAG.
+
+**Expansion produces nodes, never text.** It is not a splice path: the expanded
+tree goes through `renderSql` exactly as an unexpanded one does, so identifier
+validation, the allowlist and the bind discipline all still apply, once, in the
+one place that owns them.
+
 ## What still needs a live EUL
 
 These are open because no offline source answers them, not because they were
