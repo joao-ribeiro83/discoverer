@@ -11,6 +11,7 @@ export {
   buildConnectString,
   closeAllPools,
   createExecutor,
+  isAlreadyInitialized,
   isTableNotFoundError,
   resolveExecutor,
   EulConnectionError,

@@ -641,10 +641,17 @@ export async function commandReimportJoins(
 
 export async function commandVerify(
   db: VerifyDb,
-  options: { json: boolean; sampleLimit?: number },
+  options: { json: boolean; sampleLimit?: number; compile?: boolean },
   io: CliIO,
 ): Promise<number> {
-  const report = await verifyMigration(db, { sampleLimit: options.sampleLimit });
+  const report = await verifyMigration(db, {
+    sampleLimit: options.sampleLimit,
+    // Read-only unless asked. `--compile` is what publishes the D-059
+    // partition into `compile_status`, and it is re-runnable by construction:
+    // the compiled expression is derived from `source_tokens`, which it never
+    // writes (D-055, D-070).
+    writeCompileStatus: options.compile === true,
+  });
 
   // The report carries the database NAME only. `data_sources` holds
   // `password_enc`, and nothing here reads a column from it.
@@ -705,6 +712,11 @@ function parseArgs(argv: string[]) {
     .option('samples', {
       type: 'number',
       describe: 'Example findings to show per verify seam (default 10)',
+    })
+    .option('compile', {
+      type: 'boolean',
+      describe:
+        'verify: also WRITE each calculated field bucket to compile_status/compile_reason/compiled_sql. Without it, verify only reads.',
     })
     .command('analyze', 'Detect the EUL version, read it, and print an assessment report')
     .command('export', 'Export the EUL metadata as normalized JSON')
@@ -817,6 +829,7 @@ export async function runCli(argv: string[], deps: CliDeps = {}): Promise<number
         {
           json: parsed.json === true,
           sampleLimit: typeof parsed.samples === 'number' ? parsed.samples : undefined,
+          compile: parsed.compile === true,
         },
         io,
       );

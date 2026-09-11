@@ -68,16 +68,18 @@ one of four buckets.
 
 ```
 [PASS   ] formula-compile — every calculated field compiles or is quarantined with a reason
-            formulas=49819 compiled=0 compiledUnverified=49739 quarantined=80 failed=0
-            distinctReasons=3 partitioned=49819
-            · 76x UNFITTED_CODE
+            formulas=49819 compiled=0 compiledUnverified=46685 quarantined=3134 failed=0
+            distinctReasons=6 partitioned=49819
+            · 1593x UNRESOLVED_ELEMENT
+            · 685x UNFITTED_CODE
+            · 649x INVALID_IDENTIFIER
+            · 186x BAD_ARITY
+            · 18x UNKNOWN_SEMANTICS
             · 3x UNREAGGREGABLE
-            · 1x UNKNOWN_SEMANTICS
-            by reason:
-                    76  UNFITTED_CODE
-                     3  UNREAGGREGABLE
-                     1  UNKNOWN_SEMANTICS
 ```
+
+That is the real estate, measured 2026-09-11: 93.71 % of its 49 819 calculated
+fields render to an Oracle expression.
 
 ### The four buckets
 
@@ -98,6 +100,12 @@ of by fixing them, and the check fails outright if the four stop summing.
 `VERIFIED`. The compiler worked; the estate still cannot run those calculations.
 Both appear under `Status:` as blockers — see [Reading the bottom
 line](#reading-the-bottom-line).
+
+Not every quarantine is a gap to close. `INVALID_IDENTIFIER` above is the
+renderer refusing to emit 22 rows of `custom_functions` whose names are
+operators (`!=`, `*`, `/`) rather than functions — correct behaviour on
+metadata the migration passed through. Read the reasons before reading the
+total.
 
 `by reason:` is the whole histogram, not a sample. It is the improvement
 backlog: whichever code tops it is the one worth fitting next.
@@ -143,8 +151,19 @@ nothing for the renderer to read:
             · 49819x NO_SOURCE_TOKENS
 ```
 
-The fix is a maps re-import, which writes `source_tokens` and the element
-bindings beside each formula. No amount of renderer work moves these rows.
+The fix is a maps re-import, which writes `source_tokens`, the element bindings
+and `data_type` beside each formula. No amount of renderer work moves these
+rows. There is no `dn-migrate` command for it — use
+`POST /api/migration/reimport-maps`, or the script behind it:
+
+```bash
+npx tsx src/scripts/reimport-maps.ts <dataSourceId>          # dry run
+npx tsx src/scripts/reimport-maps.ts <dataSourceId> --live
+```
+
+Run it from the environment that has the Oracle Instant Client. **It deletes
+and rebuilds every migrated map**, so any edit made to one since the original
+migration is lost; the dry run reports what it would replace first.
 
 ### 3. `referential-closure` — does everything a map points at hang together?
 

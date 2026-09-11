@@ -287,26 +287,57 @@ async function loadMapScope(
   functionByName: ReadonlyMap<string, FunctionBinding>,
 ): Promise<CompileScope> {
   const columnByItemName = new globalThis.Map<string, ItemBinding>();
+  const register = (key: unknown, name: unknown, column: string): void => {
+    if (typeof key !== 'string' || key === '') return;
+    const lower = key.toLowerCase();
+    // First writer wins, and the query below orders the map's own columns
+    // first, so a displayed column's label is never shadowed by a same-named
+    // item that the map merely has in scope.
+    if (columnByItemName.has(lower)) return;
+    columnByItemName.set(lower, { name: typeof name === 'string' ? name : key, column });
+  };
+
+  // Two populations, in this order.
+  //
+  // 1. The map's own displayed columns, which carry the worksheet's label as
+  //    well as the EUL name — a `[6,n]` binding is a label, and Discoverer
+  //    shows whichever label the worksheet chose.
+  // 2. Every item in the folders the map uses. **A Discoverer calculation may
+  //    reference an item the worksheet does not display**, and resolving only
+  //    against the column list is how 54 664 of the 128 068 element bindings
+  //    inside the quarantined rows came to look unresolvable on the live
+  //    estate. The folder set is the query's own scope, which is the scope
+  //    Discoverer resolves a calculation in; widening to every item in the
+  //    estate instead would let a same-named item from an unrelated folder
+  //    answer, which is a wrong number rather than a refusal.
+  //
+  // An item with no `column_name` is skipped in both: the EUL carries 2 786 of
+  // those, and they have no formula either, so there is nothing to emit. The
+  // renderer refuses them as `UNRESOLVED_ELEMENT`, which is the truth.
   for (const row of await rows(
     db,
-    sql`SELECT i.name AS name, i.column_name AS column_name, mi.display_name AS display_name
+    sql`SELECT i.name AS name, i.column_name AS column_name, mi.display_name AS display_name, 0 AS rank
         FROM map_items mi
         JOIN items i ON i.id = mi.item_id
-        WHERE mi.map_id = ${mapId}::uuid`,
+        WHERE mi.map_id = ${mapId}::uuid
+        UNION ALL
+        SELECT i.name AS name, i.column_name AS column_name, NULL AS display_name, 1 AS rank
+        FROM items i
+        WHERE i.folder_id IN (
+          SELECT scoped.folder_id
+          FROM map_items mi2
+          JOIN items scoped ON scoped.id = mi2.item_id
+          WHERE mi2.map_id = ${mapId}::uuid
+        )
+        ORDER BY rank`,
   )) {
     const column = typeof row.column_name === 'string' ? row.column_name : null;
     if (column === null) continue;
-    // A `[6,n]` binding is a label, and Discoverer shows whichever label the
-    // worksheet chose. Both the EUL name and the worksheet's override are
-    // registered so either spelling resolves; neither is guessed at.
-    for (const key of [row.name, row.display_name]) {
-      if (typeof key === 'string' && key !== '') {
-        columnByItemName.set(key.toLowerCase(), { name: key, column });
-      }
-    }
+    register(row.display_name, row.name, column);
+    register(row.name, row.name, column);
   }
 
-  const treeByCalcName = new globalThis.Map<string, FormulaNode>();
+  const treeByCalcElementId = new globalThis.Map<number, FormulaNode>();
   // One merged binding table per map. Expansion substitutes a sibling's tree,
   // and that subtree's `[6,n]` ids were written against the sibling's own
   // bindings; element ids are workbook-scoped, so merging is sound — and the
@@ -314,20 +345,24 @@ async function loadMapScope(
   const mapBindings: ElementBindings = { items: {}, parameters: {}, functions: {} };
   for (const row of await rows(
     db,
-    sql`SELECT name, source_tokens, source_attrs
+    sql`SELECT source_element_id, source_tokens, source_attrs
         FROM map_calculated_fields
         WHERE map_id = ${mapId}::uuid AND source_tokens IS NOT NULL`,
   )) {
-    if (typeof row.name !== 'string' || typeof row.source_tokens !== 'string') continue;
+    if (typeof row.source_tokens !== 'string') continue;
     const { tree } = parseFormulaTree(row.source_tokens);
-    if (tree !== null) treeByCalcName.set(row.name.toLowerCase(), tree);
+    // Keyed by the element id the `[6,n]` token names, so expansion needs no
+    // name lookup. A row with no `source_element_id` simply cannot be the
+    // target of a reference, and is skipped rather than keyed on a guess.
+    const elementId = typeof row.source_element_id === 'number' ? row.source_element_id : null;
+    if (tree !== null && elementId !== null) treeByCalcElementId.set(elementId, tree);
     const own = readBindings(row.source_attrs);
     Object.assign(mapBindings.items, own.items);
     Object.assign(mapBindings.parameters, own.parameters);
     Object.assign(mapBindings.functions, own.functions);
   }
 
-  return { columnByItemName, treeByCalcName, mapBindings, functionByName };
+  return { columnByItemName, treeByCalcElementId, mapBindings, functionByName };
 }
 
 /**
@@ -391,7 +426,7 @@ export async function checkFormulaCompileRate(
   let scopeMapId: string | null = null;
   let scope: CompileScope = {
     columnByItemName: new globalThis.Map(),
-    treeByCalcName: new globalThis.Map(),
+    treeByCalcElementId: new globalThis.Map(),
     mapBindings: EMPTY_BINDINGS,
     functionByName,
   };

@@ -32,7 +32,7 @@ function scope(over: Partial<CompileScope> = {}): CompileScope {
       ['amount', { name: 'AMOUNT', column: 'AMOUNT' }],
       ['region', { name: 'REGION', column: 'REGION' }],
     ]),
-    treeByCalcName: new Map(),
+    treeByCalcElementId: new Map(),
     mapBindings: EMPTY_BINDINGS,
     functionByName: new Map<string, FunctionBinding>([
       ['PKG_RATE', { name: 'PKG_RATE', arity: null }],
@@ -102,7 +102,10 @@ describe('compileStoredFormula', () => {
         bindings: bindings({ items: { '900': 'Margin', '29': 'REGION' } }),
       }),
       scope({
-        treeByCalcName: new Map([['margin', margin]]),
+        // Keyed by the element id `[6,900]` names, not by the name "Margin":
+        // the parser disambiguates same-named siblings, so the name detour
+        // missed 50 378 bindings on the live estate.
+        treeByCalcElementId: new Map([[900, margin]]),
         // Margin's own `[6,27]` — the substituted subtree brings ids the row
         // itself never named, which is what the merged table is for.
         mapBindings: bindings({ items: { '27': 'AMOUNT' } }),
@@ -148,7 +151,7 @@ describe('compileStoredFormula', () => {
     const self = parseFormulaTree('[1,1]([6,900])').tree!;
     const verdict = compileStoredFormula(
       row({ sourceTokens: '[1,1]([6,900])', bindings: bindings({ items: { '900': 'Self' } }) }),
-      scope({ treeByCalcName: new Map([['self', self]]) }),
+      scope({ treeByCalcElementId: new Map([[900, self]]) }),
     );
     expect(verdict).toMatchObject({ bucket: 'QUARANTINED', reason: 'CALCULATION_CYCLE' });
   });

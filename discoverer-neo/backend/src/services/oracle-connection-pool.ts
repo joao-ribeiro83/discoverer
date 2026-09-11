@@ -83,8 +83,16 @@ function initOracleClientOnce(oracledb: OracleDbModule): void {
     oracledb.initOracleClient({ libDir: config.ORACLE_CLIENT_PATH });
     clientInitialized = true;
   } catch (err) {
-    // A second init in the same process throws; that is harmless.
-    if (/already been initialized/i.test(String(err))) {
+    // A second init in the same process throws; that is harmless, and the
+    // driver says so two different ways: `already been initialized` when the
+    // arguments match, and `NJS-090: … already called with different
+    // arguments` when they do not. Matching on "already" covers both.
+    //
+    // `isAlreadyInitialized` in `@discoverer-neo/core` is the same predicate.
+    // It is deliberately NOT imported: this file is request-path code and
+    // `no-restricted-imports` forbids it reaching into the migration
+    // pipeline, which is a rule worth more than one shared regex.
+    if (/already been initialized|already called/i.test(String(err))) {
       clientInitialized = true;
       return;
     }
