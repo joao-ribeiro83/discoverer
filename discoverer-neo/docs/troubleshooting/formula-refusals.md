@@ -136,6 +136,50 @@ Neo's list of functions it will emit.
 generated, and reaching this reason means a built-in was mapped to something
 outside it — which is a defect in Neo, not in your metadata.
 
+### `CALCULATION_CYCLE`
+
+**What it means.** The calculation refers to another calculation that refers
+back to it, directly or through a chain. There is no value to compute.
+
+Discoverer allows one calculation to use another by name, and Neo substitutes
+the whole chain rather than the name. A loop has no bottom, so it is declined
+with the chain named rather than expanded until something breaks.
+
+**What to do.** Open the calculation in Neo's formula editor and break the
+loop. The refusal names every calculation on the ring.
+
+### `EXPANSION_TOO_DEEP`, `EXPANSION_TOO_LARGE`
+
+**What it means.** The chain of calculations-referring-to-calculations is
+longer than 16 links, or expands to more than 20 000 nodes.
+
+The second is the one that actually happens: a chain that is not a chain but a
+diamond, where several calculations share a parent, multiplies rather than adds.
+
+**What to do.** Flatten the chain. A calculation used by several others can
+usually be written once as a folder item instead, which is computed once rather
+than substituted everywhere.
+
+### `NO_SOURCE_TOKENS`
+
+**What it means.** Neo has the readable text of the formula but not the token
+tree it came from, so there is nothing to compile.
+
+This is **not** a gap in what Neo understands. It happens when the estate was
+migrated by a version of the tool that did not keep the token form, and it
+affects every calculation on such an estate equally.
+
+**What to do.** Re-import the maps. That writes the token form beside each
+formula and the calculations compile normally. Nothing else changes it.
+
+### `TOKENS_NOT_RETAINED`
+
+**What it means.** The same situation as `NO_SOURCE_TOKENS`, reported by the
+older text-based check: the stored formula still visibly contains `[1,102]`-style
+tokens and the tree behind them was not kept.
+
+**What to do.** Re-import the maps.
+
 ---
 
 ## What a refusal does *not* mean
