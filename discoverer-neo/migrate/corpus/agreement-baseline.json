@@ -12,15 +12,47 @@
   "cleanWeightedRate": 99.61,
   "cleanPhaseGate": 99,
   "buckets": {
-    "COMPILED": { "rows": 21760, "occurrences": 36342 },
-    "COMPILED_UNVERIFIED": { "rows": 912, "occurrences": 1487 },
-    "QUARANTINED": { "rows": 76, "occurrences": 142 },
-    "FAILED": { "rows": 0, "occurrences": 0 }
+    "COMPILED": {
+      "rows": 21760,
+      "occurrences": 36342
+    },
+    "COMPILED_UNVERIFIED": {
+      "rows": 912,
+      "occurrences": 1487
+    },
+    "QUARANTINED": {
+      "rows": 76,
+      "occurrences": 142
+    },
+    "FAILED": {
+      "rows": 0,
+      "occurrences": 0
+    }
   },
   "bucketsMeasuredAt": "2026-09-10, Phase 4.4, npm run render-corpus -w @discoverer-neo/core",
   "bucketNote": "The D-059 partition (Phase 4.4). Every corpus row lands in exactly one bucket and the four sum to 22 748 rows / 37 971 occurrences — the test asserts the sum, so FAILED = 0 cannot be met by dropping rows out of the partition. COMPILED is reachable here only because this corpus carries a DisplayFormula for every row; the verifier's partition over the 49 819 STORED formulas has no reference rendering and tops out at COMPILED_UNVERIFIED until the Phase 9.1 Oracle contract tests exist. COMPILED_UNVERIFIED here means the opposite thing and is worth reading carefully: rendered, but the anonymiser destroyed the reference, so nothing is left to check it against. Ratcheted per bucket in the direction each is allowed to move — COMPILED up, the other three down. FAILED is asserted as an equality, never a ceiling.",
   "comparison": "displayMatches — exact byte comparison outside item, parameter and custom-function name spans, which the anonymised corpus (D-114) cannot supply and which unify with a back-reference instead. NOT plain string equality: 99.77% of corpus rows carry an anonymised name, so a === comparison caps at 4.60% weighted however correct the renderer is.",
   "ceiling": "About 96% raw. 912 distinct rows (1 487 occurrences) were destroyed by the Phase 0.5 anonymiser and can never match — a private filter's Name is frequently its own DisplayFormula, so whole display strings were replaced wholesale. formula-decoder-spec.md §11.1 states the one-line fix and needs d4dumps/, which is not on this machine.",
   "gate": "Phase 4.3's acceptance is >= 99% and the raw denominator cannot reach it, so the gate is stated against the clean subset — the spec's own instruction in §11.1, 'state the gates against the clean subset, or rebuild the corpus'. The raw rates stay in this file and stay ratcheted, so the exclusion is visible rather than assumed, and weightedMismatchedUnexplained = 0 is the check that the exclusion is not absorbing real defects.",
-  "note": "A ratchet AND a gate. formula-corpus-agreement.test.ts fails if a change lowers any rate, and separately if the clean rates fall under cleanPhaseGate or the raw rates under phaseGate. Raise these by hand when a change lifts them, in the same commit that lifts them. Both denominators are reported because they answer different questions: distinct is how much of the formula language is covered, weighted is how many real formulas in a real estate would render."
+  "note": "A ratchet AND a gate. formula-corpus-agreement.test.ts fails if a change lowers any rate, and separately if the clean rates fall under cleanPhaseGate or the raw rates under phaseGate. Raise these by hand when a change lifts them, in the same commit that lifts them. Both denominators are reported because they answer different questions: distinct is how much of the formula language is covered, weighted is how many real formulas in a real estate would render.",
+  "sqlBuckets": {
+    "COMPILED": {
+      "rows": 0,
+      "occurrences": 0
+    },
+    "COMPILED_UNVERIFIED": {
+      "rows": 22668,
+      "occurrences": 37808
+    },
+    "QUARANTINED": {
+      "rows": 80,
+      "occurrences": 163
+    },
+    "FAILED": {
+      "rows": 0,
+      "occurrences": 0
+    }
+  },
+  "sqlBucketsMeasuredAt": "2026-09-11, Phase 4.5, npm run render-corpus -w @discoverer-neo/core",
+  "sqlBucketNote": "The D-059 partition over the SQL rendering rather than the display rendering, and the two answer different questions. The display partition above asks whether the tree renders back to what Discoverer printed (fidelity, checkable because every corpus row carries a DisplayFormula). This asks whether it renders to an Oracle expression at all, which has no reference to check against and so can never reach COMPILED. Every element resolves when this is measured, deliberately: that isolates renderer coverage from the per-map item lookup, so a row here is a formula-language gap while UNRESOLVED_ELEMENT on a live estate is a metadata question. This is the projection of what `dn-migrate verify --compile` will report once the estate carries its token forms (D-055); the live estate, migrated before dual storage, reports NO_SOURCE_TOKENS for all 49 819 rows until the maps are re-imported. Ratcheted per bucket in the direction each may move, with FAILED asserted as an equality. Backlog behind the 163 quarantined occurrences: UNFITTED_CODE 142 (76 rows), UNKNOWN_SEMANTICS 18 (1 row), UNREAGGREGABLE 3 (3 rows)."
 }

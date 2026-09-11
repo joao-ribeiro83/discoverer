@@ -22,10 +22,13 @@
 import { readFileSync } from 'node:fs';
 
 import {
+  createBindCollector,
   DISPLAY_NAME_MARK,
   displayMatches,
   Quarantined,
   renderDisplay,
+  renderSql,
+  type SqlRenderContext,
 } from '../semantics/render.js';
 import type { FormulaBucket } from './formula-compile.js';
 import { parseFormulaTree } from './workbook-parser.js';
@@ -446,5 +449,106 @@ export function reportRendering(rows: readonly CorpusRow[], sampleLimit = 10): R
     quarantineHistogram: [...byReason.entries()]
       .map(([reason, counts]) => ({ reason, ...counts }))
       .sort((a, b) => b.occurrences - a.occurrences),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// The SQL partition — Phase 4.5's projection
+// ---------------------------------------------------------------------------
+
+export interface SqlCompileReport {
+  distinctPairs: number;
+  totalOccurrences: number;
+  buckets: BucketPartition;
+  /** Every refusal reason, weighted, largest first. The improvement backlog. */
+  quarantineHistogram: { reason: string; rows: number; occurrences: number }[];
+}
+
+/**
+ * Render every corpus row to **SQL** and partition the result (D-059).
+ *
+ * `reportRendering` above measures the *display* form against what Discoverer
+ * printed — fidelity. This measures the *SQL* form, which has no reference to
+ * check against and so can never reach `COMPILED`; what it answers is whether
+ * the renderer has a reading of the tree at all.
+ *
+ * **Why it exists beside `dn-migrate verify --compile`.** The verifier is the
+ * real compile run, and it reports whatever the estate happens to carry — on
+ * an estate migrated before dual storage, that is `NO_SOURCE_TOKENS` for every
+ * row and says nothing about the renderer. This runs the same renderer over
+ * the same estate's committed token strings, so the projection is reproducible
+ * in CI with no database and no Oracle.
+ *
+ * Every element resolves, deliberately. That isolates renderer coverage from
+ * the per-map item lookup: a row that quarantines here is a formula language
+ * gap, while `UNRESOLVED_ELEMENT` on the live run is a metadata question.
+ */
+export function reportSqlCompile(rows: readonly CorpusRow[]): SqlCompileReport {
+  const buckets: BucketPartition = {
+    COMPILED: { rows: 0, occurrences: 0 },
+    COMPILED_UNVERIFIED: { rows: 0, occurrences: 0 },
+    QUARANTINED: { rows: 0, occurrences: 0 },
+    FAILED: { rows: 0, occurrences: 0 },
+  };
+  const byReason = new Map<string, { rows: number; occurrences: number }>();
+  let totalOccurrences = 0;
+
+  const put = (bucket: FormulaBucket, occurrences: number): void => {
+    buckets[bucket].rows += 1;
+    buckets[bucket].occurrences += occurrences;
+  };
+  const tally = (reason: string, occurrences: number): void => {
+    const seen = byReason.get(reason) ?? { rows: 0, occurrences: 0 };
+    seen.rows += 1;
+    seen.occurrences += occurrences;
+    byReason.set(reason, seen);
+  };
+
+  for (const row of rows) {
+    totalOccurrences += row.occurrences;
+    const { tree } = parseFormulaTree(row.io);
+    if (tree === null) {
+      put('QUARANTINED', row.occurrences);
+      tally('PARSE_FAILED', row.occurrences);
+      continue;
+    }
+    try {
+      const result = renderSql(tree, permissiveContext());
+      if (result.ok) {
+        // Never COMPILED: no Oracle has run this. Phase 9.1 owns that bucket.
+        put('COMPILED_UNVERIFIED', row.occurrences);
+      } else {
+        put('QUARANTINED', row.occurrences);
+        tally(result.reason, row.occurrences);
+      }
+    } catch (err) {
+      // The renderer threw rather than refusing. That is our bug, and FAILED
+      // is the only bucket CI gates on.
+      put('FAILED', row.occurrences);
+      tally(`THREW_${err instanceof Error ? err.name : 'UNKNOWN'}`, row.occurrences);
+    }
+  }
+
+  return {
+    distinctPairs: rows.length,
+    totalOccurrences,
+    buckets,
+    quarantineHistogram: [...byReason.entries()]
+      .map(([reason, counts]) => ({ reason, ...counts }))
+      .sort((a, b) => b.occurrences - a.occurrences),
+  };
+}
+
+/**
+ * A context in which every element resolves. See `reportSqlCompile` — the
+ * point is to measure the renderer, not the estate's metadata.
+ */
+function permissiveContext(): SqlRenderContext {
+  const binder = createBindCollector();
+  return {
+    resolveItem: (id) => ({ name: `ITEM_${id}`, column: `COL_${id}` }),
+    resolveParameter: (id) => `P_${id}`,
+    resolveFunction: (id) => ({ name: `FN_${id}`, arity: null }),
+    bind: binder.bind,
   };
 }
