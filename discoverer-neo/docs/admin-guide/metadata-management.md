@@ -351,6 +351,45 @@ Users can drill from year → quarter → month → date in reports.
 1. Click hierarchy → **Delete**
 2. Drill-down becomes unavailable for maps using this hierarchy
 
+### Hierarchies are trees, not numbered lists
+
+A level can have more than one child, so a hierarchy can branch into
+alternate drill paths. Each level records its **parent**; the level number you
+see is derived from that, by counting steps down from the top. Two levels at
+the same depth is normal and allowed.
+
+A level whose item could not be resolved is **kept and flagged**, not removed.
+Shortening someone's drill path silently is worse than showing a gap.
+
+### Hierarchies migrated from Discoverer
+
+Discoverer stores hierarchies outside any business area. Discoverer Neo needs
+one, so the migration works it out from the hierarchy's own levels: a level
+names an item, the item belongs to a folder, and the folder belongs to a
+business area. Where the levels reach more than one business area, the **top
+level's** business area is used, and the others are listed in a migration
+warning.
+
+**Date hierarchies are not imported.** In Discoverer, a *date hierarchy* is a
+template — Year, Quarter, Month, Day — that an administrator applies to a date
+column, and Discoverer then auto-generates one hierarchy per column from it.
+Those generated copies are machinery, not design: they all say the same four
+things. Discoverer Neo builds a date drill path from the date item instead, so
+neither the templates nor their generated copies are carried across.
+
+Every skipped hierarchy is counted and named in the migration report, so the
+number is auditable:
+
+| Reason in the report | What it means |
+| --- | --- |
+| `HIER_DATE_TEMPLATE` | A Discoverer date-hierarchy template. Regenerated, not imported. |
+| `HIER_SYSTEM_GENERATED` | A hierarchy Discoverer generated from a template, not one a person authored. |
+| `HIER_NO_BUSINESS_AREA` | No level's item resolved to a business area. |
+
+A hand-authored hierarchy is migrated in full — its tree, its depths and its
+items. If a migration reports zero hierarchies, check the report: on an estate
+that only ever used date hierarchies, zero is the correct answer.
+
 ## Metadata Caching
 
 Metadata (business areas, folders, items, joins, hierarchies) is cached in Redis for performance.
