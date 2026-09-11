@@ -2,7 +2,7 @@ import type { Folder } from '../../db/schema.js';
 import { SqlGenerationError, type MapDefinition } from '../../types/sql.js';
 import { effectiveFolderSet, type EffectiveFolderSet } from './folder-set.js';
 import { effectiveAggregate } from './select-clause.js';
-import { AGGREGATE_FUNCTIONS } from './formula-parser.js';
+import { containsAggregateCall } from './formula-parser.js';
 import {
   RE_AGGREGATE,
   UNREAGGREGATABLE,
@@ -677,17 +677,6 @@ function axisMapItemIds(def: MapDefinition, folderIds: Set<string>): string[] {
     )
     .sort((a, b) => a.mapItem.displayOrder - b.mapItem.displayOrder)
     .map(({ mapItem }) => mapItem.id);
-}
-
-/**
- * Whether a formula calls an aggregate. Deliberately crude: it only has to be
- * conservative enough to reach a refusal, and the parser does the real work
- * everywhere a formula becomes SQL.
- */
-function containsAggregateCall(formula: string): boolean {
-  return [...AGGREGATE_FUNCTIONS].some((fn) =>
-    new RegExp(`\\b${fn}\\s*\\(`, 'i').test(formula),
-  );
 }
 
 function folderNamer(def: MapDefinition): (folderId: string) => string {

@@ -94,3 +94,25 @@ export const UNREAGGREGABLE_FUNCTIONS = new Set([
 export function isAllowedFunction(name: string): boolean {
   return AGGREGATE_FUNCTIONS.has(name) || SCALAR_FUNCTIONS.has(name);
 }
+
+/**
+ * Whether a string calls an aggregate. Deliberately crude, and never a
+ * substitute for the parser's `containsAggregate`, which reads the tree.
+ *
+ * Two callers, both of which only need it to be conservative:
+ *
+ * - On **emitted SQL**, where it is exact: every identifier is already
+ *   double-quoted, so a column called `SUM_TOTAL` reads as `"SUM_TOTAL"` and
+ *   cannot be followed by `(`. `select-clause.ts` uses it this way to keep an
+ *   already-aggregating expression out of GROUP BY (BE-05).
+ * - On a **stored Discoverer formula**, where it can over-report — a bare item
+ *   named `SUM (x)` would match. The planner uses it only to decide whether a
+ *   calculation might aggregate, and over-reporting there costs a refusal, not
+ *   a wrong number.
+ *
+ * Do not read it as a truth about a formula a person typed. One declaration,
+ * for the same BE-09 reason as the sets above.
+ */
+export function containsAggregateCall(sql: string): boolean {
+  return [...AGGREGATE_FUNCTIONS].some((fn) => new RegExp(`\\b${fn}\\s*\\(`, 'i').test(sql));
+}
