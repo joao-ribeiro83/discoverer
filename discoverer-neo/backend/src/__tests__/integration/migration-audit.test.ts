@@ -198,8 +198,10 @@ describe('EUL migration into REAL Postgres', () => {
       expect(await countPrefixed('hierarchy_levels')).toBe(3);
       expect(await countPrefixed('custom_functions')).toBe(1);
       expect(await countPrefixed('maps')).toBe(1);
-      // AP 800 (JSMITH), 801 (MJONES via folder) and 802 (SALES_ROLE).
-      expect(await countPrefixed('user_business_area_grants')).toBe(3);
+      // AP 800 (JSMITH) and 802 (SALES_ROLE) are the business-area grants;
+      // 801 is a workbook share and 803 an EUL-wide privilege - neither is
+      // representable as a business-area grant.
+      expect(await countPrefixed('user_business_area_grants')).toBe(2);
     } finally {
       await close();
     }

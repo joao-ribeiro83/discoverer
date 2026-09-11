@@ -27,6 +27,7 @@ import type {
   ColumnMapping,
   ColumnType,
   CustomFunction,
+  DateTemplateLevel,
   EulSchemaAdapter,
   EulUser,
   EulVersion,
@@ -198,12 +199,25 @@ const HIER_COLUMNS: ColumnSpec[] = [
   { name: 'HI_ID', type: 'number', required: true, mapsTo: 'sourceId' },
 ];
 
-/** Probed on HIERARCHIES. [?] */
+/**
+ * Probed on HIERARCHIES.
+ *
+ * There is deliberately no `BA_ID` here: the live EUL4 table has no
+ * business-area column and never had one (`EUL_SCHEMA_GROUND_TRUTH.md` 3.6).
+ * The business area is derived by `resolveHierarchyBusinessAreas`.
+ *
+ * `HI_TYPE`, `HI_SYS_GENERATED`, `IBH_DBH_ID` and `DBH_DEFAULT` are how a
+ * date-hierarchy template and its auto-stamped instances are told apart from
+ * a hand-authored drill path — see `transformHierarchy`. [?]
+ */
 const HIER_OPTIONAL_COLUMNS = [
   'HI_NAME',
   'HI_DESCRIPTION',
   'HI_DEVELOPER_KEY',
-  'BA_ID',
+  'HI_TYPE',
+  'HI_SYS_GENERATED',
+  'IBH_DBH_ID',
+  'DBH_DEFAULT',
 ] as const;
 
 /**
@@ -216,16 +230,37 @@ const HIER_NODE_COLUMNS: ColumnSpec[] = [
 ];
 
 /**
- * The node→item link and node label are not attested offline. Candidates are
- * probed in order and the first present one wins; if none exist the node keeps
- * a null item, and Neo skips that level with a warning rather than the
- * migration inventing an association. [?]
+ * `HN_NAME` is the node label. The node→item link is NOT on this table: a live
+ * EUL4 `HI_NODES` has no `*_EXP_ID` column at all. The link lives in
+ * `IG_EXP_LINKS` (`IEL_TYPE = 'HIL'`, `HIL_HN_ID` -> `HIL_EXP_ID`), which is
+ * also the first hop of the business-area chain. `HN_EXP_ID`/`HN_IT_EXP_ID`
+ * stay in the probe list because no source confirms their absence on EUL5;
+ * where one exists it wins, and `IG_EXP_LINKS` fills the rest. [?]
  */
 const HIER_NODE_OPTIONAL_COLUMNS = [
   'HN_EXP_ID',
   'HN_IT_EXP_ID',
   'HN_NAME',
 ] as const;
+
+/**
+ * `IG_EXP_LINKS` — the node -> item link, and with it the only route from a
+ * hierarchy to a business area. `IEL_TYPE` discriminates: `HIL` rows are
+ * hierarchy links (the `KIL_*` columns belong to join links and are null).
+ */
+const HIER_EXP_LINK_COLUMNS: ColumnSpec[] = [
+  { name: 'HIL_HN_ID', type: 'number', required: false, mapsTo: 'nodeId', defaultValue: null },
+  { name: 'HIL_EXP_ID', type: 'number', required: false, mapsTo: 'itemId', defaultValue: null },
+  { name: 'IEL_TYPE', type: 'string', required: false, mapsTo: 'linkType', defaultValue: null },
+];
+
+/** `DBH_NODES` — the levels of a `DBH` date-hierarchy template. */
+const DATE_TEMPLATE_NODE_COLUMNS: ColumnSpec[] = [
+  { name: 'DHN_ID', type: 'number', required: true, mapsTo: 'sourceId' },
+  { name: 'DHN_HI_ID', type: 'number', required: true, mapsTo: 'hierarchyId' },
+  { name: 'DHN_NAME', type: 'string', required: false, mapsTo: 'name', defaultValue: null },
+  { name: 'DHN_DATA_FMT_MSK', type: 'string', required: false, mapsTo: 'dataFormatMask', defaultValue: null },
+];
 
 /** `HI_SEGMENTS` — the parent/child edges that give the tree its shape. */
 const HIER_SEGMENT_COLUMNS: ColumnSpec[] = [
@@ -305,15 +340,24 @@ const GRANT_COLUMNS: ColumnSpec[] = [
 ];
 
 /**
- * Target-id columns on `ACCESS_PRIVS`. `GD_DOC_ID` is confirmed; the
- * business-area and folder equivalents are NOT confirmed offline, so all of
- * these are probed rather than assumed. [?]
+ * Target-id and discriminator columns on `ACCESS_PRIVS`, all probed.
+ *
+ * `AP_TYPE` is Oracle's own discriminator and the only reliable one — `GBA` =
+ * business area, `GD` = workbook, `GP` = EUL-wide privilege. The id columns
+ * agree with it but cannot stand in for it: a `GP` row has every id null, so
+ * reading the ids alone cannot tell an EUL-wide privilege from a broken row.
+ *
+ * There is deliberately no `GO_OBJ_ID`: the live EUL4 table has no
+ * folder-grant column, so a folder-level grant is not a thing this schema can
+ * express. `AP_PRIV_LEVEL` exists but its code table does not appear in any
+ * Oracle source in this corpus — it is reported, never interpreted.
  */
 const GRANT_OPTIONAL_COLUMNS = [
-  'GD_DOC_ID',
   'AP_ID',
+  'AP_TYPE',
+  'AP_PRIV_LEVEL',
   'GBA_BA_ID',
-  'GO_OBJ_ID',
+  'GD_DOC_ID',
 ] as const;
 
 /** `EUL_USERS` — the grantee directory. `EU_ROLE_FLAG` marks DB roles. */
@@ -369,6 +413,8 @@ export function createEulSchemaAdapter(version: EulVersionInfo): EulSchemaAdapte
     getHierarchyColumns: () => toMappings(HIER_COLUMNS, version.version),
     getHierarchyNodeColumns: () => toMappings(HIER_NODE_COLUMNS, version.version),
     getHierarchySegmentColumns: () => toMappings(HIER_SEGMENT_COLUMNS, version.version),
+    getHierarchyExpLinkColumns: () => toMappings(HIER_EXP_LINK_COLUMNS, version.version),
+    getDateTemplateNodeColumns: () => toMappings(DATE_TEMPLATE_NODE_COLUMNS, version.version),
     getDocumentColumns: () => toMappings(DOC_COLUMNS, version.version),
     getFunctionColumns: () => toMappings(FUN_COLUMNS, version.version),
     getUserColumns: () => toMappings(USER_COLUMNS, version.version),
@@ -1088,6 +1134,46 @@ export function orderHierarchyNodes(
   return ordered;
 }
 
+/**
+ * A hierarchy's business areas, derived - `HIERARCHIES` has no BA column.
+ *
+ * The chain is four hops, and every one of them is a table the migration would
+ * otherwise never open for this purpose:
+ *
+ *     HI_NODES.HN_ID
+ *       -> IG_EXP_LINKS (IEL_TYPE = 'HIL', HIL_HN_ID -> HIL_EXP_ID)
+ *       -> EXPRESSIONS.IT_OBJ_ID                (the level's item -> its folder)
+ *       -> BA_OBJ_LINKS.BOL_OBJ_ID -> BOL_BA_ID (the folder -> its business areas)
+ *
+ * A hierarchy can therefore reach more than one business area, and Neo's
+ * `hierarchies.business_area_id` is a single NOT NULL column. THE RULE: the
+ * business area of the root-most level that resolves one wins, because a drill
+ * path is entered at its root; every other one it reaches is carried in
+ * `spannedBusinessAreaIds` and warned about rather than dropped. Nodes arrive
+ * root-first from `orderHierarchyNodes`, so "first resolved" is "root-most".
+ *
+ * Measured on the live EUL4 estate: 491 of 508 hierarchies reach exactly one
+ * business area, 17 reach none, and none reaches two. The rule exists so that
+ * an estate which does span two is handled by a decision rather than by
+ * whichever row Oracle happened to return first.
+ */
+export function resolveHierarchyBusinessAreas(
+  nodes: HierarchyNode[],
+  basByFolder: Map<number, number[]>,
+  folderByItem: Map<number, number>,
+): number[] {
+  const out: number[] = [];
+  for (const node of nodes) {
+    if (node.itemId === null) continue;
+    const folderId = folderByItem.get(node.itemId);
+    if (folderId === undefined) continue;
+    for (const baId of basByFolder.get(folderId) ?? []) {
+      if (!out.includes(baId)) out.push(baId);
+    }
+  }
+  return out;
+}
+
 export async function readHierarchies(
   adapter: EulSchemaAdapter,
   source: EulSource,
@@ -1099,7 +1185,7 @@ export async function readHierarchies(
     adapter.getTableName('HIERARCHIES'),
     HIER_OPTIONAL_COLUMNS,
   );
-  const hierarchies = (await readEntity(
+  const hierarchies = await readEntity(
     execute,
     adapter,
     'HIERARCHIES',
@@ -1108,11 +1194,14 @@ export async function readHierarchies(
       ...optionalMappings(hierPresent, [
         { name: 'HI_NAME', type: 'string', mapsTo: 'name' },
         { name: 'HI_DESCRIPTION', type: 'string', mapsTo: 'description' },
-        { name: 'BA_ID', type: 'number', mapsTo: 'businessAreaId' },
+        { name: 'HI_TYPE', type: 'string', mapsTo: 'hierarchyType' },
+        { name: 'HI_SYS_GENERATED', type: 'boolean', mapsTo: 'sysGenerated' },
+        { name: 'IBH_DBH_ID', type: 'number', mapsTo: 'fromDateTemplateId' },
+        { name: 'DBH_DEFAULT', type: 'boolean', mapsTo: 'isDefaultDateTemplate' },
       ]),
     ],
     { orderBy: 'HI_ID' },
-  )) as unknown as Hierarchy[];
+  );
 
   const nodePresent = await probeColumns(
     execute,
@@ -1139,6 +1228,31 @@ export async function readHierarchies(
     { orderBy: 'HN_HI_ID, HN_ID' },
   )) as unknown as HierarchyNode[];
 
+  // Node -> item. On a live EUL4, `HI_NODES` carries no item column at all, so
+  // without this hop every level in the estate reads as item-less.
+  const itemByNode = new Map<number, number>();
+  if (adapter.hasTable('IG_EXP_LINKS')) {
+    try {
+      const links = await readEntity(
+        execute,
+        adapter,
+        'IG_EXP_LINKS',
+        adapter.getHierarchyExpLinkColumns(),
+      );
+      for (const link of links) {
+        // KIL rows are join links; only HIL rows are hierarchy links.
+        if (link.linkType !== null && link.linkType !== 'HIL') continue;
+        const nodeId = link.nodeId as number | null;
+        const itemId = link.itemId as number | null;
+        if (nodeId !== null && itemId !== null && !itemByNode.has(nodeId)) {
+          itemByNode.set(nodeId, itemId);
+        }
+      }
+    } catch (err) {
+      if (!(err instanceof EulReadError) || !isTableNotFoundError(err.cause)) throw err;
+    }
+  }
+
   // Edges. A missing segments table just means every node is a root.
   const parentOf = new Map<number, number>();
   if (adapter.hasTable('HI_SEGMENTS')) {
@@ -1159,24 +1273,129 @@ export async function readHierarchies(
     }
   }
 
+  // Date-template levels, for the `DBH` rows. Their levels are NOT in
+  // `HI_NODES` - a template has none.
+  const templateLevels = new Map<number, DateTemplateLevel[]>();
+  if (adapter.hasTable('DBH_NODES')) {
+    try {
+      const rows = await readEntity(
+        execute,
+        adapter,
+        'DBH_NODES',
+        adapter.getDateTemplateNodeColumns(),
+        { orderBy: 'DHN_HI_ID, DHN_ID' },
+      );
+      for (const row of rows) {
+        const hierId = row.hierarchyId as number | null;
+        if (hierId === null) continue;
+        const list = templateLevels.get(hierId) ?? [];
+        list.push({
+          sourceId: row.sourceId as number,
+          name: dbString(row.name ?? ''),
+          dataFormatMask: (row.dataFormatMask as string | null) ?? null,
+        });
+        templateLevels.set(hierId, list);
+      }
+    } catch (err) {
+      if (!(err instanceof EulReadError) || !isTableNotFoundError(err.cause)) throw err;
+    }
+  }
+
+  // The last two hops: item -> folder -> business areas.
+  const folderByItem = await readItemFolderMap(adapter, execute);
+  const basByFolder = await readFolderBusinessAreaMap(adapter, execute);
+
   const byHierarchy = new Map<number, HierarchyNode[]>();
   for (const node of nodes) {
     if (node.hierarchyId === null) continue;
     const list = byHierarchy.get(node.hierarchyId) ?? [];
-    list.push({ ...node, name: node.name ?? `Node ${node.sourceId}`, itemId: node.itemId ?? null });
+    list.push({
+      ...node,
+      name: node.name ?? `Node ${node.sourceId}`,
+      itemId: node.itemId ?? itemByNode.get(node.sourceId) ?? null,
+    });
     byHierarchy.set(node.hierarchyId, list);
   }
 
-  return hierarchies.map((h) => ({
-    ...h,
-    name: h.name ?? `Hierarchy ${h.sourceId}`,
-    businessAreaId: h.businessAreaId ?? null,
-    createdBy: null,
-    createdAt: null,
-    updatedBy: null,
-    updatedAt: null,
-    nodes: orderHierarchyNodes(byHierarchy.get(h.sourceId) ?? [], parentOf),
-  }));
+  return hierarchies.map((h) => {
+    const sourceId = h.sourceId as number;
+    const ordered = orderHierarchyNodes(byHierarchy.get(sourceId) ?? [], parentOf);
+    const spanned = resolveHierarchyBusinessAreas(ordered, basByFolder, folderByItem);
+    return {
+      sourceId,
+      businessAreaId: spanned[0] ?? null,
+      spannedBusinessAreaIds: spanned,
+      hierarchyType: (h.hierarchyType as string | null) ?? null,
+      sysGenerated: h.sysGenerated === true,
+      fromDateTemplateId: (h.fromDateTemplateId as number | null) ?? null,
+      isDefaultDateTemplate: h.isDefaultDateTemplate === true,
+      dateTemplateLevels: templateLevels.get(sourceId) ?? [],
+      name: (h.name as string | null) ?? `Hierarchy ${sourceId}`,
+      description: (h.description as string | null) ?? null,
+      createdBy: null,
+      createdAt: null,
+      updatedBy: null,
+      updatedAt: null,
+      nodes: ordered,
+    } satisfies Hierarchy;
+  });
+}
+
+/** `EXPRESSIONS.EXP_ID` -> `IT_OBJ_ID` - which folder an item belongs to. */
+async function readItemFolderMap(
+  adapter: EulSchemaAdapter,
+  execute: OracleExecutor,
+): Promise<Map<number, number>> {
+  const out = new Map<number, number>();
+  try {
+    const rows = await readEntity(execute, adapter, 'EXPRESSIONS', [
+      { name: 'EXP_ID', type: 'number', required: true, mapsTo: 'itemId', existsInSource: true },
+      {
+        name: 'IT_OBJ_ID',
+        type: 'number',
+        required: false,
+        defaultValue: null,
+        mapsTo: 'folderId',
+        existsInSource: true,
+      },
+    ]);
+    for (const row of rows) {
+      const itemId = row.itemId as number | null;
+      const folderId = row.folderId as number | null;
+      if (itemId !== null && folderId !== null) out.set(itemId, folderId);
+    }
+  } catch (err) {
+    if (!(err instanceof EulReadError) || !isTableNotFoundError(err.cause)) throw err;
+  }
+  return out;
+}
+
+/** `BA_OBJ_LINKS` - a folder's business areas. Many-to-many by design. */
+async function readFolderBusinessAreaMap(
+  adapter: EulSchemaAdapter,
+  execute: OracleExecutor,
+): Promise<Map<number, number[]>> {
+  const out = new Map<number, number[]>();
+  if (!adapter.hasTable('BA_OBJ_LINKS')) return out;
+  try {
+    const links = await readEntity(
+      execute,
+      adapter,
+      'BA_OBJ_LINKS',
+      adapter.getBusinessAreaLinkColumns(),
+    );
+    for (const link of links) {
+      const folderId = link.folderId as number | null;
+      const baId = link.businessAreaId as number | null;
+      if (folderId === null || baId === null) continue;
+      const list = out.get(folderId) ?? [];
+      if (!list.includes(baId)) list.push(baId);
+      out.set(folderId, list);
+    }
+  } catch (err) {
+    if (!(err instanceof EulReadError) || !isTableNotFoundError(err.cause)) throw err;
+  }
+  return out;
 }
 
 export async function readCustomFunctions(
@@ -1323,11 +1542,17 @@ async function readWorkbookBodies(
 }
 
 /**
- * Grants — `ACCESS_PRIVS`, with the grantee resolved through `EUL_USERS`.
+ * Grants - `ACCESS_PRIVS`, with the grantee resolved through `EUL_USERS`.
  *
- * The privilege target columns beyond `GD_DOC_ID` are unconfirmed offline, so
- * they are probed. A grant with no resolvable target is reported at level
- * `EUL` (an EUL-wide privilege) rather than being silently dropped.
+ * `AP_TYPE` is the discriminator, not the id columns. Oracle spells the three
+ * kinds `GBA` (business area), `GD` (workbook) and `GP` (an EUL-wide
+ * privilege, whose code is `GP_APP_ID` and whose id columns are all null).
+ * Reading the ids alone cannot tell a `GP` row from a broken one, so `AP_TYPE`
+ * wins where it exists and the ids are only the fallback.
+ *
+ * There is no folder-level grant: a live EUL4 `ACCESS_PRIVS` has no
+ * `GO_OBJ_ID` column, so `BA_OBJ_LINKS` plays no part here. That link table is
+ * what binds *folders* to business areas, and a grant never names a folder.
  */
 export async function readGrants(
   adapter: EulSchemaAdapter,
@@ -1344,9 +1569,10 @@ export async function readGrants(
     ...adapter.getGrantColumns(),
     ...optionalMappings(present, [
       { name: 'AP_ID', type: 'number', mapsTo: 'sourceId' },
+      { name: 'AP_TYPE', type: 'string', mapsTo: 'grantType' },
+      { name: 'AP_PRIV_LEVEL', type: 'number', mapsTo: 'privLevel' },
       { name: 'GD_DOC_ID', type: 'number', mapsTo: 'documentId' },
       { name: 'GBA_BA_ID', type: 'number', mapsTo: 'businessAreaId' },
-      { name: 'GO_OBJ_ID', type: 'number', mapsTo: 'folderId' },
     ]),
   ];
 
@@ -1360,21 +1586,24 @@ export async function readGrants(
   return rows.map((row, idx) => {
     const user = byId.get(row.granteeId as number);
     const businessAreaId = (row.businessAreaId as number | null) ?? null;
-    const folderId = (row.folderId as number | null) ?? null;
     const documentId = (row.documentId as number | null) ?? null;
+    const grantType = ((row.grantType as string | null) ?? '').trim().toUpperCase() || null;
     const level: Grant['level'] =
-      businessAreaId !== null
+      grantType === 'GBA'
         ? 'BUSINESS_AREA'
-        : folderId !== null
-          ? 'FOLDER'
-          : documentId !== null
-            ? 'DOCUMENT'
-            : 'EUL';
+        : grantType === 'GD'
+          ? 'DOCUMENT'
+          : grantType === 'GP'
+            ? 'EUL'
+            : businessAreaId !== null
+              ? 'BUSINESS_AREA'
+              : documentId !== null
+                ? 'DOCUMENT'
+                : 'EUL';
     const privCode = (row.privCode as number | null) ?? null;
     return {
       sourceId: (row.sourceId as number | null) ?? idx,
       businessAreaId,
-      folderId,
       documentId,
       // Fall back to the raw EU_ID when the directory has no matching row, so
       // an unresolvable grant is still reportable rather than blank.
@@ -1384,6 +1613,8 @@ export async function readGrants(
       // GP_APP_ID's code table is undocumented offline; carry the number
       // through as a string so the transform's map can grow once decoded.
       privType: privCode === null ? null : String(privCode),
+      privLevel: (row.privLevel as number | null) ?? null,
+      grantType,
       level,
       createdBy: null,
       createdAt: (row.createdAt as Date | null) ?? null,

@@ -189,10 +189,10 @@ describe('readEulSchema', () => {
     expect(data.conditions).toHaveLength(0);
     expect(data.securityConditions).toHaveLength(0);
     expect(data.joins).toHaveLength(1);
-    expect(data.hierarchies).toHaveLength(1);
+    expect(data.hierarchies).toHaveLength(3);
     expect(data.customFunctions).toHaveLength(1);
     expect(data.users.map((u) => u.username)).toEqual(['JSMITH', 'MJONES', 'SALES_ROLE']);
-    expect(data.grants).toHaveLength(3);
+    expect(data.grants).toHaveLength(4);
     expect(data.workbooks).toHaveLength(1);
     expect(data.workbookUsage).toEqual([]);
   });

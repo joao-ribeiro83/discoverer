@@ -809,18 +809,19 @@ export function validateEulData(eul: EulReadResult): ValidationResult {
     });
   }
 
-  // Grants referencing missing business areas / folders.
+  // Grants referencing missing business areas. A grant never names a folder:
+  // `ACCESS_PRIVS` has no folder-grant column.
   const brokenGrants: number[] = [];
   for (const grant of data.grants) {
-    const baMissing = grant.businessAreaId !== null && !baIds.has(grant.businessAreaId);
-    const folderMissing = grant.folderId !== null && !folderIds.has(grant.folderId);
-    if (baMissing || folderMissing) brokenGrants.push(grant.sourceId);
+    if (grant.businessAreaId !== null && !baIds.has(grant.businessAreaId)) {
+      brokenGrants.push(grant.sourceId);
+    }
   }
   if (brokenGrants.length > 0) {
     issues.push({
       severity: 'warning',
       code: 'GRANT_BROKEN_REF',
-      message: `${brokenGrants.length} grant(s) reference a missing business area or folder.`,
+      message: `${brokenGrants.length} grant(s) reference a missing business area.`,
       objectIds: brokenGrants,
     });
   }
