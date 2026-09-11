@@ -636,14 +636,109 @@ describe('unified read functions', () => {
       const { adapter, execute } = await adapterFor(eul5Db());
       const hierarchies = await readHierarchies(adapter, execute);
 
-      expect(hierarchies).toHaveLength(1);
+      expect(hierarchies).toHaveLength(3); // 500 authored, 501 template, 502 instance
+      const authored = hierarchies.find((h) => h.sourceId === 500);
       // Fixture tree: 510 (root) → 511 → 512.
-      expect(hierarchies[0]?.nodes.map((n) => [n.sourceId, n.depth])).toEqual([
+      expect(authored?.nodes.map((n) => [n.sourceId, n.depth])).toEqual([
         [510, 1],
         [511, 2],
         [512, 3],
       ]);
-      expect(hierarchies[0]?.nodes.map((n) => n.parentNodeId)).toEqual([null, 510, 511]);
+      expect(authored?.nodes.map((n) => n.parentNodeId)).toEqual([null, 510, 511]);
+    });
+
+    // --- Phase 5.1b: the four-hop business-area resolver -------------------
+
+    it('resolves the business area through IG_EXP_LINKS → EXPRESSIONS → BA_OBJ_LINKS', async () => {
+      const { adapter, execute } = await adapterFor(eul5Db());
+      const authored = (await readHierarchies(adapter, execute)).find((h) => h.sourceId === 500);
+
+      // HIERARCHIES has no BA column. Node 510 → item 300 → folder 200 →
+      // business areas 100 and 101.
+      expect(authored?.businessAreaId).toBe(100);
+      expect(authored?.spannedBusinessAreaIds).toEqual([100, 101]);
+    });
+
+    it('never reads a BA_ID column off HIERARCHIES, even if one exists', async () => {
+      const db = eul5Db();
+      const { adapter, execute } = await adapterFor(db);
+      await readHierarchies(adapter, execute);
+      const hierSql = db.executed.filter((sql) => sql.includes('EUL5_HIERARCHIES'));
+      expect(hierSql.length).toBeGreaterThan(0);
+      expect(hierSql.every((sql) => !/\bBA_ID\b/.test(sql))).toBe(true);
+    });
+
+    it('takes the node → item link from IG_EXP_LINKS, not from HI_NODES', async () => {
+      // HI_NODES in the fixture carries no *_EXP_ID column at all, exactly as
+      // a live EUL4 does. Without the IG_EXP_LINKS hop every level is itemless.
+      const { adapter, execute } = await adapterFor(eul5Db());
+      const authored = (await readHierarchies(adapter, execute)).find((h) => h.sourceId === 500);
+      expect(authored?.nodes.map((n) => n.itemId)).toEqual([300, 301, 302]);
+    });
+
+    it('ignores KIL rows in IG_EXP_LINKS — those are join links', async () => {
+      const db = eul5Db();
+      db.tables.EUL5_IG_EXP_LINKS = [
+        { IEL_ID: 5, IEL_TYPE: 'KIL', HIL_HN_ID: 510, HIL_EXP_ID: 300 },
+      ];
+      const { adapter, execute } = await adapterFor(db);
+      const authored = (await readHierarchies(adapter, execute)).find((h) => h.sourceId === 500);
+      expect(authored?.nodes.every((n) => n.itemId === null)).toBe(true);
+      expect(authored?.businessAreaId).toBeNull();
+    });
+
+    it('resolves a multi-business-area hierarchy to its ROOT level’s business area', async () => {
+      const db = eul5Db();
+      // Root (510) → item 302 → folder 201 → BA 100 only.
+      // Child (511) → item 300 → folder 200 → BAs 100, 101.
+      db.tables.EUL5_EXPRESSIONS = (db.tables.EUL5_EXPRESSIONS ?? []).map((row) =>
+        row.EXP_ID === 302 ? { ...row, IT_OBJ_ID: 201 } : row,
+      );
+      db.tables.EUL5_IG_EXP_LINKS = [
+        { IEL_ID: 1, IEL_TYPE: 'HIL', HIL_HN_ID: 510, HIL_EXP_ID: 302 },
+        { IEL_ID: 2, IEL_TYPE: 'HIL', HIL_HN_ID: 511, HIL_EXP_ID: 300 },
+      ];
+      const { adapter, execute } = await adapterFor(db);
+      const authored = (await readHierarchies(adapter, execute)).find((h) => h.sourceId === 500);
+
+      expect(authored?.businessAreaId).toBe(100); // the root's, not the widest
+      expect(authored?.spannedBusinessAreaIds).toEqual([100, 101]);
+    });
+
+    it('reads HI_TYPE, HI_SYS_GENERATED and IBH_DBH_ID so boilerplate is identifiable', async () => {
+      const { adapter, execute } = await adapterFor(eul5Db());
+      const all = await readHierarchies(adapter, execute);
+
+      expect(all.find((h) => h.sourceId === 500)).toMatchObject({
+        hierarchyType: 'IBH',
+        sysGenerated: false,
+        fromDateTemplateId: null,
+      });
+      expect(all.find((h) => h.sourceId === 501)).toMatchObject({
+        hierarchyType: 'DBH',
+        sysGenerated: false,
+        isDefaultDateTemplate: true,
+      });
+      expect(all.find((h) => h.sourceId === 502)).toMatchObject({
+        hierarchyType: 'IBH',
+        sysGenerated: true,
+        fromDateTemplateId: 501,
+      });
+    });
+
+    it('reads a date template’s levels from DBH_NODES', async () => {
+      const { adapter, execute } = await adapterFor(eul5Db());
+      const template = (await readHierarchies(adapter, execute)).find((h) => h.sourceId === 501);
+
+      // The estate's six templates are all exactly these four levels; a
+      // template that is not is what this assertion exists to surface.
+      expect(template?.dateTemplateLevels.map((l) => [l.name, l.dataFormatMask])).toEqual([
+        ['Year', 'YYYY'],
+        ['Quarter', '"Q"Q'],
+        ['Month', 'Mon'],
+        ['Day', 'DD'],
+      ]);
+      expect(template?.nodes).toHaveLength(0); // a template has no HI_NODES
     });
 
     it('marks nodes unreachable from a root with a null depth instead of dropping them', async () => {
@@ -657,7 +752,7 @@ describe('unified read functions', () => {
       const { adapter, execute } = await adapterFor(db);
       const hierarchies = await readHierarchies(adapter, execute);
 
-      const nodes = hierarchies[0]?.nodes ?? [];
+      const nodes = hierarchies.find((h) => h.sourceId === 500)?.nodes ?? [];
       expect(nodes).toHaveLength(3); // nothing silently lost
       expect(nodes.find((n) => n.sourceId === 512)?.depth).toBeNull();
     });
@@ -688,8 +783,8 @@ describe('unified read functions', () => {
       delete db.tables.EUL5_HI_SEGMENTS;
       const { adapter, execute } = await adapterFor(db);
       const hierarchies = await readHierarchies(adapter, execute);
-      expect(hierarchies).toHaveLength(1);
-      expect(hierarchies[0]?.nodes.every((n) => n.depth === 1)).toBe(true);
+      expect(hierarchies).toHaveLength(3);
+      expect(hierarchies.every((h) => h.nodes.every((n) => n.depth === 1))).toBe(true);
     });
   });
 
@@ -757,18 +852,23 @@ describe('unified read functions', () => {
       const { adapter, execute, db } = await adapterFor(eul5Db());
       const grants = await readGrants(adapter, execute);
 
-      expect(grants).toHaveLength(3);
+      expect(grants).toHaveLength(4);
       expect(grants.find((g) => g.sourceId === 800)).toMatchObject({
         grantee: 'JSMITH', // resolved via the join, not a column on ACCESS_PRIVS
         businessAreaId: 100,
-        folderId: null,
         level: 'BUSINESS_AREA',
-        privCode: 1006,
+        grantType: 'GBA',
       });
+      // AP_TYPE is the discriminator, so a workbook share and an EUL-wide
+      // privilege are told apart even though both have a null GBA_BA_ID.
       expect(grants.find((g) => g.sourceId === 801)).toMatchObject({
         grantee: 'MJONES',
-        folderId: 200,
-        level: 'FOLDER',
+        documentId: 700,
+        level: 'DOCUMENT',
+      });
+      expect(grants.find((g) => g.sourceId === 803)).toMatchObject({
+        level: 'EUL',
+        privCode: 1006,
       });
       // A role grantee is carried through as such.
       expect(grants.find((g) => g.sourceId === 802)).toMatchObject({
@@ -777,6 +877,9 @@ describe('unified read functions', () => {
       });
       expect(db.executed.some((sql) => sql.includes('EUL5_ACCESS_PRIVS'))).toBe(true);
       expect(db.executed.some((sql) => sql.includes('ELEM_ACCESS'))).toBe(false);
+      // A grant never names a folder — ACCESS_PRIVS has no such column, so
+      // BA_OBJ_LINKS plays no part in resolving one.
+      expect(db.executed.some((sql) => sql.includes('GO_OBJ_ID'))).toBe(false);
     });
 
     it('degrades to an EUL-wide grant when no target column exists', async () => {

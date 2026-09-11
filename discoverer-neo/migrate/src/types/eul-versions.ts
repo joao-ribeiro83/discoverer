@@ -247,6 +247,8 @@ export interface EulSchemaAdapter {
   getHierarchyNodeColumns(): ColumnMapping[];
   /** `HI_SEGMENTS` — the parent/child edges between nodes. */
   getHierarchySegmentColumns(): ColumnMapping[];
+  getHierarchyExpLinkColumns(): ColumnMapping[];
+  getDateTemplateNodeColumns(): ColumnMapping[];
   getDocumentColumns(): ColumnMapping[];
   getFunctionColumns(): ColumnMapping[];
   getUserColumns(): ColumnMapping[];
@@ -401,9 +403,34 @@ export interface HierarchyNode {
   depth: number | null;
 }
 
+/** One level of a `DBH` date-hierarchy template — `DBH_NODES`. */
+export interface DateTemplateLevel {
+  sourceId: number;
+  name: string;
+  /** `DHN_DATA_FMT_MSK` — the Oracle date mask the level truncates to. */
+  dataFormatMask: string | null;
+}
+
 export interface Hierarchy {
   sourceId: number;
+  /**
+   * Derived, never read: `HIERARCHIES` has no business-area column. The chain
+   * is hierarchy -> `HI_NODES` -> `IG_EXP_LINKS` (`IEL_TYPE='HIL'`) ->
+   * `EXPRESSIONS.IT_OBJ_ID` -> `BA_OBJ_LINKS`. Null when no level resolves one.
+   */
   businessAreaId: number | null;
+  /** Every business area the hierarchy's levels reach, in resolution order. */
+  spannedBusinessAreaIds: number[];
+  /** `HI_TYPE` — `IBH` = item-based, `DBH` = date-hierarchy template. */
+  hierarchyType: string | null;
+  /** `HI_SYS_GENERATED` — Oracle's own "a human did not author this" flag. */
+  sysGenerated: boolean;
+  /** `IBH_DBH_ID` — the date template this item hierarchy was stamped from. */
+  fromDateTemplateId: number | null;
+  /** `DBH_DEFAULT` — this template is the EUL's default date hierarchy. */
+  isDefaultDateTemplate: boolean;
+  /** `DBH_NODES` level names, for a `DBH` template. Empty otherwise. */
+  dateTemplateLevels: DateTemplateLevel[];
   name: string;
   description: string | null;
   /** Ordered root-first by derived depth. */
@@ -486,16 +513,24 @@ export interface EulUser {
  */
 export interface Grant {
   sourceId: number;
+  /** `GBA_BA_ID` — set when the grant is on a business area. */
   businessAreaId: number | null;
-  folderId: number | null;
   /** `GD_DOC_ID` — set when the grant is on a workbook. */
   documentId: number | null;
   grantee: string;
   granteeIsRole: boolean;
+  /** `GP_APP_ID` — the EUL-wide privilege code, set only on `GP` rows. */
   privCode: number | null;
   privType: string | null;
-  /** Derived from whichever target id is populated. */
-  level: 'BUSINESS_AREA' | 'FOLDER' | 'DOCUMENT' | 'EUL';
+  /**
+   * `AP_PRIV_LEVEL`. Its code table appears in no Oracle source in this
+   * corpus, so it is carried through and reported, never interpreted.
+   */
+  privLevel: number | null;
+  /** `AP_TYPE` — Oracle's own discriminator: `GBA` | `GD` | `GP`. */
+  grantType: string | null;
+  /** From `AP_TYPE`, falling back to whichever target id is populated. */
+  level: 'BUSINESS_AREA' | 'DOCUMENT' | 'EUL';
   createdBy: string | null;
   createdAt: Date | null;
 }

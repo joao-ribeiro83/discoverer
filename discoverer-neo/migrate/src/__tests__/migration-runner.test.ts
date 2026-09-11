@@ -65,11 +65,15 @@ describe('runMigration — EUL5 source, end to end', () => {
     // EXP 300 (CO), 301 (CI) and 302 (CO) all migrate — CO is the plain
     // column-backed item the old ['CI','CU'] default silently skipped.
     expect(rowsOf(state, 'items')).toHaveLength(3);
+    // 1 of 3: the date template and its generated instance are regenerated
+    // natively, not imported (D-074).
     expect(rowsOf(state, 'hierarchies')).toHaveLength(1);
     expect(rowsOf(state, 'hierarchy_levels')).toHaveLength(3);
     expect(rowsOf(state, 'custom_functions')).toHaveLength(1);
     expect(rowsOf(state, 'maps')).toHaveLength(1);
-    expect(rowsOf(state, 'user_business_area_grants')).toHaveLength(3);
+    // 2 of 4: a workbook share and an EUL-wide privilege are not business-area
+    // grants and have no Neo equivalent.
+    expect(rowsOf(state, 'user_business_area_grants')).toHaveLength(2);
 
     expect(result.validation?.valid).toBe(true);
     expect(state.ensureSchemaCalls).toBe(1);
@@ -287,19 +291,81 @@ describe('runMigration — EUL5 source, end to end', () => {
     expect(result.skipped.some((s) => s.table === 'joins')).toBe(true);
   });
 
-  it('resolves folder-level grants to the folder’s business area and de-duplicates', async () => {
+  it('migrates business-area grants and declares why the others are not', async () => {
     const { writer, state } = createFakeWriter();
-    await runMigration({ source: mockExecutor(eul5Db()), writer, deps: deterministicDeps() });
+    const result = await runMigration({
+      source: mockExecutor(eul5Db()),
+      writer,
+      deps: deterministicDeps(),
+    });
 
     const grants = rowsOf(state, 'user_business_area_grants');
     const baId = first(rowsOf(state, 'business_areas')).id;
-    // AP 800 (JSMITH/BA), 801 (MJONES on a folder → its BA) and 802
-    // (SALES_ROLE/BA) all land on the same business area.
-    expect(grants).toHaveLength(3);
+    // AP 800 (JSMITH) and 802 (SALES_ROLE) are the business-area grants.
+    expect(grants).toHaveLength(2);
     for (const g of grants) {
       expect(g.businessAreaId).toBe(baId);
       expect(g.permissionLevel).toBe('VIEW');
     }
+
+    // AP 801 is a workbook share, 803 an EUL-wide privilege. Both are counted
+    // and explained, not silently dropped.
+    const reasons = result.skipped
+      .filter((s) => s.table === 'user_business_area_grants')
+      .map((s) => s.reason);
+    expect(reasons).toHaveLength(2);
+    expect(reasons.some((r) => r.includes('workbook'))).toBe(true);
+    expect(reasons.some((r) => r.includes('EUL-wide'))).toBe(true);
+  });
+
+  it('never migrates a grant broader than its source', async () => {
+    const { writer, state } = createFakeWriter();
+    await runMigration({ source: mockExecutor(eul5Db()), writer, deps: deterministicDeps() });
+
+    // A Discoverer business-area grant carries no permission level, so VIEW —
+    // the narrowest Neo has — is the only level a migration may write.
+    for (const g of rowsOf(state, 'user_business_area_grants')) {
+      expect(g.permissionLevel).toBe('VIEW');
+    }
+  });
+
+  it('skips date-hierarchy boilerplate, counts it, and says which rule applied', async () => {
+    const { writer, state } = createFakeWriter();
+    const result = await runMigration({
+      source: mockExecutor(eul5Db()),
+      writer,
+      deps: deterministicDeps(),
+    });
+
+    // Only the hand-authored hierarchy survives.
+    const hierarchies = rowsOf(state, 'hierarchies');
+    expect(hierarchies).toHaveLength(1);
+    expect(first(hierarchies).name).toBe('Time Hierarchy');
+
+    const skipped = result.skipped.filter((s) => s.table === 'hierarchies');
+    expect(skipped).toHaveLength(2);
+    expect(skipped.map((s) => s.sourceId).sort()).toEqual([501, 502]);
+    expect(skipped.find((s) => s.sourceId === 501)?.reason).toContain('date-hierarchy template');
+    expect(skipped.find((s) => s.sourceId === 502)?.reason).toContain('system-generated');
+  });
+
+  it('migrates a hierarchy as a tree, with derived depth and parent links', async () => {
+    const { writer, state } = createFakeWriter();
+    await runMigration({ source: mockExecutor(eul5Db()), writer, deps: deterministicDeps() });
+
+    const levels = rowsOf(state, 'hierarchy_levels');
+    expect(levels.map((l) => [l.levelName, l.levelNumber])).toEqual([
+      ['Year', 1],
+      ['Quarter', 2],
+      ['Month', 3],
+    ]);
+    // The tree is modelled, not flattened: each level points at its parent.
+    const byName = new Map(levels.map((l) => [l.levelName as string, l]));
+    expect(byName.get('Year')?.parentLevelId).toBeNull();
+    expect(byName.get('Quarter')?.parentLevelId).toBe(byName.get('Year')?.id);
+    expect(byName.get('Month')?.parentLevelId).toBe(byName.get('Quarter')?.id);
+    // Every level resolved its item through IG_EXP_LINKS.
+    expect(levels.every((l) => l.itemId !== null)).toBe(true);
   });
 
   it('hosts workbook maps in the auto-created business area and attributes the owner', async () => {

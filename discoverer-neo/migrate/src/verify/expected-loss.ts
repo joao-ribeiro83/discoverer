@@ -121,18 +121,16 @@ export const EXPECTED_LOSS_ALLOWANCES: readonly ExpectedLossAllowance[] = [
     table: 'hierarchies',
     sourceCount: 508,
     expectedTarget: 0,
-    why: 'EUL4_HIERARCHIES has no business-area column and Neo requires one, so every hierarchy is skipped (502 IBH, 6 DBH). The business area has to be derived: hierarchy → HI_NODES → IG_EXP_LINKS → EXPRESSIONS.IT_OBJ_ID → BA_OBJ_LINKS.',
+    why: 'Phase 5.1b. Not one of the 508 is a hand-authored drill path. HI_SYS_GENERATED is 1 on all 502 IBH rows and every one of them carries a non-null IBH_DBH_ID, so all 502 are instances Discoverer stamped from a date template; the remaining 6 are the DBH templates themselves. D-074: Neo regenerates a date drill path from the date item, so none of the 508 is imported. The four-hop business-area resolver is in place and correct (it reaches exactly one business area for 491 of the 508) — it simply has nothing left to resolve for. This zero is a decision, not the old accident.',
     explained: true,
-    recoveredBy: 'Phase 5',
   },
   {
     concept: 'hierarchy levels',
     table: 'hierarchy_levels',
     sourceCount: null,
     expectedTarget: 0,
-    why: 'Follows hierarchies — nothing to hang a level on until those migrate. The source figure was never measured.',
+    why: 'Follows hierarchies — no hierarchy is imported, so there is nothing to hang a level on. The 6 templates are four levels each (Year, Quarter, Month, Day), identical across all six; the reader asserts that shape so a template that differs surfaces as a failure rather than vanishing into this line.',
     explained: true,
-    recoveredBy: 'Phase 5',
   },
   {
     concept: 'worksheet layouts',
@@ -144,14 +142,12 @@ export const EXPECTED_LOSS_ALLOWANCES: readonly ExpectedLossAllowance[] = [
     recoveredBy: 'Phase 5',
   },
 
-  // --- recorded, NOT understood -------------------------------------------
   {
     concept: 'business-area grants',
     table: 'user_business_area_grants',
     sourceCount: 138,
     expectedTarget: 60,
-    why: 'F-11. 78 source grants produced no target row and the cause has never been established. Until it is, nobody can say whether this is correct de-duplication or 78 people silently losing access.',
-    explained: false,
-    recoveredBy: 'Phase 5',
+    why: 'Phase 5.1a settles F-11. ACCESS_PRIVS holds three kinds of row, told apart by AP_TYPE: 60 GBA (business-area grants — all 60 migrate, none lost), 50 GD (shares of a single workbook; Neo has no workbook-level grant) and 28 GP (EUL-wide privileges, GP_APP_ID 1000-1015 — not business-area grants at all). 60 + 50 + 28 = 138. The 78 are two whole concepts Neo does not model, not 78 people losing access. Every one of the 60 grantees is a real user, every business area exists, and the 60 (user, business area) pairs are already distinct — nothing is de-duplicated away.',
+    explained: true,
   },
 ];

@@ -137,12 +137,22 @@ export const ITEM_TYPE_MAP: Record<string, NeoItemType> = {
  * *access* (the user may see/query the object), not a CRUD grade, so every
  * migrated grant lands at VIEW; elevated permissions must be re-granted in Neo.
  */
-export const GRANT_PERMISSION_MAP: Record<string, NeoPermissionLevel> = {
-  BUSINESS_AREA: 'VIEW',
-  OBJECT: 'VIEW',
-  FOLDER: 'VIEW',
-};
-
+/**
+ * Every migrated business-area grant is `VIEW`, and that is the faithful
+ * reading, not a collapse.
+ *
+ * A Discoverer business-area grant is binary: `ACCESS_PRIVS` carries no
+ * permission column for it. What a user may *do* comes from the separate
+ * EUL-wide privilege rows (`AP_TYPE = 'GP'`, `GP_APP_ID` 1000-1015), which are
+ * not business-area grants and have no Neo equivalent. `AP_PRIV_LEVEL` does
+ * exist, but its code table appears in no Oracle source in this corpus, so
+ * interpreting it would be inventing authorisation data.
+ *
+ * `VIEW` is the narrowest level in `permissionLevelEnum`, so this can only
+ * ever narrow a grant, never widen one. A non-zero `AP_PRIV_LEVEL` raises
+ * `GRANT_PRIV_LEVEL_UNMAPPED` so an administrator reviews it rather than the
+ * loss being silent.
+ */
 export const DEFAULT_GRANT_PERMISSION: NeoPermissionLevel = 'VIEW';
 
 // ---------------------------------------------------------------------------
@@ -265,7 +275,22 @@ export interface TransformedHierarchy {
   updatedAt: Date | null;
   levels: TransformedHierarchyLevel[];
   warnings: TransformWarning[];
+  /** True when this hierarchy is not migrated. `skipReason` says which rule. */
+  skip: boolean;
+  skipReason: HierarchySkipReason | null;
 }
+
+/**
+ * Why a hierarchy was not migrated. Each is a declared, counted outcome - the
+ * reconciliation in `expected-loss.ts` adds them up, so none is a silent drop.
+ */
+export type HierarchySkipReason =
+  /** `HI_TYPE = 'DBH'` - a date-hierarchy template. D-074: regenerated, not imported. */
+  | 'DATE_TEMPLATE'
+  /** `HI_SYS_GENERATED` - Oracle stamped this, a person did not. Boilerplate. */
+  | 'SYSTEM_GENERATED'
+  /** No level resolved a business area, and `hierarchies.business_area_id` is NOT NULL. */
+  | 'NO_BUSINESS_AREA';
 
 export interface TransformedCustomFunction {
   sourceId: number;
@@ -681,13 +706,13 @@ export interface TransformedGrant {
   /** True when the grantee is a database role rather than a user. */
   granteeIsRole: boolean;
   businessAreaSourceId: number | null;
-  folderSourceId: number | null;
   /**
    * `DOCUMENT` (a workbook grant) and `EUL` (an EUL-wide privilege) have no
-   * Neo equivalent yet — both are carried through so they can be reported,
-   * and both set `skip`.
+   * Neo equivalent yet - both are carried through so they can be reported,
+   * and both set `skip`. There is no `FOLDER`: `ACCESS_PRIVS` has no
+   * folder-grant column.
    */
-  level: 'BUSINESS_AREA' | 'FOLDER' | 'DOCUMENT' | 'EUL';
+  level: 'BUSINESS_AREA' | 'DOCUMENT' | 'EUL';
   permissionLevel: NeoPermissionLevel;
   warnings: TransformWarning[];
   /** True when the grant can't be represented (no BA/folder reference). */

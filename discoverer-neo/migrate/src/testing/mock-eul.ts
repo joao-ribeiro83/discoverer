@@ -208,6 +208,8 @@ const EUL5_TABLE_NAMES = [
   'EUL5_HIERARCHIES',
   'EUL5_HI_NODES',
   'EUL5_HI_SEGMENTS',
+  'EUL5_IG_EXP_LINKS',
+  'EUL5_DBH_NODES',
   'EUL5_SUMMARY_OBJS',
   'EUL5_FUNCTIONS',
   'EUL5_ACCESS_PRIVS',
@@ -390,18 +392,66 @@ export function eul5Db(): MockDb {
           FK_MANDATORY: 1,
         },
       ],
+      // There is deliberately no BA_ID column: a hierarchy's business area is
+      // derived through IG_EXP_LINKS -> EXPRESSIONS -> BA_OBJ_LINKS.
+      // 500 is hand-authored; 501 is a date template; 502 is an instance
+      // Discoverer stamped from that template.
       EUL5_HIERARCHIES: [
-        { HI_ID: 500, BA_ID: 100, HI_NAME: 'Time Hierarchy', HI_DESCRIPTION: 'Year > Quarter > Month' },
+        {
+          HI_ID: 500,
+          HI_TYPE: 'IBH',
+          HI_NAME: 'Time Hierarchy',
+          HI_DESCRIPTION: 'Year > Quarter > Month',
+          HI_SYS_GENERATED: 0,
+          IBH_DBH_ID: null,
+          DBH_DEFAULT: 0,
+        },
+        {
+          HI_ID: 501,
+          HI_TYPE: 'DBH',
+          HI_NAME: 'Default Date Hierarchy',
+          HI_DESCRIPTION: null,
+          HI_SYS_GENERATED: 0,
+          IBH_DBH_ID: null,
+          DBH_DEFAULT: 1,
+        },
+        {
+          HI_ID: 502,
+          HI_TYPE: 'IBH',
+          HI_NAME: 'Order Date Default Date Hierarchy',
+          HI_DESCRIPTION: null,
+          HI_SYS_GENERATED: 1,
+          IBH_DBH_ID: 501,
+          DBH_DEFAULT: 0,
+        },
       ],
+      // A live HI_NODES has no item column at all — the link is IG_EXP_LINKS.
       EUL5_HI_NODES: [
-        { HN_ID: 510, HN_HI_ID: 500, HN_EXP_ID: 300, HN_NAME: 'Year' },
-        { HN_ID: 511, HN_HI_ID: 500, HN_EXP_ID: 301, HN_NAME: 'Quarter' },
-        { HN_ID: 512, HN_HI_ID: 500, HN_EXP_ID: 302, HN_NAME: 'Month' },
+        { HN_ID: 510, HN_HI_ID: 500, HN_NAME: 'Year' },
+        { HN_ID: 511, HN_HI_ID: 500, HN_NAME: 'Quarter' },
+        { HN_ID: 512, HN_HI_ID: 500, HN_NAME: 'Month' },
+        { HN_ID: 520, HN_HI_ID: 502, HN_NAME: 'Year' },
       ],
       // 510 is the root (never a child); 511 under it; 512 under 511.
       EUL5_HI_SEGMENTS: [
         { IHS_HI_ID: 500, IHS_HN_ID_PARENT: 510, IHS_HN_ID_CHILD: 511 },
         { IHS_HI_ID: 500, IHS_HN_ID_PARENT: 511, IHS_HN_ID_CHILD: 512 },
+      ],
+      // IEL_TYPE 'HIL' = hierarchy node -> item. 'KIL' rows belong to joins
+      // and must not be read as hierarchy links.
+      EUL5_IG_EXP_LINKS: [
+        { IEL_ID: 1, IEL_TYPE: 'HIL', HIL_HN_ID: 510, HIL_EXP_ID: 300 },
+        { IEL_ID: 2, IEL_TYPE: 'HIL', HIL_HN_ID: 511, HIL_EXP_ID: 301 },
+        { IEL_ID: 3, IEL_TYPE: 'HIL', HIL_HN_ID: 512, HIL_EXP_ID: 302 },
+        { IEL_ID: 4, IEL_TYPE: 'HIL', HIL_HN_ID: 520, HIL_EXP_ID: 300 },
+        { IEL_ID: 5, IEL_TYPE: 'KIL', HIL_HN_ID: 999, HIL_EXP_ID: 999 },
+      ],
+      // A date template's levels live here, not in HI_NODES.
+      EUL5_DBH_NODES: [
+        { DHN_ID: 530, DHN_HI_ID: 501, DHN_NAME: 'Year', DHN_DATA_FMT_MSK: 'YYYY' },
+        { DHN_ID: 531, DHN_HI_ID: 501, DHN_NAME: 'Quarter', DHN_DATA_FMT_MSK: '"Q"Q' },
+        { DHN_ID: 532, DHN_HI_ID: 501, DHN_NAME: 'Month', DHN_DATA_FMT_MSK: 'Mon' },
+        { DHN_ID: 533, DHN_HI_ID: 501, DHN_NAME: 'Day', DHN_DATA_FMT_MSK: 'DD' },
       ],
       EUL5_FUNCTIONS: [
         { FUN_ID: 600, FUN_NAME: 'GET_FISCAL_YEAR', FUN_DESCRIPTION: 'Fiscal year lookup' },
@@ -428,33 +478,47 @@ export function eul5Db(): MockDb {
         { EU_ID: 901, EU_USERNAME: 'MJONES', EU_ROLE_FLAG: 'N' },
         { EU_ID: 902, EU_USERNAME: 'SALES_ROLE', EU_ROLE_FLAG: 'Y' },
       ],
-      // GBA_BA_ID / GO_OBJ_ID are present here so the probe finds them; a
-      // fixture without them exercises the degrade-to-EUL-wide path.
+      // The live column shape: AP_TYPE discriminates, and there is no
+      // GO_OBJ_ID — a grant can never name a folder. One row of each kind.
+      // A fixture without the target columns exercises the degrade path.
       EUL5_ACCESS_PRIVS: [
         {
           AP_ID: 800,
+          AP_TYPE: 'GBA',
           AP_EU_ID: 900,
-          GP_APP_ID: 1006,
+          AP_PRIV_LEVEL: 0,
+          GP_APP_ID: null,
           GBA_BA_ID: 100,
-          GO_OBJ_ID: null,
           GD_DOC_ID: null,
           AP_CREATED_DATE: created,
         },
         {
           AP_ID: 801,
+          AP_TYPE: 'GD',
           AP_EU_ID: 901,
-          GP_APP_ID: 1015,
+          AP_PRIV_LEVEL: 0,
+          GP_APP_ID: null,
           GBA_BA_ID: null,
-          GO_OBJ_ID: 200,
-          GD_DOC_ID: null,
+          GD_DOC_ID: 700,
           AP_CREATED_DATE: created,
         },
         {
           AP_ID: 802,
+          AP_TYPE: 'GBA',
           AP_EU_ID: 902,
-          GP_APP_ID: 1006,
+          AP_PRIV_LEVEL: 0,
+          GP_APP_ID: null,
           GBA_BA_ID: 100,
-          GO_OBJ_ID: null,
+          GD_DOC_ID: null,
+          AP_CREATED_DATE: created,
+        },
+        {
+          AP_ID: 803,
+          AP_TYPE: 'GP',
+          AP_EU_ID: 900,
+          AP_PRIV_LEVEL: 0,
+          GP_APP_ID: 1006,
+          GBA_BA_ID: null,
           GD_DOC_ID: null,
           AP_CREATED_DATE: created,
         },
@@ -556,10 +620,11 @@ export function eul4Db(): MockDb {
       EUL4_ACCESS_PRIVS: [
         {
           AP_ID: 90,
+          AP_TYPE: 'GBA',
           AP_EU_ID: 80,
-          GP_APP_ID: 1006,
+          AP_PRIV_LEVEL: 0,
+          GP_APP_ID: null,
           GBA_BA_ID: 10,
-          GO_OBJ_ID: null,
           GD_DOC_ID: null,
           AP_CREATED_DATE: created,
         },

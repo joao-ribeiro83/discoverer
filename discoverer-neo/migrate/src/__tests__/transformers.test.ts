@@ -134,6 +134,12 @@ function hierarchy(overrides: Partial<Hierarchy> = {}): Hierarchy {
   return {
     sourceId: 500,
     businessAreaId: 100,
+    spannedBusinessAreaIds: [100],
+    hierarchyType: 'IBH',
+    sysGenerated: false,
+    fromDateTemplateId: null,
+    isDefaultDateTemplate: false,
+    dateTemplateLevels: [],
     name: 'Time Hierarchy',
     description: 'Year > Quarter > Month',
     // A node tree with derived depths, not numbered levels.
@@ -193,12 +199,13 @@ function grant(overrides: Partial<Grant> = {}): Grant {
   return {
     sourceId: 800,
     businessAreaId: 100,
-    folderId: null,
     documentId: null,
     grantee: 'JSMITH',
     granteeIsRole: false,
     privCode: 1006,
-    privType: 'BUSINESS_AREA',
+    privType: '1006',
+    privLevel: 0,
+    grantType: 'GBA',
     level: 'BUSINESS_AREA',
     createdBy: 'DISCO_ADMIN',
     createdAt: CREATED,
@@ -1752,22 +1759,25 @@ describe('transformGrant', () => {
     });
   });
 
-  it('keeps a folder-level grant for the runner to resolve to the folder’s BA', () => {
-    const t = transformGrant(
-      grant({ sourceId: 801, businessAreaId: null, folderId: 200, privType: 'OBJECT', level: 'FOLDER' }),
-      'EUL5',
-    );
-    expect(t).toMatchObject({ level: 'FOLDER', folderSourceId: 200, skip: false });
-  });
-
-  it('skips a grant with neither a business area nor a folder', () => {
-    const t = transformGrant(grant({ businessAreaId: null, folderId: null }), 'EUL4');
+  it('skips a business-area grant with no business area', () => {
+    const t = transformGrant(grant({ businessAreaId: null }), 'EUL4');
     expect(t.skip).toBe(true);
     expect(codes(t.warnings)).toContain('GRANT_NO_BA');
   });
 
-  it('defaults an unknown privilege type to VIEW', () => {
-    expect(transformGrant(grant({ privType: 'MYSTERY' }), 'EUL5').permissionLevel).toBe('VIEW');
+  it('never widens a grant: every migrated business-area grant is VIEW', () => {
+    // AP_PRIV_LEVEL's code table is undocumented, so it must not be read as a
+    // permission. VIEW is the narrowest level Neo has.
+    for (const privLevel of [0, 1, 2, 99]) {
+      expect(transformGrant(grant({ privLevel }), 'EUL4').permissionLevel).toBe('VIEW');
+    }
+  });
+
+  it('flags a non-zero AP_PRIV_LEVEL instead of collapsing it silently', () => {
+    const t = transformGrant(grant({ privLevel: 1 }), 'EUL4');
+    expect(t.skip).toBe(false);
+    expect(codes(t.warnings)).toContain('GRANT_PRIV_LEVEL_UNMAPPED');
+    expect(transformGrant(grant({ privLevel: 0 }), 'EUL4').warnings).toHaveLength(0);
   });
 
   it('transformGrants maps a list', () => {

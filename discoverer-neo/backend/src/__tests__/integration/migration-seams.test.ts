@@ -524,8 +524,8 @@ describe('Migration seam tests', () => {
       // An unexplained gap must be visible as its own number, or it becomes
       // indistinguishable from an accepted one.
       expect(result.metrics.unexplainedAllowances).toBe(1);
-      // 138 declared at source minus the 3 grants this fixture wrote.
-      expect(result.metrics.rowsLostToAllowances).toBe(135);
+      // 138 declared at source minus the 2 grants this fixture wrote.
+      expect(result.metrics.rowsLostToAllowances).toBe(136);
     });
 
     it('refuses to interpolate anything that is not a bare table name', async () => {
@@ -546,11 +546,13 @@ describe('Migration seam tests', () => {
         expect(a.expectedTarget).toBeGreaterThanOrEqual(0);
         // Every gap carries a stated reason, whether or not it is understood.
         expect(a.why.length).toBeGreaterThan(10);
-        // A loss of more than 1% of the source names the phase that recovers
-        // it. Below that the rows are genuinely gone (7 unattributable totals),
-        // and inventing a recovery phase for them would be a lie.
+        // A loss of more than 1% of the source must either be understood, or
+        // name the phase that will establish what it is. An understood loss
+        // needs no recovery phase: hierarchies and grants are both settled -
+        // what they drop is boilerplate and concepts Neo does not model, and
+        // inventing a recovery phase for them would be a lie.
         const lost = a.sourceCount === null ? 0 : a.sourceCount - a.expectedTarget;
-        if (a.sourceCount !== null && lost > a.sourceCount * 0.01) {
+        if (a.sourceCount !== null && lost > a.sourceCount * 0.01 && !a.explained) {
           expect(a.recoveredBy).toBeTruthy();
         }
       }
@@ -798,11 +800,13 @@ describe('Migration seam tests', () => {
         expect(a.expectedTarget).toBeGreaterThanOrEqual(0);
         // Every gap carries a stated reason, whether or not it is understood.
         expect(a.why.length).toBeGreaterThan(10);
-        // A loss of more than 1% of the source names the phase that recovers
-        // it. Below that the rows are genuinely gone (7 unattributable totals),
-        // and inventing a recovery phase for them would be a lie.
+        // A loss of more than 1% of the source must either be understood, or
+        // name the phase that will establish what it is. An understood loss
+        // needs no recovery phase: hierarchies and grants are both settled -
+        // what they drop is boilerplate and concepts Neo does not model, and
+        // inventing a recovery phase for them would be a lie.
         const lost = a.sourceCount === null ? 0 : a.sourceCount - a.expectedTarget;
-        if (a.sourceCount !== null && lost > a.sourceCount * 0.01) {
+        if (a.sourceCount !== null && lost > a.sourceCount * 0.01 && !a.explained) {
           expect(a.recoveredBy).toBeTruthy();
         }
       }

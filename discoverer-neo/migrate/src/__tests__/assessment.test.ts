@@ -124,6 +124,12 @@ function hierarchy(sourceId: number, businessAreaId: number | null): Hierarchy {
   return {
     sourceId,
     businessAreaId,
+    spannedBusinessAreaIds: businessAreaId === null ? [] : [businessAreaId],
+    hierarchyType: 'IBH',
+    sysGenerated: false,
+    fromDateTemplateId: null,
+    isDefaultDateTemplate: false,
+    dateTemplateLevels: [],
     name: `Hier${sourceId}`,
     description: null,
     nodes: [],
