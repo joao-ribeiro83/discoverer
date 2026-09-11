@@ -495,17 +495,27 @@ reason is the unknown these tests exist to delete, so a classifier that returns
 one gets `no reason given` counted against it in the report — visible, rather
 than blending into the quarantine total.
 
-The vocabulary is applied in **two places, over two different populations**, and
-the same bucket name means a different thing in each. Read the population first:
+The vocabulary is applied in **three places, over three different populations**,
+and the same bucket name means a different thing in each. Read the population
+first:
 
-| | Seam 2 of the verifier | The formula corpus |
-| --- | --- | --- |
-| Population | the 49 819 **stored** formulas | 37 971 aligned (stored, displayed) pairs |
-| Needs | a migrated database | nothing — the corpus is committed |
-| Runs in CI | no | **yes** |
-| Reference rendering | none | Discoverer's own `DisplayFormula`, per row |
-| `COMPILED` | unreachable — nothing may claim a formula works until the Phase 9.1 Oracle contract tests can prove it | rendered, and it reproduces what Discoverer showed |
-| `COMPILED_UNVERIFIED` | parses; never run anywhere | rendered, but the Phase 0.5 anonymiser destroyed the reference, so nothing is left to check it against |
+| | Seam 2 of the verifier | The corpus, display | The corpus, SQL |
+| --- | --- | --- | --- |
+| Population | the 49 819 **stored** formulas | 37 971 aligned (stored, displayed) pairs | the same 37 971, rendered to SQL |
+| Needs | a migrated database | nothing — the corpus is committed | nothing |
+| Runs in CI | no | **yes** | **yes** |
+| Reference rendering | none | Discoverer's own `DisplayFormula`, per row | none |
+| Asks | does the estate compile *today* | does the tree render back to what Discoverer printed | does the tree render to SQL at all |
+| `COMPILED` | unreachable — nothing may claim a formula works until the Phase 9.1 Oracle contract tests can prove it | rendered, and it reproduces what Discoverer showed | unreachable, same reason |
+| `COMPILED_UNVERIFIED` | rendered from `source_tokens`; never run anywhere | rendered, but the Phase 0.5 anonymiser destroyed the reference, so nothing is left to check it against | rendered to an Oracle expression |
+
+The third column is Phase 4.5's, and it exists because the first cannot stand in
+for it: seam 2 reports whatever the estate happens to carry, and on an estate
+migrated before dual storage (D-055) that is `NO_SOURCE_TOKENS` for every row —
+a true statement about the estate and no statement at all about the renderer.
+The SQL partition resolves every element deliberately, which separates renderer
+coverage from the per-map item lookup: a row there is a formula-language gap,
+while `UNRESOLVED_ELEMENT` on a live estate is a metadata question.
 
 The corpus side is the gate CI runs, because it is the one that needs no
 infrastructure:
