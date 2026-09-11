@@ -292,12 +292,68 @@ hours, and one side reached 6 660 408 rows. Budget accordingly, and note that
 this EUL is an author's declaration, not something the data can be counted back
 out of.
 
+### 3.4a Object links — what binds to a business area, and what does not
+**[SQL — live EUL4 `ALL_TAB_COLUMNS`, 2026-09-11]**
+
+`BA_OBJ_LINKS` binds **folders** to business areas, and nothing else. Two
+things were read as going through it that do not.
+
+**A hierarchy has no business area of its own — it is derived, in four hops.**
+`HIERARCHIES` has no `BA_ID` column (17 columns, listed in §3.6). Neither does
+`HI_NODES` carry an item column: there is no `HN_EXP_ID`, no `HN_IT_EXP_ID`.
+Both the item and the business area come from `IG_EXP_LINKS`:
+
+```
+HI_NODES.HN_ID
+  -> IG_EXP_LINKS  (IEL_TYPE = 'HIL', HIL_HN_ID -> HIL_EXP_ID)   the level's item
+  -> EXPRESSIONS.IT_OBJ_ID                                        the item's folder
+  -> BA_OBJ_LINKS.BOL_OBJ_ID -> BOL_BA_ID                         the folder's BAs
+```
+
+`IG_EXP_LINKS` (`IEL_ID, IEL_TYPE, HIL_EXP_ID, HIL_HN_ID, KIL_EXP_ID,
+KIL_KEY_ID, KIL_SEQUENCE` + audit) serves two masters: `HIL` rows are
+hierarchy links, `KIL` rows are join links. Filter on `IEL_TYPE`. On the live
+estate every one of the 2 510 rows is `HIL`.
+
+Measured: 491 of 508 hierarchies reach exactly **one** business area, 17 reach
+none, and **none reaches two**. A hierarchy that did reach two would have no
+answer the source can give, so Neo takes the **root-most level's** business
+area — a drill path is entered at its root — and records the rest.
+
+**A grant never names a folder.** `ACCESS_PRIVS` has no `GO_OBJ_ID` column, so
+there is no folder-level grant to resolve and `BA_OBJ_LINKS` is not involved.
+See §3.5.
+
 ### 3.5 Security — `ACCESS_PRIVS` + `EUL_USERS` **[SQL — `batchusr.sql`]**
 
 | Table | Real columns |
 | --- | --- |
 | `EUL_USERS` | `EU_ID` (PK), `EU_USERNAME` |
-| `ACCESS_PRIVS` | `AP_EU_ID` → `EUL_USERS.EU_ID`, `GP_APP_ID` (privilege/app code), `GD_DOC_ID` → workbook **[GUIDE]** |
+| `ACCESS_PRIVS` | `AP_ID, AP_TYPE, AP_EU_ID, AP_PRIV_LEVEL, GP_APP_ID, GBA_BA_ID, GD_DOC_ID, AP_ELEMENT_STATE` + audit **[SQL — live EUL4, 2026-09-11]** |
+
+**`AP_TYPE` is the discriminator, not the id columns.** There is one row per
+privilege and three kinds of row:
+
+| `AP_TYPE` | Means | Target column | Live count |
+| --- | --- | --- | ---: |
+| `GBA` | access to a business area | `GBA_BA_ID` → `BAS.BA_ID` | 60 |
+| `GD` | a share of one workbook | `GD_DOC_ID` → `DOCUMENTS.DOC_ID` | 50 |
+| `GP` | an EUL-wide privilege | none — `GP_APP_ID` 1000-1015 | 28 |
+
+A `GP` row has **every** id column null, so reading the ids alone cannot tell
+an EUL-wide privilege from a broken row. That is why `AP_TYPE` is read first.
+`GP_APP_ID` is only ever set on `GP` rows; `batchusr.sql:3094` uses codes
+`1006` and `1015` together to identify EUL administrators.
+
+There is **no `GO_OBJ_ID`**: a grant cannot name a folder.
+
+**`AP_PRIV_LEVEL` exists and its code table does not.** Live values are `0`
+(132 rows) and `1` (6 rows, all `GBA`). No Oracle source in this corpus —
+shipped SQL, DTD or PDF — says what they mean. It is carried through and
+reported, never interpreted: a business-area grant migrates as `VIEW`, the
+narrowest level Neo has, and a non-zero `AP_PRIV_LEVEL` raises
+`GRANT_PRIV_LEVEL_UNMAPPED` for an administrator to review. This can only
+narrow a grant, never widen one.
 
 Grants join through `EU_ID`; the grantee name is **not** a column on the privilege
 table. `GP_APP_ID` is a numeric privilege code (`1006`, `1015`, … appear in
@@ -400,9 +456,9 @@ whole read), unconfirmed columns go through `probeColumns()`, which asks
 | --- | --- | --- |
 | `KEY_CONS` | `KEY_ID`, `KEY_NAME`, `FK_ONE_TO_ONE`, `FK_MSTR_NO_DETAIL`, `FK_DTL_NO_MASTER`, `FK_MANDATORY` | source id falls back to row index; every absent flag reads **false**, which is fanning + INNER + not-mandatory — the safe direction in all four cases |
 | `EXPRESSIONS` (for `JP`) | `JP_KEY_ID`, `EXP_FORMULA1` | no predicates are read at all, and every join then refuses **by name** at query time rather than being silently dropped |
-| `HIERARCHIES` | `HI_NAME`, `HI_DESCRIPTION`, `BA_ID` | synthesized name; hierarchy skipped if it has no BA (Neo requires one) |
-| `HI_NODES` | `HN_EXP_ID` / `HN_IT_EXP_ID`, `HN_NAME` | node keeps a null item; Neo skips that level with a warning |
-| `ACCESS_PRIVS` | `AP_ID`, `GD_DOC_ID`, `GBA_BA_ID`, `GO_OBJ_ID` | grant reported at level `EUL` |
+| `HIERARCHIES` | `HI_NAME`, `HI_DESCRIPTION`, `HI_TYPE`, `HI_SYS_GENERATED`, `IBH_DBH_ID`, `DBH_DEFAULT` | synthesized name; a hierarchy with no `HI_TYPE`/`HI_SYS_GENERATED` is treated as authored. **`BA_ID` is deliberately not probed** — see §3.4a |
+| `HI_NODES` | `HN_EXP_ID` / `HN_IT_EXP_ID`, `HN_NAME` | neither exists on a live EUL4; the item link comes from `IG_EXP_LINKS` instead |
+| `ACCESS_PRIVS` | `AP_ID`, `AP_TYPE`, `AP_PRIV_LEVEL`, `GBA_BA_ID`, `GD_DOC_ID` | with no `AP_TYPE` the level falls back to whichever id is set, and a row with none is reported at level `EUL` |
 | `DOCUMENTS` | `DOC_DOCUMENT`, `DOC_CONTENT`, `DOC_LENGTH`, `DOC_BATCH`, `DOC_EU_ID`, `DOC_FOLDER_ID` | owner falls back to `DOC_CREATED_BY`; with no body column the workbook migrates as an empty map |
 
 ### 4.2 What to verify first against a live EUL
@@ -410,9 +466,12 @@ whole read), unconfirmed columns go through `probeColumns()`, which asks
 1. **The probe list above** — run the migration and read the warnings; every
    probed column that turns out to exist under a different name is a
    one-line addition.
-2. **`GP_APP_ID` privilege codes.** Carried through verbatim; the map from
-   code to Neo permission level is a guess until decoded. `1006` and `1015`
-   appear in Oracle's `batchusr.sql`.
+2. **`GP_APP_ID` privilege codes.** ANSWERED for this estate's purposes: they
+   appear only on `AP_TYPE = 'GP'` rows, which are EUL-wide privileges and not
+   business-area grants at all, so they never fed a permission level. Decoding
+   them would let Neo model EUL-wide privileges, which it does not yet.
+   `1006` and `1015` appear in Oracle's `batchusr.sql`. **`AP_PRIV_LEVEL` is
+   the one still open** — see §3.5.
 3. **Condition rows in `EXPRESSIONS`.** Answered on the live EUL4: there are
    none. `EXP_TYPE` holds only `CO` (6 967 rows), `CI` (2 830) and `JP` (10, a
    join predicate). Worksheet conditions are not `EXPRESSIONS` rows at all —

@@ -118,6 +118,84 @@ keeps both readings cheap.
 
 ---
 
+## Decision 2a — a hierarchy's business area is derived, in four hops
+
+**Discoverer.** `HIERARCHIES` has no business-area column, and never had one.
+A hierarchy is EUL-scoped: it is a sibling of a business area in the export
+DTD, not a child. Its business area is a property of the items its levels
+name.
+
+**Neo.** `hierarchies.business_area_id` is a single `NOT NULL` column.
+
+**Decision.** Derive it:
+
+```
+HI_NODES -> IG_EXP_LINKS (IEL_TYPE='HIL') -> EXPRESSIONS.IT_OBJ_ID -> BA_OBJ_LINKS
+```
+
+and where a hierarchy reaches more than one business area, **take the
+root-most level's**, because a drill path is entered at its root. Every other
+one it reaches is recorded on the read model and raised as
+`HIER_SPANS_BUSINESS_AREAS` — not dropped.
+
+**Why not many-to-many.** Decision 1 made *folders* many-to-many because a
+folder genuinely is shared across business areas on this estate. A hierarchy
+is not: measured across all 508, 491 reach exactly one, 17 reach none, and
+**none reaches two**. A second table to model a case that does not occur is
+cost without a reader. The rule exists so that an estate where it does occur
+is handled by a decision rather than by whichever row Oracle returned first.
+
+**The same four hops carry the item.** `HI_NODES` has no item column either —
+no `HN_EXP_ID`, no `HN_IT_EXP_ID`. Before this, every one of the estate's
+2 510 hierarchy levels read as item-less. Now all 2 510 resolve.
+
+---
+
+## Decision 2b — date hierarchies are regenerated, not imported
+
+**Discoverer.** A **date hierarchy** (`HI_TYPE = 'DBH'`) is a *template*: four
+levels — Year, Quarter, Month, Day — that an administrator applies to a date
+item. Applying it makes Discoverer auto-generate an item hierarchy
+(`HI_TYPE = 'IBH'`, `HI_SYS_GENERATED = 1`, `IBH_DBH_ID` pointing back at the
+template) plus the `EUL_DATE_TRUNC` items behind it.
+
+**What this estate actually holds.** All 508 hierarchies are date machinery:
+
+| | Count | |
+| --- | ---: | --- |
+| `DBH` templates, author-made | 6 | all four levels: Year, Quarter, Month, Day |
+| `IBH` instances, `HI_SYS_GENERATED = 1`, `IBH_DBH_ID` set | 502 | one per date column |
+| **Hand-authored item hierarchies** | **0** | — |
+
+**Decision.** Import none of them. Neo regenerates a date drill path from the
+date item itself; importing 502 machine-stamped copies of the same four levels
+would carry the mechanism rather than the meaning, and would tie every date
+drill to whichever template happened to be applied in 2001.
+
+Each skip is **counted and named** — `HIER_DATE_TEMPLATE` for the 6,
+`HIER_SYSTEM_GENERATED` for the 502 — and declared in
+`migrate/src/verify/expected-loss.ts`, where the reconciliation seam asserts
+the resulting zero. It is a decision, not a silent drop.
+
+**What would change this.** `HI_SYS_GENERATED = 0` on an `IBH` row: a
+hand-authored drill path. The resolver above is already in place for it, so
+such a hierarchy migrates with its tree, its depths and its items intact. This
+estate simply has none.
+
+**Two things the source does not record.** `DBH_NODES` has no sequence column,
+so a template's level *order* is not stored — the four levels come back in
+`DHN_ID` order, which on this estate is `Year, Quarter, Month, Day` for one
+template and the reverse for the other five. The natural date granularity is
+the only available ordering. And `DBH_DEFAULT = 1` on exactly one of the six
+marks the EUL's default template; nothing says what the other five are for.
+
+**Performance, carried forward.** Oracle's own warning (`9.0.4` admin guide
+p. 12-6): a date hierarchy on an indexed fact-table date column suppresses the
+index, because every level becomes `EUL_DATE_TRUNC(col, …)`. A regenerated
+date drill should emit a sargable `date_trunc`/`EXTRACT` instead. Phase 7.3.
+
+---
+
 ## Decision 3 — grantees can be database roles
 
 **Discoverer.** `EUL_USERS.EU_ROLE_FLAG` marks a grantee as an Oracle **role**.
@@ -327,11 +405,13 @@ These are open because no offline source answers them, not because they were
 deferred. §4.2 of the ground-truth document has the full list; the ones that
 bear on the decisions above:
 
-- **`GP_APP_ID` privilege codes** — every migrated grant currently lands at
-  `VIEW`. Decoding the codes is what would let Decision 3's roles carry
-  differentiated permissions.
-- **`HI_NODES` item link** — probed as `HN_EXP_ID`/`HN_IT_EXP_ID`. If a real
-  EUL spells it differently, Decision 2's levels arrive without items until the
-  name is added.
+- **`AP_PRIV_LEVEL`** — every migrated business-area grant lands at `VIEW`,
+  and on this estate that is correct: a Discoverer business-area grant is
+  binary, and what a user may *do* comes from the separate EUL-wide privilege
+  rows. `AP_PRIV_LEVEL` is `1` on 6 of the 60 and no Oracle source says what
+  that means; those 6 are flagged `GRANT_PRIV_LEVEL_UNMAPPED` for review.
+  Decoding it is what would let Decision 3's roles carry differentiated
+  permissions. (`GP_APP_ID` is answered: it appears only on EUL-wide
+  privilege rows, which are not business-area grants.)
 - **Condition rows** — no confirmed `EXP_TYPE` identifies one, so conditions do
   not migrate at all.
