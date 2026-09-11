@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
-import { inArray, like, sql } from 'drizzle-orm';
+import { eq, inArray, like, sql } from 'drizzle-orm';
 
 import {
   dryRun,
@@ -223,21 +223,56 @@ describe('Migration seam tests', () => {
   // -------------------------------------------------------------------------
   describe('seam 2: every calculated field compiles or is quarantined with a reason', () => {
     // The EUL5 fixture carries no calculated fields, so the seam would pass
-    // vacuously over it. These three cover the buckets the real estate lands
-    // in: one that parses, one unrendered Discoverer token (49 027 of them
-    // live), and one that is not a formula at all.
+    // vacuously over it. These four cover the buckets the real estate lands in
+    // and both halves of the compile path:
+    //
+    //   1. readable text that parses            -> the injected hook
+    //   2. a token form whose tree renders      -> the Phase 4 renderer
+    //   3. a token form whose element is absent -> UNRESOLVED_ELEMENT
+    //   4. not a formula at all                 -> the hook refuses
+    //
+    // Rows 1 and 4 have no `source_tokens`, which is the case the hook now
+    // exists for; rows 2 and 3 are the compile run proper, against real
+    // Postgres rather than a fake.
     const FIELD_IDS = [
       `${PREFIX}888800000001`,
       `${PREFIX}888800000002`,
       `${PREFIX}888800000003`,
+      `${PREFIX}888800000004`,
     ];
 
     beforeAll(async () => {
       const [map] = await db.select().from(maps).where(idLike(maps.id)).limit(1);
+      // The bindings are built from an item the map actually carries, so the
+      // success path is exercised rather than asserted.
+      const [boundItem] = await db
+        .select({ name: items.name })
+        .from(mapItems)
+        .innerJoin(items, eq(items.id, mapItems.itemId))
+        .where(eq(mapItems.mapId, map!.id))
+        .limit(1);
+
       await db.insert(mapCalculatedFields).values([
         { id: FIELD_IDS[0]!, mapId: map!.id, name: 'parses', formula: 'SUM(AMOUNT) * 2', displayOrder: 1 },
-        { id: FIELD_IDS[1]!, mapId: map!.id, name: 'token', formula: '[1,1]([6,2])', displayOrder: 2 },
-        { id: FIELD_IDS[2]!, mapId: map!.id, name: 'garbage', formula: 'SUM(', displayOrder: 3 },
+        {
+          id: FIELD_IDS[1]!,
+          mapId: map!.id,
+          name: 'renders',
+          formula: `[1,1](${boundItem!.name})`,
+          sourceTokens: '[1,1]([6,2])',
+          sourceAttrs: { elementBindings: { items: { '2': boundItem!.name } } },
+          displayOrder: 2,
+        },
+        {
+          id: FIELD_IDS[2]!,
+          mapId: map!.id,
+          name: 'unbound',
+          formula: '[1,1]([6,9999])',
+          sourceTokens: '[1,1]([6,9999])',
+          sourceAttrs: { elementBindings: { items: {} } },
+          displayOrder: 3,
+        },
+        { id: FIELD_IDS[3]!, mapId: map!.id, name: 'garbage', formula: 'SUM(', displayOrder: 4 },
       ]);
     });
 
@@ -252,14 +287,20 @@ describe('Migration seam tests', () => {
       });
 
       const { formulas = 0, compiledUnverified = 0, quarantined = 0, failed = 0 } = result.metrics;
-      expect(formulas).toBe(3);
+      expect(formulas).toBe(4);
       // Every formula lands in exactly one bucket — no silent third state.
       expect(compiledUnverified + quarantined + failed + (result.metrics.compiled ?? 0)).toBe(formulas);
-      expect(compiledUnverified).toBe(1);
+      // The seam reports the sum too, so a lost row fails rather than flatters.
+      expect(result.metrics.partitioned).toBe(formulas);
+      // `parses` through the hook, `renders` through the token renderer.
+      expect(compiledUnverified).toBe(2);
+      // `unbound` (no binding for [6,9999]) and `garbage` (not a formula).
       expect(quarantined).toBe(2);
       // FAILED is the only gated bucket: an unhandled path is our bug.
       expect(failed).toBe(0);
       expect(result.status).toBe('PASS');
+      // Passing and still not ready: two of the four cannot be executed.
+      expect(result.readinessBlocker).toContain('do not compile');
     });
 
     it('states a reason for every quarantined formula', async () => {
@@ -270,13 +311,20 @@ describe('Migration seam tests', () => {
 
       // A quarantine without a reason is the unknown this seam exists to
       // delete, so the verifier must never fall back to a placeholder.
-      expect(result.findings.join(' | ')).not.toContain('no reason given');
-      expect(result.findings.join(' | ')).toContain('unrendered Discoverer');
+      const reported = result.findings.join(' | ');
+      expect(reported).not.toContain('NO_REASON_GIVEN');
+      // A code, from the renderer's own refusal vocabulary.
+      expect(reported).toContain('UNRESOLVED_ELEMENT');
       expect(result.metrics.distinctReasons).toBe(2);
+      // The histogram is the whole backlog, not a sample of it.
+      expect(Object.keys(result.histogram ?? {})).toHaveLength(2);
+      // No formula body anywhere in what a shared log would hold.
+      expect(reported).not.toContain('[6,9999]');
     });
 
-    it('reports FAIL when the classifier hits a path it does not handle', async () => {
-      // Negative control for the one bucket CI gates on.
+    it('reports FAIL when the compiler hits a path it does not handle', async () => {
+      // Negative control for the one bucket CI gates on. Only the two rows
+      // with no token form reach the hook, so only those two can throw.
       const result = await checkFormulaCompileRate(db, {
         mapIdPrefix: PREFIX,
         compileFormula: () => {
@@ -284,16 +332,58 @@ describe('Migration seam tests', () => {
         },
       });
 
-      expect(result.metrics.failed).toBe(3);
+      expect(result.metrics.failed).toBe(2);
       expect(result.status).toBe('FAIL');
-      expect(result.findings.join(' | ')).toContain('classifier threw');
+      expect(result.findings.join(' | ')).toContain('COMPILER_THREW');
     });
 
-    it('never reports PASS when no compiler is injected', async () => {
+    it('compiles the token forms with no hook injected at all', async () => {
+      // The renderer lives in `@discoverer-neo/core`, so the seam no longer
+      // needs this workspace to evaluate a token formula — which is what makes
+      // `dn-migrate verify` report seam 2 instead of skipping it.
       const result = await checkFormulaCompileRate(db, { mapIdPrefix: PREFIX });
-      expect(result.status).toBe('SKIPPED');
-      // The count is still useful, and still not a pass.
-      expect(result.metrics.formulas).toBe(3);
+      expect(result.metrics.formulas).toBe(4);
+      // `renders` only. The two hookless rows fall to NO_SOURCE_TOKENS.
+      expect(result.metrics.compiledUnverified).toBe(1);
+      expect(result.metrics.failed).toBe(0);
+      expect(result.findings.join(' | ')).toContain('NO_SOURCE_TOKENS');
+    });
+
+    it('writes the partition back only when asked', async () => {
+      await checkFormulaCompileRate(db, { mapIdPrefix: PREFIX });
+      const before = await db
+        .select({ id: mapCalculatedFields.id, status: mapCalculatedFields.compileStatus })
+        .from(mapCalculatedFields)
+        .where(inArray(mapCalculatedFields.id, FIELD_IDS));
+      // Read-only by default, so the verifier can be pointed at a live estate.
+      expect(before.every((r) => r.status === null)).toBe(true);
+
+      await checkFormulaCompileRate(db, {
+        mapIdPrefix: PREFIX,
+        writeCompileStatus: true,
+        compileFormula: bucketFormula,
+      });
+      const after = await db
+        .select({
+          id: mapCalculatedFields.id,
+          status: mapCalculatedFields.compileStatus,
+          reason: mapCalculatedFields.compileReason,
+          compiled: mapCalculatedFields.compiledSql,
+          tokens: mapCalculatedFields.sourceTokens,
+        })
+        .from(mapCalculatedFields)
+        .where(inArray(mapCalculatedFields.id, FIELD_IDS));
+
+      expect(after.every((r) => r.status !== null)).toBe(true);
+      const rendered = after.find((r) => r.id === FIELD_IDS[1]);
+      expect(rendered!.status).toBe('COMPILED_UNVERIFIED');
+      expect(rendered!.compiled).toContain('SUM(');
+      // D-055: the provenance the expression was derived from is untouched.
+      expect(rendered!.tokens).toBe('[1,1]([6,2])');
+      const unbound = after.find((r) => r.id === FIELD_IDS[2]);
+      expect(unbound!.status).toBe('QUARANTINED');
+      expect(unbound!.reason).toBe('UNRESOLVED_ELEMENT');
+      expect(unbound!.compiled).toBeNull();
     });
   });
 
