@@ -122,6 +122,36 @@ let oracledbModule: OracleDbModule | null = null;
 let clientInitialized = false;
 
 /**
+ * Has the Oracle Instant Client already been loaded into this process?
+ *
+ * The driver refuses a second `initOracleClient` two different ways, and both
+ * mean the same harmless thing — the client is loaded:
+ *
+ * - `already been initialized`, when the second call passes the same arguments;
+ * - **`NJS-090: initOracleClient() was already called with different
+ *   arguments`**, when it does not.
+ *
+ * The second one is the case that actually happens here. `reimport-maps` runs
+ * inside the backend, whose pool initialises with `{ libDir: <configured> }`,
+ * and then the migrator's own init runs with `{}` because this workspace reads
+ * `ORACLE_CLIENT_PATH` from the environment and the container does not set it.
+ * Only the first form was tolerated, so the re-import failed at the read step
+ * with a message telling the operator to set a variable that would not have
+ * fixed anything.
+ *
+ * Matching on "already" rather than on the code covers both, and is the right
+ * shape of test: whichever wording the driver uses, the client is there.
+ *
+ * `oracle-connection-pool.ts` keeps its own copy of this regex rather than
+ * importing this one. That is not drift by accident: the pool is request-path
+ * code and `no-restricted-imports` forbids it reaching into the migration
+ * pipeline, which is a rule worth more than one shared regex.
+ */
+export function isAlreadyInitialized(err: unknown): boolean {
+  return /already been initialized|already called/i.test(String(err));
+}
+
+/**
  * Switch the driver into thick mode when `ORACLE_THICK_MODE` says to.
  *
  * Thin mode is the default and needs no Oracle Instant Client, but it cannot
@@ -146,8 +176,7 @@ function initThickModeOnce(oracledb: OracleDbModule): void {
     const libDir = process.env.ORACLE_CLIENT_PATH;
     oracledb.initOracleClient(libDir ? { libDir } : {});
   } catch (err) {
-    // A second init in the same process throws, and that is harmless.
-    if (/already been initialized/i.test(String(err))) return;
+    if (isAlreadyInitialized(err)) return;
     throw new EulConnectionError(
       'ORACLE_THICK_MODE is enabled but the Oracle Instant Client could not be ' +
         `loaded: ${err instanceof Error ? err.message : String(err)}. Set ` +

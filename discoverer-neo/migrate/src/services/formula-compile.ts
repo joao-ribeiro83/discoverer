@@ -74,8 +74,21 @@ export interface StoredFormula {
 export interface CompileScope {
   /** Item name (lower-cased) → the column it is. */
   columnByItemName: ReadonlyMap<string, ItemBinding>;
-  /** Calculation name (lower-cased) → its own token tree, for expansion. */
-  treeByCalcName: ReadonlyMap<string, FormulaNode>;
+  /**
+   * `source_element_id` → that calculation's own token tree, for expansion.
+   *
+   * **Keyed by element id, not by name.** Going through the name cannot work:
+   * the workbook parser disambiguates same-named siblings, so a binding reads
+   * `SEGURO DIRECTO1 #100` while the stored `name` is `SEGURO DIRECTO1`, and
+   * the round-trip misses. Measured on the live estate, that one indirection
+   * accounted for 50 378 of 128 068 element bindings inside the quarantined
+   * rows, and it manufactured false `CALCULATION_CYCLE` refusals on top: two
+   * elements sharing a label made a reference look like a self-reference.
+   *
+   * The element id is what the `[6,n]` token actually says, so it needs no
+   * lookup through the bindings at all.
+   */
+  treeByCalcElementId: ReadonlyMap<number, FormulaNode>;
   /**
    * Every calculated field's bindings on this map, merged.
    *
@@ -134,11 +147,13 @@ export function compileStoredFormula(row: StoredFormula, scope: CompileScope): C
     // Expansion first (Phase 4.4, Decision 7): a `[6,n]` naming a sibling
     // calculation is substituted, not named, so the compiled expression is the
     // whole computation rather than a reference to a string.
-    const expanded = expandCalculations(tree, (elementId) => {
-      const name = named('items', elementId);
-      if (name === undefined) return null;
-      return scope.treeByCalcName.get(name.toLowerCase()) ?? null;
-    });
+    //
+    // Straight off the element id the token carries. Nothing consults the
+    // bindings here — see `treeByCalcElementId` for what the name detour cost.
+    const expanded = expandCalculations(
+      tree,
+      (elementId) => scope.treeByCalcElementId.get(elementId) ?? null,
+    );
 
     const collector = createBindCollector();
     const ctx: SqlRenderContext = {
