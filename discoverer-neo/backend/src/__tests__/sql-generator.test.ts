@@ -177,6 +177,12 @@ function mkCalcField(
     sourceIdentifier: null,
     sourceElementId: null,
     sourceAttrs: null,
+    // D-055 dual storage. A field authored in Neo has no token form, which is
+    // what these four nulls are.
+    sourceTokens: null,
+    compiledSql: null,
+    compileStatus: null,
+    compileReason: null,
     createdAt: NOW,
     ...overrides,
   };
@@ -999,6 +1005,68 @@ describe('SQL generator', () => {
       const result = generateSql(def);
       expect(result.hasAggregates).toBe(true);
       expect(norm(result.sql)).toContain('GROUP BY f1."REGION"');
+    });
+
+    it('puts a bare column from a mixed formula into GROUP BY (BE-05)', () => {
+      // `SUM(AMOUNT) / CUSTOMER_ID` contains an aggregate, so the whole
+      // expression used to be treated as aggregated and the bare column never
+      // reached GROUP BY — ORA-00979 on any per-unit or share-of-total
+      // calculation. `containsAggregate` says a GROUP BY is needed;
+      // `bareReferences` says of what.
+      const f = salesFixture();
+      const def = mkDef({
+        items: [{ mapItem: mkMapItem(f.region), item: f.region, folder: f.sales }],
+        calculatedFields: [
+          mkCalcField({ name: 'Per Customer', formula: 'SUM([Amount]) / [Customer Id]' }),
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(result.hasAggregates).toBe(true);
+      const sql = norm(result.sql);
+      expect(sql).toContain('GROUP BY f1."REGION", f1."CUSTOMER_ID"');
+      // The aggregate itself stays out of GROUP BY — grouping by SUM() is
+      // ORA-00934, the mirror-image error.
+      expect(sql.slice(sql.indexOf('GROUP BY'))).not.toContain('SUM(');
+    });
+
+    it('groups by nothing extra when the aggregate encloses everything', () => {
+      // `SUM(AMOUNT / CUSTOMER_ID)` is fully aggregated. A depth counter, not a
+      // text scan, is what tells the two cases apart.
+      const f = salesFixture();
+      const def = mkDef({
+        items: [{ mapItem: mkMapItem(f.region), item: f.region, folder: f.sales }],
+        calculatedFields: [
+          mkCalcField({ name: 'Ratio', formula: 'SUM([Amount] / [Customer Id])' }),
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const sql = norm(generateSql(def).sql);
+      // CUSTOMER_ID is in the SELECT list, inside the aggregate. What matters
+      // is that it is not in GROUP BY.
+      expect(sql.slice(sql.indexOf('GROUP BY'))).toBe('GROUP BY f1."REGION"');
+    });
+
+    it('groups a bare column once, however many formulas name it', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [{ mapItem: mkMapItem(f.region), item: f.region, folder: f.sales }],
+        calculatedFields: [
+          mkCalcField({ name: 'A', formula: 'SUM([Amount]) / [Customer Id]' }),
+          mkCalcField({
+            name: 'B',
+            formula: 'SUM([Amount]) - [Customer Id]',
+            displayOrder: 1,
+          }),
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const sql = norm(generateSql(def).sql);
+      const groupBy = sql.slice(sql.indexOf('GROUP BY'));
+      expect(groupBy.match(/CUSTOMER_ID/g)).toHaveLength(1);
     });
 
     it('rejects disallowed functions', () => {

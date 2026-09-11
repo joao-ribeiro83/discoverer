@@ -14,6 +14,7 @@ export {
   SCALAR_FUNCTIONS,
   UNREAGGREGABLE_FUNCTIONS,
   isAllowedFunction,
+  containsAggregateCall,
 } from './allowlist.js';
 
 export {

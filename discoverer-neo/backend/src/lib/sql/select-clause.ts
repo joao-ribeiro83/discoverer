@@ -6,7 +6,11 @@ import {
 } from '../../types/sql.js';
 import type { GenerationContext } from './context.js';
 import { makeColumnAlias } from './identifiers.js';
-import { parseFormula, AGGREGATE_FUNCTIONS } from './formula-parser.js';
+import {
+  parseFormula,
+  AGGREGATE_FUNCTIONS,
+  containsAggregateCall,
+} from './formula-parser.js';
 
 export interface SelectClauseResult {
   /** "SELECT expr AS ALIAS, ..." */
@@ -156,7 +160,24 @@ export function buildSelectClause(
     parts.push(`${parsed.sql} AS ${alias}`);
     aliasByCalcFieldId.set(field.id, alias);
     columns.push({ alias, label: field.name, isAggregate });
-    if (!isAggregate) nonAggregateExprs.push(parsed.sql);
+    if (!isAggregate) {
+      nonAggregateExprs.push(parsed.sql);
+    } else {
+      // BE-05. A formula that mixes an aggregate with a bare column —
+      // `SUM(AMOUNT) / HEADCOUNT` — is not a single aggregated expression.
+      // Oracle needs the bare part in GROUP BY, and treating the whole thing
+      // as aggregated is `ORA-00979` on any per-unit or share-of-total
+      // calculation. `containsAggregate` says a GROUP BY is needed;
+      // `bareReferences` says of what.
+      //
+      // A reference is dropped when its own resolved expression aggregates:
+      // an item whose EUL formula reads `SUM(x)` is bare in the calculated
+      // field's tree and is still an aggregate in the SQL, and grouping by it
+      // would be `ORA-00934`.
+      for (const expr of parsed.bareReferences) {
+        if (!containsAggregateCall(expr)) nonAggregateExprs.push(expr);
+      }
+    }
   }
 
   // Formulas may hide aggregates inside item expressions too.

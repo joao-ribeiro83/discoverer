@@ -36,6 +36,7 @@ import { SqlGenerationError } from '../../types/sql.js';
 export {
   AGGREGATE_FUNCTIONS,
   SCALAR_FUNCTIONS,
+  containsAggregateCall,
 } from '@discoverer-neo/core/semantics';
 
 /** Zero-argument pseudo-columns allowed as bare references. */
@@ -209,12 +210,33 @@ export interface ParsedFormula {
   containsAggregate: boolean;
   /** Item names that the formula referenced. */
   referencedItems: string[];
+  /**
+   * BE-05 — the emitted SQL of every item reference that is **not** inside an
+   * aggregate call, in first-use order.
+   *
+   * Oracle requires every non-aggregated SELECT expression to appear in
+   * GROUP BY. `SUM(AMOUNT) / HEADCOUNT` contains an aggregate, so the whole
+   * expression used to be treated as aggregated and `HEADCOUNT` never reached
+   * GROUP BY — `ORA-00979`, on any map with a per-unit or share-of-total
+   * calculation. `containsAggregate` answers "does this need a GROUP BY";
+   * this answers "of what".
+   *
+   * Collected at emit time from the tree, never re-scanned out of the text.
+   */
+  bareReferences: string[];
 }
 
 class Parser {
   private pos = 0;
   containsAggregate = false;
   referencedItems: string[] = [];
+  bareReferences: string[] = [];
+  /**
+   * How many aggregate calls enclose the node being emitted. A reference is
+   * bare only at depth 0 — `SUM(A/B)` groups by nothing, `SUM(A)/B` groups
+   * by B.
+   */
+  private aggregateDepth = 0;
 
   constructor(
     private tokens: Token[],
@@ -389,7 +411,19 @@ class Parser {
       );
     }
     if (isAggregate) this.containsAggregate = true;
+    // Everything emitted inside an aggregate is aggregated, however deeply
+    // nested, so the depth is incremented for the whole call and restored in
+    // a finally — a parse error must not leave the counter wrong for the rest
+    // of the formula.
+    if (isAggregate) this.aggregateDepth += 1;
+    try {
+      return this.functionCallBody(name, isAggregate);
+    } finally {
+      if (isAggregate) this.aggregateDepth -= 1;
+    }
+  }
 
+  private functionCallBody(name: string, isAggregate: boolean): string {
     this.expect('LPAREN');
 
     // COUNT(*) special case
@@ -434,6 +468,7 @@ class Parser {
       );
     }
     this.referencedItems.push(name);
+    if (this.aggregateDepth === 0) this.bareReferences.push(resolved);
     return resolved;
   }
 
@@ -484,6 +519,7 @@ export function parseFormula(
     sql,
     containsAggregate: parser.containsAggregate,
     referencedItems: parser.referencedItems,
+    bareReferences: parser.bareReferences,
   };
 }
 
