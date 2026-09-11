@@ -19,7 +19,11 @@
 
 import { resolve } from 'node:path';
 
-import { readFormulaCorpus, reportRendering } from '../services/formula-corpus-agreement.js';
+import {
+  readFormulaCorpus,
+  reportRendering,
+  reportSqlCompile,
+} from '../services/formula-corpus-agreement.js';
 
 const CORPUS_PATH = resolve(process.cwd(), 'corpus', 'formula-corpus.tsv');
 
@@ -108,6 +112,49 @@ function main(): void {
       `  ${entry.reason.padEnd(30)} ${String(entry.occurrences).padStart(7)} occ ` +
         `${pc(entry.occurrences, w).padStart(7)}   ${String(entry.rows).padStart(6)} rows`,
     );
+  }
+
+  // --- the SQL partition (Phase 4.5) --------------------------------------
+  //
+  // The display partition above is fidelity: does the tree render back to what
+  // Discoverer printed. This is the other question — does it render to SQL at
+  // all — and it is the one `dn-migrate verify --compile` asks of the estate.
+  // Measured here because the verifier can only report what the estate carries,
+  // and an estate migrated before dual storage carries no token forms.
+  const compiled = reportSqlCompile(rows);
+  console.log('\nSQL partition (D-059, every element resolved)');
+  console.log('                        rows              occurrences');
+  for (const name of ['COMPILED', 'COMPILED_UNVERIFIED', 'QUARANTINED', 'FAILED'] as const) {
+    const b = compiled.buckets[name];
+    console.log(
+      `  ${name.padEnd(22)}${String(b.rows).padStart(6)} ${pc(b.rows, d).padStart(8)}` +
+        `   ${String(b.occurrences).padStart(8)} ${pc(b.occurrences, w).padStart(8)}`,
+    );
+  }
+  const sqlRows = Object.values(compiled.buckets).reduce((n, b) => n + b.rows, 0);
+  const sqlOcc = Object.values(compiled.buckets).reduce((n, b) => n + b.occurrences, 0);
+  console.log(
+    `  ${'(sum)'.padEnd(22)}${String(sqlRows).padStart(6)} of ${d}` +
+      `   ${String(sqlOcc).padStart(8)} of ${w}`,
+  );
+  if (compiled.buckets.FAILED.rows > 0) {
+    console.error(
+      `\nSQL FAILED bucket is not empty: ${compiled.buckets.FAILED.rows} row(s). D-059.`,
+    );
+    process.exitCode = 1;
+  }
+  if (sqlRows !== d || sqlOcc !== w) {
+    console.error(`\nSQL buckets do not partition the corpus: ${sqlRows}/${d}, ${sqlOcc}/${w}.`);
+    process.exitCode = 1;
+  }
+  if (compiled.quarantineHistogram.length > 0) {
+    console.log('\nSQL quarantine reasons — the improvement backlog');
+    for (const entry of compiled.quarantineHistogram) {
+      console.log(
+        `  ${entry.reason.padEnd(30)} ${String(entry.occurrences).padStart(7)} occ ` +
+          `${pc(entry.occurrences, w).padStart(7)}   ${String(entry.rows).padStart(6)} rows`,
+      );
+    }
   }
 
   if (report.unexplainedSamples.length > 0) {

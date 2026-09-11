@@ -185,11 +185,13 @@ jobs:
       - name: Test
         run: npm test --workspace @discoverer-neo/core -- --coverage
 
-      # The D-059 four-bucket partition over the committed formula corpus.
-      # A separate step from the tests because the histogram belongs in the CI
-      # log where anyone can read it — a compile gate reported as a single
-      # percentage is this project's signature failure mode. The step exits
-      # non-zero when the FAILED bucket is not empty, or when the four buckets
-      # stop summing to the whole corpus.
-      - name: Formula bucket partition (D-059)
+      # The D-059 four-bucket partition over the committed formula corpus —
+      # now printed twice, for the display rendering (fidelity, Phase 4.4) and
+      # for the SQL rendering (does it compile at all, Phase 4.5). A separate
+      # step from the tests because the histogram belongs in the CI log where
+      # anyone can read it: a compile gate reported as a single percentage is
+      # this project's signature failure mode. The step exits non-zero when
+      # either FAILED bucket is not empty, or when either partition stops
+      # summing to the whole corpus.
+      - name: Formula bucket partitions (D-059)
         run: npm run render-corpus --workspace @discoverer-neo/core

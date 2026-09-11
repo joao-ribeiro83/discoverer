@@ -11,6 +11,7 @@ import {
   TOKEN_RENDERER,
   type BucketPartition,
   type FormulaRenderer,
+  reportSqlCompile,
 } from '../services/formula-corpus-agreement.js';
 import { displayMatches } from '../semantics/render.js';
 
@@ -49,6 +50,8 @@ interface Baseline {
   cleanPhaseGate: number;
   /** The Phase 4.4 gate: the D-059 partition, ratcheted per bucket. */
   buckets: BucketPartition;
+  /** The Phase 4.5 gate: the same partition over the SQL rendering. */
+  sqlBuckets: BucketPartition;
   renderer: string;
   measuredAt: string;
   comparison: string;
@@ -267,6 +270,49 @@ describe('formula corpus agreement gate', () => {
     } finally {
       rmSync(path, { force: true });
     }
+  });
+
+  describe('the SQL partition — Phase 4.5', () => {
+    const report = reportSqlCompile(rows);
+
+    it('puts every row in exactly one bucket', () => {
+      const rowSum = Object.values(report.buckets).reduce((n, b) => n + b.rows, 0);
+      const occSum = Object.values(report.buckets).reduce((n, b) => n + b.occurrences, 0);
+      expect(rowSum).toBe(report.distinctPairs);
+      expect(occSum).toBe(report.totalOccurrences);
+    });
+
+    it('asserts FAILED = 0', () => {
+      // The defining assertion of Phase 4.5, on the SQL side. A FAILED row is
+      // a renderer path nobody wrote — our bug — and never a data problem.
+      expect(report.buckets.FAILED).toEqual({ rows: 0, occurrences: 0 });
+    });
+
+    it('never claims COMPILED', () => {
+      // There is no reference Oracle result to check an emitted expression
+      // against. Phase 9.1's contract tests are what can claim that bucket,
+      // and a partition that claimed it here would be claiming a proof it
+      // does not have.
+      expect(report.buckets.COMPILED).toEqual({ rows: 0, occurrences: 0 });
+    });
+
+    it('names a reason for every quarantined row', () => {
+      expect(report.buckets.QUARANTINED.occurrences).toBe(
+        report.quarantineHistogram.reduce((n, e) => n + e.occurrences, 0),
+      );
+      for (const entry of report.quarantineHistogram) expect(entry.reason).not.toBe('');
+    });
+
+    it('does not regress against the recorded SQL bucket baseline', () => {
+      // The ratchet, in the direction each bucket may move. Raise the baseline
+      // by hand in the same commit that improves it.
+      expect(report.buckets.COMPILED_UNVERIFIED.occurrences).toBeGreaterThanOrEqual(
+        baseline.sqlBuckets.COMPILED_UNVERIFIED.occurrences,
+      );
+      expect(report.buckets.QUARANTINED.occurrences).toBeLessThanOrEqual(
+        baseline.sqlBuckets.QUARANTINED.occurrences,
+      );
+    });
   });
 
   it('reports 0%, not NaN, over an empty corpus', () => {
