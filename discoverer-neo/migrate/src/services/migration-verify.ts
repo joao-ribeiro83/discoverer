@@ -448,7 +448,7 @@ export async function checkFormulaCompileRate(
         // problem — which is exactly what FAILED is reserved for.
         verdict = {
           bucket: 'FAILED',
-          reason: `compiler threw: ${describe(err)}`,
+          reason: `COMPILER_THREW: ${scrub(describe(err))}`,
           sql: null,
           containsAggregate: false,
         };
@@ -520,6 +520,25 @@ export async function checkFormulaCompileRate(
         ? `${buckets.QUARANTINED} of ${total} calculated field(s) do not compile — see the per-reason histogram`
         : undefined,
   };
+}
+
+/**
+ * Strip anything formula-shaped out of a message before it becomes a reason.
+ *
+ * A reason is aggregated into a histogram and printed into a CI log, and this
+ * run reads 49 819 customer formulas. The one path that can carry content that
+ * far is a compiler bug whose error message quotes what it choked on —
+ * `parseFormulaTree`'s own `SyntaxError` embeds the whole token string, and it
+ * only stays out of here because that function returns its error instead of
+ * throwing. So the content is removed rather than the message: quoted spans,
+ * bracketed token runs, and anything past a sentence's worth of text.
+ */
+function scrub(message: string): string {
+  return message
+    .replace(/\[[^\]]*\]/g, '[…]')
+    .replace(/"[^"]*"/g, '"…"')
+    .replace(/'[^']*'/g, "'…'")
+    .slice(0, 120);
 }
 
 /** Widen the injected hook's narrower return shape into a full verdict. */

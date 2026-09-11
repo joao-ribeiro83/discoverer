@@ -62,20 +62,89 @@ folders the join metadata does not link.
 
 ### 2. `formula-compile` — does every calculated field land in a named bucket?
 
+This check **is** the compile run. It reads each calculated field's stored
+token tree, renders it to an Oracle expression, and files the row in exactly
+one of four buckets.
+
 ```
 [PASS   ] formula-compile — every calculated field compiles or is quarantined with a reason
-            formulas=49819 compiled=0 compiledUnverified=37 quarantined=49782 failed=0
-            · 49027x unrendered Discoverer [class,id] token — no renderer yet
+            formulas=49819 compiled=0 compiledUnverified=49739 quarantined=80 failed=0
+            distinctReasons=3 partitioned=49819
+            · 76x UNFITTED_CODE
+            · 3x UNREAGGREGABLE
+            · 1x UNKNOWN_SEMANTICS
+            by reason:
+                    76  UNFITTED_CODE
+                     3  UNREAGGREGABLE
+                     1  UNKNOWN_SEMANTICS
 ```
 
-`failed` is the only number that fails the check. It counts formulas that hit a
-path the classifier does not handle, which is a bug in the tool. A large
-`quarantined` count is a stated, understood gap — every one of them carries a
-reason, and the reasons are aggregated so you see the shape rather than 49 782
-lines.
+### The four buckets
 
-`compiled` stays 0 until formulas are proven against a real Oracle. "Parses" and
-"works" are different claims, and the report keeps them apart.
+| Bucket | What it means |
+| --- | --- |
+| `COMPILED` | Rendered **and** proven against a real Oracle. Nothing can claim this yet — the contract tests that would are a later phase — so this is 0. |
+| `COMPILED_UNVERIFIED` | Rendered to an Oracle expression. Not yet run anywhere. |
+| `QUARANTINED` | Did not render, and the tool can say why. Each row carries a reason code. |
+| `FAILED` | Hit a path the compiler does not handle. **A bug in the tool**, never a data problem. |
+
+`partitioned` must equal `formulas`. That is asserted, not decorative: without
+it, `failed=0` could be satisfied by losing rows out of the partition instead
+of by fixing them, and the check fails outright if the four stop summing.
+
+`failed` is the only number that fails the check.
+
+`quarantined` does not fail the check and **does** stop the report saying
+`VERIFIED`. The compiler worked; the estate still cannot run those calculations.
+Both appear under `Status:` as blockers — see [Reading the bottom
+line](#reading-the-bottom-line).
+
+`by reason:` is the whole histogram, not a sample. It is the improvement
+backlog: whichever code tops it is the one worth fitting next.
+
+### Publishing the partition
+
+By default this check only reads, so it is safe against a live estate. Add
+`--compile` to write each verdict back:
+
+```bash
+npx dn-migrate verify --target <connection> --compile
+```
+
+That fills three columns on `map_calculated_fields`:
+
+| Column | Holds |
+| --- | --- |
+| `compile_status` | The bucket. `NULL` means no compile run has seen the row — a fifth state on purpose, so an unvisited row is not read as a clean one. |
+| `compile_reason` | The reason code, on a quarantined or failed row. |
+| `compiled_sql` | The Oracle expression, or `NULL` if the row was declined. |
+
+```sql
+SELECT compile_status, count(*) FROM map_calculated_fields GROUP BY 1;
+```
+
+Re-run it as often as you like. The compiled expression is derived from
+`source_tokens`, which a compile run never writes, so a later run with a better
+renderer simply replaces a derived value.
+
+`compiled_sql` is **evidence, not an execution path.** Column references in it
+are unqualified, because the table alias a column needs is chosen per query at
+generation time and a stored string cannot know it. What the column proves is
+that the formula has a reading at all.
+
+### If every row says `NO_SOURCE_TOKENS`
+
+That means the estate was migrated before the token form was kept, so there is
+nothing for the renderer to read:
+
+```
+[PASS   ] formula-compile — every calculated field compiles or is quarantined with a reason
+            formulas=49819 compiled=0 compiledUnverified=0 quarantined=49819 failed=0
+            · 49819x NO_SOURCE_TOKENS
+```
+
+The fix is a maps re-import, which writes `source_tokens` and the element
+bindings beside each formula. No amount of renderer work moves these rows.
 
 ### 3. `referential-closure` — does everything a map points at hang together?
 
@@ -251,8 +320,23 @@ Run it inside the backend container, where the Oracle Instant Client lives.
 
 ```
 Status: COMPLETED_WITH_BLOCKERS
+  BLOCKER formula-compile: 80 of 49819 calculated field(s) do not compile — see the per-reason histogram
   BLOCKER referential-closure: 2 closure invariant(s) broken across 31565 reference(s)
 ```
+
+There are two kinds of blocker in that list, and the difference matters when
+you decide what to do about one:
+
+- A **check that failed** says a part of the tool is broken. `referential-closure`
+  above is one.
+- A **readiness blocker** comes from a check that *passed*. The tool worked,
+  refused honestly, and the estate still is not usable — `formula-compile`
+  above declined 80 calculations correctly, and a report that called that
+  "ready" would be lying. A migration once scored 75 out of 100 with no
+  blockers listed over an estate where none of its 923 maps could run; this is
+  the line that stops that happening again.
+
+Either kind stops the report saying `VERIFIED`.
 
 `VERIFIED` — every check passed.
 

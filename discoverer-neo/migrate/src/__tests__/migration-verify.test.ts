@@ -132,6 +132,22 @@ describe('seam 2 — formula compile rate', () => {
     expect(result.reason).toContain('do not handle');
   });
 
+  it('keeps a formula body out of the reason when the compiler throws', async () => {
+    // The one path that can carry customer content into a shared log: a bug
+    // whose error message quotes what it choked on. `parseFormulaTree`'s own
+    // SyntaxError embeds the whole token string, and only stays out of here
+    // because it returns its error instead of throwing.
+    const result = await checkFormulaCompileRate(fakeDb(hookPages(readable)), {
+      compileFormula: () => {
+        throw new SyntaxError('expected "," at offset 7 of "[1,1]([6,27])"');
+      },
+    });
+    const reported = [...result.findings, ...Object.keys(result.histogram ?? {})].join(' ');
+    expect(reported).toContain('COMPILER_THREW');
+    expect(reported).not.toContain('[6,27]');
+    expect(reported).not.toContain('[1,1]');
+  });
+
   it('treats a non-string formula column as empty rather than crashing', async () => {
     const result = await checkFormulaCompileRate(
       fakeDb(hookPages([{ id: 'f1', map_id: 'm1', formula: null, source_tokens: null }])),
