@@ -79,6 +79,7 @@ function item(sourceId: number, folderId: number | null, expType = 'CI'): Item {
   return {
     sourceId,
     folderId,
+    itemClassId: null,
     name: `Item${sourceId}`,
     description: null,
     expType,
@@ -172,6 +173,7 @@ function data(overrides: Partial<EulFullData> = {}): EulFullData {
     businessAreas: [],
     folders: [],
     items: [],
+    itemClasses: [],
     conditions: [],
     securityConditions: [],
     joins: [],

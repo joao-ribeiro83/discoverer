@@ -16,6 +16,7 @@ import type {
   Grant,
   Hierarchy,
   Item,
+  ItemClass,
   Join,
 } from '../../types/eul-versions.js';
 import type { ParsedWorkbook } from '../eul-reader.js';
@@ -37,6 +38,7 @@ import {
   type TransformedHierarchyLevel,
   type HierarchySkipReason,
   type TransformedItem,
+  type TransformedItemClass,
   type TransformedJoin,
   type TransformedMapCalculatedField,
   type TransformedMapCondition,
@@ -240,11 +242,81 @@ export function transformItem(item: Item, _version: EulVersion): TransformedItem
     isHidden: false,
     isActive: true,
     parentItemSourceId: item.parentItemId,
+    itemClassSourceId: item.itemClassId,
     createdByUsername: item.createdBy,
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,
     warnings,
     skip,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Item class
+// ---------------------------------------------------------------------------
+
+/**
+ * `DOMAINS` → an `item_classes` row.
+ *
+ * Nothing is skipped and nothing is inferred. The two capabilities the source
+ * does state are read off the item columns; `providesDrillDetail` has no
+ * source column and stays false until Phase 7.3 gives it a meaning.
+ *
+ * `DOM_DATA_TYPE` is a numeric code no available Oracle source decodes, and
+ * the reference estate holds zero rows to fit it against, so it is NOT guessed
+ * into a type name: the column stays null and a warning names the code. The
+ * LOV item carries its own `data_type` anyway, which is what the pick-list
+ * actually renders from.
+ */
+export function transformItemClass(
+  itemClass: ItemClass,
+  _version: EulVersion,
+): TransformedItemClass {
+  const warnings: TransformWarning[] = [];
+
+  let name = (itemClass.name ?? '').trim();
+  if (name === '') {
+    name = `Item class ${itemClass.sourceId}`;
+    warnings.push({
+      code: 'ITEM_CLASS_MISSING_NAME',
+      message: `Item class ${itemClass.sourceId} has no name; using "${name}".`,
+      sourceId: itemClass.sourceId,
+    });
+  }
+
+  if (itemClass.dataType !== null && itemClass.dataType !== undefined) {
+    warnings.push({
+      code: 'ITEM_CLASS_DATA_TYPE_UNMAPPED',
+      message: `Item class ${itemClass.sourceId} has DOM_DATA_TYPE=${itemClass.dataType}, a code no source decodes; left unset.`,
+      sourceId: itemClass.sourceId,
+    });
+  }
+
+  // "An item class to support an alternative sort must also support a list of
+  // values" (9.0.4 admin guide p. 8-4). A rank item with no LOV item is a
+  // source the guide says cannot exist, so say so rather than silently
+  // carrying a sort nothing can order.
+  if (itemClass.rankItemId !== null && itemClass.lovItemId === null) {
+    warnings.push({
+      code: 'ITEM_CLASS_SORT_WITHOUT_LOV',
+      message: `Item class ${itemClass.sourceId} names a sort item but no LOV item; Discoverer requires both.`,
+      sourceId: itemClass.sourceId,
+    });
+  }
+
+  return {
+    sourceId: itemClass.sourceId,
+    name: clamp(name, NAME_MAX),
+    description: itemClass.description,
+    developerKey: itemClass.developerKey ? clamp(itemClass.developerKey, 100) : null,
+    sourceItemSourceId: itemClass.lovItemId,
+    sortItemSourceId: itemClass.rankItemId,
+    providesDrillDetail: false,
+    cached: itemClass.cached === 1,
+    cardinality: itemClass.cardinality,
+    dataType: null,
+    systemGenerated: itemClass.systemGenerated === 1,
+    warnings,
   };
 }
 

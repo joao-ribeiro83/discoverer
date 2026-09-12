@@ -203,7 +203,8 @@ describe('readEulSchema', () => {
     expect(version.version).toBe('EUL4');
     expect(data.securityConditions).toEqual([]);
     expect(data.businessAreas[0]?.name).toBe('Finance');
-    expect(data.items).toHaveLength(2);
+    expect(data.items).toHaveLength(4);
+    expect(data.itemClasses).toHaveLength(1);
     expect(data.workbooks).toHaveLength(1);
   });
 

@@ -476,6 +476,13 @@ export const items = pgTable(
     // Self-referential parent item; FK added at migration time because drizzle
     // cannot declare an inline `.references()` on its own table.
     parentItemId: uuid('parent_item_id'),
+    /**
+     * The item's item class (`EXPRESSIONS.IT_DOM_ID`). No inline
+     * `.references()`: `item_classes` points back at `items` for its LOV and
+     * rank items, and drizzle cannot express the cycle. The FK is in the SQL
+     * migration.
+     */
+    itemClassId: uuid('item_class_id'),
     createdBy: uuid('created_by').references(() => users.id, {
       onDelete: 'set null',
     }),
@@ -489,8 +496,81 @@ export const items = pgTable(
   (t) => [
     index('items_folder_idx').on(t.folderId),
     index('items_parent_idx').on(t.parentItemId),
+    index('items_item_class_idx').on(t.itemClassId),
     index('items_created_by_idx').on(t.createdBy),
     AGG_FUNCTION_CHECK('items_agg_function_check', t.aggFunction),
+  ],
+);
+
+// ---------------------------------------------------------------------------
+// 6a. item_classes
+// ---------------------------------------------------------------------------
+
+/**
+ * An item class — Discoverer's `EUL4_DOMAINS`.
+ *
+ * One shared property bundle that many items point at, carrying up to THREE
+ * orthogonal capabilities (`9.0.4\B10270_01.pdf` p. 8-2):
+ *
+ *  - **list of values** — a dropdown of the distinct values in a column;
+ *  - **alternative sort** — order those values by a *second* item instead of
+ *    alphabetically (and it "must also support a list of values", p. 8-4);
+ *  - **drill to detail** — two items in different folders that share a class
+ *    are drillable to each other.
+ *
+ * The source models the first two by which item column is populated, not by a
+ * flag, so Neo does the same: `sourceItemId` present means it provides a LOV,
+ * `sortItemId` present means it provides an alternative sort. Drill-to-detail
+ * has no column at all in `EUL4_DOMAINS` — it is the mere existence of a
+ * shared class — so that one gets a real boolean.
+ *
+ * **The values are never stored.** An LOV is `SELECT DISTINCT` against the
+ * live source at prompt time (`"The values are those values in the database
+ * column on which the item is based"`, p. 8-3). Freezing them into rows here
+ * would be wrong on day one. `cached` and `cardinality` are the source's own
+ * hints about how expensive that query is, and `lov.service.ts` honours both.
+ */
+export const itemClasses = pgTable(
+  'item_classes',
+  {
+    id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+    name: varchar('name', { length: 255 }).notNull(),
+    description: text('description'),
+    /** `DOM_DEVELOPER_KEY` — the source's stable export key. */
+    developerKey: varchar('developer_key', { length: 100 }),
+    /**
+     * `DOM_IT_ID_LOV` — the item whose column the LOV reads.
+     * Non-null ⇒ this class provides a list of values.
+     * No inline `.references()`: see `items.itemClassId`.
+     */
+    sourceItemId: uuid('source_item_id'),
+    /**
+     * `DOM_IT_ID_RANK` — the item the values are ordered by.
+     * Non-null ⇒ this class provides an alternative sort.
+     */
+    sortItemId: uuid('sort_item_id'),
+    /** No source column; see the note above. Phase 7.3 consumes it. */
+    providesDrillDetail: boolean('provides_drill_detail')
+      .notNull()
+      .default(false),
+    /** `DOM_CACHED` — cache the values rather than re-query every prompt. */
+    cached: boolean('cached').notNull().default(false),
+    /** `DOM_CARDINALITY` — distinct-value estimate; drives the long-LOV UI. */
+    cardinality: integer('cardinality'),
+    /** `DOM_DATA_TYPE`, mapped to the same vocabulary as `items.data_type`. */
+    dataType: varchar('data_type', { length: 64 }),
+    /** `DOM_SYS_GENERATED` — bulk-load generated rather than authored. */
+    systemGenerated: boolean('system_generated').notNull().default(false),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index('item_classes_source_item_idx').on(t.sourceItemId),
+    index('item_classes_sort_item_idx').on(t.sortItemId),
   ],
 );
 
@@ -1328,6 +1408,7 @@ export type NewBusinessAreaRow = typeof businessAreas.$inferInsert;
 export type NewGrantRow = typeof userBusinessAreaGrants.$inferInsert;
 export type NewFolderRow = typeof folders.$inferInsert;
 export type NewItemRow = typeof items.$inferInsert;
+export type NewItemClassRow = typeof itemClasses.$inferInsert;
 export type NewJoinRow = typeof joins.$inferInsert;
 export type NewHierarchyRow = typeof hierarchies.$inferInsert;
 export type NewHierarchyLevelRow = typeof hierarchyLevels.$inferInsert;
@@ -1348,6 +1429,7 @@ export const TARGET_TABLES = {
   business_areas: businessAreas,
   folders,
   folder_business_areas: folderBusinessAreas,
+  item_classes: itemClasses,
   items,
   joins,
   join_predicates: joinPredicates,

@@ -928,7 +928,27 @@ describe('runMigration — EUL4 source, end to end', () => {
     expect(rowsOf(state, 'users')).toHaveLength(2); // ACLARK + migration user
     expect(rowsOf(state, 'business_areas')).toHaveLength(2); // Finance + workbook host
     expect(rowsOf(state, 'folders')).toHaveLength(1);
-    expect(rowsOf(state, 'items')).toHaveLength(2);
+    expect(rowsOf(state, 'items')).toHaveLength(4);
+    expect(rowsOf(state, 'item_classes')).toHaveLength(1);
+
+    // An item class binds in BOTH directions, and the two FKs form a cycle:
+    // the item names its class, and the class names the item its LOV reads
+    // from. Both sides have to be resolved by the time the transaction
+    // commits, which is what the DEFERRABLE constraints in migration 0017 buy.
+    const itemClass = rowsOf(state, 'item_classes')[0] as Record<string, unknown>;
+    const itemByName = new Map(
+      rowsOf(state, 'items').map((row) => [
+        (row as Record<string, unknown>).name as string,
+        row as Record<string, unknown>,
+      ]),
+    );
+    expect(itemByName.get('Cost Centre')?.itemClassId).toBe(itemClass.id);
+    expect(itemClass.sourceItemId).toBe(itemByName.get('Cost Centre')?.id);
+    expect(itemClass.sortItemId).toBe(itemByName.get('Cost Centre Sort')?.id);
+    // Modelled now, consumed in Phase 7.3.
+    expect(itemClass.providesDrillDetail).toBe(false);
+    expect(itemClass.cached).toBe(true);
+    expect(itemClass.cardinality).toBe(42);
     expect(rowsOf(state, 'hierarchies')).toHaveLength(1);
     expect(rowsOf(state, 'hierarchy_levels')).toHaveLength(1);
     expect(rowsOf(state, 'custom_functions')).toHaveLength(1);

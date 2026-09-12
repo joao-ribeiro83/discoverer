@@ -39,6 +39,7 @@ import {
   transformGrant,
   transformHierarchy,
   transformItem,
+  transformItemClass,
   transformJoin,
   transformUser,
   transformWorkbook,
@@ -193,6 +194,7 @@ export const TARGET_TABLE_ORDER: readonly TargetTable[] = [
   'business_areas',
   'folders',
   'folder_business_areas',
+  'item_classes',
   'items',
   'joins',
   'join_predicates',
@@ -216,6 +218,7 @@ const EMPTY_COUNTS = (): TableCounts => ({
   business_areas: 0,
   folders: 0,
   folder_business_areas: 0,
+  item_classes: 0,
   items: 0,
   joins: 0,
   join_predicates: 0,
@@ -735,6 +738,7 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
       isHidden: t.isHidden,
       isActive: t.isActive,
       parentItemId: null, // filled in a second pass once all item UUIDs exist
+      itemClassId: null, // filled in below, once item_classes have UUIDs
       createdBy: resolveUser(t.createdByUsername),
       createdAt: t.createdAt ?? deps.now(),
       updatedAt: t.updatedAt ?? deps.now(),
@@ -758,6 +762,77 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     }
   }
   planned.items = itemRows.length;
+
+  // --- 4a. item classes (DOMAINS) -------------------------------------------
+  // Written BEFORE items so `items.item_class_id` has something to point at.
+  // The reverse links (`source_item_id`, `sort_item_id`) point at items that
+  // do not exist yet, which is why those two FKs are DEFERRABLE INITIALLY
+  // DEFERRED — the whole migration is one transaction, and the cycle only has
+  // to hold at commit.
+  //
+  // On an estate where no administrator ever created an item class this list
+  // is empty, and that is the correct result, not a failure.
+  const itemClassIdBySource = new Map<number, string>();
+  const itemClassRows: Record<string, unknown>[] = [];
+  for (const source of eul.data.itemClasses) {
+    const t = transformItemClass(source, version.version);
+    collect(t.warnings);
+    const id = deps.genId();
+    itemClassIdBySource.set(t.sourceId, id);
+    const resolveItem = (sourceId: number | null): string | null => {
+      if (sourceId === null) return null;
+      const uuid = itemIdBySource.get(sourceId);
+      if (uuid) return uuid;
+      warnings.push({
+        code: 'ITEM_CLASS_ITEM_UNRESOLVED',
+        message: `Item class ${t.sourceId} names item ${sourceId}, which was not migrated; the link is dropped.`,
+        sourceId: t.sourceId,
+      });
+      return null;
+    };
+    itemClassRows.push({
+      id,
+      name: t.name,
+      description: t.description,
+      developerKey: t.developerKey,
+      sourceItemId: resolveItem(t.sourceItemSourceId),
+      sortItemId: resolveItem(t.sortItemSourceId),
+      providesDrillDetail: t.providesDrillDetail,
+      cached: t.cached,
+      cardinality: t.cardinality,
+      dataType: t.dataType,
+      systemGenerated: t.systemGenerated,
+      createdAt: deps.now(),
+      updatedAt: deps.now(),
+    });
+  }
+  planned.item_classes = itemClassRows.length;
+
+  // Bind each item to its class now that both sides have UUIDs.
+  let itemsWithClass = 0;
+  for (const t of orderedItems) {
+    if (t.skip || t.itemClassSourceId === null) continue;
+    const row = itemRowsBySource.get(t.sourceId);
+    if (!row) continue;
+    const classUuid = itemClassIdBySource.get(t.itemClassSourceId);
+    if (classUuid) {
+      row.itemClassId = classUuid;
+      itemsWithClass += 1;
+    } else {
+      warnings.push({
+        code: 'ITEM_CLASS_UNRESOLVED',
+        message: `Item ${t.sourceId} names item class ${t.itemClassSourceId}, which was not migrated; the pick-list falls back to the item's own column.`,
+        sourceId: t.sourceId,
+      });
+    }
+  }
+  if (itemClassRows.length > 0) {
+    await emit(
+      'INFO',
+      'item_classes',
+      `${itemClassRows.length} item class(es); ${itemsWithClass} item(s) bound to one.`,
+    );
+  }
 
   // Security Manager conditions (EUL5 EXP_TYPE='SM') have no Neo item type —
   // they correspond to row-level security policies, which are configured in Neo
@@ -1316,6 +1391,7 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     ['business_areas', baRows],
     ['folders', folderRows],
     ['folder_business_areas', folderShareRows],
+    ['item_classes', itemClassRows],
     ['items', itemRows],
     ['joins', joinRows],
     ['join_predicates', joinPredicateRows],

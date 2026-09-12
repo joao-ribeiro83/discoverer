@@ -9,6 +9,7 @@ import {
   readFolders,
   readGrants,
   readHierarchies,
+  readItemClasses,
   readItems,
   readJoins,
   readUsers,
@@ -369,7 +370,7 @@ describe('unified read functions', () => {
         const { adapter, execute, db } = await adapterFor(eul4Db());
         const items = await readItems(adapter, execute);
 
-        expect(items).toHaveLength(2);
+        expect(items).toHaveLength(4);
         expect(items.every((i) => i.aggregation === null)).toBe(true);
         expect(db.executed.find((sql) => sql.includes('EUL4_EXPRESSIONS'))).not.toContain(
           'IT_FUN_ID',
@@ -377,11 +378,60 @@ describe('unified read functions', () => {
       });
     });
 
+  describe('readItemClasses', () => {
+    // Three capabilities, one table. The source states two of them by naming
+    // an item, not by setting a flag — see EUL_SCHEMA_GROUND_TRUTH.md §3.4b.
+    it('reads a class, its LOV item and its alternative-sort item', async () => {
+      const { adapter, execute } = await adapterFor(eul4Db());
+      const classes = await readItemClasses(adapter, execute);
+
+      expect(classes).toHaveLength(1);
+      expect(classes[0]).toMatchObject({
+        sourceId: 70,
+        name: 'Cost Centre',
+        developerKey: 'CC_CLASS',
+        lovItemId: 32,
+        rankItemId: 33,
+        cached: 1,
+        cardinality: 42,
+      });
+    });
+
+    it('binds to items through EXPRESSIONS.IT_DOM_ID', async () => {
+      const { adapter, execute } = await adapterFor(eul4Db());
+      const items = await readItems(adapter, execute);
+
+      expect(items.find((i) => i.sourceId === 32)?.itemClassId).toBe(70);
+      expect(items.find((i) => i.sourceId === 31)?.itemClassId).toBeNull();
+    });
+
+    // An estate where no administrator ever created one is the NORMAL case:
+    // the live EUL4 this project migrates holds zero rows in EUL4_DOMAINS.
+    it('returns empty when the estate has no item classes', async () => {
+      const db = eul4Db();
+      db.tables.EUL4_DOMAINS = [];
+      const { adapter, execute } = await adapterFor(db);
+
+      await expect(readItemClasses(adapter, execute)).resolves.toEqual([]);
+    });
+
+    // An EUL old enough to lack the table simply has no item classes; that
+    // must not take the whole read down with an ORA-00942.
+    it('degrades to empty when DOMAINS is absent', async () => {
+      const db = eul4Db();
+      delete db.tables.EUL4_DOMAINS;
+      db.catalog = db.catalog.filter((row) => row.tableName !== 'EUL4_DOMAINS');
+      const { adapter, execute } = await adapterFor(db);
+
+      await expect(readItemClasses(adapter, execute)).resolves.toEqual([]);
+    });
+  });
+
     it('never selects columns that do not exist on EXPRESSIONS', async () => {
       const { adapter, execute, db } = await adapterFor(eul4Db());
       const items = await readItems(adapter, execute);
 
-      expect(items).toHaveLength(2);
+      expect(items).toHaveLength(4);
       const itemSql = db.executed.find((sql) => sql.includes('EUL4_EXPRESSIONS'));
       for (const fabricated of [
         'EXP_COL_NAME',

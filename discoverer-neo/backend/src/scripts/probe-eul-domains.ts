@@ -50,7 +50,7 @@ async function main() {
   console.log(`owner=${schema} prefix=${prefix}\n`);
 
   const q = async (sql: string, binds: Record<string, unknown> = {}) => {
-    const r = await conn.execute(sql, binds, OBJ);
+    const r = await conn.execute(sql, binds as never, OBJ);
     return (r.rows ?? []) as Record<string, unknown>[];
   };
 
@@ -81,8 +81,9 @@ async function main() {
   }
 
   // 3. Row count and sample.
-  const [{ N }] = (await q(`SELECT COUNT(*) AS N FROM ${prefix}DOMAINS`)) as { N: number }[];
-  console.log(`== row count: ${N} ==\n`);
+  const countRows = (await q(`SELECT COUNT(*) AS N FROM ${prefix}DOMAINS`)) as { N: number }[];
+  console.log(`== row count: ${countRows[0]?.N ?? 0} ==
+`);
 
   const sample = await q(`SELECT * FROM ${prefix}DOMAINS WHERE ROWNUM <= 8`);
   console.log('== sample rows ==');

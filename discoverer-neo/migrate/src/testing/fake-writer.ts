@@ -27,6 +27,7 @@ export function emptyTargetTables(): FakeTables {
     business_areas: [],
     folders: [],
     folder_business_areas: [],
+    item_classes: [],
     items: [],
     joins: [],
     join_predicates: [],
