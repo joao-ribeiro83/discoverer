@@ -399,6 +399,45 @@ tree goes through `renderSql` exactly as an unexpanded one does, so identifier
 validation, the allowlist and the bind discipline all still apply, once, in the
 one place that owns them.
 
+## Decision 8 — item classes exist in the model, but the pick-list falls back to the item
+
+**Discoverer.** An **item class** (`EUL4_DOMAINS`) is one shared property bundle
+carrying three capabilities: a list of values, an alternative sort, and
+drill-to-detail links. An item picks one up through `EXPRESSIONS.IT_DOM_ID`. A
+parameter or a condition gets its pick-list from the item it is written over.
+The values are never stored — an LOV is `SELECT DISTINCT` against the live
+source, with a cache flag and a cardinality hint.
+
+**What this estate actually holds.** Nothing.
+
+| | Count |
+| --- | ---: |
+| Rows in `EUL4_DOMAINS` | **0** |
+| Items with `IT_DOM_ID` set | **0** of 9 626 |
+
+No administrator here ever created an item class. Strict fidelity therefore
+means every one of the 7 521 parameters and 5 605 conditions stays a free-text
+box — which is what Discoverer 4.1 showed these users, and also what makes the
+product unusable for the thing they complained about.
+
+**Decision.** Model the item class in full — all three capabilities, the LOV
+item, the rank item, the cache flag, the cardinality hint — so an authored class
+works the moment one exists, on this estate or another. Then, **when an item has
+no class, resolve the pick-list from the item itself**: `SELECT DISTINCT` on the
+item's own column, same cap, same cache, same entitlement check. The item class
+is treated as *configuration over* the LOV, not as the LOV's only source.
+
+This is a deliberate departure. Discoverer showed free text where no class was
+defined; Neo shows a pick-list. It adds a dropdown, never removes one, and it
+cannot show a value the user could not already query — the fallback runs through
+`assertDataEntitlement` exactly as the class-driven path does.
+
+**Where it does not apply.** A calculation has no base column, so it has no
+fallback LOV; it needs an authored class or it stays free text. Same for an item
+whose folder has no data source.
+
+---
+
 ## What still needs a live EUL
 
 These are open because no offline source answers them, not because they were
