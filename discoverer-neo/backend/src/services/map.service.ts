@@ -28,6 +28,7 @@ import {
 } from '../db/schema.js';
 import { userHasPermission } from './business-area.service.js';
 import { makeBindName } from '../lib/sql/identifiers.js';
+import { substituteTitleTokens } from '../lib/title-tokens.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -592,13 +593,28 @@ async function loadChildren(mapId: string, tx: Tx | typeof db = db): Promise<Map
     tx.select().from(mapPageSetup).where(eq(mapPageSetup.mapId, mapId)).limit(1),
   ]);
 
+  // `&Date`, `&Time` and `&<ParamName>` substitute here, not at migration —
+  // see `substituteTitleTokens`. Outside an actual execution the best
+  // available value for a named token is the parameter's own default.
+  const paramValues = new Map(
+    parameterRows
+      .filter((p): p is typeof p & { defaultValue: string } => p.defaultValue !== null)
+      .map((p) => [p.name, p.defaultValue]),
+  );
+  const resolvedLayouts = layoutRows.map((layout) => ({
+    ...layout,
+    title: substituteTitleTokens(layout.title, paramValues),
+    titleRtf: substituteTitleTokens(layout.titleRtf, paramValues),
+    titleHtml: substituteTitleTokens(layout.titleHtml, paramValues),
+  }));
+
   return {
     items: itemRows,
     conditions: conditionRows,
     parameters: parameterRows,
     calculatedFields: calculatedFieldRows,
     totals: totalRows,
-    layouts: layoutRows,
+    layouts: resolvedLayouts,
     pageSetup: pageSetupRows[0] ?? null,
   };
 }
