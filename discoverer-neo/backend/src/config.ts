@@ -64,7 +64,13 @@ const EnvSchema = z.object({
   METADATA_CACHE_TTL_SECONDS: z.coerce.number().int().positive().default(300),
 
   JWT_SECRET: z.string().min(16).default(INSECURE_DEFAULTS.JWT_SECRET),
-  JWT_EXPIRES_IN: z.string().default('7d'),
+  /** Access token lifetime. Short on purpose: the client renews it with a refresh token. */
+  JWT_EXPIRES_IN: z.string().default('15m'),
+  /**
+   * Session lifetime from login, in seconds. Refresh tokens rotate on every
+   * use, but rotation keeps this expiry, so no session outlives it.
+   */
+  REFRESH_TOKEN_TTL_SECONDS: z.coerce.number().int().positive().default(7 * 24 * 60 * 60),
 
   /**
    * Use node-oracledb thick mode, which requires the Oracle Instant Client.

@@ -42,7 +42,8 @@ Complete environment variable reference for Discoverer Neo.
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `JWT_SECRET` | dev-only-insecure-secret-change-me | JWT signing secret (min 16 chars). **The backend refuses to start with `NODE_ENV=production` while this default is in force.** |
-| `JWT_EXPIRES_IN` | 7d | Token expiration (e.g., "7d", "24h", "3600") |
+| `JWT_EXPIRES_IN` | 15m | Access token lifetime (e.g., "15m", "1h", "900"). Short on purpose: the client renews it with the refresh token. |
+| `REFRESH_TOKEN_TTL_SECONDS` | 604800 (7 days) | Session lifetime from login. Refresh tokens rotate on every use, but rotation never extends this; after it, the user logs in again. |
 | `ENCRYPTION_KEY` | dev-only-insecure-encryption-key-change-me | AES-256-GCM key for stored credentials (min 32 chars). **The backend refuses to start with `NODE_ENV=production` while this default is in force.** Changing it requires re-encrypting stored credentials — see [Rotating the encryption key](#rotating-the-encryption-key). |
 
 Both defaults are published in this repository, so neither protects anything
@@ -114,7 +115,8 @@ METADATA_CACHE_TTL_SECONDS=300
 
 # --- JWT ---
 JWT_SECRET=generate_strong_random_secret_min_16_chars
-JWT_EXPIRES_IN=7d
+JWT_EXPIRES_IN=15m
+REFRESH_TOKEN_TTL_SECONDS=604800
 
 # --- Encryption ---
 ENCRYPTION_KEY=generate_strong_random_key_min_32_chars

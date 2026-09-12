@@ -307,18 +307,21 @@ describe('POST /api/auth/refresh', () => {
       payload: { email: TEST_EMAIL, password: TEST_PASSWORD },
     });
 
-    const { token } = loginRes.json().data;
+    const { token, refreshToken } = loginRes.json().data;
 
     const refreshRes = await app.inject({
       method: 'POST',
       url: '/api/auth/refresh',
-      payload: { token },
+      payload: { refreshToken },
     });
 
     expect(refreshRes.statusCode).toBe(200);
     const newToken = refreshRes.json().data.token;
     expect(newToken).toBeDefined();
-    expect(newToken).not.toBe(token);
+    // The access token can match byte-for-byte within the same second; the
+    // refresh token is what must rotate.
+    expect(refreshRes.json().data.refreshToken).not.toBe(refreshToken);
+    expect(app.jwt.decode<{ sub: string }>(newToken)?.sub).toBe(app.jwt.decode<{ sub: string }>(token)?.sub);
 
     // Verify the new token works
     const meRes = await app.inject({
@@ -335,7 +338,7 @@ describe('POST /api/auth/refresh', () => {
     const response = await app.inject({
       method: 'POST',
       url: '/api/auth/refresh',
-      payload: { token: 'completely-invalid-token' },
+      payload: { refreshToken: 'completely-invalid-token' },
     });
 
     expect(response.statusCode).toBe(401);

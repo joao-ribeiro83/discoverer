@@ -22,13 +22,15 @@ interface User {
 interface AuthState {
   user: User | null
   token: string | null
+  /** Works once: every refresh returns a replacement and kills this one. */
+  refreshToken: string | null
   isAuthenticated: boolean
   hasHydrated: boolean
-  login: (user: User, token: string) => void
+  login: (user: User, token: string, refreshToken: string) => void
   /** Update the cached user, e.g. after clearing mustChangePassword. */
   setUser: (user: User) => void
   logout: () => void
-  setToken: (token: string) => void
+  setTokens: (token: string, refreshToken: string) => void
   setHasHydrated: (hydrated: boolean) => void
 }
 
@@ -58,18 +60,19 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
       token: null,
+      refreshToken: null,
       isAuthenticated: false,
       hasHydrated: false,
       setUser: (user) => {
         set({ user })
       },
-      login: (user, token) => {
-        set({ user, token, isAuthenticated: true })
+      login: (user, token, refreshToken) => {
+        set({ user, token, refreshToken, isAuthenticated: true })
       },
       logout: () => {
-        set({ user: null, token: null, isAuthenticated: false })
+        set({ user: null, token: null, refreshToken: null, isAuthenticated: false })
       },
-      setToken: (token) => set({ token }),
+      setTokens: (token, refreshToken) => set({ token, refreshToken }),
       setHasHydrated: (hydrated) => set({ hasHydrated: hydrated }),
     }),
     {
@@ -78,6 +81,7 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         user: state.user,
         token: state.token,
+        refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
       }),
       onRehydrateStorage: () => (state) => {
@@ -86,3 +90,12 @@ export const useAuthStore = create<AuthState>()(
     }
   )
 )
+
+// Tabs share one persisted session. When another tab rotates the refresh
+// token, this tab's copy is dead — pick up the replacement instead of logging
+// out on the next refresh.
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (event) => {
+    if (event.key === 'auth-storage') void useAuthStore.persist.rehydrate()
+  })
+}
