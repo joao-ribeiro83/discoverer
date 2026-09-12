@@ -186,12 +186,25 @@ Estas preferencias son de autoservicio y por usuario. Cada usuario puede acceder
 
 ### Activo/Inactivo
 
-Utilice el conmutador de estado del usuario:
+Establezca `isActive` en la cuenta mediante la API. La pantalla de usuarios todavía no tiene un conmutador.
 
-- **Activo** — El usuario puede iniciar sesión
-- **Inactivo** — El usuario no puede iniciar sesión (eliminación temporal)
+```bash
+curl -X PUT http://localhost:3000/api/users/<user-id> \
+  -H "Authorization: Bearer <admin-token>" \
+  -H "Content-Type: application/json" \
+  -d '{"isActive": false}'
+```
+
+- **Activo** (predeterminado) — El usuario puede iniciar sesión
+- **Inactivo** — El usuario no puede iniciar sesión ni renovar una sesión (eliminación temporal)
 
 Resulta útil para deshabilitar temporalmente cuentas sin eliminarlas.
+
+**La baja surte efecto de inmediato.** La existencia, el estado activo y el rol
+se leen de la base de datos en cada solicitud y en cada renovación del token,
+nunca del propio token. Un usuario que desactive o elimine queda rechazado en
+su siguiente solicitud, y un usuario al que rebaje de rol queda limitado al
+nuevo rol en su siguiente solicitud. No es necesario esperar a que caduque su token.
 
 ### Cuenta bloqueada
 

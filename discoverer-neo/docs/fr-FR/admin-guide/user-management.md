@@ -189,12 +189,26 @@ Ces préférences sont en libre-service et propres à chaque utilisateur. Chaque
 
 ### Actif/Inactif
 
-Basculez le statut de l'utilisateur :
+Définissez `isActive` sur le compte via l'API. L'écran Utilisateurs ne propose pas encore de bascule.
 
-- **Actif** — L'utilisateur peut se connecter
-- **Inactif** — L'utilisateur ne peut pas se connecter (suppression réversible)
+```bash
+curl -X PUT http://localhost:3000/api/users/<user-id> \
+  -H "Authorization: Bearer <admin-token>" \
+  -H "Content-Type: application/json" \
+  -d '{"isActive": false}'
+```
+
+- **Actif** (par défaut) — L'utilisateur peut se connecter
+- **Inactif** — L'utilisateur ne peut ni se connecter ni renouveler une session (suppression réversible)
 
 Utile pour désactiver temporairement sans supprimer les comptes.
+
+**Le retrait d'accès prend effet immédiatement.** L'existence, le statut actif
+et le rôle sont lus dans la base de données à chaque requête et à chaque
+renouvellement de jeton, jamais dans le jeton lui-même. Un utilisateur que vous
+désactivez ou supprimez est refusé dès sa requête suivante, et un utilisateur
+rétrogradé est limité au nouveau rôle dès sa requête suivante. Inutile
+d'attendre l'expiration de son jeton.
 
 ### Compte verrouillé
 

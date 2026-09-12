@@ -5,10 +5,15 @@ import { db } from '../db/index.js';
 import { users } from '../db/schema.js';
 import { hashPassword, verifyPassword } from '../lib/password.js';
 import { config } from '../config.js';
+import { getSessionUser } from '../services/user.service.js';
 
 // ---------------------------------------------------------------------------
 // Validation schemas
 // ---------------------------------------------------------------------------
+
+const DAY_SECONDS = 24 * 60 * 60;
+const REFRESH_GRACE_SECONDS = 7 * DAY_SECONDS;
+const MAX_SESSION_SECONDS = 14 * DAY_SECONDS;
 
 /** Floor for a user-chosen password. Temporary ones are longer still. */
 const MIN_PASSWORD_LENGTH = 12;
@@ -108,8 +113,10 @@ export default function authRoutes(fastify: FastifyInstance) {
         return reply.code(401).send({ error: 'Invalid email or password' });
       }
 
+      // Status is checked after the hash compare, so a deactivated account
+      // cannot be told apart from a wrong password by timing.
       const isValid = await verifyPassword(password, user.passwordHash);
-      if (!isValid) {
+      if (!isValid || !user.isActive || user.isRole) {
         return reply.code(401).send({ error: 'Invalid email or password' });
       }
 
@@ -167,32 +174,51 @@ export default function authRoutes(fastify: FastifyInstance) {
 
       // Verify the token, ignoring expiration to allow refresh of expired
       // tokens within a 7-day window.
-      let payload: { sub: string; email: string; role: string; exp?: number };
+      let payload: { sub: string; exp?: number; iat?: number; oiat?: number };
       try {
-        payload = fastify.jwt.verify<{
-          sub: string;
-          email: string;
-          role: string;
-          exp?: number;
-        }>(token, { ignoreExpiration: true });
+        payload = fastify.jwt.verify<typeof payload>(token, { ignoreExpiration: true });
       } catch {
         return reply.code(401).send({ error: 'Invalid token' });
       }
 
-      // Reject tokens expired more than 7 days ago
       if (typeof payload.exp !== 'number') {
         return reply.code(401).send({ error: 'Invalid token' });
       }
 
-      const now = Math.floor(Date.now() / 1000);
-      const sevenDaysInSeconds = 7 * 24 * 60 * 60;
+      // This route has no `authenticate` preHandler (it must accept an expired
+      // token), so it checks the logout blacklist itself. Without this, logout
+      // followed by refresh handed back a fresh, un-blacklisted token.
+      if ((await fastify.redis.get(`token:blacklist:${token}`)) !== null) {
+        return reply.code(401).send({ error: 'Token has been revoked' });
+      }
 
-      if (payload.exp + sevenDaysInSeconds < now) {
+      const now = Math.floor(Date.now() / 1000);
+      if (payload.exp + REFRESH_GRACE_SECONDS < now) {
         return reply.code(401).send({ error: 'Token expired' });
       }
 
+      // The grace window is measured from the token's own `exp`, and every
+      // refresh mints a fresh `exp` — so on its own it renews forever. The
+      // original login time rides along in `oiat` and caps the session.
+      const originalIssuedAt = payload.oiat ?? payload.iat ?? 0;
+      if (originalIssuedAt + MAX_SESSION_SECONDS < now) {
+        return reply.code(401).send({ error: 'Session expired' });
+      }
+
+      // Role and status are re-read, never copied from the presented token.
+      const account = await getSessionUser(payload.sub);
+      if (!account) {
+        return reply.code(401).send({ error: 'Invalid token' });
+      }
+
       const newToken = await reply.jwtSign(
-        { sub: payload.sub, email: payload.email, role: payload.role },
+        {
+          sub: account.id,
+          email: account.email,
+          role: account.role,
+          name: account.name,
+          oiat: originalIssuedAt,
+        },
         { expiresIn: config.JWT_EXPIRES_IN },
       );
 

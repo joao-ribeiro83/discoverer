@@ -20,6 +20,7 @@ const UpdateBodySchema = z.object({
   password: z.string().min(8).optional(),
   name: z.string().min(1).max(255).optional(),
   role: RoleEnum.optional(),
+  isActive: z.boolean().optional(),
 });
 
 const IdParamSchema = z.object({
@@ -37,6 +38,7 @@ const userSchema = {
     email: { type: 'string' },
     name: { type: 'string' },
     role: { type: 'string', enum: ['ADMIN', 'MANAGER', 'USER', 'VIEWER'] },
+    isActive: { type: 'boolean' },
     createdAt: { type: 'string' },
     updatedAt: { type: 'string' },
   },
@@ -227,6 +229,7 @@ export default function userRoutes(fastify: FastifyInstance) {
             password: { type: 'string', minLength: 8 },
             name: { type: 'string', minLength: 1, maxLength: 255 },
             role: { type: 'string', enum: ['ADMIN', 'MANAGER', 'USER', 'VIEWER'] },
+            isActive: { type: 'boolean' },
           },
         },
         response: {

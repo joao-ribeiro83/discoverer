@@ -25,6 +25,30 @@ export async function getByEmail(email: string): Promise<User | null> {
   return row ?? null;
 }
 
+/**
+ * The account behind a session, read fresh — or null when it may no longer
+ * hold one: deleted, deactivated, or a database role (which never logs in).
+ *
+ * Called on every authenticated request and every refresh, so role and status
+ * always come from `users`, never from the token.
+ */
+export async function getSessionUser(id: string) {
+  const [row] = await db
+    .select({
+      id: users.id,
+      email: users.email,
+      name: users.name,
+      role: users.role,
+      mustChangePassword: users.mustChangePassword,
+      isActive: users.isActive,
+      isRole: users.isRole,
+    })
+    .from(users)
+    .where(eq(users.id, id))
+    .limit(1);
+  return row && row.isActive && !row.isRole ? row : null;
+}
+
 export interface UserSearchResult {
   id: string;
   name: string;
@@ -87,6 +111,7 @@ export interface UpdateUserInput {
   password?: string;
   name?: string;
   role?: 'ADMIN' | 'MANAGER' | 'USER' | 'VIEWER';
+  isActive?: boolean;
 }
 
 export async function update(id: string, data: UpdateUserInput): Promise<SafeUser | null> {
