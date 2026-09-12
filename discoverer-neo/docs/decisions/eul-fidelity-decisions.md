@@ -438,6 +438,57 @@ whose folder has no data source.
 
 ---
 
+## Decision 9 — a condition tree is one boolean deep, not a tree
+
+**Discoverer.** A worksheet condition is a token tree, and Oracle's own object
+model carries a per-node negation flag (`DCBImportedFilterNode::IsNot`) on any
+node in it.
+
+**What this estate actually holds.** Measured over all 3 395 source condition
+trees:
+
+| Depth | Share |
+| --- | ---: |
+| 0 | 92.6% |
+| 1 | 7.3% |
+| 2 | 7 instances |
+| ≥ 3 | zero |
+
+Every depth this estate uses is already covered by the flat `group_id` +
+`logic_operator` model: a lone predicate is depth 0, a group is depth 1, and
+grouped conditions joined by `OR` reproduce the only depth-2 shape measured.
+The one thing that model could not express was `NOT` — the parser refused it
+outright rather than migrate a filter as its own complement.
+
+**Decision.** Add one `negated` boolean to `map_conditions` instead of building
+a `parent_id` expression tree. It is per-node — it negates the row it sits on,
+never the group around it, since negating a group would change which rows the
+*other* rows in it match. This closes the parser's only real refusal and covers
+the entire measured corpus without adding a structure nothing in this estate
+needs.
+
+The tree stays deferred until `EUL4_SUB_QUERIES` / `EUL4_SQ_CRRLTNS` get a
+reader: correlated subqueries, not nesting depth, are the tree's actual
+justification, and those tables' contents are currently unknown.
+
+Two more columns closed alongside it, independent of the tree question:
+
+- **Case sensitivity.** The parser has always read `Case Sensitive` (tag
+  `0x0102`); `map_conditions` had no column to put it in. An insensitive
+  comparison now emits `UPPER()` on both sides — text only, since folding a
+  `DATE` or `NUMBER` expression through `UPPER()` would be a no-op at best.
+- **Conditions on calculated fields.** `item_id` was `NOT NULL`, so a
+  condition could never reference a calculation — while the legacy spec
+  supports exactly that. `item_id` is now nullable, `calculated_field_id` is
+  new, and a CHECK enforces exactly one of the two, at the database, not just
+  in the API layer. Such a condition resolves through the same formula
+  renderer a calculated field's own SELECT expression uses, and inherits that
+  renderer's compile bucket as a gate: a calculation that has never compiled,
+  or was quarantined, refuses the condition rather than silently emitting a
+  broken `WHERE`.
+
+---
+
 ## What still needs a live EUL
 
 These are open because no offline source answers them, not because they were

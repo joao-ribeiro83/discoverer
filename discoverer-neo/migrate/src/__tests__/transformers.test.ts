@@ -1865,6 +1865,7 @@ describe('buildMapConditionRows', () => {
     sourceIndex: 0,
     groupKey: null,
     logicOperator: 'AND',
+    caseSensitive: true,
     ...overrides,
   });
 

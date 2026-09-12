@@ -7,6 +7,7 @@ import {
 import type { GenerationContext } from './context.js';
 import { validateBindName } from './identifiers.js';
 import { ALIAS_TOKEN_RE, referencedBindNames } from './security-predicates.js';
+import { parseFormula } from './formula-parser.js';
 
 export interface WhereClauseResult {
   /** "WHERE ..." or empty string when there are no conditions. */
@@ -97,13 +98,49 @@ export function buildWhereClause(
     return isDate ? `TO_DATE(:${name}, 'YYYY-MM-DD')` : `:${name}`;
   }
 
+  /**
+   * A condition's left side, when it filters a calculated field rather than
+   * an item — resolved through the same formula renderer `select-clause.ts`
+   * uses for a calculated field's own SELECT expression.
+   *
+   * Inherits that field's D-059 compile bucket as a gate: QUARANTINED, FAILED
+   * and "never verified" all refuse loudly here rather than let an
+   * uncompilable calculation silently drop out of the WHERE clause.
+   */
+  function calculatedFieldExpression(
+    field: MapDefinition['calculatedFields'][number],
+  ): string {
+    if (field.compileStatus !== 'COMPILED' && field.compileStatus !== 'COMPILED_UNVERIFIED') {
+      throw new SqlGenerationError(
+        `Calculated field "${field.name}" has not compiled ` +
+          `(status: ${field.compileStatus ?? 'not verified'}) and cannot be used in a condition`,
+      );
+    }
+    const parsed = parseFormula(field.formula, (name) =>
+      ctx.resolveFormulaReference(name),
+    );
+    if (parsed.containsAggregate) {
+      throw new SqlGenerationError(
+        `Calculated field "${field.name}" aggregates, and an aggregate cannot appear in a WHERE clause`,
+      );
+    }
+    return `(${parsed.sql})`;
+  }
+
   function renderCondition(
     entry: MapDefinition['conditions'][number],
   ): RenderedCondition {
-    const { condition, item, folder } = entry;
-    const lhs = ctx.itemExpression(item, folder);
-    const isDate = !!(
-      item.dataType && /DATE|TIMESTAMP/i.test(item.dataType)
+    const { condition, item, folder, calculatedField } = entry;
+    const label = item ? item.name : calculatedField.name;
+    const dataType = item ? item.dataType : calculatedField.dataType;
+    const isDate = !!(dataType && /DATE|TIMESTAMP/i.test(dataType));
+    const isNumeric = !!(dataType && /NUMBER|INTEGER|FLOAT|DECIMAL/i.test(dataType));
+    // Oracle's case-insensitive flag is a text-comparison setting — folding a
+    // DATE or NUMBER expression through UPPER() would be a no-op at best.
+    const caseFold = condition.caseSensitive === false && !isDate && !isNumeric;
+    const fold = (expr: string): string => (caseFold ? `UPPER(${expr})` : expr);
+    const lhs = fold(
+      item ? ctx.itemExpression(item, folder) : calculatedFieldExpression(calculatedField),
     );
     const op = condition.operator;
 
@@ -114,7 +151,7 @@ export function buildWhereClause(
     } else if (condition.conditionType === 'STATIC') {
       if (condition.value === null || condition.value === undefined) {
         throw new SqlGenerationError(
-          `STATIC condition on "${item.name}" has no value`,
+          `STATIC condition on "${label}" has no value`,
         );
       }
       const base = validateBindName(`${bindPrefix}c${staticBindCounter++}`);
@@ -123,23 +160,23 @@ export function buildWhereClause(
         const values = condition.value.split(',').map((v) => v.trim());
         const names = values.map((v, i) => {
           const bind = `${base}_${i}`;
-          bindParams[bind] = bindValueFor(item.dataType, v);
-          return placeholder(bind, isDate);
+          bindParams[bind] = bindValueFor(dataType, v);
+          return fold(placeholder(bind, isDate));
         });
         sql = `${lhs} IN (${names.join(', ')})`;
       } else if (op === 'BETWEEN') {
         const parts = condition.value.split(',').map((v) => v.trim());
         if (parts.length !== 2) {
           throw new SqlGenerationError(
-            `BETWEEN condition on "${item.name}" needs two comma-separated values`,
+            `BETWEEN condition on "${label}" needs two comma-separated values`,
           );
         }
-        bindParams[`${base}_lo`] = bindValueFor(item.dataType, parts[0]!);
-        bindParams[`${base}_hi`] = bindValueFor(item.dataType, parts[1]!);
-        sql = `${lhs} BETWEEN ${placeholder(`${base}_lo`, isDate)} AND ${placeholder(`${base}_hi`, isDate)}`;
+        bindParams[`${base}_lo`] = bindValueFor(dataType, parts[0]!);
+        bindParams[`${base}_hi`] = bindValueFor(dataType, parts[1]!);
+        sql = `${lhs} BETWEEN ${fold(placeholder(`${base}_lo`, isDate))} AND ${fold(placeholder(`${base}_hi`, isDate))}`;
       } else {
-        bindParams[base] = bindValueFor(item.dataType, condition.value);
-        sql = `${lhs} ${op} ${placeholder(base, isDate)}`;
+        bindParams[base] = bindValueFor(dataType, condition.value);
+        sql = `${lhs} ${op} ${fold(placeholder(base, isDate))}`;
       }
     } else {
       // PARAMETER condition. `param_name` holds the parameter's *bind name*,
@@ -149,7 +186,7 @@ export function buildWhereClause(
       const paramName = condition.paramName;
       if (!paramName) {
         throw new SqlGenerationError(
-          `PARAMETER condition on "${item.name}" has no paramName`,
+          `PARAMETER condition on "${label}" has no paramName`,
         );
       }
       // Bind names are derived and uniquified where the row is written, so a
@@ -168,12 +205,12 @@ export function buildWhereClause(
           const names = values.map((v, i) => {
             const bind = `${paramName}_${i}`;
             bindParams[bind] = v;
-            return placeholder(bind, isDate);
+            return fold(placeholder(bind, isDate));
           });
           sql = `${lhs} IN (${names.join(', ')})`;
         } else {
           if (provided !== undefined) bindParams[paramName] = provided;
-          sql = `${lhs} IN (${placeholder(paramName, isDate)})`;
+          sql = `${lhs} IN (${fold(placeholder(paramName, isDate))})`;
         }
       } else if (op === 'BETWEEN') {
         const lo = `${paramName}_lo`;
@@ -188,12 +225,16 @@ export function buildWhereClause(
           bindParams[lo] = parts[0];
           bindParams[hi] = parts[1];
         }
-        sql = `${lhs} BETWEEN ${placeholder(lo, isDate)} AND ${placeholder(hi, isDate)}`;
+        sql = `${lhs} BETWEEN ${fold(placeholder(lo, isDate))} AND ${fold(placeholder(hi, isDate))}`;
       } else {
         if (provided !== undefined) bindParams[paramName] = provided;
-        sql = `${lhs} ${op} ${placeholder(paramName, isDate)}`;
+        sql = `${lhs} ${op} ${fold(placeholder(paramName, isDate))}`;
       }
     }
+
+    // Per-node, not per-group: negating here, before the row joins its group,
+    // is what keeps a negated sibling from flipping the rows around it.
+    if (condition.negated) sql = `NOT (${sql})`;
 
     return {
       sql,

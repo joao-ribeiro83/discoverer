@@ -262,7 +262,9 @@ export function resolveDataSourceId(def: MapDefinition): string {
     if (folder.dataSourceId) ids.add(folder.dataSourceId);
   }
   for (const { folder } of def.conditions) {
-    if (folder.dataSourceId) ids.add(folder.dataSourceId);
+    // A calculated-field condition has no folder of its own; the items its
+    // formula reaches already contributed theirs via `def.items` above.
+    if (folder?.dataSourceId) ids.add(folder.dataSourceId);
   }
   if (ids.size === 0) {
     throw new MapExecutionError(

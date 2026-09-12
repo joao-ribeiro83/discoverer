@@ -995,9 +995,19 @@ export const mapConditions = pgTable(
     mapId: uuid('map_id')
       .notNull()
       .references(() => maps.id, { onDelete: 'cascade' }),
-    itemId: uuid('item_id')
-      .notNull()
-      .references(() => items.id, { onDelete: 'cascade' }),
+    /**
+     * Exactly one of `itemId` / `calculatedFieldId` is set — enforced by the
+     * `map_conditions_reference_ck` CHECK below, not just at the app layer.
+     * Nullable since ARCH M4: a condition on a calculation is real Discoverer
+     * (legacy-analysis.md:918, one carve-out for aggregate calculated items),
+     * and the tree rewrite this needed nothing to do with is a separate,
+     * deliberately deferred concern.
+     */
+    itemId: uuid('item_id').references(() => items.id, { onDelete: 'cascade' }),
+    calculatedFieldId: uuid('calculated_field_id').references(
+      () => mapCalculatedFields.id,
+      { onDelete: 'cascade' },
+    ),
     operator: operatorEnum('operator').notNull(),
     value: text('value'),
     /**
@@ -1011,6 +1021,22 @@ export const mapConditions = pgTable(
     groupId: uuid('group_id'),
     logicOperator: logicOperatorEnum('logic_operator').notNull().default('AND'),
     displayOrder: integer('display_order').notNull().default(0),
+    /**
+     * Per-node negation — Oracle's `DCBImportedFilterNode::IsNot`. Applies to
+     * this row alone, never to its group: negating a group would change which
+     * rows the OTHER rows in it match. Default false so every row migrated
+     * before this column existed reads as not negated, which is what they are
+     * — the parser refused anything actually negated rather than dropping the
+     * flag (see `CONDITION_NEGATION_CODES` in workbook-parser.ts).
+     */
+    negated: boolean('negated').notNull().default(false),
+    /**
+     * `Case Sensitive` (`0x0102`), read by the parser but never stored until
+     * now. Oracle's own default for a text comparison is case-sensitive, so
+     * that is the default here too — every row migrated before this column
+     * existed keeps comparing exactly as it always did.
+     */
+    caseSensitive: boolean('case_sensitive').notNull().default(true),
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -1018,6 +1044,10 @@ export const mapConditions = pgTable(
   (t) => [
     index('map_conditions_map_idx').on(t.mapId),
     index('map_conditions_item_idx').on(t.itemId),
+    check(
+      'map_conditions_reference_ck',
+      sql`(${t.itemId} IS NOT NULL) <> (${t.calculatedFieldId} IS NOT NULL)`,
+    ),
   ],
 );
 

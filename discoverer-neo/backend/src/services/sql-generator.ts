@@ -13,6 +13,7 @@ import {
   mapTotals,
   type Item,
   type Folder,
+  type MapCalculatedField,
 } from '../db/schema.js';
 import {
   SqlGenerationError,
@@ -289,7 +290,9 @@ async function assembleDefinition({
   const referencedItemIds = [
     ...new Set([
       ...mapItemRows.map((r) => r.itemId),
-      ...conditionRows.map((r) => r.itemId),
+      ...conditionRows
+        .map((r) => r.itemId)
+        .filter((id): id is string => id !== null),
     ]),
   ];
   const seedItems = referencedItemIds.length
@@ -387,16 +390,30 @@ async function assembleDefinition({
     return { item, folder };
   }
 
+  const calcFieldById = new globalThis.Map<string, MapCalculatedField>(
+    calculatedFieldRows.map((f) => [f.id, f]),
+  );
+
   return {
     map,
     items: mapItemRows.map((mi) => ({
       mapItem: mi,
       ...itemWithFolder(mi.itemId),
     })),
-    conditions: conditionRows.map((c) => ({
-      condition: c,
-      ...itemWithFolder(c.itemId),
-    })),
+    // The CHECK on map_conditions guarantees exactly one of itemId /
+    // calculatedFieldId is set; this mirrors that with the same either/or.
+    conditions: conditionRows.map((c) => {
+      if (c.itemId !== null) {
+        return { condition: c, ...itemWithFolder(c.itemId) };
+      }
+      const calculatedField = calcFieldById.get(c.calculatedFieldId!);
+      if (!calculatedField) {
+        throw new SqlGenerationError(
+          `Condition references calculated field "${c.calculatedFieldId}", which no longer exists on this map`,
+        );
+      }
+      return { condition: c, calculatedField };
+    }),
     parameters: parameterRows,
     calculatedFields: calculatedFieldRows,
     totals: totalRows,

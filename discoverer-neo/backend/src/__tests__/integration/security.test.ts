@@ -159,6 +159,7 @@ function mkCondition(
     id: uid(),
     mapId: 'unused',
     itemId: item.id,
+    calculatedFieldId: null,
     operator: '=',
     value: null,
     paramName: null,
@@ -166,6 +167,8 @@ function mkCondition(
     groupId: null,
     logicOperator: 'AND',
     displayOrder: 0,
+    negated: false,
+    caseSensitive: true,
     createdAt: NOW,
     ...overrides,
   };
