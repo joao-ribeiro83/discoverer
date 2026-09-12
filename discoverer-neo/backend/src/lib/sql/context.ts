@@ -38,7 +38,10 @@ export class GenerationContext {
   ) {
     this.admitted = admittedFolderIds ? new Set(admittedFolderIds) : null;
     for (const { folder } of def.items) this.registerFolder(folder);
-    for (const { folder } of def.conditions) this.registerFolder(folder);
+    // A condition on a calculated field carries no folder of its own — the
+    // formula it resolves through references items whose OWN entries (in
+    // `def.items`, `def.formulaItems`) already registered theirs.
+    for (const { folder } of def.conditions) if (folder) this.registerFolder(folder);
     for (const entry of def.formulaItems) {
       this.registerFolder(entry.folder);
       this.formulaItemsByName.set(entry.item.name.toUpperCase(), entry);

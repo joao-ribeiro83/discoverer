@@ -446,6 +446,16 @@ function scopedConditions(
   const parameterBindNames = new Set<string>();
 
   for (const entry of def.conditions) {
+    if (!entry.folder) {
+      // A calculated-field condition has no single folder to test against a
+      // branch's scope — its formula can reach across several. Placement here
+      // is forced by arithmetic (see the comment above): guessing a branch
+      // risks the exact silent double-count/drop this rewrite exists to
+      // avoid, so this refuses instead of picking one.
+      throw new SqlGenerationError(
+        `Condition on calculated field "${entry.calculatedField.name}" cannot be placed in this query's fan-trap rewrite; remove the condition or simplify the map`,
+      );
+    }
     const folderId = entry.folder.id;
     if (!branchFolderIds.has(folderId) && folderId !== masterFolderId) continue;
     conditionIds.push(entry.condition.id);
@@ -685,7 +695,7 @@ function folderNamer(def: MapDefinition): (folderId: string) => string {
     if (!byId.has(f.id)) byId.set(f.id, f);
   };
   for (const { folder } of def.items) add(folder);
-  for (const { folder } of def.conditions) add(folder);
+  for (const { folder } of def.conditions) if (folder) add(folder);
   for (const { folder } of def.formulaItems) add(folder);
   for (const j of def.joins) {
     add(j.leftFolder);

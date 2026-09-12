@@ -265,6 +265,38 @@ different source column, an alternative sort order, or caching turned off.
 
 In each case the field stays free text, which is what it was before.
 
+## Conditions
+
+A worksheet **Condition** filters the rows a map returns. Each one compares an
+item — or a calculated field — against a value, a parameter, or another
+comparison, and conditions can be grouped and joined with AND/OR.
+
+### Negation
+
+A condition can be marked **NOT**, flipping what it matches — for example
+"Region is EMEA" becomes "Region is NOT EMEA". Negation applies to that one
+condition only: negating a condition inside a group never changes what the
+other conditions in the group match.
+
+### Case sensitivity
+
+By default a text condition compares exactly as typed. Turning **Case
+Sensitive** off makes it match regardless of letter case — "emea" then matches
+"EMEA", "Emea", and "EMEA" alike. This only applies to text; it has no effect
+on a number or date comparison.
+
+### Conditions on calculated fields
+
+A condition can compare a **calculated field** instead of an item — for
+example, filtering on `Amount * 1.1` rather than a raw column. A condition
+references exactly one of an item or a calculated field, never both and never
+neither.
+
+A calculated field used this way must be one Neo can actually compute. If the
+calculation has not been verified, or was flagged as unusable, the condition
+is refused rather than silently dropped or run with wrong results — fix or
+remove the calculation before using it in a condition.
+
 ## Joins
 
 A **Join** defines a relationship between two folders. One folder is the

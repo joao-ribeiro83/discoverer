@@ -541,6 +541,12 @@ export interface TransformedMapCondition {
    * reads, not an accident of this transformer.
    */
   logicOperator: 'AND' | 'OR';
+  /**
+   * `Case Sensitive` (`0x0102`), read once per source condition — every leaf
+   * row cut from the same tree shares it, since Discoverer records it at the
+   * whole-condition level, not per predicate.
+   */
+  caseSensitive: boolean;
 }
 
 export interface TransformedMapParameter {

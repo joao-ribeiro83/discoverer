@@ -37,6 +37,7 @@ const condition = (
   sourceIndex: 0,
   groupKey: null,
   logicOperator: 'AND',
+  caseSensitive: true,
   ...overrides,
 });
 

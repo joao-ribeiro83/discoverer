@@ -134,6 +134,7 @@ function mkCondition(
     id: uid(),
     mapId: 'unused',
     itemId: item.id,
+    calculatedFieldId: null,
     operator: '=',
     value: null,
     paramName: null,
@@ -141,6 +142,8 @@ function mkCondition(
     groupId: null,
     logicOperator: 'AND',
     displayOrder: 0,
+    negated: false,
+    caseSensitive: true,
     createdAt: NOW,
     ...overrides,
   };
@@ -713,6 +716,267 @@ describe('SQL generator', () => {
       expect(norm(result.sql)).toContain('BETWEEN :c0_lo AND :c0_hi');
       expect(norm(result.sql)).toContain('f1."REGION" IS NULL');
       expect(result.bindParams).toEqual({ c0_lo: 10, c0_hi: 20 });
+    });
+
+    it('wraps a negated condition in NOT (), per-node', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+        ],
+        conditions: [
+          {
+            condition: mkCondition(f.region, {
+              operator: '=',
+              value: 'EMEA',
+              negated: true,
+            }),
+            item: f.region,
+            folder: f.sales,
+          },
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(norm(result.sql)).toContain('WHERE NOT (f1."REGION" = :c0)');
+    });
+
+    it('does not negate a sibling sharing the same group', () => {
+      const f = salesFixture();
+      const groupId = '44444444-4444-4444-8444-444444444444';
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+        ],
+        conditions: [
+          {
+            condition: mkCondition(f.region, {
+              operator: '=',
+              value: 'EMEA',
+              negated: true,
+              groupId,
+            }),
+            item: f.region,
+            folder: f.sales,
+          },
+          {
+            condition: mkCondition(f.region, {
+              operator: '=',
+              value: 'APAC',
+              logicOperator: 'OR',
+              displayOrder: 1,
+              groupId,
+            }),
+            item: f.region,
+            folder: f.sales,
+          },
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      // The negation stays on its own row; the sibling is untouched.
+      expect(norm(result.sql)).toContain(
+        'WHERE (NOT (f1."REGION" = :c0) OR f1."REGION" = :c1)',
+      );
+    });
+
+    it('folds a case-insensitive text comparison through UPPER() on both sides', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+        ],
+        conditions: [
+          {
+            condition: mkCondition(f.region, {
+              operator: '=',
+              value: 'emea',
+              caseSensitive: false,
+            }),
+            item: f.region,
+            folder: f.sales,
+          },
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(norm(result.sql)).toContain(
+        'WHERE UPPER(f1."REGION") = UPPER(:c0)',
+      );
+    });
+
+    it('leaves a case-sensitive text comparison unfolded', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+        ],
+        conditions: [
+          {
+            condition: mkCondition(f.region, {
+              operator: '=',
+              value: 'EMEA',
+              caseSensitive: true,
+            }),
+            item: f.region,
+            folder: f.sales,
+          },
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(norm(result.sql)).toContain('WHERE f1."REGION" = :c0');
+      expect(norm(result.sql)).not.toContain('UPPER');
+    });
+
+    it('does not fold a case-insensitive NUMBER comparison', () => {
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.amount), item: f.amount, folder: f.sales },
+        ],
+        conditions: [
+          {
+            condition: mkCondition(f.amount, {
+              operator: '>=',
+              value: '100',
+              caseSensitive: false,
+            }),
+            item: f.amount,
+            folder: f.sales,
+          },
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(norm(result.sql)).not.toContain('UPPER');
+    });
+
+    it('resolves a condition on a calculated field through the formula renderer', () => {
+      const f = salesFixture();
+      const doubled = mkCalcField({
+        name: 'Doubled Amount',
+        formula: 'Amount * 2',
+        dataType: 'NUMBER',
+        compileStatus: 'COMPILED_UNVERIFIED',
+      });
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+        ],
+        conditions: [
+          {
+            condition: mkCondition(f.amount, {
+              itemId: null,
+              calculatedFieldId: doubled.id,
+              operator: '>',
+              value: '100',
+            }),
+            calculatedField: doubled,
+          },
+        ],
+        calculatedFields: [doubled],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(norm(result.sql)).toContain('WHERE (f1."AMOUNT" * 2) > :c0');
+      expect(result.bindParams).toEqual({ c0: 100 });
+    });
+
+    it('refuses a condition on a calculated field that has never compiled', () => {
+      const f = salesFixture();
+      const neverVerified = mkCalcField({
+        name: 'Unverified',
+        formula: 'Amount * 2',
+        compileStatus: null,
+      });
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+        ],
+        conditions: [
+          {
+            condition: mkCondition(f.amount, {
+              itemId: null,
+              calculatedFieldId: neverVerified.id,
+              operator: '>',
+              value: '100',
+            }),
+            calculatedField: neverVerified,
+          },
+        ],
+        calculatedFields: [neverVerified],
+        formulaItems: f.formulaItems,
+      });
+
+      expect(() => generateSql(def)).toThrow(/has not compiled/);
+    });
+
+    it('refuses a condition on a quarantined calculated field', () => {
+      const f = salesFixture();
+      const quarantined = mkCalcField({
+        name: 'Quarantined',
+        formula: 'Amount * 2',
+        compileStatus: 'QUARANTINED',
+        compileReason: 'UNRESOLVED_ELEMENT',
+      });
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+        ],
+        conditions: [
+          {
+            condition: mkCondition(f.amount, {
+              itemId: null,
+              calculatedFieldId: quarantined.id,
+              operator: '>',
+              value: '100',
+            }),
+            calculatedField: quarantined,
+          },
+        ],
+        calculatedFields: [quarantined],
+        formulaItems: f.formulaItems,
+      });
+
+      expect(() => generateSql(def)).toThrow(/has not compiled/);
+    });
+
+    it('refuses a condition on an aggregating calculated field', () => {
+      // WHERE cannot hold a group function (Oracle ORA-00934); a HAVING-shaped
+      // condition is not something a flat condition row can express.
+      const f = salesFixture();
+      const total = mkCalcField({
+        name: 'Total',
+        formula: 'SUM(Amount)',
+        compileStatus: 'COMPILED_UNVERIFIED',
+      });
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+        ],
+        conditions: [
+          {
+            condition: mkCondition(f.amount, {
+              itemId: null,
+              calculatedFieldId: total.id,
+              operator: '>',
+              value: '100',
+            }),
+            calculatedField: total,
+          },
+        ],
+        calculatedFields: [total],
+        formulaItems: f.formulaItems,
+      });
+
+      expect(() => generateSql(def)).toThrow(/aggregate cannot appear in a WHERE/);
     });
 
     it('groups conditions and honors OR logic', () => {
@@ -1350,6 +1614,47 @@ describe('SQL generator', () => {
       });
       expect(norm(result.sql)).toContain(
         'WHERE (f1."REGION" = :c0 OR f1."REGION" = :c1) AND (f1."AMOUNT" > 0)',
+      );
+    });
+
+    it('still brackets an ORed block when one side is negated', () => {
+      // Same hazard as above, with NOT in the mix: a negated row must not
+      // change whether the OR block as a whole gets bracketed ahead of the
+      // security predicate.
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+        ],
+        conditions: [
+          {
+            condition: mkCondition(f.region, {
+              operator: '=',
+              value: 'EMEA',
+              negated: true,
+            }),
+            item: f.region,
+            folder: f.sales,
+          },
+          {
+            condition: mkCondition(f.region, {
+              operator: '=',
+              value: 'APAC',
+              logicOperator: 'OR',
+              displayOrder: 1,
+            }),
+            item: f.region,
+            folder: f.sales,
+          },
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def, {
+        securityPredicates: ['f1."AMOUNT" > 0'],
+      });
+      expect(norm(result.sql)).toContain(
+        'WHERE (NOT (f1."REGION" = :c0) OR f1."REGION" = :c1) AND (f1."AMOUNT" > 0)',
       );
     });
 

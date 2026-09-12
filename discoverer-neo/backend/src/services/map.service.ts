@@ -81,7 +81,15 @@ export interface MapItemInput {
 }
 
 export interface MapConditionInput {
-  itemId: string;
+  /** Exactly one of `itemId` / `calculatedFieldName` must be set. */
+  itemId?: string;
+  /**
+   * Names a calculated field in the SAME request rather than an id, because
+   * `calculatedFields` is fully replaced on every save (BE-02) and gets fresh
+   * ids each time — the same reason `paramName` names a parameter by prompt
+   * rather than by bind name.
+   */
+  calculatedFieldName?: string;
   operator: ConditionOperator;
   value?: string | null;
   paramName?: string | null;
@@ -89,6 +97,10 @@ export interface MapConditionInput {
   groupId?: string | null;
   logicOperator?: 'AND' | 'OR';
   displayOrder?: number;
+  /** Per-node negation (Oracle's `IsNot`). Defaults to false. */
+  negated?: boolean;
+  /** Text comparisons only. Defaults to true — Oracle's own default. */
+  caseSensitive?: boolean;
 }
 
 export interface MapParameterInput {
@@ -206,6 +218,11 @@ export async function validateMapItems(
 
 function validateConditionInputs(conditions: MapConditionInput[]): void {
   for (const c of conditions) {
+    if (Boolean(c.itemId) === Boolean(c.calculatedFieldName)) {
+      throw new MapValidationError(
+        'A condition must reference exactly one of itemId or calculatedFieldName',
+      );
+    }
     if (c.conditionType === 'PARAMETER' && !c.paramName) {
       throw new MapValidationError(
         'PARAMETER conditions must reference a paramName',
@@ -281,6 +298,20 @@ function validateParameterInputs(
   }
 }
 
+function validateCalculatedFieldReferences(
+  calculatedFields: MapCalculatedFieldInput[],
+  conditions: MapConditionInput[],
+): void {
+  const names = new Set(calculatedFields.map((f) => f.name));
+  for (const c of conditions) {
+    if (c.calculatedFieldName && !names.has(c.calculatedFieldName)) {
+      throw new MapValidationError(
+        `Condition references undefined calculated field "${c.calculatedFieldName}"`,
+      );
+    }
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Child-row helpers
 // ---------------------------------------------------------------------------
@@ -330,13 +361,39 @@ async function insertChildren(
         .returning()
     : [];
 
+  // Calculated fields are inserted before conditions so a condition can
+  // resolve `calculatedFieldName` against the row this same save just made —
+  // fields are fully replaced on every save (BE-02) and get fresh ids each
+  // time, so a condition cannot carry one over from before.
+  const calculatedFieldRows = input.calculatedFields?.length
+    ? await tx
+        .insert(mapCalculatedFields)
+        .values(
+          input.calculatedFields.map((f, idx) => ({
+            mapId,
+            name: f.name,
+            formula: f.formula,
+            displayOrder: f.displayOrder ?? idx,
+          })),
+        )
+        .returning()
+    : [];
+  const calcFieldIdByName = new globalThis.Map(
+    calculatedFieldRows.map((f) => [f.name, f.id]),
+  );
+
   const conditionRows = input.conditions?.length
     ? await tx
         .insert(mapConditions)
         .values(
           input.conditions.map((c, idx) => ({
             mapId,
-            itemId: c.itemId,
+            itemId: c.itemId ?? null,
+            // `validateCalculatedFieldReferences` has already refused a name
+            // matching no calculated field in this same request.
+            calculatedFieldId: c.calculatedFieldName
+              ? (calcFieldIdByName.get(c.calculatedFieldName) ?? null)
+              : null,
             operator: c.operator,
             value: c.value ?? null,
             // Stored as the parameter's bind name. `validateParameterInputs`
@@ -347,6 +404,8 @@ async function insertChildren(
             groupId: c.groupId ?? null,
             logicOperator: c.logicOperator ?? 'AND',
             displayOrder: c.displayOrder ?? idx,
+            negated: c.negated ?? false,
+            caseSensitive: c.caseSensitive ?? true,
           })),
         )
         .returning()
@@ -363,20 +422,6 @@ async function insertChildren(
             paramType: p.paramType,
             defaultValue: p.defaultValue ?? null,
             isRequired: p.isRequired ?? false,
-          })),
-        )
-        .returning()
-    : [];
-
-  const calculatedFieldRows = input.calculatedFields?.length
-    ? await tx
-        .insert(mapCalculatedFields)
-        .values(
-          input.calculatedFields.map((f, idx) => ({
-            mapId,
-            name: f.name,
-            formula: f.formula,
-            displayOrder: f.displayOrder ?? idx,
           })),
         )
         .returning()
@@ -575,11 +620,17 @@ export async function create(
 
   const referencedItemIds = [
     ...data.items.map((i) => i.itemId),
-    ...(data.conditions ?? []).map((c) => c.itemId),
+    ...(data.conditions ?? [])
+      .map((c) => c.itemId)
+      .filter((id): id is string => id !== undefined),
   ];
   await validateMapItems(data.businessAreaId, referencedItemIds);
   validateConditionInputs(data.conditions ?? []);
   validateParameterInputs(data.parameters ?? [], data.conditions ?? []);
+  validateCalculatedFieldReferences(
+    data.calculatedFields ?? [],
+    data.conditions ?? [],
+  );
 
   return db.transaction(async (tx) => {
     const [map] = await tx
@@ -632,11 +683,17 @@ export async function update(
     }
     const referencedItemIds = [
       ...data.items.map((i) => i.itemId),
-      ...(data.conditions ?? []).map((c) => c.itemId),
+      ...(data.conditions ?? [])
+        .map((c) => c.itemId)
+        .filter((id): id is string => id !== undefined),
     ];
     await validateMapItems(existing.businessAreaId, referencedItemIds);
     validateConditionInputs(data.conditions ?? []);
     validateParameterInputs(data.parameters ?? [], data.conditions ?? []);
+    validateCalculatedFieldReferences(
+      data.calculatedFields ?? [],
+      data.conditions ?? [],
+    );
   }
 
   return db.transaction(async (tx) => {
@@ -823,6 +880,12 @@ export async function duplicate(
   const promptByBindName = new globalThis.Map(
     source.parameters.map((p) => [p.bindName, p.name]),
   );
+  // Same reasoning as `promptByBindName`: `calculatedFieldId` will not survive
+  // the copy (fields get fresh ids), so a condition on one is carried over by
+  // NAME and re-resolved once the copy's own fields are inserted.
+  const calcFieldNameById = new globalThis.Map(
+    source.calculatedFields.map((f) => [f.id, f.name]),
+  );
 
   return db.transaction(async (tx) => {
     const [copy] = await tx
@@ -861,7 +924,10 @@ export async function duplicate(
         sortGroup: i.sortGroup,
       })),
       conditions: source.conditions.map((c) => ({
-        itemId: c.itemId,
+        itemId: c.itemId ?? undefined,
+        calculatedFieldName: c.calculatedFieldId
+          ? calcFieldNameById.get(c.calculatedFieldId)
+          : undefined,
         operator: c.operator,
         value: c.value,
         paramName:
@@ -872,6 +938,8 @@ export async function duplicate(
         groupId: c.groupId,
         logicOperator: c.logicOperator,
         displayOrder: c.displayOrder,
+        negated: c.negated,
+        caseSensitive: c.caseSensitive,
       })),
       parameters: source.parameters.map((p) => ({
         name: p.name,
@@ -956,7 +1024,8 @@ export async function exportAsXml(id: string): Promise<string | null> {
   lines.push('  <conditions>');
   for (const c of map.conditions) {
     const attrs = [
-      `itemId="${c.itemId}"`,
+      c.itemId ? `itemId="${c.itemId}"` : null,
+      c.calculatedFieldId ? `calculatedFieldId="${c.calculatedFieldId}"` : null,
       `operator="${xmlEscape(c.operator)}"`,
       `type="${c.conditionType}"`,
       `logic="${c.logicOperator}"`,
@@ -965,6 +1034,8 @@ export async function exportAsXml(id: string): Promise<string | null> {
       // below to recover the prompt it stands for.
       c.paramName ? `paramName="${xmlEscape(c.paramName)}"` : null,
       c.groupId ? `groupId="${c.groupId}"` : null,
+      c.negated ? `negated="true"` : null,
+      c.caseSensitive === false ? `caseSensitive="false"` : null,
     ]
       .filter(Boolean)
       .join(' ');

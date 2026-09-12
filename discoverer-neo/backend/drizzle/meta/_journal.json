@@ -127,6 +127,20 @@
       "when": 1790200000000,
       "tag": "0017_item_classes",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1790500000000,
+      "tag": "0018_condition_negation_and_case",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1790500100000,
+      "tag": "0019_condition_calculated_field",
+      "breakpoints": true
     }
   ]
 }

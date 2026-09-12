@@ -1145,6 +1145,9 @@ export function transformWorkbook(
             // The first row of a group carries how the group joins the
             // previous one; the rest carry how they join inside it.
             logicOperator: predicateIndex === 0 ? group.join : group.inner,
+            // Oracle's own default is case-sensitive; `null` means the
+            // element carried no `0x0102` tag at all, which reads the same.
+            caseSensitive: condition.caseSensitive ?? true,
           });
         }
       }
@@ -1833,6 +1836,7 @@ export interface MapConditionRow {
   groupId: string | null;
   logicOperator: 'AND' | 'OR';
   displayOrder: number;
+  caseSensitive: boolean;
 }
 
 export interface MapConditionRowsResult {
@@ -1907,6 +1911,7 @@ export function buildMapConditionRows(
         groupId,
         logicOperator: condition.logicOperator,
         displayOrder: condition.displayOrder,
+        caseSensitive: condition.caseSensitive,
       });
     }
   }

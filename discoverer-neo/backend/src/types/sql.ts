@@ -21,8 +21,15 @@ export interface MapDefinition {
   map: Map;
   /** Selected columns, each with its metadata item and owning folder. */
   items: Array<{ mapItem: MapItem; item: Item; folder: Folder }>;
-  /** Conditions with their metadata item and owning folder. */
-  conditions: Array<{ condition: MapCondition; item: Item; folder: Folder }>;
+  /**
+   * Conditions, each with the item+folder it filters OR the calculated field
+   * it filters — exactly one of the two, matching `map_conditions`' own CHECK
+   * constraint (ARCH M4).
+   */
+  conditions: Array<
+    | { condition: MapCondition; item: Item; folder: Folder; calculatedField?: undefined }
+    | { condition: MapCondition; item?: undefined; folder?: undefined; calculatedField: MapCalculatedField }
+  >;
   parameters: MapParameter[];
   calculatedFields: MapCalculatedField[];
   /**
