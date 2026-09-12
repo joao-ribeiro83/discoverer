@@ -324,6 +324,60 @@ area — a drill path is entered at its root — and records the rest.
 there is no folder-level grant to resolve and `BA_OBJ_LINKS` is not involved.
 See §3.5.
 
+### 3.4b `DOMAINS` — item classes **[LIVE EUL4 — every column confirmed, 2026-09-12]**
+
+An item class is one shared property bundle carrying up to **three** orthogonal
+capabilities — list of values, alternative sort, drill to detail
+(`9.0.4\B10270_01.pdf` p. 8-2). It is not "the LOV table", and a boolean
+`has_lov` loses two of the three.
+
+`EUL4_DOMAINS`, 20 columns, exactly as `ALL_TAB_COLUMNS` reports them:
+
+| Column | Type | Null | What it is |
+| --- | --- | --- | --- |
+| `DOM_ID` | NUMBER | N | PK |
+| `DOM_NAME` | VARCHAR2(100) | N | the class name the admin sees |
+| `DOM_DEVELOPER_KEY` | VARCHAR2(100) | N | stable export key |
+| `DOM_DESCRIPTION` | VARCHAR2(240) | Y | |
+| `DOM_DATA_TYPE` | NUMBER | N | the LOV column's type |
+| `DOM_LOGICAL_ITEM` | NUMBER | N | DTD `LogicalItemFlag` |
+| `DOM_SYS_GENERATED` | NUMBER | N | bulk-load generated vs authored |
+| `DOM_CARDINALITY` | NUMBER | Y | distinct-value estimate; drives the long-LOV UI |
+| `DOM_LAST_EXEC_TIME` | NUMBER | Y | when the LOV query last ran |
+| `DOM_CACHED` | NUMBER | N | cache the values vs re-query |
+| `DOM_IT_ID_LOV` | NUMBER | Y | **the item the LOV reads** → `EXPRESSIONS.IT_EXP_ID` |
+| `DOM_IT_ID_RANK` | NUMBER | Y | **the alternative-sort item** (same folder) |
+| `DOM_USER_PROP1`, `DOM_USER_PROP2` | VARCHAR2(100) | Y | user-defined properties |
+| `DOM_ELEMENT_STATE` | NUMBER | N | element state |
+| `DOM_CREATED_BY/_DATE`, `DOM_UPDATED_BY/_DATE` | | | audit |
+| `NOTM` | NUMBER | Y | Oracle internal |
+
+**The open question in `legacy-analysis.md` §5.3 is answered: the three
+capabilities are neither separate booleans nor a type code.** They are implied
+by which item columns are populated:
+
+- LOV — `DOM_IT_ID_LOV` is not null.
+- Alternative sort — `DOM_IT_ID_RANK` is not null (and needs a LOV, p. 8-4).
+- Drill to detail — no column at all. It is the *existence* of the class,
+  shared across items, that makes two items drillable to each other.
+
+**Binding:** `EXPRESSIONS.IT_DOM_ID → DOMAINS.DOM_ID`. That is the only
+reference to `DOM_ID` anywhere in the EUL — there is no `DOMAINS`-to-parameter
+or `DOMAINS`-to-condition table. A parameter or condition reaches its class
+through the item it is written over.
+
+**Values are never stored.** There is no value table. An LOV is
+`SELECT DISTINCT <DOM_IT_ID_LOV's column> FROM <its folder>` against the live
+source, ordered by `DOM_IT_ID_RANK`'s column when present. Migrating the values
+as a static enum would freeze data that changes daily.
+
+**On this estate the table is empty.** `SELECT COUNT(*) FROM EUL4_DOMAINS` = 0,
+and `IT_DOM_ID` is null on all 9 626 items. No administrator here ever created
+an item class, so there are no LOVs, no alternative sorts and no drill-to-detail
+links to migrate. The reader imports zero rows and that is correct. See
+[`eul-fidelity-decisions.md`](../docs/decisions/eul-fidelity-decisions.md) Decision 8 for
+what Neo does instead.
+
 ### 3.5 Security — `ACCESS_PRIVS` + `EUL_USERS` **[SQL — `batchusr.sql`]**
 
 | Table | Real columns |
