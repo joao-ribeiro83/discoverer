@@ -120,6 +120,13 @@
       "when": 1789900000000,
       "tag": "0016_calculated_field_dual_storage",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1790200000000,
+      "tag": "0017_item_classes",
+      "breakpoints": true
     }
   ]
 }

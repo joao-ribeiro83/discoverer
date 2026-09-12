@@ -24,6 +24,7 @@ import {
   transformGrants,
   transformHierarchy,
   transformItem,
+  transformItemClass,
   transformJoin,
   transformUser,
   transformUsers,
@@ -45,6 +46,7 @@ import type {
   Grant,
   Hierarchy,
   Item,
+  ItemClass,
   Join,
 } from '../types/eul-versions.js';
 
@@ -91,6 +93,7 @@ function item(overrides: Partial<Item> = {}): Item {
   return {
     sourceId: 300,
     folderId: 200,
+    itemClassId: null,
     name: 'Invoice Amount',
     description: 'Header amount',
     expType: 'CI',
@@ -428,6 +431,57 @@ describe('transformItem', () => {
 // ---------------------------------------------------------------------------
 // Join
 // ---------------------------------------------------------------------------
+
+describe('transformItemClass', () => {
+  const itemClass = (overrides: Partial<ItemClass> = {}): ItemClass => ({
+    sourceId: 70,
+    name: 'Cost Centre',
+    description: 'Valid cost centres',
+    developerKey: 'CC_CLASS',
+    lovItemId: 32,
+    rankItemId: 33,
+    cached: 1,
+    cardinality: 42,
+    dataType: null,
+    systemGenerated: 0,
+    ...overrides,
+  });
+
+  // The source has no capability flags. A class provides a LOV when it names a
+  // LOV item and an alternative sort when it names a rank item; that IS the
+  // model, so the transform must carry both links through untouched.
+  it('carries both item links, which is how the capabilities are stated', () => {
+    const t = transformItemClass(itemClass(), 'EUL4');
+
+    expect(t.sourceItemSourceId).toBe(32);
+    expect(t.sortItemSourceId).toBe(33);
+    expect(t.cached).toBe(true);
+    expect(t.cardinality).toBe(42);
+    expect(t.systemGenerated).toBe(false);
+    expect(t.warnings).toEqual([]);
+  });
+
+  it('models drill-to-detail, which has no source column, as false', () => {
+    expect(transformItemClass(itemClass(), 'EUL4').providesDrillDetail).toBe(false);
+  });
+
+  // "An item class to support an alternative sort must also support a list of
+  // values" — 9.0.4 admin guide p. 8-4.
+  it('warns when a sort item arrives without a LOV item', () => {
+    const t = transformItemClass(itemClass({ lovItemId: null }), 'EUL4');
+
+    expect(t.warnings.map((w) => w.code)).toContain('ITEM_CLASS_SORT_WITHOUT_LOV');
+  });
+
+  // DOM_DATA_TYPE is a numeric code no Oracle source decodes and the reference
+  // estate has zero rows to fit it against, so it is reported, not guessed.
+  it('never guesses DOM_DATA_TYPE into a type name', () => {
+    const t = transformItemClass(itemClass({ dataType: 2 }), 'EUL4');
+
+    expect(t.dataType).toBeNull();
+    expect(t.warnings.map((w) => w.code)).toContain('ITEM_CLASS_DATA_TYPE_UNMAPPED');
+  });
+});
 
 describe('transformJoin', () => {
   it('maps master/detail components to left/right, carrying the sequence', () => {

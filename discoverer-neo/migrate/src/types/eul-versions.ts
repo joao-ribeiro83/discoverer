@@ -253,6 +253,8 @@ export interface EulSchemaAdapter {
   getFunctionColumns(): ColumnMapping[];
   getUserColumns(): ColumnMapping[];
   getGrantColumns(): ColumnMapping[];
+  /** `DOMAINS` — item classes. */
+  getDomainColumns(): ColumnMapping[];
 
   supportsSummaryFolders(): boolean;
   hasHierarchyNodeTree(): boolean;
@@ -307,6 +309,8 @@ export interface Folder {
 export interface Item {
   sourceId: number;
   folderId: number | null;
+  /** `IT_DOM_ID` — the item class this item belongs to, if any. */
+  itemClassId: number | null;
   name: string;
   description: string | null;
   expType: string;
@@ -322,6 +326,36 @@ export interface Item {
   createdAt: Date | null;
   updatedBy: string | null;
   updatedAt: Date | null;
+}
+
+/**
+ * `DOMAINS` — an item class.
+ *
+ * One shared property bundle carrying three capabilities: a list of values, an
+ * alternative sort, and drill-to-detail. The first two are read off which item
+ * column is populated (`DOM_IT_ID_LOV`, `DOM_IT_ID_RANK`); the third has no
+ * column, so it is the mere existence of a class shared by two items.
+ *
+ * It holds no values. `cached` and `cardinality` describe how expensive the
+ * live `SELECT DISTINCT` behind the LOV is, not what it returns.
+ */
+export interface ItemClass {
+  sourceId: number;
+  name: string;
+  description: string | null;
+  developerKey: string | null;
+  /** `DOM_IT_ID_LOV` → `EXPRESSIONS.EXP_ID`. Present ⇒ provides a LOV. */
+  lovItemId: number | null;
+  /** `DOM_IT_ID_RANK` → `EXPRESSIONS.EXP_ID`. Present ⇒ provides a sort. */
+  rankItemId: number | null;
+  /** `DOM_CACHED`, as the source's 0/1. */
+  cached: number | null;
+  /** `DOM_CARDINALITY` — distinct-value estimate, or null if never measured. */
+  cardinality: number | null;
+  /** `DOM_DATA_TYPE`, the source's numeric code. */
+  dataType: number | null;
+  /** `DOM_SYS_GENERATED`, as the source's 0/1. */
+  systemGenerated: number | null;
 }
 
 /**

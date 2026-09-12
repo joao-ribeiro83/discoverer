@@ -194,7 +194,7 @@ Una **combinación** define una relación entre dos carpetas.
    - **Nombre** — Nombre de la combinación (p. ej., «Customers to Orders»)
    - **Carpeta 1** — Carpeta izquierda
    - **Carpeta 2** — Carpeta derecha
-   - **Tipo de combinación** — INNER, LEFT, RIGHT, FULL
+   - **Tipo de combinación** — INNER, LEFT, RIGHT
    - **Condiciones** — Predicados de combinación (véase a continuación)
 4. Haga clic en **Crear**
 
@@ -221,7 +221,11 @@ CUSTOMERS.CUSTOMER_ID = ORDERS.CUSTOMER_ID
 | **INNER** | Solo las filas que coinciden en ambas carpetas |
 | **LEFT** | Todas las filas de la carpeta 1, con las coincidentes de la carpeta 2 o NULL |
 | **RIGHT** | Todas las filas de la carpeta 2, con las coincidentes de la carpeta 1 o NULL |
-| **FULL** | Todas las filas de ambas carpetas (con NULL) |
+
+No existe la combinación FULL. Activar **ambas** opciones externas se rechaza
+en lugar de ejecutarse: Discoverer tampoco podía expresar esa combinación, y
+ninguna documentación de Oracle indica qué debería significar. Desactive una
+de ellas.
 
 ### Consultas de varias tablas
 

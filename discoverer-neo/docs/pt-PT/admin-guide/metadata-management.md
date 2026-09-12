@@ -194,7 +194,7 @@ Uma **Junção** define uma relação entre duas pastas.
    - **Nome** — Nome da junção (p. ex., "Clientes para Encomendas")
    - **Pasta 1** — Pasta à esquerda
    - **Pasta 2** — Pasta à direita
-   - **Tipo de Junção** — INNER, LEFT, RIGHT, FULL
+   - **Tipo de Junção** — INNER, LEFT, RIGHT
    - **Condições** — Predicados da junção (ver abaixo)
 4. Clique em **Criar**
 
@@ -221,7 +221,11 @@ CUSTOMERS.CUSTOMER_ID = ORDERS.CUSTOMER_ID
 | **INNER** | Apenas as linhas correspondentes em ambas as pastas |
 | **LEFT** | Todas as linhas da Pasta 1, com correspondência na Pasta 2 ou NULL |
 | **RIGHT** | Todas as linhas da Pasta 2, com correspondência na Pasta 1 ou NULL |
-| **FULL** | Todas as linhas de ambas as pastas (com NULLs) |
+
+Não existe junção FULL. Ativar **ambas** as opções externas é recusado em vez
+de executado: o Discoverer também não conseguia expressar essa combinação, e
+nenhuma documentação da Oracle indica o que deveria significar. Desative uma
+delas.
 
 ### Consultas de Várias Tabelas
 

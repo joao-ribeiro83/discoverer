@@ -210,6 +210,8 @@ export interface TransformedItem {
   isHidden: boolean;
   isActive: boolean;
   parentItemSourceId: number | null;
+  /** `IT_DOM_ID` — the item class this item belongs to, if any. */
+  itemClassSourceId: number | null;
   createdByUsername: string | null;
   createdAt: Date | null;
   updatedAt: Date | null;
@@ -226,6 +228,33 @@ export interface TransformedItem {
  * than the source did, so an unresolvable component refuses at query time
  * instead (D-058).
  */
+/**
+ * An `item_classes` row.
+ *
+ * The two capability booleans the target needs are DERIVED, not read: a class
+ * provides a LOV when it names a LOV item and an alternative sort when it
+ * names a rank item, because that is the only way the source states either.
+ * `providesDrillDetail` has no source column at all — Discoverer treats two
+ * items that share a class as drillable to each other — so it defaults false
+ * and Phase 7.3 decides what to do with it.
+ */
+export interface TransformedItemClass {
+  sourceId: number;
+  name: string;
+  description: string | null;
+  developerKey: string | null;
+  /** `DOM_IT_ID_LOV`. Resolved to an item uuid by the migration runner. */
+  sourceItemSourceId: number | null;
+  /** `DOM_IT_ID_RANK`. */
+  sortItemSourceId: number | null;
+  providesDrillDetail: boolean;
+  cached: boolean;
+  cardinality: number | null;
+  dataType: string | null;
+  systemGenerated: boolean;
+  warnings: TransformWarning[];
+}
+
 export interface TransformedJoinComponent {
   /** MASTER-side item (D-040). */
   leftItemSourceId: number | null;

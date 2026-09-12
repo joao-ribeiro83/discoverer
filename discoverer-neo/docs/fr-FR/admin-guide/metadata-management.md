@@ -195,7 +195,7 @@ Une **jointure** définit une relation entre deux dossiers.
    - **Nom** — Nom de la jointure (p. ex. « Clients vers Commandes »)
    - **Dossier 1** — Dossier de gauche
    - **Dossier 2** — Dossier de droite
-   - **Type de jointure** — INNER, LEFT, RIGHT, FULL
+   - **Type de jointure** — INNER, LEFT, RIGHT
    - **Conditions** — Prédicats de jointure (voir ci-dessous)
 4. Cliquez sur **Créer**
 
@@ -222,7 +222,11 @@ CUSTOMERS.CUSTOMER_ID = ORDERS.CUSTOMER_ID
 | **INNER** | Uniquement les lignes correspondant aux deux dossiers |
 | **LEFT** | Toutes les lignes du dossier 1, correspondance dans le dossier 2 ou NULL |
 | **RIGHT** | Toutes les lignes du dossier 2, correspondance dans le dossier 1 ou NULL |
-| **FULL** | Toutes les lignes des deux dossiers (avec NULL) |
+
+Il n'existe pas de jointure FULL. Activer **les deux** réglages externes est
+refusé plutôt qu'exécuté : Discoverer ne pouvait pas non plus exprimer cette
+combinaison, et aucune documentation Oracle n'indique ce qu'elle devrait
+signifier. Désactivez l'un des deux réglages.
 
 ### Requêtes multitables
 

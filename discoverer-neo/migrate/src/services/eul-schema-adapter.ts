@@ -37,6 +37,7 @@ import type {
   Hierarchy,
   HierarchyNode,
   Item,
+  ItemClass,
   Join,
   JoinComponent,
   Workbook,
@@ -139,7 +140,30 @@ const EXP_COLUMNS: ColumnSpec[] = [
  * whole item read into an `ORA-00904`, and no offline source confirms the
  * spelling on EUL5.
  */
-const EXP_OPTIONAL_COLUMNS = ['IT_FUN_ID'] as const;
+const EXP_OPTIONAL_COLUMNS = ['IT_FUN_ID', 'IT_DOM_ID'] as const;
+
+/**
+ * `DOMAINS` — item classes. Every column confirmed against the live EUL4's
+ * `ALL_TAB_COLUMNS` (2026-09-12); see EUL_SCHEMA_GROUND_TRUTH.md §3.4b.
+ *
+ * There is no "provides a LOV" flag and no capability type code. A class
+ * provides a list of values when `DOM_IT_ID_LOV` names an item, and an
+ * alternative sort when `DOM_IT_ID_RANK` does; drill-to-detail has no column
+ * at all. Only `DOM_ID`, `DOM_NAME` and `DOM_DEVELOPER_KEY` are NOT NULL on
+ * the source, so everything else defaults rather than being required.
+ */
+const DOMAIN_COLUMNS: ColumnSpec[] = [
+  { name: 'DOM_ID', type: 'number', required: true, mapsTo: 'sourceId' },
+  { name: 'DOM_NAME', type: 'string', required: true, mapsTo: 'name' },
+  { name: 'DOM_DESCRIPTION', type: 'string', required: false, mapsTo: 'description', defaultValue: null },
+  { name: 'DOM_DEVELOPER_KEY', type: 'string', required: false, mapsTo: 'developerKey', defaultValue: null },
+  { name: 'DOM_IT_ID_LOV', type: 'number', required: false, mapsTo: 'lovItemId', defaultValue: null },
+  { name: 'DOM_IT_ID_RANK', type: 'number', required: false, mapsTo: 'rankItemId', defaultValue: null },
+  { name: 'DOM_CACHED', type: 'number', required: false, mapsTo: 'cached', defaultValue: null },
+  { name: 'DOM_CARDINALITY', type: 'number', required: false, mapsTo: 'cardinality', defaultValue: null },
+  { name: 'DOM_DATA_TYPE', type: 'number', required: false, mapsTo: 'dataType', defaultValue: null },
+  { name: 'DOM_SYS_GENERATED', type: 'number', required: false, mapsTo: 'systemGenerated', defaultValue: null },
+];
 
 /**
  * `KEY_CONS` — joins, folder to folder.
@@ -419,6 +443,7 @@ export function createEulSchemaAdapter(version: EulVersionInfo): EulSchemaAdapte
     getFunctionColumns: () => toMappings(FUN_COLUMNS, version.version),
     getUserColumns: () => toMappings(USER_COLUMNS, version.version),
     getGrantColumns: () => toMappings(GRANT_COLUMNS, version.version),
+    getDomainColumns: () => toMappings(DOMAIN_COLUMNS, version.version),
 
     supportsSummaryFolders: () => features.summaryFolders && hasTable('SUMMARY_OBJS'),
     hasHierarchyNodeTree: () => features.hierarchyNodeTree,
@@ -740,6 +765,7 @@ export async function readItems(
       ...adapter.getExpressionColumns(),
       ...optionalMappings(present, [
         { name: 'IT_FUN_ID', type: 'number', mapsTo: 'functionId' },
+        { name: 'IT_DOM_ID', type: 'number', mapsTo: 'itemClassId' },
       ]),
     ],
     {
@@ -755,6 +781,9 @@ export async function readItems(
     // ordering is stable and Neo's displayOrder is populated.
     sequence: idx,
     formula: null,
+    // Probed: absent on an EUL that predates item classes, and null on every
+    // item in an estate where no administrator ever created one.
+    itemClassId: (row as { itemClassId?: number | null }).itemClassId ?? null,
     // The Default aggregate, named. `Detail` reaches this field as `Detail`
     // and is turned into "no aggregation" one layer up, by
     // `normalizeAggregation` — this layer reports what the EUL says, it does
@@ -1396,6 +1425,36 @@ async function readFolderBusinessAreaMap(
     if (!(err instanceof EulReadError) || !isTableNotFoundError(err.cause)) throw err;
   }
   return out;
+}
+
+/**
+ * Item classes.
+ *
+ * A plain read — `DOMAINS` has no link table and nothing else in the EUL
+ * references `DOM_ID` except `EXPRESSIONS.IT_DOM_ID`, which the item read
+ * carries. An estate with no item classes returns an empty list, which is the
+ * correct answer and not a failure: `EUL4_DOMAINS` holds zero rows on the
+ * reference estate.
+ *
+ * A missing table degrades to empty for the same reason a missing `FUNCTIONS`
+ * costs the default aggregate rather than the read — an EUL old enough to lack
+ * it simply has no item classes.
+ */
+export async function readItemClasses(
+  adapter: EulSchemaAdapter,
+  source: EulSource,
+): Promise<ItemClass[]> {
+  if (!adapter.hasTable('DOMAINS')) return [];
+  const execute = resolveExecutor(source);
+  try {
+    const rows = await readEntity(execute, adapter, 'DOMAINS', adapter.getDomainColumns(), {
+      orderBy: 'DOM_ID',
+    });
+    return rows as unknown as ItemClass[];
+  } catch (err) {
+    if (!(err instanceof EulReadError) || !isTableNotFoundError(err.cause)) throw err;
+    return [];
+  }
 }
 
 export async function readCustomFunctions(
