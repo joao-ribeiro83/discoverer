@@ -208,7 +208,22 @@ nuevo rol en su siguiente solicitud. No es necesario esperar a que caduque su to
 
 ### Cuenta bloqueada
 
-No existe un bloqueo manual de cuentas en la versión actual. Los usuarios pueden reintentar la contraseña de forma indefinida.
+Los inicios de sesión fallidos bloquean una cuenta durante un tiempo breve. Con la configuración predeterminada:
+
+- **5 inicios de sesión fallidos** en una cuenta en 15 minutos bloquean esa
+  cuenta durante **15 minutos**. El inicio de sesión devuelve
+  `429 Too Many Requests` hasta que termina el bloqueo.
+- **100 inicios de sesión fallidos** desde una misma dirección IP en 15 minutos
+  bloquean esa dirección hasta que terminan los 15 minutos, para todas las cuentas.
+- Un inicio de sesión correcto pone a cero los fallos de la cuenta.
+- Una dirección que inició sesión correctamente en la cuenta en los últimos
+  30 días puede seguir iniciando sesión mientras la cuenta está bloqueada. Así,
+  un atacante no puede dejar fuera al usuario real fallando a propósito. Esa
+  dirección sigue sujeta al límite por dirección.
+- Cada bloqueo escribe un evento `auth.lockout` en el registro de auditoría.
+
+El bloqueo termina solo; no hay desbloqueo manual. Los límites se definen en
+[Configuración](../../deployment/configuration.md#login-rate-limiting).
 
 Para impedir el inicio de sesión:
 - Establezca el estado **Inactivo** (preferible)

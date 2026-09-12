@@ -209,7 +209,21 @@ request. You do not have to wait for their token to expire.
 
 ### Locked Account
 
-No manual account lock in current version. Users can retry password indefinitely.
+Failed logins lock an account for a short time. With the default settings:
+
+- **5 failed logins** to one account within 15 minutes lock that account for
+  **15 minutes**. Login returns `429 Too Many Requests` until the lock ends.
+- **100 failed logins** from one IP address within 15 minutes block that
+  address until the 15 minutes end, for every account.
+- A successful login clears the account's failure count.
+- An address that logged in to the account successfully in the last 30 days
+  can still log in while the account is locked. So an attacker cannot keep
+  the real user out by failing logins on purpose. That address is still held
+  to the per-address limit.
+- Each lock writes an `auth.lockout` event to the audit log.
+
+A lock ends by itself; there is no manual unlock. The limits are set in
+[Configuration](../deployment/configuration.md#login-rate-limiting).
 
 To prevent login:
 - Set **Inactive** (preferred)

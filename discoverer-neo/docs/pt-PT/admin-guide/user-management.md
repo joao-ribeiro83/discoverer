@@ -209,7 +209,23 @@ no pedido seguinte. Não é preciso esperar que o token expire.
 
 ### Conta Bloqueada
 
-Não existe bloqueio manual de conta na versão atual. Os utilizadores podem repetir a palavra-passe indefinidamente.
+Os inícios de sessão falhados bloqueiam uma conta durante pouco tempo. Com as predefinições:
+
+- **5 inícios de sessão falhados** numa conta em 15 minutos bloqueiam essa
+  conta durante **15 minutos**. O início de sessão devolve
+  `429 Too Many Requests` até o bloqueio terminar.
+- **100 inícios de sessão falhados** a partir de um mesmo endereço IP em
+  15 minutos bloqueiam esse endereço até os 15 minutos terminarem, para todas
+  as contas.
+- Um início de sessão bem-sucedido repõe a zero as falhas da conta.
+- Um endereço que iniciou sessão com sucesso na conta nos últimos 30 dias
+  continua a poder iniciar sessão enquanto a conta está bloqueada. Assim, um
+  atacante não consegue manter o utilizador real de fora falhando de
+  propósito. Esse endereço continua sujeito ao limite por endereço.
+- Cada bloqueio escreve um evento `auth.lockout` no registo de auditoria.
+
+O bloqueio termina sozinho; não existe desbloqueio manual. Os limites
+definem-se na [Configuração](../../deployment/configuration.md#login-rate-limiting).
 
 Para impedir o início de sessão:
 - Defina como **Inativo** (preferível)

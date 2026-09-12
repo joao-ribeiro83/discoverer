@@ -50,6 +50,30 @@ Both defaults are published in this repository, so neither protects anything
 from anyone holding a copy of it. The guard lives in `backend/src/config.ts`
 (`assertProductionSecrets`) and throws before any config value is read.
 
+### Login Rate Limiting
+
+Failed logins are counted per IP address and per account. State lives in Redis;
+account keys hold a hash of the email, never the email itself.
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `LOGIN_RATE_LIMIT_WINDOW_SECONDS` | 900 | Window in which failed logins are counted |
+| `LOGIN_MAX_FAILURES_PER_IP` | 100 | Failed logins from one IP, across all accounts, before that IP gets `429` for the rest of the window |
+| `LOGIN_LOCKOUT_THRESHOLD` | 5 | Failed logins to one account before it is locked |
+| `LOGIN_LOCKOUT_SECONDS` | 900 | How long a lock lasts. Failing while locked does not extend it. Each lock writes an `auth.lockout` audit event. |
+| `TRUST_PROXY` | false | Fastify `trustProxy`: `false`, `true`, a hop count (`1`), or trusted addresses/CIDRs. `docker-compose.prod.yml` sets `1` for its nginx. |
+
+An address that logged in to an account successfully in the last 30 days is not
+held by that account's lock, so failing on purpose cannot keep the real user out.
+It is still held by the per-IP limit.
+
+**Set `TRUST_PROXY` behind a reverse proxy.** Without it the backend sees the
+proxy's address for every request, so the per-IP limit becomes one global
+limit that a single attacker can trip for everyone. **Do not set it when the
+backend port is also reachable directly** (for example `docker-compose.yml`,
+which publishes port 3000): a direct caller could then pick its own address
+with an `X-Forwarded-For` header.
+
 ### Oracle Database Connectivity
 
 | Variable | Default | Description |
@@ -117,6 +141,14 @@ METADATA_CACHE_TTL_SECONDS=300
 JWT_SECRET=generate_strong_random_secret_min_16_chars
 JWT_EXPIRES_IN=15m
 REFRESH_TOKEN_TTL_SECONDS=604800
+
+# --- Login rate limiting ---
+LOGIN_RATE_LIMIT_WINDOW_SECONDS=900
+LOGIN_MAX_FAILURES_PER_IP=100
+LOGIN_LOCKOUT_THRESHOLD=5
+LOGIN_LOCKOUT_SECONDS=900
+# nginx in front; only when the backend port is not public
+TRUST_PROXY=1
 
 # --- Encryption ---
 ENCRYPTION_KEY=generate_strong_random_key_min_32_chars

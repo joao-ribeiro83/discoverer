@@ -36,10 +36,19 @@ import { closeSchedulerQueue } from './queues/scheduler.queue.js';
 import { startSchedulerWorker, type SchedulerWorkerHandle } from './workers/scheduler.worker.js';
 
 export async function buildApp(): Promise<FastifyInstance> {
+  const { TRUST_PROXY } = config;
   const app = Fastify({
     logger: {
       level: process.env.LOG_LEVEL ?? 'info',
     },
+    // Login rate limiting keys on request.ip — see config.TRUST_PROXY.
+    // A hop count is spelled as proxy-addr's own rule (trust the nearest N
+    // hops), since Fastify's types do not accept the number itself.
+    trustProxy:
+      TRUST_PROXY === 'true' ? true
+      : TRUST_PROXY === 'false' ? false
+      : /^\d+$/.test(TRUST_PROXY) ? (_address: string, hop: number) => hop < Number(TRUST_PROXY)
+      : TRUST_PROXY,
   });
 
   // Global error handler — must be set BEFORE routes are registered:
