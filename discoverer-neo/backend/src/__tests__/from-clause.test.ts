@@ -81,6 +81,7 @@ function mkItem(folder: Folder, name: string, overrides: Partial<Item> = {}): It
     isHidden: false,
     isActive: true,
     parentItemId: null,
+    itemClassId: null,
     createdBy: USER_ID,
     createdAt: NOW,
     updatedAt: NOW,

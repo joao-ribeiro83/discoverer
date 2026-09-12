@@ -1,7 +1,7 @@
 /**
  * The backend's view of the database.
  *
- * The 21 tables shared with the migrator are **not declared here**. They live
+ * The 22 tables shared with the migrator are **not declared here**. They live
  * in `@discoverer-neo/core/db/schema` as their single definition and are
  * re-exported below, so the two workspaces cannot drift: there is only one
  * declaration to drift from. Adding a `pgTable` call here for any of them

@@ -188,6 +188,28 @@ describe('an item bound to an item class', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Dates
+// ---------------------------------------------------------------------------
+
+describe('a DATE column', () => {
+  // Oracle's SELECT DISTINCT is distinct in Oracle's terms, and a DATE carries
+  // a time. Two rows a second apart are two values to the database and one
+  // string here, so the same day came back six times on the live estate.
+  it('collapses timestamps that render as the same day', async () => {
+    const item = await createTestItem(folderId, 'Data Estado', 'CI', 'DATA_ESTADO', adminId);
+    const oracle = stubOracle([
+      new Date('2018-03-27T09:00:00Z'),
+      new Date('2018-03-27T17:30:00Z'),
+      new Date('2018-03-28T08:00:00Z'),
+    ]);
+
+    const result = await resolveLov(item.id, ADMIN(), {}, undefined, oracle);
+
+    expect(result.values).toEqual(['2018-03-27', '2018-03-28']);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Caps
 // ---------------------------------------------------------------------------
 

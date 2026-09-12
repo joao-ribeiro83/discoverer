@@ -24,6 +24,7 @@ const SHARED_TABLES = [
   'folders',
   'folder_business_areas',
   'items',
+  'item_classes',
   'joins',
   'join_predicates',
   'hierarchies',

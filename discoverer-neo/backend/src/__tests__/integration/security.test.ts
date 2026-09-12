@@ -97,6 +97,7 @@ function mkItem(
     isHidden: false,
     isActive: true,
     parentItemId: null,
+    itemClassId: null,
     createdBy: FIXTURE_USER_ID,
     createdAt: NOW,
     updatedAt: NOW,
