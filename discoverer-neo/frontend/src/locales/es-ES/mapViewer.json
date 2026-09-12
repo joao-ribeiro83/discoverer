@@ -114,7 +114,9 @@
     "title": "Parámetros de ejecución",
     "description": "Introduzca los valores de los parámetros de este mapa y, a continuación, ejecútelo.",
     "listPlaceholder": "valores, separados, por comas",
-    "required": "Este parámetro es obligatorio."
+    "required": "Este parámetro es obligatorio.",
+    "typeToSearch": "Demasiados valores para listar: escriba para buscar.",
+    "moreValues": "Mostrando los primeros {{count}} valores: escriba para reducir la lista."
   },
   "export": {
     "saveBeforeExport": "Guarde el mapa antes de exportarlo.",

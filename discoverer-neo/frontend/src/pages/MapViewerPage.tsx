@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ExecutionPanel } from '@/components/map-builder/ExecutionPanel'
 import {
   ParameterPromptDialog,
+  itemIdForParameter,
   needsParameterPrompt,
 } from '@/components/parameters/ParameterPromptDialog'
 
@@ -102,6 +103,13 @@ export function MapViewerPage() {
   // migrated worksheet whose items did not resolve. Everything else that can
   // stop a run (no data-source connection, no data entitlement) is only
   // knowable server-side and comes back as a CONNECT/FORBIDDEN error kind.
+  // A prompt shows a pick-list when it can be traced to an item, which a
+  // parameter does only through the condition written over it.
+  const promptParameters = map.parameters.map((p) => ({
+    ...p,
+    itemId: itemIdForParameter(p, map.conditions),
+  }))
+
   const noOutputColumns = map.items.length === 0
   const disabledReason = noOutputColumns ? t('mapViewer:viewer.cannotRunNoColumns') : null
 
@@ -157,7 +165,7 @@ export function MapViewerPage() {
       </Card>
 
       <ParameterPromptDialog
-        parameters={map.parameters}
+        parameters={promptParameters}
         open={promptOpen}
         onOpenChange={setPromptOpen}
         onSubmit={handlePromptSubmit}

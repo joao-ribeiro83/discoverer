@@ -246,6 +246,28 @@ export interface MapCondition {
   createdAt: string
 }
 
+/**
+ * An item's live list of values.
+ *
+ * Nothing here is stored: the backend runs `SELECT DISTINCT` against the
+ * customer's database each time the cache misses, because a Discoverer LOV was
+ * always "the values in the column the item is based on" and freezing them
+ * would go stale the day after a migration.
+ */
+export interface ItemValues {
+  /**
+   * `values` — here is the list.
+   * `search` — too many distinct values to show; type to narrow it first.
+   */
+  mode: 'values' | 'search'
+  values: string[]
+  /** The cap cut the list short; there are more values than these. */
+  truncated: boolean
+  /** The item class that configured this, or null when it fell back to the item. */
+  itemClassId: string | null
+  cardinality: number | null
+}
+
 export interface MapParameter {
   id: string
   mapId: string

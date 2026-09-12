@@ -114,7 +114,9 @@
     "title": "Paramètres d'exécution",
     "description": "Saisissez les valeurs des paramètres de cette carte, puis exécutez-la.",
     "listPlaceholder": "valeurs, séparées, par des virgules",
-    "required": "Ce paramètre est obligatoire."
+    "required": "Ce paramètre est obligatoire.",
+    "typeToSearch": "Trop de valeurs à lister — saisissez pour rechercher.",
+    "moreValues": "Affichage des {{count}} premières valeurs — saisissez pour réduire la liste."
   },
   "export": {
     "saveBeforeExport": "Enregistrez la carte avant de l'exporter.",

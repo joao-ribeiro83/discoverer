@@ -35,6 +35,7 @@ import { PlanPreflight } from '@/components/map-builder/PlanPreflight'
 import { downloadXml } from '@/components/map-builder/export-utils'
 import {
   ParameterPromptDialog,
+  itemIdForParameter,
   needsParameterPrompt,
 } from '@/components/parameters/ParameterPromptDialog'
 
@@ -61,6 +62,7 @@ export function MapBuilderPage() {
   const mapName = useMapBuilderStore((s) => s.name)
   const mapType = useMapBuilderStore((s) => s.mapType)
   const builderParameters = useMapBuilderStore((s) => s.parameters)
+  const builderConditions = useMapBuilderStore((s) => s.conditions)
   const exportCtl = useMapExport(mapId, mapName, lastParameters)
 
   const promptParameters = useMemo(
@@ -71,8 +73,11 @@ export function MapBuilderPage() {
         paramType: p.paramType,
         defaultValue: p.defaultValue,
         isRequired: p.isRequired,
+        // A draft parameter has no bind name yet — that is derived server-side
+        // on save — so in the builder the condition matches on the prompt.
+        itemId: itemIdForParameter(p, builderConditions),
       })),
-    [builderParameters],
+    [builderParameters, builderConditions],
   )
 
   // Tracks which map id is currently loaded into the store so we never re-load
