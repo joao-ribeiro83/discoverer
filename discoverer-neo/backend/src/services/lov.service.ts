@@ -404,6 +404,21 @@ export function defaultLovDeps(): ResolveLovDeps {
   };
 }
 
+/**
+ * One column value as the pick-list shows it.
+ *
+ * A scalar Oracle column comes back as a string, a number or a Date. Anything
+ * else — a LOB handle, a nested cursor — is dropped rather than stringified:
+ * `[object Object]` is not a value anyone can pick.
+ */
+function renderLovValue(value: unknown): string | null {
+  if (value instanceof Date) return value.toISOString().slice(0, 10);
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (typeof value === 'bigint') return value.toString();
+  return null;
+}
+
 /** What one Oracle round-trip yields: the values, and whether the cap bit. */
 interface LovPage {
   values: string[];
@@ -425,11 +440,8 @@ async function runLovQuery(
     });
     const rows = (result.rows ?? []) as Array<{ LOV_VALUE: unknown }>;
     const values = rows
-      .map((row) => row.LOV_VALUE)
-      .filter((value) => value !== null && value !== undefined)
-      .map((value) =>
-        value instanceof Date ? value.toISOString().slice(0, 10) : String(value),
-      );
+      .map((row) => renderLovValue(row.LOV_VALUE))
+      .filter((value): value is string => value !== null);
     // `SELECT DISTINCT` is distinct in ORACLE's terms, and an Oracle DATE
     // carries a time. Two rows a second apart are two distinct values to the
     // database and one string here, so a pick-list over a DATE column comes

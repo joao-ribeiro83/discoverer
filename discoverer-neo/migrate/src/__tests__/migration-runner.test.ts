@@ -935,12 +935,9 @@ describe('runMigration — EUL4 source, end to end', () => {
     // the item names its class, and the class names the item its LOV reads
     // from. Both sides have to be resolved by the time the transaction
     // commits, which is what the DEFERRABLE constraints in migration 0017 buy.
-    const itemClass = rowsOf(state, 'item_classes')[0] as Record<string, unknown>;
+    const itemClass = rowsOf(state, 'item_classes')[0]!;
     const itemByName = new Map(
-      rowsOf(state, 'items').map((row) => [
-        (row as Record<string, unknown>).name as string,
-        row as Record<string, unknown>,
-      ]),
+      rowsOf(state, 'items').map((row) => [String(row.name), row]),
     );
     expect(itemByName.get('Cost Centre')?.itemClassId).toBe(itemClass.id);
     expect(itemClass.sourceItemId).toBe(itemByName.get('Cost Centre')?.id);
