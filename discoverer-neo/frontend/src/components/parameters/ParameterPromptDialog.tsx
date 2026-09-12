@@ -11,7 +11,8 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import type { MapParameter } from '@/lib/types'
+import type { MapCondition, MapParameter } from '@/lib/types'
+import { ItemValuePicker } from './ItemValuePicker'
 
 /**
  * Minimal shape this dialog needs. Kept narrower than the persisted
@@ -25,6 +26,34 @@ export interface PromptableParameter {
   paramType: MapParameter['paramType']
   defaultValue: string | null
   isRequired: boolean
+  /**
+   * The item this prompt filters on, when one can be worked out — see
+   * `itemIdForParameter`. With an item, the box offers that item's live list
+   * of values; without one it stays free text.
+   */
+  itemId?: string | null
+}
+
+/**
+ * Which item a prompt filters on.
+ *
+ * A `map_parameters` row carries no item of its own — Discoverer's workbook
+ * format does not record one. What it has is a condition written over it, and
+ * a condition names both its item and the parameter it reads
+ * (`map_conditions.param_name`). So the item comes from the condition.
+ *
+ * `paramName` holds the **bind name** for anything migrated since bind-safe
+ * names landed, but older rows still hold the prompt, so both are matched.
+ * Returns null when no condition references the prompt, which is the ordinary
+ * case for a parameter used only inside a calculation.
+ */
+export function itemIdForParameter(
+  parameter: { name: string; bindName?: string },
+  conditions: Pick<MapCondition, 'itemId' | 'paramName'>[],
+): string | null {
+  const keys = [parameter.bindName, parameter.name].filter(Boolean)
+  const match = conditions.find((c) => c.paramName != null && keys.includes(c.paramName))
+  return match?.itemId ?? null
 }
 
 function inputType(paramType: PromptableParameter['paramType']): 'text' | 'number' | 'date' {
@@ -107,15 +136,28 @@ export function ParameterPromptDialog({
                 {p.name}
                 {p.isRequired && <span className="text-destructive"> *</span>}
               </Label>
-              <Input
-                id={`param-prompt-${p.id}`}
-                type={inputType(p.paramType)}
-                value={values[p.name] ?? ''}
-                onChange={(e) => setValues((v) => ({ ...v, [p.name]: e.target.value }))}
-                placeholder={
-                  p.paramType === 'LIST' ? t('mapViewer:parameters.listPlaceholder') : undefined
-                }
-              />
+              {p.itemId ? (
+                <ItemValuePicker
+                  itemId={p.itemId}
+                  id={`param-prompt-${p.id}`}
+                  type={inputType(p.paramType)}
+                  value={values[p.name] ?? ''}
+                  onChange={(next) => setValues((v) => ({ ...v, [p.name]: next }))}
+                  placeholder={
+                    p.paramType === 'LIST' ? t('mapViewer:parameters.listPlaceholder') : undefined
+                  }
+                />
+              ) : (
+                <Input
+                  id={`param-prompt-${p.id}`}
+                  type={inputType(p.paramType)}
+                  value={values[p.name] ?? ''}
+                  onChange={(e) => setValues((v) => ({ ...v, [p.name]: e.target.value }))}
+                  placeholder={
+                    p.paramType === 'LIST' ? t('mapViewer:parameters.listPlaceholder') : undefined
+                  }
+                />
+              )}
               {errors[p.name] && <p className="text-sm text-destructive">{errors[p.name]}</p>}
             </div>
           ))}

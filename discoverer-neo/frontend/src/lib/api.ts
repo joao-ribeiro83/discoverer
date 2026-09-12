@@ -9,6 +9,7 @@ import type {
   ImportResult,
   Folder,
   Item,
+  ItemValues,
   Join,
   JoinSuggestion,
   Hierarchy,
@@ -233,6 +234,13 @@ export const apiClient = {
     delete: (id: string) => api.delete<Envelope<{ message: string }>>(`/items/${id}`),
     import: (folderId: string, columns: unknown) =>
       api.post<Envelope<{ created: unknown[]; skipped: unknown[] }>>(`/folders/${folderId}/items/import`, { columns }),
+    /**
+     * The item's live list of values — read from the customer's database at
+     * call time, never a stored enum. 422 means "this item has no pick-list",
+     * which is a fact about the metadata, not an error to surface.
+     */
+    values: (id: string, params: { search?: string; limit?: number } = {}) =>
+      api.get<Envelope<ItemValues>>(`/items/${id}/values`, { params }),
   },
   // Joins (scoped to a business area for list/create; flat for get/update/delete)
   joins: {

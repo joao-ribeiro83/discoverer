@@ -114,7 +114,9 @@
     "title": "Run parameters",
     "description": "Enter values for this map's parameters, then run.",
     "listPlaceholder": "comma, separated, values",
-    "required": "This parameter is required."
+    "required": "This parameter is required.",
+    "typeToSearch": "Too many values to list — type to search.",
+    "moreValues": "Showing the first {{count}} values — type to narrow the list."
   },
   "export": {
     "saveBeforeExport": "Save the map before exporting.",
