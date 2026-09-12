@@ -111,6 +111,7 @@ async function countPrefixed(table: TargetTable): Promise<number> {
     // count by the folder side instead.
     folder_business_areas: sql`SELECT count(*)::int AS c FROM folder_business_areas WHERE folder_id::text LIKE ${PREFIX + '%'}`,
     items: sql`SELECT count(*)::int AS c FROM items WHERE id::text LIKE ${PREFIX + '%'}`,
+    item_classes: sql`SELECT count(*)::int AS c FROM item_classes WHERE id::text LIKE ${PREFIX + '%'}`,
     joins: sql`SELECT count(*)::int AS c FROM joins WHERE id::text LIKE ${PREFIX + '%'}`,
     join_predicates: sql`SELECT count(*)::int AS c FROM join_predicates WHERE id::text LIKE ${PREFIX + '%'}`,
     hierarchies: sql`SELECT count(*)::int AS c FROM hierarchies WHERE id::text LIKE ${PREFIX + '%'}`,

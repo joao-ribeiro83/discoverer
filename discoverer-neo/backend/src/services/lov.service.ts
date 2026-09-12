@@ -404,26 +404,43 @@ export function defaultLovDeps(): ResolveLovDeps {
   };
 }
 
+/** What one Oracle round-trip yields: the values, and whether the cap bit. */
+interface LovPage {
+  values: string[];
+  truncated: boolean;
+}
+
 async function runLovQuery(
   dataSourceId: string,
   sql: string,
   binds: Record<string, unknown>,
-  maxRows: number,
+  limit: number,
   deps: ResolveLovDeps,
-): Promise<string[]> {
+): Promise<LovPage> {
   const conn = await deps.getConnection(dataSourceId);
   try {
     const result = await conn.execute(sql, binds as BindParameters, {
       outFormat: OUT_FORMAT_OBJECT,
-      maxRows,
+      maxRows: limit + 1,
     });
     const rows = (result.rows ?? []) as Array<{ LOV_VALUE: unknown }>;
-    return rows
+    const values = rows
       .map((row) => row.LOV_VALUE)
       .filter((value) => value !== null && value !== undefined)
       .map((value) =>
         value instanceof Date ? value.toISOString().slice(0, 10) : String(value),
       );
+    // `SELECT DISTINCT` is distinct in ORACLE's terms, and an Oracle DATE
+    // carries a time. Two rows a second apart are two distinct values to the
+    // database and one string here, so a pick-list over a DATE column comes
+    // back with the same day repeated — measured on the live estate, where
+    // 2018-03-27 appeared six times in 200 rows. Collapse them again on this
+    // side, where the truncation that caused it happened.
+    //
+    // Truncation is judged on the ROW count, not the deduplicated one: after
+    // collapsing, a full page looks short, and reporting it as complete would
+    // hide the values beyond the cap.
+    return { values: [...new Set(values)].slice(0, limit), truncated: rows.length > limit };
   } finally {
     await deps.releaseConnection(dataSourceId, conn);
   }
@@ -473,32 +490,31 @@ export async function resolveLov(
   const cacheable = security.predicates.length === 0 && source.cacheable;
   const key = `${CACHE_PREFIX}${source.dataSourceId}:${itemId}:${offset}:${limit}:${search.toUpperCase()}`;
 
-  let values: string[] | null = null;
+  let page: LovPage | null = null;
   if (cacheable && redis) {
     try {
       const raw = await redis.get(key);
-      if (raw !== null) values = JSON.parse(raw) as string[];
+      if (raw !== null) page = JSON.parse(raw) as LovPage;
     } catch {
       // A cache miss and a broken cache are the same thing here.
     }
   }
 
-  if (values === null) {
-    values = await runLovQuery(source.dataSourceId, sql, binds, limit + 1, deps);
+  if (page === null) {
+    page = await runLovQuery(source.dataSourceId, sql, binds, limit, deps);
     if (cacheable && redis) {
       try {
-        await redis.setex(key, CACHE_TTL_SECONDS, JSON.stringify(values));
+        await redis.setex(key, CACHE_TTL_SECONDS, JSON.stringify(page));
       } catch {
         // Best effort, as everywhere else.
       }
     }
   }
 
-  const truncated = values.length > limit;
   return {
     mode: 'values',
-    values: truncated ? values.slice(0, limit) : values,
-    truncated,
+    values: page.values,
+    truncated: page.truncated,
     itemClassId: source.itemClassId,
     cardinality: source.cardinality,
   };

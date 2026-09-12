@@ -69,6 +69,7 @@ function mkItem(
     isHidden: false,
     isActive: true,
     parentItemId: null,
+    itemClassId: null,
     createdBy: USER_ID,
     createdAt: NOW,
     updatedAt: NOW,
