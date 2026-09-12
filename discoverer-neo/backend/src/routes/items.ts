@@ -11,6 +11,8 @@ import {
 } from '../services/item.service.js';
 import { requireFolderAccess, requireItemAccess } from '../middleware/business-area-auth.js';
 import { cached, invalidate, metadataKeys } from '../lib/metadata-cache.js';
+import { LovError, LOV_MAX_LIMIT, resolveLov } from '../services/lov.service.js';
+import { DataEntitlementError } from '../services/business-area.service.js';
 
 // ---------------------------------------------------------------------------
 // Validation schemas
@@ -52,6 +54,13 @@ const IdParamSchema = z.object({
 
 const FolderIdParamSchema = z.object({
   folderId: z.string().uuid(),
+});
+
+const LovQuerySchema = z.object({
+  /** Prefix filter. Bound as a value; never reaches SQL as text. */
+  search: z.string().max(255).optional(),
+  limit: z.coerce.number().int().min(1).max(LOV_MAX_LIMIT).optional(),
+  offset: z.coerce.number().int().min(0).optional(),
 });
 
 const ImportBodySchema = z.object({
@@ -521,6 +530,90 @@ export default function itemRoutes(fastify: FastifyInstance) {
         const message = err instanceof Error ? err.message : String(err);
         if (message.includes('does not exist')) {
           return reply.code(400).send({ error: message });
+        }
+        throw err;
+      }
+    },
+  );
+
+  // GET /api/items/:id/values — the item's live list of values.
+  //
+  // `requireItemAccess` answers "may you see this metadata"; the service then
+  // runs `assertDataEntitlement` and the row-level security check, because
+  // "may you see this item" and "may you read its data" are different
+  // questions and a pick-list answers the second one.
+  fastify.get(
+    '/api/items/:id/values',
+    {
+      preHandler: [fastify.authenticate, requireItemAccess('VIEW')],
+      schema: {
+        tags: ['Items'],
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          required: ['id'],
+          properties: { id: { type: 'string', format: 'uuid' } },
+        },
+        querystring: {
+          type: 'object',
+          properties: {
+            search: { type: 'string', maxLength: 255 },
+            limit: { type: 'integer', minimum: 1, maximum: LOV_MAX_LIMIT },
+            offset: { type: 'integer', minimum: 0 },
+          },
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              data: {
+                type: 'object',
+                properties: {
+                  mode: { type: 'string', enum: ['values', 'search'] },
+                  values: { type: 'array', items: { type: 'string' } },
+                  truncated: { type: 'boolean' },
+                  itemClassId: { type: ['string', 'null'] },
+                  cardinality: { type: ['integer', 'null'] },
+                },
+              },
+            },
+          },
+          400: { type: 'object', properties: { error: { type: 'string' } } },
+          401: { type: 'object', properties: { error: { type: 'string' } } },
+          403: { type: 'object', properties: { error: { type: 'string' } } },
+          404: { type: 'object', properties: { error: { type: 'string' } } },
+          422: { type: 'object', properties: { error: { type: 'string' } } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const params = IdParamSchema.safeParse(request.params);
+      if (!params.success) {
+        return reply.code(400).send({ error: 'Invalid item ID format' });
+      }
+      const query = LovQuerySchema.safeParse(request.query);
+      if (!query.success) {
+        return reply.code(400).send({ error: 'Invalid list-of-values options' });
+      }
+
+      const user = request.user as { sub: string; role: string };
+      try {
+        const result = await resolveLov(
+          params.data.id,
+          { id: user.sub, role: user.role },
+          query.data,
+          fastify.redis,
+        );
+        return reply.code(200).send({ data: result });
+      } catch (err) {
+        if (err instanceof DataEntitlementError) {
+          return reply.code(403).send({ error: err.message });
+        }
+        if (err instanceof LovError) {
+          // 422, not 500: "this item has no pick-list" is a fact about the
+          // metadata, and the prompt falls back to a free-text box on it.
+          if (err.kind === 'FORBIDDEN') return reply.code(403).send({ error: err.message });
+          return reply.code(422).send({ error: err.message });
         }
         throw err;
       }
