@@ -508,6 +508,44 @@ Two more columns closed alongside it, independent of the tree question:
 
 ---
 
+## Decision 10 — conditional formats (Exceptions) do not migrate; the gap is undecoded evidence, not a missing transformer
+
+**Discoverer.** A worksheet Exception is conditional highlighting — cell or row
+formatting triggered by a data value. `AUDIT_LEGACY_COMPATIBILITY_MATRIX.md`
+§C scores this "partial / lost in data (schema ready)", `P1 MUST`, on the
+premise that it needs "a transformer fix, not a redesign" like sort rank and
+worksheet identity.
+
+**That premise is wrong for this row, and this decision corrects it.**
+`EUL_SCHEMA_GROUND_TRUTH.md` §7.8.11 already investigated it directly: an
+earlier research pass guessed the `0x0898` element held exception ranges;
+decoding it properly showed `0x0898` is a worksheet's *saved parameter
+values* (`04-ABR-2008`, `25`, `%`), not formatting, and withdrew the guess.
+No other element class in the parser's inventory has been identified as
+conditional-format data. The classes the parser reads but does not model
+(`0x03e8`, `0x06a4`, `0x0708`, `0x0ce4`) total **40 elements across the whole
+923-workbook corpus** — too sparse to reverse-engineer a value encoding from
+by cross-tabulation, the method that worked for sort direction, word wrap and
+the rest of §7.8.8.
+
+**This is not "absent in source"** the way a crosstab edge or a percentage
+is — Discoverer 4's client genuinely supports Exceptions, so the `.DIS`
+container almost certainly encodes them somewhere. It is closer to
+Decision 9's `AP_PRIV_LEVEL`: a real gap that stays open until new evidence
+(a `d4dumps`-style dump corpus, or Oracle's own accessor list for a class
+this decoding pass hasn't tried) exists to decode against. Re-attempting the
+same cross-tabulation against the same 40 elements would not produce a
+different answer.
+
+**Decision.** `map_conditional_formats` / `map_format_target` keep their
+0 rows. The application already reads and writes the table for maps authored
+directly in Neo (`map.service.ts`'s snapshot-copy path) — only migration-time
+population is blocked. Score this row "model genuinely incomplete", not
+"schema ready, data missing", in any reconciliation or scorecard that reads
+from the audit matrix.
+
+---
+
 ## What still needs a live EUL
 
 These are open because no offline source answers them, not because they were
@@ -524,3 +562,22 @@ bear on the decisions above:
   privilege rows, which are not business-area grants.)
 - **Condition rows** — no confirmed `EXP_TYPE` identifies one, so conditions do
   not migrate at all.
+- **Conditional formats (Exceptions)** — Decision 10. Needs a fresh dump
+  corpus (`d4dumps`) or new binary evidence to identify which element class
+  carries them; the 40 corpus-wide unmodelled elements are not enough to
+  cross-tabulate a value encoding from.
+
+## MIG-08 — 171 items skipped, one folder, absent in source
+
+`migration_log` carries exactly 171 distinct `"… skipped: folder not
+migrated"` item warnings (one per full-migration run × 3 runs = 513 rows),
+all against the single folder `FOLDER_NO_BA` flagged during the same run:
+*"1 folder(s) reference a missing or null business area."* The folder itself
+has no `BA_OBJ_LINKS` row in the source EUL, so it was never migrated, and
+every item it owns is skipped as a consequence — not 171 independent losses.
+
+**Decision.** Declared an expected loss, not chased. A folder with no
+business area in the source EUL is not reachable through Discoverer's own
+UI either — Discoverer Plus lists folders through the business areas that
+expose them, so a folder with none was already invisible to end users before
+migration.
