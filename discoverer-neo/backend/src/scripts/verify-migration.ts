@@ -46,6 +46,10 @@ async function main(): Promise<void> {
     planMap: async (mapId) => decideMap(await loadMapDefinition(mapId)),
     maxMaps: numericFlag('--max-maps'),
     sampleLimit: numericFlag('--samples'),
+    // `--compile` was documented above but never passed, so this entry point
+    // reported the formula partition and published nothing — a maps re-import
+    // left `compile_status` NULL until someone ran the CLI instead.
+    writeCompileStatus: process.argv.includes('--compile'),
   });
 
   // The report carries the database NAME only — never the connection string,
