@@ -7,6 +7,7 @@ import { users } from '../db/schema.js';
 import { hashPassword, verifyPassword } from '../lib/password.js';
 import { config } from '../config.js';
 import { getSessionUser } from '../services/user.service.js';
+import { log as writeAuditEntry } from '../services/audit.service.js';
 
 // ---------------------------------------------------------------------------
 // Refresh sessions
@@ -36,6 +37,81 @@ async function openSession(fastify: FastifyInstance, userId: string) {
     config.REFRESH_TOKEN_TTL_SECONDS,
   );
   return { sid, refreshToken: `${sid}.${secret}` };
+}
+
+// ---------------------------------------------------------------------------
+// Login throttling (SEC-05)
+//
+// Failed logins are counted per IP and per account in fixed windows. Per-IP
+// alone is beaten by rotating addresses; per-account alone lets anyone lock a
+// known user out. So:
+//   - only failures count, so an office behind one NAT is not throttled by
+//     its own good logins;
+//   - an account lock is temporary, is set NX (failing while locked never
+//     extends it), and is audited;
+//   - an address that logged in to the account successfully in the last 30
+//     days is not held by the account lock — the attacker cannot keep the
+//     real user out — though it is still held by the per-IP limit.
+// Account keys hold sha256(email), never the address, so Redis and logs carry
+// nothing a guesser typed.
+// ---------------------------------------------------------------------------
+
+const KNOWN_ADDRESS_SECONDS = 30 * 24 * 60 * 60;
+const throttleKeys = (ip: string, email: string) => {
+  const account = sha256(email.trim().toLowerCase());
+  return {
+    ipFailures: `auth:login:fail:ip:${ip}`,
+    accountFailures: `auth:login:fail:acct:${account}`,
+    lock: `auth:login:lock:${account}`,
+    knownAddress: `auth:login:known:${account}:${ip}`,
+  };
+};
+type ThrottleKeys = ReturnType<typeof throttleKeys>;
+
+/** Seconds the caller must wait, or 0 when the attempt may proceed. */
+async function loginBlockedFor(fastify: FastifyInstance, keys: ThrottleKeys): Promise<number> {
+  const [ipFailures, lockTtl, known] = await Promise.all([
+    fastify.redis.get(keys.ipFailures),
+    fastify.redis.ttl(keys.lock),
+    fastify.redis.exists(keys.knownAddress),
+  ]);
+  if (Number(ipFailures) >= config.LOGIN_MAX_FAILURES_PER_IP) {
+    return Math.max(1, await fastify.redis.ttl(keys.ipFailures));
+  }
+  return lockTtl > 0 && !known ? lockTtl : 0;
+}
+
+async function recordLoginFailure(
+  fastify: FastifyInstance,
+  keys: ThrottleKeys,
+  ip: string,
+  userId: string | null,
+) {
+  const window = config.LOGIN_RATE_LIMIT_WINDOW_SECONDS;
+  const results = await fastify.redis
+    .multi()
+    .incr(keys.ipFailures)
+    .expire(keys.ipFailures, window, 'NX')
+    .incr(keys.accountFailures)
+    .expire(keys.accountFailures, window, 'NX')
+    .exec();
+  const failures = Number(results?.[2]?.[1] ?? 0);
+  if (failures < config.LOGIN_LOCKOUT_THRESHOLD) return;
+
+  const locked = await fastify.redis.set(keys.lock, '1', 'EX', config.LOGIN_LOCKOUT_SECONDS, 'NX');
+  await fastify.redis.del(keys.accountFailures);
+  if (locked !== 'OK') return;
+
+  // No email, no password: the user id (when the account exists) and the IP.
+  fastify.log.warn({ userId, ip, failures }, 'login lockout');
+  await writeAuditEntry({
+    userId,
+    action: 'auth.lockout',
+    entityType: 'auth',
+    entityId: userId,
+    details: { failures, lockoutSeconds: config.LOGIN_LOCKOUT_SECONDS },
+    ipAddress: ip,
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -117,6 +193,12 @@ export default function authRoutes(fastify: FastifyInstance) {
               error: { type: 'string' },
             },
           },
+          429: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' },
+            },
+          },
         },
       },
     },
@@ -130,6 +212,18 @@ export default function authRoutes(fastify: FastifyInstance) {
       }
 
       const { email, password } = parsed.data;
+      const ip = request.ip;
+      const keys = throttleKeys(ip, email);
+
+      // Checked before the database and bcrypt, so a throttled guesser costs
+      // almost nothing.
+      const waitSeconds = await loginBlockedFor(fastify, keys);
+      if (waitSeconds > 0) {
+        return reply
+          .code(429)
+          .header('Retry-After', String(waitSeconds))
+          .send({ error: 'Too many login attempts. Try again later.' });
+      }
 
       const [user] = await db
         .select()
@@ -138,6 +232,7 @@ export default function authRoutes(fastify: FastifyInstance) {
         .limit(1);
 
       if (!user) {
+        await recordLoginFailure(fastify, keys, ip, null);
         return reply.code(401).send({ error: 'Invalid email or password' });
       }
 
@@ -145,8 +240,15 @@ export default function authRoutes(fastify: FastifyInstance) {
       // cannot be told apart from a wrong password by timing.
       const isValid = await verifyPassword(password, user.passwordHash);
       if (!isValid || !user.isActive || user.isRole) {
+        await recordLoginFailure(fastify, keys, ip, user.id);
         return reply.code(401).send({ error: 'Invalid email or password' });
       }
+
+      await fastify.redis
+        .multi()
+        .del(keys.accountFailures)
+        .set(keys.knownAddress, '1', 'EX', KNOWN_ADDRESS_SECONDS)
+        .exec();
 
       const { sid, refreshToken } = await openSession(fastify, user.id);
       const token = await reply.jwtSign(

@@ -73,6 +73,23 @@ const EnvSchema = z.object({
   REFRESH_TOKEN_TTL_SECONDS: z.coerce.number().int().positive().default(7 * 24 * 60 * 60),
 
   /**
+   * Fastify `trustProxy`: "false", "true", a hop count ("1"), or a list of
+   * trusted addresses/CIDRs. Behind a reverse proxy, set it so login rate
+   * limiting counts the client's IP rather than the proxy's — otherwise one
+   * attacker's failures throttle everyone. Never set it while the backend
+   * port is also reachable directly: a direct caller could then choose its IP.
+   */
+  TRUST_PROXY: z.string().default('false'),
+  /** Fixed window in which failed logins are counted, per IP and per account. */
+  LOGIN_RATE_LIMIT_WINDOW_SECONDS: z.coerce.number().int().positive().default(15 * 60),
+  /** Failed logins from one IP, across all accounts, before that IP gets 429. */
+  LOGIN_MAX_FAILURES_PER_IP: z.coerce.number().int().positive().default(100),
+  /** Failed logins to one account before it is temporarily locked. */
+  LOGIN_LOCKOUT_THRESHOLD: z.coerce.number().int().positive().default(5),
+  /** How long a locked account stays locked. It never extends while locked. */
+  LOGIN_LOCKOUT_SECONDS: z.coerce.number().int().positive().default(15 * 60),
+
+  /**
    * Use node-oracledb thick mode, which requires the Oracle Instant Client.
    *
    * Thin mode is the default and needs no client, but it cannot connect to

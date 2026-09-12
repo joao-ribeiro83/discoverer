@@ -105,6 +105,10 @@ services:
       EXPORT_DIR: /app/exports
       SCHEDULE_RESULT_DIR: /app/scheduled-results
       ORACLE_THICK_MODE: ${ORACLE_THICK_MODE:-false}
+      # nginx is exactly one hop in front, and nothing else can reach the
+      # backend — so its X-Forwarded-For is the real client IP that login
+      # rate limiting counts. Without this every client looks like nginx.
+      TRUST_PROXY: ${TRUST_PROXY:-1}
     # No host port publish — nginx is the only public entry point; the
     # backend is reached at http://backend:3000 on the compose network.
     volumes:

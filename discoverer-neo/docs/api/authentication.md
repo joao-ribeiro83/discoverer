@@ -94,6 +94,15 @@ the database on every request.
   }
   ```
 
+- `429 Too Many Requests` — Too many failed logins from this IP address, or to
+  this account. The `Retry-After` header gives the seconds to wait. See
+  [Login Rate Limiting](#login-rate-limiting).
+  ```json
+  {
+    "error": "Too many login attempts. Try again later."
+  }
+  ```
+
 ### POST /api/auth/refresh
 
 Exchange a refresh token for a new access token **and a new refresh token**.
@@ -342,6 +351,17 @@ When a user logs out, the access token is added to a Redis blacklist with a TTL 
 ### Deprovisioning
 
 Every authenticated request and every refresh reads the account from `users`. A deleted or deactivated account is refused on its next request; a demoted account gets its new role on its next request. The effective session lifetime after deprovisioning is zero requests, not one token lifetime.
+
+### Login Rate Limiting
+
+Failed logins are counted per IP address and per account. With the defaults, 5
+failures to one account lock it for 15 minutes, and 100 failures from one IP
+block that IP for the rest of a 15-minute window. Both answer `429` with a
+`Retry-After` header — even for the right password. A lock never extends while
+locked, and an address that logged in to the account successfully in the last
+30 days is not held by it, so an attacker cannot keep the real user out. Each
+lock is written to the audit log as `auth.lockout`. Settings:
+[Configuration Reference](../deployment/configuration.md#login-rate-limiting).
 
 ### JWT Secret
 

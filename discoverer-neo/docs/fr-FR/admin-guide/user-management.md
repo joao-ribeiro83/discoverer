@@ -212,7 +212,23 @@ d'attendre l'expiration de son jeton.
 
 ### Compte verrouillé
 
-Aucun verrouillage manuel de compte dans la version actuelle. Les utilisateurs peuvent réessayer leur mot de passe indéfiniment.
+Les échecs de connexion verrouillent un compte pendant une courte durée. Avec les paramètres par défaut :
+
+- **5 échecs de connexion** sur un compte en 15 minutes verrouillent ce compte
+  pendant **15 minutes**. La connexion renvoie `429 Too Many Requests` jusqu'à
+  la fin du verrouillage.
+- **100 échecs de connexion** depuis une même adresse IP en 15 minutes bloquent
+  cette adresse jusqu'à la fin des 15 minutes, pour tous les comptes.
+- Une connexion réussie remet à zéro les échecs du compte.
+- Une adresse qui s'est connectée avec succès à ce compte au cours des
+  30 derniers jours peut encore se connecter pendant le verrouillage. Un
+  attaquant ne peut donc pas bloquer le véritable utilisateur en échouant
+  exprès. Cette adresse reste soumise à la limite par adresse.
+- Chaque verrouillage écrit un événement `auth.lockout` dans le journal d'audit.
+
+Le verrouillage prend fin tout seul ; il n'existe pas de déverrouillage manuel.
+Les limites se règlent dans la
+[Configuration](../../deployment/configuration.md#login-rate-limiting).
 
 Pour empêcher la connexion :
 - Définissez le statut **Inactif** (recommandé)
