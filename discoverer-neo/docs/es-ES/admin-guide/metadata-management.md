@@ -182,6 +182,66 @@ Utilice el conmutador **Está oculto** para excluirlo del generador de mapas o i
 
 Los mapas que seleccionan este elemento quedan rotos.
 
+## Clases de elemento
+
+Una **clase de elemento** es un conjunto de propiedades que varios elementos
+pueden compartir. Una sola clase aporta hasta tres capacidades a la vez:
+
+| Capacidad | Qué hace | Cómo se define |
+| --- | --- | --- |
+| **Lista de valores** | El campo de valor del elemento pasa a ser una lista de selección | Indique un **elemento LOV** |
+| **Orden alternativo** | La lista se ordena por una segunda columna en vez de alfabéticamente | Indique un **elemento de orden**, en la misma carpeta |
+| **Detalle (drill)** | Dos elementos que comparten clase son navegables entre sí | Compartir la clase ES el vínculo |
+
+Esto reproduce exactamente `EUL4_DOMAINS` de Oracle Discoverer, incluido el
+hecho de que las dos primeras capacidades se definen *nombrando un elemento*,
+no marcando una casilla.
+
+### Los valores nunca se almacenan
+
+Una lista de valores se lee de su base de datos **en el momento en que se abre
+la solicitud**: `SELECT DISTINCT <columna> FROM <tabla>`. No se copia nada a
+Discoverer Neo. Un centro de coste añadido esta mañana aparece en la lista esta
+tarde, sin reimportar nada.
+
+Dos ajustes controlan el coste de esa lectura:
+
+- **En caché** — cuando está activo, los valores se guardan durante poco tiempo
+  (dos minutos) y se comparten entre usuarios. Desactívelo para una columna que
+  cambia constantemente.
+- **Cardinalidad** — cuántos valores distintos tiene aproximadamente la columna.
+  Por encima de unos 500, la lista deja de intentar ser una lista y pide al
+  usuario que escriba unos caracteres primero. Es el mismo comportamiento que
+  Oracle llamaba **LOV larga**.
+
+Una lista de selección nunca muestra un valor que el usuario no pudiera ya
+consultar: pasa por la misma comprobación de permisos de área de negocio y las
+mismas políticas de seguridad a nivel de fila que un informe. Una carpeta
+cubierta por una política para la que el usuario no tiene regla no devuelve
+ninguna lista.
+
+### Elementos sin clase de elemento
+
+**La mayoría de los entornos no tienen ninguna.** Una clase de elemento había
+que crearla a mano en Discoverer Administrator, y muchos sitios nunca lo
+hicieron. En la migración de referencia `EUL4_DOMAINS` tiene cero filas.
+
+En ese caso Discoverer mostraba un campo de texto libre. Discoverer Neo no:
+cuando un elemento no tiene clase, la lista recurre a la **propia columna** del
+elemento, con el mismo límite, la misma caché y las mismas comprobaciones de
+permisos. Obtiene una lista de valores válidos sin configurar nada.
+
+Aun así, crear una clase de elemento sigue siendo útil cuando quiere más
+control: otra columna de origen, un orden alternativo o la caché desactivada.
+
+### Dónde no aparece una lista
+
+- Un **cálculo** no tiene columna de base de datos, así que no hay nada que listar.
+- Una carpeta **sin origen de datos** no se puede consultar.
+- Un parámetro usado solo dentro de un cálculo no está ligado a ningún elemento.
+
+En cada caso el campo sigue siendo texto libre, que es lo que era antes.
+
 ## Combinaciones
 
 Una **combinación** define una relación entre dos carpetas.

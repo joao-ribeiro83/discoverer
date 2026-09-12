@@ -39,8 +39,32 @@ Les valeurs saisies sont envoyées au serveur comme variables de liaison. Le
 navigateur ne construit jamais de SQL : une valeur contenant une apostrophe ou
 un point-virgule reste une donnée, jamais du code.
 
-Les listes de valeurs arriveront dans une version ultérieure ; pour l'instant
-tous les champs sont en texte libre.
+### Listes de valeurs
+
+La plupart des champs de paramètre proposent une **liste des valeurs réellement
+présentes** dans la colonne filtrée. Commencez à saisir, ou cliquez dans le
+champ, et votre navigateur affiche les suggestions en dessous.
+
+Les valeurs sont lues dans votre base de données à l'ouverture de l'invite :
+elles sont donc à jour. Ce n'est pas une copie faite lors de la migration du
+rapport.
+
+Trois points à connaître :
+
+- **Vous pouvez toujours saisir ce que vous voulez.** La liste est une
+  suggestion, pas une barrière. Elle est plafonnée : une valeur valide peut se
+  trouver en dehors, et une note sous le champ le signale lorsque la liste a été
+  tronquée.
+- **Une colonne très large vous demande de saisir d'abord.** Un champ comportant
+  des centaines de milliers de valeurs distinctes (un numéro de police, par
+  exemple) affiche *« Trop de valeurs à lister — saisissez pour rechercher »*.
+  Tapez deux ou trois caractères et les valeurs correspondantes apparaissent.
+- **Certains champs n'ont pas de liste.** Un élément calculé n'a pas de colonne
+  derrière lui : il n'y a rien à lister, et le champ reste en texte simple. Rien
+  d'anormal.
+
+Vous ne voyez que des valeurs que vous avez déjà le droit d'interroger. La liste
+passe par les mêmes contrôles de permission que l'exécution du rapport.
 
 ## Quand le bouton Exécuter est désactivé
 

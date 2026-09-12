@@ -183,6 +183,66 @@ Basculez **Est masqué** pour exclure du générateur de cartes ou y inclure l'�
 
 Les cartes sélectionnant cet élément deviennent inutilisables.
 
+## Classes d'élément
+
+Une **classe d'élément** est un ensemble de propriétés que plusieurs éléments
+peuvent partager. Une seule classe porte jusqu'à trois capacités à la fois :
+
+| Capacité | Rôle | Comment la définir |
+| --- | --- | --- |
+| **Liste de valeurs** | Le champ de valeur de l'élément devient une liste de sélection | Indiquez un **élément LOV** |
+| **Tri alternatif** | La liste est triée par une seconde colonne au lieu de l'ordre alphabétique | Indiquez un **élément de tri**, dans le même dossier |
+| **Exploration (drill)** | Deux éléments partageant une classe sont explorables l'un vers l'autre | Le partage de la classe EST le lien |
+
+Cela reproduit exactement `EUL4_DOMAINS` d'Oracle Discoverer, y compris le fait
+que les deux premières capacités se définissent en *nommant un élément*, et non
+en cochant une case.
+
+### Les valeurs ne sont jamais stockées
+
+Une liste de valeurs est lue depuis votre base de données **au moment où
+l'invite s'ouvre** : `SELECT DISTINCT <colonne> FROM <table>`. Rien n'est copié
+dans Discoverer Neo. Un centre de coût ajouté ce matin apparaît dans la liste
+cet après-midi, sans réimportation.
+
+Deux réglages contrôlent le coût de cette lecture :
+
+- **En cache** — lorsqu'il est actif, les valeurs sont conservées peu de temps
+  (deux minutes) et partagées entre utilisateurs. Désactivez-le pour une colonne
+  qui change sans cesse.
+- **Cardinalité** — le nombre approximatif de valeurs distinctes de la colonne.
+  Au-delà d'environ 500, la liste cesse d'être une liste et demande à
+  l'utilisateur de saisir quelques caractères d'abord. C'est le comportement
+  qu'Oracle appelait une **LOV longue**.
+
+Une liste de sélection n'affiche jamais une valeur que l'utilisateur ne pouvait
+pas déjà interroger : elle passe par le même contrôle d'habilitation sur le
+domaine d'activité et les mêmes politiques de sécurité au niveau ligne qu'un
+rapport. Un dossier couvert par une politique pour laquelle l'utilisateur n'a
+aucune règle ne renvoie aucune liste.
+
+### Éléments sans classe d'élément
+
+**La plupart des parcs n'en ont aucune.** Une classe d'élément devait être créée
+à la main dans Discoverer Administrator, et beaucoup de sites ne l'ont jamais
+fait. Sur la migration de référence, `EUL4_DOMAINS` contient zéro ligne.
+
+Discoverer affichait alors un champ en texte libre. Discoverer Neo non : quand
+un élément n'a pas de classe, la liste se rabat sur la **propre colonne** de
+l'élément, avec le même plafond, le même cache et les mêmes contrôles de
+permission. Vous obtenez une liste de valeurs valides sans rien configurer.
+
+Créer une classe d'élément reste utile lorsque vous voulez plus de contrôle :
+une autre colonne source, un tri alternatif, ou le cache désactivé.
+
+### Où aucune liste n'apparaît
+
+- Un **calcul** n'a pas de colonne de base de données : il n'y a rien à lister.
+- Un dossier **sans source de données** ne peut pas être interrogé.
+- Un paramètre utilisé uniquement dans un calcul n'est rattaché à aucun élément.
+
+Dans chaque cas le champ reste en texte libre, ce qu'il était auparavant.
+
 ## Jointures
 
 Une **jointure** définit une relation entre deux dossiers.

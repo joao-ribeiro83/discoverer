@@ -38,8 +38,30 @@ Los valores que escribe se envían al servidor como variables de enlace. El
 navegador nunca construye SQL, por lo que un valor con comillas o punto y coma
 es dato, nunca código.
 
-Las listas de valores llegarán en una versión posterior; por ahora todos los
-campos son texto libre.
+### Listas de valores
+
+La mayoría de los campos de parámetro ofrecen una **lista de los valores que
+existen realmente** en la columna que se está filtrando. Empiece a escribir, o
+haga clic en el campo, y el navegador muestra las sugerencias debajo.
+
+Los valores se leen de su base de datos al abrirse la solicitud, así que están
+al día. No son una copia hecha cuando se migró el informe.
+
+Tres cosas que conviene saber:
+
+- **Puede escribir cualquier cosa.** La lista es una sugerencia, no una valla.
+  Está limitada, así que un valor válido puede quedar fuera de ella; una nota
+  bajo el campo lo indica cuando la lista se ha recortado.
+- **Una columna muy amplia le pide que escriba primero.** Un campo con cientos
+  de miles de valores distintos (un número de póliza, por ejemplo) muestra
+  *«Demasiados valores para listar: escriba para buscar»*. Escriba dos o tres
+  caracteres y aparecerán los valores que coinciden.
+- **Algunos campos no tienen lista.** Un elemento calculado no tiene columna
+  detrás, así que no hay nada que listar, y el campo sigue siendo texto simple.
+  No pasa nada malo.
+
+Solo verá valores que ya tiene permitido consultar. La lista pasa por las mismas
+comprobaciones de permisos que ejecutar el informe.
 
 ## Cuando el botón Ejecutar está desactivado
 

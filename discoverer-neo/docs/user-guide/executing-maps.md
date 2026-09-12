@@ -37,8 +37,29 @@ page.
 Values you type are sent to the server as bind variables. The browser never
 builds SQL, so a value with a quote or a semicolon in it is data, never code.
 
-Pick-lists for parameters that have a list of values arrive in a later release;
-for now every field is free text.
+### Pick-lists
+
+Most parameter fields offer a **list of the values that actually exist** in the
+column being filtered. Start typing, or click the field, and your browser shows
+the suggestions underneath it.
+
+The values are read from your database as the prompt opens, so they are current.
+They are not a copy made when the worksheet was migrated.
+
+Three things to know:
+
+- **You can still type anything.** The list is a suggestion, not a fence. It is
+  capped, so a valid value can sit outside it — a note under the field says so
+  when the list was cut short.
+- **A very wide column asks you to type first.** A field with hundreds of
+  thousands of distinct values (a policy number, say) shows
+  *"Too many values to list — type to search"*. Type two or three characters
+  and the matching values appear.
+- **Some fields have no list.** A calculated item has no column behind it, so
+  there is nothing to list, and the field stays plain text. Nothing is wrong.
+
+You only ever see values you are already allowed to query. The pick-list goes
+through the same permission checks as running the worksheet does.
 
 ## When Run is switched off
 

@@ -182,6 +182,66 @@ Alterne **Está Oculto** para excluir ou incluir no construtor de mapas. Útil p
 
 Os mapas que selecionam este item ficam quebrados.
 
+## Classes de item
+
+Uma **classe de item** é um conjunto de propriedades que vários itens podem
+partilhar. Uma única classe traz até três capacidades ao mesmo tempo:
+
+| Capacidade | O que faz | Como se define |
+| --- | --- | --- |
+| **Lista de valores** | A caixa de valor do item passa a ser uma lista de seleção | Indique um **item LOV** |
+| **Ordenação alternativa** | A lista é ordenada por uma segunda coluna em vez de alfabeticamente | Indique um **item de ordenação**, na mesma pasta |
+| **Detalhe (drill)** | Dois itens que partilham uma classe são navegáveis entre si | Partilhar a classe É a ligação |
+
+Isto reproduz exactamente o `EUL4_DOMAINS` do Oracle Discoverer, incluindo o
+facto de as duas primeiras capacidades se definirem *nomeando um item*, e não
+marcando uma caixa.
+
+### Os valores nunca são guardados
+
+Uma lista de valores é lida da sua base de dados **no momento em que o pedido
+abre**: `SELECT DISTINCT <coluna> FROM <tabela>`. Nada é copiado para o
+Discoverer Neo. Um centro de custo acrescentado esta manhã aparece na lista
+esta tarde, sem reimportação.
+
+Duas definições controlam o custo dessa leitura:
+
+- **Em cache** — quando ligado, os valores são guardados por pouco tempo (dois
+  minutos) e partilhados entre utilizadores. Desligue-o para uma coluna que
+  muda constantemente.
+- **Cardinalidade** — quantos valores distintos a coluna tem, aproximadamente.
+  Acima de cerca de 500, a lista deixa de tentar ser uma lista e pede ao
+  utilizador que escreva alguns caracteres primeiro. É o mesmo comportamento a
+  que a Oracle chamava **LOV longa**.
+
+Uma lista de seleção nunca mostra um valor que o utilizador já não pudesse
+consultar: passa pela mesma verificação de permissões de área de negócio e
+pelas mesmas políticas de segurança ao nível da linha que um relatório. Uma
+pasta abrangida por uma política para a qual o utilizador não tem regra não
+devolve lista nenhuma.
+
+### Itens sem classe de item
+
+**A maioria dos parques não tem nenhuma.** Uma classe de item tinha de ser
+criada à mão no Discoverer Administrator, e muitos sítios nunca o fizeram. Na
+migração de referência, `EUL4_DOMAINS` tem zero linhas.
+
+Nesse caso o Discoverer mostrava uma caixa de texto livre. O Discoverer Neo
+não: quando um item não tem classe, a lista recorre à **própria coluna** do
+item, com o mesmo limite, a mesma cache e as mesmas verificações de permissões.
+Obtém uma lista de valores válidos sem configurar nada.
+
+Criar uma classe de item continua a valer a pena quando quer mais controlo:
+outra coluna de origem, uma ordenação alternativa, ou a cache desligada.
+
+### Onde não aparece lista
+
+- Um **cálculo** não tem coluna de base de dados, por isso não há nada a listar.
+- Uma pasta **sem origem de dados** não pode ser consultada.
+- Um parâmetro usado apenas dentro de um cálculo não está ligado a item nenhum.
+
+Em cada caso o campo continua a ser texto livre, que era o que já era.
+
 ## Junções
 
 Uma **Junção** define uma relação entre duas pastas.
