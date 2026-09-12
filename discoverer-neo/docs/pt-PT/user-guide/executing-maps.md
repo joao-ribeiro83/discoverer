@@ -38,8 +38,30 @@ Os valores que escreve são enviados para o servidor como variáveis de ligaçã
 O navegador nunca constrói SQL, por isso um valor com aspas ou ponto e vírgula
 é dados, nunca código.
 
-As listas de valores para parâmetros chegam numa versão posterior; por agora
-todos os campos são texto livre.
+### Listas de valores
+
+A maioria dos campos de parâmetro oferece uma **lista dos valores que existem
+mesmo** na coluna a ser filtrada. Comece a escrever, ou clique no campo, e o
+navegador mostra as sugestões por baixo.
+
+Os valores são lidos da sua base de dados no momento em que o pedido abre, por
+isso estão actualizados. Não são uma cópia feita quando o relatório foi migrado.
+
+Três coisas a saber:
+
+- **Pode na mesma escrever o que quiser.** A lista é uma sugestão, não uma
+  cerca. Tem limite, por isso um valor válido pode ficar de fora — uma nota por
+  baixo do campo avisa quando a lista foi cortada.
+- **Uma coluna muito larga pede-lhe que escreva primeiro.** Um campo com
+  centenas de milhares de valores distintos (um número de apólice, por exemplo)
+  mostra *«Demasiados valores para listar — escreva para pesquisar»*. Escreva
+  dois ou três caracteres e os valores correspondentes aparecem.
+- **Alguns campos não têm lista.** Um item calculado não tem coluna por trás,
+  por isso não há nada a listar, e o campo continua a ser texto simples. Não
+  está nada errado.
+
+Só vê valores que já tem permissão para consultar. A lista passa pelas mesmas
+verificações de permissões que executar o relatório.
 
 ## Quando o botão Executar está desligado
 

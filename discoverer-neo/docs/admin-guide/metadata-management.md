@@ -207,6 +207,64 @@ Toggle **Is Hidden** to exclude from or include in map builder. Useful for:
 
 Maps selecting this item become broken.
 
+## Item Classes
+
+An **item class** is a bundle of properties that many items can share. One
+class carries up to three capabilities at once:
+
+| Capability | What it does | How it is set |
+| --- | --- | --- |
+| **List of values** | The item's value box becomes a pick-list | Name a **LOV item** |
+| **Alternative sort** | The pick-list is ordered by a second column instead of alphabetically | Name a **sort item**, in the same folder |
+| **Drill to detail** | Two items that share a class are drillable to each other | Sharing the class is the link |
+
+This mirrors Oracle Discoverer's `EUL4_DOMAINS` exactly, including the fact
+that the first two capabilities are stated by *naming an item*, not by ticking
+a box.
+
+### The values are never stored
+
+A list of values is read from your database **at the moment the prompt opens**:
+`SELECT DISTINCT <column> FROM <table>`. Nothing is copied into Discoverer Neo.
+A cost centre added this morning appears in the pick-list this afternoon,
+without a re-import.
+
+Two settings control the cost of that read:
+
+- **Cached** — when on, the values are held for a short time (two minutes) and
+  shared between users. Turn it off for a column that changes constantly.
+- **Cardinality** — roughly how many distinct values the column has. Above
+  about 500, the pick-list stops trying to be a list and asks the user to type
+  a few characters first. This is the same behaviour Oracle called a
+  **long LOV**.
+
+A pick-list never shows a value the user could not already query: it runs
+through the same business-area grant check and the same row-level security
+policies as a worksheet does. A folder covered by a policy the user has no
+rule for returns no pick-list at all.
+
+### Items with no item class
+
+**Most estates have none.** An item class had to be created by hand in
+Discoverer Administrator, and many sites never did. On the reference migration
+`EUL4_DOMAINS` holds zero rows.
+
+Discoverer showed a free-text box in that case. Discoverer Neo does not: when
+an item has no class, the pick-list falls back to the item's **own column**,
+with the same cap, the same cache and the same permission checks. You get a
+dropdown of valid values without configuring anything.
+
+An item class is still worth creating when you want the extra control — a
+different source column, an alternative sort order, or caching turned off.
+
+### Where a pick-list does not appear
+
+- A **calculation** has no database column, so there is nothing to list.
+- A folder with **no data source** cannot be queried at all.
+- A parameter used only inside a calculation is not attached to any item.
+
+In each case the field stays free text, which is what it was before.
+
 ## Joins
 
 A **Join** defines a relationship between two folders. One folder is the
