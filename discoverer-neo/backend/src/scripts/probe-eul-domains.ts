@@ -71,7 +71,9 @@ async function main() {
   );
   console.log(`== ${prefix}DOMAINS columns (${cols.length}) ==`);
   for (const c of cols) {
-    console.log(`  ${c.COLUMN_NAME} ${c.DATA_TYPE}(${c.DATA_LENGTH}) null=${c.NULLABLE}`);
+    console.log(
+      `  ${String(c.COLUMN_NAME)} ${String(c.DATA_TYPE)}(${String(c.DATA_LENGTH)}) null=${String(c.NULLABLE)}`,
+    );
   }
   console.log('');
 
@@ -103,9 +105,9 @@ async function main() {
       const v = await q(
         `SELECT ${name} AS V, COUNT(*) AS C FROM ${prefix}DOMAINS GROUP BY ${name} ORDER BY 2 DESC`,
       );
-      vals = ' -> ' + v.map((x) => `${JSON.stringify(x.V)}x${x.C}`).join(' ');
+      vals = ' -> ' + v.map((x) => `${JSON.stringify(x.V)}x${String(x.C)}`).join(' ');
     }
-    console.log(`  ${name}: distinct=${distinct} nonnull=${d[0]!.NN}${vals}`);
+    console.log(`  ${name}: distinct=${distinct} nonnull=${String(d[0]!.NN)}${vals}`);
   }
   console.log('');
 
@@ -122,7 +124,7 @@ async function main() {
     const r = await q(
       `SELECT COUNT(*) AS C, COUNT(DISTINCT ${n}) AS D FROM ${prefix}EXPRESSIONS WHERE ${n} IS NOT NULL`,
     );
-    console.log(`  ${n}: rows=${r[0]!.C} distinct=${r[0]!.D}`);
+    console.log(`  ${n}: rows=${String(r[0]!.C)} distinct=${String(r[0]!.D)}`);
   }
   console.log('');
 
@@ -133,7 +135,7 @@ async function main() {
     { o: schema, p: `${prefix}%` },
   );
   console.log('== all DOM-named columns in the EUL ==');
-  for (const r of refs) console.log(`  ${r.TABLE_NAME}.${r.COLUMN_NAME}`);
+  for (const r of refs) console.log(`  ${String(r.TABLE_NAME)}.${String(r.COLUMN_NAME)}`);
   console.log('');
 
   await conn.close();
