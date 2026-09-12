@@ -893,14 +893,12 @@ describe('transformWorkbook', () => {
       worksheets: [{ name: 'S', columns: [{ itemLabel: 'Estado' }] }],
     });
     const [map] = transformWorkbook(workbook({ content }), 'EUL4');
-    // Nothing is written at all: a row with a null operator used to reach the
-    // writer and be dropped there, which made "reported" and "migrated" two
-    // different counts of the same condition.
-    expect(map?.conditions).toEqual([]);
-    expect(codes(map?.warnings ?? [])).toContain('CONDITION_OPERATOR_UNMAPPED');
-    expect(map?.warnings.find((w) => w.code === 'CONDITION_OPERATOR_UNMAPPED')?.message).toContain(
-      'NOT IN is a negated test',
-    );
+    // The negation rides on the row: `IN` plus `negated`, which the SQL
+    // generator renders as `NOT (… IN …)`. Dropping the condition, as this
+    // used to, would have returned every row the filter excluded.
+    expect(map?.conditions).toHaveLength(1);
+    expect(map?.conditions[0]).toMatchObject({ operator: 'IN', value: 'M,A', negated: true });
+    expect(codes(map?.warnings ?? [])).not.toContain('CONDITION_OPERATOR_UNMAPPED');
   });
 
   it('warns that conditions are workbook-wide when there are several worksheets', () => {
@@ -1866,6 +1864,7 @@ describe('buildMapConditionRows', () => {
     groupKey: null,
     logicOperator: 'AND',
     caseSensitive: true,
+    negated: false,
     ...overrides,
   });
 

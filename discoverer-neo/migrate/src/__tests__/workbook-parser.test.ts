@@ -223,6 +223,7 @@ describe('planCondition', () => {
             itemRef: 4,
             parameterRef: null,
             literals: ['V'],
+            negated: false,
           },
         ],
       },
@@ -322,37 +323,67 @@ describe('planCondition', () => {
   });
 
   describe('negation', () => {
-    it('refuses a NOT node rather than migrating what it negates', () => {
+    it('migrates a NOT node as the positive test with the negation on the row', () => {
       const result = plan('[1,101]([1,81]([6,4],[5,1,"V"]))');
-      expect(result.groups).toEqual([]);
-      expect(result.unsupported).toContain('negated');
+      expect(result.unsupported).toBeNull();
+      expect(result.groups).toHaveLength(1);
+      expect(result.groups[0]?.predicates).toEqual([
+        {
+          operator: '=',
+          operatorCode: 81,
+          neoOperator: '=',
+          itemRef: 4,
+          parameterRef: null,
+          literals: ['V'],
+          negated: true,
+        },
+      ]);
     });
 
-    it('refuses a NOT anywhere inside a conjunction, and says it is a negation', () => {
+    it('negates only the node the NOT wraps, not its siblings', () => {
       const result = plan(
         '[1,98]([1,81]([6,4],[5,1,"V"]),[1,101]([1,81]([6,5],[5,1,"X"])))',
       );
-      expect(result.groups).toEqual([]);
-      expect(result.unsupported).toContain('NOT is a negated test');
+      expect(result.unsupported).toBeNull();
+      expect(result.groups.flatMap((g) => g.predicates).map((p) => p.negated)).toEqual([
+        false,
+        true,
+      ]);
+    });
+
+    it('cancels a double negation rather than emitting two NOTs', () => {
+      const result = plan('[1,101]([1,101]([1,81]([6,4],[5,1,"V"])))');
+      expect(result.unsupported).toBeNull();
+      expect(result.groups[0]?.predicates[0]?.negated).toBe(false);
     });
 
     it.each([
-      [91, 'NOT IN', '[1,91]([6,4],[5,1,"M"],[5,1,"A"])'],
-      [90, 'IS NOT NULL', '[1,90]([6,4])'],
-      [93, 'NOT BETWEEN', '[1,93]([6,4],[5,2,"1"],[5,2,"9"])'],
-      [100, 'NOT LIKE', '[1,100]([6,4],[5,1,"A%"])'],
-    ])('refuses %i (%s), never its positive form', (_code, name, tokens) => {
+      [91, 'IN', '[1,91]([6,4],[5,1,"M"],[5,1,"A"])'],
+      [90, 'IS_NULL', '[1,90]([6,4])'],
+      [93, 'BETWEEN', '[1,93]([6,4],[5,2,"1"],[5,2,"9"])'],
+      [100, 'LIKE', '[1,100]([6,4],[5,1,"A%"])'],
+    ])('maps code %i onto %s with the negation on the row', (_code, neoOperator, tokens) => {
       const result = plan(tokens);
-      expect(result.groups).toEqual([]);
-      expect(result.unsupported).toContain(name);
-      expect(result.unsupported).toContain('negated');
+      expect(result.unsupported).toBeNull();
+      const [predicate] = result.groups.flatMap((g) => g.predicates);
+      expect(predicate?.neoOperator).toBe(neoOperator);
+      expect(predicate?.negated).toBe(true);
     });
 
-    it('drops the whole condition, not just the negated half', () => {
-      // `a = 1 AND b NOT IN (…)` migrated as `a = 1` would return more rows
-      // than Discoverer did, and look like a clean migration.
-      const result = plan('[1,98]([1,81]([6,4],[5,2,"1"]),[1,91]([6,5],[5,1,"M"]))');
+    it('refuses a NOT over a whole group rather than negating its rows one by one', () => {
+      // `NOT (a = 1 AND b = 2)` is `a <> 1 OR b <> 2`. Negating each row in
+      // place would keep the AND and filter to neither.
+      const result = plan('[1,101]([1,98]([1,81]([6,4],[5,2,"1"]),[1,81]([6,5],[5,2,"2"])))');
       expect(result.groups).toEqual([]);
+      expect(result.unsupported).toContain('whole AND group');
+    });
+
+    it('refuses a NOT BETWEEN whose bounds need two rows', () => {
+      // Separate parameters for the bounds: the positive form expands to
+      // `>= AND <=`, whose negation is an OR with nowhere to bracket.
+      const result = plan('[1,93]([6,4],[8,51],[8,52])');
+      expect(result.groups).toEqual([]);
+      expect(result.unsupported).toContain('NOT BETWEEN');
     });
   });
 

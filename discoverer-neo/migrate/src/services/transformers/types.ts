@@ -547,6 +547,12 @@ export interface TransformedMapCondition {
    * whole-condition level, not per predicate.
    */
   caseSensitive: boolean;
+  /**
+   * `map_conditions.negated` — this row's own test is inverted, from a `NOT`
+   * node or a negated operator code. Per row, not per group: unlike
+   * `caseSensitive`, two leaf rows cut from the same tree can differ.
+   */
+  negated: boolean;
 }
 
 export interface TransformedMapParameter {

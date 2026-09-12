@@ -471,6 +471,25 @@ The tree stays deferred until `EUL4_SUB_QUERIES` / `EUL4_SQ_CRRLTNS` get a
 reader: correlated subqueries, not nesting depth, are the tree's actual
 justification, and those tables' contents are currently unknown.
 
+**What the parser now accepts.** Five `EUL_FUNCTIONS` codes carry a negation.
+Four fold it into the operator's own name and map onto their positive form with
+`negated` set — `NOT IN` → `IN`, `NOT LIKE` → `LIKE`, `IS NOT NULL` →
+`IS NULL`, `NOT BETWEEN` → `BETWEEN`. The fifth, `NOT` (`FUN_ID` 101), is a
+node of its own: it negates the single test it wraps, and a `NOT` over a `NOT`
+cancels rather than emitting two.
+
+Two shapes stay refused, because the flag cannot express them:
+
+- **`NOT` over a whole `AND`/`OR` group.** `NOT (a AND b)` is `a' OR b'` by De
+  Morgan. Negating each row in place would leave the `AND` and match neither.
+  The negation belongs to the group, and the flat model has no group to put it
+  on.
+- **`NOT BETWEEN` over bounds that need two rows.** A positive `BETWEEN` whose
+  bounds are separate parameters expands to `>= AND <=`, an identity. Negated,
+  that expansion becomes `< OR >`, an `OR` of two rows inside a group that is
+  already `AND`ing — one more level of brackets than exists. A `NOT BETWEEN`
+  that fits one row migrates normally.
+
 Two more columns closed alongside it, independent of the tree question:
 
 - **Case sensitivity.** The parser has always read `Case Sensitive` (tag
