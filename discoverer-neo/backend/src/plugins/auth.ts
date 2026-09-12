@@ -34,10 +34,8 @@ interface JwtPayload {
   email: string;
   role: string;
   name?: string;
-  /** Original login time, carried across refreshes so a session cannot self-renew. */
-  oiat?: number;
-  iat?: number;
-  exp?: number;
+  /** Refresh session this token belongs to; logout deletes it. */
+  sid?: string;
 }
 
 declare module '@fastify/jwt' {

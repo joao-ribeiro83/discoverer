@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/auth'
-import { apiClient } from '@/lib/api'
+import { apiClient, refreshSession } from '@/lib/api'
 import { getTokenExpiryMs } from '@/lib/jwt'
 import i18n, { isSupportedLocale } from '@/i18n'
 
@@ -14,14 +14,13 @@ export function useAuth() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
-  const refreshingRef = useRef(false)
 
   const login = useCallback(async (email: string, password: string) => {
     setIsLoading(true)
     try {
       const response = await apiClient.auth.login(email, password)
-      const { token, user } = response.data.data
-      useAuthStore.getState().login(user, token)
+      const { token, refreshToken, user } = response.data.data
+      useAuthStore.getState().login(user, token, refreshToken)
       // Apply the user's saved locale so the UI switches to their language
       // immediately after sign-in (spec §4 resolution order).
       if (isSupportedLocale(user.locale)) {
@@ -43,21 +42,8 @@ export function useAuth() {
     }
   }, [])
 
-  const refresh = useCallback(async () => {
-    if (refreshingRef.current) return null
-    const currentToken = useAuthStore.getState().token
-    if (!currentToken) return null
-
-    refreshingRef.current = true
-    try {
-      const response = await apiClient.auth.refresh(currentToken)
-      const { token: newToken } = response.data.data
-      useAuthStore.getState().setToken(newToken)
-      return newToken
-    } finally {
-      refreshingRef.current = false
-    }
-  }, [])
+  // Shared with the 401 interceptor, so the two never spend the same refresh token.
+  const refresh = useCallback(() => refreshSession(), [])
 
   // Proactively refresh the token before it expires; force logout on failure.
   useEffect(() => {

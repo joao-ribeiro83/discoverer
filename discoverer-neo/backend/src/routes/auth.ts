@@ -1,3 +1,4 @@
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { eq } from 'drizzle-orm';
@@ -8,12 +9,38 @@ import { config } from '../config.js';
 import { getSessionUser } from '../services/user.service.js';
 
 // ---------------------------------------------------------------------------
-// Validation schemas
+// Refresh sessions
+//
+// A refresh token is `<sid>.<secret>`, separate from the access token. Redis
+// holds `auth:session:<sid>` = `<userId>:<sha256(secret)>`, expiring
+// REFRESH_TOKEN_TTL_SECONDS after login. Each refresh swaps in a new secret
+// and keeps the key's TTL: the token rotates, the session never outlives its
+// login. Logout, or refreshing a deprovisioned account, deletes the key.
 // ---------------------------------------------------------------------------
 
-const DAY_SECONDS = 24 * 60 * 60;
-const REFRESH_GRACE_SECONDS = 7 * DAY_SECONDS;
-const MAX_SESSION_SECONDS = 14 * DAY_SECONDS;
+const sessionKey = (sid: string) => `auth:session:${sid}`;
+const sha256 = (value: string) => createHash('sha256').update(value).digest('hex');
+const newSecret = () => randomBytes(32).toString('base64url');
+
+// Compare-and-swap, so two refreshes racing with one token cannot both win.
+const ROTATE_SCRIPT =
+  "if redis.call('GET', KEYS[1]) == ARGV[1] then return redis.call('SET', KEYS[1], ARGV[2], 'KEEPTTL') end return nil";
+
+async function openSession(fastify: FastifyInstance, userId: string) {
+  const sid = randomUUID();
+  const secret = newSecret();
+  await fastify.redis.set(
+    sessionKey(sid),
+    `${userId}:${sha256(secret)}`,
+    'EX',
+    config.REFRESH_TOKEN_TTL_SECONDS,
+  );
+  return { sid, refreshToken: `${sid}.${secret}` };
+}
+
+// ---------------------------------------------------------------------------
+// Validation schemas
+// ---------------------------------------------------------------------------
 
 /** Floor for a user-chosen password. Temporary ones are longer still. */
 const MIN_PASSWORD_LENGTH = 12;
@@ -29,7 +56,7 @@ const LoginBodySchema = z.object({
 });
 
 const RefreshBodySchema = z.object({
-  token: z.string().min(1),
+  refreshToken: z.string().min(1).max(1024),
 });
 
 // ---------------------------------------------------------------------------
@@ -59,6 +86,7 @@ export default function authRoutes(fastify: FastifyInstance) {
                 type: 'object',
                 properties: {
                   token: { type: 'string' },
+                  refreshToken: { type: 'string' },
                   user: {
                     type: 'object',
                     properties: {
@@ -120,14 +148,16 @@ export default function authRoutes(fastify: FastifyInstance) {
         return reply.code(401).send({ error: 'Invalid email or password' });
       }
 
+      const { sid, refreshToken } = await openSession(fastify, user.id);
       const token = await reply.jwtSign(
-        { sub: user.id, email: user.email, role: user.role, name: user.name },
+        { sub: user.id, email: user.email, role: user.role, name: user.name, sid },
         { expiresIn: config.JWT_EXPIRES_IN },
       );
 
       return reply.code(200).send({
         data: {
           token,
+          refreshToken,
           user: {
             id: user.id,
             email: user.email,
@@ -154,9 +184,9 @@ export default function authRoutes(fastify: FastifyInstance) {
         tags: ['Auth'],
         body: {
           type: 'object',
-          required: ['token'],
+          required: ['refreshToken'],
           properties: {
-            token: { type: 'string', minLength: 1 },
+            refreshToken: { type: 'string', minLength: 1, maxLength: 1024 },
           },
         },
       },
@@ -170,62 +200,48 @@ export default function authRoutes(fastify: FastifyInstance) {
         });
       }
 
-      const { token } = parsed.data;
+      // One answer for every failure: unknown, spent, revoked, expired, or a
+      // deprovisioned account. The caller learns nothing about which.
+      const invalid = () => reply.code(401).send({ error: 'Invalid refresh token' });
 
-      // Verify the token, ignoring expiration to allow refresh of expired
-      // tokens within a 7-day window.
-      let payload: { sub: string; exp?: number; iat?: number; oiat?: number };
-      try {
-        payload = fastify.jwt.verify<typeof payload>(token, { ignoreExpiration: true });
-      } catch {
-        return reply.code(401).send({ error: 'Invalid token' });
+      // No `authenticate` preHandler: an access token is not accepted here at
+      // all, expired or not — a blacklisted one simply finds no session.
+      const { refreshToken } = parsed.data;
+      const dot = refreshToken.indexOf('.');
+      if (dot <= 0) return invalid();
+      const sid = refreshToken.slice(0, dot);
+      const key = sessionKey(sid);
+
+      const stored = await fastify.redis.get(key);
+      const [userId, hash] = stored?.split(':') ?? [];
+      if (!stored || !userId || hash !== sha256(refreshToken.slice(dot + 1))) {
+        return invalid();
       }
 
-      if (typeof payload.exp !== 'number') {
-        return reply.code(401).send({ error: 'Invalid token' });
-      }
-
-      // This route has no `authenticate` preHandler (it must accept an expired
-      // token), so it checks the logout blacklist itself. Without this, logout
-      // followed by refresh handed back a fresh, un-blacklisted token.
-      if ((await fastify.redis.get(`token:blacklist:${token}`)) !== null) {
-        return reply.code(401).send({ error: 'Token has been revoked' });
-      }
-
-      const now = Math.floor(Date.now() / 1000);
-      if (payload.exp + REFRESH_GRACE_SECONDS < now) {
-        return reply.code(401).send({ error: 'Token expired' });
-      }
-
-      // The grace window is measured from the token's own `exp`, and every
-      // refresh mints a fresh `exp` — so on its own it renews forever. The
-      // original login time rides along in `oiat` and caps the session.
-      const originalIssuedAt = payload.oiat ?? payload.iat ?? 0;
-      if (originalIssuedAt + MAX_SESSION_SECONDS < now) {
-        return reply.code(401).send({ error: 'Session expired' });
-      }
-
-      // Role and status are re-read, never copied from the presented token.
-      const account = await getSessionUser(payload.sub);
+      // Role and status are re-read every time, never copied from a token.
+      const account = await getSessionUser(userId);
       if (!account) {
-        return reply.code(401).send({ error: 'Invalid token' });
+        await fastify.redis.del(key);
+        return invalid();
       }
 
-      const newToken = await reply.jwtSign(
-        {
-          sub: account.id,
-          email: account.email,
-          role: account.role,
-          name: account.name,
-          oiat: originalIssuedAt,
-        },
+      const secret = newSecret();
+      const swapped = await fastify.redis.eval(
+        ROTATE_SCRIPT,
+        1,
+        key,
+        stored,
+        `${userId}:${sha256(secret)}`,
+      );
+      if (swapped === null) return invalid();
+
+      const token = await reply.jwtSign(
+        { sub: account.id, email: account.email, role: account.role, name: account.name, sid },
         { expiresIn: config.JWT_EXPIRES_IN },
       );
 
       return reply.code(200).send({
-        data: {
-          token: newToken,
-        },
+        data: { token, refreshToken: `${sid}.${secret}` },
       });
     },
   );
@@ -257,6 +273,9 @@ export default function authRoutes(fastify: FastifyInstance) {
           user?.sub ?? 'unknown',
         );
       }
+
+      // End the session too, or its refresh token would mint new access tokens.
+      if (user?.sid) await fastify.redis.del(sessionKey(user.sid));
 
       return reply.code(200).send({
         data: { message: 'Logged out successfully' },

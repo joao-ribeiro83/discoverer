@@ -5,7 +5,7 @@ import { LoginPage } from '@/pages/LoginPage'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { useAuth } from '@/hooks/useAuth'
 import { useAuthStore } from '@/store/auth'
-import { apiClient } from '@/lib/api'
+import { apiClient, refreshSession } from '@/lib/api'
 
 vi.mock('@/lib/api', () => ({
   apiClient: {
@@ -13,9 +13,9 @@ vi.mock('@/lib/api', () => ({
       login: vi.fn(),
       logout: vi.fn(),
       me: vi.fn(),
-      refresh: vi.fn(),
     },
   },
+  refreshSession: vi.fn(),
 }))
 
 const mockedApiClient = vi.mocked(apiClient, true)
@@ -145,26 +145,34 @@ describe('ProtectedRoute', () => {
 })
 
 describe('useAuth token refresh', () => {
-  it('replaces the stored token with the refreshed one', async () => {
-    useAuthStore.setState({
-      user: testUser,
-      token: 'old.jwt.token',
-      isAuthenticated: true,
-      hasHydrated: true,
-    })
-    mockedApiClient.auth.refresh.mockResolvedValueOnce({
-      data: { data: { token: 'new.jwt.token' } },
-    } as never)
+  it('delegates to the shared refreshSession', async () => {
+    vi.mocked(refreshSession).mockResolvedValueOnce('new.jwt.token')
 
     const { result } = renderHook(() => useAuth(), {
       wrapper: ({ children }) => <MemoryRouter>{children}</MemoryRouter>,
     })
 
+    let token: string | undefined
     await act(async () => {
-      await result.current.refresh()
+      token = await result.current.refresh()
     })
 
-    expect(mockedApiClient.auth.refresh).toHaveBeenCalledWith('old.jwt.token')
-    expect(useAuthStore.getState().token).toBe('new.jwt.token')
+    expect(refreshSession).toHaveBeenCalledTimes(1)
+    expect(token).toBe('new.jwt.token')
+  })
+
+  it('stores the refresh token from login', async () => {
+    mockedApiClient.auth.login.mockResolvedValueOnce({
+      data: { data: { token: 'a.jwt.token', refreshToken: 'sid.secret', user: testUser } },
+    } as never)
+
+    const { result } = renderHook(() => useAuth(), {
+      wrapper: ({ children }) => <MemoryRouter>{children}</MemoryRouter>,
+    })
+    await act(async () => {
+      await result.current.login('jane@example.com', 'pw')
+    })
+
+    expect(useAuthStore.getState().refreshToken).toBe('sid.secret')
   })
 })

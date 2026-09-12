@@ -115,16 +115,17 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle 401 (refresh token)
+// Handle 401: refresh once, then retry. `refreshSession()` shares one
+// in-flight request between callers — a refresh token works once, so two
+// parallel refreshes would end the session.
 api.interceptors.response.use(
   (res) => res,
   async (err) => {
-    if (err.response?.status === 401) {
-      // Attempt refresh
-      const token = localStorage.getItem('token');
-      const { data } = await api.post('/auth/refresh', { token });
-      localStorage.setItem('token', data.token);
-      return api.request(err.config);
+    if (err.response?.status === 401 && !err.config._retried) {
+      err.config._retried = true;
+      const token = await refreshSession(); // POST /auth/refresh { refreshToken }
+      err.config.headers.Authorization = `Bearer ${token}`;
+      return api(err.config);
     }
     throw err;
   }

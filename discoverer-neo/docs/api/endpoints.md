@@ -49,6 +49,7 @@ Log in with email and password.
 {
   "data": {
     "token": "eyJhbGciOiJIUzI1NiIs...",
+    "refreshToken": "3f1c2a9e-8d4b-4f6e-9a7c-1b2d3e4f5a6b.q8Zr0x1vW2...",
     "user": {
       "id": "550e8400-e29b-41d4-a716-446655440000",
       "email": "user@example.com",
@@ -104,12 +105,15 @@ The existing token stays valid; the flag is re-read from the database on each
 request, so the next call succeeds without signing in again.
 
 #### POST /api/auth/refresh
-Refresh an expired or expiring JWT token (valid for 7 days after expiration).
+Exchange the refresh token from login for a new access token and a new refresh
+token. The old refresh token stops working at once. The access token is not
+accepted here. Role and account status are re-read from the database. See
+[Authentication](authentication.md#post-apiauthrefresh).
 
 **Request Body:**
 ```json
 {
-  "token": "eyJhbGciOiJIUzI1NiIs..."
+  "refreshToken": "3f1c2a9e-8d4b-4f6e-9a7c-1b2d3e4f5a6b.q8Zr0x1vW2..."
 }
 ```
 
@@ -117,16 +121,19 @@ Refresh an expired or expiring JWT token (valid for 7 days after expiration).
 ```json
 {
   "data": {
-    "token": "eyJhbGciOiJIUzI1NiIs..."
+    "token": "eyJhbGciOiJIUzI1NiIs...",
+    "refreshToken": "3f1c2a9e-8d4b-4f6e-9a7c-1b2d3e4f5a6b.Vb7kP2m..."
   }
 }
 ```
 
 **Errors:**
-- `401 Unauthorized` — Token invalid or expired > 7 days
+- `401 Unauthorized` — `Invalid refresh token`: unknown, already used, revoked
+  by logout, past the session's 7-day expiry, or the account is deleted or
+  deactivated
 
 #### POST /api/auth/logout
-Invalidate current token and log out.
+Log out. Blacklists the current access token and deletes the session's refresh token.
 
 **Authentication:** Required (Bearer token)
 

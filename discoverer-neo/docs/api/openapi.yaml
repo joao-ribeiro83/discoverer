@@ -125,6 +125,8 @@ paths:
                     properties:
                       token:
                         type: string
+                      refreshToken:
+                        type: string
                       user:
                         type: object
                         properties:
@@ -166,11 +168,12 @@ paths:
             schema:
               type: object
               required:
-                - token
+                - refreshToken
               properties:
-                token:
+                refreshToken:
                   type: string
                   minLength: 1
+                  maxLength: 1024
       responses:
         '200':
           description: Default Response

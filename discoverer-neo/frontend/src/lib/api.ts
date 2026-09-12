@@ -131,19 +131,54 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// Response interceptor — force a logout+redirect on a 401 from an
-// already-authenticated call (an expired/invalid session). Login and refresh
+let refreshInFlight: Promise<string> | null = null
+
+/**
+ * Exchange the refresh token for a new token pair; resolves to the new access
+ * token. Concurrent callers share one request: each refresh token works once,
+ * so two parallel refreshes would spend it twice and end the session.
+ */
+export function refreshSession(): Promise<string> {
+  refreshInFlight ??= (async () => {
+    const refreshToken = useAuthStore.getState().refreshToken
+    if (!refreshToken) throw new Error('No refresh token')
+    const response = await api.post<{ data: { token: string; refreshToken: string } }>(
+      '/auth/refresh',
+      { refreshToken }
+    )
+    const { token, refreshToken: next } = response.data.data
+    useAuthStore.getState().setTokens(token, next)
+    return token
+  })().finally(() => {
+    refreshInFlight = null
+  })
+  return refreshInFlight
+}
+
+// Response interceptor — on a 401 from an already-authenticated call, refresh
+// once and retry (access tokens live 15 minutes, so an expired one is routine).
+// If that fails the session is over: logout+redirect. Login and refresh
 // requests report their own 401s locally (inline form error / useAuth's
 // session-expired flow) and must not be short-circuited here.
 const AUTH_SELF_HANDLED_PATHS = ['/auth/login', '/auth/refresh']
 
 api.interceptors.response.use(
   (response) => response,
-  (error: unknown) => {
-    if (isAxiosError(error) && error.response?.status === 401) {
-      const url = error.config?.url ?? ''
+  async (error: unknown) => {
+    if (isAxiosError(error) && error.response?.status === 401 && error.config) {
+      const config = error.config as typeof error.config & { _retried?: boolean }
+      const url = config.url ?? ''
       const selfHandled = AUTH_SELF_HANDLED_PATHS.some((path) => url.includes(path))
       if (!selfHandled) {
+        if (!config._retried && useAuthStore.getState().refreshToken) {
+          config._retried = true
+          try {
+            config.headers.Authorization = `Bearer ${await refreshSession()}`
+            return await api(config)
+          } catch {
+            // fall through: the session cannot be renewed
+          }
+        }
         useAuthStore.getState().logout()
         window.location.href = '/login'
       }
@@ -177,7 +212,7 @@ export const apiClient = {
   // Auth
   auth: {
     login: (email: string, password: string) =>
-      api.post<{ data: { token: string; user: AuthUser } }>('/auth/login', {
+      api.post<{ data: { token: string; refreshToken: string; user: AuthUser } }>('/auth/login', {
         email,
         password,
       }),
@@ -188,8 +223,6 @@ export const apiClient = {
         currentPassword,
         newPassword,
       }),
-    refresh: (token: string) =>
-      api.post<{ data: { token: string } }>('/auth/refresh', { token }),
   },
   // Business Areas
   businessAreas: {

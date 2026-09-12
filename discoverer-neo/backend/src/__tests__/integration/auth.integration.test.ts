@@ -88,18 +88,26 @@ describe('POST /api/auth/login', () => {
 describe('POST /api/auth/refresh', () => {
   it('returns a new valid token on refresh', async () => {
     await createTestUser(USER_EMAIL, USER_PASSWORD, 'USER');
-    const token = await loginAndGetToken(app, USER_EMAIL, USER_PASSWORD);
+    const loginRes = await app.inject({
+      method: 'POST',
+      url: '/api/auth/login',
+      payload: { email: USER_EMAIL, password: USER_PASSWORD },
+    });
+    const { token, refreshToken } = loginRes.json().data;
 
     const res = await app.inject({
       method: 'POST',
       url: '/api/auth/refresh',
-      payload: { token },
+      payload: { refreshToken },
     });
 
     expect(res.statusCode).toBe(200);
     const newToken = res.json().data.token;
     expect(newToken).toBeDefined();
-    expect(newToken).not.toBe(token);
+    // The access token can match byte-for-byte within the same second; the
+    // refresh token is what must rotate.
+    expect(res.json().data.refreshToken).not.toBe(refreshToken);
+    expect(app.jwt.decode<{ sub: string }>(newToken)?.sub).toBe(app.jwt.decode<{ sub: string }>(token)?.sub);
 
     // Verify the new token works
     const meRes = await app.inject({
@@ -115,7 +123,7 @@ describe('POST /api/auth/refresh', () => {
     const res = await app.inject({
       method: 'POST',
       url: '/api/auth/refresh',
-      payload: { token: 'invalid-token' },
+      payload: { refreshToken: 'invalid-token' },
     });
 
     expect(res.statusCode).toBe(401);
@@ -206,7 +214,7 @@ describe('Full auth flow', () => {
       payload: { email: USER_EMAIL, password: USER_PASSWORD },
     });
     expect(loginRes.statusCode).toBe(200);
-    const token1 = loginRes.json().data.token;
+    const { token: token1, refreshToken } = loginRes.json().data;
 
     // 2. Me works
     const me1 = await app.inject({
@@ -220,7 +228,7 @@ describe('Full auth flow', () => {
     const refreshRes = await app.inject({
       method: 'POST',
       url: '/api/auth/refresh',
-      payload: { token: token1 },
+      payload: { refreshToken },
     });
     expect(refreshRes.statusCode).toBe(200);
     const token2 = refreshRes.json().data.token;
