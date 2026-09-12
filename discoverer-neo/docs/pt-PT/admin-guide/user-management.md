@@ -187,12 +187,25 @@ Estas preferências são de autosserviço e por utilizador. Cada utilizador pode
 
 ### Ativo/Inativo
 
-Alterne o estado do utilizador:
+Defina `isActive` na conta através da API. O ecrã de Utilizadores ainda não tem um interruptor.
 
-- **Ativo** — O utilizador pode iniciar sessão
-- **Inativo** — O utilizador não pode iniciar sessão (eliminação reversível)
+```bash
+curl -X PUT http://localhost:3000/api/users/<user-id> \
+  -H "Authorization: Bearer <admin-token>" \
+  -H "Content-Type: application/json" \
+  -d '{"isActive": false}'
+```
+
+- **Ativo** (predefinição) — O utilizador pode iniciar sessão
+- **Inativo** — O utilizador não pode iniciar sessão nem renovar uma sessão (eliminação reversível)
 
 Útil para desativar temporariamente sem eliminar contas.
+
+**A remoção de acesso tem efeito imediato.** A existência, o estado ativo e a
+função são lidos da base de dados em cada pedido e em cada renovação do token,
+nunca do próprio token. Um utilizador que desative ou elimine é recusado logo no
+pedido seguinte, e um utilizador despromovido fica limitado à nova função logo
+no pedido seguinte. Não é preciso esperar que o token expire.
 
 ### Conta Bloqueada
 

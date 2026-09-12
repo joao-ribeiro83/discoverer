@@ -187,12 +187,25 @@ These preferences are self-service and per-user. Each user can access Settings v
 
 ### Active/Inactive
 
-Toggle user status:
+Set `isActive` on the account through the API. The Users screen has no toggle yet.
 
-- **Active** — User can log in
-- **Inactive** — User cannot log in (soft delete)
+```bash
+curl -X PUT http://localhost:3000/api/users/<user-id> \
+  -H "Authorization: Bearer <admin-token>" \
+  -H "Content-Type: application/json" \
+  -d '{"isActive": false}'
+```
+
+- **Active** (default) — User can log in
+- **Inactive** — User cannot log in or refresh a session (soft delete)
 
 Useful for temporary disabling without deleting accounts.
+
+**Deprovisioning takes effect immediately.** Existence, active status and role
+are read from the database on every request and every token refresh — never
+from the token. A user you deactivate or delete is refused on their very next
+request, and a user you demote is held to the new role on their very next
+request. You do not have to wait for their token to expire.
 
 ### Locked Account
 

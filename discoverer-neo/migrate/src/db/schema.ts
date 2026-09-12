@@ -273,6 +273,12 @@ export const users = pgTable(
      * a control, since the API is reachable directly.
      */
     mustChangePassword: boolean('must_change_password').notNull().default(false),
+    /**
+     * False for a deprovisioned account. Read on every authenticated request
+     * and every refresh — never from the token — so switching it off ends the
+     * account's access on its next request.
+     */
+    isActive: boolean('is_active').notNull().default(true),
     passwordHash: varchar('password_hash', { length: 255 }).notNull(),
     name: varchar('name', { length: 255 }).notNull(),
     role: userRoleEnum('role').notNull().default('USER'),
