@@ -1148,6 +1148,8 @@ export function transformWorkbook(
             // Oracle's own default is case-sensitive; `null` means the
             // element carried no `0x0102` tag at all, which reads the same.
             caseSensitive: condition.caseSensitive ?? true,
+            // Per predicate, from this node's own NOT.
+            negated: predicate.negated,
           });
         }
       }
@@ -1837,6 +1839,7 @@ export interface MapConditionRow {
   logicOperator: 'AND' | 'OR';
   displayOrder: number;
   caseSensitive: boolean;
+  negated: boolean;
 }
 
 export interface MapConditionRowsResult {
@@ -1912,6 +1915,7 @@ export function buildMapConditionRows(
         logicOperator: condition.logicOperator,
         displayOrder: condition.displayOrder,
         caseSensitive: condition.caseSensitive,
+        negated: condition.negated,
       });
     }
   }

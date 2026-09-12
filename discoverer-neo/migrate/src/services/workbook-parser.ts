@@ -1004,13 +1004,13 @@ export const CONDITION_OPERATOR_TABLE: Record<number, ConditionOperator> = {
   87: { name: 'LIKE', kind: 'predicate', minArgs: 2, maxArgs: 2, neo: 'LIKE' },
   88: { name: 'IN', kind: 'predicate', minArgs: 2, maxArgs: null, neo: 'IN' },
   89: { name: 'IS NULL', kind: 'predicate', minArgs: 1, maxArgs: 1, neo: 'IS_NULL' },
-  90: { name: 'IS NOT NULL', kind: 'predicate', minArgs: 1, maxArgs: 1, neo: null },
-  91: { name: 'NOT IN', kind: 'predicate', minArgs: 2, maxArgs: null, neo: null },
+  90: { name: 'IS NOT NULL', kind: 'predicate', minArgs: 1, maxArgs: 1, neo: 'IS_NULL' },
+  91: { name: 'NOT IN', kind: 'predicate', minArgs: 2, maxArgs: null, neo: 'IN' },
   92: { name: 'BETWEEN', kind: 'predicate', minArgs: 3, maxArgs: 3, neo: 'BETWEEN' },
-  93: { name: 'NOT BETWEEN', kind: 'predicate', minArgs: 3, maxArgs: 3, neo: null },
+  93: { name: 'NOT BETWEEN', kind: 'predicate', minArgs: 3, maxArgs: 3, neo: 'BETWEEN' },
   98: { name: 'AND', kind: 'logical', minArgs: 2, maxArgs: null, neo: null },
   99: { name: 'OR', kind: 'logical', minArgs: 2, maxArgs: null, neo: null },
-  100: { name: 'NOT LIKE', kind: 'predicate', minArgs: 2, maxArgs: 2, neo: null },
+  100: { name: 'NOT LIKE', kind: 'predicate', minArgs: 2, maxArgs: 2, neo: 'LIKE' },
   101: { name: 'NOT', kind: 'logical', minArgs: 1, maxArgs: 1, neo: null },
   104: { name: '!=', kind: 'predicate', minArgs: 2, maxArgs: 2, neo: '<>' },
   105: { name: '^=', kind: 'predicate', minArgs: 2, maxArgs: 2, neo: '<>' },
@@ -1028,10 +1028,14 @@ export const CONDITION_OPERATOR_TABLE: Record<number, ConditionOperator> = {
  * `BuildFilterString` when a filter is rendered back to text. The rest fold
  * the negation into the operator's own name.
  *
- * All of them map to `neo: null` above, so a condition containing one is
- * reported rather than written. Nothing negated may migrate: dropping the
- * negation would replace a filter by its complement, which is the one failure
- * mode a reviewer looking at row counts would not notice.
+ * All of them map to their *positive* operator above and set
+ * `ConditionPredicate.negated`, which `map_conditions.negated` stores and the
+ * SQL generator renders as `NOT (…)` around that row alone. Per node, never
+ * per group: negating a group would change which rows its siblings keep.
+ *
+ * `NOT (a AND b)` is therefore still refused — its negation belongs to the
+ * group, not to a row — and so is a `NOT BETWEEN` whose bounds do not fit one
+ * row, since expanding that one needs an OR the flat model cannot bracket.
  */
 export const CONDITION_NEGATION_CODES: readonly number[] = [90, 91, 93, 100, 101];
 
@@ -1276,6 +1280,14 @@ export interface ConditionPredicate {
   parameterRef: number | null;
   /** Literal operands on the right, in order. */
   literals: string[];
+  /**
+   * `DCBImportedFilterNode::IsNot` — this row's own test is inverted.
+   *
+   * Set by the negated operator codes (`NOT IN`, `NOT LIKE`, `IS NOT NULL`,
+   * `NOT BETWEEN`) and by a `NOT` wrapping a single test. It belongs to this
+   * predicate only; the group it sits in is unaffected.
+   */
+  negated: boolean;
 }
 
 /**
@@ -1339,11 +1351,34 @@ function readPredicates(node: FormulaNode): ConditionPredicate[] | string {
       ? `operator code ${node.code} is not a known EUL function`
       : `${name} is a value expression, not a test`;
   }
-  // Negation is checked before nesting: a NOT reached here is a negation
-  // wherever it sits, and saying "nested too deep" would send a reviewer
-  // looking for the wrong problem.
-  if (CONDITION_NEGATION_CODES.includes(node.code)) {
-    return `${operator.name} is a negated test and Discoverer Neo has no negation`;
+  // `NOT (test)` negates the single row that test becomes — the per-node flag,
+  // which is what Oracle stores. `NOT (a AND b)` negates a whole group, and a
+  // flat row list has nowhere to put that, so it is refused rather than
+  // reshaped into something that reads the same and filters differently.
+  if (node.code === 101) {
+    const [inner] = node.args;
+    if (inner === undefined) return 'NOT has no operand';
+    if (inner.type === 'call' && inner.code !== 101) {
+      const innerOperator = CONDITION_OPERATOR_TABLE[inner.code];
+      if (innerOperator?.kind === 'logical') {
+        return (
+          `NOT applies to a whole ${innerOperator.name} group, and Discoverer Neo ` +
+          'negates one test at a time'
+        );
+      }
+    }
+    const read = readPredicates(inner);
+    if (typeof read === 'string') return read;
+    // Two rows mean a BETWEEN that expanded into `>=` and `<=`. Negating that
+    // pair is `< low OR > high` by De Morgan, and an OR of two rows cannot sit
+    // in a group that is already ANDing.
+    if (read.length > 1) {
+      return (
+        'NOT applies to a BETWEEN over separate bounds, whose negation needs ' +
+        'one more level of brackets than Discoverer Neo has'
+      );
+    }
+    return read.map((predicate) => ({ ...predicate, negated: !predicate.negated }));
   }
   if (operator.kind === 'logical') {
     return `${operator.name} nested deeper than Discoverer Neo's condition groups reach`;
@@ -1358,6 +1393,10 @@ function readPredicates(node: FormulaNode): ConditionPredicate[] | string {
     return `${operator.name} is applied to ${describeFormulaNode(left)}, not to a plain item`;
   }
 
+  // `NOT IN`, `NOT LIKE`, `IS NOT NULL`, `NOT BETWEEN`: the operator table
+  // maps each to its positive form, and the negation rides on the row.
+  const negated = CONDITION_NEGATION_CODES.includes(node.code);
+
   /** One row against the item on the left. */
   const row = (
     neoOperator: NeoConditionOperator,
@@ -1370,6 +1409,7 @@ function readPredicates(node: FormulaNode): ConditionPredicate[] | string {
     itemRef: left.elementId,
     parameterRef: operands.find((operand) => operand.type === 'parameter')?.elementId ?? null,
     literals: operands.flatMap((operand) => (operand.type === 'literal' ? [operand.value] : [])),
+    negated,
   });
 
   if (operator.neo === 'IS_NULL') {
@@ -1402,6 +1442,12 @@ function readPredicates(node: FormulaNode): ConditionPredicate[] | string {
     }
     if (low.type === 'parameter' && high.type === 'parameter' && low.elementId === high.elementId) {
       return [row('BETWEEN', operator.name, [low])];
+    }
+
+    // A negated BETWEEN cannot expand: `NOT (x >= a AND x <= b)` is
+    // `x < a OR x > b`, an OR of two rows, which needs a group of its own.
+    if (negated) {
+      return 'NOT BETWEEN carries bounds Discoverer Neo cannot hold in one row';
     }
 
     // Otherwise expand. `x BETWEEN a AND b` is *defined* as `x >= a AND x <= b`
@@ -1463,8 +1509,13 @@ export function planCondition(tree: FormulaNode | null): ConditionPlan {
       : { groups: [{ join: 'AND', inner: 'AND', predicates }], depth, unsupported: null };
   }
 
+  // A root `NOT` counts as a level of boolean spine, so it lands here rather
+  // than in the depth-0 branch above. It is still one test and one row.
   if (tree.code === 101) {
-    return reject('the condition is negated (NOT) and Discoverer Neo has no negation');
+    const predicates = readPredicates(tree);
+    return typeof predicates === 'string'
+      ? reject(predicates)
+      : { groups: [{ join: 'AND', inner: 'AND', predicates }], depth, unsupported: null };
   }
   if (depth > 2) {
     return reject(

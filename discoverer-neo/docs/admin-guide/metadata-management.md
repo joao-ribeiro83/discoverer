@@ -278,6 +278,12 @@ A condition can be marked **NOT**, flipping what it matches — for example
 condition only: negating a condition inside a group never changes what the
 other conditions in the group match.
 
+A negated Discoverer condition is migrated as it stands, including `NOT IN`,
+`NOT LIKE`, `IS NOT NULL` and `NOT BETWEEN`. Two shapes are not: a `NOT`
+placed around a whole AND/OR group, and a `NOT BETWEEN` whose two bounds come
+from separate parameter prompts. Both are reported in the migration warnings
+and must be rebuilt by hand.
+
 ### Case sensitivity
 
 By default a text condition compares exactly as typed. Turning **Case
