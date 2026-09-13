@@ -260,6 +260,22 @@ el hook de auditoría no tiene forma de avisarle.
 
 `backend/src/__tests__/audit-redaction.test.ts` fija la regla.
 
+## Acceso a nivel de objeto
+
+Leer una carpeta, un elemento, una unión o una jerarquía por su id requiere el
+mismo permiso que listarlos. Un usuario sin permiso sobre un área de negocio a la
+que pertenece el objeto recibe `403 Forbidden`, no el objeto. Los
+administradores omiten la comprobación.
+
+Una carpeta pertenece a su área de negocio propietaria y a todas las áreas con
+las que se comparte; basta un permiso sobre cualquiera de ellas. Los elementos y
+las uniones siguen a su carpeta. Las jerarquías siguen a su área de negocio.
+
+`backend/src/__tests__/get-by-id-scoping.test.ts` analiza todos los archivos de
+rutas y falla si una ruta `GET` con id no nombra ninguna comprobación de acceso.
+
+Las lecturas aún no se registran en la auditoría. Eso es la fase 6.4.
+
 ## Prácticas recomendadas
 
 1. **Empiece de forma sencilla** — Comience con el filtrado por una sola columna (región, departamento)

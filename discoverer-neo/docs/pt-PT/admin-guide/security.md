@@ -260,6 +260,22 @@ fuga, e o hook de auditoria não tem forma de o avisar.
 
 `backend/src/__tests__/audit-redaction.test.ts` fixa a regra.
 
+## Acesso ao nível do objecto
+
+Ler uma pasta, um item, uma junção ou uma hierarquia pelo seu id exige a mesma
+permissão que listá-los. Um utilizador sem permissão numa área de negócio a que
+o objecto pertence recebe `403 Forbidden`, não o objecto. Os administradores
+contornam a verificação.
+
+Uma pasta pertence à sua área de negócio proprietária e a todas as áreas com que
+é partilhada; basta uma permissão em qualquer delas. Os itens e as junções seguem
+a sua pasta. As hierarquias seguem a sua área de negócio.
+
+`backend/src/__tests__/get-by-id-scoping.test.ts` analisa todos os ficheiros de
+rotas e falha se uma rota `GET` com id não nomear nenhuma verificação de acesso.
+
+As leituras ainda não são registadas na auditoria. Isso é a fase 6.4.
+
 ## Melhores Práticas
 
 1. **Comece de Forma Simples** — Comece com filtragem por uma única coluna (região, departamento)

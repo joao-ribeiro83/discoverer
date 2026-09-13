@@ -261,6 +261,22 @@ couvert ; `apiPass` ne l'est pas. Ajouter un nom qui ne correspond pas revient
 
 `backend/src/__tests__/audit-redaction.test.ts` fixe la règle.
 
+## Accès au niveau de l'objet
+
+Lire un dossier, un élément, une jointure ou une hiérarchie par son id exige la
+même autorisation que les lister. Un utilisateur sans autorisation sur un domaine
+métier auquel l'objet appartient reçoit `403 Forbidden`, pas l'objet. Les
+administrateurs contournent la vérification.
+
+Un dossier appartient à son domaine métier propriétaire et à chaque domaine avec
+lequel il est partagé ; une autorisation sur l'un d'eux suffit. Les éléments et
+les jointures suivent leur dossier. Les hiérarchies suivent leur domaine métier.
+
+`backend/src/__tests__/get-by-id-scoping.test.ts` analyse tous les fichiers de
+routes et échoue si une route `GET` avec id ne nomme aucun contrôle d'accès.
+
+Les lectures ne sont pas encore journalisées. C'est la phase 6.4.
+
 ## Bonnes pratiques
 
 1. **Commencez simplement** — Débutez par un filtrage sur une seule colonne (region, department)
