@@ -1120,11 +1120,19 @@ export function transformWorkbook(
         });
         return;
       }
+      // A condition whose groups are ORed must be one group on the map. The
+      // map's other conditions are ANDed at the level between groups, where
+      // `x AND a OR b` means `(x AND a) OR b`. Inside one group each row keeps
+      // its own operator, and AND binding tighter than OR keeps an OR of ANDs.
+      const ored = condition.groups.some((group) => group.join === 'OR');
       for (const [groupIndex, group] of condition.groups.entries()) {
-        // Only a group with something to bracket needs a key; a lone predicate
-        // is its own clause and a key would only add empty parentheses.
-        const groupKey =
-          group.predicates.length > 1 ? `c${index}g${groupIndex}` : null;
+        // Otherwise only a group with something to bracket needs a key; a lone
+        // predicate is its own clause and a key would only add empty parentheses.
+        const groupKey = ored
+          ? `c${index}`
+          : group.predicates.length > 1
+            ? `c${index}g${groupIndex}`
+            : null;
         for (const [predicateIndex, predicate] of group.predicates.entries()) {
           conditions.push({
             itemSourceId: predicate.itemSourceId,
