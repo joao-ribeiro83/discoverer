@@ -362,6 +362,11 @@ Revoke a user's permission in a business area.
 
 Folders are containers for Items (columns/attributes) within a Business Area. They typically represent tables or views from a data source.
 
+> **Phase 6.2 — recorded here, regenerated in Phase 8.4.** `GET /api/folders/:id`,
+> `GET /api/items/:id`, `GET /api/items/:id/descendants`, `GET /api/joins/:id` and
+> `GET /api/hierarchies/:id` require a VIEW grant on a business area the object
+> belongs to (or ADMIN), and return `403 Forbidden` otherwise.
+
 #### GET /api/business-areas/:baId/folders
 List folders in a business area.
 

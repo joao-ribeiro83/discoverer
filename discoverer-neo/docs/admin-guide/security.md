@@ -320,6 +320,26 @@ Two things it deliberately does *not* do:
   targeted only by an inactive policy is not treated as policy-bearing —
   otherwise disabling a policy would lock everyone out with no way back in.
 
+## Object-level access
+
+Reading one folder, item, join or hierarchy by its id needs the same grant as
+listing it. A user without a grant on a business area the object belongs to gets
+`403 Forbidden`, not the object. Admins bypass the check.
+
+A folder belongs to its owning business area and to every area it is shared
+into; a grant on any one of them is enough. Items and joins follow their folder.
+Hierarchies follow their business area.
+
+Before this, those reads checked only that you were signed in, so any account
+could walk the metadata layer one id at a time — table names, column names and
+join topology for areas it had never been granted.
+
+`backend/src/__tests__/get-by-id-scoping.test.ts` scans every route file and
+fails if a `GET` route keyed by an id names no access gate. A route that
+genuinely holds no per-area data must be listed there with its reason.
+
+Reads are not yet written to the audit log. That is Phase 6.4.
+
 ## Best Practices
 
 1. **Start Simple** — Begin with single-column filtering (region, department)
