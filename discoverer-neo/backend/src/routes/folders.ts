@@ -679,6 +679,11 @@ export default function folderRoutes(fastify: FastifyInstance) {
           type: 'object',
           properties: {
             tableOwner: { type: 'string' },
+            // F-14: this schema can carry thousands of tables with their
+            // full column lists (measured at 404 KB unpaginated); default and
+            // cap keep a single response bounded regardless of schema size.
+            limit: { type: 'integer', minimum: 1, maximum: 1000, default: 500 },
+            offset: { type: 'integer', minimum: 0, default: 0 },
           },
         },
         response: {
@@ -690,6 +695,9 @@ export default function folderRoutes(fastify: FastifyInstance) {
                 properties: {
                   tables: { type: 'array', items: introspectedTableSchema },
                   count: { type: 'integer' },
+                  total: { type: 'integer' },
+                  limit: { type: 'integer' },
+                  offset: { type: 'integer' },
                 },
               },
             },
@@ -707,14 +715,27 @@ export default function folderRoutes(fastify: FastifyInstance) {
         return reply.code(400).send({ error: 'Invalid data source ID format' });
       }
 
+      const { tableOwner, limit, offset } = request.query as {
+        tableOwner?: string;
+        limit: number;
+        offset: number;
+      };
+
       try {
         const { introspectSchema } = await import('../services/oracle-introspection.js');
-        const tables = await introspectSchema(paramParsed.data.dsId, fastify.redis);
+        const allTables = await introspectSchema(paramParsed.data.dsId, fastify.redis);
+        const filtered = tableOwner
+          ? allTables.filter((t) => t.tableOwner.toUpperCase() === tableOwner.toUpperCase())
+          : allTables;
+        const page = filtered.slice(offset, offset + limit);
 
         return reply.code(200).send({
           data: {
-            tables,
-            count: tables.length,
+            tables: page,
+            count: page.length,
+            total: filtered.length,
+            limit,
+            offset,
           },
         });
       } catch (err) {
