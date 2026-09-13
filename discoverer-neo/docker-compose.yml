@@ -14,8 +14,9 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-discoverer_neo}
       POSTGRES_USER: ${POSTGRES_USER:-discoverer}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me_in_production}
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+    # No port publication (INF-12): this file is titled "Production", and a
+    # production Postgres has no business being reachable from 0.0.0.0 on the
+    # host. `backend` reaches it over the compose network by service name.
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -28,8 +29,7 @@ services:
     image: redis:7-alpine
     container_name: discoverer-neo-redis
     restart: unless-stopped
-    ports:
-      - "${REDIS_PORT:-6379}:6379"
+    # No port publication (INF-12) — same reasoning as postgres above.
     volumes:
       - redis_data:/data
     healthcheck:
