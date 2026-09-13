@@ -349,6 +349,20 @@ comprueba **al crear y al actualizar** con la misma función
 rechazan con `400`. Cambiar el tipo de una carpeta a COMPLEX sin SQL también se
 rechaza.
 
+**Una carpeta COMPLEX a la que llega una directiva de seguridad de nivel de fila
+no se ejecuta.** Su SQL se inserta como tabla derivada y el predicado de la
+directiva se combina con AND en la consulta que la rodea, nunca en las tablas
+que ese SQL lee, así que Neo no puede demostrar que el predicado filtre nada. El
+rechazo nombra la carpeta y la directiva, se aplica a todos los usuarios y vale
+tanto si la directiva se dirige a la carpeta como a su área de negocio:
+
+> Refusing to run: COMPLEX folder "X" is covered by row-level security policy "P", and a policy's predicate cannot yet be proven to filter the rows a COMPLEX folder's own SQL reads
+
+Con el modo predeterminado `CLOSED`, por tanto, una carpeta COMPLEX no se puede
+leer en absoluto: sin directiva se rechaza por no estar cubierta, y con ella se
+rechaza aquí. Lea esos datos a través de una carpeta normal sobre la tabla o la
+vista subyacente y ponga la directiva en esa carpeta.
+
 ## Prácticas recomendadas
 
 1. **Empiece de forma sencilla** — Comience con el filtrado por una sola columna (región, departamento)

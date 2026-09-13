@@ -434,37 +434,68 @@ export async function getUserPolicies(
  * predicate for. Map execution and the list-of-values path both ask here, so
  * the two cannot drift apart.
  *
- * Under `ROW_LEVEL_FAIL_MODE=CLOSED`, the default, every folder the user
- * resolved nothing for refuses. No policy means no rows, so removing,
- * disabling or unassigning a policy can only ever take rows away. Discoverer's
- * row-level security failed open by construction; this is Neo's one deliberate
- * incompatibility with it (D-090).
+ * Two refusals, checked in this order:
  *
- * `OPEN` keeps only D-116's rule: a folder refuses when some ACTIVE policy —
- * anyone's — reaches it, and every other folder runs unfiltered. Inactive
- * policies never count, so under `OPEN` disabling a policy does widen access.
+ * 1. **A COMPLEX folder that any ACTIVE policy reaches (SEC-06).** Its custom
+ *    SQL is inlined as a derived table, and a predicate is ANDed onto the query
+ *    around it — never into the tables that SQL reads. Until a predicate can be
+ *    proven injected there, the folder refuses for everyone, covered or not,
+ *    and the refusal names the folder and the policy.
  *
- * Admins are not exempt in either mode. They bypass the grant gate; which rows
- * they may see is a separate question, and a policy an admin silently escaped
- * would be no policy at all.
+ * 2. **A folder the user resolved no predicate for (D-090).** Under
+ *    `ROW_LEVEL_FAIL_MODE=CLOSED`, the default, every such folder refuses: no
+ *    policy means no rows, so removing, disabling or unassigning a policy can
+ *    only ever take rows away. Discoverer's row-level security failed open by
+ *    construction; this is Neo's one deliberate incompatibility with it.
+ *    `OPEN` keeps only D-116's rule — refuse a folder some ACTIVE policy
+ *    reaches, run every other folder unfiltered — so under `OPEN` disabling a
+ *    policy does widen access.
+ *
+ * Together they make a COMPLEX folder unreadable under `CLOSED`: without a
+ * policy it is uncovered, and with one it refuses. That is the honest position
+ * until predicates reach inside custom SQL.
+ *
+ * Admins are exempt from neither. They bypass the grant gate; which rows they
+ * may see is a separate question, and a policy an admin silently escaped would
+ * be no policy at all.
  */
 export async function rowSecurityRefusal(
   folderIds: string[],
   baByFolder: globalThis.Map<string, string[]>,
   covered: ReadonlySet<string>,
 ): Promise<string | null> {
-  let blocked = folderIds.filter((id) => !covered.has(id));
-  if (blocked.length > 0 && config.ROW_LEVEL_FAIL_MODE === 'OPEN') {
-    const reached = await policiesReaching(blocked, baByFolder);
-    blocked = blocked.filter((id) => reached.has(id));
-  }
-  if (blocked.length === 0) return null;
+  if (folderIds.length === 0) return null;
 
-  const names = await db
-    .select({ name: folders.name })
+  const rows = await db
+    .select({ id: folders.id, name: folders.name, folderType: folders.folderType })
     .from(folders)
-    .where(inArray(folders.id, blocked));
-  const label = names.map((f) => `"${f.name}"`).join(', ') || blocked.join(', ');
+    .where(inArray(folders.id, folderIds));
+  const nameOf = (id: string) => rows.find((f) => f.id === id)?.name ?? id;
+  const complex = rows.filter((f) => f.folderType === 'COMPLEX').map((f) => f.id);
+  const open = config.ROW_LEVEL_FAIL_MODE === 'OPEN';
+
+  let blocked = folderIds.filter((id) => !covered.has(id));
+  const probe = [...new Set([...complex, ...(open ? blocked : [])])];
+  const reached =
+    probe.length > 0
+      ? await policiesReaching(probe, baByFolder)
+      : new globalThis.Map<string, string[]>();
+
+  for (const id of complex) {
+    const policies = reached.get(id);
+    if (policies) {
+      const label = policies.map((name) => `"${name}"`).join(', ');
+      return (
+        `Refusing to run: COMPLEX folder "${nameOf(id)}" is covered by row-level security ` +
+        `${policies.length === 1 ? 'policy' : 'policies'} ${label}, and a policy's predicate ` +
+        "cannot yet be proven to filter the rows a COMPLEX folder's own SQL reads"
+      );
+    }
+  }
+
+  if (open) blocked = blocked.filter((id) => reached.has(id));
+  if (blocked.length === 0) return null;
+  const label = blocked.map((id) => `"${nameOf(id)}"`).join(', ');
   return `Refusing to run unfiltered: no row-level security policy resolves for you on folder(s) ${label}`;
 }
 
