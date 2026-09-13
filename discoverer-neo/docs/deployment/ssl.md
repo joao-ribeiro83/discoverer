@@ -122,6 +122,14 @@ server {
 }
 ```
 
+The ready-to-use production reverse proxy is `nginx/nginx-ssl.conf`, paired
+with `docker-compose.prod.yml` — the example above is illustrative. Whichever
+config you run: never proxy `/metrics` through this public, internet-facing
+listener (INF-09). It has no auth (Prometheus doesn't carry a JWT), so
+`nginx-ssl.conf` proxies only `/health` here — Prometheus reaches `/metrics`
+by scraping the `backend` service directly, inside the Docker compose
+network. See [Monitoring](monitoring.md).
+
 ## Docker Deployment with SSL
 
 ### Mount Certificates
