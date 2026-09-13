@@ -618,6 +618,47 @@ describe('Oracle introspection', () => {
     expect(data.tables).toHaveLength(2);
   });
 
+  it('paginates GET /tables (F-14)', async () => {
+    const manyTables = Array.from({ length: 12 }, (_, i) => ({
+      tableName: `TABLE_${i}`,
+      tableOwner: 'HR',
+      columns: mockTables[0]!.columns,
+    }));
+    await app.redis.setex(
+      `oracle:introspection:${testDataSourceId}`,
+      300,
+      JSON.stringify(manyTables),
+    );
+
+    const page1 = await app.inject({
+      method: 'GET',
+      url: `/api/data-sources/${testDataSourceId}/tables?limit=5&offset=0`,
+      headers: { authorization: `Bearer ${adminToken}` },
+    });
+    expect(page1.statusCode).toBe(200);
+    const data1 = page1.json().data;
+    expect(data1.tables).toHaveLength(5);
+    expect(data1.total).toBe(12);
+    expect(data1.limit).toBe(5);
+    expect(data1.offset).toBe(0);
+
+    const page2 = await app.inject({
+      method: 'GET',
+      url: `/api/data-sources/${testDataSourceId}/tables?limit=5&offset=5`,
+      headers: { authorization: `Bearer ${adminToken}` },
+    });
+    const data2 = page2.json().data;
+    expect(data2.tables).toHaveLength(5);
+    expect(data2.tables[0].tableName).toBe('TABLE_5');
+
+    const page3 = await app.inject({
+      method: 'GET',
+      url: `/api/data-sources/${testDataSourceId}/tables?limit=5&offset=10`,
+      headers: { authorization: `Bearer ${adminToken}` },
+    });
+    expect(page3.json().data.tables).toHaveLength(2);
+  });
+
   it('404s GET /tables for an unknown data source', async () => {
     const response = await app.inject({
       method: 'GET',
