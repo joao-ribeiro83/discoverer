@@ -7,7 +7,7 @@
 | The 7 depth-2 conditions investigated | Done — **not row-level security. This estate had none.** |
 | `EUL4_ASM_POLICIES` | No RLS reader built (D-077). 1 row, 0 constraints: nothing to migrate as summary input either |
 | RLS fails closed (D-090) | Done — `ROW_LEVEL_FAIL_MODE`, default `CLOSED`, on maps, exports, schedules and pick-lists |
-| COMPLEX folder carrying a policy refuses (SEC-06) | Not yet |
+| COMPLEX folder carrying a policy refuses (SEC-06) | Done — refuses for every user, naming the folder and the policy |
 | Summary/RLS bypass invariant beside the plan type (D-021) | Already in `lib/sql/query-plan.ts` since Phase 3.3; update for fail-closed pending |
 
 ## Fail-closed (D-090)
@@ -53,6 +53,24 @@ assignees every row — or set `ROW_LEVEL_FAIL_MODE=OPEN` until they are written
   cannot escape.
 - **The rewrite refuses a folder predicate that no branch reads**
   (`renderRewrite`) instead of dropping it.
+
+## COMPLEX folders (SEC-06)
+
+A COMPLEX folder inlines its custom SQL as a derived table, and a predicate is
+ANDed onto the query around it, never into the tables that SQL reads.
+`rowSecurityRefusal` therefore refuses a COMPLEX folder that any **active**
+policy reaches — through a folder rule or a business-area rule — for every
+user, covered or not, and names the folder and the policy. The check runs
+before the coverage check, so the refusal a user sees is the structural one.
+
+Under `CLOSED` a COMPLEX folder is unreadable: uncovered without a policy,
+refused with one. Live impact is nil — `discoverer_neo` holds 212 folders, all
+`TABLE` (2026-09-13). What lifts it is pushing predicates into the custom SQL's
+own tables, provably; until then refusal is the honest answer.
+
+Tests: `rls-conformance.test.ts` gate 13 — a folder rule and a business-area
+rule each refuse by name, for the covered user and the uncovered one alike, and
+with no policy the folder runs only in `OPEN` mode.
 
 ## Verdict: this estate had no row-level security
 

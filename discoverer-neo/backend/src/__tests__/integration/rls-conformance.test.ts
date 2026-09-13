@@ -56,6 +56,7 @@ import { config } from '../../config.js';
 //  11. an export carrying the same predicates as the on-screen query
 //  12. a user with no policy sees NOTHING, and removing or disabling a
 //      policy never opens access                                         (D-090)
+//  13. a COMPLEX folder any active policy reaches refuses, naming both   (SEC-06)
 //
 // Row-level security fails closed by default, so every gate that needs a query
 // to RUN gives its user a rule on each folder that query reads. Gate 10 is the
@@ -863,6 +864,87 @@ describe('row-level security fails closed by default (D-090)', () => {
       expect(execute).not.toHaveBeenCalled();
     } finally {
       await dropPolicy(policyId);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Gate 13 — a COMPLEX folder carrying a policy refuses, naming both (SEC-06).
+// Its SQL is inlined as a derived table, and predicates are ANDed onto the
+// query around it, never into the tables that SQL reads.
+// ---------------------------------------------------------------------------
+
+describe('a COMPLEX folder carrying a policy refuses (SEC-06)', () => {
+  let complexFolder: Folder;
+  let complexMapId: string;
+
+  beforeAll(async () => {
+    [complexFolder] = (await db
+      .insert(folders)
+      .values({
+        businessAreaId: baId,
+        name: 'SALES_SQL',
+        folderType: 'COMPLEX',
+        customSql: 'SELECT REGION, AMOUNT FROM APP.SALES',
+        dataSourceId: salesFolder.dataSourceId,
+        createdBy: adminId,
+      })
+      .returning()) as [Folder];
+    const complexRegion = await mkItem(complexFolder, 'Region', {
+      columnName: 'REGION',
+    });
+    complexMapId = await mkMap('RLS Conf Complex', baId, [complexRegion.id]);
+  });
+
+  it('refuses, naming the folder and the policy — even for the user it covers', async () => {
+    const policyId = await createPolicy('RLS Conf complex guard', [
+      {
+        targetId: complexFolder.id,
+        targetType: 'FOLDER',
+        sqlPredicate: '{alias}."REGION" = \'EMEA\'',
+      },
+    ]);
+    try {
+      await assignPolicy(policyId, userOkId);
+      for (const userId of [userOkId, userNoPolicyId]) {
+        const { conn, execute } = makeCaptureConn();
+        await expect(
+          executeMap(complexMapId, {}, userId, {}, realPipelineDeps(conn)),
+        ).rejects.toThrow(
+          /COMPLEX folder "SALES_SQL" is covered by row-level security policy "RLS Conf complex guard"/,
+        );
+        expect(execute).not.toHaveBeenCalled();
+      }
+    } finally {
+      await dropPolicy(policyId);
+    }
+  });
+
+  it('refuses when a business-area policy reaches it, too', async () => {
+    const policyId = await createPolicy('RLS Conf area-wide', [
+      { targetId: baId, targetType: 'BUSINESS_AREA', sqlPredicate: '1 = 1' },
+    ]);
+    try {
+      await assignPolicy(policyId, userOkId);
+      await expect(captureSql(complexMapId, userOkId)).rejects.toThrow(
+        /COMPLEX folder "SALES_SQL" is covered by row-level security policy "RLS Conf area-wide"/,
+      );
+    } finally {
+      await dropPolicy(policyId);
+    }
+  });
+
+  it('with no policy it is refused as uncovered, and runs only in OPEN mode', async () => {
+    await expect(captureSql(complexMapId, userOkId)).rejects.toThrow(
+      /no row-level security policy resolves for you on folder\(s\) "SALES_SQL"/,
+    );
+
+    config.ROW_LEVEL_FAIL_MODE = 'OPEN';
+    try {
+      const sql = await captureSql(complexMapId, userOkId);
+      expect(sql).toContain('(SELECT REGION, AMOUNT FROM APP.SALES)');
+    } finally {
+      config.ROW_LEVEL_FAIL_MODE = 'CLOSED';
     }
   });
 });

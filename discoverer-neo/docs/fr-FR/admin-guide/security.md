@@ -353,6 +353,21 @@ instruction `SELECT` ou `WITH` ; le DDL, le DML, `EXEC`, `EXECUTE IMMEDIATE` et
 les appels `DBMS_` sont refusés avec `400`. Passer un dossier en COMPLEX sans SQL
 est également refusé.
 
+**Un dossier COMPLEX atteint par une stratégie de sécurité au niveau des lignes
+refuse de s'exécuter.** Son SQL est inséré comme table dérivée, et le prédicat
+de la stratégie est combiné par un ET dans la requête qui l'entoure — jamais
+dans les tables que ce SQL lit —, si bien que Neo ne peut pas prouver que le
+prédicat filtre quoi que ce soit. Le refus nomme le dossier et la stratégie,
+s'applique à tous les utilisateurs et vaut que la stratégie cible le dossier ou
+son domaine d'activité :
+
+> Refusing to run: COMPLEX folder "X" is covered by row-level security policy "P", and a policy's predicate cannot yet be proven to filter the rows a COMPLEX folder's own SQL reads
+
+En mode `CLOSED`, le mode par défaut, un dossier COMPLEX ne peut donc pas être
+lu du tout : sans stratégie, il est refusé faute de couverture ; avec une
+stratégie, il est refusé ici. Lisez ces données par un dossier ordinaire sur la
+table ou la vue sous-jacente, et placez la stratégie sur ce dossier.
+
 ## Bonnes pratiques
 
 1. **Commencez simplement** — Débutez par un filtrage sur une seule colonne (region, department)

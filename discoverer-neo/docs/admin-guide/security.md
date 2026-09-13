@@ -401,6 +401,20 @@ too.
 Before this, only create was checked: a folder created with a clean `SELECT`
 could be edited to anything.
 
+**A COMPLEX folder that a row-level security policy reaches refuses to run.**
+Its SQL is inlined as a derived table, and a policy's predicate is ANDed onto
+the query around it — never into the tables that SQL reads — so Neo cannot
+prove the predicate filters anything. The refusal names the folder and the
+policy, applies to every user, and holds whether the policy targets the folder
+or its business area:
+
+> Refusing to run: COMPLEX folder "X" is covered by row-level security policy "P", and a policy's predicate cannot yet be proven to filter the rows a COMPLEX folder's own SQL reads
+
+Under the default `CLOSED` mode a COMPLEX folder therefore cannot be read at
+all: without a policy it is refused as uncovered, and with one it is refused
+here. Read the same data through an ordinary folder over the underlying table
+or view instead, and put the policy on that folder.
+
 ## Best Practices
 
 1. **Start Simple** — Begin with single-column filtering (region, department)

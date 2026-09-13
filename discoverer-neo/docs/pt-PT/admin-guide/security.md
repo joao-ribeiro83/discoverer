@@ -349,6 +349,21 @@ verificado **na criação e na actualização** pela mesma função
 recusados com `400`. Mudar o tipo de uma pasta para COMPLEX sem SQL também é
 recusado.
 
+**Uma pasta COMPLEX a que chega uma política de segurança ao nível da linha
+recusa-se a executar.** O seu SQL é inserido como tabela derivada, e o predicado
+da política é combinado com E lógico na consulta que a envolve — nunca nas
+tabelas que esse SQL lê —, pelo que o Neo não consegue provar que o predicado
+filtra alguma coisa. A recusa indica a pasta e a política, aplica-se a todos os
+utilizadores e vale quer a política se aplique à pasta, quer à sua área de
+negócio:
+
+> Refusing to run: COMPLEX folder "X" is covered by row-level security policy "P", and a policy's predicate cannot yet be proven to filter the rows a COMPLEX folder's own SQL reads
+
+No modo `CLOSED`, o predefinido, uma pasta COMPLEX não pode por isso ser lida de
+todo: sem política é recusada por não estar coberta, e com política é recusada
+aqui. Leia esses dados através de uma pasta normal sobre a tabela ou vista
+subjacente e coloque a política nessa pasta.
+
 ## Melhores Práticas
 
 1. **Comece de Forma Simples** — Comece com filtragem por uma única coluna (região, departamento)
