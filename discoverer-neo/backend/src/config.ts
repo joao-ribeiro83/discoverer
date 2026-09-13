@@ -200,6 +200,15 @@ const EnvSchema = z.object({
    */
   CREDENTIAL_FILE_TTL_HOURS: z.coerce.number().int().positive().default(24),
 
+  /**
+   * Comma-separated origins allowed to make credentialed cross-origin
+   * requests (INF-13). `@fastify/cors` was reflecting whatever `Origin` the
+   * caller sent — with `credentials: true`, that lets any site ride a
+   * logged-in user's cookies/session. An exact-match allowlist closes it;
+   * there is no wildcard mode because credentials require an exact match.
+   */
+  CORS_ALLOWED_ORIGINS: z.string().default('http://localhost:5173,http://localhost:5174'),
+
   LOG_LEVEL: z
     .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
     .default('info'),
@@ -277,5 +286,8 @@ export const config = {
       ? parsed.data.NODE_ENV !== 'test'
       : parsed.data.SCHEDULER_WORKER_ENABLED === 'true',
   METADATA_CACHE_ENABLED: parsed.data.METADATA_CACHE_ENABLED === 'true',
+  CORS_ALLOWED_ORIGINS: parsed.data.CORS_ALLOWED_ORIGINS.split(',')
+    .map((origin) => origin.trim())
+    .filter((origin) => origin.length > 0),
 };
 export type Config = typeof config;
