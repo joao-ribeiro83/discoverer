@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { dataSources, type DataSource, type NewDataSource } from '../db/schema.js';
 import { encrypt, decrypt } from '../lib/encryption.js';
-import { assertHostIsSafe, DataSourceHostError } from '../lib/host-safety.js';
+import { resolveSafeHost, DataSourceHostError } from '../lib/host-safety.js';
 import { importOracleDb, type OracleDbModule } from './oracle-driver.js';
 
 // Shape returned to API clients — never includes the decrypted password.
@@ -147,10 +147,14 @@ async function testOracleConnection(
   // SEC-10: this probe reports success/failure/latency for whatever host:port
   // it is given — exactly the oracle a port scanner wants. Only the
   // structured host/port form is checked; an explicit connectionString is
-  // already an admin typing raw Oracle connect syntax.
+  // already an admin typing raw Oracle connect syntax. The resolved address
+  // (not `ds.host`) is what actually gets dialed below, so a DNS answer that
+  // changes between this check and the connect attempt (rebinding) can't
+  // reach a different address than the one just validated.
+  let resolvedHost = ds.host;
   if (!ds.connectionString && ds.host) {
     try {
-      await assertHostIsSafe(ds.host);
+      resolvedHost = await resolveSafeHost(ds.host);
     } catch (err) {
       const latencyMs = Math.round(performance.now() - start);
       const message = err instanceof DataSourceHostError ? err.message : 'Host check failed';
@@ -173,7 +177,7 @@ async function testOracleConnection(
   // Decrypt password for the connection attempt.
   const password = ds.passwordEnc ? decrypt(ds.passwordEnc) : '';
   const connectString =
-    ds.connectionString || `(DESCRIPTION=(ADDRESS=(HOST=${ds.host})(PORT=${ds.port})(PROTOCOL=TCP))(CONNECT_DATA=(SERVICE_NAME=${ds.serviceName || ds.sid})))`;
+    ds.connectionString || `(DESCRIPTION=(ADDRESS=(HOST=${resolvedHost})(PORT=${ds.port})(PROTOCOL=TCP))(CONNECT_DATA=(SERVICE_NAME=${ds.serviceName || ds.sid})))`;
 
   let conn;
   try {
