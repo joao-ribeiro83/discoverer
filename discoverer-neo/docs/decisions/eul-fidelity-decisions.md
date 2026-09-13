@@ -546,6 +546,58 @@ from the audit matrix.
 
 ---
 
+## Decision 11 — `EUL4_ASM_POLICIES` is summary management, not row-level security
+
+**The audit's premise.** F-27 (`AUDIT_LEGACY_COMPATIBILITY_MATRIX.md:64`)
+lists `EUL4_ASM_POLICIES` as unmigrated "Security Manager conditions", MUST/P1.
+**It is not row-level security**, proven three ways:
+
+1. `discoverer10g\sql\eulasm.sql:1-2` sets up privileges "required for Summary
+   Management (and ASM)" and grants `create any materialized view`,
+   `analyze any` and `global query rewrite`.
+2. ASM is chapter 13 of the Administration Guide, "Managing summary folders".
+   The minimum an ASM policy needs is a tablespace name and a disc-space
+   allowance (`9.0.4\B10270_01.pdf` pp. 13-5, 13-8).
+3. `EUL.dtd:385-399`: `ASMPolicy` constrains folders and summary objects,
+   carries no user and no predicate, and is a per-EUL singleton
+   (`EUL.dtd:83`). A singleton cannot be per-user security.
+
+**Decision.** Do not build an RLS reader against it (D-077). It would return an
+empty or meaningless policy set and, worse, a false sense that row-level
+security had been migrated. Nor does it migrate as summary-folder input: on
+this estate `ASM_POLICIES` holds 1 row, `ASMP_CONS` 0 and `ASMP_LOGS` 0
+(measured 2026-09-13), so no administrator ever excluded a folder from
+summarisation — and summary folders rely on Oracle's own query rewrite
+anyway (D-076).
+
+**What Discoverer 4.1 row-level security actually was.** A mandatory, hidden
+advanced condition on a folder whose predicate compares Oracle's `USER` to a
+hard-coded user list (`9.0.4\B10270_01.pdf` pp. 11-15…11-19):
+
+```sql
+(USER IN ('ADMTEST','SMITH') AND Store.Region = 'West')
+OR
+(USER IN ('JONES')           AND Store.Region = 'East')
+```
+
+**This estate had none.** Measured 2026-09-13, read-only:
+
+- No folder condition exists at all: `EUL4_EXPRESSIONS` holds only `CO`, `CI`
+  and `JP` rows, so there is no mandatory condition to carry a predicate.
+- No EUL expression, and none of the 3 427 workbook condition trees, calls
+  `UID`, `USER` or `USERENV` (`FUN_ID` 69, 70, 71 in Oracle's own seed script).
+- No folder reads `ALL_USERS`, `DBA_USERS` or `USER_USERS`.
+- The two depth-2 `OR`-of-`AND` trees — Decision 9's "7 instances", counted
+  per worksheet — compare ordinary items to literals and a parameter. Neither
+  names a user, and a workbook condition is not mandatory in any case.
+
+So nothing migrates into `security_policies`, and nothing was lost by not
+reading `ASM_POLICIES`. The business-area grants and the `!migrat` sentinel
+carry the whole access-control burden brought over from the source. The full
+measurement is in `docs/master-plan/checkpoints/PHASE_6.3_CHECKPOINT.md`.
+
+---
+
 ## What still needs a live EUL
 
 These are open because no offline source answers them, not because they were
@@ -560,8 +612,10 @@ bear on the decisions above:
   Decoding it is what would let Decision 3's roles carry differentiated
   permissions. (`GP_APP_ID` is answered: it appears only on EUL-wide
   privilege rows, which are not business-area grants.)
-- **Condition rows** — no confirmed `EXP_TYPE` identifies one, so conditions do
-  not migrate at all.
+- **Folder condition rows** — this EUL holds none: `EXP_TYPE` is only `CO`,
+  `CI` and `JP` (re-measured 2026-09-13). Worksheet conditions migrate from
+  workbook bodies instead; an EUL that does carry folder conditions still needs
+  a reader.
 - **Conditional formats (Exceptions)** — Decision 10. Needs a fresh dump
   corpus (`d4dumps`) or new binary evidence to identify which element class
   carries them; the 40 corpus-wide unmodelled elements are not enough to
