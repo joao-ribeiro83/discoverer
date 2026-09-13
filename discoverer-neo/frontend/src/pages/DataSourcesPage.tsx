@@ -40,7 +40,10 @@ function buildFormSchema(t: (key: string) => string) {
     password: z.string().optional(),
   })
 }
-type FormValues = z.infer<ReturnType<typeof buildFormSchema>>
+// port uses z.coerce, so the pre-submit input type (raw string from the
+// number input) differs from the post-validation output type (number).
+type FormInput = z.input<ReturnType<typeof buildFormSchema>>
+type FormValues = z.output<ReturnType<typeof buildFormSchema>>
 
 export function DataSourcesPage() {
   const { t } = useTranslation(['admin', 'common'])
@@ -58,7 +61,7 @@ export function DataSourcesPage() {
     queryFn: async () => (await apiClient.dataSources.list()).data.data,
   })
 
-  const form = useForm<FormValues>({
+  const form = useForm<FormInput, unknown, FormValues>({
     resolver: standardSchemaResolver(buildFormSchema(t)),
     defaultValues: { name: '', description: '', connectionType: 'oracle' },
   })
