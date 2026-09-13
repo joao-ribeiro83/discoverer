@@ -83,11 +83,16 @@ const KIND_STATUS: Record<ExecutionErrorKind, number> = {
   FORBIDDEN: 403,
 };
 
-/** Translate a thrown execution error into a JSON response. Returns true when handled. */
-function handleExecutionError(reply: FastifyReply, err: unknown): boolean {
+/**
+ * Translate a thrown execution error into a JSON response. Returns true when
+ * handled. `correlationId` (the request id) is echoed back so a user can
+ * quote it when reporting a failure (BE-11) — `MapExecutionError.message` is
+ * already the kind's generic text, never the driver's raw one (SEC-07).
+ */
+function handleExecutionError(reply: FastifyReply, err: unknown, correlationId: string): boolean {
   if (err instanceof MapExecutionError) {
     const statusCode = KIND_STATUS[err.kind];
-    reply.code(statusCode).send({ error: err.message, statusCode, kind: err.kind });
+    reply.code(statusCode).send({ error: err.message, statusCode, kind: err.kind, correlationId });
     return true;
   }
   if (err instanceof SqlGenerationError) {
@@ -157,7 +162,7 @@ export default function mapExecutionRoutes(fastify: FastifyInstance) {
         // A definition that cannot even be assembled — an item that no longer
         // exists, a join Neo cannot express — is reported the same way a
         // refusal is. The canvas is still being built; nothing here is fatal.
-        if (handleExecutionError(reply, err)) return;
+        if (handleExecutionError(reply, err, request.id)) return;
         throw err;
       }
     },
@@ -195,11 +200,12 @@ export default function mapExecutionRoutes(fastify: FastifyInstance) {
             timeoutMs: parsed.data.timeoutMs,
             calculatedFields: parsed.data.calculatedFields,
             offset: parsed.data.offset,
+            correlationId: request.id,
           },
         );
         return { data: result };
       } catch (err) {
-        if (handleExecutionError(reply, err)) return;
+        if (handleExecutionError(reply, err, request.id)) return;
         throw err;
       }
     },
