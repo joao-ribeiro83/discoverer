@@ -10,21 +10,73 @@ Learn how to define row-level security (RLS) policies that filter data by user o
 
 ## How RLS Works
 
-1. **Define Policy:** Create a security predicate for a folder
-2. **User Context:** Associate user with context values (e.g., region = "EMEA")
-3. **Query Execution:** Predicate automatically added to WHERE clause
-4. **Filtered Results:** User sees only rows matching their context
+1. **A policy holds rules.** Each rule targets a **business area** or a
+   **folder** and carries a SQL predicate — a WHERE-clause fragment such as
+   `REGION = 'EMEA'` or `{alias}."SALES_REP_ID" = :current_user_id`.
+2. **A policy is assigned** to users, to roles, or to both.
+3. **When a query runs,** Neo finds every folder whose rows can reach the
+   result: the map's items and conditions, the folders a calculation reads, and
+   joined folders that filter rows. A business-area rule applies to each such
+   folder that belongs to its area (owned or shared); a folder rule applies to
+   its own folder.
+4. **Every applicable predicate is ANDed into the WHERE clause,** each in its
+   own brackets, so an `OR` in the map's own conditions cannot escape it. On a
+   worksheet that summarises several sets of detail rows, the predicate goes
+   inside each summary, before anything is added up.
 
-```sql
--- Base query
-SELECT CUSTOMER_ID, SALES_AMOUNT, REGION FROM CUSTOMERS
+Predicates can use three binds, filled from the signed-in user and never from
+the request: `:current_user_id`, `:current_user_email` and
+`:current_user_role`. A folder rule can write `{alias}` for its folder's place
+in the query.
 
--- With RLS policy
-SELECT CUSTOMER_ID, SALES_AMOUNT, REGION FROM CUSTOMERS
-WHERE REGION = NVL2(SYS_CONTEXT('dn_user_context', 'region'),
-                     SYS_CONTEXT('dn_user_context', 'region'),
-                     REGION)
-```
+## Row-level security fails closed
+
+**A user no policy gives rows on a folder sees nothing from that folder.** The
+query is refused by name, and no SQL reaches Oracle:
+
+> Refusing to run unfiltered: no row-level security policy resolves for you on folder(s) "SALES"
+
+This is **deliberately unlike Discoverer**, and it is the one place Neo breaks
+compatibility on purpose (D-090). Discoverer's row-level security was a
+mandatory folder condition; a folder without one showed every row to everyone.
+Reproducing that would be reproducing a vulnerability.
+
+What follows from it:
+
+- **A fresh deployment returns nothing** until policies exist — administrators
+  included. To let a group see every row of a business area, give them a
+  policy whose rule targets that area with the predicate `1 = 1`.
+- **Removing, disabling or unassigning a policy never opens access.** It can
+  only take rows away.
+- **Administrators are not exempt.** They bypass business-area grants; they do
+  not bypass row-level security. There is no admin bypass to audit.
+- **Lists of values follow the same rule.** A pick-list over a folder you have
+  no policy for is refused too.
+
+The setting is `ROW_LEVEL_FAIL_MODE`
+([Configuration](../deployment/configuration.md#row-level-security)). `OPEN`
+refuses only a folder that some active policy already targets, and runs every
+other folder unfiltered, as before this change. Use it only while a
+deployment's policies are being written: under `OPEN`, disabling a policy does
+widen access again.
+
+### Administrators are the trust boundary for predicates
+
+A predicate is raw SQL, spliced into every query its folder reaches. Neo
+validates it when it is saved and, before every run, checks again that it
+cannot break out of its brackets. It refuses:
+
+- statement separators (`;`) and comments (`--`, `/* */`);
+- anything that closes the bracket the predicate is wrapped in, such as
+  `1=1) OR (1=1`, which would return every row;
+- DDL, DML and PL/SQL keywords, `UNION` / `INTERSECT` / `MINUS` / `EXCEPT`, and
+  `DBMS_`, `UTL_`, `OWA_`, `HTP.` and `HTF.` calls;
+- binds other than the three above, and text that does not parse as a
+  condition.
+
+Those checks stop mistakes and the known ways out. **They cannot tell a wrong
+rule from a right one.** Whoever can edit policies decides what every user
+sees, so treat the security administrator role as you would database access.
 
 ## Creating Security Policies
 
@@ -166,14 +218,18 @@ Audit logs show executed SQL:
 2. Uncheck **Active**
 3. Save
 
-Policy no longer filters queries.
+The policy stops applying. Its users do **not** get unfiltered rows back: a
+folder they no longer have an active policy for is refused, as described in
+[Row-level security fails closed](#row-level-security-fails-closed). Only under
+`ROW_LEVEL_FAIL_MODE=OPEN` does disabling or deleting a policy widen access.
 
 ### Permanently Delete
 
 1. Find policy → **Delete**
 2. Confirm
 
-Policy is removed; queries no longer filtered.
+The policy, its rules and its assignments are removed. As with disabling, this
+takes rows away and never gives them back.
 
 ## Performance Considerations
 
@@ -293,32 +349,25 @@ because that report reads a folder in your business area even though the report
 itself is filed elsewhere. That is the intended behaviour: the policy protects
 the data, not the report.
 
-### 3. A folder with a policy is fail-closed
+### 3. A folder with no policy for you is refused
 
-If **anyone's** active policy targets a folder (or a business area that folder
-belongs to) and the person running the query resolves **no** predicate for it,
-the query is refused by name rather than run unfiltered.
-
-Before this, a user with no policy assignment simply got every row the policy
-existed to hide.
+Running a query needs a row-level security policy that covers **every folder
+it reads**. A user without one is refused by name rather than handed every row
+— see [Row-level security fails closed](#row-level-security-fails-closed).
 
 **What you may see:** *"Refusing to run unfiltered: no row-level security policy
 resolves for you on folder(s) X"*. The fix is to assign that user (or their
 role) a policy covering the folder. If they are meant to see everything, assign
-them a permissive policy (`1=1`) rather than leaving them unassigned — the
-absence of a policy is no longer read as permission.
+them a permissive policy (`1 = 1`) rather than leaving them unassigned — the
+absence of a policy is never read as permission.
 
 This applies to **admins too**. Admins bypass grants; they do not bypass
-row-level policies, and they never did — this only extends the same rule to the
-case where no policy resolves.
+row-level policies.
 
-Two things it deliberately does *not* do:
-
-- **It is not a global fail-closed.** A folder no policy targets runs exactly as
-  before. Against an empty policy table the rule changes nothing at all.
-- **Inactive policies do not count.** Their rules apply to nobody, so a folder
-  targeted only by an inactive policy is not treated as policy-bearing —
-  otherwise disabling a policy would lock everyone out with no way back in.
+This started in Phase 1.1 as a narrower rule — refuse only a folder that some
+active policy already targeted — and became the full fail-closed in Phase 6.3.
+`ROW_LEVEL_FAIL_MODE=OPEN` brings the narrower rule back; it never lets a
+folder that a policy targets run unfiltered.
 
 ## Object-level access
 
@@ -365,7 +414,7 @@ could be edited to anything.
 
 - **Manual Context Assignment** — Users' context currently set manually (no automatic LDAP sync in v0.1)
 - **No Temporal RLS** — No time-based filtering yet
-- **Single Predicate per Folder** — Only one policy applies per folder
+- **Policies Combine with AND** — When several of your policies reach a folder, you see only the rows all of them allow
 - **No Row-Level UPDATE/DELETE** — RLS only filters SELECT queries
 
 ## What's Next?

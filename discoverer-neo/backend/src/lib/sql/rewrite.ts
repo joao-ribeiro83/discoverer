@@ -85,6 +85,21 @@ export function renderRewrite(
     );
   }
 
+  // A folder's predicate goes only into the branches that read that folder
+  // (`renderBranch`). One that no branch reads would vanish without a trace —
+  // an inline view is a new place for a predicate to go missing — so refuse
+  // rather than run without it (D-090).
+  for (const predicate of options.securityPredicates ?? []) {
+    if (typeof predicate === 'string' || !predicate.folderId) continue;
+    const { folderId } = predicate;
+    if (!plan.branches.some((branch) => branch.folderIds.includes(folderId))) {
+      const named = [...def.items, ...def.formulaItems].find((e) => e.folder.id === folderId);
+      throw new SqlGenerationError(
+        `A row-level security predicate for folder "${named?.folder.name ?? folderId}" has no branch to apply it in`,
+      );
+    }
+  }
+
   const bindParams: Record<string, unknown> = {};
   const rendered = plan.branches.map((branch) =>
     renderBranch(def, plan, branch, options, bindParams),

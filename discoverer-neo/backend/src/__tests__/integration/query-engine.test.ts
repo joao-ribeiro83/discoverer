@@ -21,9 +21,13 @@ import {
   mapParameters,
   mapCalculatedFields,
   queryExecutionLog,
+  securityPolicies,
+  securityPolicyAssignments,
+  securityPolicyRules,
   type Item,
   type Folder,
 } from '../../db/schema.js';
+import { config } from '../../config.js';
 import {
   FLAGS_FOR_JOIN_TYPE,
   type JoinType,
@@ -425,6 +429,10 @@ async function executeTestMap(
 // ---------------------------------------------------------------------------
 
 beforeAll(async () => {
+  // SQL generation and execution, not row security: the admin these tests run
+  // as has no policy, and the default CLOSED mode would refuse every query
+  // (D-090). The rewrite-under-CLOSED block at the end switches it back.
+  config.ROW_LEVEL_FAIL_MODE = 'OPEN';
   await cleanupIntegrationUsers();
 });
 
@@ -1081,5 +1089,115 @@ describe('Scenario 12: row-level security predicate', () => {
     expect(predicateAt).toBeGreaterThan(-1);
     expect(groupByAt).toBeGreaterThan(-1);
     expect(predicateAt).toBeLessThan(groupByAt);
+  });
+});
+
+// ===========================================================================
+// Row-level security on a rewritten query, in the default CLOSED mode (D-090)
+//
+// An inline view is a new place for a predicate to go missing, so fail-closed
+// is tested against the rewrite through the REAL resolver — not with a
+// predicate handed to the generator by hand, as the test above does.
+// ===========================================================================
+
+describe('fail-closed row-level security on a rewritten query (D-090)', () => {
+  beforeAll(() => {
+    config.ROW_LEVEL_FAIL_MODE = 'CLOSED';
+  });
+
+  afterAll(() => {
+    config.ROW_LEVEL_FAIL_MODE = 'OPEN';
+  });
+
+  function rewriteMap(): Promise<string> {
+    return createTestMap({
+      items: [
+        { item: fx.custName, displayOrder: 0 },
+        { item: fx.amount, displayOrder: 1, aggFunction: 'SUM' },
+      ],
+    });
+  }
+
+  /** Assign the admin one policy holding these folder rules, for `run` only. */
+  async function withRules(
+    rules: Array<{ folder: Folder; sqlPredicate: string }>,
+    run: () => Promise<void>,
+  ): Promise<void> {
+    const [policy] = await db
+      .insert(securityPolicies)
+      .values({ name: `QE rewrite policy ${Date.now()}`, policyType: 'ROW_LEVEL' })
+      .returning();
+    try {
+      await db.insert(securityPolicyRules).values(
+        rules.map((rule) => ({
+          policyId: policy!.id,
+          targetId: rule.folder.id,
+          targetType: 'FOLDER' as const,
+          sqlPredicate: rule.sqlPredicate,
+        })),
+      );
+      await db
+        .insert(securityPolicyAssignments)
+        .values({ policyId: policy!.id, userId: adminId });
+      await run();
+    } finally {
+      // Rules and assignments cascade. Deleted here rather than left behind:
+      // the conformance suite asserts the policy tables start empty.
+      await db.delete(securityPolicies).where(eq(securityPolicies.id, policy!.id));
+    }
+  }
+
+  it('refuses a user with no policy before any statement reaches Oracle', async () => {
+    const mapId = await rewriteMap();
+    const { conn, execute } = makeRowsConn([]);
+    await expect(executeMap(mapId, {}, adminId, {}, execDeps(conn))).rejects.toThrow(
+      /no row-level security policy resolves for you/,
+    );
+    expect(execute).not.toHaveBeenCalled();
+  });
+
+  it('refuses when a branch reads a folder the user has no rule for', async () => {
+    const mapId = await rewriteMap();
+    await withRules(
+      [{ folder: fx.customers, sqlPredicate: '{alias}."CUSTOMER_NAME" IS NOT NULL' }],
+      async () => {
+        const { conn, execute } = makeRowsConn([]);
+        await expect(executeMap(mapId, {}, adminId, {}, execDeps(conn))).rejects.toThrow(
+          /on folder\(s\) "SALES"/,
+        );
+        expect(execute).not.toHaveBeenCalled();
+      },
+    );
+  });
+
+  it('puts every resolved predicate inside the branch, below its GROUP BY', async () => {
+    const mapId = await rewriteMap();
+    await withRules(
+      [
+        { folder: fx.sales, sqlPredicate: '{alias}."REGION" = \'EMEA\'' },
+        { folder: fx.customers, sqlPredicate: '{alias}."CUSTOMER_NAME" IS NOT NULL' },
+      ],
+      async () => {
+        const { conn, execute } = makeRowsConn([]);
+        await executeMap(mapId, {}, adminId, {}, execDeps(conn));
+
+        const sql = execute.mock.calls[0]![0] as string;
+        assertSqlContains(sql, 'LEFT OUTER JOIN "APP"."CUSTOMERS"');
+        // A rule lands only in the branches that read its folder, so check each
+        // occurrence against its OWN inline view: that view's GROUP BY must come
+        // before the view closes (`) b0`, `) b1`, ...). The outer query has no
+        // WHERE, so an occurrence with no view closing after it has leaked out.
+        for (const fragment of ['"REGION" = \'EMEA\'', '"CUSTOMER_NAME" IS NOT NULL']) {
+          let at = sql.indexOf(fragment);
+          expect(at).toBeGreaterThan(-1);
+          while (at > -1) {
+            const viewCloses = sql.indexOf(') b', at);
+            expect(viewCloses).toBeGreaterThan(at);
+            expect(sql.slice(at, viewCloses)).toContain('GROUP BY');
+            at = sql.indexOf(fragment, at + fragment.length);
+          }
+        }
+      },
+    );
   });
 });

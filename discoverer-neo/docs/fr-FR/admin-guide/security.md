@@ -10,21 +10,82 @@ La **sécurité au niveau des lignes (RLS)** filtre automatiquement les résulta
 
 ## Fonctionnement de la RLS
 
-1. **Définir une stratégie :** créez un prédicat de sécurité pour un dossier
-2. **Contexte utilisateur :** associez l'utilisateur à des valeurs de contexte (p. ex. region = « EMEA »)
-3. **Exécution de la requête :** le prédicat est automatiquement ajouté à la clause WHERE
-4. **Résultats filtrés :** l'utilisateur ne voit que les lignes correspondant à son contexte
+1. **Une stratégie contient des règles.** Chaque règle cible un **domaine
+   d'activité** ou un **dossier** et porte un prédicat SQL — un fragment de
+   clause WHERE tel que `REGION = 'EMEA'` ou
+   `{alias}."SALES_REP_ID" = :current_user_id`.
+2. **Une stratégie est attribuée** à des utilisateurs, à des rôles, ou aux deux.
+3. **Lorsqu'une requête s'exécute,** Neo repère chaque dossier dont les lignes
+   peuvent atteindre le résultat : les éléments et conditions de la carte, les
+   dossiers qu'un calcul lit, et les dossiers joints qui filtrent des lignes.
+   Une règle de domaine d'activité s'applique à chacun de ces dossiers qui
+   appartient à son domaine (propriétaire ou partagé) ; une règle de dossier
+   s'applique à son dossier.
+4. **Chaque prédicat applicable est combiné par un ET dans la clause WHERE,**
+   chacun entre ses propres parenthèses, de sorte qu'un `OR` dans les
+   conditions de la carte ne peut pas s'en échapper. Sur une feuille qui résume
+   plusieurs ensembles de lignes de détail, le prédicat est placé dans chaque
+   résumé, avant toute addition.
 
-```sql
--- Base query
-SELECT CUSTOMER_ID, SALES_AMOUNT, REGION FROM CUSTOMERS
+Les prédicats peuvent utiliser trois liaisons, alimentées par l'utilisateur
+connecté et jamais par la requête : `:current_user_id`, `:current_user_email`
+et `:current_user_role`. Une règle de dossier peut écrire `{alias}` pour
+désigner son dossier dans la requête.
 
--- With RLS policy
-SELECT CUSTOMER_ID, SALES_AMOUNT, REGION FROM CUSTOMERS
-WHERE REGION = NVL2(SYS_CONTEXT('dn_user_context', 'region'),
-                     SYS_CONTEXT('dn_user_context', 'region'),
-                     REGION)
-```
+## La sécurité au niveau des lignes refuse par défaut
+
+**Un utilisateur à qui aucune stratégie ne donne de lignes d'un dossier ne voit
+rien de ce dossier.** La requête est refusée en nommant le dossier, et aucun
+SQL n'atteint Oracle :
+
+> Refusing to run unfiltered: no row-level security policy resolves for you on folder(s) "SALES"
+
+C'est **délibérément différent de Discoverer**, et c'est le seul point où Neo
+rompt volontairement la compatibilité (D-090). La sécurité au niveau des lignes
+de Discoverer était une condition obligatoire de dossier ; un dossier qui n'en
+avait pas montrait toutes les lignes à tout le monde. La reproduire reviendrait
+à reproduire une vulnérabilité.
+
+Ce qui en découle :
+
+- **Un nouveau déploiement ne renvoie rien** tant qu'il n'existe pas de
+  stratégies, pas même aux administrateurs. Pour qu'un groupe voie toutes les
+  lignes d'un domaine d'activité, attribuez-lui une stratégie dont la règle
+  cible ce domaine avec le prédicat `1 = 1`.
+- **Supprimer, désactiver ou retirer une stratégie n'ouvre jamais l'accès.**
+  Cela ne peut que retirer des lignes.
+- **Les administrateurs ne sont pas exemptés.** Ils contournent les
+  autorisations de domaine d'activité ; ils ne contournent pas la sécurité au
+  niveau des lignes. Il n'existe aucun contournement administrateur à auditer.
+- **Les listes de valeurs suivent la même règle.** Une liste déroulante sur un
+  dossier pour lequel vous n'avez pas de stratégie est refusée elle aussi.
+
+Le paramètre est `ROW_LEVEL_FAIL_MODE`
+([Configuration](../../deployment/configuration.md#row-level-security)).
+`OPEN` ne refuse qu'un dossier déjà ciblé par une stratégie active et exécute
+tous les autres sans filtre, comme avant cette modification. Ne l'utilisez que
+pendant la rédaction des stratégies d'un déploiement : en mode `OPEN`,
+désactiver une stratégie élargit de nouveau l'accès.
+
+### Les administrateurs sont la frontière de confiance des prédicats
+
+Un prédicat est du SQL brut, inséré dans chaque requête qu'atteint son dossier.
+Neo le valide à l'enregistrement et, avant chaque exécution, vérifie de nouveau
+qu'il ne peut pas sortir de ses parenthèses. Il refuse :
+
+- les séparateurs d'instructions (`;`) et les commentaires (`--`, `/* */`) ;
+- tout ce qui ferme la parenthèse qui entoure le prédicat, comme
+  `1=1) OR (1=1`, qui renverrait toutes les lignes ;
+- les mots-clés DDL, DML et PL/SQL, `UNION` / `INTERSECT` / `MINUS` /
+  `EXCEPT`, et les appels `DBMS_`, `UTL_`, `OWA_`, `HTP.` et `HTF.` ;
+- les liaisons autres que les trois ci-dessus, et un texte qui ne s'analyse pas
+  comme une condition.
+
+Ces contrôles arrêtent les erreurs et les échappatoires connues. **Ils ne
+peuvent pas distinguer une règle fausse d'une règle juste.** Quiconque peut
+modifier les stratégies décide de ce que voit chaque utilisateur : traitez le
+rôle d'administrateur de sécurité comme vous traiteriez un accès à la base de
+données.
 
 ## Créer des stratégies de sécurité
 
@@ -166,14 +227,20 @@ Les journaux d'audit affichent le SQL exécuté :
 2. Décochez **Actif**
 3. Enregistrez
 
-La stratégie ne filtre plus les requêtes.
+La stratégie cesse de s'appliquer. Ses utilisateurs ne **retrouvent pas** de
+lignes non filtrées : un dossier pour lequel ils n'ont plus de stratégie active
+est refusé, comme décrit dans
+[La sécurité au niveau des lignes refuse par défaut](#la-sécurité-au-niveau-des-lignes-refuse-par-défaut).
+Ce n'est qu'avec `ROW_LEVEL_FAIL_MODE=OPEN` que désactiver ou supprimer une
+stratégie élargit l'accès.
 
 ### Supprimer définitivement
 
 1. Recherchez la stratégie → **Supprimer**
 2. Confirmez
 
-La stratégie est supprimée ; les requêtes ne sont plus filtrées.
+La stratégie, ses règles et ses attributions sont supprimées. Comme pour la
+désactivation, cela retire des lignes et n'en rend jamais.
 
 ## Considérations de performance
 
@@ -299,7 +366,7 @@ est également refusé.
 
 - **Attribution manuelle du contexte** — Le contexte des utilisateurs est actuellement défini manuellement (aucune synchronisation LDAP automatique dans la v0.1)
 - **Pas de RLS temporelle** — Aucun filtrage basé sur le temps pour l'instant
-- **Un seul prédicat par dossier** — Une seule stratégie s'applique par dossier
+- **Les stratégies se combinent par ET** — Lorsque plusieurs de vos stratégies atteignent un dossier, vous ne voyez que les lignes qu'elles autorisent toutes
 - **Pas de UPDATE/DELETE au niveau des lignes** — La RLS ne filtre que les requêtes SELECT
 
 ## Et ensuite ?

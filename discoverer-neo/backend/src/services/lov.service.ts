@@ -1,16 +1,10 @@
 import type { Redis } from 'ioredis';
 import type { BindParameters, Connection } from 'oracledb';
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { db } from '../db/index.js';
-import {
-  folders,
-  itemClasses,
-  items,
-  securityPolicies,
-  securityPolicyRules,
-} from '../db/schema.js';
+import { folders, itemClasses, items } from '../db/schema.js';
 import { assertDataEntitlement, businessAreasForFolders } from './business-area.service.js';
-import { getUserPolicies } from './security.service.js';
+import { getUserPolicies, rowSecurityRefusal } from './security.service.js';
 import { folderTableRef } from '../lib/sql/from-clause.js';
 import { quoteIdentifier } from '../lib/sql/identifiers.js';
 import { ALIAS_TOKEN_RE, referencedBindNames } from '../lib/sql/security-predicates.js';
@@ -261,33 +255,15 @@ export interface LovSecurity {
   binds: Record<string, unknown>;
 }
 
-/** Does any ACTIVE policy rule target this folder, or a business area it is in? */
-async function folderIsPolicyBearing(folderId: string, areaIds: string[]): Promise<boolean> {
-  const rows = await db
-    .select({ id: securityPolicyRules.id })
-    .from(securityPolicyRules)
-    .innerJoin(securityPolicies, eq(securityPolicyRules.policyId, securityPolicies.id))
-    .where(
-      and(
-        eq(securityPolicies.isActive, true),
-        inArray(securityPolicyRules.targetId, [folderId, ...areaIds]),
-      ),
-    )
-    .limit(1);
-  return rows.length > 0;
-}
-
 /**
  * Row-level security for the one folder this LOV reads.
  *
  * Deliberately narrower than `resolveSecurityPredicates`, which works over a
- * map's whole folder set. The same two rules hold, though:
- *
- *  - applicable predicates are ANDed into the WHERE clause;
- *  - a folder that SOMEONE's active policy targets, but for which THIS user
- *    resolves no predicate, is refused rather than listed unfiltered (D-116).
- *    A pick-list that leaked the values a policy exists to hide would be that
- *    policy's most convenient bypass.
+ * map's whole folder set, but it refuses on exactly the same terms because it
+ * asks the same `rowSecurityRefusal`. Applicable predicates are ANDed into the
+ * WHERE clause; a folder this user resolves none for is refused rather than
+ * listed unfiltered. A pick-list that leaked the values a policy exists to
+ * hide would be that policy's most convenient bypass.
  */
 export async function resolveLovSecurity(
   folderId: string,
@@ -307,15 +283,10 @@ export async function resolveLovSecurity(
     }
   }
 
-  if (predicates.length === 0) {
-    if (await folderIsPolicyBearing(folderId, areaIds)) {
-      throw new LovError(
-        'FORBIDDEN',
-        'This folder is covered by a row-level security policy you have no rule for',
-      );
-    }
-    return { predicates: [], binds: {} };
-  }
+  const covered = new Set(predicates.length > 0 ? [folderId] : []);
+  const refusal = await rowSecurityRefusal([folderId], baByFolder, covered);
+  if (refusal) throw new LovError('FORBIDDEN', refusal);
+  if (predicates.length === 0) return { predicates: [], binds: {} };
 
   return {
     predicates,

@@ -5,7 +5,7 @@
     "nonAdminDescription": "Les stratégies de sécurité au niveau des lignes limitent les lignes que les utilisateurs peuvent voir.",
     "nonAdminMessage": "Seuls les administrateurs peuvent gérer les stratégies de sécurité.",
     "newPolicy": "Nouvelle stratégie",
-    "emptyMessage": "Aucune stratégie de sécurité pour le moment. Sans stratégie, les utilisateurs voient toutes les lignes que leurs autorisations de carte permettent."
+    "emptyMessage": "Aucune stratégie de sécurité pour le moment. Par défaut, la sécurité au niveau des lignes refuse l'accès : tant qu'aucune stratégie ne couvre un dossier, personne ne voit ses lignes, pas même les administrateurs."
   },
   "table": {
     "rules": "Règles",
@@ -49,7 +49,7 @@
     "roleAriaLabel": "Rôle à attribuer",
     "selectRole": "Sélectionner un rôle",
     "assign": "Attribuer",
-    "notAssigned": "Non attribuée — cette stratégie ne restreint actuellement personne.",
+    "notAssigned": "Non attribuée — cette stratégie ne donne de lignes à personne.",
     "unknownUser": "Utilisateur inconnu",
     "roleLabel": "Rôle",
     "removeAssignment": "Supprimer l'attribution"

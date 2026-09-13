@@ -5,7 +5,7 @@
     "nonAdminDescription": "Row-level security policies restrict which rows users can see.",
     "nonAdminMessage": "Only administrators can manage security policies.",
     "newPolicy": "New Policy",
-    "emptyMessage": "No security policies yet. Without policies, users see every row their map permissions allow."
+    "emptyMessage": "No security policies yet. Row-level security fails closed by default: until a policy covers a folder, nobody sees its rows, administrators included."
   },
   "table": {
     "rules": "Rules",
@@ -49,7 +49,7 @@
     "roleAriaLabel": "Role to assign",
     "selectRole": "Select role",
     "assign": "Assign",
-    "notAssigned": "Not assigned — this policy currently restricts nobody.",
+    "notAssigned": "Not assigned — this policy gives rows to nobody.",
     "unknownUser": "Unknown user",
     "roleLabel": "Role",
     "removeAssignment": "Remove assignment"

@@ -5,7 +5,7 @@
     "nonAdminDescription": "As políticas de segurança ao nível da linha restringem quais as linhas que os utilizadores podem ver.",
     "nonAdminMessage": "Apenas os administradores podem gerir políticas de segurança.",
     "newPolicy": "Nova Política",
-    "emptyMessage": "Ainda não existem políticas de segurança. Sem políticas, os utilizadores veem todas as linhas que as suas permissões de mapa permitem."
+    "emptyMessage": "Ainda não existem políticas de segurança. Por omissão, a segurança ao nível da linha recusa o acesso: enquanto nenhuma política cobrir uma pasta, ninguém vê as suas linhas, nem mesmo os administradores."
   },
   "table": {
     "rules": "Regras",
@@ -49,7 +49,7 @@
     "roleAriaLabel": "Função a atribuir",
     "selectRole": "Selecione a função",
     "assign": "Atribuir",
-    "notAssigned": "Não atribuída — esta política não restringe atualmente ninguém.",
+    "notAssigned": "Não atribuída — esta política não dá linhas a ninguém.",
     "unknownUser": "Utilizador desconhecido",
     "roleLabel": "Função",
     "removeAssignment": "Remover atribuição"

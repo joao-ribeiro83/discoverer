@@ -1,6 +1,8 @@
 import { and, asc, eq, inArray, isNull, or } from 'drizzle-orm';
+import { config } from '../config.js';
 import { db } from '../db/index.js';
 import {
+  folders,
   securityPolicies,
   securityPolicyAssignments,
   securityPolicyRules,
@@ -420,4 +422,78 @@ export async function getUserPolicies(
   }
 
   return policies.map((p) => ({ ...p, rules: rulesByPolicy.get(p.id) ?? [] }));
+}
+
+// ---------------------------------------------------------------------------
+// Fail-closed (D-090)
+// ---------------------------------------------------------------------------
+
+/**
+ * Why row-level security refuses a query over `folderIds`, or null when it may
+ * run. `covered` holds the folders the executing user resolved at least one
+ * predicate for. Map execution and the list-of-values path both ask here, so
+ * the two cannot drift apart.
+ *
+ * Under `ROW_LEVEL_FAIL_MODE=CLOSED`, the default, every folder the user
+ * resolved nothing for refuses. No policy means no rows, so removing,
+ * disabling or unassigning a policy can only ever take rows away. Discoverer's
+ * row-level security failed open by construction; this is Neo's one deliberate
+ * incompatibility with it (D-090).
+ *
+ * `OPEN` keeps only D-116's rule: a folder refuses when some ACTIVE policy —
+ * anyone's — reaches it, and every other folder runs unfiltered. Inactive
+ * policies never count, so under `OPEN` disabling a policy does widen access.
+ *
+ * Admins are not exempt in either mode. They bypass the grant gate; which rows
+ * they may see is a separate question, and a policy an admin silently escaped
+ * would be no policy at all.
+ */
+export async function rowSecurityRefusal(
+  folderIds: string[],
+  baByFolder: globalThis.Map<string, string[]>,
+  covered: ReadonlySet<string>,
+): Promise<string | null> {
+  let blocked = folderIds.filter((id) => !covered.has(id));
+  if (blocked.length > 0 && config.ROW_LEVEL_FAIL_MODE === 'OPEN') {
+    const reached = await policiesReaching(blocked, baByFolder);
+    blocked = blocked.filter((id) => reached.has(id));
+  }
+  if (blocked.length === 0) return null;
+
+  const names = await db
+    .select({ name: folders.name })
+    .from(folders)
+    .where(inArray(folders.id, blocked));
+  const label = names.map((f) => `"${f.name}"`).join(', ') || blocked.join(', ');
+  return `Refusing to run unfiltered: no row-level security policy resolves for you on folder(s) ${label}`;
+}
+
+/**
+ * The names of the ACTIVE policies reaching each folder — through a rule on the
+ * folder itself or on a business area it belongs to. A folder no active policy
+ * reaches is absent from the result.
+ */
+async function policiesReaching(
+  folderIds: string[],
+  baByFolder: globalThis.Map<string, string[]>,
+): Promise<globalThis.Map<string, string[]>> {
+  const targetsOf = (folderId: string) => [folderId, ...(baByFolder.get(folderId) ?? [])];
+  const rows = await db
+    .select({ targetId: securityPolicyRules.targetId, name: securityPolicies.name })
+    .from(securityPolicyRules)
+    .innerJoin(securityPolicies, eq(securityPolicyRules.policyId, securityPolicies.id))
+    .where(
+      and(
+        eq(securityPolicies.isActive, true),
+        inArray(securityPolicyRules.targetId, [...new Set(folderIds.flatMap(targetsOf))]),
+      ),
+    );
+
+  const reached = new globalThis.Map<string, string[]>();
+  for (const folderId of folderIds) {
+    const targets = new Set(targetsOf(folderId));
+    const names = [...new Set(rows.filter((r) => targets.has(r.targetId)).map((r) => r.name))];
+    if (names.length > 0) reached.set(folderId, names.sort());
+  }
+  return reached;
 }

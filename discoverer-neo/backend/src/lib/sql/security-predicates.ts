@@ -50,38 +50,74 @@ export const MAX_PREDICATE_LENGTH = 4000;
 /**
  * Replace the contents of single-quoted string literals with spaces so keyword
  * and bind scanning cannot be fooled by text inside literals. Doubled quotes
- * ('') inside a literal are handled. Returns null when a literal never
- * terminates — always a validation failure for the caller.
+ * ('') inside a literal are handled. Returns null when a literal — or a quoted
+ * identifier — never terminates: always a validation failure for the caller.
+ *
+ * Double-quoted identifiers are tracked but kept. `"DBMS_LOCK"."SLEEP"(1)` is a
+ * real call, so the package scan has to see it; and tracking them stops the
+ * apostrophe in `"O'Brien"` opening a literal Oracle never opens, which would
+ * blank the real SQL between it and the next quote.
  */
 export function stripStringLiterals(sql: string): string | null {
   let out = '';
-  let i = 0;
-  while (i < sql.length) {
+  let quote: "'" | '"' | null = null;
+  for (let i = 0; i < sql.length; i += 1) {
     const ch = sql[i]!;
-    if (ch !== "'") {
+    if (quote === null) {
+      if (ch === "'" || ch === '"') quote = ch;
       out += ch;
+    } else if (ch !== quote) {
+      out += quote === "'" ? ' ' : ch;
+    } else if (quote === "'" && sql[i + 1] === "'") {
+      out += '  ';
       i += 1;
-      continue;
+    } else {
+      quote = null;
+      out += ch;
     }
-    // Inside a literal: scan to the closing quote, honouring '' escapes.
-    let j = i + 1;
-    let closed = false;
-    while (j < sql.length) {
-      if (sql[j] === "'") {
-        if (sql[j + 1] === "'") {
-          j += 2;
-          continue;
-        }
-        closed = true;
-        break;
-      }
-      j += 1;
-    }
-    if (!closed) return null;
-    out += `'${' '.repeat(j - i - 1)}'`;
-    i = j + 1;
   }
-  return out;
+  return quote === null ? out : null;
+}
+
+/**
+ * Why a predicate could break out of the bracket the SQL generator wraps it
+ * in, or null when it cannot.
+ *
+ * The generator emits `AND (<predicate>)`, and that bracket is the whole of
+ * the OR-cannot-escape guarantee. A predicate that closes it — `1=1) OR (1=1`
+ * — turns the clause into `AND (1=1) OR (1=1)`, and every row escapes with the
+ * OR. A comment can swallow the closing bracket or the clauses after it.
+ * `validatePredicate` checks this on write; the generator checks it again, so
+ * a stored row that predates a tightening is still stopped.
+ */
+export function bracketingError(predicate: string): string | null {
+  const stripped = stripStringLiterals(predicate);
+  if (stripped === null) {
+    return 'Unterminated string literal or quoted identifier';
+  }
+  if (stripped.includes(';')) {
+    return 'Statement separators (;) are not allowed';
+  }
+  if (stripped.includes('--') || stripped.includes('/*') || stripped.includes('*/')) {
+    return 'SQL comments are not allowed';
+  }
+  // Our literal stripper does not understand q'...' quoting, so such a literal
+  // could smuggle anything past every later check.
+  if (/\bq'/i.test(stripped)) {
+    return "Oracle alternative quoting (q'...') is not allowed";
+  }
+
+  // A bracket inside a quoted identifier is no bracket to Oracle either.
+  const code = stripped.replace(/"[^"]*"/g, (identifier) => ' '.repeat(identifier.length));
+  let depth = 0;
+  for (const ch of code) {
+    if (ch === '(') depth += 1;
+    if (ch === ')') depth -= 1;
+    if (depth < 0) break;
+  }
+  return depth === 0
+    ? null
+    : 'Unbalanced parentheses: a predicate must not close the bracket it is wrapped in';
 }
 
 /** Bind names referenced by a predicate (literal contents ignored). */
@@ -135,6 +171,12 @@ const FORBIDDEN_KEYWORDS = [
   'AUDIT',
   'NOAUDIT',
   'FLASHBACK',
+  // Set operators. A row filter is one boolean test and never needs one, and a
+  // predicate is spliced into every query its folder reaches.
+  'UNION',
+  'INTERSECT',
+  'MINUS',
+  'EXCEPT',
 ] as const;
 
 /** Oracle package prefixes that would allow side effects or data exfil. */
@@ -159,15 +201,19 @@ export interface ValidatePredicateOptions {
 /**
  * Validate an admin-authored SQL predicate (a WHERE-clause fragment).
  *
+ * **The administrator is the trust boundary for what a predicate says.** It is
+ * raw SQL, spliced into every query its folder reaches, and nothing here can
+ * tell a wrong rule from a right one. These layers stop mistakes and the known
+ * ways out of the generator's bracket; they are not a sandbox.
+ *
  * Defence layers, in order:
  *  1. length / emptiness
- *  2. unterminated string literals (quote smuggling)
- *  3. statement separators and comment tokens (`;`, `--`, "slash-star")
- *  4. Oracle q-quote literals (`q'...'`) — our literal stripper does not
- *     understand them, so they could smuggle anything past later checks
- *  5. DDL/DML/PLSQL keywords and dangerous package prefixes
- *  6. bind variables outside the CONTEXT_BIND_NAMES allowlist
- *  7. a real syntax parse of `SELECT 1 FROM DUAL WHERE (<predicate>)`
+ *  2. `bracketingError`: unterminated literals and quoted identifiers,
+ *     statement separators, comments, Oracle q-quote literals, and
+ *     parentheses that would close the generator's bracket
+ *  3. DDL/DML/PLSQL keywords, set operators and dangerous package prefixes
+ *  4. bind variables outside the CONTEXT_BIND_NAMES allowlist
+ *  5. a real syntax parse of `SELECT 1 FROM DUAL WHERE (<predicate>)`
  *     (node-sql-parser, db2 dialect — the closest match to Oracle)
  */
 export function validatePredicate(
@@ -185,23 +231,12 @@ export function validatePredicate(
     };
   }
 
-  const stripped = stripStringLiterals(trimmed);
-  if (stripped === null) {
-    return { valid: false, error: 'Unterminated string literal' };
+  const escape = bracketingError(trimmed);
+  if (escape) {
+    return { valid: false, error: escape };
   }
-
-  if (stripped.includes(';')) {
-    return { valid: false, error: 'Statement separators (;) are not allowed' };
-  }
-  if (stripped.includes('--') || stripped.includes('/*') || stripped.includes('*/')) {
-    return { valid: false, error: 'SQL comments are not allowed' };
-  }
-  if (/\bq'/i.test(stripped)) {
-    return {
-      valid: false,
-      error: "Oracle alternative quoting (q'...') is not allowed",
-    };
-  }
+  // bracketingError has already refused an unterminated literal.
+  const stripped = stripStringLiterals(trimmed)!;
 
   for (const keyword of FORBIDDEN_KEYWORDS) {
     if (new RegExp(`\\b${keyword}\\b`, 'i').test(stripped)) {

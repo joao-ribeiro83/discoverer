@@ -6,7 +6,11 @@ import {
 } from '../../types/sql.js';
 import type { GenerationContext } from './context.js';
 import { validateBindName } from './identifiers.js';
-import { ALIAS_TOKEN_RE, referencedBindNames } from './security-predicates.js';
+import {
+  ALIAS_TOKEN_RE,
+  bracketingError,
+  referencedBindNames,
+} from './security-predicates.js';
 import { parseFormula } from './formula-parser.js';
 
 export interface WhereClauseResult {
@@ -302,6 +306,13 @@ export function buildWhereClause(
       throw new SqlGenerationError(
         'Security predicates must not contain statement separators',
       );
+    }
+    // The bracket this predicate is about to be wrapped in is the whole
+    // OR-cannot-escape guarantee. Rules are validated on write, but a stored
+    // row can predate a tightening, and this is the last place to stop it.
+    const escape = bracketingError(trimmed);
+    if (escape) {
+      throw new SqlGenerationError(`Security predicate refused: ${escape}`);
     }
 
     // FOLDER-targeted rules refer to their folder via {alias}; resolve it to
