@@ -35,9 +35,16 @@ import type { EffectiveFolderSet } from './folder-set.js';
  * their query with someone else's data — *"the fastest path through the system
  * is also the one that leaks."*
  *
- * **Nothing leaks today: Neo has no result cache.** This note exists so that
- * the first person to add one — a cached plan result, a summary-folder
- * redirect, a materialised rollup — finds the rule at the moment they need it:
+ * Under the default `ROW_LEVEL_FAIL_MODE=CLOSED` every folder is RLS-bearing:
+ * no query runs without predicates resolved for the user who asked (D-090).
+ *
+ * **Nothing leaks today: Neo keeps no shared result cache.** The two places
+ * that do hold results are scoped. An async job's result is served only to the
+ * user who started it (`routes/map-execution.ts`), and the list-of-values cache
+ * is skipped whenever a predicate applies (`services/lov.service.ts`). This
+ * note exists so that the first person to add a cache — a cached plan result,
+ * a summary-folder redirect, a materialised rollup — finds the rule at the
+ * moment they need it:
  *
  * > A cache key for a query over an RLS-bearing folder must include the
  * > resolved security predicates and their bind values, or the cache must not

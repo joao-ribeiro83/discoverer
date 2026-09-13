@@ -481,6 +481,44 @@ describe('POST /api/maps/:id/execute-async and status/cancel', () => {
     });
     expect(res.statusCode).toBe(404);
   });
+
+  it("404s another user's job, even on a map they may open", async () => {
+    // A job's result is filtered by its OWNER's row-level security. Handing it
+    // to a second viewer of the same map is the summary/RLS bypass (D-021).
+    const [shared] = await db
+      .insert(maps)
+      .values({
+        name: 'MX Public Map',
+        mapType: 'TABLE',
+        businessAreaId: baId,
+        createdBy: ownerId,
+        isPublic: true,
+      })
+      .returning();
+    const create = await app.inject({
+      method: 'POST',
+      url: `/api/maps/${shared!.id}/execute-async`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload: {},
+    });
+    const jobId = create.json().data.jobId as string;
+
+    for (const method of ['GET', 'DELETE'] as const) {
+      const res = await app.inject({
+        method,
+        url: `/api/maps/${shared!.id}/executions/${jobId}`,
+        headers: { authorization: `Bearer ${otherToken}` },
+      });
+      expect(res.statusCode).toBe(404);
+    }
+
+    const own = await app.inject({
+      method: 'GET',
+      url: `/api/maps/${shared!.id}/executions/${jobId}`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+    });
+    expect(own.statusCode).toBe(200);
+  });
 });
 
 describe('GET /api/maps/:id/history', () => {

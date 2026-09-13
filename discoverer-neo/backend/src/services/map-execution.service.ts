@@ -193,6 +193,12 @@ export type AsyncJobStatus =
 export interface AsyncJob {
   jobId: string;
   mapId: string;
+  /**
+   * Who started the job. Its result is filtered by THIS user's row-level
+   * security, so it is served to no one else (D-021): the status and cancel
+   * routes answer 404 for anyone else's job.
+   */
+  userId: string;
   status: AsyncJobStatus;
   createdAt: Date;
   startedAt?: Date;
@@ -834,7 +840,7 @@ export function executeMapAsync(
   deps: MapExecutionDeps = defaultDeps(),
 ): Promise<{ jobId: string }> {
   const jobId = randomUUID();
-  jobs.set(jobId, { jobId, mapId, status: 'QUEUED', createdAt: new Date() });
+  jobs.set(jobId, { jobId, mapId, userId, status: 'QUEUED', createdAt: new Date() });
   // Fire-and-forget; runAsyncJob owns all state transitions and cleanup.
   void runAsyncJob(jobId, mapId, parameterValues, userId, options, deps);
   return Promise.resolve({ jobId });
