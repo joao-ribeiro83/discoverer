@@ -37,6 +37,13 @@ Complete environment variable reference for Discoverer Neo.
 | `METADATA_CACHE_ENABLED` | true | Enable metadata caching (improves performance ~55%) |
 | `METADATA_CACHE_TTL_SECONDS` | 300 | Cache timeout (5 min) |
 
+`POSTGRES_PORT` and `REDIS_PORT` above configure the *containers'* internal
+port; `docker-compose.yml` (INF-12) no longer publishes either to the host —
+`backend` reaches both over the compose network by service name, and a
+production Postgres/Redis has no reason to be reachable from outside the
+Docker host. `docker-compose.dev.yml` still publishes both for local
+debugging.
+
 ### Authentication (JWT)
 
 | Variable | Default | Description |
@@ -99,6 +106,25 @@ business area a policy (a `1 = 1` rule gives its assignees every row), or set
 | `ORACLE_POOL_INCREMENT` | 1 | New connections per allocation |
 | `ORACLE_POOL_IDLE_TIMEOUT_SECONDS` | 300 | Idle timeout (seconds) |
 | `ORACLE_CONNECT_TIMEOUT_MS` | 10000 | Connection timeout (ms) |
+
+Creating or testing a data source resolves its host and refuses one that
+lands on a link-local address (169.254.0.0/16, including the 169.254.169.254
+cloud metadata endpoint) — SEC-10. Loopback and ordinary private ranges
+(10/8, 172.16/12, 192.168/16) are allowed: an on-prem Oracle instance
+colocated with the backend is a supported deployment, not just a test
+fixture. This check only applies to the structured host/port fields; an
+explicit connect string is untouched.
+
+### CORS
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CORS_ALLOWED_ORIGINS` | `http://localhost:5173,http://localhost:5174` | Comma-separated exact-match allowlist of origins allowed to make credentialed requests |
+
+Set this to your real frontend origin(s) in production — a comma-separated
+list, no wildcards. Credentialed cross-origin requests (cookies, the
+Authorization header) are only granted to an exact match; every other origin
+gets no CORS headers at all (INF-13).
 
 ### Export Jobs (Excel, CSV)
 
@@ -446,6 +472,37 @@ spec:
 ### HashiCorp Vault
 
 Integrate with Vault for dynamic secrets.
+
+## Dependency Scanning (INF-05)
+
+CI (`.github/workflows/ci.yml`) runs `npm audit --audit-level=high` on every
+push and pull request against `master`; the build fails on any high or
+critical advisory. As of Phase 6.4, 0 high/critical advisories are open.
+
+Eight moderate advisories are deliberately not upgraded — each is either
+already at its package's latest published version, or its only available fix
+requires the maintainer's *next* release to actually drop the vulnerable
+transitive dependency (npm's suggested "fix" was, in one case, an older major
+version — a downgrade, not a fix):
+
+| Package | Why it stays |
+|---|---|
+| `drizzle-kit`, `@esbuild-kit/core-utils`, `@esbuild-kit/esm-loader`, `esbuild` | `drizzle-kit@0.31.10` is latest; its bundled dev-time esbuild is the vulnerable one. Dev tooling only, not shipped to production. |
+| `exceljs`, `uuid` | `exceljs@4.4.0` is latest; its bundled `uuid` is the vulnerable one. |
+| `monaco-editor`, `dompurify` | `monaco-editor@0.56.0` (the version `npm audit fix` proposes) still bundles a `dompurify` version inside the advisory's vulnerable range — upgrading would not clear it. |
+
+Re-check with `npm audit` after any `npm install`; revisit this table once a
+package publishes a release that actually clears its advisory.
+
+**Two critical advisories were fixed**, both in `vitest`/`@vitest/coverage-v8`
+(frontend dev dependency): pinned to `^4.1.11` rather than the newer `5.0.0`.
+Vitest 5.0.0 changed its `Assertion<R, T>` type to two generic parameters;
+`@testing-library/jest-dom`'s current release (`7.0.1`, published *before*
+vitest 5.0.0) still declares the older single-parameter `Assertion<T>`, so
+every jest-dom matcher (`toBeInTheDocument()` etc.) silently loses its types
+under vitest 5 — `skipLibCheck: true` hides the underlying declaration-merge
+conflict instead of erroring on it. Revisit the vitest 5 upgrade once
+jest-dom ships a release declaring the two-parameter signature.
 
 ## What's Next?
 
