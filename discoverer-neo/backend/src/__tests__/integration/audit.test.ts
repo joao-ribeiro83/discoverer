@@ -14,6 +14,22 @@ import { hashPassword } from '../../lib/password.js';
 
 let app: FastifyInstance;
 
+/** Audit writes are fire-and-forget (see plugins/audit.ts) — poll rather than check once immediately after. */
+async function eventually<T>(
+  produce: () => Promise<T>,
+  predicate: (value: T) => boolean,
+  { timeoutMs = 3000, stepMs = 25 } = {},
+): Promise<T> {
+  const start = Date.now();
+  let value = await produce();
+  while (!predicate(value)) {
+    if (Date.now() - start > timeoutMs) return value;
+    await new Promise((r) => setTimeout(r, stepMs));
+    value = await produce();
+  }
+  return value;
+}
+
 const TEST_PASSWORD = 'SecurePass123!';
 const ADMIN_EMAIL = 'audit-admin@example.com';
 const VIEWER_EMAIL = 'audit-viewer@example.com';
@@ -129,16 +145,21 @@ describe('audit plugin — automatic logging', () => {
     });
     expect(readRes.statusCode).toBe(200);
 
-    const res = await app.inject({
-      method: 'GET',
-      url: `/api/audit/user/${adminId}?limit=200`,
-      headers: { authorization: `Bearer ${adminToken}` },
-    });
-    const { data } = res.json();
-    const entry = data.find(
-      (e: { action: string; entityId: string }) =>
-        e.action === 'GET /api/business-areas/:id' && e.entityId === createdBaId,
+    const isTheRead = (e: { action: string; entityId: string }) =>
+      e.action === 'GET /api/business-areas/:id' && e.entityId === createdBaId;
+
+    const { data } = await eventually(
+      async () => {
+        const res = await app.inject({
+          method: 'GET',
+          url: `/api/audit/user/${adminId}?limit=200`,
+          headers: { authorization: `Bearer ${adminToken}` },
+        });
+        return res.json();
+      },
+      (body) => body.data.some(isTheRead),
     );
+    const entry = data.find(isTheRead);
     expect(entry).toBeDefined();
     expect(entry.entityType).toBe('business-areas');
     expect(JSON.stringify(entry.details)).not.toMatch(/password/i);
@@ -150,6 +171,9 @@ describe('audit plugin — automatic logging', () => {
       url: '/api/health',
       headers: { authorization: `Bearer ${adminToken}` },
     });
+    // No positive event to poll for, so give the fire-and-forget write every
+    // chance to land before confirming it didn't.
+    await new Promise((r) => setTimeout(r, 200));
     const res = await app.inject({
       method: 'GET',
       url: `/api/audit/user/${adminId}?limit=200`,
