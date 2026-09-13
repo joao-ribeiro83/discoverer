@@ -121,4 +121,151 @@ describe('AuditLogPage', () => {
     )
     expect(screen.getByRole('button', { name: /export csv/i })).toBeDisabled()
   })
+
+  it('falls back to the email, then to "Unknown", when a name is missing', async () => {
+    mockedApi.audit.query.mockResolvedValue({
+      data: {
+        data: [
+          makeEntry({ id: 'a2', userId: 'u2', userName: undefined, userEmail: 'noname@example.com' }),
+          makeEntry({ id: 'a3', userId: undefined, userName: undefined, userEmail: undefined }),
+        ],
+        total: 2,
+        limit: 25,
+        offset: 0,
+      },
+    } as never)
+
+    renderWithProviders(<AuditLogPage />)
+
+    await waitFor(() => expect(screen.getByText('noname@example.com')).toBeInTheDocument())
+    expect(screen.getByText('System / unauthenticated')).toBeInTheDocument()
+  })
+
+  it('shows an em dash for a row with no IP address', async () => {
+    mockedApi.audit.query.mockResolvedValue({
+      data: { data: [makeEntry({ ipAddress: undefined })], total: 1, limit: 25, offset: 0 },
+    } as never)
+
+    renderWithProviders(<AuditLogPage />)
+
+    await waitFor(() => expect(screen.getByText('Ada Admin')).toBeInTheDocument())
+    expect(screen.getByText('—')).toBeInTheDocument()
+  })
+
+  it('exports rows with missing entityId/ipAddress as quoted-empty CSV fields', async () => {
+    let capturedBlob: Blob | undefined
+    const created = vi.fn((blob: Blob) => {
+      capturedBlob = blob
+      return 'blob:mock-url'
+    })
+    const revoked = vi.fn()
+    vi.stubGlobal('URL', { ...URL, createObjectURL: created, revokeObjectURL: revoked })
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+
+    mockedApi.audit.query.mockResolvedValue({
+      data: {
+        data: [makeEntry({ entityId: undefined, ipAddress: undefined })],
+        total: 1,
+        limit: 25,
+        offset: 0,
+      },
+    } as never)
+
+    renderWithProviders(<AuditLogPage />)
+    await waitFor(() => expect(screen.getByText('Ada Admin')).toBeInTheDocument())
+
+    fireEvent.click(screen.getByRole('button', { name: /export csv/i }))
+
+    expect(created).toHaveBeenCalled()
+    expect(clickSpy).toHaveBeenCalled()
+    expect(revoked).toHaveBeenCalledWith('blob:mock-url')
+    expect(capturedBlob).toBeDefined()
+    const text = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result as string)
+      reader.onerror = () => reject(reader.error ?? new Error('FileReader error'))
+      reader.readAsText(capturedBlob!)
+    })
+    expect(text).toContain('""') // the blank entityId/ipAddress fields, quoted-empty
+
+    clickSpy.mockRestore()
+    vi.unstubAllGlobals()
+  })
+
+  it('closes the detail dialog and clears the selection', async () => {
+    mockedApi.audit.query.mockResolvedValue({
+      data: { data: [makeEntry()], total: 1, limit: 25, offset: 0 },
+    } as never)
+
+    renderWithProviders(<AuditLogPage />)
+    await waitFor(() => expect(screen.getByText('Ada Admin')).toBeInTheDocument())
+
+    fireEvent.click(screen.getByTitle('View details'))
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument())
+
+    fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' })
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+  })
+
+  it('applies a date-range filter and reflects it in the stats query and label', async () => {
+    mockedApi.audit.stats.mockResolvedValue({
+      data: { data: { ...emptyStats, totalActions: 3 } },
+    } as never)
+
+    renderWithProviders(<AuditLogPage />)
+    await waitFor(() => expect(mockedApi.audit.query).toHaveBeenCalled())
+
+    fireEvent.change(screen.getByLabelText('From'), { target: { value: '2026-01-01' } })
+
+    await waitFor(() =>
+      expect(mockedApi.audit.query).toHaveBeenCalledWith(
+        expect.objectContaining({ dateFrom: new Date('2026-01-01').toISOString() }),
+      ),
+    )
+    expect(screen.getByText('In the selected date range')).toBeInTheDocument()
+  })
+
+  it('renders the top-actions and per-day breakdowns once stats resolve', async () => {
+    mockedApi.audit.stats.mockResolvedValue({
+      data: {
+        data: {
+          totalActions: 5,
+          byDay: [{ date: '2026-07-18', count: 5 }],
+          byUser: [],
+          byActionType: [{ action: 'POST /api/maps', count: 5 }],
+        },
+      },
+    } as never)
+
+    renderWithProviders(<AuditLogPage />)
+
+    await waitFor(() => expect(screen.getByText('5')).toBeInTheDocument())
+    expect(screen.getByText('POST /api/maps')).toBeInTheDocument()
+    expect(screen.queryByText('No activity recorded yet.')).not.toBeInTheDocument()
+  })
+
+  it('pages forward and back through results', async () => {
+    mockedApi.audit.query.mockResolvedValue({
+      data: { data: [makeEntry()], total: 60, limit: 25, offset: 0 },
+    } as never)
+
+    renderWithProviders(<AuditLogPage />)
+    await waitFor(() => expect(screen.getByText('Ada Admin')).toBeInTheDocument())
+
+    const prevButton = screen.getByRole('button', { name: 'Previous' })
+    const nextButton = screen.getByRole('button', { name: 'Next' })
+    expect(prevButton).toBeDisabled()
+    expect(nextButton).not.toBeDisabled()
+
+    fireEvent.click(nextButton)
+    await waitFor(() =>
+      expect(mockedApi.audit.query).toHaveBeenCalledWith(expect.objectContaining({ offset: 25 })),
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Previous' }))
+    await waitFor(() =>
+      expect(mockedApi.audit.query).toHaveBeenCalledWith(expect.objectContaining({ offset: 0 })),
+    )
+  })
 })
