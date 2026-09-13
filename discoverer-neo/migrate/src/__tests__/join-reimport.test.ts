@@ -165,6 +165,21 @@ describe('reimportJoins', () => {
     });
   });
 
+  it('defaults genId/now when no deps are supplied', async () => {
+    const { db, written } = fakeDb();
+    const result = await reimportJoins({
+      source: mockExecutor(eul5Db()),
+      db,
+      version: 'EUL5',
+      // No `deps` — exercises the real randomUUID()/Date.now() fallbacks.
+    });
+
+    expect(result.written).toBe(1);
+    expect(written.predicates[0]!.id).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+    );
+  });
+
   it('names a join that arrives with no readable predicate (D-039)', async () => {
     const source = eul5Db();
     source.tables.EUL5_EXPRESSIONS = (source.tables.EUL5_EXPRESSIONS ?? []).filter(
