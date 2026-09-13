@@ -6,6 +6,16 @@ Learn about Discoverer Neo's audit trail and how to review system activities.
 
 **Audit Logging** records all significant system activities — metadata changes, map executions, user login/logout, permission grants/revocations, and export jobs.
 
+As of Phase 6.4 (SEC-11), reads are also audited on the EUL metadata routes —
+business areas, folders, items, joins, hierarchies, custom functions, and
+data sources — not just writes. This closes the gap where an IDOR read (a
+user reaching an entity they should not, via a GET-by-id) left no trail.
+Reads elsewhere (auth/session, dashboards, execution status polling) stay
+unaudited: auditing those would multiply log volume for no forensic value.
+This only runs with Phase 0.2's substring redaction in place — auditing a
+read while redaction is still exact-match would multiply the exposure it is
+meant to reduce, not shrink it.
+
 Every audit event includes:
 - **Timestamp** — When the activity occurred
 - **User** — Who performed the action
