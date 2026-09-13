@@ -14,12 +14,14 @@ const PAGES: { path: string; heading: string }[] = [
   { path: '/admin/users', heading: 'Users' },
   { path: '/maps', heading: 'Maps' },
   { path: '/schedules', heading: 'Schedules' },
+  { path: '/admin/security', heading: 'Security Policies' },
 ]
 
 test.describe('Accessibility sweep', () => {
   test.beforeEach(async ({ page }) => {
     await seedAuthedSession(page)
     await mockCommonApi(page)
+    await page.route('**/api/security/policies', (route) => jsonRoute(route, { data: [] }))
     await page.route('**/api/custom-functions', (route) => jsonRoute(route, { data: [] }))
     await page.route('**/api/users', (route) => jsonRoute(route, { data: [] }))
     await page.route('**/api/schedules', (route) => jsonRoute(route, { data: [] }))

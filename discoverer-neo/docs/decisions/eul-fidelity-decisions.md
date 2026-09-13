@@ -596,6 +596,15 @@ reading `ASM_POLICIES`. The business-area grants and the `!migrat` sentinel
 carry the whole access-control burden brought over from the source. The full
 measurement is in `docs/master-plan/checkpoints/PHASE_6.3_CHECKPOINT.md`.
 
+**Where Neo diverges, deliberately (D-090).** Discoverer's row-level security
+failed open: a folder with no mandatory condition showed every row to every
+user. Neo's fails closed. A user no policy gives rows on a folder is refused,
+administrators included, and removing or disabling a policy never widens
+access. It is Neo's one intended incompatibility with Discoverer, because
+reproducing the original would be reproducing a vulnerability. A deployment
+still writing its policies can set `ROW_LEVEL_FAIL_MODE=OPEN` — see
+`docs/admin-guide/security.md`.
+
 ---
 
 ## What still needs a live EUL

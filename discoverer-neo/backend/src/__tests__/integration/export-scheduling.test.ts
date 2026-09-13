@@ -62,6 +62,7 @@ import {
   authenticatedRequest,
   cleanupIntegrationUsers,
 } from './test-helper.js';
+import { config } from '../../config.js';
 
 // ===========================================================================
 // Export + scheduling integration tests.
@@ -296,6 +297,9 @@ async function drainQueues(): Promise<void> {
 // ---------------------------------------------------------------------------
 
 beforeAll(async () => {
+  // Exports and schedules, not row security: under the default CLOSED mode the
+  // admin these tests run as has no policy and would be refused (D-090).
+  config.ROW_LEVEL_FAIL_MODE = 'OPEN';
   app = await getApp();
   await cleanupIntegrationUsers();
 });

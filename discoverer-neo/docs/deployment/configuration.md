@@ -74,6 +74,20 @@ backend port is also reachable directly** (for example `docker-compose.yml`,
 which publishes port 3000): a direct caller could then pick its own address
 with an `X-Forwarded-For` header.
 
+### Row-Level Security
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `ROW_LEVEL_FAIL_MODE` | CLOSED | What happens to a folder no row-level security policy gives the user rows on. `CLOSED` refuses the query. `OPEN` refuses only a folder some active policy already targets, and runs every other folder unfiltered. |
+
+**`CLOSED` is the default, and a fresh deployment returns nothing until it has
+policies** — administrators included. That is deliberate and it is Neo's one
+intended difference from Discoverer, whose row-level security let everyone see
+every row until someone wrote a condition. Before users run reports, give each
+business area a policy (a `1 = 1` rule gives its assignees every row), or set
+`OPEN` while the policies are being written. See
+[Security Policies](../admin-guide/security.md#row-level-security-fails-closed).
+
 ### Oracle Database Connectivity
 
 | Variable | Default | Description |
@@ -149,6 +163,10 @@ LOGIN_LOCKOUT_THRESHOLD=5
 LOGIN_LOCKOUT_SECONDS=900
 # nginx in front; only when the backend port is not public
 TRUST_PROXY=1
+
+# --- Row-level security ---
+# CLOSED (default): no policy, no rows. OPEN only while policies are written.
+ROW_LEVEL_FAIL_MODE=CLOSED
 
 # --- Encryption ---
 ENCRYPTION_KEY=generate_strong_random_key_min_32_chars

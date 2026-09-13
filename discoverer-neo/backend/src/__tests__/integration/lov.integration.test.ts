@@ -9,6 +9,7 @@ import {
   type ResolveLovDeps,
 } from '../../services/lov.service.js';
 import { DataEntitlementError } from '../../services/business-area.service.js';
+import { config } from '../../config.js';
 import {
   getApp,
   closeApp,
@@ -55,6 +56,9 @@ function stubOracle(rows: unknown[]): ResolveLovDeps & { sql: string; binds: unk
 }
 
 beforeAll(async () => {
+  // Most of this file is LOV mechanics, not row security, so it runs OPEN. The
+  // CLOSED default is pinned in its own block at the end.
+  config.ROW_LEVEL_FAIL_MODE = 'OPEN';
   app = await getApp();
 });
 
@@ -263,5 +267,32 @@ describe('entitlement', () => {
     );
 
     expect(result.values).toEqual(['1000']);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Row-level security — the CLOSED default (D-090)
+// ---------------------------------------------------------------------------
+
+describe('row-level security', () => {
+  it('fails closed by default: a granted user with no policy gets no values', async () => {
+    config.ROW_LEVEL_FAIL_MODE = 'CLOSED';
+    try {
+      const item = await createTestItem(folderId, 'Cost Centre', 'CI', 'COST_CENTRE', adminId);
+      const member = await createTestUser(
+        `lov-nopolicy-${Date.now()}@integration.test`,
+        'Password123!',
+        'USER',
+      );
+      await grantTestPermission(businessAreaId, member.id, 'VIEW', adminId);
+      const oracle = stubOracle(['1000']);
+
+      await expect(
+        resolveLov(item.id, { id: member.id, role: 'USER' }, {}, undefined, oracle),
+      ).rejects.toThrow(/no row-level security policy resolves for you/);
+      expect(oracle.sql).toBe('');
+    } finally {
+      config.ROW_LEVEL_FAIL_MODE = 'OPEN';
+    }
   });
 });

@@ -5,7 +5,7 @@
     "nonAdminDescription": "Las directivas de seguridad de nivel de fila restringen las filas que los usuarios pueden ver.",
     "nonAdminMessage": "Solo los administradores pueden administrar las directivas de seguridad.",
     "newPolicy": "Nueva directiva",
-    "emptyMessage": "Aún no hay directivas de seguridad. Sin directivas, los usuarios ven todas las filas que permiten sus permisos de mapa."
+    "emptyMessage": "Aún no hay directivas de seguridad. De forma predeterminada, la seguridad de nivel de fila deniega el acceso: hasta que una directiva cubra una carpeta, nadie ve sus filas, ni siquiera los administradores."
   },
   "table": {
     "rules": "Reglas",
@@ -49,7 +49,7 @@
     "roleAriaLabel": "Rol que se va a asignar",
     "selectRole": "Seleccione un rol",
     "assign": "Asignar",
-    "notAssigned": "Sin asignar: actualmente esta directiva no restringe a nadie.",
+    "notAssigned": "Sin asignar: esta directiva no da filas a nadie.",
     "unknownUser": "Usuario desconocido",
     "roleLabel": "Rol",
     "removeAssignment": "Quitar asignación"

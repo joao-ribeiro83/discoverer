@@ -441,6 +441,13 @@ describe('folder-scoped policy — only maps that use the folder', () => {
           targetType: 'FOLDER',
           sqlPredicate: '{alias}."AMOUNT" >= 0',
         },
+        // Row-level security fails closed (D-090): with no rule of its own the
+        // products map would be refused, not run, and prove nothing here.
+        {
+          targetId: productsFolder.id,
+          targetType: 'FOLDER',
+          sqlPredicate: '{alias}."PCODE" IS NOT NULL',
+        },
       ],
     });
     await assignPolicy(policyId, userAId);
@@ -469,7 +476,8 @@ describe('folder-scoped policy — only maps that use the folder', () => {
       await loadMapDefinition(productsMapId),
       userAId,
     );
-    expect(forProducts.predicates).toHaveLength(0);
+    // Only the products folder's own rule: the SALES rule stays out.
+    expect(forProducts.predicates.map((p) => p.folderId)).toEqual([productsFolder.id]);
 
     const { sql } = await runAndCaptureSql(
       productsMapId,
@@ -629,6 +637,9 @@ describe('route rejects malicious predicates with 400 (not 500 / silent accept)'
     'REGION = :evil_bind',
     "REGION = 'unterminated",
     'DBMS_LOCK.SLEEP(10) = 1',
+    'REGION IN (SELECT R FROM A UNION SELECT R FROM B)',
+    // Closes the generator's bracket: `AND (1=1) OR (1=1)` returns every row.
+    '1=1) OR (1=1',
   ];
 
   for (const sqlPredicate of attacks) {
@@ -659,5 +670,34 @@ describe('route rejects malicious predicates with 400 (not 500 / silent accept)'
       },
     });
     expect(res.statusCode).toBe(400);
+  });
+
+  it('refuses the same predicates on UPDATE, not only on create', async () => {
+    const policyId = await createPolicy({
+      name: 'Int57 update target',
+      rules: [{ targetId: baId, targetType: 'BUSINESS_AREA', sqlPredicate: "REGION = 'EMEA'" }],
+    });
+    try {
+      for (const sqlPredicate of [
+        'REGION IN (SELECT R FROM A UNION SELECT R FROM B)',
+        "REGION = 'EMEA' /* hidden */",
+        '1=1) OR (1=1',
+      ]) {
+        const res = await app.inject({
+          method: 'PUT',
+          url: `/api/security/policies/${policyId}`,
+          headers: authHeaders(adminToken),
+          payload: { rules: [{ targetId: baId, targetType: 'BUSINESS_AREA', sqlPredicate }] },
+        });
+        expect(res.statusCode).toBe(400);
+      }
+      const [stored] = await db
+        .select({ sqlPredicate: securityPolicyRules.sqlPredicate })
+        .from(securityPolicyRules)
+        .where(eq(securityPolicyRules.policyId, policyId));
+      expect(stored!.sqlPredicate).toBe("REGION = 'EMEA'");
+    } finally {
+      await db.delete(securityPolicies).where(eq(securityPolicies.id, policyId));
+    }
   });
 });

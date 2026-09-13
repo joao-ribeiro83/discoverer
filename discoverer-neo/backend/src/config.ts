@@ -90,6 +90,20 @@ const EnvSchema = z.object({
   LOGIN_LOCKOUT_SECONDS: z.coerce.number().int().positive().default(15 * 60),
 
   /**
+   * What row-level security does with a folder no policy gives the executing
+   * user rows on, per policy type (`security_policies.policy_type`, where only
+   * `ROW_LEVEL` exists).
+   *
+   * `CLOSED`, the default, refuses the query: no policy means no rows, and
+   * removing or disabling a policy can only ever take rows away. This is Neo's
+   * one deliberate incompatibility with Discoverer, whose row-level security
+   * failed open (D-090). `OPEN` refuses only a folder that some active policy
+   * already targets (D-116) and runs every other folder unfiltered — for a
+   * deployment that has not written its policies yet.
+   */
+  ROW_LEVEL_FAIL_MODE: z.enum(['CLOSED', 'OPEN']).default('CLOSED'),
+
+  /**
    * Use node-oracledb thick mode, which requires the Oracle Instant Client.
    *
    * Thin mode is the default and needs no client, but it cannot connect to

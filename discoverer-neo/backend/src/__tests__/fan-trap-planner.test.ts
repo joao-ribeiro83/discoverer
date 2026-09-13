@@ -834,6 +834,15 @@ describe('conditions and parameters are branch-local', () => {
     expect(text.match(/"REGION" = :region/g)).toHaveLength(2);
     expect(text).toMatch(/WHERE \("f1"?\.?.?"REGION" = :region\)|WHERE \(f1\."REGION" = :region\)/);
   });
+
+  it('refuses a folder predicate no branch reads, rather than drop it', () => {
+    const f = oracleFixture();
+    expect(() =>
+      renderRewrite(f.def, asRewrite(f.def), {
+        securityPredicates: [{ sql: '{alias}."X" = 1', folderId: 'folder-in-no-branch' }],
+      }),
+    ).toThrow(/"folder-in-no-branch" has no branch to apply it in/);
+  });
 });
 
 // ---------------------------------------------------------------------------

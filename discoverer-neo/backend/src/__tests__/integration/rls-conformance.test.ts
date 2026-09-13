@@ -38,13 +38,14 @@ import {
   securityRelevantFolderIds,
 } from '../../lib/sql/folder-set.js';
 import { assertDataEntitlement } from '../../services/business-area.service.js';
+import { config } from '../../config.js';
 
 // ===========================================================================
-// RLS conformance suite — D-115 / D-116, Phase 1.1
+// RLS conformance suite — D-115 / D-116 (Phase 1.1), D-090 (Phase 6.3)
 //
 // Every test here is a GATE, not a nice-to-have. They cover the three routes a
-// folder can reach the emitted SQL by, and the two ways the old code could run
-// a query it should have refused:
+// folder can reach the emitted SQL by, and the ways the old code could run a
+// query it should have refused:
 //
 //   1. a user with no policy on a policy-bearing folder                  (D-116)
 //   2. a BA-scoped policy on a map whose business_area_id IS NULL        (D-015)
@@ -53,6 +54,12 @@ import { assertDataEntitlement } from '../../services/business-area.service.js';
 //   9. an INNER-joined bridge folder                                     (D-115)
 //  10. a policy-bearing folder the user cannot resolve -> refusal        (D-116)
 //  11. an export carrying the same predicates as the on-screen query
+//  12. a user with no policy sees NOTHING, and removing or disabling a
+//      policy never opens access                                         (D-090)
+//
+// Row-level security fails closed by default, so every gate that needs a query
+// to RUN gives its user a rule on each folder that query reads. Gate 10 is the
+// OPEN-mode rule, and switches the mode for its own block only.
 //
 // Oracle is faked at the driver boundary only: policy creation, definition
 // loading, folder-set derivation, predicate resolution and SQL generation are
@@ -621,6 +628,13 @@ describe('policy on a folder reached only by a calculated field (D-115)', () => 
         targetType: 'FOLDER',
         sqlPredicate: '{alias}."SECRET_VALUE" > 0',
       },
+      // The map's own folder needs a rule too, or it refuses before SECRETS
+      // gets a say: row-level security fails closed (D-090).
+      {
+        targetId: salesFolder.id,
+        targetType: 'FOLDER',
+        sqlPredicate: '{alias}."REGION" IS NOT NULL',
+      },
     ]);
     await assignPolicy(policyId, userOkId);
   });
@@ -647,7 +661,7 @@ describe('policy on a folder reached only by a calculated field (D-115)', () => 
         await loadMapDefinition(calcRefMapId),
         userNoPolicyId,
       ),
-    ).rejects.toThrow(/on folder\(s\) "SECRETS"/);
+    ).rejects.toThrow(/on folder\(s\) .*"SECRETS"/);
   });
 });
 
@@ -665,6 +679,13 @@ describe('policy on an INNER-joined folder (D-115)', () => {
         targetType: 'FOLDER',
         sqlPredicate: '{alias}."LABEL" IS NOT NULL',
       },
+      // SALES needs its own rule, or both maps below refuse before BRIDGE's
+      // rule is even considered: row-level security fails closed (D-090).
+      {
+        targetId: salesFolder.id,
+        targetType: 'FOLDER',
+        sqlPredicate: '{alias}."REGION" IS NOT NULL',
+      },
     ]);
     await assignPolicy(policyId, userOkId);
   });
@@ -680,22 +701,31 @@ describe('policy on an INNER-joined folder (D-115)', () => {
   });
 
   it('leaves a map that never touches the joined folder alone', async () => {
-    // The plain map reads SALES only. BRIDGE's policy must not reach it, and
-    // the absence of a predicate must not be mistaken for a refusal.
+    // The plain map reads SALES only. BRIDGE's rule must not reach it.
     const resolved = await resolveSecurityPredicates(
       await loadMapDefinition(plainMapId),
       userOkId,
     );
-    expect(resolved.predicates).toHaveLength(0);
+    expect(resolved.predicates.map((p) => p.folderId)).toEqual([salesFolder.id]);
   });
 });
 
 // ---------------------------------------------------------------------------
-// Gate 10 — a policy-bearing folder the user cannot resolve refuses, and the
-// rule is a NO-OP when no policy exists at all.
+// Gate 10 — under ROW_LEVEL_FAIL_MODE=OPEN, a policy-bearing folder the user
+// cannot resolve still refuses, and the rule is a NO-OP when no policy exists.
+// OPEN is the escape hatch for a deployment still writing its policies; it
+// must never drop below D-116.
 // ---------------------------------------------------------------------------
 
-describe('per-policy-bearing-folder fail-closed (D-116)', () => {
+describe('OPEN mode keeps the per-policy-bearing-folder refusal (D-116)', () => {
+  beforeAll(() => {
+    config.ROW_LEVEL_FAIL_MODE = 'OPEN';
+  });
+
+  afterAll(() => {
+    config.ROW_LEVEL_FAIL_MODE = 'CLOSED';
+  });
+
   it('is a no-op against an empty policy table — every map still runs', async () => {
     const rules = await db.select().from(securityPolicyRules);
     expect(rules).toHaveLength(0);
@@ -758,6 +788,86 @@ describe('per-policy-bearing-folder fail-closed (D-116)', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Gate 12 — row-level security fails CLOSED by default (D-090). A user with no
+// policy sees nothing, and no change to a policy can ever widen access.
+// ---------------------------------------------------------------------------
+
+describe('row-level security fails closed by default (D-090)', () => {
+  it('runs CLOSED unless a deployment says otherwise', () => {
+    expect(config.ROW_LEVEL_FAIL_MODE).toBe('CLOSED');
+  });
+
+  it('a user with no policy sees NOTHING — even when no policy exists at all', async () => {
+    expect(await db.select().from(securityPolicyRules)).toHaveLength(0);
+
+    // Granted the data, assigned nothing. Admins are not exempt.
+    for (const userId of [userOkId, userNoPolicyId, adminId]) {
+      const { conn, execute } = makeCaptureConn();
+      await expect(
+        executeMap(plainMapId, {}, userId, {}, realPipelineDeps(conn)),
+      ).rejects.toThrow(/no row-level security policy resolves for you on folder\(s\) "SALES"/);
+      expect(execute).not.toHaveBeenCalled();
+    }
+  });
+
+  it('removing a policy does not open access', async () => {
+    const policyId = await createPolicy('RLS Conf removable', [
+      {
+        targetId: salesFolder.id,
+        targetType: 'FOLDER',
+        sqlPredicate: '{alias}."REGION" = \'EMEA\'',
+      },
+    ]);
+    await assignPolicy(policyId, userOkId);
+    expect(await captureSql(plainMapId, userOkId)).toContain('"REGION" = \'EMEA\'');
+
+    const res = await app.inject({
+      method: 'DELETE',
+      url: `/api/security/policies/${policyId}`,
+      headers: { authorization: `Bearer ${adminToken}` },
+    });
+    expect(res.statusCode).toBe(200);
+
+    // The user it covered and the user it never covered: both still get nothing.
+    for (const userId of [userOkId, userNoPolicyId]) {
+      const { conn, execute } = makeCaptureConn();
+      await expect(
+        executeMap(plainMapId, {}, userId, {}, realPipelineDeps(conn)),
+      ).rejects.toThrow(/no row-level security policy resolves for you/);
+      expect(execute).not.toHaveBeenCalled();
+    }
+  });
+
+  it('disabling a policy does not open access either', async () => {
+    const policyId = await createPolicy('RLS Conf disabled', [
+      {
+        targetId: salesFolder.id,
+        targetType: 'FOLDER',
+        sqlPredicate: '{alias}."REGION" = \'EMEA\'',
+      },
+    ]);
+    try {
+      await assignPolicy(policyId, userOkId);
+      const res = await app.inject({
+        method: 'PUT',
+        url: `/api/security/policies/${policyId}`,
+        headers: { authorization: `Bearer ${adminToken}` },
+        payload: { isActive: false },
+      });
+      expect(res.statusCode).toBe(200);
+
+      const { conn, execute } = makeCaptureConn();
+      await expect(
+        executeMap(plainMapId, {}, userOkId, {}, realPipelineDeps(conn)),
+      ).rejects.toThrow(/no row-level security policy resolves for you/);
+      expect(execute).not.toHaveBeenCalled();
+    } finally {
+      await dropPolicy(policyId);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Gate 3 — the DATA gate refuses an owner / public / shared map when the user
 // holds no grant on any business area the folders belong to (D-016).
 // ---------------------------------------------------------------------------
@@ -784,9 +894,13 @@ describe('data entitlement gate (D-016)', () => {
     expect(execute).not.toHaveBeenCalled();
   });
 
-  it('lets a granted user through the same public map', async () => {
-    const sql = await captureSql(publicMapId, userOkId);
-    expect(sql).toContain('SELECT');
+  it('lets a granted user through the same public map, on to row-level security', async () => {
+    // Past the data gate, a user with no policy meets row-level security, which
+    // fails closed (D-090). A refusal that names policies, not grants, is the
+    // proof this user got through.
+    await expect(captureSql(publicMapId, userOkId)).rejects.toThrow(
+      /no row-level security policy resolves for you/,
+    );
   });
 });
 

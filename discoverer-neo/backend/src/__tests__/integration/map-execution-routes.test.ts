@@ -34,6 +34,7 @@ import {
 } from '../../db/schema.js';
 import { hashPassword } from '../../lib/password.js';
 import { closeAll as closeOraclePools } from '../../services/oracle-connection-pool.js';
+import { config } from '../../config.js';
 
 let app: FastifyInstance;
 
@@ -86,6 +87,10 @@ async function cleanup() {
 }
 
 beforeAll(async () => {
+  // These tests are about the routes, not row security. Under the default
+  // CLOSED mode a user with no policy is refused before parameters are checked
+  // or a connection is tried (D-090); rls-conformance.test.ts covers that.
+  config.ROW_LEVEL_FAIL_MODE = 'OPEN';
   app = await buildApp();
   await app.ready();
   await cleanup();

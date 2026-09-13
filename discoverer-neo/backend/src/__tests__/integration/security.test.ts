@@ -252,6 +252,14 @@ describe('validatePredicate', () => {
     ['SALES_REP = :my_custom_bind', /unknown bind/i],
     ['AND AND AND', /not a valid/i],
     ['x '.repeat(2500), /exceeds/i],
+    // Closing the generator's bracket: `AND (1=1) OR (1=1)` returns every row.
+    ['1=1) OR (1=1', /parentheses/i],
+    // Brackets inside quoted identifiers balance the count; the real ones do not.
+    ['"(" = 1) OR (1 = 1 AND ")" = ")"', /parentheses/i],
+    ['REGION IN (SELECT R FROM A UNION SELECT R FROM B)', /UNION/i],
+    // An apostrophe inside a quoted identifier opens no literal, so it cannot
+    // hide the call between it and the next quote from the package scan.
+    [`"x'" = 1 OR DBMS_LOCK.SLEEP(1) = 1 OR "'" = 1`, /DBMS/i],
   ];
   for (const [predicate, errorPattern] of invalid) {
     it(`rejects: ${predicate.slice(0, 50) || '(empty)'}`, () => {
@@ -281,6 +289,12 @@ describe('stripStringLiterals', () => {
   });
   it('returns null on an unterminated literal', () => {
     expect(stripStringLiterals("A = 'x")).toBeNull();
+  });
+  it('keeps quoted identifiers, and an apostrophe inside one opens no literal', () => {
+    expect(stripStringLiterals(`"O'Brien" = 'x'`)).toBe(`"O'Brien" = ' '`);
+  });
+  it('returns null on an unterminated quoted identifier', () => {
+    expect(stripStringLiterals('"REGION = 1')).toBeNull();
   });
 });
 

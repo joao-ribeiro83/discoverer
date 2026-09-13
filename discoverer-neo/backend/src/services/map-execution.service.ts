@@ -1,14 +1,8 @@
 import { randomUUID } from 'node:crypto';
-import { and, desc, eq, inArray } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import type { BindParameters, Connection } from 'oracledb';
 import { db } from '../db/index.js';
-import {
-  folders,
-  queryExecutionLog,
-  securityPolicies,
-  securityPolicyRules,
-  users,
-} from '../db/schema.js';
+import { queryExecutionLog, users } from '../db/schema.js';
 import {
   generateSql,
   loadMapDefinition,
@@ -23,7 +17,7 @@ import type {
   MapDefinition,
   SecurityPredicate,
 } from '../types/sql.js';
-import { getUserPolicies } from './security.service.js';
+import { getUserPolicies, rowSecurityRefusal } from './security.service.js';
 import {
   assertDataEntitlement,
   businessAreasForFolders,
@@ -305,12 +299,12 @@ export interface ResolvedRowSecurity {
  * rules may use `{alias}` for their folder's query alias, and any rule may use
  * the `:current_user_*` context binds.
  *
- * Fails closed twice:
+ * Refuses rather than run without the rules it owes:
  *  - an unknown executing user is refused rather than run without policies;
- *  - a folder in the set that SOMEONE's active policy targets, but for which
- *    THIS user resolves no predicate, is refused by name (D-116). Against an
- *    empty `security_policy_rules` table that rule is a no-op, and it becomes
- *    correct the instant the first policy is written.
+ *  - a folder in the set this user resolves no predicate for is refused by
+ *    name (`rowSecurityRefusal`). Under the default CLOSED mode that is every
+ *    such folder — no policy, no rows (D-090). Under OPEN it is only a folder
+ *    some active policy reaches (D-116).
  *
  * Exported for the security test-suite; production callers go through
  * `defaultPrepareQuery`.
@@ -362,7 +356,8 @@ export async function resolveSecurityPredicates(
     }
   }
 
-  await assertPolicyBearingFoldersCovered(usedFolderIds, baByFolder, covered);
+  const refusal = await rowSecurityRefusal(usedFolderIds, baByFolder, covered);
+  if (refusal) throw new MapExecutionError('FORBIDDEN', refusal);
 
   if (predicates.length === 0) return { predicates: [], bindParams: {} };
 
@@ -374,76 +369,6 @@ export async function resolveSecurityPredicates(
       current_user_role: user.role,
     },
   };
-}
-
-/**
- * Fail closed per policy-bearing folder (D-116).
- *
- * A folder is policy-bearing when at least one rule of an ACTIVE policy —
- * anyone's — targets it, or targets a business area it belongs to. If the
- * executing user resolved no predicate for such a folder, the query is refused
- * by name instead of running unfiltered.
- *
- * Deliberately NOT a global fail-closed. `getUserPolicies` returning empty
- * means "no predicates", and flipping that globally would return zero rows for
- * every map in the estate, because `security_policy_rules` is empty today. The
- * full treatment is Phase 6.3 (D-090). Inactive policies are excluded: their
- * rules apply to nobody, so treating their folders as policy-bearing would
- * lock everyone out with no way to satisfy the check.
- *
- * Admins are NOT exempt. They bypass the grant gate above; "which rows may I
- * see" is a different question, and a policy an admin silently escaped would
- * be no policy at all.
- */
-async function assertPolicyBearingFoldersCovered(
-  usedFolderIds: string[],
-  baByFolder: globalThis.Map<string, string[]>,
-  covered: Set<string>,
-): Promise<void> {
-  const uncovered = usedFolderIds.filter((id) => !covered.has(id));
-  if (uncovered.length === 0) return;
-
-  const businessAreaIds = [
-    ...new Set(uncovered.flatMap((id) => baByFolder.get(id) ?? [])),
-  ];
-  const targetIds = [...new Set([...uncovered, ...businessAreaIds])];
-
-  const rows = await db
-    .select({
-      targetId: securityPolicyRules.targetId,
-      targetType: securityPolicyRules.targetType,
-    })
-    .from(securityPolicyRules)
-    .innerJoin(
-      securityPolicies,
-      eq(securityPolicyRules.policyId, securityPolicies.id),
-    )
-    .where(
-      and(
-        eq(securityPolicies.isActive, true),
-        inArray(securityPolicyRules.targetId, targetIds),
-      ),
-    );
-  if (rows.length === 0) return;
-
-  const targeted = new Set(rows.map((r) => r.targetId));
-  const blocked = uncovered.filter(
-    (id) =>
-      targeted.has(id) ||
-      (baByFolder.get(id) ?? []).some((ba) => targeted.has(ba)),
-  );
-  if (blocked.length === 0) return;
-
-  const names = await db
-    .select({ id: folders.id, name: folders.name })
-    .from(folders)
-    .where(inArray(folders.id, blocked));
-  const label = names.map((f) => `"${f.name}"`).join(', ') || blocked.join(', ');
-
-  throw new MapExecutionError(
-    'FORBIDDEN',
-    `Refusing to run unfiltered: no row-level security policy resolves for you on folder(s) ${label}`,
-  );
 }
 
 /**

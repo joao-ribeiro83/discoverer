@@ -2296,6 +2296,14 @@ describe('SQL generator', () => {
       ).toThrow(/statement separators/);
     });
 
+    it('refuses a stored predicate that would close its own bracket', () => {
+      // `AND (1=1) OR (1=1)`: the OR escapes, and every row escapes with it.
+      const { def } = baseDef();
+      expect(() =>
+        generateSql(def, { securityPredicates: ['1=1) OR (1=1'] }),
+      ).toThrow(/Unbalanced parentheses/);
+    });
+
     it('rejects an {alias} predicate with no folder target', () => {
       const { def } = baseDef();
       expect(() =>

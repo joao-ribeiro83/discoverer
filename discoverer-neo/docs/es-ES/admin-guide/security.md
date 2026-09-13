@@ -10,21 +10,79 @@ La **seguridad de nivel de fila (RLS)** filtra automáticamente los resultados d
 
 ## Cómo funciona la RLS
 
-1. **Definir la directiva:** cree un predicado de seguridad para una carpeta
-2. **Contexto del usuario:** asocie al usuario con valores de contexto (p. ej., region = «EMEA»)
-3. **Ejecución de la consulta:** el predicado se añade automáticamente a la cláusula WHERE
-4. **Resultados filtrados:** el usuario ve únicamente las filas que coinciden con su contexto
+1. **Una directiva contiene reglas.** Cada regla se dirige a un **área de
+   negocio** o a una **carpeta** y lleva un predicado SQL: un fragmento de
+   cláusula WHERE como `REGION = 'EMEA'` o
+   `{alias}."SALES_REP_ID" = :current_user_id`.
+2. **Una directiva se asigna** a usuarios, a roles o a ambos.
+3. **Cuando se ejecuta una consulta,** Neo localiza todas las carpetas cuyas
+   filas pueden llegar al resultado: los elementos y las condiciones del mapa,
+   las carpetas que lee un cálculo y las carpetas unidas que filtran filas. Una
+   regla de área de negocio se aplica a cada una de esas carpetas que pertenezca
+   a su área (propia o compartida); una regla de carpeta se aplica a su carpeta.
+4. **Cada predicado aplicable se combina con AND en la cláusula WHERE,** cada
+   uno entre sus propios paréntesis, de modo que un `OR` de las condiciones del
+   mapa no puede escaparse de él. En una hoja que resume varios conjuntos de
+   filas de detalle, el predicado va dentro de cada resumen, antes de sumar nada.
 
-```sql
--- Base query
-SELECT CUSTOMER_ID, SALES_AMOUNT, REGION FROM CUSTOMERS
+Los predicados pueden usar tres enlaces, que se rellenan a partir del usuario
+que ha iniciado sesión y nunca a partir de la petición: `:current_user_id`,
+`:current_user_email` y `:current_user_role`. Una regla de carpeta puede
+escribir `{alias}` para referirse a su carpeta dentro de la consulta.
 
--- With RLS policy
-SELECT CUSTOMER_ID, SALES_AMOUNT, REGION FROM CUSTOMERS
-WHERE REGION = NVL2(SYS_CONTEXT('dn_user_context', 'region'),
-                     SYS_CONTEXT('dn_user_context', 'region'),
-                     REGION)
-```
+## La seguridad de nivel de fila deniega por defecto
+
+**Un usuario al que ninguna directiva da filas de una carpeta no ve nada de esa
+carpeta.** La consulta se rechaza nombrando la carpeta, y ningún SQL llega a
+Oracle:
+
+> Refusing to run unfiltered: no row-level security policy resolves for you on folder(s) "SALES"
+
+Esto es **deliberadamente distinto de Discoverer**, y es el único punto en el
+que Neo rompe la compatibilidad a propósito (D-090). La seguridad de nivel de
+fila de Discoverer era una condición obligatoria de carpeta; una carpeta sin
+ella mostraba todas las filas a todo el mundo. Reproducirlo sería reproducir
+una vulnerabilidad.
+
+Lo que se deriva de ello:
+
+- **Una instalación nueva no devuelve nada** hasta que existen directivas,
+  tampoco a los administradores. Para que un grupo vea todas las filas de un
+  área de negocio, asígnele una directiva cuya regla se dirija a esa área con el
+  predicado `1 = 1`.
+- **Eliminar, deshabilitar o desasignar una directiva nunca abre el acceso.**
+  Solo puede quitar filas.
+- **Los administradores no están exentos.** Omiten los permisos de área de
+  negocio; no omiten la seguridad de nivel de fila. No hay ninguna omisión de
+  administrador que auditar.
+- **Las listas de valores siguen la misma regla.** Una lista desplegable sobre
+  una carpeta para la que no tiene directiva también se rechaza.
+
+El ajuste es `ROW_LEVEL_FAIL_MODE`
+([Configuración](../../deployment/configuration.md#row-level-security)).
+`OPEN` rechaza solo una carpeta a la que ya se dirige alguna directiva activa y
+ejecuta sin filtrar todas las demás, como antes de este cambio. Úselo solo
+mientras se escriben las directivas de una instalación: con `OPEN`,
+deshabilitar una directiva vuelve a ampliar el acceso.
+
+### Los administradores son la frontera de confianza de los predicados
+
+Un predicado es SQL sin procesar que se inserta en cada consulta a la que llega
+su carpeta. Neo lo valida al guardarlo y, antes de cada ejecución, vuelve a
+comprobar que no puede salirse de sus paréntesis. Rechaza:
+
+- separadores de sentencias (`;`) y comentarios (`--`, `/* */`);
+- todo lo que cierre el paréntesis que envuelve al predicado, como
+  `1=1) OR (1=1`, que devolvería todas las filas;
+- palabras clave DDL, DML y PL/SQL, `UNION` / `INTERSECT` / `MINUS` /
+  `EXCEPT`, y llamadas `DBMS_`, `UTL_`, `OWA_`, `HTP.` y `HTF.`;
+- enlaces distintos de los tres anteriores y texto que no se analiza como una
+  condición.
+
+Estas comprobaciones detienen errores y las vías de escape conocidas. **No
+pueden distinguir una regla equivocada de una correcta.** Quien puede editar las
+directivas decide lo que ve cada usuario, así que trate el rol de administrador
+de seguridad como trataría el acceso a la base de datos.
 
 ## Creación de directivas de seguridad
 
@@ -166,14 +224,20 @@ Los registros de auditoría muestran el SQL ejecutado:
 2. Desmarque **Activa**
 3. Guarde
 
-La directiva deja de filtrar las consultas.
+La directiva deja de aplicarse. Sus usuarios **no** recuperan filas sin filtrar:
+una carpeta para la que ya no tienen ninguna directiva activa se rechaza, como
+se explica en
+[La seguridad de nivel de fila deniega por defecto](#la-seguridad-de-nivel-de-fila-deniega-por-defecto).
+Solo con `ROW_LEVEL_FAIL_MODE=OPEN` deshabilitar o eliminar una directiva
+amplía el acceso.
 
 ### Eliminar permanentemente
 
 1. Busque la directiva → **Eliminar**
 2. Confirme
 
-La directiva se elimina; las consultas dejan de filtrarse.
+Se eliminan la directiva, sus reglas y sus asignaciones. Igual que al
+deshabilitarla, esto quita filas y nunca las devuelve.
 
 ## Consideraciones de rendimiento
 
@@ -298,7 +362,7 @@ rechaza.
 
 - **Asignación manual del contexto** — El contexto de los usuarios se establece actualmente de forma manual (sin sincronización automática con LDAP en la v0.1)
 - **Sin RLS temporal** — Aún no existe filtrado basado en el tiempo
-- **Un único predicado por carpeta** — Solo se aplica una directiva por carpeta
+- **Las directivas se combinan con AND** — Cuando varias de sus directivas llegan a una carpeta, solo ve las filas que todas permiten
 - **Sin UPDATE/DELETE de nivel de fila** — La RLS solo filtra las consultas SELECT
 
 ## ¿Qué sigue?
