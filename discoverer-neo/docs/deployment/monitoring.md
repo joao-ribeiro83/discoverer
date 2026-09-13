@@ -26,9 +26,18 @@ docker compose ps
 
 ## Prometheus Metrics
 
-Backend exposes Prometheus metrics at `/metrics`:
+Backend exposes Prometheus metrics at `/metrics` — unauthenticated, since
+Prometheus does not hold a JWT. It carries no business data, but **is not
+routed through the public TLS listener** (`nginx/nginx-ssl.conf`, INF-09):
+Prometheus must scrape the backend directly, inside the Docker compose
+network, never over the internet-facing ingress.
 
 ```bash
+# From inside the compose network (e.g. a Prometheus container on the same
+# network), not through the public nginx listener:
+curl http://backend:3000/metrics
+
+# From the host, for local debugging only:
 curl http://localhost:3000/metrics
 ```
 
