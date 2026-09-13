@@ -20,7 +20,9 @@ import { recordCacheHit, recordCacheMiss } from '../plugins/metrics.js';
  *    preHandlers *before* the handler consults the cache, so a cache hit never
  *    bypasses a grant check. Anything whose shape depends on the caller —
  *    the per-user filtered business-area list, a response with a `permissions`
- *    array — must not be cached with these helpers.
+ *    array — must not be cached with these helpers. Query results never are:
+ *    row-level security filters them per user, and serving one user's rows to
+ *    another is the summary/RLS bypass recorded in `sql/query-plan.ts` (D-021).
  *
  * 2. **A cache failure is never a request failure.** Redis is a performance
  *    dependency, not a correctness one: every operation falls back to the

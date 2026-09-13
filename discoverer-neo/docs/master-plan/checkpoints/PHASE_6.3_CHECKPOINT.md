@@ -8,7 +8,7 @@
 | `EUL4_ASM_POLICIES` | No RLS reader built (D-077). 1 row, 0 constraints: nothing to migrate as summary input either |
 | RLS fails closed (D-090) | Done — `ROW_LEVEL_FAIL_MODE`, default `CLOSED`, on maps, exports, schedules and pick-lists |
 | COMPLEX folder carrying a policy refuses (SEC-06) | Done — refuses for every user, naming the folder and the policy |
-| Summary/RLS bypass invariant beside the plan type (D-021) | Already in `lib/sql/query-plan.ts` since Phase 3.3; update for fail-closed pending |
+| Summary/RLS bypass invariant beside the plan type (D-021) | Done — updated for fail-closed; async job results now go only to the user who started them |
 
 ## Fail-closed (D-090)
 
@@ -71,6 +71,37 @@ own tables, provably; until then refusal is the honest answer.
 Tests: `rls-conformance.test.ts` gate 13 — a folder rule and a business-area
 rule each refuse by name, for the covered user and the uncovered one alike, and
 with no policy the folder runs only in `OPEN` mode.
+
+## The summary/RLS bypass invariant (D-021)
+
+It was already written beside the plan type in `lib/sql/query-plan.ts` (Phase
+3.3) and in `docs/developer-guide/architecture.md`. This stage updated both for
+fail-closed — under `CLOSED` every folder is RLS-bearing — and pointed
+`lib/metadata-cache.ts` at it, because the caching module is where the first
+person adding a result cache will look.
+
+**The premise "Neo has no result caching" was not quite true; it is now.** An
+async execution keeps its result in memory, and
+`GET /api/maps/:id/executions/:jobId` checked only that the caller could open
+the map. Anyone who could open a public or shared map and held another user's
+job id could collect rows filtered by that other user's row-level security —
+the bypass in miniature. Job ids are random UUIDs, so it was hard to reach, not
+impossible. The job now records its `userId`, and the status and cancel routes
+answer `404` to anyone else (`map-execution-routes.test.ts`).
+
+The list-of-values cache was already safe: it is skipped whenever a predicate
+applies, which under `CLOSED` is every list a user may see.
+
+## Validation
+
+- `npm test -w backend`: 63 suites, 1 356 tests, all passing (2026-09-13, with
+  all four changes in).
+- `e2e/accessibility.spec.ts` › `/admin/security`: no axe violations, run
+  against port 5174.
+- `node scripts/i18n-check.mjs pt-PT fr-FR es-ES`: all checks pass.
+
+**Resume check:** run `rls-conformance.test.ts`. Gate 12's "a user with no
+policy sees NOTHING" must refuse, and no statement may reach Oracle.
 
 ## Verdict: this estate had no row-level security
 

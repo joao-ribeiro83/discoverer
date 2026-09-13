@@ -257,9 +257,12 @@ export default function mapExecutionRoutes(fastify: FastifyInstance) {
       if (!map) return;
 
       const { jobId } = request.params as { jobId: string };
+      const user = request.user as { sub: string };
       const job = getExecutionStatus(jobId);
-      // Guard against probing job ids that belong to another map.
-      if (!job || job.mapId !== map.id) {
+      // 404 for a job on another map or started by someone else. The result
+      // carries its owner's row-level security, so a second viewer of the same
+      // map must not collect it (D-021) — nor learn that the id exists.
+      if (!job || job.mapId !== map.id || job.userId !== user.sub) {
         return reply.code(404).send({ error: 'Execution job not found' });
       }
       return { data: job };
@@ -282,8 +285,9 @@ export default function mapExecutionRoutes(fastify: FastifyInstance) {
       if (!map) return;
 
       const { jobId } = request.params as { jobId: string };
+      const user = request.user as { sub: string };
       const job = getExecutionStatus(jobId);
-      if (!job || job.mapId !== map.id) {
+      if (!job || job.mapId !== map.id || job.userId !== user.sub) {
         return reply.code(404).send({ error: 'Execution job not found' });
       }
 

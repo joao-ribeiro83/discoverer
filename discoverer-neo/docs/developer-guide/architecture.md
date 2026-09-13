@@ -535,11 +535,23 @@ already admits.
 
 **The summary/RLS bypass (D-021).** A materialised view, rollup or cached
 result derived from an RLS-bearing folder contains only its creator's rows —
-*the fastest path through the system is also the one that leaks*. Nothing leaks
-today because Neo has **no result cache**. The note exists so the first person
-to add one finds the rule: a cache key for a query over an RLS-bearing folder
-must include the resolved security predicates and their bind values, or the
-cache must not exist.
+*the fastest path through the system is also the one that leaks*. Under the
+default `ROW_LEVEL_FAIL_MODE=CLOSED` every folder is RLS-bearing: no query runs
+without predicates resolved for the user who asked.
+
+Neo keeps **no shared result cache**, and the two places that do hold results
+are scoped, so nothing leaks today:
+
+- an async execution's result goes only to the user who started it — the job
+  records its `userId`, and the status and cancel routes answer `404` to anyone
+  else, even a user who may open the same map;
+- the list-of-values cache is skipped whenever a predicate applies, which
+  under `CLOSED` is every list a user is allowed to see.
+
+The rule is written beside the plan type (`lib/sql/query-plan.ts`) so the first
+person to add a cache, a summary redirect or a rollup finds it: a cache key for
+a query over an RLS-bearing folder must include the resolved security
+predicates and their bind values, or the cache must not exist.
 
 **The security set is not the join path.** The planner deliberately adds
 folders to FROM that carry no selected item. Do not widen the security set to
@@ -628,11 +640,11 @@ Frontend                Backend                        Data Sources
 
 ### Query Result Caching
 
-**What:** Temporary caching of map execution results
-
-**Duration:** Per request (not persisted)
-
-**Use:** Pagination (first page cached while fetching more)
+**None.** Map results are not cached. An async execution keeps its result in
+memory for the user who started it to collect, and no one else can read it.
+Anything that would serve one request's rows to another must honour the
+summary/RLS bypass invariant (D-021) — see
+[Two invariants recorded beside the plan type](#two-invariants-recorded-beside-the-plan-type).
 
 ### Session Caching
 
