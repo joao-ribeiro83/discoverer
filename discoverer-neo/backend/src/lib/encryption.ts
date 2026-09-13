@@ -36,6 +36,26 @@ export function encryptWith(key: Buffer, plaintext: string): string {
 }
 
 /**
+ * Thrown by {@link decryptWith} when the auth tag check fails (F-16). That
+ * only happens two ways: the ciphertext is corrupt, or `ENCRYPTION_KEY` no
+ * longer matches the key it was encrypted under — in practice, a rotation
+ * that skipped the re-encryption pass. Either way it is not a generic 500;
+ * naming it distinguishes "your key rotation is broken" from every other
+ * unhandled error at the point it is thrown.
+ */
+export class DecryptionError extends Error {
+  constructor(cause: unknown) {
+    super(
+      'Stored value could not be decrypted. ENCRYPTION_KEY may not match the ' +
+        'key it was encrypted under — see docs/deployment/configuration.md for ' +
+        'the re-encryption steps a key rotation requires.',
+    );
+    this.name = 'DecryptionError';
+    this.cause = cause;
+  }
+}
+
+/**
  * Decrypt a string produced by {@link encryptWith} under an explicit key.
  *
  * GCM's auth tag makes a successful decrypt proof that the key was right and
@@ -44,16 +64,20 @@ export function encryptWith(key: Buffer, plaintext: string): string {
  * and not a guess.
  */
 export function decryptWith(key: Buffer, ciphertext: string): string {
-  const buffer = Buffer.from(ciphertext, 'base64');
+  try {
+    const buffer = Buffer.from(ciphertext, 'base64');
 
-  const iv = buffer.subarray(0, IV_LENGTH);
-  const authTag = buffer.subarray(buffer.length - AUTH_TAG_LENGTH);
-  const encrypted = buffer.subarray(IV_LENGTH, buffer.length - AUTH_TAG_LENGTH);
+    const iv = buffer.subarray(0, IV_LENGTH);
+    const authTag = buffer.subarray(buffer.length - AUTH_TAG_LENGTH);
+    const encrypted = buffer.subarray(IV_LENGTH, buffer.length - AUTH_TAG_LENGTH);
 
-  const decipher = createDecipheriv(ALGORITHM, key, iv);
-  decipher.setAuthTag(authTag);
+    const decipher = createDecipheriv(ALGORITHM, key, iv);
+    decipher.setAuthTag(authTag);
 
-  return Buffer.concat([decipher.update(encrypted), decipher.final()]).toString('utf8');
+    return Buffer.concat([decipher.update(encrypted), decipher.final()]).toString('utf8');
+  } catch (err) {
+    throw new DecryptionError(err);
+  }
 }
 
 /**

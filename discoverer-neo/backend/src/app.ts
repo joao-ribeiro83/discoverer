@@ -1,4 +1,6 @@
+import { randomUUID } from 'node:crypto';
 import Fastify, { type FastifyError, type FastifyInstance } from 'fastify';
+import { DecryptionError } from './lib/encryption.js';
 import cors from './plugins/cors.js';
 import helmet from './plugins/helmet.js';
 import sensible from './plugins/sensible.js';
@@ -41,6 +43,10 @@ export async function buildApp(): Promise<FastifyInstance> {
     logger: {
       level: process.env.LOG_LEVEL ?? 'info',
     },
+    // A real id, not Fastify's default per-process counter ("req-1", reused
+    // across restarts) — this is what a user quotes to find their failure in
+    // the logs (BE-11), so it has to be actually unique.
+    genReqId: () => randomUUID(),
     // Login rate limiting keys on request.ip — see config.TRUST_PROXY.
     // A hop count is spelled as proxy-addr's own rule (trust the nearest N
     // hops), since Fastify's types do not accept the number itself.
@@ -58,6 +64,15 @@ export async function buildApp(): Promise<FastifyInstance> {
     const statusCode = error.statusCode ?? 500;
     request.log.error({ err: error }, 'Unhandled error');
 
+    // F-16: a decryption failure means a key rotation went wrong, not a
+    // generic crash — its own message already says so without leaking
+    // anything (no ciphertext, no key material), so it skips the blanket
+    // "Internal Server Error" every other 500 gets.
+    if (error instanceof DecryptionError) {
+      reply.code(500).send({ error: error.message, statusCode: 500, correlationId: request.id });
+      return;
+    }
+
     // Fastify v5 schema-validation failures carry a generic message; the
     // useful part lives in error.validation.
     let message = statusCode >= 500 ? 'Internal Server Error' : error.message;
@@ -74,6 +89,7 @@ export async function buildApp(): Promise<FastifyInstance> {
     reply.code(statusCode).send({
       error: message,
       statusCode,
+      correlationId: request.id,
     });
   });
 
