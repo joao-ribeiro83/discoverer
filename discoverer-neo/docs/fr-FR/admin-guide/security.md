@@ -277,6 +277,15 @@ routes et échoue si une route `GET` avec id ne nomme aucun contrôle d'accès.
 
 Les lectures ne sont pas encore journalisées. C'est la phase 6.4.
 
+## SQL personnalisé des dossiers COMPLEX
+
+Le SQL d'un dossier COMPLEX est inséré dans chaque requête qui le lit ; il est
+donc vérifié **à la création et à la mise à jour** par la même fonction
+(`assertValidFolderSql` dans `folder.service.ts`). Il doit s'agir d'une seule
+instruction `SELECT` ou `WITH` ; le DDL, le DML, `EXEC`, `EXECUTE IMMEDIATE` et
+les appels `DBMS_` sont refusés avec `400`. Passer un dossier en COMPLEX sans SQL
+est également refusé.
+
 ## Bonnes pratiques
 
 1. **Commencez simplement** — Débutez par un filtrage sur une seule colonne (region, department)

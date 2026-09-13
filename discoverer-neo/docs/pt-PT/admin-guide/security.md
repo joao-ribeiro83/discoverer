@@ -276,6 +276,15 @@ rotas e falha se uma rota `GET` com id não nomear nenhuma verificação de aces
 
 As leituras ainda não são registadas na auditoria. Isso é a fase 6.4.
 
+## SQL personalizado em pastas COMPLEX
+
+O SQL de uma pasta COMPLEX é inserido em cada consulta que a lê, por isso é
+verificado **na criação e na actualização** pela mesma função
+(`assertValidFolderSql` em `folder.service.ts`). Tem de ser uma única instrução
+`SELECT` ou `WITH`; DDL, DML, `EXEC`, `EXECUTE IMMEDIATE` e chamadas `DBMS_` são
+recusados com `400`. Mudar o tipo de uma pasta para COMPLEX sem SQL também é
+recusado.
+
 ## Melhores Práticas
 
 1. **Comece de Forma Simples** — Comece com filtragem por uma única coluna (região, departamento)

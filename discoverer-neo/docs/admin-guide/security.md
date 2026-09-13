@@ -340,6 +340,18 @@ genuinely holds no per-area data must be listed there with its reason.
 
 Reads are not yet written to the audit log. That is Phase 6.4.
 
+## Custom SQL on COMPLEX folders
+
+A COMPLEX folder's SQL is inlined into every query that reads it, so it is
+checked on **create and on update** by the same function
+(`assertValidFolderSql` in `folder.service.ts`). It must be one `SELECT` or
+`WITH` statement; DDL, DML, `EXEC`, `EXECUTE IMMEDIATE` and `DBMS_` calls are
+refused with `400`. Changing a folder's type to COMPLEX without SQL is refused
+too.
+
+Before this, only create was checked: a folder created with a clean `SELECT`
+could be edited to anything.
+
 ## Best Practices
 
 1. **Start Simple** — Begin with single-column filtering (region, department)

@@ -276,6 +276,15 @@ rutas y falla si una ruta `GET` con id no nombra ninguna comprobación de acceso
 
 Las lecturas aún no se registran en la auditoría. Eso es la fase 6.4.
 
+## SQL personalizado en carpetas COMPLEX
+
+El SQL de una carpeta COMPLEX se inserta en cada consulta que la lee, así que se
+comprueba **al crear y al actualizar** con la misma función
+(`assertValidFolderSql` en `folder.service.ts`). Debe ser una única sentencia
+`SELECT` o `WITH`; DDL, DML, `EXEC`, `EXECUTE IMMEDIATE` y llamadas `DBMS_` se
+rechazan con `400`. Cambiar el tipo de una carpeta a COMPLEX sin SQL también se
+rechaza.
+
 ## Prácticas recomendadas
 
 1. **Empiece de forma sencilla** — Comience con el filtrado por una sola columna (región, departamento)
