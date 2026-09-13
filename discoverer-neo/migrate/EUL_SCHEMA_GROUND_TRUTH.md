@@ -840,13 +840,19 @@ they join inside it — one column doing two jobs by position
 (`backend/src/lib/sql/where-clause.ts`).
 
 That expresses any boolean tree **two levels deep**, which is every condition
-that exists in the source:
+that exists in the source. A condition whose tests are ORed is written as
+**one** group, whatever its inner shape: inside the brackets each row keeps its
+own operator, and AND binds tighter than OR.
 
 ```
-[1,99]( [1,98](a, b), [1,98](c, d) )     ->  (a AND b) OR (c AND d)
-        group 1        group 2               join=AND       join=OR
-                                             inner=AND      inner=AND
+[1,99]( [1,98](a, b), [1,98](c, d) )     ->  (a AND b OR c AND d)
+                                             one group; logic AND, AND, OR, AND
 ```
+
+It cannot be one group per `AND`. The workbook's other conditions are ANDed
+onto the same map between the groups, and `x AND (a AND b) OR (c AND d)` is
+`(x AND a AND b) OR (c AND d)`. It was written that way until 2026-09-13, and
+32 of the 843 migrated maps with conditions returned more rows than Discoverer.
 
 A self-referencing `parent_id` would express arbitrary depth, but nothing in
 the corpus needs it and it would have to be honoured by the WHERE-clause

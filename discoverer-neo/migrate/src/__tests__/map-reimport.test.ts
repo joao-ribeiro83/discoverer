@@ -372,6 +372,87 @@ describe('reimportMaps', () => {
     ]);
   });
 
+  it('writes an OR condition as one group, so its OR cannot bind to the other conditions', async () => {
+    const { writer, state } = await migratedTarget();
+    const db = eul5Db();
+    const documents = db.tables.EUL5_DOCUMENTS!;
+    const body = buildWorkbookFixture({
+      name: 'Monthly Sales',
+      eulOwner: 'EUL5_US',
+      items: [
+        {
+          folderName: 'SALES_SUMMARY',
+          folderLabel: 'Sales Summary',
+          itemName: 'REGION',
+          itemLabel: 'Region',
+          sourceId: 302,
+        },
+        {
+          folderName: 'INVOICE_HEADERS',
+          folderLabel: 'Invoice Headers',
+          itemName: 'INVOICE_AMOUNT',
+          itemLabel: 'Invoice Amount',
+          sourceId: 300,
+        },
+      ],
+      conditions: [
+        // Region = 'N'
+        { operatorCode: 81, item: 'Region', literals: ['N'] },
+        // Region = 'S' OR Region = 'E'
+        {
+          operatorCode: 99,
+          args: [
+            { operatorCode: 81, item: 'Region', literals: ['S'] },
+            { operatorCode: 81, item: 'Region', literals: ['E'] },
+          ],
+        },
+        // (Invoice Amount > 1 AND Region = 'W') OR Invoice Amount > 9
+        {
+          operatorCode: 99,
+          args: [
+            {
+              operatorCode: 98,
+              args: [
+                { operatorCode: 83, item: 'Invoice Amount', literals: ['1'], literalKind: 2 },
+                { operatorCode: 81, item: 'Region', literals: ['W'] },
+              ],
+            },
+            { operatorCode: 83, item: 'Invoice Amount', literals: ['9'], literalKind: 2 },
+          ],
+        },
+      ],
+      worksheets: [{ name: 'Sales', columns: [{ item: 'Region' }] }],
+    });
+    documents[0]!.DOC_DOCUMENT = body;
+    documents[0]!.DOC_LENGTH = body.length;
+
+    await reimportMaps({ source: mockExecutor(db), writer, deps: deterministicDeps() });
+
+    // Discoverer ANDs a worksheet's conditions: `N AND (S OR E) AND
+    // ((>1 AND W) OR >9)`. The WHERE clause joins groups by SQL precedence, so
+    // written one group per test this read `N AND S OR E AND …`, which is
+    // `(N AND S) OR …` and returns more rows than Discoverer did.
+    const rows = rowsOf(state, 'map_conditions').sort(
+      (a, b) => (a.displayOrder as number) - (b.displayOrder as number),
+    );
+    const groupNames = new Map<unknown, string>();
+    const groupName = (groupId: unknown): string | null => {
+      if (groupId === null) return null;
+      if (!groupNames.has(groupId)) groupNames.set(groupId, `g${groupNames.size + 1}`);
+      return groupNames.get(groupId)!;
+    };
+    expect(rows.map((r) => [r.value, groupName(r.groupId), r.logicOperator])).toEqual([
+      ['N', null, 'AND'],
+      ['S', 'g1', 'AND'],
+      ['E', 'g1', 'OR'],
+      // Inside the group AND binds tighter than OR, so the AND pair needs no
+      // brackets of its own.
+      ['1', 'g2', 'AND'],
+      ['W', 'g2', 'AND'],
+      ['9', 'g2', 'OR'],
+    ]);
+  });
+
   it('rebuilds totals the same way a full run writes them', async () => {
     const { writer, state } = await migratedTarget();
     const db = eul5Db();
