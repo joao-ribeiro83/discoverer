@@ -6,6 +6,8 @@ Saiba mais sobre o trilho de auditoria do Discoverer Neo e como rever as ativida
 
 O **Registo de Auditoria** regista todas as atividades significativas do sistema — alterações de metadados, execuções de mapas, início/fim de sessão de utilizadores, concessão/revogação de permissões e tarefas de exportação.
 
+Desde a fase 6.4 (SEC-11), as leituras também são auditadas nas rotas de metadados do EUL — áreas de negócio, pastas, itens, junções, hierarquias, funções personalizadas e origens de dados — e não apenas as escritas. Isto fecha a lacuna em que uma leitura IDOR (um utilizador a aceder a uma entidade à qual não deveria chegar, através de um GET por id) não deixava rasto. As restantes leituras (autenticação/sessão, painéis, sondagem do estado de execução) continuam por auditar: auditá-las multiplicaria o volume de registos sem qualquer valor forense. Isto só é ativado com a correção de redação por subcadeia da fase 0.2 já em vigor — auditar uma leitura enquanto a redação ainda for de correspondência exata multiplicaria a exposição em vez de a reduzir.
+
 Cada evento de auditoria inclui:
 - **Data/Hora** — Quando ocorreu a atividade
 - **Utilizador** — Quem executou a ação

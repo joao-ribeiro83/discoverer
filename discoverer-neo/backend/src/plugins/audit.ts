@@ -18,6 +18,27 @@ const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
 const DEFAULT_EXCLUDE_PREFIXES = ['/api/health', '/metrics', '/documentation'];
 
+/**
+ * GET routes audited despite being reads (SEC-11). Every mutation is already
+ * audited above; reads were not, so an IDOR that only *looks* — the EUL
+ * metadata GET-by-id routes Phase 6.2 scoped by entity — left no trail. This
+ * is deliberately narrower than "every GET": auth/session, dashboards and
+ * execution polling would multiply audit_log volume for no forensic value,
+ * and SEC-11 asks for metadata routes "at minimum".
+ *
+ * Must land after SEC-02's redaction fix (D-093) — the `redact()` call below
+ * is exact-match no longer, so a metadata response is safe to persist.
+ */
+const READ_AUDITED_PREFIXES = [
+  '/api/business-areas',
+  '/api/folders',
+  '/api/items',
+  '/api/joins',
+  '/api/hierarchies',
+  '/api/custom-functions',
+  '/api/data-sources',
+];
+
 // Trailing route segments that name an operation rather than a resource —
 // used to find the resource segment when the URL ends in one of these
 // (e.g. POST /api/schedules/:id/trigger should audit as entityType
@@ -166,9 +187,12 @@ export default fp(
     const excludePrefixes = opts.excludeRoutes ?? DEFAULT_EXCLUDE_PREFIXES;
 
     fastify.addHook('onSend', async (request: FastifyRequest, reply, payload) => {
-      if (!MUTATING_METHODS.has(request.method)) return payload;
-
       const routePattern = request.routeOptions?.url ?? request.url;
+      const isAuditedRead =
+        request.method === 'GET' &&
+        READ_AUDITED_PREFIXES.some((prefix) => routePattern.startsWith(prefix));
+      if (!MUTATING_METHODS.has(request.method) && !isAuditedRead) return payload;
+
       if (excludePrefixes.some((prefix) => routePattern.startsWith(prefix))) {
         return payload;
       }

@@ -6,6 +6,8 @@ Découvrez la piste d'audit de Discoverer Neo et comment examiner les activités
 
 La **journalisation d'audit** enregistre toutes les activités importantes du système — modifications de métadonnées, exécutions de cartes, connexions/déconnexions des utilisateurs, octrois/révocations d'autorisations et tâches d'exportation.
 
+Depuis la phase 6.4 (SEC-11), les lectures sont également auditées sur les routes de métadonnées de l'EUL — domaines d'activité, dossiers, éléments, jointures, hiérarchies, fonctions personnalisées et sources de données — et pas seulement les écritures. Cela comble la faille par laquelle une lecture IDOR (un utilisateur atteignant une entité à laquelle il ne devrait pas accéder, via un GET par id) ne laissait aucune trace. Les autres lectures (authentification/session, tableaux de bord, sondage de l'état d'exécution) restent non auditées : les auditer multiplierait le volume de journaux sans valeur d'investigation. Ceci ne fonctionne qu'avec la correction de rédaction par sous-chaîne de la phase 0.2 déjà en place — auditer une lecture tant que la rédaction reste une correspondance exacte multiplierait l'exposition au lieu de la réduire.
+
 Chaque événement d'audit comprend :
 - **Horodatage** — Quand l'activité s'est produite
 - **Utilisateur** — Qui a effectué l'action

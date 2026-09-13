@@ -121,10 +121,33 @@ describe('audit plugin — automatic logging', () => {
     expect(JSON.stringify(entry.details)).not.toContain(TEST_PASSWORD);
   });
 
-  it('does not log a pure read (GET) request', async () => {
+  it('audits a metadata GET read (SEC-11), with no credential in the logged body', async () => {
+    const readRes = await app.inject({
+      method: 'GET',
+      url: `/api/business-areas/${createdBaId}`,
+      headers: { authorization: `Bearer ${adminToken}` },
+    });
+    expect(readRes.statusCode).toBe(200);
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/audit/user/${adminId}?limit=200`,
+      headers: { authorization: `Bearer ${adminToken}` },
+    });
+    const { data } = res.json();
+    const entry = data.find(
+      (e: { action: string; entityId: string }) =>
+        e.action === 'GET /api/business-areas/:id' && e.entityId === createdBaId,
+    );
+    expect(entry).toBeDefined();
+    expect(entry.entityType).toBe('business-areas');
+    expect(JSON.stringify(entry.details)).not.toMatch(/password/i);
+  });
+
+  it('does not audit a read outside the metadata prefixes', async () => {
     await app.inject({
       method: 'GET',
-      url: '/api/business-areas',
+      url: '/api/health',
       headers: { authorization: `Bearer ${adminToken}` },
     });
     const res = await app.inject({
@@ -133,7 +156,9 @@ describe('audit plugin — automatic logging', () => {
       headers: { authorization: `Bearer ${adminToken}` },
     });
     const { data } = res.json();
-    expect(data.some((e: { action: string }) => e.action.startsWith('GET '))).toBe(false);
+    expect(data.some((e: { action: string }) => e.action.startsWith('GET /api/health'))).toBe(
+      false,
+    );
   });
 });
 
