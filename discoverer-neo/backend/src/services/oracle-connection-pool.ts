@@ -2,7 +2,7 @@ import type { Connection, Pool } from 'oracledb';
 import { config } from '../config.js';
 import * as dataSourceService from './data-source.service.js';
 import { importOracleDb, type OracleDbModule } from './oracle-driver.js';
-import { assertHostIsSafe } from '../lib/host-safety.js';
+import { resolveSafeHost } from '../lib/host-safety.js';
 
 /**
  * Oracle connection-pool manager.
@@ -173,13 +173,20 @@ async function buildPool(dataSourceId: string): Promise<Pool> {
   // Only the structured host/port form is checked — an explicit connectString
   // is already an admin typing raw Oracle connect syntax, not the accidental
   // SSRF surface this guards against.
-  if (!ds.connectionString && ds.host) {
-    await assertHostIsSafe(ds.host);
-  }
+  //
+  // The connect descriptor is built from the *resolved* address, not
+  // `ds.host` — the pool would otherwise re-resolve the hostname itself on
+  // every connection it opens, and a DNS answer that was safe at check time
+  // is not guaranteed to stay safe (DNS rebinding). Pinning the address here
+  // also means the pool never re-resolves DNS again for its lifetime; a
+  // legitimate DNS-based failover needs the pool rebuilt (closePool), the
+  // same way a credential change already does.
+  const host =
+    !ds.connectionString && ds.host ? await resolveSafeHost(ds.host) : ds.host;
 
   const connectString =
     ds.connectionString ||
-    `(DESCRIPTION=(ADDRESS=(HOST=${ds.host})(PORT=${ds.port})(PROTOCOL=TCP))(CONNECT_DATA=(SERVICE_NAME=${
+    `(DESCRIPTION=(ADDRESS=(HOST=${host})(PORT=${ds.port})(PROTOCOL=TCP))(CONNECT_DATA=(SERVICE_NAME=${
       ds.serviceName || ds.sid
     })))`;
 

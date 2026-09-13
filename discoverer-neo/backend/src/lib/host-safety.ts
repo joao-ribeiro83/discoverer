@@ -27,15 +27,29 @@ export class DataSourceHostError extends Error {
 }
 
 function isDisallowedAddress(address: string): boolean {
-  if (isIPv4(address)) {
-    const octets = address.split('.').map(Number);
+  // An IPv4-mapped IPv6 literal (::ffff:169.254.169.254) is still the same
+  // address as far as the OS/driver is concerned — unwrap it before checking,
+  // or it sails past both the isIPv4 and the fe80: checks below.
+  const mapped = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/i.exec(address);
+  const candidate = mapped ? mapped[1]! : address;
+
+  if (isIPv4(candidate)) {
+    const octets = candidate.split('.').map(Number);
     return octets[0] === 169 && octets[1] === 254; // link-local, incl. 169.254.169.254 cloud metadata
   }
-  return address.toLowerCase().startsWith('fe80:');
+  return candidate.toLowerCase().startsWith('fe80:');
 }
 
-/** Resolve `host` and throw {@link DataSourceHostError} if it lands on a disallowed address. */
-export async function assertHostIsSafe(host: string): Promise<void> {
+/**
+ * Resolve `host` and throw {@link DataSourceHostError} if it lands on a
+ * disallowed address. Returns the resolved literal address — callers must
+ * connect to *that*, not re-resolve `host` themselves. Oracle's driver does
+ * its own DNS lookup when handed a hostname, and a hostname's DNS answer can
+ * change between this check and the moment it connects (DNS rebinding): the
+ * safe address seen here is worthless as a guarantee unless it is also the
+ * address actually dialed.
+ */
+export async function resolveSafeHost(host: string): Promise<string> {
   let address: string;
   try {
     ({ address } = await lookup(host));
@@ -45,4 +59,5 @@ export async function assertHostIsSafe(host: string): Promise<void> {
   if (isDisallowedAddress(address)) {
     throw new DataSourceHostError(`Data source host "${host}" resolves to a disallowed address`);
   }
+  return address;
 }
