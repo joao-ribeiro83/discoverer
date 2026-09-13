@@ -1,4 +1,8 @@
-import '@testing-library/jest-dom'
+// vitest 5's `Assertion<T, R>` interface only merges with jest-dom's
+// vitest-specific type augmentation, not the plain Jest one — importing the
+// generic entry point silently drops every matcher's types (they still work
+// at runtime, but `tsc` no longer recognizes them).
+import '@testing-library/jest-dom/vitest'
 // Initialize i18next once for the whole test suite so components that call
 // useTranslation() render real English strings instead of raw keys.
 import '@/i18n'
