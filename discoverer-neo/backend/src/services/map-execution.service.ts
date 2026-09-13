@@ -83,6 +83,13 @@ export interface ExecuteOptions {
    * full result up to `ASYNC_MAX_ROWS`).
    */
   offset?: number;
+  /**
+   * Ties a failure's generic client-facing message back to the detailed one
+   * in server logs (SEC-07/BE-11). Callers with a request in scope should
+   * pass its id; a random one is generated otherwise so every failure is
+   * still traceable.
+   */
+  correlationId?: string;
 }
 
 export interface ResultColumn extends ColumnFormat {
@@ -207,6 +214,8 @@ export interface AsyncJob {
   executionTimeMs?: number;
   truncated?: boolean;
   error?: string;
+  /** Set alongside `error`; `error` is already the generic public text (SEC-07). */
+  errorKind?: ExecutionErrorKind;
   /** Populated once the job reaches COMPLETED. */
   result?: ExecuteResult;
 }
@@ -552,6 +561,7 @@ async function defaultPrepareQuery(
 async function runTotalsQueries(
   conn: Connection,
   totals: GeneratedTotalsQuery[],
+  correlationId: string,
 ): Promise<{ groups: ResultTotalsGroup[]; warnings: string[] }> {
   const groups: ResultTotalsGroup[] = [];
   const warnings: string[] = [];
@@ -571,10 +581,12 @@ async function runTotalsQueries(
         rows: (result.rows ?? []) as Record<string, unknown>[],
       });
     } catch (err) {
+      // SEC-07: no raw driver text in a client-visible warning.
+      classifyAndLog(err, 'QUERY', correlationId);
       warnings.push(
         query.breakLabel
-          ? `Subtotals by "${query.breakLabel}" could not be computed: ${errorMessage(err)}`
-          : `Totals could not be computed: ${errorMessage(err)}`,
+          ? `Subtotals by "${query.breakLabel}" could not be computed.`
+          : 'Totals could not be computed.',
       );
     }
   }
@@ -632,12 +644,44 @@ export function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
 }
 
-function asExecutionError(
+/**
+ * Generic, kind-scoped text safe to show any user who can execute a map
+ * (SEC-07). The driver's actual message — which for an Oracle failure is raw
+ * `ORA-nnnnn` text describing schema/data internals — never reaches the
+ * client; `console.error` below keeps it for whoever reads server logs,
+ * tagged with the job id (or, for the synchronous path, the request's
+ * correlation id) so it can be found again.
+ */
+const PUBLIC_ERROR_MESSAGE: Record<ExecutionErrorKind, string> = {
+  CONFIG: 'The map is not configured correctly and cannot be run.',
+  CONNECT: 'Could not connect to the data source.',
+  TIMEOUT: 'The query did not finish within the time limit.',
+  QUERY: 'The query could not be completed.',
+  CANCELLED: 'Execution was cancelled.',
+  FORBIDDEN: 'You do not have access to this data.',
+};
+
+/** Log the real error server-side, then return the kind's generic text. */
+function classifyAndLog(err: unknown, kind: ExecutionErrorKind, correlationId: string): string {
+  // eslint-disable-next-line no-console -- this service has no injected logger; see MapExecutionDeps.
+  console.error(`[map-execution:${correlationId}] kind=${kind}`, err);
+  return PUBLIC_ERROR_MESSAGE[kind];
+}
+
+/**
+ * A deliberate refusal upstream (a malformed calculated field, a data
+ * entitlement check) already threw its own typed `MapExecutionError` with the
+ * right kind and a message that is already safe to show — pass it through
+ * unchanged. Only an *unclassified* failure (the raw driver error) gets
+ * bucketed as `kind` and its message replaced.
+ */
+function wrapExecutionError(
   err: unknown,
   kind: ExecutionErrorKind,
+  correlationId: string,
 ): MapExecutionError {
   if (err instanceof MapExecutionError) return err;
-  return new MapExecutionError(kind, errorMessage(err), err);
+  return new MapExecutionError(kind, classifyAndLog(err, kind, correlationId), err);
 }
 
 /**
@@ -708,6 +752,7 @@ export async function executeMap(
 ): Promise<ExecuteResult> {
   const maxRows = clampSyncMaxRows(options.maxRows);
   const timeoutMs = clampTimeout(options.timeoutMs);
+  const correlationId = options.correlationId ?? randomUUID();
 
   // Row offset for "load more" pagination; only meaningful with a positive value.
   const offset =
@@ -730,6 +775,7 @@ export async function executeMap(
   try {
     conn = await deps.getConnection(prepared.dataSourceId);
   } catch (err) {
+    const wrapped = wrapExecutionError(err, 'CONNECT', correlationId);
     await safeRecord(deps, {
       mapId,
       executedBy: userId,
@@ -737,10 +783,10 @@ export async function executeMap(
       rowCount: null,
       sqlText: prepared.sql,
       planDecision: prepared.planDecision,
-      errorMessage: errorMessage(err),
+      errorMessage: wrapped.message,
       status: 'FAILED',
     });
-    throw asExecutionError(err, 'CONNECT');
+    throw wrapped;
   }
 
   try {
@@ -768,7 +814,7 @@ export async function executeMap(
     // whole filtered set rather than the fetched page.
     const totals = prepared.totals ?? [];
     const totalsRun = totals.length
-      ? await runTotalsQueries(conn, totals)
+      ? await runTotalsQueries(conn, totals, correlationId)
       : { groups: [], warnings: [] };
     const warnings = [...(prepared.warnings ?? []), ...totalsRun.warnings];
 
@@ -800,6 +846,8 @@ export async function executeMap(
     };
   } catch (err) {
     const timedOut = isTimeoutError(err);
+    const kind: ExecutionErrorKind = timedOut ? 'TIMEOUT' : 'QUERY';
+    const wrapped = wrapExecutionError(err, kind, correlationId);
     await safeRecord(deps, {
       mapId,
       executedBy: userId,
@@ -807,10 +855,10 @@ export async function executeMap(
       rowCount: null,
       sqlText: prepared.sql,
       planDecision: prepared.planDecision,
-      errorMessage: errorMessage(err),
-      status: timedOut ? 'TIMEOUT' : 'FAILED',
+      errorMessage: wrapped.message,
+      status: wrapped.kind === 'TIMEOUT' ? 'TIMEOUT' : 'FAILED',
     });
-    throw asExecutionError(err, timedOut ? 'TIMEOUT' : 'QUERY');
+    throw wrapped;
   } finally {
     await deps.releaseConnection(prepared.dataSourceId, conn);
   }
@@ -1095,6 +1143,7 @@ async function runAsyncJob(
     if (cancelRequested.has(jobId) || isCancelError(err)) {
       terminal = 'CANCELLED';
       job.error = 'Execution cancelled by user';
+      job.errorKind = 'CANCELLED';
       await safeRecord(deps, {
         mapId,
         executedBy: userId,
@@ -1107,7 +1156,9 @@ async function runAsyncJob(
       });
     } else if (isTimeoutError(err)) {
       terminal = 'TIMEOUT';
-      job.error = errorMessage(err);
+      const wrapped = wrapExecutionError(err, 'TIMEOUT', jobId);
+      job.error = wrapped.message;
+      job.errorKind = wrapped.kind;
       await safeRecord(deps, {
         mapId,
         executedBy: userId,
@@ -1120,7 +1171,9 @@ async function runAsyncJob(
       });
     } else {
       terminal = 'FAILED';
-      job.error = errorMessage(err);
+      const wrapped = wrapExecutionError(err, 'QUERY', jobId);
+      job.error = wrapped.message;
+      job.errorKind = wrapped.kind;
       await safeRecord(deps, {
         mapId,
         executedBy: userId,
@@ -1155,8 +1208,10 @@ function finalizeFailure(
   },
 ): void {
   const timedOut = isTimeoutError(args.err);
-  job.status = timedOut ? 'TIMEOUT' : 'FAILED';
-  job.error = errorMessage(args.err);
+  const wrapped = wrapExecutionError(args.err, timedOut ? 'TIMEOUT' : 'QUERY', job.jobId);
+  job.status = wrapped.kind === 'TIMEOUT' ? 'TIMEOUT' : 'FAILED';
+  job.error = wrapped.message;
+  job.errorKind = wrapped.kind;
   job.executionTimeMs = args.elapsed;
   job.finishedAt = new Date();
   void safeRecord(deps, {

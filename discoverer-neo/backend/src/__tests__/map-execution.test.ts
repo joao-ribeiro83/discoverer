@@ -228,7 +228,7 @@ describe('executeMap (synchronous)', () => {
     expect(releaseConnection).toHaveBeenCalledTimes(1);
   });
 
-  it('maps a generic query error to a QUERY error and logs FAILED', async () => {
+  it('maps a generic query error to a QUERY error and logs FAILED, without the raw driver text (SEC-07)', async () => {
     const err = new Error('ORA-00942: table or view does not exist');
     const { conn } = makeFailingConn(err);
     const { deps, recordExecution } = makeDeps(conn);
@@ -241,11 +241,11 @@ describe('executeMap (synchronous)', () => {
     }
     expect(caught).toBeInstanceOf(MapExecutionError);
     expect((caught as MapExecutionError).kind).toBe('QUERY');
+    expect((caught as MapExecutionError).message).not.toMatch(/ORA-/);
 
-    expect(recordExecution.mock.calls[0]![0]).toMatchObject({
-      status: 'FAILED',
-      errorMessage: 'ORA-00942: table or view does not exist',
-    });
+    const recorded = recordExecution.mock.calls[0]![0] as { errorMessage: string | null };
+    expect(recorded).toMatchObject({ status: 'FAILED' });
+    expect(recorded.errorMessage).not.toMatch(/ORA-/);
   });
 
   it('surfaces a connection-acquire failure as CONNECT without releasing', async () => {
@@ -359,7 +359,7 @@ describe('executeMapAsync (background job)', () => {
     expect(releaseConnection).toHaveBeenCalledTimes(1);
   });
 
-  it('settles as FAILED on a generic async query error', async () => {
+  it('settles as FAILED on a generic async query error, without the raw driver text (SEC-07)', async () => {
     const { conn } = makeFailingConn(
       new Error('ORA-00942: table or view does not exist'),
     );
@@ -369,11 +369,14 @@ describe('executeMapAsync (background job)', () => {
     await waitFor(() => getExecutionStatus(jobId)?.status === 'FAILED');
 
     const job = getExecutionStatus(jobId)!;
-    expect(job.error).toMatch(/ORA-00942/);
-    expect(recordExecution.mock.calls[0]![0]).toMatchObject({ status: 'FAILED' });
+    expect(job.error).not.toMatch(/ORA-/);
+    expect(job.errorKind).toBe('QUERY');
+    const recorded = recordExecution.mock.calls[0]![0] as { errorMessage: string | null };
+    expect(recorded).toMatchObject({ status: 'FAILED' });
+    expect(recorded.errorMessage).not.toMatch(/ORA-/);
   });
 
-  it('settles as FAILED when the connection cannot be acquired', async () => {
+  it('settles as FAILED when the connection cannot be acquired, without the raw driver text (SEC-07)', async () => {
     const { conn } = makeResultSetConn([{ C1: 1 }]);
     const getConnection = jest.fn(async () => {
       throw new Error('ORA-12541: no listener');
@@ -383,10 +386,10 @@ describe('executeMapAsync (background job)', () => {
     const { jobId } = await executeMapAsync(MAP_ID, {}, USER_ID, {}, deps);
     await waitFor(() => getExecutionStatus(jobId)?.status === 'FAILED');
 
-    expect(getExecutionStatus(jobId)!.error).toMatch(/ORA-12541/);
+    expect(getExecutionStatus(jobId)!.error).not.toMatch(/ORA-/);
   });
 
-  it('settles as FAILED when prepareQuery fails', async () => {
+  it('settles as FAILED when prepareQuery fails, without leaking the raw message (SEC-07)', async () => {
     const { conn } = makeResultSetConn([{ C1: 1 }]);
     const prepareQuery = jest.fn(async () => {
       throw new Error('bad map definition');
@@ -396,7 +399,7 @@ describe('executeMapAsync (background job)', () => {
     const { jobId } = await executeMapAsync(MAP_ID, {}, USER_ID, {}, deps);
     await waitFor(() => getExecutionStatus(jobId)?.status === 'FAILED');
 
-    expect(getExecutionStatus(jobId)!.error).toMatch(/bad map definition/);
+    expect(getExecutionStatus(jobId)!.error).not.toMatch(/bad map definition/);
   });
 
   it('completes via the no-result-set fallback (execute returns plain rows)', async () => {
