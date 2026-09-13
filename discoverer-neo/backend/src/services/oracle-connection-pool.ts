@@ -2,6 +2,7 @@ import type { Connection, Pool } from 'oracledb';
 import { config } from '../config.js';
 import * as dataSourceService from './data-source.service.js';
 import { importOracleDb, type OracleDbModule } from './oracle-driver.js';
+import { assertHostIsSafe } from '../lib/host-safety.js';
 
 /**
  * Oracle connection-pool manager.
@@ -52,6 +53,7 @@ export class OraclePoolError extends Error {
     this.name = 'OraclePoolError';
   }
 }
+
 
 // ---------------------------------------------------------------------------
 // Driver loading (dynamic, cached)
@@ -166,6 +168,13 @@ async function buildPool(dataSourceId: string): Promise<Pool> {
     throw new OraclePoolError(
       `Data source "${ds.name}" is not an Oracle connection (got: ${ds.connectionType})`,
     );
+  }
+
+  // Only the structured host/port form is checked — an explicit connectString
+  // is already an admin typing raw Oracle connect syntax, not the accidental
+  // SSRF surface this guards against.
+  if (!ds.connectionString && ds.host) {
+    await assertHostIsSafe(ds.host);
   }
 
   const connectString =

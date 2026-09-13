@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { dataSources, type DataSource, type NewDataSource } from '../db/schema.js';
 import { encrypt, decrypt } from '../lib/encryption.js';
+import { assertHostIsSafe, DataSourceHostError } from '../lib/host-safety.js';
 import { importOracleDb, type OracleDbModule } from './oracle-driver.js';
 
 // Shape returned to API clients — never includes the decrypted password.
@@ -143,6 +144,20 @@ async function testOracleConnection(
   ds: DataSource,
   start: number,
 ): Promise<ConnectionTestResult> {
+  // SEC-10: this probe reports success/failure/latency for whatever host:port
+  // it is given — exactly the oracle a port scanner wants. Only the
+  // structured host/port form is checked; an explicit connectionString is
+  // already an admin typing raw Oracle connect syntax.
+  if (!ds.connectionString && ds.host) {
+    try {
+      await assertHostIsSafe(ds.host);
+    } catch (err) {
+      const latencyMs = Math.round(performance.now() - start);
+      const message = err instanceof DataSourceHostError ? err.message : 'Host check failed';
+      return { success: false, message, latencyMs };
+    }
+  }
+
   let oracledb: OracleDbModule | null = null;
   try {
     oracledb = await importOracleDb();
