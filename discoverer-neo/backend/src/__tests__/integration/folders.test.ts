@@ -935,4 +935,83 @@ describe('SQL validation', () => {
 
     expect(response.statusCode).toBe(201);
   });
+
+  // SEC-04: the update path had no gate. A clean COMPLEX folder could be
+  // rewritten to anything by PUT. The update must reject exactly what create
+  // rejects, with the same message, because it runs the same function.
+  describe('on UPDATE', () => {
+    const HOSTILE = [
+      'DROP TABLE EMPLOYEES',
+      'SELECT * FROM EMPLOYEES; DELETE FROM EMPLOYEES',
+      'BEGIN EXECUTE IMMEDIATE \'DROP TABLE EMPLOYEES\'; END;',
+      'SELECT DBMS_PIPE.RECEIVE_MESSAGE(\'x\', 10) FROM DUAL',
+      '',
+    ];
+
+    async function createComplexFolder(): Promise<string> {
+      const res = await app.inject({
+        method: 'POST',
+        url: `/api/business-areas/${testBusinessAreaId}/folders`,
+        headers: { authorization: `Bearer ${adminToken}` },
+        payload: { name: 'Clean Complex', folderType: 'COMPLEX', customSql: 'SELECT 1 FROM DUAL' },
+      });
+      expect(res.statusCode).toBe(201);
+      return res.json().data.id as string;
+    }
+
+    for (const sql of HOSTILE) {
+      it(`rejects ${JSON.stringify(sql)} identically to create`, async () => {
+        const created = await app.inject({
+          method: 'POST',
+          url: `/api/business-areas/${testBusinessAreaId}/folders`,
+          headers: { authorization: `Bearer ${adminToken}` },
+          payload: { name: 'Hostile Create', folderType: 'COMPLEX', customSql: sql },
+        });
+        const folderId = await createComplexFolder();
+        const updated = await app.inject({
+          method: 'PUT',
+          url: `/api/folders/${folderId}`,
+          headers: { authorization: `Bearer ${adminToken}` },
+          payload: { customSql: sql },
+        });
+
+        expect(created.statusCode).toBe(400);
+        expect(updated.statusCode).toBe(400);
+        expect(updated.json().error).toBe(created.json().error);
+
+        const [row] = await db.select().from(folders).where(eq(folders.id, folderId));
+        expect(row!.customSql).toBe('SELECT 1 FROM DUAL');
+      });
+    }
+
+    it('rejects turning a folder into COMPLEX without SQL', async () => {
+      const [folder] = await db
+        .insert(folders)
+        .values({ businessAreaId: testBusinessAreaId, name: 'Plain', folderType: 'DERIVED' })
+        .returning();
+
+      const response = await app.inject({
+        method: 'PUT',
+        url: `/api/folders/${folder!.id}`,
+        headers: { authorization: `Bearer ${adminToken}` },
+        payload: { folderType: 'COMPLEX' },
+      });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.json().error).toContain('Invalid custom SQL');
+    });
+
+    it('accepts a valid SELECT on update', async () => {
+      const folderId = await createComplexFolder();
+      const response = await app.inject({
+        method: 'PUT',
+        url: `/api/folders/${folderId}`,
+        headers: { authorization: `Bearer ${adminToken}` },
+        payload: { customSql: 'SELECT EMPLOYEE_ID FROM EMPLOYEES' },
+      });
+
+      expect(response.statusCode).toBe(200);
+      expect(response.json().data.customSql).toBe('SELECT EMPLOYEE_ID FROM EMPLOYEES');
+    });
+  });
 });

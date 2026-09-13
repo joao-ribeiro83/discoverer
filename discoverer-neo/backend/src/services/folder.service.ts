@@ -105,6 +105,26 @@ export function validateCustomSql(sql: string): { valid: boolean; error?: string
   return { valid: true };
 }
 
+/**
+ * The one `custom_sql` gate for writes. Create and update both call it, so a
+ * rule added here reaches both — SEC-04 was the update path having no gate at
+ * all, which let a COMPLEX folder created with a clean SELECT be rewritten to
+ * anything. Pass the folder's type and SQL as they will be *after* the write.
+ */
+export function assertValidFolderSql(
+  folderType: string,
+  customSql: string | null | undefined,
+): void {
+  if (folderType !== 'COMPLEX') return;
+  if (!customSql || customSql.trim().length === 0) {
+    throw new Error('Invalid custom SQL: SQL cannot be empty for COMPLEX folders');
+  }
+  const validation = validateCustomSql(customSql);
+  if (!validation.valid) {
+    throw new Error(`Invalid custom SQL: ${validation.error}`);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // CRUD
 // ---------------------------------------------------------------------------
@@ -147,18 +167,7 @@ export async function create(
     }
   }
 
-  // Validate custom SQL for COMPLEX folders
-  if (data.folderType === 'COMPLEX') {
-    if (!data.customSql || data.customSql.trim().length === 0) {
-      throw new Error(
-        'Invalid custom SQL: SQL cannot be empty for COMPLEX folders',
-      );
-    }
-    const validation = validateCustomSql(data.customSql);
-    if (!validation.valid) {
-      throw new Error(`Invalid custom SQL: ${validation.error}`);
-    }
-  }
+  assertValidFolderSql(data.folderType, data.customSql);
 
   const values: NewFolder = {
     businessAreaId: data.businessAreaId,
@@ -184,6 +193,21 @@ export async function update(
   id: string,
   data: UpdateFolderInput,
 ): Promise<Folder | null> {
+  // Validate the folder as it will be after the write: a PUT may change only
+  // the type, only the SQL, or both.
+  if (data.folderType !== undefined || data.customSql !== undefined) {
+    const [current] = await db
+      .select({ folderType: folders.folderType, customSql: folders.customSql })
+      .from(folders)
+      .where(eq(folders.id, id))
+      .limit(1);
+    if (!current) return null;
+    assertValidFolderSql(
+      data.folderType ?? current.folderType,
+      data.customSql !== undefined ? data.customSql : current.customSql,
+    );
+  }
+
   const values: Record<string, unknown> = {
     ...data,
     updatedAt: new Date(),

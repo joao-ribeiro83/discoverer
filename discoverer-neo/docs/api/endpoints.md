@@ -366,6 +366,8 @@ Folders are containers for Items (columns/attributes) within a Business Area. Th
 > `GET /api/items/:id`, `GET /api/items/:id/descendants`, `GET /api/joins/:id` and
 > `GET /api/hierarchies/:id` require a VIEW grant on a business area the object
 > belongs to (or ADMIN), and return `403 Forbidden` otherwise.
+> `PUT /api/folders/:id` validates `customSql` exactly as create does, and returns
+> `400` with the same message for a rejected statement.
 
 #### GET /api/business-areas/:baId/folders
 List folders in a business area.

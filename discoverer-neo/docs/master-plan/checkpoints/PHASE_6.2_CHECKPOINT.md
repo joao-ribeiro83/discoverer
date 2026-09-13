@@ -6,7 +6,24 @@
 |---|---|
 | SEC-03 — the five entity `GET`-by-id routes gated | Already closed in Phase 1.2; confirmed still gated |
 | SEC-03 — every `GET /:id` route scoped, enforced by a test | Done — `backend/src/__tests__/get-by-id-scoping.test.ts` |
-| SEC-04 — `custom_sql` validated on UPDATE with the create-path function | Pending (second commit) |
+| SEC-04 — `custom_sql` validated on UPDATE with the create-path function | Done — `assertValidFolderSql`, called from `create` and `update` |
+
+## SEC-04
+
+`folder.service.update` had no SQL check. Create's inline block is now
+`assertValidFolderSql(folderType, customSql)`, called by both. Update validates
+the folder as it will be *after* the write — the body's type/SQL, falling back
+to the stored row — so a PUT that changes only the type to COMPLEX is caught
+too. The route maps the error to `400`, as create does.
+
+Tests (`folders.test.ts` › SQL validation › on UPDATE): five hostile payloads,
+each sent to POST and PUT, must both 400 with an identical message and leave
+the stored SQL unchanged; type-to-COMPLEX without SQL is refused; a valid
+SELECT update succeeds.
+
+Live impact measured: `discoverer_neo` holds 212 folders, all TABLE, zero
+COMPLEX. The frontend sends `customSql` on every folder edit, so a stored
+COMPLEX folder failing the validator would become uneditable — there are none.
 
 ## Routes audited
 
