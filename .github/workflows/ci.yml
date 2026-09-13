@@ -195,3 +195,25 @@ jobs:
       # summing to the whole corpus.
       - name: Formula bucket partitions (D-059)
         run: npm run render-corpus --workspace @discoverer-neo/core
+
+  audit:
+    name: Dependency audit (INF-05)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: discoverer-neo/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Gates on high/critical only. Anything deliberately not upgraded (a
+      # fix that only exists as a breaking major bump, or no fix published
+      # yet) is recorded with its reason in docs/deployment/configuration.md
+      # rather than silenced here.
+      - name: npm audit --audit-level=high
+        run: npm audit --audit-level=high
