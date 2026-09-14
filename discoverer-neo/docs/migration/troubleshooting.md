@@ -382,6 +382,34 @@ map_conditions — condition "Estado NOT IN ('M','A')" — operator has no Neo e
 
 **Solution:** recreate them in the map by hand.
 
+### A worksheet carries conditions it never used
+
+**Cause:** Discoverer stores a workbook's conditions once, in a pool shared by
+every worksheet in that workbook — it does not record which worksheet
+activates which condition. A worksheet re-import therefore attaches the whole
+pool to every worksheet's map. This is not a migration bug and there is
+nothing to fix in the tool: the source `.DIS` file itself does not carry the
+missing link. See `workbook-parser.ts`'s note on `conditionsAreWorkbookWide`.
+
+**Find them:** the job log reports `CONDITIONS_WORKBOOK_WIDE`, one line per
+affected worksheet, naming the workbook and how many conditions it carries.
+
+**Is it safe to leave?** Yes. An unused condition with no value filled in
+does not change what the worksheet returns — it just asks for a parameter
+nobody has to answer. Removing one by guessing which worksheet "really" uses
+it is the wrong direction: a wrong guess would silently change that
+worksheet's results, which is worse than the noise.
+
+**Reviewed as known-noise:**
+
+| Workbook (source id) | Worksheets | Conditions | Reviewed | Finding |
+|---|---|---|---|---|
+| `GD_M.M67B_V07.DIS` (211152) | 5 | 26 | 2026-09-14 | Checked against the live database: mostly parameter prompts (unit code, date range, policy/document number) plus a few fixed values. Consistent with several report variants sharing one condition pool. Left as-is. |
+
+`M67B_V08` through `V12` (source ids 231479, 233056, 241043, 241908, 244393)
+carry the same shape — 5 worksheets, 26 conditions each — but were not
+individually reviewed; add a row above if one of them is checked.
+
 ### A worksheet column was dropped
 
 **Cause:** the workbook references an item by name, and that item no longer
