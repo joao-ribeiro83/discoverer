@@ -107,6 +107,8 @@ class FakeScheduleStore {
       createdAt: now,
       updatedAt: now,
       parameters: input.parameters ?? [],
+      plannerDecision: null,
+      plannerRefusalDetail: null,
     };
     this.rows.set(record.id, record);
     return { ...record };

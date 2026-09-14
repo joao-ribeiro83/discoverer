@@ -353,6 +353,25 @@ export function SchedulesPage() {
       ),
     },
     {
+      id: 'planner',
+      header: t('schedules:table.planner'),
+      cell: ({ row }) => {
+        const decision = row.original.plannerDecision
+        if (!decision) {
+          return <span className="text-muted-foreground">{t('schedules:table.plannerNotChecked')}</span>
+        }
+        const isRefusal = decision.startsWith('REFUSE') || decision === 'UNPLANNABLE'
+        return (
+          <Badge
+            variant={isRefusal ? 'destructive' : 'outline'}
+            title={row.original.plannerRefusalDetail ?? undefined}
+          >
+            {decision}
+          </Badge>
+        )
+      },
+    },
+    {
       id: 'actions',
       header: '',
       cell: ({ row }) => (
