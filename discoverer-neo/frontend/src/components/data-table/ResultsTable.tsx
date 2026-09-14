@@ -18,7 +18,8 @@ import { applyFormatMask, interpolateTotalLabel, stringifyCell } from '@/lib/wor
 import { useLocale } from '@/hooks/useLocale'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
-import type { ResultColumn, ResultTotalsGroup } from '@/lib/types'
+import type { ResultColumn, ResultTotalsGroup, ResultConditionalFormat } from '@/lib/types'
+import { styleForCell } from '@/lib/conditional-format'
 import { buildWorksheetRows, type DisplayRow, type TotalEntry } from './worksheet-rows'
 
 const ROW_HEIGHT = 32
@@ -135,6 +136,8 @@ export interface ResultsTableProps {
   groupBreakAliases?: string[]
   /** Totals and subtotals the map defines, already computed by the backend. */
   totals?: ResultTotalsGroup[]
+  /** Conditional formats (Exceptions) the map defines, already resolved to `columns`. */
+  conditionalFormats?: ResultConditionalFormat[]
 }
 
 /**
@@ -157,6 +160,7 @@ export function ResultsTable({
   className,
   groupBreakAliases,
   totals,
+  conditionalFormats,
 }: ResultsTableProps) {
   const { t } = useTranslation(['mapViewer'])
   const { locale } = useLocale()
@@ -363,6 +367,9 @@ export function ResultsTable({
           {row.getVisibleCells().map((cell) => {
             const kind = columnKinds[cell.column.id] ?? 'string'
             const resultColumn = columnByName[cell.column.id]
+            const cfStyle = conditionalFormats?.length
+              ? styleForCell(cell.column.id, cell.row.original, conditionalFormats)
+              : undefined
             return (
               <td
                 key={cell.id}
@@ -372,7 +379,7 @@ export function ResultsTable({
                   alignmentClass(resultColumn, kind),
                   kind === 'number' && 'tabular-nums',
                 )}
-                style={{ width: cell.column.getSize() }}
+                style={{ width: cell.column.getSize(), ...cfStyle }}
               >
                 {suppressed.has(cell.column.id)
                   ? null
@@ -390,6 +397,9 @@ export function ResultsTable({
         {row.getVisibleCells().map((cell) => {
           const kind = columnKinds[cell.column.id] ?? 'string'
           const resultColumn = columnByName[cell.column.id]
+          const cfStyle = conditionalFormats?.length
+            ? styleForCell(cell.column.id, cell.row.original, conditionalFormats)
+            : undefined
           return (
             <td
               key={cell.id}
@@ -399,7 +409,7 @@ export function ResultsTable({
                 alignmentClass(resultColumn, kind),
                 kind === 'number' && 'tabular-nums',
               )}
-              style={{ width: cell.column.getSize() }}
+              style={{ width: cell.column.getSize(), ...cfStyle }}
             >
               {flexRender(cell.column.columnDef.cell, cell.getContext())}
             </td>

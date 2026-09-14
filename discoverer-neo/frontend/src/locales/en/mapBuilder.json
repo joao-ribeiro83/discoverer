@@ -5,6 +5,8 @@
     "export": "Export",
     "schedule": "Schedule",
     "share": "Share",
+    "conditionalFormat": "Formatting",
+    "conditionalFormatDisabledTitle": "Save the map before adding conditional formats",
     "mapNameAria": "Map name",
     "mapTypeAria": "Map type",
     "unsavedTitle": "Unsaved changes",
@@ -142,6 +144,46 @@
     "toastRevokeFailedTitle": "Could not revoke access",
     "toastLinkCopied": "Link copied to clipboard",
     "toastCopyFailedTitle": "Could not copy link"
+  },
+  "conditionalFormat": {
+    "title": "Conditional formatting",
+    "description": "Paint a cell or a whole row when a column's value meets a test — Discoverer's Exceptions.",
+    "unknownColumn": "Unknown column",
+    "noRules": "No conditional formats yet.",
+    "addRule": "Add rule",
+    "column": "Column",
+    "applyTo": "Apply to",
+    "operator": "Operator",
+    "value": "Value",
+    "valueBetweenPlaceholder": "low,high",
+    "valueInPlaceholder": "value1,value2,…",
+    "backgroundColor": "Background color",
+    "textColor": "Text color",
+    "clearColor": "Clear",
+    "bold": "Bold",
+    "italic": "Italic",
+    "underline": "Underline",
+    "deleteRuleAria": "Delete this rule",
+    "targets": {
+      "CELL": "Cell",
+      "ROW": "Row"
+    },
+    "operators": {
+      "=": "Equals",
+      "<>": "Not equals",
+      ">": "Greater than",
+      "<": "Less than",
+      ">=": "Greater than or equal to",
+      "<=": "Less than or equal to",
+      "LIKE": "Like (% and _ wildcards)",
+      "IN": "In list",
+      "BETWEEN": "Between",
+      "IS_NULL": "Is empty"
+    },
+    "toastCreated": "Rule added",
+    "toastCreateFailedTitle": "Could not add rule",
+    "toastDeleted": "Rule deleted",
+    "toastDeleteFailedTitle": "Could not delete rule"
   },
   "panels": {
     "tabs": {

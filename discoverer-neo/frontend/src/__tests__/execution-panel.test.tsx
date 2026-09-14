@@ -183,6 +183,7 @@ describe('ExecutionPanel', () => {
       format: 'XLSX',
       parameters: {},
       calculatedFields: undefined,
+      locale: 'en',
     }))
     await waitFor(() => expect(mockedApi.exports.download).toHaveBeenCalledWith('job-1'))
   })
