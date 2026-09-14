@@ -32,7 +32,11 @@ import {
   resolveSecurityPredicates,
   type MapExecutionDeps,
 } from '../../services/map-execution.service.js';
-import { defaultExportDeps } from '../../services/export.service.js';
+import {
+  defaultExportDeps,
+  processExportJob,
+  type ExportJobDeps,
+} from '../../services/export.service.js';
 import {
   effectiveFolderSet,
   securityRelevantFolderIds,
@@ -1034,5 +1038,67 @@ describe('exports carry the same predicates as the screen query (D-016)', () => 
     await expect(
       defaultExportDeps().prepareQuery(plainMapId, {}, userNoGrantId),
     ).rejects.toThrow(/do not have access to the data/);
+  });
+
+  // Phase 7.3 addition (E-08/D-09): the two tests above assert the WHERE
+  // clause `prepareQuery` builds in isolation. These run the SAME assertion
+  // through `processExportJob` itself — the code path a real export actually
+  // takes — so the proof is about the export, not just the function it
+  // happens to reuse.
+  function noopExportDeps(over: Partial<ExportJobDeps>): ExportJobDeps {
+    return {
+      prepareQuery: defaultDeps().prepareQuery,
+      getConnection: async () => {
+        throw new Error('not stubbed');
+      },
+      releaseConnection: async () => {},
+      createJob: async () => {
+        throw new Error('processExportJob does not call createJob');
+      },
+      updateJob: async () => {},
+      getJob: async () => null,
+      listJobs: async () => [],
+      writeExportFile: async () => ({ rowCount: 0 }),
+      enqueue: async () => {},
+      ...over,
+    };
+  }
+
+  it('an entitled user export sends Oracle the same predicate-bearing SQL as the screen query', async () => {
+    const { conn, execute } = makeCaptureConn();
+    const drained: Record<string, unknown>[] = [];
+
+    await processExportJob(
+      { exportJobId: 'rls-export-ok', mapId: plainMapId, format: 'CSV', requestedBy: userOkId },
+      noopExportDeps({
+        getConnection: async () => conn,
+        writeExportFile: async (source) => {
+          for await (const batch of source.batches) drained.push(...batch);
+          return { rowCount: drained.length };
+        },
+      }),
+    );
+
+    const sentSql = (execute.mock.calls[0] ?? [])[0] as string;
+    expect(sentSql).toContain("(REGION = 'EMEA')");
+  });
+
+  it('an unentitled user export refuses before any row is streamed to a file', async () => {
+    const { conn } = makeCaptureConn();
+    const writeExportFile = jest.fn(async () => ({ rowCount: 0 }));
+
+    await expect(
+      processExportJob(
+        {
+          exportJobId: 'rls-export-refused',
+          mapId: plainMapId,
+          format: 'CSV',
+          requestedBy: userNoPolicyId,
+        },
+        noopExportDeps({ getConnection: async () => conn, writeExportFile }),
+      ),
+    ).rejects.toThrow(/no row-level security policy resolves for you/);
+
+    expect(writeExportFile).not.toHaveBeenCalled();
   });
 });
