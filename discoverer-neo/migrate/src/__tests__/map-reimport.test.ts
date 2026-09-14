@@ -553,6 +553,25 @@ describe('reimportMaps', () => {
     expect(result.written.map_layouts).toBe(result.written.maps);
   });
 
+  it('replaces the workbooks with the maps rather than duplicating them', async () => {
+    const { writer, state } = await migratedTarget();
+    const before = rowsOf(state, 'workbooks').map((w) => w.id);
+    expect(before.length).toBeGreaterThan(0);
+
+    const result = await reimportMaps({
+      source: mockExecutor(eul5Db()),
+      writer,
+      deps: deterministicDeps(),
+    });
+
+    const after = rowsOf(state, 'workbooks');
+    expect(after).toHaveLength(before.length);
+    expect(after.some((w) => before.includes(w.id))).toBe(false);
+    expect(result.written.workbooks).toBe(after.length);
+    const ids = new Set(after.map((w) => w.id));
+    expect(rowsOf(state, 'maps').every((m) => ids.has(m.workbookId))).toBe(true);
+  });
+
   it('records a forced join with no join id — this run does not rebuild joins', async () => {
     const { writer, state } = await migratedTarget();
     // The full migration above already wrote a `joins` row for KEY_ID 400 —

@@ -865,6 +865,54 @@ describe('runMigration — EUL5 source, end to end', () => {
     expect(layout.sourceAttrs).toBeNull();
   });
 
+  it('groups a workbook’s worksheets under one workbooks row, in worksheet order', async () => {
+    const db = eul5Db();
+    const documents = db.tables.EUL5_DOCUMENTS!;
+    const sheet = (name: string) => ({ name, columns: [{ item: 'Region', axisType: 0 }] });
+    const body = buildWorkbookFixture({
+      name: 'Monthly Sales',
+      eulOwner: 'EUL5_US',
+      items: [
+        {
+          folderName: 'SALES_SUMMARY',
+          folderLabel: 'Sales Summary',
+          itemName: 'REGION',
+          itemLabel: 'Region',
+          sourceId: 302,
+        },
+      ],
+      worksheets: [sheet('North'), sheet('South'), sheet('East')],
+    });
+    documents[0]!.DOC_DOCUMENT = body;
+    documents[0]!.DOC_LENGTH = body.length;
+
+    const { writer, state } = createFakeWriter();
+    const result = await runMigration({ source: mockExecutor(db), writer, deps: deterministicDeps() });
+
+    // One workbook per source document, and no map outside one.
+    const workbooks = rowsOf(state, 'workbooks');
+    expect(workbooks).toHaveLength(documents.length);
+    expect(result.planned.workbooks).toBe(documents.length);
+    const workbookIds = new Set(workbooks.map((w) => w.id));
+    expect(rowsOf(state, 'maps').every((m) => workbookIds.has(m.workbookId))).toBe(true);
+
+    const workbook = first(workbooks.filter((w) => w.sourceId === documents[0]!.DOC_ID));
+    expect(workbook.name).toBe('Monthly Sales');
+    const sheets = rowsOf(state, 'maps').filter((m) => m.workbookId === workbook.id);
+    expect(sheets).toHaveLength(3);
+
+    const nameById = new Map(sheets.map((m) => [m.id, m.name]));
+    const ordered = rowsOf(state, 'map_layouts')
+      .filter((l) => nameById.has(l.mapId))
+      .sort((a, b) => (a.worksheetIndex as number) - (b.worksheetIndex as number))
+      .map((l) => nameById.get(l.mapId));
+    expect(ordered).toEqual([
+      'Monthly Sales — North',
+      'Monthly Sales — South',
+      'Monthly Sales — East',
+    ]);
+  });
+
   it('records an unresolved join reference with no join id, and warns once', async () => {
     const db = eul5Db();
     const documents = db.tables.EUL5_DOCUMENTS!;

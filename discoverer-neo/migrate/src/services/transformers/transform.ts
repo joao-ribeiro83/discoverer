@@ -812,6 +812,7 @@ export function transformWorkbook(
     createdAt: workbook.createdAt,
     updatedAt: workbook.updatedAt,
     worksheetCount: document.worksheets.length,
+    workbookName: clamp(workbookName, NAME_MAX),
   };
 
   // --- body unreadable: one metadata-only map, clearly flagged ---------------
@@ -1819,6 +1820,28 @@ export function buildMapLayoutRow(
     // every join-free worksheet would read as "this worksheet was examined and
     // forced no joins" for readers who cannot tell it from an empty default.
     sourceAttrs: joinAttrs.length > 0 ? { joins: joinAttrs } : null,
+  };
+}
+
+/**
+ * The `workbooks` row for one source workbook, built from any of the maps
+ * `transformWorkbook` returned for it — they all carry the same workbook
+ * fields. Shared by the full migration and the maps-only re-import.
+ */
+export function buildWorkbookRow(
+  sheet: TransformedWorkbook,
+  id: string,
+  createdBy: string,
+  now: Date,
+): Record<string, unknown> {
+  return {
+    id,
+    name: sheet.workbookName,
+    description: sheet.description,
+    sourceId: sheet.sourceId,
+    createdBy,
+    createdAt: sheet.createdAt ?? now,
+    updatedAt: sheet.updatedAt ?? now,
   };
 }
 
