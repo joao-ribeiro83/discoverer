@@ -362,7 +362,20 @@ async function loadMapScope(
     Object.assign(mapBindings.functions, own.functions);
   }
 
-  return { columnByItemName, treeByCalcElementId, mapBindings, functionByName };
+  // `mapBindings.parameters[id]` is a `[8,n]` token's raw prompt text, not a
+  // bind name (see `CompileScope.bindNameByPrompt`'s own comment) — resolve
+  // it against this map's real, already-deduplicated `map_parameters` rows.
+  const bindNameByPrompt = new globalThis.Map<string, string>();
+  for (const row of await rows(
+    db,
+    sql`SELECT name, bind_name FROM map_parameters WHERE map_id = ${mapId}::uuid`,
+  )) {
+    if (typeof row.name === 'string' && typeof row.bind_name === 'string') {
+      bindNameByPrompt.set(row.name.trim().toLowerCase(), row.bind_name);
+    }
+  }
+
+  return { columnByItemName, treeByCalcElementId, mapBindings, functionByName, bindNameByPrompt };
 }
 
 /**
@@ -429,6 +442,7 @@ export async function checkFormulaCompileRate(
     treeByCalcElementId: new globalThis.Map(),
     mapBindings: EMPTY_BINDINGS,
     functionByName,
+    bindNameByPrompt: new globalThis.Map(),
   };
 
   const compile = options.compileFormula;

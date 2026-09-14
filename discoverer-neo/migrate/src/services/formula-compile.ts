@@ -102,6 +102,22 @@ export interface CompileScope {
   mapBindings: ElementBindings;
   /** `custom_functions.name` (upper-cased) → its binding. Estate-wide. */
   functionByName: ReadonlyMap<string, FunctionBinding>;
+  /**
+   * A workbook parameter's prompt (lower-cased, trimmed) → its real
+   * `map_parameters.bind_name`.
+   *
+   * `ElementBindings.parameters[id]` (from `collectElementBindings`,
+   * `workbook-parser.ts`) is the raw `[8,n]` prompt text — "Dt a que se
+   * reporta a informacao", spaces and all — not a bind name despite what
+   * that field is documented to hold; nothing ever sanitized it before this
+   * existed. `makeBindName` already does that job for `map_parameters`
+   * itself, deduplicating across the whole workbook as it goes, so the
+   * result is not reproducible by calling it a second time with a fresh
+   * `taken` set — different rows could collide differently. Looking the
+   * prompt up against the map's own already-migrated parameters is the only
+   * way to get the bind name execution will actually supply a value under.
+   */
+  bindNameByPrompt: ReadonlyMap<string, string>;
 }
 
 export const EMPTY_BINDINGS: ElementBindings = { items: {}, parameters: {}, functions: {} };
@@ -162,7 +178,11 @@ export function compileStoredFormula(row: StoredFormula, scope: CompileScope): C
         if (name === undefined) return null;
         return scope.columnByItemName.get(name.toLowerCase()) ?? null;
       },
-      resolveParameter: (elementId) => named('parameters', elementId) ?? null,
+      resolveParameter: (elementId) => {
+        const prompt = named('parameters', elementId);
+        if (prompt === undefined) return null;
+        return scope.bindNameByPrompt.get(prompt.trim().toLowerCase()) ?? null;
+      },
       resolveFunction: (elementId) => {
         const name = named('functions', elementId);
         if (name === undefined) return null;
