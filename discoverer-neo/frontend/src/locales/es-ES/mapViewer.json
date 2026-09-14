@@ -26,6 +26,12 @@
       "shared": "Compartidos conmigo",
       "all": "Todos"
     },
+    "workbooks": {
+      "title": "Libros de trabajo",
+      "worksheetCount_one": "{{count}} hoja de cálculo",
+      "worksheetCount_other": "{{count}} hojas de cálculo",
+      "loadError": "No se pudieron cargar los libros de trabajo."
+    },
     "columns": {
       "businessArea": "Área de Negocio"
     },

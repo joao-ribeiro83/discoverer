@@ -118,6 +118,17 @@ column change in core is a compile error in every backend consumer that
 relied on the old type. `backend/src/__tests__/schema-single-definition.test.ts`
 is what stops a local `pgTable` reappearing and undoing that.
 
+#### Workbooks: an aggregate, not an authorization boundary
+
+`workbooks` groups worksheets (`maps` rows, via `maps.workbook_id`) into the
+document a Discoverer user actually saved, shared and scheduled as one unit —
+`map_layouts.worksheet_index` gives their order within it. The workbook
+browse view (Phase 7.1b, `GET /api/workbooks`) is built by grouping
+`map.service.ts`'s `listAll()` output by `workbookId`; it runs no separate
+visibility check. Being in a workbook alongside a map you may open grants
+nothing on its siblings — access is still decided per map (`map_shares`,
+business-area grants) and per folder (`assertDataEntitlement`).
+
 `migration_log` is deliberately **not** in `db/schema.ts`. The migrator creates
 it itself through `ensureSchema()`; declaring it there would make the backend
 re-export it and `drizzle-kit generate` would emit a `CREATE TABLE` for a table

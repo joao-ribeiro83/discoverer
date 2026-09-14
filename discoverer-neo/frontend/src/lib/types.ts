@@ -303,8 +303,21 @@ export interface MapSummary {
   createdBy: string
   isPublic: boolean
   isActive: boolean
+  workbookId?: string | null
   createdAt: string
   updatedAt: string
+}
+
+/** A workbook — Discoverer's unit of saving/sharing/scheduling — with its worksheets. */
+export interface WorkbookWithMaps {
+  id: string
+  name: string
+  description: string | null
+  sourceId: number | null
+  createdBy: string
+  createdAt: string
+  updatedAt: string
+  maps: MapSummary[]
 }
 
 export interface DashboardStats {

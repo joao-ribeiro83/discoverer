@@ -26,6 +26,12 @@
       "shared": "Partilhado comigo",
       "all": "Todos"
     },
+    "workbooks": {
+      "title": "Pastas de trabalho",
+      "worksheetCount_one": "{{count}} folha de cálculo",
+      "worksheetCount_other": "{{count}} folhas de cálculo",
+      "loadError": "Não foi possível carregar as pastas de trabalho."
+    },
     "columns": {
       "businessArea": "Área de Negócio"
     },

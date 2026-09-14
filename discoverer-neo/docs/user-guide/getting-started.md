@@ -89,6 +89,16 @@ A **Business Area** is a logical grouping of related data and queries.
    was last updated
 4. Click **Create Map** to start a new one
 
+### Browse by Workbook
+
+Above the list, a **Workbooks** panel groups worksheets the way they were
+originally saved — as a workbook, Discoverer's document that held them
+together. Click a workbook to expand it and see its worksheets in their
+original order, then click one to open it. This is grouping only: a workbook
+only shows the worksheets you're already permitted to see, in the same order
+as **All**, above; the flat list is still the fastest way to find one
+worksheet by name.
+
 ### Create a New Map
 
 See [Building Maps](building-maps.md).

@@ -88,6 +88,17 @@ Uma **Área de Negócio** é um agrupamento lógico de dados e consultas relacio
    última atualização de um mapa
 4. Clique em **Criar Mapa** para começar um novo
 
+### Explorar por Pasta de Trabalho
+
+Acima da lista, um painel de **Pastas de trabalho** agrupa as folhas de
+cálculo tal como foram originalmente guardadas — como uma pasta de trabalho,
+o documento do Discoverer que as mantinha juntas. Clique numa pasta de
+trabalho para a expandir e ver as suas folhas de cálculo pela ordem
+original, e depois clique numa para a abrir. Isto é apenas agrupamento: uma
+pasta de trabalho só mostra as folhas de cálculo que já tem permissão para
+ver, pela mesma ordem que em **Todos**, acima; a lista simples continua a
+ser a forma mais rápida de encontrar uma folha de cálculo pelo nome.
+
 ### Criar um Novo Mapa
 
 Consulte [Criar Mapas](building-maps.md).
