@@ -49,8 +49,9 @@ Phase 9.2. Phase 8.3 (a **verified** restore). Phase 9.1's equivalence report.
 
 ## Required tooling
 
-**Skills:** none. **Agents:** none.
+**Skills:** graphify. **Agents:** none.
 **Plugins / MCPs:** `context-mode`.
+**Graphify:** `graphify query "what handles credential re-provisioning, backup and restore procedures, and migration logging"` — finds credential service, backup scripts, and migration logging.
 
 ## Implementation instructions
 

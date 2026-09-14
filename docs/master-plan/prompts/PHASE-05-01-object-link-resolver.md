@@ -49,8 +49,9 @@ Phase 1.3 (the reconciliation test). Phase 0.3's Q4.
 
 ## Required tooling
 
-**Skills:** none. **Agents:** none.
+**Skills:** graphify. **Agents:** none.
 **Plugins / MCPs:** `context-mode`, `typescript-lsp`.
+**Graphify:** `graphify query "how does the EUL4 reader resolve business area bindings for hierarchies and grants via EUL4_BA_OBJ_LINKS"` — finds the resolver implementation and related transformations.
 
 ## Implementation instructions
 

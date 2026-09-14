@@ -34,8 +34,9 @@ Phase 9.1 — you need to know the migration is correct before making it repeata
 
 ## Required tooling
 
-**Skills:** none. **Agents:** none.
+**Skills:** graphify. **Agents:** none.
 **Plugins / MCPs:** `context-mode`.
+**Graphify:** `graphify query "what detects changes in the EUL source and applies incremental deltas to the target database"` — finds change detection and delta application logic.
 
 ## Implementation instructions
 

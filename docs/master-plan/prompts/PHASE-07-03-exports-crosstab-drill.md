@@ -49,9 +49,10 @@ Phase 7.1. Phase 5.1 (hierarchies), Phase 5.4 (conditional formats, page setup p
 
 ## Required tooling
 
-**Skills:** `frontend-design` **or** `ui-ux-pro-max` — exactly one.
+**Skills:** graphify, `frontend-design` **or** `ui-ux-pro-max` — exactly one.
 **Agents:** none.
 **Plugins / MCPs:** `Claude_Browser`, `playwright` (the export E2E spec exists).
+**Graphify:** `graphify query "what renders crosstabs, exports to XLSX and CSV, handles conditional formatting UI, and executes drill queries"` — finds exporters, table components, and drill logic.
 
 ## Implementation instructions
 

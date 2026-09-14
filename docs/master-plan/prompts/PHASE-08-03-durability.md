@@ -38,8 +38,9 @@ Phase 8.1.
 
 ## Required tooling
 
-**Skills:** none. **Agents:** none.
+**Skills:** graphify. **Agents:** none.
 **Plugins / MCPs:** `context-mode`, `context7` (current Redis persistence guidance).
+**Graphify:** `graphify query "what handles database backups, restores, Redis persistence configuration, and the importFromOracle transaction wrapper"` — finds backup scripts, restore logic, and import service.
 
 ## Implementation instructions
 

@@ -31,9 +31,10 @@ Phase 8.1.
 
 ## Required tooling
 
-**Skills:** none. **Agents:** none.
+**Skills:** graphify. **Agents:** none.
 **Plugins / MCPs:** `context7` (current `node-oracledb` pool behaviour — **training data will
 be stale on this**), `typescript-lsp`.
+**Graphify:** `graphify query "what emits metrics for the Oracle pool, scheduler queue, and migration progress, and where is the result cache and connection pool managed"` — finds metrics service, pool, and cache logic.
 
 ## Implementation instructions
 
