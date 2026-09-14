@@ -37,6 +37,7 @@ function scope(over: Partial<CompileScope> = {}): CompileScope {
     functionByName: new Map<string, FunctionBinding>([
       ['PKG_RATE', { name: 'PKG_RATE', arity: null }],
     ]),
+    bindNameByPrompt: new Map<string, string>([['enter a region', 'ENTER_A_REGION']]),
     ...over,
   };
 }
@@ -149,6 +150,32 @@ describe('compileStoredFormula', () => {
   it('quarantines a `[8,n]` parameter reference the bindings do not name', () => {
     const verdict = compileStoredFormula(
       row({ sourceTokens: '[1,1]([8,50])', bindings: EMPTY_BINDINGS }),
+      scope(),
+    );
+    expect(verdict).toMatchObject({ bucket: 'QUARANTINED', reason: 'UNRESOLVED_ELEMENT' });
+  });
+
+  it('resolves a `[8,n]` parameter through its real bind name, not its raw prompt', () => {
+    // The bindings table (`collectElementBindings`) stores the prompt text —
+    // "Enter a Region", spaces and all — never a usable bind name on its own.
+    // `scope().bindNameByPrompt` is what the map's real `map_parameters` row
+    // already turned that prompt into.
+    const verdict = compileStoredFormula(
+      row({
+        sourceTokens: '[1,1]([8,50])',
+        bindings: bindings({ parameters: { '50': 'Enter a Region' } }),
+      }),
+      scope(),
+    );
+    expect(verdict).toMatchObject({ bucket: 'COMPILED_UNVERIFIED', sql: 'SUM(:ENTER_A_REGION)' });
+  });
+
+  it('quarantines a `[8,n]` prompt with no matching map_parameters row, rather than binding on the raw prompt', () => {
+    const verdict = compileStoredFormula(
+      row({
+        sourceTokens: '[1,1]([8,50])',
+        bindings: bindings({ parameters: { '50': 'Some Other Prompt' } }),
+      }),
       scope(),
     );
     expect(verdict).toMatchObject({ bucket: 'QUARANTINED', reason: 'UNRESOLVED_ELEMENT' });
