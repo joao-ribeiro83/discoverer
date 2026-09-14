@@ -40,7 +40,8 @@ function buildFormSchema(t: (key: string) => string) {
     password: z.string().optional(),
   })
 }
-type FormValues = z.infer<ReturnType<typeof buildFormSchema>>
+type FormInput = z.input<ReturnType<typeof buildFormSchema>>
+type FormOutput = z.output<ReturnType<typeof buildFormSchema>>
 
 export function DataSourcesPage() {
   const { t } = useTranslation(['admin', 'common'])
@@ -58,7 +59,7 @@ export function DataSourcesPage() {
     queryFn: async () => (await apiClient.dataSources.list()).data.data,
   })
 
-  const form = useForm<FormValues>({
+  const form = useForm<FormInput, undefined, FormOutput>({
     resolver: standardSchemaResolver(buildFormSchema(t)),
     defaultValues: { name: '', description: '', connectionType: 'oracle' },
   })
@@ -86,7 +87,7 @@ export function DataSourcesPage() {
   }
 
   const saveMutation = useMutation({
-    mutationFn: async (values: FormValues) => {
+    mutationFn: async (values: FormOutput) => {
       const payload: Record<string, unknown> = {
         name: values.name,
         description: values.description || undefined,

@@ -4,9 +4,11 @@ import { ResultsTable } from '@/components/data-table/ResultsTable'
 import { CrosstabTable, crosstabAxes } from '@/components/data-table/CrosstabTable'
 import { buildWorksheetRows } from '@/components/data-table/worksheet-rows'
 import {
+  applyDateMask,
   applyFormatMask,
   interpolateTotalLabel,
   maskKind,
+  stringifyCell,
 } from '@/lib/worksheet-format'
 import type { ResultColumn, ResultTotalsGroup } from '@/lib/types'
 
@@ -120,6 +122,65 @@ describe('worksheet format masks', () => {
     )
     expect(interpolateTotalLabel(null, {}, 'Fallback')).toBe('Fallback')
   })
+
+  it('falls back when the template is whitespace-only', () => {
+    expect(interpolateTotalLabel('   ', {}, 'Fallback')).toBe('Fallback')
+  })
+
+  it('interpolates &item and blanks any part not supplied', () => {
+    expect(interpolateTotalLabel('Total for &item', {}, 'x')).toBe('Total for')
+    expect(interpolateTotalLabel('&value / &item', { value: 'East' }, 'x')).toBe('East /')
+  })
+
+  it('treats a whitespace-only or unrecognized mask as unknown', () => {
+    expect(maskKind('   ')).toBe('unknown')
+    expect(maskKind('ABC')).toBe('unknown')
+  })
+
+  it('formats a currency mask with the USD symbol', () => {
+    expect(applyFormatMask(1234.5, '$9,999.00', 'en')).toBe('$1,234.50')
+  })
+
+  it('falls back to the default locale for one Neo does not support', () => {
+    expect(applyFormatMask(1234.5, '999,999.00', 'xx-XX')).toBe('1,234.50')
+  })
+
+  it('returns null for an empty-string value', () => {
+    expect(applyFormatMask('', '999', 'en')).toBeNull()
+  })
+
+  it('formats a date mask from a non-Date value via its string form', () => {
+    const result = applyFormatMask('2026-08-05T12:00:00.000Z', 'DD-MON-YYYY', 'en')
+    expect(result).toMatch(/^\d{2}-[A-Z]{3}-\d{4}$/)
+  })
+
+  it('returns null when a date mask cannot parse the value', () => {
+    expect(applyFormatMask('not a date', 'DD-MON-YYYY', 'en')).toBeNull()
+  })
+
+  // Exercises the two-digit (unpadded) side of pad2, the PM branch, and the
+  // non-noon side of the 12-hour conversion — all zero on the DD-MON-YYYY
+  // fixture above, which only ever sees single-digit, midnight values.
+  it('formats two-digit date parts and PM correctly', () => {
+    const date = new Date(2026, 11, 25, 14, 30, 45) // Dec 25 2026, 14:30:45
+    expect(applyDateMask(date, 'YYYY-MM-DD HH24:MI:SS HH AM', 'en')).toBe(
+      '2026-12-25 14:30:45 02 PM',
+    )
+  })
+})
+
+describe('stringifyCell', () => {
+  it('stringifies primitives, dates, and structured values distinctly', () => {
+    expect(stringifyCell(null)).toBe('')
+    expect(stringifyCell(undefined)).toBe('')
+    expect(stringifyCell(42)).toBe('42')
+    expect(stringifyCell(true)).toBe('true')
+    expect(stringifyCell(10n)).toBe('10')
+    const date = new Date(2026, 0, 1)
+    expect(stringifyCell(date)).toBe(date.toISOString())
+    expect(stringifyCell({ a: 1 })).toBe('{"a":1}')
+    expect(stringifyCell([1, 2])).toBe('[1,2]')
+  })
 })
 
 // ---------------------------------------------------------------------------
@@ -205,6 +266,156 @@ describe('buildWorksheetRows', () => {
     const display = buildWorksheetRows({ rows, groupBreakAliases: [], totals: [] })
     expect(display).toHaveLength(3)
     expect(display.every((d) => d.kind === 'data')).toBe(true)
+  })
+
+  it('compares break values by time, not object identity, for Date columns', () => {
+    const d1 = new Date(2026, 0, 1)
+    const d1sameTime = new Date(2026, 0, 1)
+    const d2 = new Date(2026, 0, 2)
+    const display = buildWorksheetRows({
+      rows: [{ REGION: d1, V: 1 }, { REGION: d1sameTime, V: 2 }, { REGION: d2, V: 3 }],
+      groupBreakAliases: ['REGION'],
+      totals: [],
+    })
+    expect(display.map((d) => (d.kind === 'data' ? d.suppressed : null))).toEqual([
+      [],
+      ['REGION'],
+      [],
+    ])
+  })
+
+  it('does not treat null and undefined break values as the same group', () => {
+    const display = buildWorksheetRows({
+      rows: [{ REGION: null, V: 1 }, { REGION: undefined, V: 2 }],
+      groupBreakAliases: ['REGION'],
+      totals: [],
+    })
+    expect(display[1]).toMatchObject({ kind: 'data', suppressed: [] })
+  })
+
+  it('treats break values as equal when their string forms match, across types', () => {
+    const display = buildWorksheetRows({
+      rows: [{ REGION: 10, V: 1 }, { REGION: '10', V: 2 }],
+      groupBreakAliases: ['REGION'],
+      totals: [],
+    })
+    expect(display[1]).toMatchObject({ kind: 'data', suppressed: ['REGION'] })
+  })
+
+  // A totals group with an empty-string breakAlias (not null) is treated the
+  // same as "no total configured" — dropped rather than crashing or being
+  // mistaken for a grand total.
+  it('drops a totals group whose breakAlias is an empty string', () => {
+    const display = buildWorksheetRows({
+      rows,
+      groupBreakAliases: ['REGION'],
+      totals: [{ ...subtotals, breakAlias: '' }],
+    })
+    expect(display.some((d) => d.kind === 'subtotal' || d.kind === 'grand')).toBe(false)
+  })
+
+  // breakTargetAlias is optional; when absent, the group can never match a
+  // drawn break column, so it is folded into the grand-total footer.
+  it('sends a totals group with no breakTargetAlias to the grand-total footer', () => {
+    const display = buildWorksheetRows({
+      rows,
+      groupBreakAliases: ['REGION'],
+      totals: [
+        {
+          breakAlias: 'FOO',
+          breakLabel: 'Foo',
+          breakTargetAlias: undefined,
+          totals: subtotals.totals,
+          rows: [{ FOO: 'x', SUM_AMOUNT: 42 }],
+        },
+      ],
+    })
+    const grand = display.find((d) => d.kind === 'grand')
+    expect(grand).toMatchObject({ kind: 'grand', entries: [{ value: 42 }] })
+  })
+
+  // A break level with no matching totals group at all must not blow up
+  // closeBreaks — it is simply skipped while sibling levels still total.
+  it('skips a break level that has no totals group configured', () => {
+    const display = buildWorksheetRows({
+      rows,
+      groupBreakAliases: ['REGION', 'CUSTOMER'],
+      totals: [subtotals], // only REGION has a totals group
+    })
+    const subtotalAliases = display
+      .filter((d) => d.kind === 'subtotal')
+      .map((d) => (d.kind === 'subtotal' ? d.breakAlias : ''))
+    expect(subtotalAliases).toEqual(['REGION', 'REGION'])
+  })
+
+  // A break value with no corresponding row in the totals group's own result
+  // set (e.g. it fell outside the totals query somehow) closes silently
+  // instead of emitting an empty subtotal line.
+  it('skips a subtotal line when no totals row matches the break value', () => {
+    const display = buildWorksheetRows({
+      rows: [
+        { REGION: 'East', CUSTOMER: 'Acme', AMOUNT: 10 },
+        { REGION: 'West', CUSTOMER: 'Cog', AMOUNT: 30 },
+        { REGION: 'North', CUSTOMER: 'Delta', AMOUNT: 5 },
+      ],
+      groupBreakAliases: ['REGION'],
+      totals: [
+        {
+          ...subtotals,
+          rows: [
+            { REGION: 'East', SUM_AMOUNT: 10 },
+            { REGION: 'West', SUM_AMOUNT: 30 },
+            // deliberately no North row
+          ],
+        },
+      ],
+    })
+    const subtotalValues = display
+      .filter((d) => d.kind === 'subtotal')
+      .map((d) => (d.kind === 'subtotal' ? d.breakValue : null))
+    expect(subtotalValues).toEqual(['East', 'West'])
+  })
+
+  // A grand-totals group with no rows at all contributes nothing, so the
+  // footer is omitted rather than drawn empty.
+  // Two totals out of displayOrder actually exercises the sort comparator
+  // (a single-entry totals list never calls it at all).
+  it('sorts multiple totals in a group by displayOrder', () => {
+    const twoTotals: ResultTotalsGroup = {
+      breakAlias: null,
+      totals: [
+        { ...grandTotals.totals[0], alias: 'SECOND', displayOrder: 1 },
+        { ...grandTotals.totals[0], alias: 'FIRST', displayOrder: 0 },
+      ],
+      rows: [{ FIRST: 1, SECOND: 2 }],
+    }
+    const display = buildWorksheetRows({ rows, groupBreakAliases: [], totals: [twoTotals] })
+    const grand = display.find((d) => d.kind === 'grand')
+    expect(grand).toMatchObject({
+      kind: 'grand',
+      entries: [{ total: { alias: 'FIRST' } }, { total: { alias: 'SECOND' } }],
+    })
+  })
+
+  it('omits the grand-total row when its totals group has no rows', () => {
+    const display = buildWorksheetRows({
+      rows,
+      groupBreakAliases: [],
+      totals: [{ breakAlias: null, totals: grandTotals.totals, rows: [] }],
+    })
+    expect(display.some((d) => d.kind === 'grand')).toBe(false)
+  })
+
+  it('falls back to the break alias when the group has no breakLabel', () => {
+    const { breakLabel: _unused, ...noLabel } = subtotals
+    const display = buildWorksheetRows({ rows, groupBreakAliases: ['REGION'], totals: [noLabel] })
+    const first = display.find((d) => d.kind === 'subtotal')
+    expect(first).toMatchObject({ breakLabel: 'REGION' })
+  })
+
+  it('returns an empty display for an empty result set', () => {
+    const display = buildWorksheetRows({ rows: [], groupBreakAliases: ['REGION'], totals: [subtotals] })
+    expect(display).toEqual([])
   })
 })
 
