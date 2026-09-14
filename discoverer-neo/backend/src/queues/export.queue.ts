@@ -1,6 +1,7 @@
 import { Queue, type ConnectionOptions, type JobsOptions } from 'bullmq';
 import { config } from '../config.js';
 import type { CalcFieldInput } from '../services/calculated-field-evaluator.js';
+import type { ExportLocale } from '../services/exporters/total-labels.js';
 
 export const EXPORT_QUEUE_NAME = 'exports';
 
@@ -13,6 +14,8 @@ export interface ExportJobData {
   requestedBy: string;
   parameters?: Record<string, unknown>;
   calculatedFields?: CalcFieldInput[];
+  /** Locale for a grand/subtotal row's label text. Defaults to `en`. */
+  locale?: ExportLocale;
 }
 
 export const EXPORT_JOB_OPTIONS: JobsOptions = {

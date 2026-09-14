@@ -77,6 +77,41 @@ function makeResultSetConn(
   return { raw, conn: raw as unknown as Connection, resultSet };
 }
 
+/**
+ * A fake Connection that answers a small non-streaming `execute` (as
+ * `runTotalsQueries` issues) from `totalsRowsBySql`, keyed by exact SQL text,
+ * and a streaming `execute` (`resultSet: true`, as `openRowStream` issues)
+ * from `detailRows` — so a totals-aware export can be driven end to end
+ * without a real Oracle connection.
+ */
+function makeWorksheetConn(
+  detailRows: Record<string, unknown>[],
+  totalsRowsBySql: Record<string, Record<string, unknown>[]>,
+  metaData: Array<{ name: string }>,
+) {
+  let cursor = 0;
+  const resultSet = {
+    getRows: jest.fn(async (n: number) => {
+      const slice = detailRows.slice(cursor, cursor + n);
+      cursor += slice.length;
+      return slice;
+    }),
+    close: jest.fn(async () => {}),
+  };
+  const raw: Record<string, unknown> = {
+    callTimeout: undefined,
+    execute: jest.fn(
+      async (sql: string, _binds: unknown, opts?: { resultSet?: boolean }) => {
+        if (opts?.resultSet) return { resultSet, metaData };
+        return { rows: totalsRowsBySql[sql] ?? [] };
+      },
+    ),
+    break: jest.fn(async () => {}),
+    close: jest.fn(async () => {}),
+  };
+  return { raw, conn: raw as unknown as Connection, resultSet };
+}
+
 /** A fake Connection whose `execute` rejects. */
 function makeFailingConn(err: unknown) {
   const raw: Record<string, unknown> = {
@@ -471,6 +506,127 @@ describe('processExportJob', () => {
       expect(beforeDone[i]!).toBeGreaterThanOrEqual(beforeDone[i - 1]!);
     }
     expect(progress.at(-1)).toBe(100);
+  });
+
+  describe('worksheet totals (BE-07 follow-on: group breaks, subtotals, grand totals)', () => {
+    /** REGION (break) + AMOUNT (totalled), matching ResultsTable's placement rules. */
+    function makeWorksheetPrepared(): PreparedQuery {
+      return makePrepared({
+        sql: 'SELECT "F"."REGION" AS "C1", "F"."AMOUNT" AS "C2"\nFROM "S"."SALES" "F"',
+        columns: [
+          { alias: 'C1', label: 'Region', isAggregate: false },
+          { alias: 'C2', label: 'Amount', isAggregate: false },
+        ],
+        groupBreakAliases: ['C1'],
+        totals: [
+          {
+            breakAlias: null,
+            sql: 'SELECT_GRAND',
+            bindParams: {},
+            totals: [
+              {
+                id: 't1',
+                kind: 'TOTAL',
+                alias: 'T1',
+                targetAlias: 'C2',
+                targetLabel: 'Amount',
+                aggFunction: 'SUM',
+                displayOrder: 0,
+              },
+            ],
+          },
+          {
+            breakAlias: 'BREAK_C1',
+            breakLabel: 'Region',
+            breakTargetAlias: 'C1',
+            sql: 'SELECT_BREAK',
+            bindParams: {},
+            totals: [
+              {
+                id: 't2',
+                kind: 'TOTAL',
+                alias: 'T2',
+                targetAlias: 'C2',
+                targetLabel: 'Amount',
+                aggFunction: 'SUM',
+                displayOrder: 0,
+                label: 'Total for &value',
+              },
+            ],
+          },
+        ],
+      });
+    }
+
+    it('interleaves subtotal and grand-total rows the way ResultsTable draws them, and suppresses repeated break values', async () => {
+      const { conn } = makeWorksheetConn(
+        [
+          { C1: 'East', C2: 5 },
+          { C1: 'East', C2: 5 },
+          { C1: 'West', C2: 20 },
+        ],
+        {
+          SELECT_GRAND: [{ T1: 30 }],
+          SELECT_BREAK: [
+            { BREAK_C1: 'East', T2: 10 },
+            { BREAK_C1: 'West', T2: 20 },
+          ],
+        },
+        [{ name: 'C1' }, { name: 'C2' }],
+      );
+      const { deps, store, drained } = makeDeps(conn, {
+        prepareQuery: jest.fn(async () => makeWorksheetPrepared()) as unknown as ExportJobDeps['prepareQuery'],
+      });
+      await store.createJob({ mapId: MAP_ID, requestedBy: USER_ID, format: 'CSV' });
+
+      await processExportJob(jobData(), deps);
+
+      expect(drained).toEqual([
+        { C1: 'East', C2: 5 },
+        { C1: null, C2: 5 },
+        { C1: 'Total for East', C2: 10 },
+        { C1: 'West', C2: 20 },
+        { C1: 'Total for West', C2: 20 },
+        { C1: 'Grand total', C2: 30 },
+      ]);
+    });
+
+    it('labels totals in the requested locale', async () => {
+      const { conn } = makeWorksheetConn(
+        [{ C1: 'East', C2: 5 }],
+        { SELECT_GRAND: [{ T1: 5 }], SELECT_BREAK: [{ BREAK_C1: 'East', T2: 5 }] },
+        [{ name: 'C1' }, { name: 'C2' }],
+      );
+      const { deps, store, drained } = makeDeps(conn, {
+        prepareQuery: jest.fn(async () => makeWorksheetPrepared()) as unknown as ExportJobDeps['prepareQuery'],
+      });
+      await store.createJob({ mapId: MAP_ID, requestedBy: USER_ID, format: 'CSV' });
+
+      await processExportJob(jobData({ locale: 'fr-FR' }), deps);
+
+      expect(drained.at(-1)).toEqual({ C1: 'Total général', C2: 5 });
+    });
+
+    it('runs the totals statements before opening the detail-row cursor', async () => {
+      const { conn, raw } = makeWorksheetConn(
+        [{ C1: 'East', C2: 5 }],
+        { SELECT_GRAND: [{ T1: 5 }], SELECT_BREAK: [{ BREAK_C1: 'East', T2: 5 }] },
+        [{ name: 'C1' }, { name: 'C2' }],
+      );
+      const { deps, store } = makeDeps(conn, {
+        prepareQuery: jest.fn(async () => makeWorksheetPrepared()) as unknown as ExportJobDeps['prepareQuery'],
+      });
+      await store.createJob({ mapId: MAP_ID, requestedBy: USER_ID, format: 'CSV' });
+
+      await processExportJob(jobData(), deps);
+
+      const execute = raw.execute as jest.Mock;
+      const sqlArgs = execute.mock.calls.map((call) => call[0] as string);
+      // The two totals statements, in the order the generator planned them,
+      // then the streaming detail query last.
+      expect(sqlArgs.slice(0, 2)).toEqual(['SELECT_GRAND', 'SELECT_BREAK']);
+      expect(sqlArgs[2]).toContain('SELECT "F"."REGION"');
+    });
   });
 });
 

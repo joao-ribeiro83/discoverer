@@ -12,6 +12,7 @@ import {
   openRowStream,
   buildColumns,
   applyCalculatedFields,
+  runTotalsQueries,
   errorMessage,
   DEFAULT_TIMEOUT_MS,
   type MapExecutionDeps,
@@ -21,6 +22,15 @@ import {
 import { writeXlsx } from './exporters/excel-exporter.js';
 import { writeCsv } from './exporters/csv-exporter.js';
 import type { ExportSource, ExportWriteResult } from './exporters/types.js';
+import {
+  createWorksheetRowBuilder,
+  formatTotalsRowRecord,
+  interpolateTotalLabel,
+  applySuppression,
+  type DisplayRow,
+} from './exporters/worksheet-rows.js';
+import { totalLabelsFor, type ExportLocale } from './exporters/total-labels.js';
+import { cellText } from './exporters/types.js';
 import type { CalcFieldInput } from './calculated-field-evaluator.js';
 
 // ---------------------------------------------------------------------------
@@ -50,6 +60,8 @@ export const EXPORT_DIR =
 export interface ExportOptions {
   parameters?: Record<string, unknown>;
   calculatedFields?: CalcFieldInput[];
+  /** Locale for a grand/subtotal row's label text. Defaults to `en`. */
+  locale?: ExportLocale;
 }
 
 export interface ExportJobRecord {
@@ -262,6 +274,7 @@ export async function createExportJob(
       requestedBy,
       parameters: options.parameters,
       calculatedFields: options.calculatedFields,
+      locale: options.locale,
     });
   } catch (err) {
     // The row exists but nothing will ever pick it up (Redis down, say) —
@@ -311,6 +324,13 @@ export async function processExportJob(
     // query is ever allowed to.
     conn.callTimeout = DEFAULT_TIMEOUT_MS;
 
+    // Totals run first, on the same connection: a small, complete statement
+    // that has to finish before the (potentially very long-lived) streaming
+    // cursor for the detail rows opens on it.
+    const totalsRun = prepared.totals?.length
+      ? await runTotalsQueries(conn, prepared.totals, exportJobId)
+      : { groups: [], warnings: [] };
+
     stream = await openRowStream(conn, prepared);
     let columns: ResultColumn[] = buildColumns(prepared.columns, stream.metaData);
 
@@ -328,13 +348,50 @@ export async function processExportJob(
     // Calculated fields are scalar-only (the evaluator rejects aggregates), so
     // applying them per batch is equivalent to applying them to the whole set —
     // which is what makes them compatible with streaming at all.
-    const batches = calcFields?.length
+    const rawBatches = calcFields?.length
       ? (async function* () {
           for await (const batch of stream.batches) {
             yield applyCalculatedFields(batch, columns, calcFields).rows;
           }
         })()
       : stream.batches;
+
+    // A map with group breaks or totals gets its rows interleaved with
+    // subtotal/grand-total rows the same way ResultsTable draws them on
+    // screen (same placement rules — see exporters/worksheet-rows.ts),
+    // pushed one row at a time so the export never holds the result set in
+    // memory.
+    const groupBreakAliases = prepared.groupBreakAliases ?? [];
+    const labels = totalLabelsFor(data.locale);
+    const toRecord = (display: DisplayRow): Record<string, unknown> => {
+      if (display.kind === 'data') return applySuppression(display.row, display.suppressed);
+      if (display.kind === 'grand') {
+        return formatTotalsRowRecord(columns, display.entries, labels.grandTotal);
+      }
+      const value = cellText(display.breakValue);
+      const label = interpolateTotalLabel(
+        display.entries[0]?.total.label,
+        { value, item: display.breakLabel },
+        labels.subtotalFor(value),
+      );
+      return formatTotalsRowRecord(columns, display.entries, label);
+    };
+
+    const batches =
+      groupBreakAliases.length > 0 || totalsRun.groups.length > 0
+        ? (async function* () {
+            const builder = createWorksheetRowBuilder(groupBreakAliases, totalsRun.groups);
+            for await (const batch of rawBatches) {
+              const out: Record<string, unknown>[] = [];
+              for (const row of batch) {
+                for (const display of builder.pushRow(row)) out.push(toRecord(display));
+              }
+              if (out.length > 0) yield out;
+            }
+            const trailing = builder.finish().map(toRecord);
+            if (trailing.length > 0) yield trailing;
+          })()
+        : rawBatches;
 
     const source: ExportSource = { columns, batches };
     const filePath = buildExportFilePath(exportJobId, format);
