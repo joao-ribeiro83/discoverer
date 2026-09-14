@@ -132,6 +132,24 @@
     "downloadFailedTitle": "Échec du téléchargement",
     "exportJobFailedFallback": "La tâche d'exportation a échoué."
   },
+  "exportHistory": {
+    "title": "Exportations",
+    "description": "Vos exportations de données, en file d'attente, en cours ou terminées. Une exportation terminée peut être retéléchargée à tout moment.",
+    "map": "Carte",
+    "format": "Format",
+    "status": "État",
+    "rows": "Lignes",
+    "created": "Créée",
+    "download": "Télécharger",
+    "loading": "Chargement des exportations…",
+    "noExports": "Aucune exportation pour le moment.",
+    "statuses": {
+      "PENDING": "En file d'attente",
+      "PROCESSING": "En cours",
+      "COMPLETED": "Terminée",
+      "FAILED": "Échouée"
+    }
+  },
   "crosstab": {
     "noColumnEdge": "Ce tableau croisé n'a pas encore de colonnes en haut ; il est donc affiché sous forme de tableau. Discoverer n'enregistre pas quelles colonnes figuraient en haut — ouvrez une colonne et définissez son bord de tableau croisé sur « En haut ».",
     "tooLarge": "Ce tableau croisé ferait {{rows}} x {{columns}}, au-delà de la limite de {{max}} cellules. Filtrez le rapport ou groupez sur moins de valeurs."

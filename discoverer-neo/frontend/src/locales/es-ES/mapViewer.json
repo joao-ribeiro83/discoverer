@@ -132,6 +132,24 @@
     "downloadFailedTitle": "Error en la descarga",
     "exportJobFailedFallback": "El trabajo de exportación ha fallado."
   },
+  "exportHistory": {
+    "title": "Exportaciones",
+    "description": "Tus exportaciones de datos, en cola, en curso o finalizadas. Una exportación completada puede volver a descargarse en cualquier momento.",
+    "map": "Mapa",
+    "format": "Formato",
+    "status": "Estado",
+    "rows": "Filas",
+    "created": "Creada",
+    "download": "Descargar",
+    "loading": "Cargando exportaciones…",
+    "noExports": "Aún no hay exportaciones.",
+    "statuses": {
+      "PENDING": "En cola",
+      "PROCESSING": "En curso",
+      "COMPLETED": "Completada",
+      "FAILED": "Fallida"
+    }
+  },
   "crosstab": {
     "noColumnEdge": "Esta tabla cruzada aún no tiene columnas en la parte superior, por lo que se muestra como tabla. Discoverer no registra qué columnas iban arriba: abra una columna y defina su borde de tabla cruzada como «En la parte superior».",
     "tooLarge": "Esta tabla cruzada sería de {{rows}} x {{columns}}, por encima del límite de {{max}} celdas. Filtre el informe o agrupe por menos valores."

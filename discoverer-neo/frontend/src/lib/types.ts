@@ -610,6 +610,8 @@ export interface ExportMapBody {
   format: ExportFileFormat
   parameters?: Record<string, unknown>
   calculatedFields?: MapCalculatedFieldInput[]
+  /** Locale for a grand/subtotal row's label text. Defaults to `en`. */
+  locale?: string
 }
 
 // --- schedules ---------------------------------------------------------

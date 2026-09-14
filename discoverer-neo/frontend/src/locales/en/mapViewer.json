@@ -132,6 +132,24 @@
     "downloadFailedTitle": "Download failed",
     "exportJobFailedFallback": "The export job failed."
   },
+  "exportHistory": {
+    "title": "Exports",
+    "description": "Your data exports, queued, running or finished. A completed export can be downloaded again at any time.",
+    "map": "Map",
+    "format": "Format",
+    "status": "Status",
+    "rows": "Rows",
+    "created": "Created",
+    "download": "Download",
+    "loading": "Loading exports…",
+    "noExports": "No exports yet.",
+    "statuses": {
+      "PENDING": "Queued",
+      "PROCESSING": "Running",
+      "COMPLETED": "Completed",
+      "FAILED": "Failed"
+    }
+  },
   "crosstab": {
     "noColumnEdge": "This crosstab has no column edge yet, so it is shown as a table. Discoverer does not record which columns went across the top — open a column and set its crosstab edge to \"Across the top\".",
     "tooLarge": "This crosstab would be {{rows}} x {{columns}}, over the {{max}} cell limit. Filter the report or group on fewer values."

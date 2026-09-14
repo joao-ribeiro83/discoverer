@@ -132,6 +132,24 @@
     "downloadFailedTitle": "Falha na transferência",
     "exportJobFailedFallback": "A tarefa de exportação falhou."
   },
+  "exportHistory": {
+    "title": "Exportações",
+    "description": "As suas exportações de dados, em fila, em curso ou concluídas. Uma exportação concluída pode ser transferida novamente a qualquer momento.",
+    "map": "Mapa",
+    "format": "Formato",
+    "status": "Estado",
+    "rows": "Linhas",
+    "created": "Criada",
+    "download": "Transferir",
+    "loading": "A carregar exportações…",
+    "noExports": "Ainda não há exportações.",
+    "statuses": {
+      "PENDING": "Em fila",
+      "PROCESSING": "Em curso",
+      "COMPLETED": "Concluída",
+      "FAILED": "Falhada"
+    }
+  },
   "crosstab": {
     "noColumnEdge": "Esta tabela cruzada ainda não tem colunas no topo, por isso é apresentada como tabela. O Discoverer não regista que colunas ficavam no topo — abra uma coluna e defina a margem da tabela cruzada como «No topo».",
     "tooLarge": "Esta tabela cruzada teria {{rows}} x {{columns}}, acima do limite de {{max}} células. Filtre o relatório ou agrupe por menos valores."

@@ -20,6 +20,7 @@
     "auditLog": "Audit Log",
     "maps": "Maps",
     "schedules": "Schedules",
+    "exports": "Exports",
     "migration": "Migration",
     "settings": "Settings"
   },

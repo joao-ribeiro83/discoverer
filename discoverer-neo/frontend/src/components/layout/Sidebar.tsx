@@ -10,6 +10,7 @@ import {
   CalendarClock,
   ArrowRightLeft,
   Settings,
+  Download,
   Table2,
   GitMerge,
   Layers,
@@ -43,6 +44,7 @@ const mapsNavItems = [
 
 const otherNavItems = [
   { to: '/schedules', labelKey: 'items.schedules', icon: CalendarClock },
+  { to: '/exports', labelKey: 'items.exports', icon: Download },
   { to: '/admin/migration', labelKey: 'items.migration', icon: ArrowRightLeft },
 ]
 
