@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest'
 import { render, screen, act } from '@testing-library/react'
 import { useTranslation } from 'react-i18next'
-import i18n from '@/i18n'
+import i18n, { isSupportedLocale } from '@/i18n'
 import { formatDate, formatNumber, formatInteger } from '@/lib/format'
 
 function Sample() {
@@ -21,6 +21,26 @@ async function changeLanguage(lng: string) {
     await i18n.changeLanguage(lng)
   })
 }
+
+describe('isSupportedLocale', () => {
+  it('accepts every supported locale code', () => {
+    expect(isSupportedLocale('en')).toBe(true)
+    expect(isSupportedLocale('pt-PT')).toBe(true)
+  })
+
+  it('rejects an unsupported code', () => {
+    expect(isSupportedLocale('de-DE')).toBe(false)
+  })
+
+  it('rejects undefined and null', () => {
+    expect(isSupportedLocale(undefined)).toBe(false)
+    expect(isSupportedLocale(null)).toBe(false)
+  })
+
+  it('rejects an empty string', () => {
+    expect(isSupportedLocale('')).toBe(false)
+  })
+})
 
 describe('i18n', () => {
   afterEach(async () => {

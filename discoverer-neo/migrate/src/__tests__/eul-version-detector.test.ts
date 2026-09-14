@@ -154,6 +154,18 @@ describe('detectEulVersion', () => {
       expect(info.version).toBe('EUL5');
       expect(info.warnings.join('\n')).toMatch(/preferVersion=EUL4 ignored/);
     });
+
+    it('ignores preferVersion on a mixed schema when its tables are absent from the mix', async () => {
+      // mixedDb() only has EUL4 + EUL5 — asking for EUL3 hits the "mixed AND
+      // preferred version not present" branch, distinct from the plain
+      // (non-mixed) ignore case above.
+      const db = mixedDb();
+      const info = await detectEulVersionFromExecutor(mockExecutor(db), {
+        preferVersion: 'EUL3',
+      });
+      expect(info.version).toBe('EUL5');
+      expect(info.warnings.join('\n')).toMatch(/preferVersion=EUL3 ignored — its tables are not present/);
+    });
   });
 
   describe('VERSIONS table edge cases', () => {
@@ -166,6 +178,14 @@ describe('detectEulVersion', () => {
       expect(info.schemaVersion).toBe('unknown');
       expect(info.discovererVersion).toBe('unknown');
       expect(info.warnings.join('\n')).toMatch(/not found or not readable/);
+    });
+
+    it('reports "unknown" when the row has no VER_RELEASE', async () => {
+      const db = eul5Db();
+      db.tables.EUL5_VERSIONS = [{ VER_MIN_CODE_VER: '5.0.0.0.0' }];
+      const info = await detectEulVersionFromExecutor(mockExecutor(db));
+
+      expect(info.schemaVersion).toBe('unknown');
     });
 
     it('handles an empty EUL*_VERSIONS table', async () => {
@@ -188,6 +208,37 @@ describe('detectEulVersion', () => {
       expect(info.schemaVersion).toBe('5.1.0.0.0');
       expect(info.discovererVersion).toBe('10.1.2/11.1.1');
       expect(info.warnings.join('\n')).toMatch(/2 rows/);
+    });
+
+    it('re-throws a VERSIONS-table error that is not "table not found"', async () => {
+      const db = eul5Db();
+      const base = mockExecutor(db);
+      const executor = (sql: string, binds?: Record<string, unknown>) =>
+        sql.toUpperCase().includes('EUL5_VERSIONS')
+          ? Promise.reject(new Error('ORA-01017: invalid username/password'))
+          : base(sql, binds);
+
+      await expect(detectEulVersionFromExecutor(executor)).rejects.toThrow(
+        /ORA-01017/,
+      );
+    });
+  });
+
+  describe('currentUser lookup failure', () => {
+    it('treats a failed SELECT USER as "no connected user" rather than failing detection', async () => {
+      // currentUser() only feeds chooseOwner()'s preference order — losing it
+      // just falls through to the next rule (the only owner with EUL tables),
+      // which eul5Db() satisfies, so detection still succeeds.
+      const db = eul5Db();
+      const base = mockExecutor(db);
+      const executor = (sql: string, binds?: Record<string, unknown>) =>
+        sql.toUpperCase().includes('FROM DUAL')
+          ? Promise.reject(new Error('ORA-01012: not logged on'))
+          : base(sql, binds);
+
+      const info = await detectEulVersionFromExecutor(executor);
+      expect(info.version).toBe('EUL5');
+      expect(info.owner).toBe(EUL5_OWNER);
     });
   });
 

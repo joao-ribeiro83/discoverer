@@ -146,6 +146,22 @@ describe('compileStoredFormula', () => {
     expect(verdict).toMatchObject({ bucket: 'QUARANTINED', reason: 'UNRESOLVED_ELEMENT' });
   });
 
+  it('quarantines a `[8,n]` parameter reference the bindings do not name', () => {
+    const verdict = compileStoredFormula(
+      row({ sourceTokens: '[1,1]([8,50])', bindings: EMPTY_BINDINGS }),
+      scope(),
+    );
+    expect(verdict).toMatchObject({ bucket: 'QUARANTINED', reason: 'UNRESOLVED_ELEMENT' });
+  });
+
+  it('quarantines a `[2,n]` custom function reference the bindings do not name', () => {
+    const verdict = compileStoredFormula(
+      row({ sourceTokens: '[2,50]([6,27])', bindings: bindings({ items: { '27': 'AMOUNT' } }) }),
+      scope(),
+    );
+    expect(verdict).toMatchObject({ bucket: 'QUARANTINED', reason: 'UNRESOLVED_FUNCTION' });
+  });
+
   it('quarantines a calculation cycle rather than looping', () => {
     // `[6,900]` is Self, whose own tree references `[6,900]`.
     const self = parseFormulaTree('[1,1]([6,900])').tree!;

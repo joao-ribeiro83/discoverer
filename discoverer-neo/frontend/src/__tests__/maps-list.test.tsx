@@ -20,8 +20,9 @@ vi.mock('@tanstack/react-virtual', () => ({
 
 vi.mock('@/lib/api', () => ({
   apiClient: {
-    maps: { listMine: vi.fn(), listAll: vi.fn(), delete: vi.fn() },
+    maps: { listMine: vi.fn(), listAll: vi.fn(), delete: vi.fn(), listShares: vi.fn() },
     businessAreas: { list: vi.fn() },
+    users: { search: vi.fn() },
   },
   getErrorMessage: (err: unknown) => (err instanceof Error ? err.message : 'error'),
 }))
@@ -197,5 +198,156 @@ describe('MapsListPage', () => {
 
     fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }))
     await vi.waitFor(() => expect(mockedApi.maps.delete).toHaveBeenCalledWith('m1'))
+  })
+
+  it('cancels a delete without calling the API', async () => {
+    mockedApi.maps.listMine.mockResolvedValue(
+      envelope({ mine: [mapSummary({ id: 'm1', name: 'Sales by Region' })], shared: [] }) as never,
+    )
+    mockedApi.maps.listAll.mockResolvedValue(
+      envelope({ all: [mapSummary({ id: 'm1', name: 'Sales by Region' })] }) as never,
+    )
+    renderPage()
+
+    await screen.findByText('Sales by Region')
+    fireEvent.click(screen.getByTitle('Delete'))
+    const dialog = await screen.findByRole('dialog')
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }))
+
+    await vi.waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(mockedApi.maps.delete).not.toHaveBeenCalled()
+  })
+
+  it('shows the empty-mine message with the total worksheet count', async () => {
+    mockedApi.maps.listMine.mockResolvedValue(envelope({ mine: [], shared: [] }) as never)
+    mockedApi.maps.listAll.mockResolvedValue(
+      envelope({ all: Array.from({ length: 3 }, (_, i) => mapSummary({ id: `m${i}`, name: `Map ${i}` })) }) as never,
+    )
+    renderPage()
+    expect(await screen.findByText('3 worksheets exist; none are yours.')).toBeInTheDocument()
+  })
+
+  it('shows the empty-shared message on the Shared tab', async () => {
+    mockedApi.maps.listMine.mockResolvedValue(envelope({ mine: [], shared: [] }) as never)
+    mockedApi.maps.listAll.mockResolvedValue(
+      envelope({ all: Array.from({ length: 2 }, (_, i) => mapSummary({ id: `m${i}`, name: `Map ${i}` })) }) as never,
+    )
+    renderPage()
+    clickTab(await screen.findByRole('tab', { name: 'Shared with me' }))
+    expect(await screen.findByText('2 worksheets exist; none are shared with you.')).toBeInTheDocument()
+  })
+
+  it('shows a no-matches message when a search filters out every row', async () => {
+    mockedApi.maps.listMine.mockResolvedValue(envelope({ mine: [], shared: [] }) as never)
+    mockedApi.maps.listAll.mockResolvedValue(
+      envelope({ all: [mapSummary({ id: 'm1', name: 'Sales by Region' })] }) as never,
+    )
+    renderPage()
+    clickTab(await screen.findByRole('tab', { name: 'All' }))
+    await screen.findByText('Sales by Region')
+
+    fireEvent.change(screen.getByPlaceholderText('Search maps by name…'), { target: { value: 'nothing matches' } })
+    expect(await screen.findByText('No maps match your search or filters.')).toBeInTheDocument()
+  })
+
+  it('shows a load error instead of the table', async () => {
+    mockedApi.maps.listMine.mockRejectedValue(new Error('backend unavailable'))
+    mockedApi.maps.listAll.mockResolvedValue(envelope({ all: [] }) as never)
+    renderPage()
+    expect(await screen.findByText('backend unavailable')).toBeInTheDocument()
+  })
+
+  it('sorts by name', async () => {
+    mockedApi.maps.listMine.mockResolvedValue(envelope({ mine: [], shared: [] }) as never)
+    mockedApi.maps.listAll.mockResolvedValue(
+      envelope({
+        all: [
+          mapSummary({ id: 'm1', name: 'Zebra Report', updatedAt: '2026-01-05T00:00:00.000Z' }),
+          mapSummary({ id: 'm2', name: 'Alpha Report', updatedAt: '2026-01-01T00:00:00.000Z' }),
+        ],
+      }) as never,
+    )
+    renderPage()
+    clickTab(await screen.findByRole('tab', { name: 'All' }))
+    await screen.findByText('Zebra Report')
+
+    const [, sortSelect] = screen.getAllByRole('combobox')
+    fireEvent.click(sortSelect)
+    fireEvent.click(await screen.findByRole('option', { name: 'Name (A–Z)' }))
+
+    const names = (await screen.findAllByText(/Report$/)).map((el) => el.textContent)
+    expect(names).toEqual(['Alpha Report', 'Zebra Report'])
+  })
+
+  it('falls back to an em dash for an unrecognized business area', async () => {
+    mockedApi.maps.listMine.mockResolvedValue(envelope({ mine: [], shared: [] }) as never)
+    mockedApi.maps.listAll.mockResolvedValue(
+      envelope({ all: [mapSummary({ id: 'm1', name: 'Orphaned Map', businessAreaId: 'ba-unknown' })] }) as never,
+    )
+    renderPage()
+    clickTab(await screen.findByRole('tab', { name: 'All' }))
+    expect(await screen.findByText('Orphaned Map')).toBeInTheDocument()
+    expect(screen.getByText('—')).toBeInTheDocument()
+  })
+
+  it('hides manage actions for a row the current user cannot manage', async () => {
+    useAuthStore.setState({
+      user: { id: 'u2', email: 'viewer@example.com', name: 'Viewer', role: 'ANALYST' },
+      token: 't',
+      isAuthenticated: true,
+      hasHydrated: true,
+    })
+    mockedApi.maps.listMine.mockResolvedValue(envelope({ mine: [], shared: [] }) as never)
+    mockedApi.maps.listAll.mockResolvedValue(
+      envelope({
+        all: [mapSummary({ id: 'm1', name: 'Read Only Map', createdBy: 'someone-else' })],
+      }) as never,
+    )
+    renderPage()
+    clickTab(await screen.findByRole('tab', { name: 'All' }))
+    await screen.findByText('Read Only Map')
+
+    expect(screen.getByTitle('View')).toBeInTheDocument()
+    expect(screen.queryByTitle('Delete')).not.toBeInTheDocument()
+    expect(screen.queryByTitle('Share')).not.toBeInTheDocument()
+  })
+
+  it('shows manage actions for the row owner even without the admin role', async () => {
+    useAuthStore.setState({
+      user: { id: 'u2', email: 'owner@example.com', name: 'Owner', role: 'ANALYST' },
+      token: 't',
+      isAuthenticated: true,
+      hasHydrated: true,
+    })
+    mockedApi.maps.listMine.mockResolvedValue(
+      envelope({ mine: [mapSummary({ id: 'm1', name: 'My Own Map', createdBy: 'u2' })], shared: [] }) as never,
+    )
+    mockedApi.maps.listAll.mockResolvedValue(
+      envelope({ all: [mapSummary({ id: 'm1', name: 'My Own Map', createdBy: 'u2' })] }) as never,
+    )
+    renderPage()
+    await screen.findByText('My Own Map')
+    expect(screen.getByTitle('Delete')).toBeInTheDocument()
+  })
+
+  it('opens and closes the share dialog for a manageable row', async () => {
+    mockedApi.maps.listMine.mockResolvedValue(
+      envelope({ mine: [mapSummary({ id: 'm1', name: 'Sales by Region' })], shared: [] }) as never,
+    )
+    mockedApi.maps.listAll.mockResolvedValue(
+      envelope({ all: [mapSummary({ id: 'm1', name: 'Sales by Region' })] }) as never,
+    )
+    mockedApi.maps.listShares.mockResolvedValue(envelope([]) as never)
+    mockedApi.users.search.mockResolvedValue(envelope([]) as never)
+    renderPage()
+    await screen.findByText('Sales by Region')
+
+    fireEvent.click(screen.getByTitle('Share'))
+    const dialog = await screen.findByRole('dialog')
+    expect(dialog).toBeInTheDocument()
+
+    fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' })
+    await vi.waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
   })
 })
