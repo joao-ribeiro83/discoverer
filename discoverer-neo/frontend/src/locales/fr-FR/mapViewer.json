@@ -114,7 +114,13 @@
     "runningStatus": "Exécution… ({{status}})",
     "runFullResult": "Exécuter le résultat complet",
     "worksheetWarningsTitle_one": "{{count}} paramètre de la feuille n'a pas pu être appliqué",
-    "worksheetWarningsTitle_other": "{{count}} paramètres de la feuille n'ont pas pu être appliqués"
+    "worksheetWarningsTitle_other": "{{count}} paramètres de la feuille n'ont pas pu être appliqués",
+    "drill": {
+      "rowHint": "Double-cliquez pour explorer le détail",
+      "title": "Explorer le détail",
+      "description": "Les lignes brutes derrière les valeurs de cette ligne.",
+      "loading": "Exploration en cours…"
+    }
   },
   "parameters": {
     "title": "Paramètres d'exécution",

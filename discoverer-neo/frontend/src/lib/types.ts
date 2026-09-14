@@ -568,6 +568,18 @@ export interface ExecuteMapBody {
 }
 
 /**
+ * Discoverer's "Drill to Detail": rerun the worksheet with aggregation
+ * stripped and one clicked row's values pinned as conditions, so a total or
+ * grouped figure shows the raw rows behind it. `rowValues` is keyed by the
+ * same column alias `ExecuteResult.columns` carries — the same row the user
+ * clicked in the grid, unmodified.
+ */
+export interface DrillToDetailBody {
+  parameters?: Record<string, unknown>
+  rowValues: Record<string, unknown>
+}
+
+/**
  * Mirrors the backend's `ExecutionErrorKind` (see `KIND_STATUS` in
  * map-execution.ts). `FORBIDDEN` is what `assertDataEntitlement` raises — the
  * caller may open the map but not run it. `REFUSED` is not a failure at all:

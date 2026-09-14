@@ -648,6 +648,47 @@ dumps is the next step — not a repeat of this decision.
 
 ---
 
+## Decision 13 — hierarchy drill (up/down) is refused, not built, because there is no hierarchy to drill along
+
+**The premise this rejects.** Phase 7.3's brief asked for "hierarchy drill
+(up/down/to-detail), now that Phase 5.1 migrated hierarchies." Phase 5.1
+migrated nothing to drill along: `hierarchies` / `hierarchy_levels` are empty
+in this estate, by design (Decision in Phase 5.1's own findings — all 508
+source hierarchies are Discoverer's auto-generated date boilerplate, and Neo
+correctly does not migrate them). There is no level structure for "drill up"
+or "drill down" to walk, in this estate or in principle for source shaped
+like this.
+
+**No research document survives to define the semantics anyway.** The phase
+brief also named `docs/master-plan/research/legacy-analysis.md` §4.4 as the
+source for drill semantics. That file does not exist anywhere in this
+repository — confirmed by a direct search, not an oversight in citing it.
+Building hierarchy-based drill would mean inventing both the data (a
+hierarchy this estate does not have) and the behaviour (a spec that was never
+written down), which is exactly the "guess" this project's standing rule
+refuses.
+
+**Decision.** `drill.service.ts`'s `refuseHierarchyDrill()` throws a
+`DrillNotAvailableError` naming both reasons, rather than shipping a
+hierarchy drill that would silently do nothing (no data) or something made up
+(no spec). **Drill to detail** — reproducing Discoverer's own "Drill to
+Detail" — is built instead: given a clicked row, rerun the worksheet with
+every item's aggregation stripped and that row's non-aggregate column values
+pinned as equality conditions, reusing the existing STATIC-condition and
+`GenerationContext`/`buildSelectClause` machinery rather than a second
+SQL-generation path. It refuses the same way a total does on a fan-trap
+`REWRITE` plan (branch-joined inline views have no single row to pin to) and
+ignores a client-sent aggregate column's value rather than pinning a SUM as
+an equality filter, which would wrongly empty a multi-row group down to zero
+detail rows.
+
+**The escape clause.** If a future source EUL carries real hierarchy data
+(not auto-generated date boilerplate) and Neo migrates it, hierarchy drill
+becomes buildable — but still needs a real semantics reference before it is,
+since none exists today.
+
+---
+
 ## What still needs a live EUL
 
 These are open because no offline source answers them, not because they were

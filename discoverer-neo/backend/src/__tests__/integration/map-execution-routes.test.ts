@@ -392,6 +392,86 @@ describe('POST /api/maps/:id/execute', () => {
   }, 30_000);
 });
 
+// The deeper drillToDetail logic (aggregation stripped, alias resolution,
+// REWRITE fan-trap refusal) is covered against a fake Oracle connection in
+// query-engine.test.ts, alongside the SQL it generates. This is about the
+// route layer it shares with /execute: auth, validation, and error mapping.
+describe('POST /api/maps/:id/drill-to-detail', () => {
+  it('401s without a token', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/maps/${mapId}/drill-to-detail`,
+      payload: { rowValues: { AMOUNT: 100 } },
+    });
+    expect(res.statusCode).toBe(401);
+  });
+
+  it('404s drilling on an unknown map', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/maps/00000000-0000-4000-8000-000000000000/drill-to-detail',
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload: { rowValues: { AMOUNT: 100 } },
+    });
+    expect(res.statusCode).toBe(404);
+  });
+
+  it('403s drilling on a map the caller cannot access', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/maps/${mapId}/drill-to-detail`,
+      headers: { authorization: `Bearer ${otherToken}` },
+      payload: { rowValues: { AMOUNT: 100 } },
+    });
+    expect(res.statusCode).toBe(403);
+  });
+
+  it('400s on an invalid body (rowValues missing)', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/maps/${mapId}/drill-to-detail`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload: {},
+    });
+    expect(res.statusCode).toBe(400);
+    expect(res.json().error).toBe('Invalid request body');
+  });
+
+  it('400s with a CONFIG kind when nothing on the map matches the given values', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/maps/${mapId}/drill-to-detail`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload: { rowValues: { NOT_A_COLUMN: 'x' } },
+    });
+    expect(res.statusCode).toBe(400);
+    expect(res.json().kind).toBe('CONFIG');
+    expect(res.json().error).toMatch(/nothing to drill on/);
+  });
+
+  it('maps a CONFIG execution error to 400 (no data source on the map)', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/maps/${mapId}/drill-to-detail`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload: { rowValues: { AMOUNT: 100 } },
+    });
+    expect(res.statusCode).toBe(400);
+    expect(res.json().kind).toBe('CONFIG');
+  });
+
+  it('prepares the drill query fully then 502s on the unreachable connection', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/maps/${execMapId}/drill-to-detail`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload: { parameters: { p_region: 'EMEA' }, rowValues: { REGION: 'EMEA' } },
+    });
+    expect(res.statusCode).toBe(502);
+    expect(res.json().kind).toBe('CONNECT');
+  }, 30_000);
+});
+
 describe('POST /api/maps/:id/execute-async and status/cancel', () => {
   it('queues an async execution and returns a job id', async () => {
     const res = await app.inject({

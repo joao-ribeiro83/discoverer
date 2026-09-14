@@ -11,6 +11,7 @@ import {
   MapExecutionError,
   type ExecutionErrorKind,
 } from '../services/map-execution.service.js';
+import { drillToDetail, DrillNotAvailableError } from '../services/drill.service.js';
 
 // ---------------------------------------------------------------------------
 // Validation
@@ -52,6 +53,12 @@ const PlanBodySchema = z.object({
 
 const HistoryQuerySchema = z.object({
   limit: z.coerce.number().int().positive().max(200).optional(),
+});
+
+const DrillBodySchema = z.object({
+  parameters: z.record(z.string(), z.unknown()).optional(),
+  /** The clicked row's column-alias → value pairs, from the same result columns `/execute` returned. */
+  rowValues: z.record(z.string(), z.unknown()),
 });
 
 // JSON schemas for Fastify's built-in param validation.
@@ -205,6 +212,52 @@ export default function mapExecutionRoutes(fastify: FastifyInstance) {
         );
         return { data: result };
       } catch (err) {
+        if (handleExecutionError(reply, err, request.id)) return;
+        throw err;
+      }
+    },
+  );
+
+  // POST /api/maps/:id/drill-to-detail — Discoverer's "Drill to Detail": given
+  // a rendered row, re-run the worksheet with aggregation stripped and that
+  // row's values pinned as conditions, so the user sees the raw rows behind
+  // a total or grouped figure. Hierarchy-based drill up/down has no data in
+  // this estate and is refused (`refuseHierarchyDrill`) rather than guessed.
+  fastify.post(
+    '/api/maps/:id/drill-to-detail',
+    {
+      preHandler: [fastify.authenticate],
+      schema: {
+        tags: ['Map Execution'],
+        security: [{ bearerAuth: [] }],
+        params: idParamsSchema,
+      },
+    },
+    async (request, reply) => {
+      const map = await loadMapWithAccess(request, reply, 'VIEW');
+      if (!map) return;
+
+      const parsed = DrillBodySchema.safeParse(request.body ?? {});
+      if (!parsed.success) {
+        return reply
+          .code(400)
+          .send({ error: 'Invalid request body', details: parsed.error.issues });
+      }
+
+      const user = request.user as { sub: string };
+      try {
+        const result = await drillToDetail(
+          map.id,
+          parsed.data.parameters ?? {},
+          user.sub,
+          parsed.data.rowValues,
+          { correlationId: request.id },
+        );
+        return { data: result };
+      } catch (err) {
+        if (err instanceof DrillNotAvailableError) {
+          return reply.code(400).send({ error: err.message, statusCode: 400, kind: 'CONFIG' });
+        }
         if (handleExecutionError(reply, err, request.id)) return;
         throw err;
       }

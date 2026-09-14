@@ -58,7 +58,7 @@ const ASYNC_FETCH_BATCH = 1_000;
  * driver-agnostic (and unit-testable without the native module); the value is
  * a stable part of the oracledb public API.
  */
-const OUT_FORMAT_OBJECT = 4002;
+export const OUT_FORMAT_OBJECT = 4002;
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -485,6 +485,23 @@ async function defaultPrepareQuery(
   offset?: number,
 ): Promise<PreparedQuery> {
   const def = await loadMapDefinition(mapId);
+  return prepareQueryForDefinition(def, parameterValues, userId, rowLimit, offset);
+}
+
+/**
+ * Everything `defaultPrepareQuery` does once it has a `MapDefinition` —
+ * entitlement, RLS, generation. Split out so `drill.service.ts` can run the
+ * exact same security gates against a *derived* definition (drill-to-detail's
+ * unaggregated, row-pinned variant) instead of re-deriving them, which is
+ * exactly the kind of second copy that drifts out of sync with a real gate.
+ */
+export async function prepareQueryForDefinition(
+  def: MapDefinition,
+  parameterValues: Record<string, unknown>,
+  userId: string,
+  rowLimit?: number,
+  offset?: number,
+): Promise<PreparedQuery> {
   const dataSourceId = resolveDataSourceId(def);
 
   // The plan comes before anything that needs a folder set — which is the
@@ -634,7 +651,7 @@ function clampSyncMaxRows(n?: number): number {
 }
 
 /** Oracle raises DPI-1067 / an ORA timeout when callTimeout aborts a call. */
-function isTimeoutError(err: unknown): boolean {
+export function isTimeoutError(err: unknown): boolean {
   const code = (err as { code?: string })?.code ?? '';
   const message = err instanceof Error ? err.message : String(err);
   return (
@@ -687,7 +704,7 @@ function classifyAndLog(err: unknown, kind: ExecutionErrorKind, correlationId: s
  * unchanged. Only an *unclassified* failure (the raw driver error) gets
  * bucketed as `kind` and its message replaced.
  */
-function wrapExecutionError(
+export function wrapExecutionError(
   err: unknown,
   kind: ExecutionErrorKind,
   correlationId: string,
@@ -740,7 +757,7 @@ export function buildColumns(
   }));
 }
 
-async function safeRecord(
+export async function safeRecord(
   deps: MapExecutionDeps,
   entry: ExecutionLogEntry,
 ): Promise<void> {

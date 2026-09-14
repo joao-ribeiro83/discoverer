@@ -138,6 +138,8 @@ export interface ResultsTableProps {
   totals?: ResultTotalsGroup[]
   /** Conditional formats (Exceptions) the map defines, already resolved to `columns`. */
   conditionalFormats?: ResultConditionalFormat[]
+  /** Discoverer's "Drill to Detail" — double-clicking a row calls this with its values. */
+  onRowDrill?: (rowValues: RowRecord) => void
 }
 
 /**
@@ -161,6 +163,7 @@ export function ResultsTable({
   groupBreakAliases,
   totals,
   conditionalFormats,
+  onRowDrill,
 }: ResultsTableProps) {
   const { t } = useTranslation(['mapViewer'])
   const { locale } = useLocale()
@@ -363,7 +366,13 @@ export function ResultsTable({
       if (!row) return null
       const suppressed = new Set(display.suppressed)
       return (
-        <tr key={row.id} className="border-b hover:bg-muted/50" style={style}>
+        <tr
+          key={row.id}
+          className={cn('border-b hover:bg-muted/50', onRowDrill && 'cursor-pointer')}
+          style={style}
+          title={onRowDrill ? t('mapViewer:execution.drill.rowHint') : undefined}
+          onDoubleClick={onRowDrill ? () => onRowDrill(row.original) : undefined}
+        >
           {row.getVisibleCells().map((cell) => {
             const kind = columnKinds[cell.column.id] ?? 'string'
             const resultColumn = columnByName[cell.column.id]
@@ -393,7 +402,13 @@ export function ResultsTable({
 
     const row = tableRows[virtualRow.index]
     return (
-      <tr key={row.id} className="border-b hover:bg-muted/50" style={style}>
+      <tr
+        key={row.id}
+        className={cn('border-b hover:bg-muted/50', onRowDrill && 'cursor-pointer')}
+        style={style}
+        title={onRowDrill ? t('mapViewer:execution.drill.rowHint') : undefined}
+        onDoubleClick={onRowDrill ? () => onRowDrill(row.original) : undefined}
+      >
         {row.getVisibleCells().map((cell) => {
           const kind = columnKinds[cell.column.id] ?? 'string'
           const resultColumn = columnByName[cell.column.id]

@@ -23,6 +23,7 @@ import type {
   UpdateMapInput,
   ExecuteResult,
   ExecuteMapBody,
+  DrillToDetailBody,
   AsyncExecutionJob,
   ExecutionHistoryEntry,
   ExecutionErrorKind,
@@ -382,6 +383,8 @@ export const apiClient = {
       api.post<Envelope<ExecuteResult>>(`/maps/${id}/execute`, body),
     executeAsync: (id: string, body: ExecuteMapBody = {}) =>
       api.post<Envelope<{ jobId: string }>>(`/maps/${id}/execute-async`, body),
+    drillToDetail: (id: string, body: DrillToDetailBody) =>
+      api.post<Envelope<ExecuteResult>>(`/maps/${id}/drill-to-detail`, body),
     getExecutionStatus: (id: string, jobId: string) =>
       api.get<Envelope<AsyncExecutionJob>>(`/maps/${id}/executions/${jobId}`),
     cancelExecution: (id: string, jobId: string) =>

@@ -114,7 +114,13 @@
     "runningStatus": "A executar… ({{status}})",
     "runFullResult": "Executar resultado completo",
     "worksheetWarningsTitle_one": "Não foi possível aplicar {{count}} definição da folha de cálculo",
-    "worksheetWarningsTitle_other": "Não foi possível aplicar {{count}} definições da folha de cálculo"
+    "worksheetWarningsTitle_other": "Não foi possível aplicar {{count}} definições da folha de cálculo",
+    "drill": {
+      "rowHint": "Duplo clique para ver o detalhe",
+      "title": "Ver Detalhe",
+      "description": "As linhas originais por detrás dos valores desta linha.",
+      "loading": "A obter o detalhe…"
+    }
   },
   "parameters": {
     "title": "Parâmetros de execução",
