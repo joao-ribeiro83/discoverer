@@ -26,6 +26,8 @@ const ExportBodySchema = z.object({
   format: z.enum(['XLSX', 'CSV']),
   parameters: z.record(z.string(), z.unknown()).optional(),
   calculatedFields: z.array(CalculatedFieldSchema).max(50).optional(),
+  /** Locale for a grand/subtotal row's label text. Defaults to `en`. */
+  locale: z.enum(['en', 'es-ES', 'fr-FR', 'pt-PT']).optional(),
 });
 
 const idParamsSchema = {
@@ -154,6 +156,7 @@ export default function exportRoutes(fastify: FastifyInstance) {
       const { jobId } = await createExportJob(map.id, parsed.data.format, user.sub, {
         parameters: parsed.data.parameters,
         calculatedFields: parsed.data.calculatedFields,
+        locale: parsed.data.locale,
       });
       return reply.code(202).send({ data: { jobId, status: 'PENDING' } });
     },

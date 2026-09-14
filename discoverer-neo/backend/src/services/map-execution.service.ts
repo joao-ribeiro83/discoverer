@@ -557,8 +557,11 @@ async function defaultPrepareQuery(
  * A failed totals statement degrades to a warning instead of failing the run:
  * a report whose subtotal line is missing is still the report, and refusing to
  * show any rows because a summary would not compute is the worse trade.
+ *
+ * Exported so `export.service.ts` can run the same totals ahead of streaming
+ * an export's detail rows, instead of re-deriving this from scratch.
  */
-async function runTotalsQueries(
+export async function runTotalsQueries(
   conn: Connection,
   totals: GeneratedTotalsQuery[],
   correlationId: string,
