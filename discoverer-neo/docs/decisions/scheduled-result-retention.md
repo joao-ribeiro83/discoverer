@@ -68,3 +68,34 @@ customer's own database, out of scope for Discoverer Neo. Phase 7.2 does not
 write to, read the contents of, or reference these nine tables from Neo; a
 human operator may drop them from Oracle at their own discretion once the
 source EUL is decommissioned.
+
+## Execution — pending, not yet run
+
+Asked directly on 2026-09-14 whether to run `DROP TABLE` against the live
+`SIID_TESTES` schema now: **declined.** Dropping from a live Oracle database
+is an irreversible action against the customer's own system, not something
+this tooling executes on its own say-so — a DBA runs it, on their own
+schedule, when they're ready.
+
+The statements, for whoever does run it:
+
+```sql
+DROP TABLE SIID_TESTES.EUL4_B110321141200Q1R1;
+DROP TABLE SIID_TESTES.EUL4_B110322085606Q1R1;
+DROP TABLE SIID_TESTES.EUL4_B110401095209Q1R1;
+DROP TABLE SIID_TESTES.EUL4_B110401101850Q1R1;
+DROP TABLE SIID_TESTES.EUL4_B110401102507Q1R1;
+DROP TABLE SIID_TESTES.EUL4_B110401102915Q1R1;
+DROP TABLE SIID_TESTES.EUL4_B110401111749Q1R1;
+DROP TABLE SIID_TESTES.EUL4_B110401112553Q1R1;
+DROP TABLE SIID_TESTES.EUL4_B110401113030Q1R1;
+DROP TABLE SIID_TESTES.EUL4_B260506220828Q1R1;
+DROP TABLE SIID_TESTES.EUL4_B260506220828Q2R1;
+DROP TABLE SIID_TESTES.EUL4_B260506220828Q3R1;
+DROP TABLE SIID_TESTES.EUL4_B260506220828Q4R1;
+```
+
+`EUL4_B260506220828Q1R1` is the one with 861 rows — the decision above
+covers it too (drop all nine), but it's the one statement in this list
+that actually destroys data rather than an already-empty table, worth a
+second look before running.
