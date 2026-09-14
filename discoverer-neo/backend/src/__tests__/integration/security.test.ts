@@ -116,6 +116,7 @@ function mkMap(overrides: Partial<Map> = {}): Map {
     isPublic: false,
     isActive: true,
     selectDistinct: false,
+    workbookId: null,
     createdAt: NOW,
     updatedAt: NOW,
     ...overrides,

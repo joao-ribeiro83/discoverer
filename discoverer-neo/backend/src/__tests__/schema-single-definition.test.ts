@@ -30,6 +30,7 @@ const SHARED_TABLES = [
   'hierarchies',
   'hierarchy_levels',
   'custom_functions',
+  'workbooks',
   'maps',
   'map_items',
   'map_conditions',

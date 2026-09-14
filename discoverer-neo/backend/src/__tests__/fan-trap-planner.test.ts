@@ -110,6 +110,7 @@ function mkMap(): Map {
     isPublic: false,
     isActive: true,
     selectDistinct: false,
+    workbookId: null,
     createdAt: NOW,
     updatedAt: NOW,
   };

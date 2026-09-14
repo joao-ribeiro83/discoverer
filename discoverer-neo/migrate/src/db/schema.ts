@@ -812,6 +812,40 @@ export const customFunctions = pgTable('custom_functions', {
 });
 
 // ---------------------------------------------------------------------------
+// 10.5 workbooks
+//
+// Discoverer's unit of saving, sharing and scheduling: one `.DIS` document
+// holding ordered worksheets. Each worksheet is a `maps` row pointing here via
+// `maps.workbook_id`; the order is `map_layouts.worksheet_index`.
+//
+// OUTSIDE THE AUTHORISATION PATH (D-020). Nothing that decides what a user may
+// see or read may consult this table: access stays per map (`map_shares`,
+// business-area grants) and per folder (`assertDataEntitlement`). Being in a
+// workbook with a map you may open grants nothing on its siblings.
+// ---------------------------------------------------------------------------
+
+export const workbooks = pgTable(
+  'workbooks',
+  {
+    id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+    name: varchar('name', { length: 255 }).notNull(),
+    description: text('description'),
+    /** `DOC_ID` of the source EUL document; null for a workbook built in Neo. */
+    sourceId: integer('source_id'),
+    createdBy: uuid('created_by')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [uniqueIndex('workbooks_source_id_idx').on(t.sourceId)],
+);
+
+// ---------------------------------------------------------------------------
 // 11. maps
 // ---------------------------------------------------------------------------
 
@@ -855,6 +889,13 @@ export const maps = pgTable(
      * built before this column existed did, so the default is behaviour-neutral.
      */
     selectDistinct: boolean('select_distinct').notNull().default(false),
+    /**
+     * The workbook this map is a worksheet of. Grouping only — never read by
+     * an access check (D-020). Null for a map built in Neo outside a workbook.
+     */
+    workbookId: uuid('workbook_id').references(() => workbooks.id, {
+      onDelete: 'set null',
+    }),
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -865,6 +906,7 @@ export const maps = pgTable(
   (t) => [
     index('maps_ba_idx').on(t.businessAreaId),
     index('maps_created_by_idx').on(t.createdBy),
+    index('maps_workbook_idx').on(t.workbookId),
   ],
 );
 
@@ -1449,6 +1491,7 @@ export type NewJoinRow = typeof joins.$inferInsert;
 export type NewHierarchyRow = typeof hierarchies.$inferInsert;
 export type NewHierarchyLevelRow = typeof hierarchyLevels.$inferInsert;
 export type NewCustomFunctionRow = typeof customFunctions.$inferInsert;
+export type NewWorkbookRow = typeof workbooks.$inferInsert;
 export type NewMapRow = typeof maps.$inferInsert;
 export type NewMapItemRow = typeof mapItems.$inferInsert;
 export type NewMapConditionRow = typeof mapConditions.$inferInsert;
@@ -1472,6 +1515,7 @@ export const TARGET_TABLES = {
   hierarchies,
   hierarchy_levels: hierarchyLevels,
   custom_functions: customFunctions,
+  workbooks,
   maps,
   map_items: mapItems,
   map_conditions: mapConditions,

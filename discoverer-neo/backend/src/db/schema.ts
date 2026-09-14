@@ -45,6 +45,7 @@ import {
   joinPredicates,
   hierarchies,
   hierarchyLevels,
+  workbooks,
   maps,
   mapItems,
   mapConditions,
@@ -496,10 +497,22 @@ export const hierarchyLevelsRelations = relations(hierarchyLevels, ({ one }) => 
   }),
 }));
 
+export const workbooksRelations = relations(workbooks, ({ one, many }) => ({
+  createdBy: one(users, {
+    fields: [workbooks.createdBy],
+    references: [users.id],
+  }),
+  maps: many(maps),
+}));
+
 export const mapsRelations = relations(maps, ({ one, many }) => ({
   businessArea: one(businessAreas, {
     fields: [maps.businessAreaId],
     references: [businessAreas.id],
+  }),
+  workbook: one(workbooks, {
+    fields: [maps.workbookId],
+    references: [workbooks.id],
   }),
   createdBy: one(users, {
     fields: [maps.createdBy],
