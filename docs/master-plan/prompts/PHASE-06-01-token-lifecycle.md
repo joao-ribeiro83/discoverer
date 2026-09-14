@@ -33,9 +33,10 @@ Phase 0.2 (tier-0 credential work done).
 
 ## Required tooling
 
-**Skills:** none. **Agents:** none.
+**Skills:** graphify. **Agents:** none.
 **Plugins / MCPs:** `context7` (current Fastify auth and rate-limit plugin guidance —
 training data will be stale), `typescript-lsp`.
+**Graphify:** `graphify query "what handles token refresh, checks the logout blacklist, and manages rate limiting on login"` — finds auth routes, refresh logic, and rate-limit middleware.
 
 ## Implementation instructions
 

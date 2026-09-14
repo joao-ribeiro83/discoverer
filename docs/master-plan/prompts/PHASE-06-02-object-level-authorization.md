@@ -35,8 +35,9 @@ Phase 6.1. Phase 1.1 (`resolveBusinessAreaId` already returns `string[]`).
 
 ## Required tooling
 
-**Skills:** none. **Agents:** none.
+**Skills:** graphify. **Agents:** none.
 **Plugins / MCPs:** `typescript-lsp` — the middleware change touches four route groups.
+**Graphify:** `graphify query "what enforces entity-level authorization on GET-by-id routes and validates custom_sql in create and update paths"` — finds auth middleware, route handlers, and SQL validation.
 
 ## Implementation instructions
 

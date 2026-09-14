@@ -62,8 +62,9 @@ Phase 5.1.
 
 ## Required tooling
 
-**Skills:** none. **Agents:** none.
+**Skills:** graphify. **Agents:** none.
 **Plugins / MCPs:** `context-mode`.
+**Graphify:** `graphify query "what transforms and populates map layouts, conditional formats, sort rank, and folder-business area links"` — finds the transformer logic and schema writers.
 
 ## Implementation instructions
 

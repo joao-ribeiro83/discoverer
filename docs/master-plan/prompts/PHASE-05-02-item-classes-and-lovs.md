@@ -54,9 +54,10 @@ Phase 5.1. Phase 2.2 (the parameter prompt exists to hang pick-lists on).
 
 ## Required tooling
 
-**Skills:** none. **Agents:** none.
+**Skills:** graphify. **Agents:** none.
 **Plugins / MCPs:** `context-mode`, `Claude_Browser` (verify the pick-list renders),
 `typescript-lsp`.
+**Graphify:** `graphify query "what models domain values and pick-lists for item classes and parameters"` — finds EUL4_DOMAINS reader, LOV service, and parameter UI binding.
 
 ## Implementation instructions
 

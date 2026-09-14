@@ -70,8 +70,9 @@ grouping intact).
 
 ## Required tooling
 
-**Skills:** none. **Agents:** none.
+**Skills:** graphify. **Agents:** none.
 **Plugins / MCPs:** `typescript-lsp`, `context-mode`.
+**Graphify:** `graphify query "what parses condition nodes with NOT and case sensitivity, and how do they reference items or calculated fields"` — finds parser logic and schema constraints.
 
 ## Implementation instructions
 

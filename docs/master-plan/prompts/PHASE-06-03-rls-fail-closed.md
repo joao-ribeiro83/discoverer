@@ -85,8 +85,9 @@ Phase 1.1 (RLS already follows the derived folder set).
 
 ## Required tooling
 
-**Skills:** none. **Agents:** none.
+**Skills:** graphify. **Agents:** none.
 **Plugins / MCPs:** `context-mode` (probing the 7 conditions), `typescript-lsp`.
+**Graphify:** `graphify query "what enforces row-level security predicates, handles fail-closed behavior, and refuses COMPLEX folders with policies"` — finds security service, predicate injection, and policy enforcement.
 
 ## Implementation instructions
 

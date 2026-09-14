@@ -36,9 +36,10 @@ Phase 0.1 (CI runs). Phase 6.4 (compose port publications fixed).
 
 ## Required tooling
 
-**Skills:** none. **Agents:** none.
+**Skills:** graphify. **Agents:** none.
 **Plugins / MCPs:** `context-mode` (container logs), `context7` (current Docker and node
 guidance).
+**Graphify:** `graphify query "how does the health check probe Postgres, Redis, and Oracle, and what validates the Oracle version on startup"` — finds health logic and version check.
 
 ## Implementation instructions
 

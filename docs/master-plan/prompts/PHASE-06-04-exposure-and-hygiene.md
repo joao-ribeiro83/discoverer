@@ -47,9 +47,10 @@ Phase 6.3. **Phase 0.2 verified** — check that the redaction test exists and p
 
 ## Required tooling
 
-**Skills:** none. **Agents:** none.
+**Skills:** graphify. **Agents:** none.
 **Plugins / MCPs:** `context7` (**essential** — CVE remediation and current plugin guidance;
 training data will be stale), `security-guidance` (this is its phase).
+**Graphify:** `graphify query "what handles CORS configuration, error responses with correlation ids, and audit logging of read operations"` — finds middleware, error handling, and audit service.
 
 ## Implementation instructions
 

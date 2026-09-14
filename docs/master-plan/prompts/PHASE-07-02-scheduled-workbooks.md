@@ -45,8 +45,9 @@ Phase 7.1. Phase 5.2 (parameters carry item classes, so scheduled parameters res
 
 ## Required tooling
 
-**Skills:** none. **Agents:** none.
+**Skills:** graphify. **Agents:** none.
 **Plugins / MCPs:** `context-mode`.
+**Graphify:** `graphify query "what reads and migrates scheduled batch reports into the scheduler service, and how does it integrate with BullMQ"` — finds the scheduler service, migration logic, and frequency mapping.
 
 ## Implementation instructions
 

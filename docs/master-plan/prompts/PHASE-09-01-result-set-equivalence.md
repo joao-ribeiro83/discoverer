@@ -46,11 +46,12 @@ fidelity). **Access to the legacy Discoverer system, or to its recorded output.*
 
 ## Required tooling
 
-**Skills:** none.
+**Skills:** graphify.
 **Agents:** none — but this is a stage where a specialist could help if the comparison sprawls.
 **One at a time, foreground, if so.**
 **Plugins / MCPs:** `context-mode` — **essential**; result sets are large and must never enter
 context.
+**Graphify:** `graphify query "what executes queries and compares result sets between systems, and where is the d4wkdmp differ pattern used"` — finds query execution, differ logic, and comparison framework.
 
 ## Implementation instructions
 

@@ -49,12 +49,13 @@ Phase 8.1. Ideally after Phases 5–7, so the documentation describes the finish
 
 ## Required tooling
 
-**Skills:** none.
+**Skills:** graphify.
 **Agents:** **this is the one stage where a specialist may genuinely help** — a documentation
 reconciliation across `docs/**` × 4 locales is breadth that exceeds one context. If you use
 one, run **exactly one, foreground, at a time**, and prefer **Haiku** for the mechanical
 locale sweep.
 **Plugins / MCPs:** `context-mode`.
+**Graphify:** `graphify query "where is the Swagger spec generation script and how are endpoints documented for the API reference"` — finds the spec generator and doc patterns.
 
 ## Implementation instructions
 
