@@ -7,7 +7,7 @@ import {
 import type { GenerationContext } from './context.js';
 import { makeColumnAlias } from './identifiers.js';
 import {
-  parseFormula,
+  calculatedFieldSql,
   AGGREGATE_FUNCTIONS,
   containsAggregateCall,
 } from './formula-parser.js';
@@ -150,7 +150,7 @@ export function buildSelectClause(
   }
 
   for (const field of sortedCalcFields) {
-    const parsed = parseFormula(field.formula, (name) =>
+    const parsed = calculatedFieldSql(field, (name) =>
       ctx.resolveFormulaReference(name),
     );
     const isAggregate = parsed.containsAggregate;

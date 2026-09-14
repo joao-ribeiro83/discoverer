@@ -11,7 +11,7 @@ import {
   bracketingError,
   referencedBindNames,
 } from './security-predicates.js';
-import { parseFormula } from './formula-parser.js';
+import { calculatedFieldSql } from './formula-parser.js';
 
 export interface WhereClauseResult {
   /** "WHERE ..." or empty string when there are no conditions. */
@@ -107,21 +107,20 @@ export function buildWhereClause(
    * an item — resolved through the same formula renderer `select-clause.ts`
    * uses for a calculated field's own SELECT expression.
    *
-   * Inherits that field's D-059 compile bucket as a gate: QUARANTINED, FAILED
-   * and "never verified" all refuse loudly here rather than let an
-   * uncompilable calculation silently drop out of the WHERE clause.
+   * `requireCompiled: true` keeps this call site's own, older contract: a
+   * condition has required a `COMPILED`/`COMPILED_UNVERIFIED` D-059 bucket
+   * regardless of the field's provenance since before `calculatedFieldSql`
+   * existed. QUARANTINED, FAILED and "never verified" all refuse loudly
+   * here rather than let an uncompilable calculation silently drop out of
+   * the WHERE clause.
    */
   function calculatedFieldExpression(
     field: MapDefinition['calculatedFields'][number],
   ): string {
-    if (field.compileStatus !== 'COMPILED' && field.compileStatus !== 'COMPILED_UNVERIFIED') {
-      throw new SqlGenerationError(
-        `Calculated field "${field.name}" has not compiled ` +
-          `(status: ${field.compileStatus ?? 'not verified'}) and cannot be used in a condition`,
-      );
-    }
-    const parsed = parseFormula(field.formula, (name) =>
-      ctx.resolveFormulaReference(name),
+    const parsed = calculatedFieldSql(
+      field,
+      (name) => ctx.resolveFormulaReference(name),
+      { requireCompiled: true },
     );
     if (parsed.containsAggregate) {
       throw new SqlGenerationError(
