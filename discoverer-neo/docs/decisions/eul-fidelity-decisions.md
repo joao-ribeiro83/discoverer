@@ -607,6 +607,47 @@ still writing its policies can set `ROW_LEVEL_FAIL_MODE=OPEN` — see
 
 ---
 
+## Decision 12 — `axis_edge` is NULL because Discoverer records no crosstab edge, not because migration lost one
+
+**The finding this rejects.** A worksheet has 21 499 axis columns and none of
+them carry `map_items.axis_edge`, so a naive read of the estate says "crosstab
+row/column layout: lost". That is the wrong read.
+
+**The container does distinguish table from crosstab.** A worksheet's `0x01f8`
+reference names one of exactly two classes — `[0x0384]` table or `[0x0385]`
+crosstab (`EUL_SCHEMA_GROUND_TRUTH.md` §7.8.5, ~line 1468; the raw byte tally
+is in the structural table at line 1355). That much is real, decoded evidence,
+carried over as `maps.map_type`. What is missing is something narrower: *which
+edge* an axis column sits on inside a crosstab sheet. `EDCBAxisType`
+(`0x02be`) says axis / measure / page and stops there; Discoverer's own class
+model has no `IsRowEdge` / `IsColumnEdge` field for the parser to read
+(§7.9.2, ~line 1967).
+
+**Why this estate can't settle it either way.** All 923 worksheets in the
+customer corpus are `0x0384` — table. Zero are `0x0385`. So the "row/column
+split" gap is not a decoding failure hiding inside a crosstab worksheet this
+estate has; there is no crosstab worksheet here to decode. Oracle's own
+sample, `DISCVR4/VIDSTR4.DIS`, carries the one crosstab sheet available at
+all (`Crosstab Layout`), and it is what `CrosstabTable.tsx`'s wiring is
+verified against.
+
+**Decision.** `map_items.axis_edge` stays NULL from migration for every row in
+this estate, and that is correct, not a gap to backfill. Neo sets it when a
+user builds a crosstab in the map builder (`ColumnConfigDialog`'s "Crosstab
+edge" control), which is the only place the row/column split can honestly
+come from for source data shaped like this. Do not write a migration
+heuristic to infer one.
+
+**The escape clause, so a future estate is not blocked by this decision.** If
+a future source EUL contains a `0x0385` worksheet, this reasoning no longer
+applies to it: that worksheet's row/column split is real, undecoded evidence
+(closer to Decision 10's Exceptions than to "absent in source"), and decoding
+`0x025f` (the layout's second column list, `EUL_SCHEMA_GROUND_TRUTH.md`
+line ~1968, **[UNCONFIRMED]** as the row/column split) against real crosstab
+dumps is the next step — not a repeat of this decision.
+
+---
+
 ## What still needs a live EUL
 
 These are open because no offline source answers them, not because they were
