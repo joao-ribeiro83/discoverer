@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Play, Save, Download, CalendarClock, Share2, Loader2 } from 'lucide-react'
+import { Play, Save, Download, CalendarClock, Share2, Loader2, Paintbrush } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -21,6 +21,7 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import { useMapBuilderStore } from '@/store/mapBuilder'
 import { ShareDialog } from '@/components/map-builder/ShareDialog'
+import { ConditionalFormatDialog } from '@/components/map-builder/ConditionalFormatDialog'
 import type { MapType } from '@/lib/types'
 
 const MAP_TYPES: { value: MapType; labelKey: string }[] = [
@@ -59,6 +60,7 @@ export function MapToolbar({
   const setName = useMapBuilderStore((s) => s.setName)
   const setMapType = useMapBuilderStore((s) => s.setMapType)
   const [shareOpen, setShareOpen] = useState(false)
+  const [formatOpen, setFormatOpen] = useState(false)
 
   function comingSoon(feature: string) {
     toast({
@@ -142,6 +144,15 @@ export function MapToolbar({
         <Button
           variant="outline"
           disabled={!mapId}
+          title={mapId ? undefined : t('mapBuilder:toolbar.conditionalFormatDisabledTitle')}
+          onClick={() => setFormatOpen(true)}
+        >
+          <Paintbrush className="h-4 w-4" /> {t('mapBuilder:toolbar.conditionalFormat')}
+        </Button>
+
+        <Button
+          variant="outline"
+          disabled={!mapId}
           title={mapId ? undefined : t('mapBuilder:toolbar.shareDisabledTitle')}
           onClick={() => setShareOpen(true)}
         >
@@ -151,6 +162,9 @@ export function MapToolbar({
 
       {mapId && (
         <ShareDialog open={shareOpen} onOpenChange={setShareOpen} mapId={mapId} isPublic={isPublic} />
+      )}
+      {mapId && (
+        <ConditionalFormatDialog open={formatOpen} onOpenChange={setFormatOpen} mapId={mapId} />
       )}
     </div>
   )

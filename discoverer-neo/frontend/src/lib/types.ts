@@ -473,6 +473,67 @@ export interface ResultTotalsGroup {
   rows: Record<string, unknown>[]
 }
 
+/** A conditional format rule's operator — Discoverer's Exception test. */
+export type ConditionalFormatOperator =
+  | '='
+  | '<>'
+  | '>'
+  | '<'
+  | '>='
+  | '<='
+  | 'LIKE'
+  | 'IN'
+  | 'BETWEEN'
+  | 'IS_NULL'
+
+/** One conditional format rule (Discoverer's Exception), as the CRUD API shapes it. */
+export interface ConditionalFormatRule {
+  id: string
+  mapId: string
+  name: string | null
+  mapItemId: string | null
+  target: 'CELL' | 'ROW'
+  operator: ConditionalFormatOperator | null
+  /** `BETWEEN` stores `low,high` and `IN` a comma-joined list, one column. */
+  value: string | null
+  backgroundColor: string | null
+  textColor: string | null
+  isBold: boolean
+  isItalic: boolean
+  isUnderline: boolean
+  displayOrder: number
+}
+
+export interface ConditionalFormatInput {
+  name?: string | null
+  mapItemId: string
+  target: 'CELL' | 'ROW'
+  operator: ConditionalFormatOperator
+  value: string | null
+  backgroundColor?: string | null
+  textColor?: string | null
+  isBold?: boolean
+  isItalic?: boolean
+  isUnderline?: boolean
+  displayOrder?: number
+}
+
+/** A conditional format rule resolved to a result column, as a query result carries it. */
+export interface ResultConditionalFormat {
+  id: string
+  /** Result column this rule tests, when the map draws it. */
+  targetAlias?: string
+  target: 'CELL' | 'ROW'
+  operator: ConditionalFormatOperator | null
+  value: string | null
+  backgroundColor: string | null
+  textColor: string | null
+  isBold: boolean
+  isItalic: boolean
+  isUnderline: boolean
+  displayOrder: number
+}
+
 export interface ExecuteResult {
   columns: ResultColumn[]
   rows: Record<string, unknown>[]
@@ -488,6 +549,8 @@ export interface ExecuteResult {
   groupBreakAliases?: string[]
   /** Totals and subtotals the map defines, already computed. */
   totals?: ResultTotalsGroup[]
+  /** Conditional formats (Exceptions) the map defines, already resolved to `columns`. */
+  conditionalFormats?: ResultConditionalFormat[]
   /**
    * Map semantics this run could not honour — a sort dropped under
    * `SELECT DISTINCT`, a total whose Discoverer aggregate did not migrate.

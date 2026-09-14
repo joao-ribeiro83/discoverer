@@ -5,6 +5,8 @@
     "export": "Exporter",
     "schedule": "Planifier",
     "share": "Partager",
+    "conditionalFormat": "Mise en forme",
+    "conditionalFormatDisabledTitle": "Enregistrez la carte avant d'ajouter des mises en forme conditionnelles",
     "mapNameAria": "Nom de la carte",
     "mapTypeAria": "Type de carte",
     "unsavedTitle": "Modifications non enregistrées",
@@ -142,6 +144,46 @@
     "toastRevokeFailedTitle": "Impossible de révoquer l'accès",
     "toastLinkCopied": "Lien copié dans le presse-papiers",
     "toastCopyFailedTitle": "Impossible de copier le lien"
+  },
+  "conditionalFormat": {
+    "title": "Mise en forme conditionnelle",
+    "description": "Colorez une cellule ou toute une ligne quand la valeur d'une colonne remplit une condition — les Exceptions de Discoverer.",
+    "unknownColumn": "Colonne inconnue",
+    "noRules": "Aucune mise en forme conditionnelle pour l'instant.",
+    "addRule": "Ajouter une règle",
+    "column": "Colonne",
+    "applyTo": "Appliquer à",
+    "operator": "Opérateur",
+    "value": "Valeur",
+    "valueBetweenPlaceholder": "min,max",
+    "valueInPlaceholder": "valeur1,valeur2,…",
+    "backgroundColor": "Couleur de fond",
+    "textColor": "Couleur du texte",
+    "clearColor": "Effacer",
+    "bold": "Gras",
+    "italic": "Italique",
+    "underline": "Souligné",
+    "deleteRuleAria": "Supprimer cette règle",
+    "targets": {
+      "CELL": "Cellule",
+      "ROW": "Ligne"
+    },
+    "operators": {
+      "=": "Égal à",
+      "<>": "Différent de",
+      ">": "Supérieur à",
+      "<": "Inférieur à",
+      ">=": "Supérieur ou égal à",
+      "<=": "Inférieur ou égal à",
+      "LIKE": "Contient (jokers % et _)",
+      "IN": "Dans la liste",
+      "BETWEEN": "Entre",
+      "IS_NULL": "Est vide"
+    },
+    "toastCreated": "Règle ajoutée",
+    "toastCreateFailedTitle": "Impossible d'ajouter la règle",
+    "toastDeleted": "Règle supprimée",
+    "toastDeleteFailedTitle": "Impossible de supprimer la règle"
   },
   "panels": {
     "tabs": {

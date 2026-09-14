@@ -356,6 +356,7 @@ export function ExecutionPanel({
             }
             groupBreakAliases={result?.groupBreakAliases}
             totals={result?.totals}
+            conditionalFormats={result?.conditionalFormats}
           />
         )}
       </div>

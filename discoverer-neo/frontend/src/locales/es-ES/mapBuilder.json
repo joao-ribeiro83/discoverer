@@ -5,6 +5,8 @@
     "export": "Exportar",
     "schedule": "Programar",
     "share": "Compartir",
+    "conditionalFormat": "Formato",
+    "conditionalFormatDisabledTitle": "Guarde el mapa antes de añadir formatos condicionales",
     "mapNameAria": "Nombre del mapa",
     "mapTypeAria": "Tipo de mapa",
     "unsavedTitle": "Cambios sin guardar",
@@ -142,6 +144,46 @@
     "toastRevokeFailedTitle": "No se ha podido revocar el acceso",
     "toastLinkCopied": "Enlace copiado al portapapeles",
     "toastCopyFailedTitle": "No se ha podido copiar el enlace"
+  },
+  "conditionalFormat": {
+    "title": "Formato condicional",
+    "description": "Coloree una celda o toda una fila cuando el valor de una columna cumpla una condición — las Excepciones de Discoverer.",
+    "unknownColumn": "Columna desconocida",
+    "noRules": "Aún no hay formatos condicionales.",
+    "addRule": "Añadir regla",
+    "column": "Columna",
+    "applyTo": "Aplicar a",
+    "operator": "Operador",
+    "value": "Valor",
+    "valueBetweenPlaceholder": "mínimo,máximo",
+    "valueInPlaceholder": "valor1,valor2,…",
+    "backgroundColor": "Color de fondo",
+    "textColor": "Color de texto",
+    "clearColor": "Borrar",
+    "bold": "Negrita",
+    "italic": "Cursiva",
+    "underline": "Subrayado",
+    "deleteRuleAria": "Eliminar esta regla",
+    "targets": {
+      "CELL": "Celda",
+      "ROW": "Fila"
+    },
+    "operators": {
+      "=": "Igual a",
+      "<>": "Distinto de",
+      ">": "Mayor que",
+      "<": "Menor que",
+      ">=": "Mayor o igual que",
+      "<=": "Menor o igual que",
+      "LIKE": "Contiene (comodines % y _)",
+      "IN": "En la lista",
+      "BETWEEN": "Entre",
+      "IS_NULL": "Está vacío"
+    },
+    "toastCreated": "Regla añadida",
+    "toastCreateFailedTitle": "No se ha podido añadir la regla",
+    "toastDeleted": "Regla eliminada",
+    "toastDeleteFailedTitle": "No se ha podido eliminar la regla"
   },
   "panels": {
     "tabs": {

@@ -39,6 +39,8 @@ import type {
   MapShare,
   CreateMapShareInput,
   SharePermissionLevel,
+  ConditionalFormatRule,
+  ConditionalFormatInput,
   UserOption,
   SecurityPolicy,
   SecurityPolicyAssignment,
@@ -407,6 +409,16 @@ export const apiClient = {
     revokeShare: (id: string, userId: string) =>
       api.delete<Envelope<{ revoked: boolean }>>(`/maps/${id}/shares/${userId}`),
     sharedWithMe: () => api.get<Envelope<MapSummary[]>>('/maps/shared-with-me'),
+    // Conditional formats — kept off the general map update (a save replaces
+    // every map item, which anchors these); own lifecycle, own routes.
+    listConditionalFormats: (id: string) =>
+      api.get<Envelope<ConditionalFormatRule[]>>(`/maps/${id}/conditional-formats`),
+    createConditionalFormat: (id: string, data: ConditionalFormatInput) =>
+      api.post<Envelope<ConditionalFormatRule>>(`/maps/${id}/conditional-formats`, data),
+    updateConditionalFormat: (id: string, formatId: string, data: Partial<ConditionalFormatInput>) =>
+      api.put<Envelope<ConditionalFormatRule>>(`/maps/${id}/conditional-formats/${formatId}`, data),
+    deleteConditionalFormat: (id: string, formatId: string) =>
+      api.delete<void>(`/maps/${id}/conditional-formats/${formatId}`),
   },
   // Workbook browse view (Phase 7.1b) — read-only grouping of maps by their
   // source workbook. Same visibility as maps.listAll(); see workbooks.ts.
