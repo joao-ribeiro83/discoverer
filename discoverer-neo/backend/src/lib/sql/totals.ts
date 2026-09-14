@@ -113,6 +113,16 @@ export function planTotals(
    * wrapper's column alias, not recompute the raw expression. A target with
    * no alias (hidden under DISTINCT, so not part of what was deduplicated
    * on) has no deduplicated column to point at and is skipped.
+   *
+   * This applies even when the target's own expression already aggregates
+   * (the `aggregates` / `INLINE` case below): under DISTINCT that value is
+   * only the per-*group* figure inside the wrapper (Oracle needs a GROUP BY
+   * to run `SELECT DISTINCT` alongside an aggregate item, and that GROUP BY
+   * is what makes the wrapper's rows one per group instead of one per raw
+   * row). Re-summing those per-group figures — `SUM` is associative over a
+   * GROUP BY's disjoint partition — is exactly the grand total, so the
+   * caller wraps this target in `total.aggFunction` same as any other
+   * target once DISTINCT is in play; it does not stay unwrapped.
    */
   function targetExpression(
     total: MapTotal,
@@ -123,9 +133,8 @@ export function planTotals(
       const alias = select.aliasByMapItemId.get(entry.mapItem.id);
       if (select.distinct && !alias) return null;
       const info = ctx.itemExpressionInfo(entry.item, entry.folder);
-      const useAlias = select.distinct && !info.containsAggregate;
       return {
-        sql: useAlias ? `${DISTINCT_TOTALS_ALIAS}.${quoteIdentifier(alias!)}` : info.sql,
+        sql: select.distinct ? `${DISTINCT_TOTALS_ALIAS}.${quoteIdentifier(alias!)}` : info.sql,
         label: entry.mapItem.displayName || entry.item.name,
         alias,
         aggregates: info.containsAggregate,
@@ -139,9 +148,8 @@ export function planTotals(
       const parsed = calculatedFieldSql(field, (name) =>
         ctx.resolveFormulaReference(name),
       );
-      const useAlias = select.distinct && !parsed.containsAggregate;
       return {
-        sql: useAlias ? `${DISTINCT_TOTALS_ALIAS}.${quoteIdentifier(alias!)}` : parsed.sql,
+        sql: select.distinct ? `${DISTINCT_TOTALS_ALIAS}.${quoteIdentifier(alias!)}` : parsed.sql,
         label: field.name,
         alias,
         aggregates: parsed.containsAggregate,
@@ -248,7 +256,13 @@ export function planTotals(
       let expr: string;
       let aggFunction: string;
 
-      if (target.aggregates) {
+      // Under DISTINCT, `target.sql` is already the wrapper's per-group
+      // column (see targetExpression) — including for an aggregating item,
+      // whose "group" there is only one row of what used to be the whole
+      // table. It has to be wrapped in total.aggFunction like any other
+      // target, or a value meant to be one grand-total row stays one row
+      // per group instead.
+      if (target.aggregates && !select.distinct) {
         expr = target.sql;
         aggFunction = 'INLINE';
       } else {
