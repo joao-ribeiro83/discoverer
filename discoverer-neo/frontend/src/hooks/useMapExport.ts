@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { apiClient, getErrorMessage } from '@/lib/api'
 import { downloadBlob, safeFilename } from '@/components/map-builder/export-utils'
 import { useToast } from '@/hooks/use-toast'
+import { useLocale } from '@/hooks/useLocale'
 import type { ExportFileFormat, ExportJobStatus, MapCalculatedFieldInput } from '@/lib/types'
 
 const TERMINAL: ExportJobStatus[] = ['COMPLETED', 'FAILED']
@@ -32,6 +33,7 @@ export function useMapExport(
   parameters: Record<string, unknown> = {},
 ): UseMapExportResult {
   const { t } = useTranslation(['mapViewer'])
+  const { locale } = useLocale()
   const { toast } = useToast()
   const [jobId, setJobId] = useState<string | null>(null)
   const [downloadedJobId, setDownloadedJobId] = useState<string | null>(null)
@@ -47,7 +49,12 @@ export function useMapExport(
       calculatedFields?: MapCalculatedFieldInput[]
     }) => {
       if (!mapId) throw new Error(t('mapViewer:export.saveBeforeExport'))
-      const res = await apiClient.maps.createExport(mapId, { format, parameters, calculatedFields })
+      const res = await apiClient.maps.createExport(mapId, {
+        format,
+        parameters,
+        calculatedFields,
+        locale,
+      })
       return res.data.data
     },
     onMutate: () => {
