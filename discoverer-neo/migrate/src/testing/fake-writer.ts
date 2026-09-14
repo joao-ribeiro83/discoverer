@@ -146,6 +146,10 @@ export function createFakeWriter(options: FakeWriterOptions = {}): FakeWriter {
         tables.maps.filter((m) => m.businessAreaId === businessAreaId).map((m) => m.id),
       );
       if (doomed.size === 0) return Promise.resolve(0);
+      const doomedWorkbooks = new Set(
+        tables.maps.filter((m) => doomed.has(m.id)).map((m) => m.workbookId),
+      );
+      tables.workbooks = tables.workbooks.filter((w) => !doomedWorkbooks.has(w.id));
       tables.maps = tables.maps.filter((m) => !doomed.has(m.id));
       // Emulate ON DELETE CASCADE from maps to everything keyed on a map.
       for (const table of [

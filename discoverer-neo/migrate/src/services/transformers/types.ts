@@ -691,6 +691,8 @@ export interface TransformedWorkbook {
   updatedAt: Date | null;
   /** How many worksheets the source workbook had in total. */
   worksheetCount: number;
+  /** The source workbook's own name — the `workbooks` row, not this map. */
+  workbookName: string;
   /**
    * `maps.select_distinct` — the query request's `Distinct` (`0x0128`).
    *

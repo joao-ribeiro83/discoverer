@@ -43,6 +43,7 @@ import {
   transformJoin,
   transformUser,
   transformWorkbook,
+  buildWorkbookRow,
   MIGRATED_USER_PASSWORD_HASH,
   usernameToEmailLocal,
   MIGRATED_EMAIL_DOMAIN,
@@ -1044,6 +1045,7 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     if (!itemIdByLabel.has(key)) itemIdByLabel.set(key, row.id as string);
   }
 
+  const workbookRows: Record<string, unknown>[] = [];
   const mapRows: Record<string, unknown>[] = [];
   const mapItemRows: Record<string, unknown>[] = [];
   const mapConditionRows: Record<string, unknown>[] = [];
@@ -1065,12 +1067,27 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     const worksheetMaps = transformWorkbook(eulWb, version.version);
     migratedWorksheets += eulWb.document.worksheets.length;
 
+    // One `workbooks` row per source workbook; every map below points at it.
+    const workbookId = deps.genId();
+    const [head] = worksheetMaps;
+    if (head) {
+      workbookRows.push(
+        buildWorkbookRow(
+          head,
+          workbookId,
+          resolveUser(head.ownerUsername) ?? migrationUserId,
+          deps.now(),
+        ),
+      );
+    }
+
     for (const t of worksheetMaps) {
       collect(t.warnings);
       if (!workbookBaId) continue; // unreachable (set when workbooks exist), defensive
       const mapId = deps.genId();
       const owner = resolveUser(t.ownerUsername) ?? migrationUserId;
       mapRows.push({
+        workbookId,
         id: mapId,
         // Two worksheets in different workbooks can share a name; Neo has no
         // unique index on maps.name, but a duplicate is unusable in a picker,
@@ -1271,6 +1288,7 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
       mapLayoutRows.push(buildMapLayoutRow(t.layout, joinAttrs, mapId, deps.genId()));
     }
   }
+  planned.workbooks = workbookRows.length;
   planned.maps = mapRows.length;
   planned.map_items = mapItemRows.length;
   planned.map_conditions = mapConditionRows.length;
@@ -1400,6 +1418,7 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     ['hierarchies', hierarchyRows],
     ['hierarchy_levels', levelRows],
     ['custom_functions', functionRows],
+    ['workbooks', workbookRows],
     ['maps', mapRows],
     ['map_items', mapItemRows],
     ['map_conditions', mapConditionRows],

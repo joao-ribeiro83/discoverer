@@ -15,12 +15,20 @@
  *    is the post-mortem and must outlive the failure it records.
  */
 
-import { eq, sql } from 'drizzle-orm';
+import { eq, inArray, sql } from 'drizzle-orm';
 import type { PgInsertValue, PgTable } from 'drizzle-orm/pg-core';
 
 import type { TargetDatabase } from '../db/client.js';
 import { MIGRATION_LOG_DDL, migrationLog } from '../db/migration-log.js';
-import { businessAreas, folders, items, maps, TARGET_TABLES, users } from '../db/schema.js';
+import {
+  businessAreas,
+  folders,
+  items,
+  maps,
+  TARGET_TABLES,
+  users,
+  workbooks,
+} from '../db/schema.js';
 import type { TargetTable } from '../db/schema.js';
 
 export type MigrationLogLevel = 'INFO' | 'WARN' | 'ERROR';
@@ -64,8 +72,9 @@ export interface MigrationWriter {
    * Delete every map in `businessAreaId`, returning how many went.
    *
    * Cascades to the map's items, conditions, parameters, calculated fields,
-   * shares, schedules and export jobs (all `ON DELETE CASCADE`). Only ever
-   * called against the migration's own host business area.
+   * shares, schedules and export jobs (all `ON DELETE CASCADE`), and deletes
+   * the workbooks those maps belonged to so a re-import can recreate them.
+   * Only ever called against the migration's own host business area.
    */
   deleteMapsInBusinessArea(businessAreaId: string): Promise<number>;
   /** Run `fn` inside a transaction; data writes roll back together on throw. */
@@ -177,11 +186,17 @@ class DrizzleMigrationWriter implements MigrationWriter {
 
   async deleteMapsInBusinessArea(businessAreaId: string): Promise<number> {
     const doomed = await this.exec
-      .select({ id: maps.id })
+      .select({ id: maps.id, workbookId: maps.workbookId })
       .from(maps)
       .where(eq(maps.businessAreaId, businessAreaId));
     if (doomed.length === 0) return 0;
     await this.exec.delete(maps).where(eq(maps.businessAreaId, businessAreaId));
+    const workbookIds = [
+      ...new Set(doomed.flatMap((m) => (m.workbookId === null ? [] : [m.workbookId]))),
+    ];
+    if (workbookIds.length > 0) {
+      await this.exec.delete(workbooks).where(inArray(workbooks.id, workbookIds));
+    }
     return doomed.length;
   }
 
