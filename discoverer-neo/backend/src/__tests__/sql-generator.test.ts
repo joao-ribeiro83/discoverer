@@ -9,6 +9,7 @@ import type {
   MapItem,
   MapParameter,
   MapTotal,
+  MapConditionalFormat,
 } from '../db/schema.js';
 import type { MapDefinition } from '../types/sql.js';
 import { Parser } from 'node-sql-parser';
@@ -207,6 +208,29 @@ function mkTotal(overrides: Partial<MapTotal> = {}): MapTotal {
     displayOrder: 0,
     sourceElementId: null,
     sourceAttrs: null,
+    createdAt: NOW,
+    ...overrides,
+  };
+}
+
+function mkConditionalFormat(
+  overrides: Partial<MapConditionalFormat> = {},
+): MapConditionalFormat {
+  return {
+    id: uid(),
+    mapId: 'unused',
+    name: null,
+    mapItemId: null,
+    target: 'CELL',
+    operator: '>',
+    value: '0',
+    backgroundColor: '#ff0000',
+    textColor: null,
+    isBold: false,
+    isItalic: false,
+    isUnderline: false,
+    displayOrder: 0,
+    isActive: true,
     createdAt: NOW,
     ...overrides,
   };
@@ -3244,6 +3268,53 @@ describe('SQL generator', () => {
         expect(group!.totals[0]!.aggFunction).toBe('SUM');
         expectParsable(group!.sql);
       });
+    });
+  });
+
+  describe('conditional formats', () => {
+    it('resolves a rule to the drawn column alias', () => {
+      const f = salesFixture();
+      const amountItem = mkMapItem(f.amount, { displayOrder: 1 });
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+          { mapItem: amountItem, item: f.amount, folder: f.sales },
+        ],
+        conditionalFormats: [
+          mkConditionalFormat({
+            mapItemId: amountItem.id,
+            target: 'CELL',
+            operator: '>',
+            value: '1000',
+            backgroundColor: '#ffcc00',
+          }),
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(result.conditionalFormats).toHaveLength(1);
+      const [rule] = result.conditionalFormats;
+      expect(rule!.targetAlias).toBe('AMOUNT');
+      expect(rule!.operator).toBe('>');
+      expect(rule!.value).toBe('1000');
+      expect(rule!.backgroundColor).toBe('#ffcc00');
+    });
+
+    it('drops a rule on a column the map does not draw', () => {
+      const f = salesFixture();
+      const hiddenAmount = mkMapItem(f.amount, { isHidden: true });
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+          { mapItem: hiddenAmount, item: f.amount, folder: f.sales },
+        ],
+        conditionalFormats: [mkConditionalFormat({ mapItemId: hiddenAmount.id })],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(result.conditionalFormats).toHaveLength(0);
     });
   });
 });

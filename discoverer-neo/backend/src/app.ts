@@ -26,6 +26,7 @@ import dashboardRoutes from './routes/dashboard.js';
 import mapShareRoutes from './routes/map-shares.js';
 import mapExecutionRoutes from './routes/map-execution.js';
 import exportRoutes from './routes/export.js';
+import conditionalFormatRoutes from './routes/conditional-formats.js';
 import scheduleRoutes from './routes/schedules.js';
 import securityRoutes from './routes/security.js';
 import migrationRoutes from './routes/migration.js';
@@ -122,6 +123,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(mapShareRoutes);
   await app.register(mapExecutionRoutes);
   await app.register(exportRoutes);
+  await app.register(conditionalFormatRoutes);
   await app.register(scheduleRoutes);
   await app.register(securityRoutes);
   await app.register(migrationRoutes);

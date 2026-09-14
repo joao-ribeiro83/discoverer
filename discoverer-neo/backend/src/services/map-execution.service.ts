@@ -14,6 +14,7 @@ import type {
   GeneratedColumn,
   GeneratedTotal,
   GeneratedTotalsQuery,
+  GeneratedConditionalFormat,
   MapDefinition,
   SecurityPredicate,
 } from '../types/sql.js';
@@ -143,6 +144,11 @@ export interface ExecuteResult {
    */
   totals?: ResultTotalsGroup[];
   /**
+   * Conditional formats (Exceptions) the map defines, each already resolved
+   * to a column of `columns`. Absent when the map defines none.
+   */
+  conditionalFormats?: GeneratedConditionalFormat[];
+  /**
    * Map semantics this run could not honour — a sort dropped because the
    * statement is `SELECT DISTINCT`, a total whose aggregate did not migrate, a
    * totals statement Oracle rejected. The rows above are still valid.
@@ -159,6 +165,8 @@ export interface PreparedQuery {
   groupBreakAliases?: string[];
   /** Totals statements to run alongside `sql`; empty when the map has none. */
   totals?: GeneratedTotalsQuery[];
+  /** Conditional formats resolved to `columns`; empty when the map has none. */
+  conditionalFormats?: GeneratedConditionalFormat[];
   /** Advisories from generation; carried through to `ExecuteResult`. */
   warnings?: string[];
   /**
@@ -545,6 +553,7 @@ async function defaultPrepareQuery(
     dataSourceId,
     groupBreakAliases: generated.groupBreakAliases,
     totals: generated.totals,
+    conditionalFormats: generated.conditionalFormats,
     warnings: generated.warnings,
     planDecision: plan.decision,
   };
@@ -845,6 +854,9 @@ export async function executeMap(
         ? { groupBreakAliases: prepared.groupBreakAliases }
         : {}),
       ...(totalsRun.groups.length ? { totals: totalsRun.groups } : {}),
+      ...(prepared.conditionalFormats?.length
+        ? { conditionalFormats: prepared.conditionalFormats }
+        : {}),
       ...(warnings.length ? { warnings } : {}),
     };
   } catch (err) {
