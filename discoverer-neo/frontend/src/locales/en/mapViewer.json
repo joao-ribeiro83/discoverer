@@ -114,7 +114,13 @@
     "runningStatus": "Running… ({{status}})",
     "runFullResult": "Run full result",
     "worksheetWarningsTitle_one": "{{count}} worksheet setting could not be applied",
-    "worksheetWarningsTitle_other": "{{count}} worksheet settings could not be applied"
+    "worksheetWarningsTitle_other": "{{count}} worksheet settings could not be applied",
+    "drill": {
+      "rowHint": "Double-click to drill to detail",
+      "title": "Drill to Detail",
+      "description": "The raw rows behind this row's values.",
+      "loading": "Drilling…"
+    }
   },
   "parameters": {
     "title": "Run parameters",

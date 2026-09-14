@@ -8,7 +8,7 @@ import {
   jest,
 } from '@jest/globals';
 import type { Connection } from 'oracledb';
-import { eq } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 import { db } from '../../db/index.js';
 import {
   folders,
@@ -47,6 +47,7 @@ import {
   loadMapDefinition,
   generateSql,
 } from '../../services/sql-generator.js';
+import { drillToDetail, DrillNotAvailableError } from '../../services/drill.service.js';
 import {
   createTestUser,
   createTestDataSource,
@@ -1199,5 +1200,120 @@ describe('fail-closed row-level security on a rewritten query (D-090)', () => {
         }
       },
     );
+  });
+});
+
+// ===========================================================================
+// drillToDetail — Discoverer's "Drill to Detail" (Phase 7.3)
+//
+// Same real-Postgres-metadata / fake-Oracle-driver setup as the scenarios
+// above, since drillToDetail runs the exact same loadMapDefinition ->
+// generateSql -> entitlement/RLS pipeline as executeMap (prepareQueryForDefinition,
+// shared between both — see map-execution.service.ts). Only the query it
+// prepares differs: aggregation stripped, the clicked row's values pinned.
+// ===========================================================================
+
+describe('drillToDetail', () => {
+  async function drillTestMap(): Promise<string> {
+    return createTestMap({
+      items: [
+        { item: fx.region },
+        { item: fx.amount, displayOrder: 1, aggFunction: 'SUM' },
+      ],
+    });
+  }
+
+  it('reruns the query with aggregation stripped and the clicked value pinned', async () => {
+    const mapId = await drillTestMap();
+    const { conn, execute } = makeRowsConn([
+      { REGION: 'EAST', AMOUNT: 10 },
+      { REGION: 'EAST', AMOUNT: 15 },
+    ]);
+
+    const result = await drillToDetail(
+      mapId,
+      {},
+      adminId,
+      { REGION: 'EAST' },
+      {},
+      execDeps(conn),
+    );
+
+    expect(result.rows).toEqual([
+      { REGION: 'EAST', AMOUNT: 10 },
+      { REGION: 'EAST', AMOUNT: 15 },
+    ]);
+    const sql = execute.mock.calls[0]![0] as string;
+    const binds = execute.mock.calls[0]![1] as Record<string, unknown>;
+    // No more SUM/GROUP BY: every row comes back at its own grain.
+    expect(sql).not.toMatch(/SUM\(|GROUP BY/);
+    assertSqlContains(sql, 'f1."AMOUNT" AS AMOUNT');
+    expect(Object.values(binds)).toContain('EAST');
+  });
+
+  it('ignores the aggregate column even when the client sends its summed value', async () => {
+    // The clicked row's AMOUNT is the SUM across the group, not any one
+    // underlying row's value — pinning it as `AMOUNT = 25` would wrongly
+    // drop every detail row whose own AMOUNT isn't literally 25.
+    const mapId = await drillTestMap();
+    const { conn, execute } = makeRowsConn([
+      { REGION: 'EAST', AMOUNT: 10 },
+      { REGION: 'EAST', AMOUNT: 15 },
+    ]);
+
+    const result = await drillToDetail(
+      mapId,
+      {},
+      adminId,
+      { REGION: 'EAST', AMOUNT: 25 },
+      {},
+      execDeps(conn),
+    );
+
+    expect(result.rows).toHaveLength(2);
+    const sql = execute.mock.calls[0]![0] as string;
+    const binds = execute.mock.calls[0]![1] as Record<string, unknown>;
+    expect(sql).not.toMatch(/"AMOUNT"\s*=/);
+    expect(Object.values(binds)).not.toContain(25);
+  });
+
+  it('refuses a fan-trap REWRITE plan rather than guessing which branch a row came from', async () => {
+    const mapId = await createTestMap({
+      items: [
+        { item: fx.custName, displayOrder: 0 },
+        { item: fx.amount, displayOrder: 1, aggFunction: 'SUM' },
+      ],
+    });
+    const { conn, execute } = makeRowsConn([]);
+
+    await expect(
+      drillToDetail(mapId, {}, adminId, { CUSTOMER_NAME: 'Acme' }, {}, execDeps(conn)),
+    ).rejects.toThrow(DrillNotAvailableError);
+    expect(execute).not.toHaveBeenCalled();
+  });
+
+  it('refuses when none of the given values match a column on the map', async () => {
+    const mapId = await drillTestMap();
+    const { conn, execute } = makeRowsConn([]);
+
+    await expect(
+      drillToDetail(mapId, {}, adminId, { NOT_A_COLUMN: 'x' }, {}, execDeps(conn)),
+    ).rejects.toThrow(/nothing to drill on/);
+    expect(execute).not.toHaveBeenCalled();
+  });
+
+  it('logs the drill under its own DRILL(...) plan decision', async () => {
+    const mapId = await drillTestMap();
+    const { conn } = makeRowsConn([{ REGION: 'EAST', AMOUNT: 10 }]);
+
+    await drillToDetail(mapId, {}, adminId, { REGION: 'EAST' }, {}, execDeps(conn));
+
+    const [log] = await db
+      .select({ planDecision: queryExecutionLog.planDecision })
+      .from(queryExecutionLog)
+      .where(eq(queryExecutionLog.mapId, mapId))
+      .orderBy(desc(queryExecutionLog.executedAt))
+      .limit(1);
+    expect(log?.planDecision).toMatch(/^DRILL\(/);
   });
 });

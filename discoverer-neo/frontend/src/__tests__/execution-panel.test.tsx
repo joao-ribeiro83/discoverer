@@ -23,6 +23,7 @@ vi.mock('@/lib/api', () => ({
       executeAsync: vi.fn(),
       getExecutionStatus: vi.fn(),
       createExport: vi.fn(),
+      drillToDetail: vi.fn(),
     },
     exports: {
       list: vi.fn(),
@@ -247,6 +248,40 @@ describe('ExecutionPanel', () => {
     expect(refusal.textContent).toContain('Sales Lines')
     // And the red error banner must not also appear.
     expect(screen.queryByTestId('execution-error')).toBeNull()
+  })
+
+  it('drills to detail on a row double-click', async () => {
+    mockedApi.maps.drillToDetail.mockResolvedValue(
+      envelope(
+        baseResult({
+          columns: [{ name: 'C1', label: 'Amount', isAggregate: false }],
+          rows: [{ C1: 4 }, { C1: 6 }],
+          rowCount: 2,
+        }),
+      ) as never,
+    )
+
+    renderWithProviders(
+      <ExecutionPanel
+        mapId="map-1"
+        mapName="My Map"
+        result={baseResult()}
+        parameters={{ region: 'EAST' }}
+        onResultChange={() => {}}
+      />,
+    )
+
+    fireEvent.doubleClick(screen.getByText('10'))
+
+    expect(await screen.findByText('Drill to Detail')).toBeInTheDocument()
+    await waitFor(() =>
+      expect(mockedApi.maps.drillToDetail).toHaveBeenCalledWith('map-1', {
+        parameters: { region: 'EAST' },
+        rowValues: { C1: 10 },
+      }),
+    )
+    expect(await screen.findByText('4')).toBeInTheDocument()
+    expect(screen.getByText('6')).toBeInTheDocument()
   })
 
   it('falls back to the error banner when a REFUSED response carries no code', () => {

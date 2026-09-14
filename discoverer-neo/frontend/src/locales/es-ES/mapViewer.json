@@ -114,7 +114,13 @@
     "runningStatus": "Ejecutando… ({{status}})",
     "runFullResult": "Ejecutar resultado completo",
     "worksheetWarningsTitle_one": "No se ha podido aplicar {{count}} ajuste de la hoja",
-    "worksheetWarningsTitle_other": "No se han podido aplicar {{count}} ajustes de la hoja"
+    "worksheetWarningsTitle_other": "No se han podido aplicar {{count}} ajustes de la hoja",
+    "drill": {
+      "rowHint": "Haga doble clic para ver el detalle",
+      "title": "Ver detalle",
+      "description": "Las filas originales detrás de los valores de esta fila.",
+      "loading": "Consultando el detalle…"
+    }
   },
   "parameters": {
     "title": "Parámetros de ejecución",

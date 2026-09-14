@@ -26,6 +26,7 @@ import {
 import { ResultsTable } from '@/components/data-table/ResultsTable'
 import { CrosstabTable, crosstabAxes } from '@/components/data-table/CrosstabTable'
 import { ExecutionRefusal } from '@/components/map-builder/ExecutionRefusal'
+import { DrillDialog } from '@/components/map-builder/DrillDialog'
 import type {
   AsyncExecutionJob,
   AsyncJobStatus,
@@ -98,6 +99,7 @@ export function ExecutionPanel({
   const { toast } = useToast()
   const [sqlOpen, setSqlOpen] = useState(false)
   const [bgJobId, setBgJobId] = useState<string | null>(null)
+  const [drillRow, setDrillRow] = useState<Record<string, unknown> | null>(null)
 
   const exportCtl = useMapExport(mapId, mapName, parameters)
 
@@ -357,9 +359,19 @@ export function ExecutionPanel({
             groupBreakAliases={result?.groupBreakAliases}
             totals={result?.totals}
             conditionalFormats={result?.conditionalFormats}
+            onRowDrill={mapId ? setDrillRow : undefined}
           />
         )}
       </div>
+
+      {mapId && (
+        <DrillDialog
+          mapId={mapId}
+          rowValues={drillRow}
+          onClose={() => setDrillRow(null)}
+          parameters={parameters}
+        />
+      )}
 
       {result?.truncated && (
         <div className="flex flex-wrap items-center gap-2 border-t px-4 py-2 text-xs text-muted-foreground">
