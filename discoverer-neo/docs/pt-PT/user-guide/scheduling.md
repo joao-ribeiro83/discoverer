@@ -2,6 +2,38 @@
 
 Saiba como executar mapas automaticamente segundo um agendamento e receber os resultados.
 
+## Agendamentos migrados do Discoverer
+
+Se a sua organização migrou relatórios em lote agendados a partir do Oracle
+Discoverer, esses agendamentos aparecem aqui já criados — mas **todo
+agendamento migrado chega desativado**. Nenhum será executado até que
+alguém com acesso ao agendamento o ative.
+
+Isto é deliberado, não um erro: iniciar silenciosamente trabalhos em lote
+com anos de existência contra a sua base de dados no momento em que o novo
+sistema entra em produção seria uma surpresa que ninguém quer. Antes de
+ativar um agendamento migrado, verifique a sua **Decisão do Planeador** na
+página de detalhe do agendamento:
+
+- **Em branco** — ainda não foi executada nenhuma verificação; é seguro
+  tentar ativar e ver o que acontece.
+- **`FLAT(...)` ou `REWRITE(...)`** — o planeador de consultas confirma que
+  o mapa pode ser executado corretamente. Ative-o quando estiver pronto.
+- **`REFUSE(...)`** — o planeador já determinou que a consulta deste mapa
+  não pode ser respondida com segurança (veja a mensagem para saber quais
+  pastas estão envolvidas). Ativar o agendamento apenas produzirá a mesma
+  recusa em cada execução; o mapa subjacente precisa de ser corrigido
+  primeiro.
+- **`UNPLANNABLE`** — o próprio mapa tem um problema de dados que a migração
+  não conseguiu resolver (uma referência a um item ou fórmula por resolver).
+  Verifique o mapa antes de ativar o seu agendamento.
+
+A **frequência** de um agendamento migrado pode parecer estranha se o
+trabalho original do Discoverer fosse uma execução única em vez de
+recorrente — esses casos são migrados como um agendamento limitado a
+disparar uma única vez, o que é a migração correta de um trabalho pontual,
+não um erro de visualização.
+
 ## O Que É o Agendamento?
 
 O **Agendamento** executa um mapa automaticamente em horários especificados, armazena os resultados e, opcionalmente, envia notificações.

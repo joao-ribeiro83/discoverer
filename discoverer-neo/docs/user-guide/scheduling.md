@@ -2,6 +2,35 @@
 
 Learn how to automatically run maps on a schedule and receive results.
 
+## Schedules migrated from Discoverer
+
+If your organization migrated scheduled batch reports from Oracle
+Discoverer, those schedules appear here already created — but **every
+migrated schedule arrives disabled**. None of them will run until someone
+with access to the schedule turns it on.
+
+This is deliberate, not a bug: silently starting years-old batch jobs
+against your database the moment the new system goes live would be a
+surprise nobody wants. Before enabling a migrated schedule, check its
+**Planner Decision** on the schedule's detail page:
+
+- **Blank** — a fresh check hasn't run yet; safe to try enabling and see what
+  happens.
+- **`FLAT(...)` or `REWRITE(...)`** — the query planner is satisfied the map
+  can run correctly. Enable it when you're ready.
+- **`REFUSE(...)`** — the planner has already determined this map's query
+  cannot be answered safely (see the message for which folders are
+  involved). Enabling the schedule will only produce the same refusal on
+  every run; the underlying map needs fixing first.
+- **`UNPLANNABLE`** — the map itself has a data problem the migration
+  couldn't resolve (an unresolved item or formula reference). Check the map
+  before enabling its schedule.
+
+A migrated schedule's **frequency** may read oddly if the original
+Discoverer job was a one-time run rather than a recurring one — those come
+across as a schedule bounded to fire once, which is the correct migration of
+a one-shot job, not a display error.
+
 ## What is Scheduling?
 
 **Scheduling** runs a map automatically at specified times, stores results, and optionally sends notifications.

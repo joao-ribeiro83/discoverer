@@ -2,6 +2,39 @@
 
 Découvrez comment exécuter automatiquement des cartes selon une planification et recevoir les résultats.
 
+## Planifications migrées depuis Discoverer
+
+Si votre organisation a migré des rapports par lots planifiés depuis Oracle
+Discoverer, ces planifications apparaissent ici déjà créées — mais **toute
+planification migrée arrive désactivée**. Aucune ne s'exécutera tant que
+quelqu'un ayant accès à la planification ne l'aura pas activée.
+
+C'est délibéré, pas un bug : démarrer silencieusement des travaux par lots
+vieux de plusieurs années contre votre base de données dès la mise en
+production du nouveau système serait une surprise dont personne ne veut.
+Avant d'activer une planification migrée, vérifiez sa **Décision du
+planificateur** sur la page de détail de la planification :
+
+- **Vide** — aucune vérification n'a encore été exécutée ; il est sans
+  risque d'essayer de l'activer pour voir ce qui se passe.
+- **`FLAT(...)` ou `REWRITE(...)`** — le planificateur de requêtes confirme
+  que la carte peut s'exécuter correctement. Activez-la quand vous êtes
+  prêt.
+- **`REFUSE(...)`** — le planificateur a déjà déterminé que la requête de
+  cette carte ne peut pas être exécutée en toute sécurité (voir le message
+  pour savoir quels dossiers sont concernés). Activer la planification ne
+  produira que le même refus à chaque exécution ; la carte sous-jacente doit
+  d'abord être corrigée.
+- **`UNPLANNABLE`** — la carte elle-même présente un problème de données que
+  la migration n'a pas pu résoudre (une référence à un élément ou une
+  formule non résolue). Vérifiez la carte avant d'activer sa planification.
+
+La **fréquence** d'une planification migrée peut sembler étrange si le
+travail Discoverer d'origine était une exécution unique plutôt que
+récurrente — ces cas sont migrés sous forme de planification bornée pour ne
+se déclencher qu'une seule fois, ce qui est la migration correcte d'un
+travail ponctuel, et non une erreur d'affichage.
+
 ## Qu'est-ce que la planification ?
 
 La **planification** exécute une carte automatiquement à des moments définis, stocke les résultats et, en option, envoie des notifications.
