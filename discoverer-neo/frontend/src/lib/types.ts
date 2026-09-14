@@ -635,6 +635,12 @@ export interface Schedule {
   parameters: ScheduleParameterValue[]
   /** Computed server-side; null once the schedule has no further occurrence. */
   nextRunAt: string | null
+  /** The fan-trap planner's last decision for this schedule's map, e.g.
+   *  `FLAT(NO_MEASURES)` or `REFUSE(R3)`. Null if never planned. */
+  plannerDecision: string | null
+  /** The refusal's plain-language message when `plannerDecision` is a
+   *  `REFUSE(...)`. Null otherwise. */
+  plannerRefusalDetail: string | null
 }
 
 export interface CreateScheduleInput {

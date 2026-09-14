@@ -14,6 +14,8 @@
     "status": "Estado",
     "active": "Ativo",
     "paused": "Em pausa",
+    "planner": "Planeador",
+    "plannerNotChecked": "Não verificado",
     "runNow": "Executar agora",
     "pause": "Pausar",
     "enable": "Ativar",

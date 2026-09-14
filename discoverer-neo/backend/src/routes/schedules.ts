@@ -91,6 +91,8 @@ function toResponse(schedule: ScheduleRecord, nextRunAt: Date | null) {
     createdAt: schedule.createdAt,
     updatedAt: schedule.updatedAt,
     parameters: schedule.parameters,
+    plannerDecision: schedule.plannerDecision,
+    plannerRefusalDetail: schedule.plannerRefusalDetail,
     nextRunAt,
   };
 }

@@ -65,6 +65,13 @@ export interface ScheduleRecord {
   createdAt: Date;
   updatedAt: Date;
   parameters: ScheduleParameterValue[];
+  /** The fan-trap planner's last decision for this schedule's map — set by
+   *  the migration pre-flight, or by re-planning on enable. Null for a
+   *  schedule that has never been planned (e.g. authored fresh in Neo). */
+  plannerDecision: string | null;
+  /** The refusal's plain-language message when `plannerDecision` is a
+   *  `REFUSE(...)`. Null otherwise. */
+  plannerRefusalDetail: string | null;
 }
 
 export interface CreateScheduleInput {
@@ -269,6 +276,8 @@ function rowToRecord(
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     parameters,
+    plannerDecision: row.plannerDecision,
+    plannerRefusalDetail: row.plannerRefusalDetail,
   };
 }
 
