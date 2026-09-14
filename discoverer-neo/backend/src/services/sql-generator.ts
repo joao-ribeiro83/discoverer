@@ -29,7 +29,7 @@ import { buildWhereClause } from '../lib/sql/where-clause.js';
 import { buildGroupByClause } from '../lib/sql/group-by-clause.js';
 import { buildOrderByClause } from '../lib/sql/order-by-clause.js';
 import { buildPagination } from '../lib/sql/pagination.js';
-import { planTotals } from '../lib/sql/totals.js';
+import { planTotals, DISTINCT_TOTALS_ALIAS } from '../lib/sql/totals.js';
 import { planQuery, refusalError } from '../lib/sql/planner.js';
 import { renderRewrite } from '../lib/sql/rewrite.js';
 import type { QueryPlan, RewritePlan } from '../lib/sql/query-plan.js';
@@ -87,14 +87,24 @@ export function generateSql(
   // Totals reuse the main query's FROM and WHERE — and so its bind parameters
   // — but never its GROUP BY, ORDER BY or pagination: a total is one row over
   // the whole filtered set, or one row per break value.
+  //
+  // BE-07: under SELECT DISTINCT, "the whole filtered set" means the
+  // *deduplicated* set the user sees, not the raw joined rows behind it —
+  // so the totals' FROM becomes the main SELECT DISTINCT statement itself,
+  // wrapped as an inline view (aliased `DISTINCT_TOTALS_ALIAS`), and totals.ts
+  // aggregates its columns instead of recomputing the raw expressions.
+  const totalsFrom = select.distinct
+    ? `FROM (\n${[select.sql, from, where.sql].filter(Boolean).join('\n')}\n) ${DISTINCT_TOTALS_ALIAS}`
+    : from;
+  const totalsWhere = select.distinct ? '' : where.sql;
   const totals = totalsPlan.entries.map((entry) => ({
     breakAlias: entry.breakAlias,
     breakLabel: entry.breakLabel,
     breakTargetAlias: entry.breakTargetAlias,
     sql: [
       `SELECT ${entry.selectParts.join(',\n       ')}`,
-      from,
-      where.sql,
+      totalsFrom,
+      totalsWhere,
       entry.groupByExpr ? `GROUP BY ${entry.groupByExpr}` : '',
       entry.groupByExpr ? 'ORDER BY 1' : '',
     ]

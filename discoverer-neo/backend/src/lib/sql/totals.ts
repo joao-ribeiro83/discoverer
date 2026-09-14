@@ -1,10 +1,17 @@
 import type { MapTotal } from '../../db/schema.js';
 import type { GeneratedTotal, MapDefinition } from '../../types/sql.js';
 import type { GenerationContext } from './context.js';
-import { makeColumnAlias } from './identifiers.js';
+import { makeColumnAlias, quoteIdentifier } from './identifiers.js';
 import { calculatedFieldSql, AGGREGATE_FUNCTIONS } from './formula-parser.js';
 import type { SelectClauseResult } from './select-clause.js';
 import type { QueryPlan } from './query-plan.js';
+
+/**
+ * Alias `sql-generator.ts` gives the main query when it wraps it as the
+ * FROM for a `SELECT DISTINCT` map's totals (BE-07) — see `planTotals` and
+ * `targetExpression` below for why totals need that wrapper at all.
+ */
+export const DISTINCT_TOTALS_ALIAS = 'dt';
 
 /**
  * `map_items.id` -> the plan branch its rows come from, or null when the plan
@@ -92,31 +99,51 @@ export function planTotals(
     def.calculatedFields.map((field) => [field.id, field]),
   );
 
-  /** The SQL for what a total measures, and whether it already aggregates. */
+  /**
+   * The SQL for what a total measures, and whether it already aggregates.
+   *
+   * **BE-07.** Under `SELECT DISTINCT` the main query's row set is not its
+   * raw joined rows — duplicates are folded away first. A total built from
+   * the raw expression (`SUM(f1."AMOUNT")` straight off the FROM/WHERE)
+   * sums the *pre-dedup* rows, which is a different, larger number than
+   * what the distinct rows on screen add up to. `sql-generator.ts` wraps
+   * the main SELECT DISTINCT statement itself as the totals' FROM (aliased
+   * `DISTINCT_TOTALS_ALIAS`) precisely so the total can aggregate the same
+   * deduplicated set the user sees — so here the target must reference that
+   * wrapper's column alias, not recompute the raw expression. A target with
+   * no alias (hidden under DISTINCT, so not part of what was deduplicated
+   * on) has no deduplicated column to point at and is skipped.
+   */
   function targetExpression(
     total: MapTotal,
   ): { sql: string; label: string; alias?: string; aggregates: boolean } | null {
     if (total.mapItemId) {
       const entry = mapItemById.get(total.mapItemId);
       if (!entry) return null;
+      const alias = select.aliasByMapItemId.get(entry.mapItem.id);
+      if (select.distinct && !alias) return null;
       const info = ctx.itemExpressionInfo(entry.item, entry.folder);
+      const useAlias = select.distinct && !info.containsAggregate;
       return {
-        sql: info.sql,
+        sql: useAlias ? `${DISTINCT_TOTALS_ALIAS}.${quoteIdentifier(alias!)}` : info.sql,
         label: entry.mapItem.displayName || entry.item.name,
-        alias: select.aliasByMapItemId.get(entry.mapItem.id),
+        alias,
         aggregates: info.containsAggregate,
       };
     }
     if (total.mapCalculatedFieldId) {
       const field = calcFieldById.get(total.mapCalculatedFieldId);
       if (!field) return null;
+      const alias = select.aliasByCalcFieldId.get(field.id);
+      if (select.distinct && !alias) return null;
       const parsed = calculatedFieldSql(field, (name) =>
         ctx.resolveFormulaReference(name),
       );
+      const useAlias = select.distinct && !parsed.containsAggregate;
       return {
-        sql: parsed.sql,
+        sql: useAlias ? `${DISTINCT_TOTALS_ALIAS}.${quoteIdentifier(alias!)}` : parsed.sql,
         label: field.name,
-        alias: select.aliasByCalcFieldId.get(field.id),
+        alias,
         aggregates: parsed.containsAggregate,
       };
     }
@@ -184,10 +211,22 @@ export function planTotals(
         );
         continue;
       }
-      breakAlias = makeColumnAlias(breakLabel, taken);
       breakTargetAlias = select.aliasByMapItemId.get(entry.mapItem.id);
-      groupByExpr = info.sql;
-      selectParts.push(`${info.sql} AS ${breakAlias}`);
+      // BE-07: same reasoning as targetExpression — under DISTINCT the break
+      // has to group the deduplicated rows, so it groups by the wrapper's
+      // column, not a fresh evaluation of the raw expression.
+      if (select.distinct && !breakTargetAlias) {
+        warnings.push(
+          `Subtotals breaking on "${breakLabel}" were skipped: the column is hidden under SELECT DISTINCT and has no deduplicated value to break on`,
+        );
+        continue;
+      }
+      const breakExpr = select.distinct
+        ? `${DISTINCT_TOTALS_ALIAS}.${quoteIdentifier(breakTargetAlias!)}`
+        : info.sql;
+      breakAlias = makeColumnAlias(breakLabel, taken);
+      groupByExpr = breakExpr;
+      selectParts.push(`${breakExpr} AS ${breakAlias}`);
     }
 
     const planned: GeneratedTotal[] = [];
