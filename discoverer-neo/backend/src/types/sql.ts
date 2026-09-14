@@ -6,6 +6,7 @@ import type {
   MapParameter,
   MapCalculatedField,
   MapTotal,
+  MapConditionalFormat,
   Item,
   Folder,
   Join,
@@ -39,6 +40,12 @@ export interface MapDefinition {
    * queries and behaves exactly as it did before.
    */
   totals?: MapTotal[];
+  /**
+   * Conditional formats (Discoverer's Exceptions) the map defines
+   * (`map_conditional_formats`). Optional for the same reason `totals` is —
+   * a hand-built definition simply has none.
+   */
+  conditionalFormats?: MapConditionalFormat[];
   /**
    * All joins available in the business area, each with its folders and the
    * 1..n column pairs of its predicate.
@@ -194,6 +201,33 @@ export interface GeneratedTotal {
 }
 
 /**
+ * One conditional format rule (Discoverer's Exception), resolved to a
+ * result-set column. Evaluated client-side against the row values already on
+ * screen — the rule is a display decision, not a query — so this only needs
+ * to carry what the rule tests and how to paint the match, with `targetAlias`
+ * resolved here for the same reason `GeneratedTotal.targetAlias` is: the
+ * generator already has the map's item → column alias mapping the rest of
+ * the SQL was built from, and re-deriving it downstream from `mapItemId`
+ * alone would risk drifting from the alias the query actually emitted.
+ */
+export interface GeneratedConditionalFormat {
+  /** `map_conditional_formats.id`. */
+  id: string;
+  /** Alias of the column this rule tests, when it is drawn in the main query. */
+  targetAlias?: string;
+  target: 'CELL' | 'ROW';
+  operator: string | null;
+  /** `BETWEEN` stores `low,high` and `IN` a comma-joined list, one column. */
+  value: string | null;
+  backgroundColor: string | null;
+  textColor: string | null;
+  isBold: boolean;
+  isItalic: boolean;
+  isUnderline: boolean;
+  displayOrder: number;
+}
+
+/**
  * One statement that produces a set of totals.
  *
  * Totals are a second query rather than a `ROLLUP` bolted onto the first: a
@@ -246,6 +280,11 @@ export interface GeneratedSql {
    * defines none. Each takes `bindParams` minus the pagination binds.
    */
   totals: GeneratedTotalsQuery[];
+  /**
+   * Conditional formats (Exceptions) resolved to this statement's columns.
+   * Empty when the map defines none.
+   */
+  conditionalFormats: GeneratedConditionalFormat[];
   /**
    * Map semantics that could not be expressed in this statement — a sort on a
    * hidden item under `SELECT DISTINCT`, a total whose aggregate did not

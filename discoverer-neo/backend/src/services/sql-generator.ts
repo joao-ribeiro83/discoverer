@@ -11,6 +11,7 @@ import {
   mapParameters,
   mapCalculatedFields,
   mapTotals,
+  mapConditionalFormats,
   type Item,
   type Folder,
   type MapCalculatedField,
@@ -129,6 +130,28 @@ export function generateSql(
       return alias ? [alias] : [];
     }),
     totals,
+    conditionalFormats: (def.conditionalFormats ?? []).flatMap((cf) => {
+      const targetAlias = cf.mapItemId
+        ? select.aliasByMapItemId.get(cf.mapItemId)
+        : undefined;
+      // A rule on a column the map does not draw has nothing to paint.
+      if (cf.mapItemId && !targetAlias) return [];
+      return [
+        {
+          id: cf.id,
+          targetAlias,
+          target: cf.target,
+          operator: cf.operator,
+          value: cf.value,
+          backgroundColor: cf.backgroundColor,
+          textColor: cf.textColor,
+          isBold: cf.isBold,
+          isItalic: cf.isItalic,
+          isUnderline: cf.isUnderline,
+          displayOrder: cf.displayOrder,
+        },
+      ];
+    }),
     warnings: [...orderBy.warnings, ...totalsPlan.warnings],
   };
 }
@@ -145,6 +168,11 @@ export function generateSql(
  * a rewritten query, which is the same honest answer for the same reason. The
  * user sees a blank cell and the explanation in `docs/troubleshooting/`, never a
  * wrong number.
+ *
+ * Conditional formats are suppressed here too: `renderRewrite` builds its own
+ * item→alias map internally rather than sharing `buildSelectClause`'s, so
+ * there is nothing to resolve `mapItemId` against without duplicating that
+ * logic for a path most maps never take.
  */
 function generateRewrite(
   def: MapDefinition,
@@ -173,6 +201,7 @@ function generateRewrite(
     distinct: false,
     groupBreakAliases: [],
     totals: [],
+    conditionalFormats: [],
     warnings,
   };
 }
@@ -246,6 +275,7 @@ export async function loadMapDefinition(mapId: string): Promise<MapDefinition> {
     parameterRows,
     calculatedFieldRows,
     totalRows,
+    formatRows,
   ] = await Promise.all([
     db.select().from(mapItems).where(eq(mapItems.mapId, mapId)),
     db.select().from(mapConditions).where(eq(mapConditions.mapId, mapId)),
@@ -255,6 +285,10 @@ export async function loadMapDefinition(mapId: string): Promise<MapDefinition> {
       .from(mapCalculatedFields)
       .where(eq(mapCalculatedFields.mapId, mapId)),
     db.select().from(mapTotals).where(eq(mapTotals.mapId, mapId)),
+    db
+      .select()
+      .from(mapConditionalFormats)
+      .where(eq(mapConditionalFormats.mapId, mapId)),
   ]);
 
   return assembleDefinition({
@@ -264,6 +298,7 @@ export async function loadMapDefinition(mapId: string): Promise<MapDefinition> {
     parameterRows,
     calculatedFieldRows,
     totalRows,
+    formatRows,
   });
 }
 
@@ -283,6 +318,7 @@ async function assembleDefinition({
   parameterRows,
   calculatedFieldRows,
   totalRows,
+  formatRows = [],
 }: {
   map: MapDefinition['map'];
   mapItemRows: (typeof mapItems.$inferSelect)[];
@@ -290,6 +326,7 @@ async function assembleDefinition({
   parameterRows: (typeof mapParameters.$inferSelect)[];
   calculatedFieldRows: (typeof mapCalculatedFields.$inferSelect)[];
   totalRows: (typeof mapTotals.$inferSelect)[];
+  formatRows?: (typeof mapConditionalFormats.$inferSelect)[];
 }): Promise<MapDefinition> {
   // ---------------------------------------------------------------------
   // Derived query scope (D-013)
@@ -431,6 +468,7 @@ async function assembleDefinition({
     parameters: parameterRows,
     calculatedFields: calculatedFieldRows,
     totals: totalRows,
+    conditionalFormats: formatRows,
     // A join is kept whenever both its FOLDERS are in scope. It is NOT dropped
     // for a missing predicate or a missing predicate item: that was the old
     // behaviour, and it turned every one of the estate's ten joins into an
