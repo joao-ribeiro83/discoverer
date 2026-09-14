@@ -2,6 +2,38 @@
 
 Aprenda a ejecutar mapas automáticamente según una programación y a recibir los resultados.
 
+## Programaciones migradas desde Discoverer
+
+Si su organización migró informes por lotes programados desde Oracle
+Discoverer, esas programaciones aparecen aquí ya creadas — pero **toda
+programación migrada llega desactivada**. Ninguna se ejecutará hasta que
+alguien con acceso a la programación la active.
+
+Esto es deliberado, no un error: iniciar en silencio trabajos por lotes de
+años de antigüedad contra su base de datos en el momento en que el nuevo
+sistema entra en producción sería una sorpresa que nadie desea. Antes de
+activar una programación migrada, revise su **Decisión del Planificador**
+en la página de detalle de la programación:
+
+- **En blanco** — todavía no se ha ejecutado una comprobación; es seguro
+  intentar activarla y ver qué ocurre.
+- **`FLAT(...)` o `REWRITE(...)`** — el planificador de consultas confirma
+  que el mapa puede ejecutarse correctamente. Actívela cuando esté listo.
+- **`REFUSE(...)`** — el planificador ya ha determinado que la consulta de
+  este mapa no se puede responder con seguridad (vea el mensaje para saber
+  qué carpetas están implicadas). Activar la programación solo producirá el
+  mismo rechazo en cada ejecución; primero hay que corregir el mapa
+  subyacente.
+- **`UNPLANNABLE`** — el propio mapa tiene un problema de datos que la
+  migración no pudo resolver (una referencia a un elemento o fórmula sin
+  resolver). Revise el mapa antes de activar su programación.
+
+La **frecuencia** de una programación migrada puede leerse de forma extraña
+si el trabajo original de Discoverer era una ejecución única en lugar de
+recurrente — esos casos se migran como una programación acotada para
+dispararse una sola vez, lo cual es la migración correcta de un trabajo de
+ejecución única, no un error de visualización.
+
 ## ¿Qué es la programación?
 
 La **programación** ejecuta un mapa automáticamente a las horas especificadas, almacena los resultados y, opcionalmente, envía notificaciones.
