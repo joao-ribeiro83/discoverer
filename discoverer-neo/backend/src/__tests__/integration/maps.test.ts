@@ -1212,6 +1212,21 @@ describe('workbooks grant no access (D-020)', () => {
     expect(ids).not.toContain(siblingSheetId);
   });
 
+  it('workbook browse view carries only the worksheets the caller may see', async () => {
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/workbooks',
+      headers: { authorization: `Bearer ${viewerToken}` },
+    });
+    expect(res.statusCode).toBe(200);
+    const wb = (res.json().data as Array<{ sourceId: number; maps: Array<{ id: string }> }>).find(
+      (w) => w.sourceId === 27,
+    );
+    const ids = wb!.maps.map((m) => m.id);
+    expect(ids).toContain(grantedSheetId);
+    expect(ids).not.toContain(siblingSheetId);
+  });
+
   it('keeps the data gate closed on the sibling worksheet’s folder', async () => {
     const [sibling] = await db.select().from(maps).where(eq(maps.id, siblingSheetId));
     expect(await canAccessMap({ sub: viewerId, role: 'USER' }, sibling!, 'VIEW')).toBe(false);

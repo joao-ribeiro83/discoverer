@@ -17,6 +17,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { DeleteConfirmDialog } from '@/components/admin/DeleteConfirmDialog'
 import { ShareDialog } from '@/components/map-builder/ShareDialog'
+import { WorkbookBrowseSection } from '@/components/maps/WorkbookBrowseSection'
 
 type MapRow = MapSummary & { sharePermission?: SharePermissionLevel }
 type MapsTab = 'mine' | 'shared' | 'all'
@@ -137,6 +138,8 @@ export function MapsListPage() {
           </Link>
         </Button>
       </div>
+
+      <WorkbookBrowseSection />
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as MapsTab)}>
         <TabsList>

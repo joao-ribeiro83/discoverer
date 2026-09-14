@@ -88,6 +88,17 @@ Un **área de negocio** es una agrupación lógica de datos y consultas relacion
    la última actualización de un mapa
 4. Haga clic en **Crear mapa** para empezar uno nuevo
 
+### Explorar por libro de trabajo
+
+Encima de la lista, un panel de **Libros de trabajo** agrupa las hojas de
+cálculo tal como se guardaron originalmente: como un libro de trabajo, el
+documento de Discoverer que las mantenía juntas. Haga clic en un libro de
+trabajo para expandirlo y ver sus hojas de cálculo en su orden original, y
+luego haga clic en una para abrirla. Esto es solo agrupación: un libro de
+trabajo solo muestra las hojas de cálculo que ya tiene permiso para ver, en
+el mismo orden que en **Todos**, arriba; la lista plana sigue siendo la forma
+más rápida de encontrar una hoja de cálculo por su nombre.
+
 ### Crear un mapa nuevo
 
 Consulte [Creación de mapas](building-maps.md).

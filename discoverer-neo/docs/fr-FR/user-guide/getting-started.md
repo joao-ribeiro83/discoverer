@@ -93,6 +93,17 @@ Un **domaine d'activité** est un regroupement logique de données et de requêt
    la dernière mise à jour d'une carte
 4. Cliquez sur **Créer une carte** pour en commencer une nouvelle
 
+### Parcourir par classeur
+
+Au-dessus de la liste, un panneau **Classeurs** regroupe les feuilles telles
+qu'elles ont été enregistrées à l'origine — en tant que classeur, le document
+Discoverer qui les rassemblait. Cliquez sur un classeur pour le développer et
+voir ses feuilles dans leur ordre d'origine, puis cliquez sur l'une d'elles
+pour l'ouvrir. Il ne s'agit que d'un regroupement : un classeur n'affiche que
+les feuilles que vous êtes déjà autorisé à voir, dans le même ordre que dans
+**Toutes**, ci-dessus ; la liste à plat reste le moyen le plus rapide de
+retrouver une feuille par son nom.
+
 ### Créer une carte
 
 Consultez [Création de cartes](building-maps.md).

@@ -26,6 +26,12 @@
       "shared": "Partagées avec moi",
       "all": "Tous"
     },
+    "workbooks": {
+      "title": "Classeurs",
+      "worksheetCount_one": "{{count}} feuille",
+      "worksheetCount_other": "{{count}} feuilles",
+      "loadError": "Impossible de charger les classeurs."
+    },
     "columns": {
       "businessArea": "Domaine Métier"
     },

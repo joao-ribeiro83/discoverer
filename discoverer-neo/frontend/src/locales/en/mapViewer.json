@@ -26,6 +26,12 @@
       "shared": "Shared with me",
       "all": "All"
     },
+    "workbooks": {
+      "title": "Workbooks",
+      "worksheetCount_one": "{{count}} worksheet",
+      "worksheetCount_other": "{{count}} worksheets",
+      "loadError": "Could not load workbooks."
+    },
     "columns": {
       "businessArea": "Business Area"
     },

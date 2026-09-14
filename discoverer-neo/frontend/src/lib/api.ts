@@ -17,6 +17,7 @@ import type {
   AppUser,
   MapSummary,
   MapWithDetails,
+  WorkbookWithMaps,
   DashboardStats,
   CreateMapInput,
   UpdateMapInput,
@@ -406,6 +407,11 @@ export const apiClient = {
     revokeShare: (id: string, userId: string) =>
       api.delete<Envelope<{ revoked: boolean }>>(`/maps/${id}/shares/${userId}`),
     sharedWithMe: () => api.get<Envelope<MapSummary[]>>('/maps/shared-with-me'),
+  },
+  // Workbook browse view (Phase 7.1b) — read-only grouping of maps by their
+  // source workbook. Same visibility as maps.listAll(); see workbooks.ts.
+  workbooks: {
+    listBrowse: () => api.get<Envelope<WorkbookWithMaps[]>>('/workbooks'),
   },
   // Export jobs. Addressed by their globally-unique job id rather than nested
   // under a map, which is what allows listing a user's exports across maps.

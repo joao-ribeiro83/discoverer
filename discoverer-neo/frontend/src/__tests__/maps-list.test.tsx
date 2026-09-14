@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MapsListPage } from '@/pages/MapsListPage'
 import { apiClient } from '@/lib/api'
 import { useAuthStore } from '@/store/auth'
-import type { MapSummary, BusinessArea } from '@/lib/types'
+import type { MapSummary, BusinessArea, WorkbookWithMaps } from '@/lib/types'
 
 // jsdom has no real layout (clientHeight is always 0), so @tanstack/react-virtual
 // can't compute a meaningful visible range there. Swap in a fake that just
@@ -23,6 +23,7 @@ vi.mock('@/lib/api', () => ({
     maps: { listMine: vi.fn(), listAll: vi.fn(), delete: vi.fn(), listShares: vi.fn() },
     businessAreas: { list: vi.fn() },
     users: { search: vi.fn() },
+    workbooks: { listBrowse: vi.fn() },
   },
   getErrorMessage: (err: unknown) => (err instanceof Error ? err.message : 'error'),
 }))
@@ -43,6 +44,7 @@ function mapSummary(over: Partial<MapSummary> = {}): MapSummary {
     createdBy: 'u1',
     isPublic: false,
     isActive: true,
+    workbookId: null,
     createdAt: '2026-01-01T00:00:00.000Z',
     updatedAt: '2026-01-02T00:00:00.000Z',
     ...over,
@@ -51,6 +53,20 @@ function mapSummary(over: Partial<MapSummary> = {}): MapSummary {
 
 function businessArea(over: Partial<BusinessArea> = {}): BusinessArea {
   return { id: 'ba1', name: 'Sales', description: null, isActive: true, createdAt: '2026-01-01', ...over }
+}
+
+function workbook(over: Partial<WorkbookWithMaps> = {}): WorkbookWithMaps {
+  return {
+    id: 'wb1',
+    name: 'GD_M.M27_V08',
+    description: null,
+    sourceId: 27,
+    createdBy: 'u1',
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-02T00:00:00.000Z',
+    maps: [mapSummary({ id: 'm1', name: 'Sheet One', workbookId: 'wb1' })],
+    ...over,
+  }
 }
 
 // jsdom doesn't focus an element on a synthetic click the way a real browser
@@ -81,6 +97,7 @@ beforeEach(() => {
     hasHydrated: true,
   })
   mockedApi.businessAreas.list.mockResolvedValue(envelope([businessArea()]) as never)
+  mockedApi.workbooks.listBrowse.mockResolvedValue(envelope([]) as never)
 })
 
 describe('MapsListPage', () => {
@@ -329,6 +346,27 @@ describe('MapsListPage', () => {
     renderPage()
     await screen.findByText('My Own Map')
     expect(screen.getByTitle('Delete')).toBeInTheDocument()
+  })
+
+  it('browse view lists workbooks and drills to a worksheet', async () => {
+    mockedApi.maps.listMine.mockResolvedValue(envelope({ mine: [], shared: [] }) as never)
+    mockedApi.maps.listAll.mockResolvedValue(envelope({ all: [] }) as never)
+    mockedApi.workbooks.listBrowse.mockResolvedValue(envelope([workbook()]) as never)
+    renderPage()
+
+    await screen.findByText('GD_M.M27_V08')
+    expect(screen.getByText('1 worksheet')).toBeInTheDocument()
+    const link = await screen.findByRole('link', { name: 'Sheet One' })
+    expect(link).toHaveAttribute('href', '/maps/m1/view')
+  })
+
+  it('hides the workbooks panel when there are none to browse', async () => {
+    mockedApi.maps.listMine.mockResolvedValue(envelope({ mine: [], shared: [] }) as never)
+    mockedApi.maps.listAll.mockResolvedValue(envelope({ all: [] }) as never)
+    renderPage()
+
+    await screen.findByText('0 worksheets exist; none are yours.')
+    expect(screen.queryByText('Workbooks')).not.toBeInTheDocument()
   })
 
   it('opens and closes the share dialog for a manageable row', async () => {
