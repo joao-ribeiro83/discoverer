@@ -215,6 +215,20 @@ export const schedules = pgTable(
     createdBy: uuid('created_by')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
+    /**
+     * The fan-trap planner's decision for this schedule's map, same one-line
+     * format as `query_execution_log.plan_decision` (`FLAT(...)`, `REWRITE(n)`,
+     * `REFUSE(R3)`). Set by the migration pre-flight pass (Phase 7.2) and by
+     * `toggleSchedule` when re-enabling one; null for a schedule created in Neo,
+     * which is planned fresh on every run instead.
+     */
+    plannerDecision: varchar('planner_decision', { length: 64 }),
+    /**
+     * The refusal's plain-language message (`RefusalPlan.message`, which
+     * already names its folders per D-036) when `plannerDecision` is a
+     * `REFUSE(...)`. Null otherwise.
+     */
+    plannerRefusalDetail: text('planner_refusal_detail'),
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),
