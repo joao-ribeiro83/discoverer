@@ -3126,5 +3126,87 @@ describe('SQL generator', () => {
       expect(result.totals).toHaveLength(1);
       expect(norm(result.totals[0]!.sql)).toContain('COUNT(');
     });
+
+    // BE-07: SELECT DISTINCT's dedup has to survive into the total, or the
+    // total adds up a different (larger) set of rows than what is on screen.
+    describe('under SELECT DISTINCT (BE-07)', () => {
+      it('aggregates the deduplicated rows, not the raw join', () => {
+        const f = salesFixture();
+        const amountItem = mkMapItem(f.amount, { displayOrder: 1 });
+        const def = mkDef({
+          map: mkMap({ selectDistinct: true }),
+          items: [
+            { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+            { mapItem: amountItem, item: f.amount, folder: f.sales },
+          ],
+          totals: [mkTotal({ mapItemId: amountItem.id, aggFunction: 'SUM' })],
+          formulaItems: f.formulaItems,
+        });
+
+        const result = generateSql(def);
+        expect(result.totals).toHaveLength(1);
+        const [group] = result.totals;
+        expect(norm(group!.sql)).toBe(
+          'SELECT SUM(dt."AMOUNT") AS SUM_AMOUNT FROM ' +
+            '( SELECT DISTINCT f1."REGION" AS REGION, f1."AMOUNT" AS AMOUNT ' +
+            'FROM "APP"."SALES" f1 ) dt',
+        );
+        expectParsable(group!.sql);
+      });
+
+      it('groups a break on the deduplicated column', () => {
+        const f = salesFixture();
+        const regionItem = mkMapItem(f.region, { displayOrder: 0 });
+        const amountItem = mkMapItem(f.amount, { displayOrder: 1 });
+        const def = mkDef({
+          map: mkMap({ selectDistinct: true }),
+          items: [
+            { mapItem: regionItem, item: f.region, folder: f.sales },
+            { mapItem: amountItem, item: f.amount, folder: f.sales },
+          ],
+          totals: [
+            mkTotal({
+              mapItemId: amountItem.id,
+              breakMapItemId: regionItem.id,
+              placement: 'AT_CHANGE',
+              aggFunction: 'SUM',
+            }),
+          ],
+          formulaItems: f.formulaItems,
+        });
+
+        const result = generateSql(def);
+        const [group] = result.totals;
+        expect(norm(group!.sql)).toBe(
+          'SELECT dt."REGION" AS REGION, SUM(dt."AMOUNT") AS SUM_AMOUNT FROM ' +
+            '( SELECT DISTINCT f1."REGION" AS REGION, f1."AMOUNT" AS AMOUNT ' +
+            'FROM "APP"."SALES" f1 ) dt GROUP BY dt."REGION" ORDER BY 1',
+        );
+        expectParsable(group!.sql);
+      });
+
+      it('skips a total on a column hidden under DISTINCT, with a warning', () => {
+        const f = salesFixture();
+        const hiddenAmount = mkMapItem(f.amount, {
+          displayOrder: 1,
+          isHidden: true,
+        });
+        const def = mkDef({
+          map: mkMap({ selectDistinct: true }),
+          items: [
+            { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+            { mapItem: hiddenAmount, item: f.amount, folder: f.sales },
+          ],
+          totals: [mkTotal({ mapItemId: hiddenAmount.id, aggFunction: 'SUM' })],
+          formulaItems: f.formulaItems,
+        });
+
+        const result = generateSql(def);
+        expect(result.totals).toHaveLength(0);
+        expect(result.warnings.join(' ')).toContain(
+          'it points at a column this map does not use',
+        );
+      });
+    });
   });
 });
