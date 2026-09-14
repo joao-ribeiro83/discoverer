@@ -862,7 +862,13 @@ describe('SQL generator', () => {
       const f = salesFixture();
       const doubled = mkCalcField({
         name: 'Doubled Amount',
-        formula: 'Amount * 2',
+        // The raw text a migrated field's `formula` column carries — not
+        // valid input to this workspace's formula grammar. `compiledSql` is
+        // what the D-059 renderer actually produced from `sourceTokens`,
+        // and is what a COMPILED_UNVERIFIED field must be read from.
+        formula: '[1,68](Amount,[5,2,"2"])',
+        sourceTokens: '[1,68](Amount,[5,2,"2"])',
+        compiledSql: '"AMOUNT" * 2',
         dataType: 'NUMBER',
         compileStatus: 'COMPILED_UNVERIFIED',
       });
@@ -886,7 +892,7 @@ describe('SQL generator', () => {
       });
 
       const result = generateSql(def);
-      expect(norm(result.sql)).toContain('WHERE (f1."AMOUNT" * 2) > :c0');
+      expect(norm(result.sql)).toContain('WHERE ("AMOUNT" * 2) > :c0');
       expect(result.bindParams).toEqual({ c0: 100 });
     });
 
@@ -955,7 +961,9 @@ describe('SQL generator', () => {
       const f = salesFixture();
       const total = mkCalcField({
         name: 'Total',
-        formula: 'SUM(Amount)',
+        formula: '[1,X](Amount)',
+        sourceTokens: '[1,X](Amount)',
+        compiledSql: 'SUM("AMOUNT")',
         compileStatus: 'COMPILED_UNVERIFIED',
       });
       const def = mkDef({

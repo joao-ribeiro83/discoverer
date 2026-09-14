@@ -2,7 +2,7 @@ import type { MapTotal } from '../../db/schema.js';
 import type { GeneratedTotal, MapDefinition } from '../../types/sql.js';
 import type { GenerationContext } from './context.js';
 import { makeColumnAlias } from './identifiers.js';
-import { parseFormula, AGGREGATE_FUNCTIONS } from './formula-parser.js';
+import { calculatedFieldSql, AGGREGATE_FUNCTIONS } from './formula-parser.js';
 import type { SelectClauseResult } from './select-clause.js';
 import type { QueryPlan } from './query-plan.js';
 
@@ -110,7 +110,7 @@ export function planTotals(
     if (total.mapCalculatedFieldId) {
       const field = calcFieldById.get(total.mapCalculatedFieldId);
       if (!field) return null;
-      const parsed = parseFormula(field.formula, (name) =>
+      const parsed = calculatedFieldSql(field, (name) =>
         ctx.resolveFormulaReference(name),
       );
       return {

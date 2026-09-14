@@ -1,6 +1,7 @@
 import {
   AGGREGATE_FUNCTIONS,
   SCALAR_FUNCTIONS,
+  containsAggregateCall,
 } from '@discoverer-neo/core/semantics';
 
 import { SqlGenerationError } from '../../types/sql.js';
@@ -521,6 +522,77 @@ export function parseFormula(
     referencedItems: parser.referencedItems,
     bareReferences: parser.bareReferences,
   };
+}
+
+/**
+ * A calculated field the same way every one of `select-clause.ts`,
+ * `totals.ts` and `where-clause.ts` needs it: SQL text plus aggregate info.
+ *
+ * `field.formula` is **not** always safe to hand to `parseFormula`. Per its
+ * own column comment (`map_calculated_fields.formula`), a field migrated
+ * from a Discoverer workbook has item *names* substituted in but keeps
+ * Discoverer's raw `[class,code](...)` function tokens — a different
+ * grammar this parser does not speak. `[1,102]`'s argument list read as an
+ * "unknown item reference" is that mismatch, not a bad migration: the real
+ * SQL for a migrated field is `compiledSql`, written by the Phase 4
+ * renderer (`dn-migrate verify --compile`) from `sourceTokens`, and this is
+ * the one place that reads it — select/totals/where were each independently
+ * re-parsing `formula` instead, which can only ever work by accident (a
+ * formula with no Discoverer function codes in it).
+ *
+ * `sourceTokens` is what distinguishes the two cases: null means the field
+ * was authored directly in Neo (or predates Phase 4.5), and `formula` there
+ * is the only text that ever existed, so `parseFormula` is correct and
+ * `compileStatus` staying null forever is not a refusal. Non-null means it
+ * came from Discoverer, and only a `COMPILED`/`COMPILED_UNVERIFIED`
+ * `compiledSql` may be trusted — anything else refuses loudly here rather
+ * than reach `parseFormula` with raw tokens still inside it.
+ *
+ * `bareReferences` is empty for a compiled field: the renderer does not
+ * persist per-reference structure, only the flat SQL, so BE-05's
+ * mixed-aggregate GROUP BY refinement does not apply to it. A genuinely
+ * mixed aggregate/bare compiled formula surfaces as Oracle's own
+ * `ORA-00979` rather than a wrong GROUP BY — narrower than BE-05 covers,
+ * but no narrower than "cannot plan at all", which is where every one of
+ * these fields stood before.
+ *
+ * `opts.requireCompiled` forces the compiled path even when `sourceTokens`
+ * is null. `where-clause.ts` sets it: a condition has required a `COMPILED`/
+ * `COMPILED_UNVERIFIED` bucket regardless of provenance since D-059, and
+ * that contract predates and is independent of this function existing —
+ * loosening it for an ostensibly-Neo-authored field is a separate product
+ * decision, not a side effect of fixing select/totals to stop misreading
+ * `formula`.
+ */
+export function calculatedFieldSql(
+  field: {
+    name: string;
+    formula: string;
+    sourceTokens: string | null;
+    compiledSql: string | null;
+    compileStatus: string | null;
+  },
+  resolveItem: ItemResolver,
+  opts: { requireCompiled?: boolean } = {},
+): ParsedFormula {
+  if (field.sourceTokens != null || opts.requireCompiled) {
+    if (
+      field.compiledSql &&
+      (field.compileStatus === 'COMPILED' || field.compileStatus === 'COMPILED_UNVERIFIED')
+    ) {
+      return {
+        sql: field.compiledSql,
+        containsAggregate: containsAggregateCall(field.compiledSql),
+        referencedItems: [],
+        bareReferences: [],
+      };
+    }
+    throw new SqlGenerationError(
+      `Calculated field "${field.name}" has not compiled ` +
+        `(status: ${field.compileStatus ?? 'not verified'}) and cannot be used in a query`,
+    );
+  }
+  return parseFormula(field.formula, resolveItem);
 }
 
 /** Validate a formula without emitting SQL (for save-time checks). */
