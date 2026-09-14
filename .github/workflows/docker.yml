@@ -57,13 +57,17 @@ jobs:
             type=raw,value=${{ steps.version.outputs.tag }}
             type=raw,value=latest,enable=${{ github.event_name == 'release' }}
 
-      # Every image's build context is the repo root (npm workspaces monorepo
-      # — see each Dockerfile's own header), never the per-service directory.
+      # Every image's build context is the discoverer-neo/ npm workspace root
+      # (see each Dockerfile's own header), never the per-service directory.
+      # This workflow file lives at the true git repo root (see ci.yml's
+      # header for why); the npm workspace itself is one level down, so both
+      # paths below need that prefix — the Dockerfiles' own COPY paths
+      # (package.json, backend/, etc.) only resolve from inside discoverer-neo/.
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: ${{ matrix.service }}/Dockerfile
+          context: discoverer-neo
+          file: discoverer-neo/${{ matrix.service }}/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
