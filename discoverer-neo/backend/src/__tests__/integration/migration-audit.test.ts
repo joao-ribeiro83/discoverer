@@ -442,10 +442,26 @@ describe('audit trail across mutating routes', () => {
     expect(entry).toBeDefined();
   });
 
-  it('does NOT log pure GET reads', async () => {
+  it('audits a metadata GET read (SEC-11)', async () => {
+    // Audit writes are fire-and-forget (see plugins/audit.ts) so the row is
+    // not guaranteed to exist the instant the response comes back — poll
+    // rather than check once immediately after.
     await app.inject({ method: 'GET', url: '/api/business-areas', headers: authHeaders(adminToken) });
+    const rows = await eventually(
+      () => auditService.getUserActivity(adminId, 200),
+      (r) => r.some((row) => row.action === 'GET /api/business-areas'),
+    );
+    expect(rows.some((r) => r.action === 'GET /api/business-areas')).toBe(true);
+  });
+
+  it('does NOT audit a read outside the metadata prefixes', async () => {
+    await app.inject({ method: 'GET', url: '/api/health', headers: authHeaders(adminToken) });
+    // No positive event to poll for here, so a short fixed wait stands in for
+    // "give the fire-and-forget write every chance to land, then confirm
+    // it didn't."
+    await new Promise((r) => setTimeout(r, 200));
     const rows = await auditService.getUserActivity(adminId, 200);
-    expect(rows.some((r) => r.action.startsWith('GET '))).toBe(false);
+    expect(rows.some((r) => r.action.startsWith('GET /api/health'))).toBe(false);
   });
 
   it('filters by entity type', async () => {
