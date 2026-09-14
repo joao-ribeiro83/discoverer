@@ -476,6 +476,7 @@ export async function planDraft(items: DraftItem[]): Promise<QueryPlan> {
     isPublic: false,
     isActive: true,
     selectDistinct: false,
+    workbookId: null,
     createdAt: now,
     updatedAt: now,
   };

@@ -27,9 +27,14 @@ import {
   mapLayouts,
   mapPageSetup,
   mapShares,
+  workbooks,
 } from '../../db/schema.js';
 import { hashPassword } from '../../lib/password.js';
 import { canAccessMap } from '../../services/map.service.js';
+import {
+  assertDataEntitlement,
+  DataEntitlementError,
+} from '../../services/business-area.service.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -56,6 +61,7 @@ let otherBaId: string;
 let itemId1: string;
 let itemId2: string;
 let foreignItemId: string;
+let foreignFolderId: string;
 
 async function createTestUser(
   email: string,
@@ -89,6 +95,7 @@ async function cleanupTestData() {
   await db.delete(mapConditions);
   await db.delete(mapItems);
   await db.delete(maps);
+  await db.delete(workbooks);
   await db.delete(items);
   await db.delete(folders);
   await db.delete(userBusinessAreaGrants);
@@ -227,6 +234,7 @@ beforeAll(async () => {
     })
     .returning();
   foreignItemId = fi!.id;
+  foreignFolderId = foreignFolder!.id;
 
   adminToken = await login(ADMIN_EMAIL);
   ownerToken = await login(OWNER_EMAIL);
@@ -1152,5 +1160,63 @@ describe('Map management', () => {
       expect(res.statusCode).toBe(200);
       expect(res.json().data.totals).toHaveLength(0);
     });
+  });
+});
+
+// D-020: `workbooks` sits above maps and outside the authorisation path. The
+// viewer holds VIEW on the Maps Test BA only, so of two worksheets in one
+// workbook they may open the one in that area and nothing else.
+describe('workbooks grant no access (D-020)', () => {
+  let grantedSheetId: string;
+  let siblingSheetId: string;
+
+  beforeAll(async () => {
+    const [wb] = await db
+      .insert(workbooks)
+      .values({ name: 'GD_M.M27_V08', sourceId: 27, createdBy: ownerId })
+      .returning();
+    const [granted, sibling] = await db
+      .insert(maps)
+      .values([
+        { name: 'M27 — Sheet 1', mapType: 'TABLE', businessAreaId: baId, createdBy: ownerId, workbookId: wb!.id },
+        { name: 'M27 — Sheet 2', mapType: 'TABLE', businessAreaId: otherBaId, createdBy: ownerId, workbookId: wb!.id },
+      ])
+      .returning();
+    grantedSheetId = granted!.id;
+    siblingSheetId = sibling!.id;
+    await db.insert(mapItems).values([
+      { mapId: grantedSheetId, itemId: itemId1, displayOrder: 0 },
+      { mapId: siblingSheetId, itemId: foreignItemId, displayOrder: 0 },
+    ]);
+  });
+
+  it('opens the granted worksheet and refuses its sibling', async () => {
+    const open = (id: string) =>
+      app.inject({
+        method: 'GET',
+        url: `/api/maps/${id}`,
+        headers: { authorization: `Bearer ${viewerToken}` },
+      });
+    expect((await open(grantedSheetId)).statusCode).toBe(200);
+    expect((await open(siblingSheetId)).statusCode).toBe(403);
+  });
+
+  it('lists only the granted worksheet', async () => {
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/maps?scope=all',
+      headers: { authorization: `Bearer ${viewerToken}` },
+    });
+    const ids = (res.json().data.all as Array<{ id: string }>).map((m) => m.id);
+    expect(ids).toContain(grantedSheetId);
+    expect(ids).not.toContain(siblingSheetId);
+  });
+
+  it('keeps the data gate closed on the sibling worksheet’s folder', async () => {
+    const [sibling] = await db.select().from(maps).where(eq(maps.id, siblingSheetId));
+    expect(await canAccessMap({ sub: viewerId, role: 'USER' }, sibling!, 'VIEW')).toBe(false);
+    await expect(assertDataEntitlement(viewerId, [foreignFolderId])).rejects.toBeInstanceOf(
+      DataEntitlementError,
+    );
   });
 });

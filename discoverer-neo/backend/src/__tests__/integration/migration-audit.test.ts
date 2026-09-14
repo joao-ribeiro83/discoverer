@@ -117,6 +117,7 @@ async function countPrefixed(table: TargetTable): Promise<number> {
     hierarchies: sql`SELECT count(*)::int AS c FROM hierarchies WHERE id::text LIKE ${PREFIX + '%'}`,
     hierarchy_levels: sql`SELECT count(*)::int AS c FROM hierarchy_levels WHERE id::text LIKE ${PREFIX + '%'}`,
     custom_functions: sql`SELECT count(*)::int AS c FROM custom_functions WHERE id::text LIKE ${PREFIX + '%'}`,
+    workbooks: sql`SELECT count(*)::int AS c FROM workbooks WHERE id::text LIKE ${PREFIX + '%'}`,
     maps: sql`SELECT count(*)::int AS c FROM maps WHERE id::text LIKE ${PREFIX + '%'}`,
     map_items: sql`SELECT count(*)::int AS c FROM map_items WHERE id::text LIKE ${PREFIX + '%'}`,
     map_conditions: sql`SELECT count(*)::int AS c FROM map_conditions WHERE id::text LIKE ${PREFIX + '%'}`,
