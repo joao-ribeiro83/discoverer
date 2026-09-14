@@ -39,7 +39,10 @@ export type DisplayShape =
   | 'unaryTight' // -a
   | 'between' // a BETWEEN b AND c
   | 'inList' // a IN (b,c)  /  a NOT IN (b,c)
-  | 'passthrough'; // a — the code leaves no mark on the rendering
+  | 'passthrough' // a — the code leaves no mark on the rendering
+  | 'whenThen' // WHEN a THEN b — a [1,163] branch, always inside a CASE
+  | 'caseEnd' // CASE a b c... END — each child a whenThen or elseValue
+  | 'elseValue'; // ELSE a — [1,164], optional, only as CASE's last child
 
 /** How the node is emitted into SQL. Independent of `DisplayShape`. */
 export type SqlForm =
@@ -65,7 +68,13 @@ export type SqlForm =
    * The rendering does not show what the node computes, so no SQL can be
    * derived from it. Displays fine; refuses on the SQL side with `reason`.
    */
-  | { kind: 'displayOnly'; reason: 'UNKNOWN_SEMANTICS' };
+  | { kind: 'displayOnly'; reason: 'UNKNOWN_SEMANTICS' }
+  /** `WHEN a THEN b` — a [1,163] node, always a direct child of a CASE. */
+  | { kind: 'whenThen' }
+  /** `CASE a b c... END` — each arg already `WHEN...THEN...` or `ELSE...`. */
+  | { kind: 'case' }
+  /** `ELSE a` — a [1,164] node, optional, only as a CASE's last child. */
+  | { kind: 'elseValue' };
 
 export interface BuiltinCode {
   code: number;
@@ -164,6 +173,24 @@ export const PHASE_4_3_CODES: readonly number[] = [
   ...PHASE_4_3_BATCH_B,
 ];
 
+/**
+ * `CASE`/`WHEN`/`ELSE` — added investigating Phase 7.2's schedule migration,
+ * not a numbered phase brief. Left UNTESTED at 4.1 (`state: "UNTESTED"`,
+ * `evidenceRows: 0` in the corpus table — a hypothesis, never fitted) and
+ * refuse-only ever since (4.3's own note: "CASE/WHEN/ELSE... refuse-only").
+ *
+ * FITTED here from a real, unredacted (`IOFormula`, `DisplayFormula`) pair —
+ * `d4wkdmp.exe` against the live estate's `GD_M.M04_V46.DIS2` workbook,
+ * 2026-09-14 — not the anonymised corpus, which is why `evidenceRows`/
+ * `matchedRows` in `builtin-code-table.json` stay 0 even with `state`
+ * flipped to `FITTED`: those fields count corpus rows specifically, and none
+ * of the corpus's own 28 have been checked against this implementation yet.
+ * The formula-corpus.tsv row for [1,164] (untruncated, unlike the JSON's own
+ * 240-char-capped `examples`) is what confirms ELSE is a *separate* code —
+ * `[1,164](value)`, arity exactly 1 — not a differently-shaped [1,163].
+ */
+export const PHASE_4_4_CODES: readonly number[] = [162, 163, 164];
+
 const TABLE: readonly BuiltinCode[] = [
   // --- the ten ------------------------------------------------------------
   { code: 102, displayName: 'DECODE', shape: 'prefix', arity: [3, 60], sql: { kind: 'function', name: 'DECODE' } },
@@ -172,7 +199,18 @@ const TABLE: readonly BuiltinCode[] = [
   { code: 115, displayName: 'NULL', shape: 'zeroBare', arity: [0, 0], sql: { kind: 'keyword', text: 'NULL' } },
   { code: 96, displayName: '*', shape: 'infixTight', arity: [2, 2], sql: { kind: 'operator', op: '*' } },
   { code: 94, displayName: '+', shape: 'infixTight', arity: [2, 2], sql: { kind: 'operator', op: '+' } },
-  { code: 61, displayName: 'TO_NUMBER', shape: 'prefix', arity: [1, 1], sql: { kind: 'function', name: 'TO_NUMBER' } },
+  // Widened to 3 for the live estate's TO_NUMBER(expr, format, nlsparam) —
+  // Oracle's own documented 3-arg form, not a corpus attestation: the
+  // fitted corpus (`arities: [1]` in builtin-code-table.json, deliberately
+  // left untouched) only ever saw the 1-arg call. `d4wkdmp` gives no
+  // DisplayFormula for this specific field (it is an EUL Private Item —
+  // none of those carry one in the dump, confirmed against a sibling
+  // DECODE that doesn't have this arity question either), so this is a
+  // standard-syntax judgement call, not a verified (stored, displayed)
+  // pair. If the argument order or meaning were ever wrong, Oracle would
+  // reject the generated SQL outright rather than compute a wrong number —
+  // this is not a case-branch guess.
+  { code: 61, displayName: 'TO_NUMBER', shape: 'prefix', arity: [1, 3], sql: { kind: 'function', name: 'TO_NUMBER' } },
   { code: 58, displayName: 'TO_DATE', shape: 'prefix', arity: [1, 2], sql: { kind: 'function', name: 'TO_DATE' } },
   { code: 68, displayName: 'NVL', shape: 'prefix', arity: [2, 2], sql: { kind: 'function', name: 'NVL' } },
   { code: 55, displayName: 'TO_CHAR', shape: 'prefix', arity: [1, 2], sql: { kind: 'function', name: 'TO_CHAR' } },
@@ -211,6 +249,10 @@ const TABLE: readonly BuiltinCode[] = [
   { code: 23, displayName: 'LPAD', shape: 'prefix', arity: [3, 3], sql: { kind: 'function', name: 'LPAD' } },
   { code: 32, displayName: 'SUBSTR', shape: 'prefix', arity: [3, 3], sql: { kind: 'function', name: 'SUBSTR' } },
   { code: 117, displayName: 'COUNT_DISTINCT', shape: 'prefix', arity: [1, 1], sql: { kind: 'aggregateDistinct', name: 'COUNT' } },
+  // --- 4.4 (CASE/WHEN/ELSE, see PHASE_4_4_CODES) --------------------------
+  { code: 162, displayName: 'CASE', shape: 'caseEnd', arity: [1, 60], sql: { kind: 'case' } },
+  { code: 163, displayName: 'WHEN', shape: 'whenThen', arity: [2, 2], sql: { kind: 'whenThen' } },
+  { code: 164, displayName: 'ELSE', shape: 'elseValue', arity: [1, 1], sql: { kind: 'elseValue' } },
 ];
 
 const BY_CODE = new Map(TABLE.map((entry) => [entry.code, entry]));

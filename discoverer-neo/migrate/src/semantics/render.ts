@@ -109,6 +109,7 @@ export class Quarantined extends Error {
 export const FITTED_CODES: ReadonlySet<number> = new Set([
   1, 11, 12, 18, 23, 28, 32, 42, 43, 44, 48, 49, 55, 58, 61, 68, 73, 79, 81, 82, 83, 84, 85,
   86, 87, 88, 91, 92, 94, 95, 96, 97, 98, 99, 102, 103, 104, 106, 114, 115, 117, 126,
+  162, 163, 164,
 ]);
 
 function refuseCode(code: number): never {
@@ -215,6 +216,12 @@ export function renderDisplay(node: FormulaNode): string {
           // `[1,126]` leaves no mark on the rendering at all. Its argument is
           // the whole display form — which is exactly why it has no SQL.
           return parts[0]!;
+        case 'whenThen':
+          return `WHEN ${parts[0]} THEN ${parts[1]}`;
+        case 'caseEnd':
+          return `CASE ${parts.join(' ')} END`;
+        case 'elseValue':
+          return `ELSE ${parts[0]}`;
       }
     }
   }
@@ -584,6 +591,12 @@ class SqlEmitter {
         return `${sql.name}(DISTINCT ${args[0]})`;
       case 'displayOnly':
         throw new Quarantined(sql.reason, `[1,${node.code}] ${entry.displayName}`);
+      case 'whenThen':
+        return `WHEN ${args[0]} THEN ${args[1]}`;
+      case 'case':
+        return `CASE ${args.join(' ')} END`;
+      case 'elseValue':
+        return `ELSE ${args[0]}`;
     }
   }
 }

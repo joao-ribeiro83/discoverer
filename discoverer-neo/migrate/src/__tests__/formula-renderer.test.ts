@@ -8,6 +8,7 @@ import {
   PHASE_4_2_CODES,
   PHASE_4_2_TOP_TEN,
   PHASE_4_3_CODES,
+  PHASE_4_4_CODES,
 } from '../semantics/builtin-codes.js';
 import {
   createBindCollector,
@@ -111,7 +112,7 @@ describe('the implemented code table', () => {
 
   it('implements exactly the codes it says it does', () => {
     expect([...IMPLEMENTED_CODES].map((e) => e.code).sort((a, b) => a - b)).toEqual(
-      [...PHASE_4_2_CODES, ...PHASE_4_3_CODES].sort((a, b) => a - b),
+      [...PHASE_4_2_CODES, ...PHASE_4_3_CODES, ...PHASE_4_4_CODES].sort((a, b) => a - b),
     );
   });
 });

@@ -1527,8 +1527,8 @@
     {
       "code": 162,
       "name": "CASE",
-      "state": "UNTESTED",
-      "shape": null,
+      "state": "FITTED",
+      "shape": "caseEnd",
       "evidence": null,
       "survivors": [
         "prefix",
@@ -1565,8 +1565,8 @@
     {
       "code": 163,
       "name": "WHEN",
-      "state": "UNTESTED",
-      "shape": null,
+      "state": "FITTED",
+      "shape": "whenThen",
       "evidence": null,
       "survivors": [
         "prefix",
@@ -1599,8 +1599,8 @@
     {
       "code": 164,
       "name": "ELSE",
-      "state": "UNTESTED",
-      "shape": null,
+      "state": "FITTED",
+      "shape": "elseValue",
       "evidence": null,
       "survivors": [
         "prefix",
