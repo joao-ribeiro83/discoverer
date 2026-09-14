@@ -482,6 +482,118 @@ returned — which makes it the natural oracle for validating the fan-trap guard
 
 ---
 
+### 3.8 Scheduled batch reports — `EUL4_BATCH_*` + `EUL4_BR_RUNS` + `EUL4_FREQ_UNITS` **[LIVE EUL4 — every column confirmed, 2026-09-14]**
+
+Phase 7.2's source. Not previously documented anywhere in this repository —
+neither the retracted guides nor the pre-2026-09-14 cut of this file named
+these tables. Probed with `all_tab_columns` + full `SELECT *` (24 reports on
+the live estate, small enough to dump whole) rather than guessed.
+
+**`EUL4_BATCH_REPORTS`** — one row per scheduled batch job (24 rows live).
+
+| Column | Type | Meaning |
+| --- | --- | --- |
+| `BR_ID` | NUMBER (PK) | |
+| `BR_NAME` | VARCHAR2 | the batch job's own name, distinct from the workbook it runs |
+| `BR_WORKBOOK_NAME` | VARCHAR2 | the source workbook — matches `workbooks.name` on the migrated target **exactly**, including the `GD_M.*.DIS` form where the source used it (confirmed against all 11 distinct values live) |
+| `BR_DESCRIPTION` | VARCHAR2 | free text, e.g. `"M04A_V02" agendado como "M04A_V024" em 25.04.09` |
+| `BR_NEXT_RUN_DATE` | DATE | when it would next fire |
+| `BR_JOB_ID` | NUMBER | Oracle `DBMS_JOB` id — not migrated, Neo's scheduler is BullMQ |
+| `BR_EXPIRY` | NUMBER | **not confirmed.** Values observed (1, 4, 10, 30) don't correlate with `BR_RFU_ID`/`BR_NUM_FREQ_UNITS` on any live row, so it is not the repeat count. Read as a result-retention window (days) by name and by Discoverer's documented "purge after N days" batch option, but no live row exercises a value that would let this be verified independently. **Not migrated** — no target column holds it. |
+| `BR_COMPLETION_DATE` | DATE | when the (single, on every live row) run finished |
+| `BR_NUM_FREQ_UNITS` | NUMBER | repeat count, paired with `BR_RFU_ID` |
+| `BR_EU_ID` | NUMBER | owner → `EUL_USERS.EU_ID`. **This, not `BR_CREATED_BY`, is the entitlement owner** — on this estate the two happen to agree (both resolve to `MAPTESTES` or `SIID_TESTES`), but `BR_EU_ID` is the documented FK and is what Phase 7.2 resolves against. |
+| `BR_RFU_ID` | NUMBER | frequency unit → `EUL4_FREQ_UNITS.RFU_ID` |
+| `BR_AUTO_REFRESH` | NUMBER | **the recurrence flag.** `0` = run once, never resubmitted; `1` = recurring (per the SQL scheduler's design — no live row has `1` to confirm the resubmission mechanics, but `0` on every one of the 24 live rows is unambiguous: **every scheduled batch job in this estate is a one-shot, not a cron**). |
+| `BR_REPORT_SCHEMA` | VARCHAR2 | the connecting DB schema — a service account (`MAPTESTES`/`SIID_TESTES`), not a person; do not use as the entitlement owner |
+| `BR_ELEMENT_STATE` | NUMBER | 0 on every live row |
+| `BR_CREATED_BY`, `BR_CREATED_DATE`, `BR_UPDATED_BY`, `BR_UPDATED_DATE` | — | audit; `BR_CREATED_BY` tracks `BR_REPORT_SCHEMA` 1:1 on this estate — it is the connecting schema, not the owner |
+| `NOTM` | NUMBER | unconfirmed, always 0 or null on live data |
+
+**`EUL4_BATCH_SHEETS`** — one row per worksheet a batch job includes (29 rows
+live; most reports have one, a few have two or four).
+
+| Column | Type | Meaning |
+| --- | --- | --- |
+| `BS_ID` | NUMBER (PK) | |
+| `BS_BR_ID` | NUMBER | → `EUL4_BATCH_REPORTS.BR_ID` |
+| `BS_SHEET_NAME` | VARCHAR2 | the worksheet's display name. For a single-worksheet workbook, `maps.name` on the target equals the workbook name and this field is redundant; for a multi-worksheet workbook, the target map is named `"<workbook name> — <worksheet name>"` and `BS_SHEET_NAME` is the suffix (confirmed live: workbook `M65_V17` has maps `"M65_V17 — M65 Valores em Carteira"` and `"M65_V17 — M65 Contencioso"`, matching `BS_SHEET_NAME` values seen on its `BATCH_SHEETS` rows) |
+| `BS_SHEET_ID` | VARCHAR2 | a `{GUID}` — the worksheet's internal id inside the `.DIS` container. **Not stored anywhere on the target** (`maps` carries no sheet GUID), so it cannot be used to join; name matching is the only path, per above |
+| `BS_ELEMENT_STATE`, `BS_CREATED_BY/DATE`, `BS_UPDATED_BY/DATE` | — | audit, all 0 / matches parent report live |
+| `NOTM` | NUMBER | unconfirmed |
+
+**`EUL4_BATCH_QUERIES`** — one row per query block within a scheduled sheet
+(29 rows live, 1:1 with `BATCH_SHEETS` on this estate).
+
+| Column | Type | Meaning |
+| --- | --- | --- |
+| `BQ_ID` | NUMBER (PK) | |
+| `BQ_BS_ID` | NUMBER | → `EUL4_BATCH_SHEETS.BS_ID` |
+| `BQ_QUERY_ID` | VARCHAR2 | the sheet's `{GUID}` with a trailing query index (`{...}0`) |
+| `BQ_RESULT_SQL_1..4` | VARCHAR2 | **a SQL template, split across up to 4 columns because the whole string exceeds one VARCHAR2's length** — not a table name. It reads `SELECT <BRVCn/BRNn/BRDn columns> as E<expr_id> ... FROM <TABLE_NAME> Order By ...`, with the literal placeholder text `<TABLE_NAME>` still present. `<TABLE_NAME>` is substituted at run time with one of the `EUL4_B<timestamp>Q<n>R1` materialised result tables (§ below); the generic `BRVCn`/`BRNn`/`BRDn` column names only become meaningful through the `E<expr_id>` aliases, which map back to `EXPRESSIONS`. Concatenate `1..4` (nulls skipped) to get the full statement. |
+| `BQ_ELEMENT_STATE`, `BQ_CREATED_BY/DATE`, `BQ_UPDATED_BY/DATE` | — | audit |
+| `NOTM` | NUMBER | unconfirmed |
+
+**`EUL4_BATCH_PARAMS`** — fixed parameter values for a scheduled sheet (106
+rows live).
+
+| Column | Type | Meaning |
+| --- | --- | --- |
+| `BP_ID` | NUMBER (PK) | |
+| `BP_NAME` | VARCHAR2 | parameter name — matches an `EXPRESSIONS`/workbook parameter name |
+| `BP_VALUE1..6` | VARCHAR2 | up to 6 values (a multi-value parameter gets more than one slot filled) |
+| `BP_BS_ID` | NUMBER | → `EUL4_BATCH_SHEETS.BS_ID` — **parameters attach per sheet, not per query** |
+| `BP_ELEMENT_STATE`, `BP_CREATED_BY/DATE`, `BP_UPDATED_BY/DATE` | — | audit |
+| `NOTM` | NUMBER | unconfirmed |
+
+**`EUL4_BR_RUNS`** — one row per historical execution attempt (24 rows live —
+1:1 with `BATCH_REPORTS` on this estate; every report has exactly one
+recorded run, consistent with `BR_AUTO_REFRESH = 0` everywhere).
+
+| Column | Type | Meaning |
+| --- | --- | --- |
+| `BRR_ID` | NUMBER (PK) | |
+| `BRR_BR_ID` | NUMBER | → `EUL4_BATCH_REPORTS.BR_ID` |
+| `BRR_RUN_NUMBER` | NUMBER | `1` on every live row |
+| `BRR_STATE` | NUMBER | **not confirmed.** Live values: `2` (2 rows), `4` (13 rows), `7` (2 rows), `9` (7 rows). Every `STATE = 4` row carries a real `BRR_SVR_ERR_CODE`; every other state has none. That correlation is confirmed and is what Phase 7.2 migrates on (`errCode present ⇒ FAILED, else ⇒ SUCCESS`); the specific meaning of `2`/`7`/`9` individually is not, and is not claimed anywhere in code or docs. |
+| `BRR_RUN_DATE` | DATE | |
+| `BRR_SVR_ERR_CODE` | NUMBER | negative Oracle error number when the run failed (`-1854`, `-1722` observed) |
+| `BRR_SVR_ERR_TEXT` | VARCHAR2 | the Oracle error message, in the connecting session's language (Portuguese, on this estate: `ORA-01854: a data juliana deve situar-se entre 1 e 5373484`, `ORA-01722: número inválido`) |
+| `BRR_ACT_ELAP_TIME` | NUMBER | elapsed time |
+| `BRR_ELEMENT_STATE`, `BRR_CREATED_BY/DATE`, `BRR_UPDATED_BY/DATE` | — | audit |
+| `NOTM` | NUMBER | unconfirmed |
+
+**`EUL4_FREQ_UNITS`** — the six built-in frequency units (6 rows, fixed
+Discoverer seed data, `RFU_CREATED_DATE = 2010-11-11` on every row of this
+estate). `RFU_NAME_MN` is a message-number, not resolvable without the
+message catalogue; the unit is identified here by reading
+`RFU_SQL_EXPRESSION` instead, which is unambiguous:
+
+| `RFU_ID` | `RFU_SEQUENCE` | Expression shape | Unit |
+| --- | --- | --- | --- |
+| 2000 | 1 | `... + (&bind_num_units * 1/1440)` | MINUTES |
+| 2001 | 2 | `... + (&bind_num_units * 1/24)` | HOURS |
+| 2002 | 3 | `... + (&bind_num_units)` | DAYS |
+| 2003 | 4 | `... + (&bind_num_units * 7)` | WEEKS |
+| 2004 | 5 | `add_months(..., &bind_num_units)` | MONTHS |
+| 2005 | 6 | `add_months(..., &bind_num_units * 12)` | YEARS |
+
+Every one of the 24 live `BATCH_REPORTS` rows uses `RFU_ID = 2002` (DAYS)
+with `BR_NUM_FREQ_UNITS = 1` — but since `BR_AUTO_REFRESH = 0` on all of
+them, the unit never actually recurs; it only shaped what a manual resubmit
+would have used.
+
+**`EUL4_B<timestamp>Q<n>R1`** — the materialised result tables `<TABLE_NAME>`
+in `BQ_RESULT_SQL_*` is substituted with at run time. Named
+`B<YYMMDDHHMMSS>Q<query-index>R1`. Nine exist on the live estate; eight are
+empty, one (`EUL4_B260506220828Q1R1`) holds 861 rows. Columns are always
+generic `BRVCn` (VARCHAR2) / `BRNn` (NUMBER) / `BRDn` (DATE) — meaningless
+without the `E<expr_id>` alias map from the owning `BATCH_QUERIES` row.
+**Decision:** drop all nine rather than migrate their contents — see
+[`docs/decisions/scheduled-result-retention.md`](../docs/decisions/scheduled-result-retention.md).
+
+---
+
 ## 4. Status — rebuild completed
 
 The read layer has been rebuilt against this document. What changed:
