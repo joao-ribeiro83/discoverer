@@ -85,16 +85,20 @@ export function generateSql(
     .join('\n');
 
   // Totals reuse the main query's FROM and WHERE — and so its bind parameters
-  // — but never its GROUP BY, ORDER BY or pagination: a total is one row over
-  // the whole filtered set, or one row per break value.
+  // — but never its own ORDER BY or pagination, and never its GROUP BY except
+  // as part of the BE-07 wrapper below: a total is one row over the whole
+  // filtered set, or one row per break value.
   //
   // BE-07: under SELECT DISTINCT, "the whole filtered set" means the
   // *deduplicated* set the user sees, not the raw joined rows behind it —
   // so the totals' FROM becomes the main SELECT DISTINCT statement itself,
   // wrapped as an inline view (aliased `DISTINCT_TOTALS_ALIAS`), and totals.ts
-  // aggregates its columns instead of recomputing the raw expressions.
+  // aggregates its columns instead of recomputing the raw expressions. Its
+  // GROUP BY comes along too when the main query has one (a map that mixes
+  // an aggregating item with DISTINCT, ORA-00937 without it): the wrapper
+  // must run the identical statement, not a de-grouped variant of it.
   const totalsFrom = select.distinct
-    ? `FROM (\n${[select.sql, from, where.sql].filter(Boolean).join('\n')}\n) ${DISTINCT_TOTALS_ALIAS}`
+    ? `FROM (\n${[select.sql, from, where.sql, groupBy].filter(Boolean).join('\n')}\n) ${DISTINCT_TOTALS_ALIAS}`
     : from;
   const totalsWhere = select.distinct ? '' : where.sql;
   const totals = totalsPlan.entries.map((entry) => ({

@@ -3207,6 +3207,43 @@ describe('SQL generator', () => {
           'it points at a column this map does not use',
         );
       });
+
+      // A real migrated map hit exactly this: a calculated field whose own
+      // formula already aggregates (Discoverer's item-level default
+      // aggregation), totalled on a SELECT DISTINCT worksheet. Oracle needs a
+      // GROUP BY to run SELECT DISTINCT alongside an aggregate column, which
+      // makes the wrapper's "AMOUNT_SUM" column a per-group figure, not the
+      // grand total — re-summing it is what makes it one again.
+      it('re-sums an already-aggregating calculated field instead of leaving it unwrapped', () => {
+        const f = salesFixture();
+        const calc = mkCalcField({
+          name: 'Total Amount',
+          formula: 'SUM(AMOUNT)',
+        });
+        const def = mkDef({
+          map: mkMap({ selectDistinct: true }),
+          items: [
+            { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+          ],
+          calculatedFields: [calc],
+          totals: [mkTotal({ mapCalculatedFieldId: calc.id, aggFunction: 'SUM' })],
+          formulaItems: f.formulaItems,
+        });
+
+        const result = generateSql(def);
+        expect(result.totals).toHaveLength(1);
+        const [group] = result.totals;
+        expect(norm(group!.sql)).toBe(
+          'SELECT SUM(dt."TOTAL_AMOUNT") AS SUM_TOTAL_AMOUNT FROM ' +
+            '( SELECT DISTINCT f1."REGION" AS REGION, SUM(f1."AMOUNT") AS TOTAL_AMOUNT ' +
+            'FROM "APP"."SALES" f1 GROUP BY f1."REGION" ) dt',
+        );
+        // Not unwrapped (that would be one row per group, not a grand total)
+        // and not double-summed inside the wrapper.
+        expect(norm(group!.sql)).not.toContain('SUM(SUM(');
+        expect(group!.totals[0]!.aggFunction).toBe('SUM');
+        expectParsable(group!.sql);
+      });
     });
   });
 });
