@@ -35,7 +35,7 @@ function sketch(schema: Schema | undefined, depth = 0): string {
     });
     return `{\n${lines.join('\n')}\n${'  '.repeat(depth)}}`;
   }
-  if (type === 'string' && schema.format) return `string (${schema.format})`;
+  if (type === 'string' && schema.format) return `string (${schema.format as string})`;
   return type ?? 'any';
 }
 
@@ -54,7 +54,7 @@ function renderParams(op: Schema): string {
   const rows = params.map((p) => {
     const schema = (p.schema as Schema) ?? {};
     const type = sketch(schema).replace(/\n/g, ' ').replace(/\|/g, '\\|');
-    return `| \`${p.name}\` | ${p.in} | ${p.required ? 'yes' : 'no'} | ${type} |`;
+    return `| \`${String(p.name)}\` | ${String(p.in)} | ${p.required ? 'yes' : 'no'} | ${type} |`;
   });
   return `\n**Parameters:**\n\n| Name | In | Required | Type |\n| --- | --- | --- | --- |\n${rows.join('\n')}\n`;
 }
@@ -84,7 +84,7 @@ function renderEndpointsMarkdown(spec: Schema): string {
   for (const tag of tags) byTag.set(tag, []);
   for (const [path, methods] of Object.entries(paths)) {
     for (const [method, op] of Object.entries(methods)) {
-      const tag = ((op.tags as string[]) ?? ['Untagged'])[0];
+      const tag = ((op.tags as string[]) ?? ['Untagged'])[0] ?? 'Untagged';
       if (!byTag.has(tag)) byTag.set(tag, []);
       byTag.get(tag)!.push({ method: method.toUpperCase(), path, op });
     }
