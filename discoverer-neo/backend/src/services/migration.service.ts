@@ -28,10 +28,12 @@ import {
   createTargetDb,
   detectEulVersion,
   generateAssessmentReport,
+  MIGRATED_EMAIL_DOMAIN,
   readEulSchema,
   reimportMaps,
   runMigration,
   TARGET_TABLE_ORDER,
+  usernameToEmailLocal,
 } from '@discoverer-neo/core/migration';
 import type {
   AssessmentReport,
@@ -52,6 +54,12 @@ import { decrypt } from '../lib/encryption.js';
 import { hashPassword } from '../lib/password.js';
 import { writeCredentialFile } from './credential-file.service.js';
 import { verifyOracleClient } from './oracle-connection-pool.js';
+
+// Re-exported so other backend services (e.g. schedule-import.service.ts) can
+// derive a migrated user's email the same way the migrator does, without
+// reaching into @discoverer-neo/core/migration directly — see this file's
+// no-restricted-imports entry in eslint.config.js.
+export { usernameToEmailLocal, MIGRATED_EMAIL_DOMAIN };
 
 // ---------------------------------------------------------------------------
 // Errors
