@@ -23,7 +23,7 @@ const CalculatedFieldSchema = z.object({
 });
 
 const ExportBodySchema = z.object({
-  format: z.enum(['XLSX', 'CSV']),
+  format: z.enum(['XLSX', 'CSV', 'PDF']),
   parameters: z.record(z.string(), z.unknown()).optional(),
   calculatedFields: z.array(CalculatedFieldSchema).max(50).optional(),
   /** Locale for a grand/subtotal row's label text. Defaults to `en`. */

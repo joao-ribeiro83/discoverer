@@ -270,7 +270,11 @@ function rowToRecord(
     timezone: row.timezone,
     validFrom: row.validFrom,
     validUntil: row.validUntil,
-    outputFormat: row.outputFormat,
+    // `output_format` is the same DB enum export_jobs.format uses (now also
+    // 'PDF' for interactive exports), but the schedule-creation route only
+    // ever accepts 'XLSX' | 'CSV' (see schedules.ts's Zod schema) — a
+    // schedule row can never actually hold 'PDF'.
+    outputFormat: row.outputFormat as ScheduleOutputFormat,
     isActive: row.isActive,
     createdBy: row.createdBy,
     createdAt: row.createdAt,

@@ -658,9 +658,9 @@ export interface ExecutionHistoryEntry {
   status: 'SUCCESS' | 'FAILED' | 'TIMEOUT'
 }
 
-// --- data export (Excel/CSV) -------------------------------------------------
+// --- data export (Excel/CSV/PDF) ---------------------------------------------
 
-export type ExportFileFormat = 'XLSX' | 'CSV'
+export type ExportFileFormat = 'XLSX' | 'CSV' | 'PDF'
 export type ExportJobStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED'
 
 export interface ExportJob {
@@ -696,6 +696,9 @@ export interface ScheduleParameterValue {
   paramValue: string | null
 }
 
+/** Scheduled delivery only ever produces a file someone downloads unattended later — PDF stays interactive-only. */
+export type ScheduleOutputFormat = 'XLSX' | 'CSV'
+
 export interface Schedule {
   id: string
   mapId: string
@@ -704,7 +707,7 @@ export interface Schedule {
   timezone: string
   validFrom: string | null
   validUntil: string | null
-  outputFormat: ExportFileFormat
+  outputFormat: ScheduleOutputFormat
   isActive: boolean
   createdBy: string
   createdAt: string
@@ -726,7 +729,7 @@ export interface CreateScheduleInput {
   timezone?: string
   validFrom?: string | null
   validUntil?: string | null
-  outputFormat: ExportFileFormat
+  outputFormat: ScheduleOutputFormat
   isActive?: boolean
   parameters?: ScheduleParameterValue[]
 }

@@ -1,6 +1,6 @@
 # Exporting Data
 
-Learn how to download map results as Excel or CSV files.
+Learn how to download map results as Excel, CSV, or PDF files.
 
 ## Export Formats
 
@@ -8,13 +8,18 @@ Learn how to download map results as Excel or CSV files.
 |--------|----------|----------|
 | **XLSX** (Excel) | Professional reports, analysis | Formatting, multiple sheets, charts |
 | **CSV** (Comma-Separated Values) | Data integration, spreadsheets | Plain text, universal compatibility |
+| **PDF** | Printing, sharing a fixed layout | Page setup (orientation, margins, header/footer) when the map defines one |
+
+All three match what the screen shows: group breaks, subtotals and grand
+totals are exported in the same order and with the same labels the results
+grid draws.
 
 ## Exporting Results
 
 ### From Map Execution
 
 1. After executing a map, click the **Export** button
-2. Choose format: **XLSX** or **CSV**
+2. Choose format: **Excel**, **CSV**, or **PDF**
 3. Click **Export**
 
 The export job is queued and will begin processing.
@@ -107,6 +112,19 @@ Open with:
 - UTF-8 encoded
 - Quoted values contain special characters
 - Suitable for import into databases or scripts
+
+### PDF
+
+Open with any PDF reader, or print directly.
+
+**PDF layout:**
+- Bordered table matching the results grid, with the column headers repeated
+  on every page
+- Orientation, margins, and header/footer text come from the map's page
+  setup when it defines one, and fall back to portrait A4 with plain margins
+  otherwise — page setup has no authoring screen yet, so today this only
+  applies to a map an administrator has set one for directly
+- Paginates automatically once the rows no longer fit one page
 
 ## Sharing Exported Files
 

@@ -10,7 +10,7 @@ export interface ExportJobData {
   /** The `export_jobs` row this job writes its progress and result to. */
   exportJobId: string;
   mapId: string;
-  format: 'XLSX' | 'CSV';
+  format: 'XLSX' | 'CSV' | 'PDF';
   requestedBy: string;
   parameters?: Record<string, unknown>;
   calculatedFields?: CalcFieldInput[];

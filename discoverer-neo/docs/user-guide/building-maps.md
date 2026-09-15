@@ -212,10 +212,21 @@ the reader should not see.
 day-month-year — and then rendered in each reader's own language, so the same
 map reads correctly for everyone.
 
+### Conditional Formatting
+
+Click **Formatting** in the map toolbar (once the map is saved) to open the
+conditional format rules — Discoverer's Exceptions. Each rule picks a column,
+a comparison, and a value; matching cells or rows get the background colour,
+text colour, bold, italic or underline the rule sets.
+
+Rules are evaluated on the rendered result, not in SQL, so they apply to
+exports too. A worksheet that fans out across more than one set of detail rows
+carries no conditional formats, for the same reason it carries no totals.
+
 ## What's Next?
 
 - **[Executing Maps](executing-maps.md)** — Run your map and view results
-- **[Exporting Data](exporting-data.md)** — Save results as Excel or CSV
+- **[Exporting Data](exporting-data.md)** — Save results as Excel, CSV or PDF
 - **[Sharing Maps](sharing.md)** — Share with other users
 
 ---
