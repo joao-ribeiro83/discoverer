@@ -125,6 +125,13 @@ jobs:
       - name: Check translation completeness
         run: node scripts/i18n-check.mjs pt-PT fr-FR es-ES
 
+      # DOC-05's twin: admin-guide/user-guide/troubleshooting drifted out of
+      # locale parity silently because nothing checked it (see
+      # docs/i18n/ and scripts/docs-i18n-check.mjs's own header for which
+      # categories are localized and why).
+      - name: Check docs locale parity
+        run: node scripts/docs-i18n-check.mjs pt-PT fr-FR es-ES
+
       - name: Test
         run: npm test --workspace @discoverer-neo/frontend -- --run --coverage
 

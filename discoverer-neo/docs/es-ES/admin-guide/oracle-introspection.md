@@ -204,9 +204,8 @@ Para automatizar la inspección a gran escala (p. ej., tras implementar un nuevo
 1. Utilice la CLI o la API de la herramienta de migración para crear carpetas de forma masiva
 2. Escriba un script que realice la inspección a través de la API:
    ```bash
-   curl -X POST http://localhost:3000/api/business-areas/:baId/folders/:folderId/introspect \
-     -H "Authorization: Bearer $TOKEN" \
-     -d '{"dataSourceId":"...","schema":"SALES"}'
+   curl -X POST "http://localhost:3000/api/data-sources/$DATA_SOURCE_ID/introspect?tableOwner=SALES" \
+     -H "Authorization: Bearer $TOKEN"
    ```
 
 ## Próximos pasos
