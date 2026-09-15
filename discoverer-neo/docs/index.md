@@ -78,6 +78,7 @@ Deploy Discoverer Neo to production.
 - **[Backup and Restore](deployment/backup.md)** — Database and export file backup strategies
 - **[Monitoring](deployment/monitoring.md)** — Prometheus metrics and health checks
 - **[Troubleshooting](deployment/troubleshooting.md)** — Common issues and solutions
+- **[What a red `/health` means](troubleshooting/health-check.md)** — readiness vs. liveness, and what each field of a `503` is telling you
 
 ## Migration Guide
 

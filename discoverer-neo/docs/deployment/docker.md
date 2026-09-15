@@ -67,6 +67,62 @@ docker compose ps
 - **Frontend:** http://localhost:5173 (or your frontend port)
 - **Swagger:** http://localhost:3000/api/docs
 
+## Production Deployment (`docker-compose.prod.yml`)
+
+The **Quick Start** above (`docker compose up -d`, no `-f` flag) runs
+`docker-compose.yml` — the dev/general-purpose file, which publishes Postgres
+and Redis to `0.0.0.0` and has no resource limits. It is not the file to
+deploy with. `docker-compose.prod.yml` is: only `nginx` publishes host ports
+(80/443), every service has resource limits and a real healthcheck, and it
+never mounts source — only built images run.
+
+This is the sequence that was actually run end-to-end to verify it (Phase
+8.1, 2026-09-15) — the first time this file had ever been started:
+
+```bash
+cd discoverer-neo
+cp .env.example .env               # then edit: POSTGRES_PASSWORD, JWT_SECRET,
+                                    # ENCRYPTION_KEY (openssl rand -hex 32 each)
+
+# Self-signed cert for local verification — see nginx/nginx-ssl.conf's header
+# for the real-certificate (Let's Encrypt) path.
+mkdir -p certs
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout certs/privkey.pem -out certs/fullchain.pem -subj "/CN=localhost"
+cp certs/fullchain.pem certs/chain.pem
+
+docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml ps          # all five: healthy
+curl -sk https://localhost/health                      # readiness — see below
+```
+
+**Always run `docker compose -f docker-compose.prod.yml down` before ending a
+session** — a dev machine left running the production compose is a surprise
+for whoever opens the repo next.
+
+### What broke on the first real run, and the fix
+
+None of these were visible from reading the compose file — each only showed
+up once the stack actually started:
+
+| Failure | Cause | Fix |
+|---|---|---|
+| Backend never becomes healthy; logs `DPI-1047: Cannot locate a 64-bit Oracle Client library` | `.env` sets `ORACLE_THICK_MODE=true` (this estate's source predates the password verifier thin mode can use), but the image build defaults `INSTALL_ORACLE_CLIENT=false` — two flags that have to agree, and only one was set | `docker-compose.prod.yml`'s `backend.build.args` now reads `INSTALL_ORACLE_CLIENT` from `ORACLE_THICK_MODE` directly — one flag, not two |
+| Frontend never becomes healthy; its own container log shows nginx running fine, but `docker inspect` shows `wget: can't connect to remote host: Connection refused` | The container's healthcheck resolves `localhost` to `::1` first; `frontend/nginx.conf` only had `listen 80;` (IPv4), not `listen [::]:80;` | Added the IPv6 listener, matching `nginx/nginx-ssl.conf`, which already had both |
+| Backend crashes and restarts (repeatedly, as long as Postgres stays down) the moment Postgres is stopped, rather than just reporting `/health` as degraded | `pg`'s `Pool` emits `'error'` on a dead idle client; Node's default handling of an unlistened `'error'` event is to throw and crash the process — `backend/src/db/index.ts` never attached a listener | Added `pool.on('error', ...)` — logs and lets the pool replace the connection, matching what [node-postgres itself documents](https://node-postgres.com/apis/pool) as required |
+| `/health` takes 30–120s (eventually a `504` from nginx) to report Redis is down, instead of a prompt `503` | `ioredis` queues and retries a command against a down server rather than rejecting it immediately (no `maxRetriesPerRequest`/connect timeout configured) | The readiness check now races `redis.ping()` against a 2s timeout |
+
+### Verifying `/health` goes red
+
+```bash
+docker compose -f docker-compose.prod.yml stop postgres
+curl -sk https://localhost/health -w '\nHTTP %{http_code}\n'
+# {"status":"degraded",...,"database":"disconnected",...}  HTTP 503
+curl -sk https://localhost/api/live -w '\nHTTP %{http_code}\n'
+# {"status":"ok",...}  HTTP 200 — liveness is unaffected; see monitoring.md
+docker compose -f docker-compose.prod.yml start postgres
+```
+
 ## Compose Files
 
 ### docker-compose.yml
@@ -347,6 +403,7 @@ docker system df
 - **[SSL/TLS](ssl.md)** — HTTPS setup
 - **[Backup Guide](backup.md)** — Data protection
 - **[Monitoring](monitoring.md)** — Health and performance
+- **[What a red `/health` means](../troubleshooting/health-check.md)** — readiness vs. liveness, and how to diagnose a `503`
 
 ---
 
