@@ -87,18 +87,29 @@ curl http://localhost:3000/metrics
 - `pg_pool_connections_idle` — Idle connections
 - `pg_query_duration_ms` — Query latency (histogram)
 
-**Oracle:**
-- `oracledb_pool_connections_active` — Per-source connections
-- `oracledb_pool_connections_idle`
+**Oracle** (INF-10, one series per data source via the `data_source_id` label):
+- `oracle_pool_connections{state="open|in_use|max|waiting"}` — pool occupancy
+  and queue depth
+- `oracle_pool_acquisition_timeouts_total` — acquisitions that hit
+  `ORACLE_CONNECT_TIMEOUT_MS` (process-wide; see BE-04 below)
+- `oracle_pool_acquisition_failures_total` — acquisitions that failed with a
+  driver/database error, per data source
+- `oracle_pool_acquisition_duration_avg_milliseconds` — average time a
+  request spent queued waiting for a connection, per data source
 
 **Cache:**
-- `redis_cache_hits` — Metadata cache hits
-- `redis_cache_misses` — Cache misses
+- `cache_operations_total{result="hit|miss"}` — metadata cache reads
 
-**Job Queue:**
-- `bullmq_queue_waiting` — Pending jobs
-- `bullmq_queue_active` — Running jobs
-- `bullmq_job_duration_ms` — Job execution time
+**Job Queue** (`state` label: `waiting`, `active`, `delayed`, `failed`):
+- `export_queue_jobs` — export job queue depth
+- `scheduler_queue_jobs` — scheduled-run job queue depth
+- `export_jobs_total{outcome}` / `schedule_runs_total{outcome}` — finished
+  jobs by outcome
+
+**Migration** (INF-10):
+- `migration_running` — 1 while a migration or maps re-import job is active
+- `migration_progress_percent{kind,status,phase}` — percent complete of the
+  most recent migration job
 
 **API:**
 - `http_request_duration_seconds` — Request latency (histogram)
@@ -299,20 +310,34 @@ LIMIT 10;
 
 Monitor:
 ```promql
-pg_pool_connections_active / 10  # as percentage of max (10)
+oracle_pool_connections{state="in_use"} / oracle_pool_connections{state="max"}
+oracle_pool_connections{state="waiting"}
+oracle_pool_acquisition_timeouts_total
 ```
 
-Alert when > 80% (8 connections active).
+A pool that has leaked connections (BE-04) looks identical to a busy one in
+`in_use` alone — `oracle_pool_acquisition_timeouts_total` climbing while
+throughput does not is the tell.
 
-### Export Job Queue
+### Export and Scheduler Job Queues
 
 Monitor:
 ```promql
-bullmq_queue_waiting{queue="export"}
-bullmq_queue_active{queue="export"}
+export_queue_jobs{state="waiting"}
+scheduler_queue_jobs{state="waiting"}
 ```
 
 Alert when queue waiting > 5 jobs (indicates backlog).
+
+### Migration Progress
+
+```promql
+migration_running
+migration_progress_percent
+```
+
+`migration_running` staying at 1 far longer than the estate's usual run time,
+with `migration_progress_percent` flat, indicates a stalled migration.
 
 ## Log Levels
 

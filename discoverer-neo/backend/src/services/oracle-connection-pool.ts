@@ -237,6 +237,10 @@ async function buildPool(dataSourceId: string): Promise<Pool> {
       poolIncrement: POOL_INCREMENT,
       poolTimeout: POOL_IDLE_TIMEOUT_SECONDS,
       queueTimeout: CONNECT_TIMEOUT_MS,
+      // Feeds poolSnapshots()'s waiting/failure/latency fields (INF-10). The
+      // driver only tracks these when asked; cheap bookkeeping, and this is
+      // the only way to see a queue building up before it times out.
+      enableStatistics: true,
     });
   } catch (err) {
     throw new OraclePoolError(
@@ -362,19 +366,32 @@ export interface OraclePoolSnapshot {
   /** Of those, the ones currently checked out. */
   inUse: number;
   max: number;
+  /** Requests currently queued waiting for a free connection. */
+  waiting: number;
+  /** Acquisitions that failed (driver/database errors) since pool creation. */
+  acquireFailures: number;
+  /** Average time (ms) a request spent queued waiting for a connection. */
+  avgAcquireMs: number;
 }
 
 /**
- * Read every live pool. Cheap and synchronous — the driver keeps these as
- * plain properties — so it is safe to call from a Prometheus scrape.
+ * Read every live pool. Cheap and synchronous — `enableStatistics: true` at
+ * pool creation makes `getStatistics()` a plain in-memory read, not a network
+ * call — so it is safe to call from a Prometheus scrape.
  */
 export function poolSnapshots(): OraclePoolSnapshot[] {
-  return [...pools.entries()].map(([dataSourceId, pool]) => ({
-    dataSourceId,
-    open: pool.connectionsOpen,
-    inUse: pool.connectionsInUse,
-    max: POOL_MAX,
-  }));
+  return [...pools.entries()].map(([dataSourceId, pool]) => {
+    const stats = pool.getStatistics();
+    return {
+      dataSourceId,
+      open: pool.connectionsOpen,
+      inUse: pool.connectionsInUse,
+      max: POOL_MAX,
+      waiting: stats?.currentQueueLength ?? 0,
+      acquireFailures: stats?.failedRequests ?? 0,
+      avgAcquireMs: stats?.averageTimeInQueue ?? 0,
+    };
+  });
 }
 
 export function timedOutAcquisitions(): number {

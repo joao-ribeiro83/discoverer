@@ -79,6 +79,7 @@ Deploy Discoverer Neo to production.
 - **[Monitoring](deployment/monitoring.md)** — Prometheus metrics and health checks
 - **[Troubleshooting](deployment/troubleshooting.md)** — Common issues and solutions
 - **[What a red `/health` means](troubleshooting/health-check.md)** — readiness vs. liveness, and what each field of a `503` is telling you
+- **[Reading Oracle pool exhaustion and queue backlog](troubleshooting/oracle-pool-and-queues.md)** — telling a leaked pool from a busy one, and what a growing export/scheduler queue means
 
 ## Migration Guide
 
