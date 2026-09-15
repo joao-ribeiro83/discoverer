@@ -52,6 +52,16 @@ export const MAX_TIMEOUT_MS = 30_000;
 /** Upper bound on rows an async job buffers in memory. */
 export const ASYNC_MAX_ROWS = 100_000;
 const ASYNC_FETCH_BATCH = 1_000;
+/**
+ * Bounds on the in-memory `jobs` registry (BE-03). Without these, a job's
+ * result — up to `ASYNC_MAX_ROWS` rows, JSON-serialisable — is retained for
+ * the process lifetime; nothing ever removed a finished job. Same idiom as
+ * `migration.service.ts`'s `pruneJobs`: async results are poll-until-done
+ * working data, not a durable record (that is `queryExecutionLog`), so an
+ * in-memory TTL + count cap is correct and Redis is not needed.
+ */
+const ASYNC_JOB_TTL_MS = 30 * 60 * 1000;
+const ASYNC_JOB_MAX_COUNT = 200;
 
 /**
  * node-oracledb's OUT_FORMAT_OBJECT constant. Hard-coded so this service stays
@@ -912,6 +922,36 @@ const activeConnections = new Map<
 >();
 const cancelRequested = new Set<string>();
 
+const TERMINAL_JOB_STATUSES: readonly AsyncJobStatus[] = [
+  'COMPLETED',
+  'FAILED',
+  'TIMEOUT',
+  'CANCELLED',
+];
+
+/**
+ * Evict finished jobs older than the TTL, then trim down to the count cap
+ * (oldest finished jobs first) if still over. A job still QUEUED/RUNNING is
+ * never evicted — only its terminal result is retention data. Run on every
+ * new job so the registry cannot grow past these bounds even under sustained
+ * async-execute traffic with nobody polling for results.
+ */
+function pruneJobs(): void {
+  const cutoff = Date.now() - ASYNC_JOB_TTL_MS;
+  for (const [id, job] of jobs) {
+    if (job.finishedAt && job.finishedAt.getTime() < cutoff) jobs.delete(id);
+  }
+
+  if (jobs.size <= ASYNC_JOB_MAX_COUNT) return;
+  const finished = [...jobs.entries()]
+    .filter(([, job]) => TERMINAL_JOB_STATUSES.includes(job.status))
+    .sort((a, b) => a[1].createdAt.getTime() - b[1].createdAt.getTime());
+  for (const [id] of finished) {
+    if (jobs.size <= ASYNC_JOB_MAX_COUNT) break;
+    jobs.delete(id);
+  }
+}
+
 export function executeMapAsync(
   mapId: string,
   parameterValues: Record<string, unknown>,
@@ -920,6 +960,7 @@ export function executeMapAsync(
   deps: MapExecutionDeps = defaultDeps(),
 ): Promise<{ jobId: string }> {
   const jobId = randomUUID();
+  pruneJobs();
   jobs.set(jobId, { jobId, mapId, userId, status: 'QUEUED', createdAt: new Date() });
   // Fire-and-forget; runAsyncJob owns all state transitions and cleanup.
   void runAsyncJob(jobId, mapId, parameterValues, userId, options, deps);
