@@ -67,9 +67,12 @@ services:
     image: redis:7-alpine
     container_name: discoverer-neo-redis
     restart: unless-stopped
-    # RDB persistence (default redis.conf: save 3600 1 / 300 100 / 60 10000)
-    # is enough for this app's use of Redis — a cache + BullMQ queue, neither
-    # of which needs AOF durability guarantees.
+    # AOF, fsync every second (INF-11): Redis is the system of record for
+    # BullMQ job state (export/scheduler queues), not just a cache — RDB's
+    # up-to-1-hour snapshot window can silently drop in-flight and delayed
+    # jobs on a crash. `everysec` accepts at most ~1s of job loss, which is
+    # the standard trade against fsync-per-write throughput cost.
+    command: redis-server --appendonly yes --appendfsync everysec
     volumes:
       - redis_data:/data
     healthcheck:

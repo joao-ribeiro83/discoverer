@@ -4,7 +4,7 @@
 #
 # Usage:
 #   ./scripts/restore.sh --postgres backups/postgres/discoverer_neo_20260719-020000.dump.gz \
-#                         [--redis backups/redis/dump_20260719-020000.rdb] \
+#                         [--redis backups/redis/data_20260719-020000.tar.gz] \
 #                         [--files backups/files/generated_files_20260719-020000.tar.gz] \
 #                         [--compose-file docker-compose.prod.yml]
 #
@@ -74,10 +74,14 @@ if [ -n "$PG_FILE" ]; then
 fi
 
 if [ -n "$REDIS_FILE" ]; then
-  [ -f "$REDIS_FILE" ] || { echo "Redis snapshot not found: $REDIS_FILE" >&2; exit 1; }
+  [ -f "$REDIS_FILE" ] || { echo "Redis backup not found: $REDIS_FILE" >&2; exit 1; }
   echo "==> Restoring Redis from $REDIS_FILE"
   docker compose -f "$COMPOSE_FILE" stop redis
-  docker compose -f "$COMPOSE_FILE" cp "$REDIS_FILE" "redis:/data/dump.rdb"
+  # Replace the whole /data dir (RDB + AOF) via a throwaway container sharing
+  # the stopped service's volume — same --volumes-from trick as the files
+  # restore below, since `docker compose cp` only ever moves one file.
+  docker run --rm -i --volumes-from "$REDIS_CONTAINER" alpine \
+    sh -c "rm -rf /data/* /data/.[!.]*; tar xzf - -C /data" < "$REDIS_FILE"
   docker compose -f "$COMPOSE_FILE" start redis
   echo "    done"
 fi
