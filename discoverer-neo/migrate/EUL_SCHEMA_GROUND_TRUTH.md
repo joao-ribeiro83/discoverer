@@ -1097,7 +1097,7 @@ section and are scoped there.
 ### 7.7 Verified against Oracle's own dump tool
 
 `DISCVR4/d4wkdmp.exe -f` — Oracle's own workbook dumper — runs (see
-`DISCOVERER_NEO_WORKSHEET_FIDELITY_PLAN.md` §2 for the recipe) and gives a
+`docs/archive/DISCOVERER_NEO_WORKSHEET_FIDELITY_PLAN.md` §2 for the recipe) and gives a
 reference to check this parser against instead of trusting it on inspection.
 The harness is `migrate/src/services/d4wkdmp-dump-parser.ts` +
 `d4wkdmp-differ.ts`, driven by `migrate/src/scripts/diff-corpus.ts`; see

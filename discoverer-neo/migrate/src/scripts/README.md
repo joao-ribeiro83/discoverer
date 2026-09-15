@@ -5,7 +5,7 @@ is exported from `@discoverer-neo/core/migration`'s package entry points (`.` /
 `./testing`), and it needs things the migration never depends on: a 32-bit
 Windows host and Oracle 8 client (`DISCVR4/d4wkdmp.exe`) for the corpus dump,
 and a live connection to the source EUL for the differ. See
-`DISCOVERER_NEO_WORKSHEET_FIDELITY_PLAN.md` (task W1) for why this exists —
+`docs/archive/DISCOVERER_NEO_WORKSHEET_FIDELITY_PLAN.md` (task W1) for why this exists —
 every later worksheet-fidelity task is checked against this harness's report
 rather than trusted on inspection.
 

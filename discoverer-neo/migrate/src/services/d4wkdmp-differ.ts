@@ -2,7 +2,7 @@
  * Compares Oracle's own `d4wkdmp.exe -f` dump of a workbook against what
  * `workbook-parser.ts` reads from the same workbook's raw bytes.
  *
- * This is the verification harness `DISCOVERER_NEO_WORKSHEET_FIDELITY_PLAN.md`
+ * This is the verification harness `docs/archive/DISCOVERER_NEO_WORKSHEET_FIDELITY_PLAN.md`
  * (task W1) calls for: everything later in that plan (W2 onward) is checked
  * against this differ's report rather than trusted on inspection. See
  * `migrate/src/scripts/diff-corpus.ts` for the CLI that drives it against a

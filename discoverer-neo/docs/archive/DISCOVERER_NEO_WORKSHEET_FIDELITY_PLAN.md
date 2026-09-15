@@ -1,5 +1,16 @@
 # Worksheet Fidelity — Execution Plan
 
+> **ARCHIVED — superseded 2026-09-15.** See [`MASTER_IMPLEMENTATION_PLAN.md`](../../../MASTER_IMPLEMENTATION_PLAN.md)
+> for current status and [`DECISION_REGISTER.md`](../../../docs/master-plan/DECISION_REGISTER.md) D-001 for why.
+> Referenced by code comments in `migrate/src/services/d4wkdmp-differ.ts`,
+> `migrate/src/scripts/README.md`, and `migrate/EUL_SCHEMA_GROUND_TRUTH.md` — this file moved
+> here, those references now point at `docs/archive/DISCOVERER_NEO_WORKSHEET_FIDELITY_PLAN.md`.
+>
+> **Every `✅` / `- [x]` below is an acceptance criterion this plan set out to meet, not a
+> completion record (DOC-01).** The checkmarks were written before the work and never updated
+> after. Read this file as evidence of the reasoning behind the plan, not as a report of what
+> shipped.
+
 **Created:** 2026-08-25 · **Revised:** 2026-08-25 (after `d4wkdmp.exe` was made to run)
 **Scope:** bring migrated maps up to what a Discoverer 4 worksheet actually holds.
 **Background:** the workbook body (`EUL4_DOCUMENTS.DOC_DOCUMENT`) is already

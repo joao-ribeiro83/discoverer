@@ -1,5 +1,13 @@
 # Discoverer Neo — Project Summary
 
+> **ARCHIVED — superseded 2026-09-15.** See [`MASTER_IMPLEMENTATION_PLAN.md`](../../../MASTER_IMPLEMENTATION_PLAN.md)
+> for current status and [`DECISION_REGISTER.md`](../../../docs/master-plan/DECISION_REGISTER.md) D-001 for why.
+>
+> **Every `✅` / `- [x]` below is an acceptance criterion this plan set out to meet, not a
+> completion record (DOC-01).** The checkmarks were written before the work and never updated
+> after. Read this file as evidence of the reasoning behind the plan, not as a report of what
+> shipped.
+
 ## What is Discoverer Neo?
 
 **Discoverer Neo** is a modern, open-source replacement for Oracle Discoverer 4, built with current technologies and designed to run entirely in Docker containers. It replicates all the features you currently use in Discoverer while removing the limitations (like the 65,000-row Excel limit).
