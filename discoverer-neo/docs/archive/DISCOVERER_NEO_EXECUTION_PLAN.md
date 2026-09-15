@@ -1,5 +1,13 @@
 # Discoverer Neo — Execution Plan
 
+> **ARCHIVED — superseded 2026-09-15.** See [`MASTER_IMPLEMENTATION_PLAN.md`](../../../MASTER_IMPLEMENTATION_PLAN.md)
+> for current status and [`DECISION_REGISTER.md`](../../../docs/master-plan/DECISION_REGISTER.md) D-001 for why.
+>
+> **Every `✅` / `- [x]` below is an acceptance criterion this plan set out to meet, not a
+> completion record (DOC-01).** The checkmarks were written before the work and never updated
+> after. Read this file as evidence of the reasoning behind the plan, not as a report of what
+> shipped.
+
 > **Version:** 1.1 (updated 2026-07-20 — added Phase 7: Internationalization, Theming & User Preferences)
 > **Date:** 2026-06-22  
 > **Estimated Duration:** 16-20 weeks (full-time development) for Phases 0–6, +3-4 weeks extension for Phase 7  

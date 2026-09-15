@@ -1,5 +1,15 @@
 # Discoverer Neo — Plan Review & Status Assessment
 
+> **ARCHIVED — superseded 2026-09-15.** See [`MASTER_IMPLEMENTATION_PLAN.md`](../../../MASTER_IMPLEMENTATION_PLAN.md)
+> for current status and [`DECISION_REGISTER.md`](../../../docs/master-plan/DECISION_REGISTER.md) D-001 for why.
+>
+> **This "verification of actual status" is itself seven weeks stale, and wrong in the
+> understating direction (DOC-02).** It reports Phases 2–6 as "Not started"; today those phases
+> are built. Read it as a snapshot of 2026-07-12, not as current status.
+>
+> **Every `✅` / `- [x]` in the plans this file reviews is an acceptance criterion, not a
+> completion record (DOC-01)** — see `MASTER_IMPLEMENTATION_PLAN.md` for what is actually built.
+
 > **Version:** 1.0
 > **Date:** 2026-07-12
 > **Reviewed by:** Claude Fable 5

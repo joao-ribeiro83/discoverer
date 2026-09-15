@@ -55,6 +55,8 @@ table or column names from them. Details in `../CLAUDE.md`.
 
 ## Plan
 
-`../DISCOVERER_NEO_SESSION_PLAN.md` holds the phased session plan;
-`../DISCOVERER_NEO_ARCHITECTURE.md` the architecture. Both are large — read the
-section you need, not the whole file.
+`../MASTER_IMPLEMENTATION_PLAN.md` holds the phased plan and its decision
+register (`../docs/master-plan/DECISION_REGISTER.md`); `../DISCOVERER_NEO_ARCHITECTURE.md`
+the architecture. Both are large — read the section you need, not the whole file.
+The earlier session/execution plans it superseded are kept for their reasoning
+in `docs/archive/` (D-001) — they are not current status.
