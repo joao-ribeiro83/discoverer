@@ -5,7 +5,7 @@ import { and, desc, eq, lt, isNotNull } from 'drizzle-orm';
 import type { Connection } from 'oracledb';
 import { config } from '../config.js';
 import { db } from '../db/index.js';
-import { exportJobs } from '../db/schema.js';
+import { exportJobs, maps, mapPageSetup } from '../db/schema.js';
 import { exportQueue, type ExportJobData } from '../queues/export.queue.js';
 import {
   defaultDeps,
@@ -21,6 +21,7 @@ import {
 } from './map-execution.service.js';
 import { writeXlsx } from './exporters/excel-exporter.js';
 import { writeCsv } from './exporters/csv-exporter.js';
+import { writePdf } from './exporters/pdf-exporter.js';
 import type { ExportSource, ExportWriteResult } from './exporters/types.js';
 import {
   createWorksheetRowBuilder,
@@ -42,7 +43,7 @@ import type { CalcFieldInput } from './calculated-field-evaluator.js';
 // export can still be found (and re-downloaded) days later.
 // ---------------------------------------------------------------------------
 
-export type ExportFormat = 'XLSX' | 'CSV';
+export type ExportFormat = 'XLSX' | 'CSV' | 'PDF';
 export type ExportJobStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
 
 /**
@@ -101,12 +102,18 @@ export interface ExportJobDeps {
   updateJob(id: string, patch: ExportJobPatch): Promise<void>;
   getJob(id: string): Promise<ExportJobRecord | null>;
   listJobs(userId: string, limit: number): Promise<ExportJobRecord[]>;
-  /** Hands the streaming source to the format's writer. */
+  /**
+   * Hands the streaming source to the format's writer. `mapId` and `locale`
+   * are only used by PDF — to look up `map_page_setup`/the map's own name,
+   * and to format the `&D` header/footer placeholder — XLSX/CSV ignore both.
+   */
   writeExportFile(
     source: ExportSource,
     format: ExportFormat,
     filePath: string,
+    mapId: string,
     onRows?: (rows: number) => void,
+    locale?: ExportLocale,
   ): Promise<ExportWriteResult>;
   /** Enqueue the background job that performs the export. */
   enqueue(data: ExportJobData): Promise<void>;
@@ -169,12 +176,31 @@ async function defaultWriteExportFile(
   source: ExportSource,
   format: ExportFormat,
   filePath: string,
+  mapId: string,
   onRows?: (rows: number) => void,
+  locale?: ExportLocale,
 ): Promise<ExportWriteResult> {
   await fsp.mkdir(path.dirname(filePath), { recursive: true });
-  return format === 'XLSX'
-    ? writeXlsx(filePath, source, { onRows })
-    : writeCsv(filePath, source, { onRows });
+  switch (format) {
+    case 'XLSX':
+      return writeXlsx(filePath, source, { onRows });
+    case 'CSV':
+      return writeCsv(filePath, source, { onRows });
+    case 'PDF': {
+      const [map] = await db.select({ name: maps.name }).from(maps).where(eq(maps.id, mapId)).limit(1);
+      const [setup] = await db
+        .select()
+        .from(mapPageSetup)
+        .where(eq(mapPageSetup.mapId, mapId))
+        .limit(1);
+      return writePdf(filePath, source, {
+        onRows,
+        pageSetup: setup ?? null,
+        title: map?.name ?? 'Export',
+        locale,
+      });
+    }
+  }
 }
 
 async function defaultEnqueue(data: ExportJobData): Promise<void> {
@@ -204,7 +230,14 @@ export function defaultExportDeps(): ExportJobDeps {
 // ---------------------------------------------------------------------------
 
 function extensionFor(format: ExportFormat): string {
-  return format === 'XLSX' ? 'xlsx' : 'csv';
+  switch (format) {
+    case 'XLSX':
+      return 'xlsx';
+    case 'PDF':
+      return 'pdf';
+    case 'CSV':
+      return 'csv';
+  }
 }
 
 export function buildExportFilePath(jobId: string, format: ExportFormat): string {
@@ -396,9 +429,16 @@ export async function processExportJob(
     const source: ExportSource = { columns, batches };
     const filePath = buildExportFilePath(exportJobId, format);
 
-    const result = await deps.writeExportFile(source, format, filePath, (rows) => {
-      void safeUpdate(deps, exportJobId, { progress: streamingProgress(rows) });
-    });
+    const result = await deps.writeExportFile(
+      source,
+      format,
+      filePath,
+      mapId,
+      (rows) => {
+        void safeUpdate(deps, exportJobId, { progress: streamingProgress(rows) });
+      },
+      data.locale,
+    );
 
     await deps.updateJob(exportJobId, {
       status: 'COMPLETED',
@@ -464,6 +504,7 @@ export interface ExportDownload {
 const CONTENT_TYPES: Record<ExportFormat, string> = {
   XLSX: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   CSV: 'text/csv; charset=utf-8',
+  PDF: 'application/pdf',
 };
 
 export class ExportNotReadyError extends Error {

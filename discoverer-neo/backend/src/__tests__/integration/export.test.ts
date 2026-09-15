@@ -27,6 +27,7 @@ import {
 import { attemptsExhausted } from '../../workers/export.worker.js';
 import { writeXlsx, excelNumberFormat, sheetNameFor } from '../../services/exporters/excel-exporter.js';
 import { writeCsv } from '../../services/exporters/csv-exporter.js';
+import { writePdf } from '../../services/exporters/pdf-exporter.js';
 import type { ExportSource } from '../../services/exporters/types.js';
 import type { PreparedQuery, ResultColumn } from '../../services/map-execution.service.js';
 import { EXPORT_JOB_OPTIONS, type ExportJobData } from '../../queues/export.queue.js';
@@ -486,7 +487,7 @@ describe('processExportJob', () => {
         await store.updateJob(id, patch);
       },
       // Use the real CSV writer's progress cadence via a temp file.
-      writeExportFile: async (source, _format, _filePath, onRows) => {
+      writeExportFile: async (source, _format, _filePath, _mapId, onRows) => {
         const dir = await fsp.mkdtemp(path.join(os.tmpdir(), 'progress-'));
         try {
           return await writeCsv(path.join(dir, 'p.csv'), source, { onRows });
@@ -703,6 +704,7 @@ describe('buildExportFilePath', () => {
   it('derives the extension from the format', () => {
     expect(buildExportFilePath('job-1', 'XLSX')).toMatch(/job-1\.xlsx$/);
     expect(buildExportFilePath('job-1', 'CSV')).toMatch(/job-1\.csv$/);
+    expect(buildExportFilePath('job-1', 'PDF')).toMatch(/job-1\.pdf$/);
   });
 });
 
@@ -975,6 +977,94 @@ describe('exporters', () => {
       expect(await readCsv(file)).toHaveLength(50_000);
     });
   });
+
+  describe('writePdf', () => {
+    /** A page's `/MediaBox [0 0 W H]` — present in plain text even though
+     * pdfkit compresses content streams, so orientation is checkable without
+     * a PDF-parsing dependency. */
+    function mediaBoxes(buf: Buffer): Array<{ width: number; height: number }> {
+      const text = buf.toString('latin1');
+      return [...text.matchAll(/\/MediaBox\s*\[\s*0\s+0\s+([\d.]+)\s+([\d.]+)\s*\]/g)].map((m) => ({
+        width: Number(m[1]),
+        height: Number(m[2]),
+      }));
+    }
+
+    it('produces a well-formed, non-empty PDF with the right row count', async () => {
+      const file = path.join(dir, 'out.pdf');
+      const result = await writePdf(file, source(sampleRows));
+      expect(result.rowCount).toBe(3);
+
+      const raw = fs.readFileSync(file);
+      expect(raw.subarray(0, 5).toString('latin1')).toBe('%PDF-');
+      expect(raw.toString('latin1').trim().endsWith('%%EOF')).toBe(true);
+      expect(raw.length).toBeGreaterThan(0);
+    });
+
+    it('defaults to portrait when no page setup is given', async () => {
+      const file = path.join(dir, 'portrait.pdf');
+      await writePdf(file, source(sampleRows), { pageSetup: null });
+      const [box] = mediaBoxes(fs.readFileSync(file));
+      expect(box!.height).toBeGreaterThan(box!.width);
+    });
+
+    it('honours orientation: LANDSCAPE from map_page_setup', async () => {
+      const file = path.join(dir, 'landscape.pdf');
+      await writePdf(file, source(sampleRows), { pageSetup: { orientation: 'LANDSCAPE' } });
+      const [box] = mediaBoxes(fs.readFileSync(file));
+      expect(box!.width).toBeGreaterThan(box!.height);
+    });
+
+    it('draws a header and footer without spawning extra blank pages', async () => {
+      // Regression: pdfkit auto-adds a page the instant text() draws below
+      // `page.height - margins.bottom`, which is exactly where a footer
+      // belongs — caught live when a real header+footer export came back as
+      // 4 pages (3 of them blank) for 16 rows that fit on one.
+      const file = path.join(dir, 'chrome.pdf');
+      const result = await writePdf(file, source(sampleRows), {
+        title: 'My Map',
+        pageSetup: {
+          headerLeft: 'Left',
+          headerCenter: '&T',
+          headerRight: 'Right',
+          footerLeft: 'Page &P',
+          footerCenter: 'Mid',
+          footerRight: 'Printed &D',
+        },
+      });
+      expect(result.rowCount).toBe(3);
+      expect(mediaBoxes(fs.readFileSync(file)).length).toBe(1);
+    });
+
+    it('paginates once the rows overflow a single page', async () => {
+      const rows = Array.from({ length: 200 }, (_, i) => ({
+        REGION: `r${i}`,
+        AMOUNT: i,
+        SOLD_ON: null,
+      }));
+      const file = path.join(dir, 'many.pdf');
+      const result = await writePdf(file, source(rows, 50));
+      expect(result.rowCount).toBe(200);
+      expect(mediaBoxes(fs.readFileSync(file)).length).toBeGreaterThan(1);
+    });
+
+    it('does not throw when grid lines and headings are turned off', async () => {
+      const file = path.join(dir, 'nogrid.pdf');
+      const result = await writePdf(file, source(sampleRows), {
+        pageSetup: { printGridLines: false, printHeadings: false },
+      });
+      expect(result.rowCount).toBe(3);
+    });
+
+    it('accepts numeric-string margins the way a Postgres `numeric` column round-trips them', async () => {
+      const file = path.join(dir, 'margins.pdf');
+      const result = await writePdf(file, source(sampleRows), {
+        pageSetup: { marginTop: '1.5', marginLeft: '1', marginRight: '1', marginBottom: '1.5' },
+      });
+      expect(result.rowCount).toBe(3);
+      expect(fs.readFileSync(file).subarray(0, 5).toString('latin1')).toBe('%PDF-');
+    });
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -1029,6 +1119,14 @@ describe('downloadExport', () => {
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     );
     expect(filename).toMatch(/\.xlsx$/);
+  });
+
+  it('uses the application/pdf content type for PDF', async () => {
+    const file = path.join(dir, 'x.pdf');
+    await fsp.writeFile(file, 'stub');
+    const { filename, contentType } = downloadExport(completedJob(file, 'PDF'));
+    expect(contentType).toBe('application/pdf');
+    expect(filename).toMatch(/\.pdf$/);
   });
 
   it('refuses a job that has not completed', () => {

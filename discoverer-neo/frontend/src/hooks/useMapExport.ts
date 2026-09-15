@@ -100,7 +100,7 @@ export function useMapExport(
     if (!jobId || !job) return
     try {
       const res = await apiClient.exports.download(jobId)
-      const ext = job.format === 'CSV' ? 'csv' : 'xlsx'
+      const ext = job.format === 'CSV' ? 'csv' : job.format === 'PDF' ? 'pdf' : 'xlsx'
       downloadBlob(res.data, `${safeFilename(mapName)}.${ext}`)
       setDownloadedJobId(jobId)
     } catch (err) {

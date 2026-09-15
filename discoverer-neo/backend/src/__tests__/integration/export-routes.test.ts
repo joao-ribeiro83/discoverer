@@ -146,7 +146,7 @@ describe('POST /api/maps/:id/export', () => {
       method: 'POST',
       url: `/api/maps/${mapId}/export`,
       headers: { authorization: `Bearer ${ownerToken}` },
-      payload: { format: 'PDF' },
+      payload: { format: 'DOCX' },
     });
     expect(res.statusCode).toBe(400);
     expect(res.json().error).toBe('Invalid request body');

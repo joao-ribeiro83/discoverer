@@ -96,6 +96,7 @@
     "sql": "SQL",
     "excel": "Excel",
     "csv": "CSV",
+    "pdf": "PDF",
     "closeResults": "Fermer les résultats",
     "executionError": "Erreur d'exécution",
     "errorKind": {

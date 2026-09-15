@@ -189,6 +189,46 @@ describe('ExecutionPanel', () => {
     await waitFor(() => expect(mockedApi.exports.download).toHaveBeenCalledWith('job-1'))
   })
 
+  it('exports to PDF: creates the job, polls to completion, and downloads the file', async () => {
+    mockedApi.maps.createExport.mockResolvedValue(
+      envelope({ jobId: 'job-2', status: 'PENDING' }) as never,
+    )
+    mockedApi.exports.getStatus.mockResolvedValue(
+      envelope({
+        jobId: 'job-2',
+        mapId: 'map-1',
+        format: 'PDF',
+        status: 'COMPLETED',
+        progress: 100,
+        rowCount: 3,
+        errorMessage: null,
+        createdAt: '',
+        completedAt: '',
+      }) as never,
+    )
+    mockedApi.exports.download.mockResolvedValue({ data: new Blob(['x']) } as never)
+
+    renderWithProviders(
+      <ExecutionPanel
+        mapId="map-1"
+        mapName="My Map"
+        result={baseResult()}
+        parameters={{}}
+        onResultChange={() => {}}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /^PDF$/ }))
+
+    await waitFor(() => expect(mockedApi.maps.createExport).toHaveBeenCalledWith('map-1', {
+      format: 'PDF',
+      parameters: {},
+      calculatedFields: undefined,
+      locale: 'en',
+    }))
+    await waitFor(() => expect(mockedApi.exports.download).toHaveBeenCalledWith('job-2'))
+  })
+
   // --- Error surface (Phase 2.2) ----------------------------------------
   //
   // The point of these three is that the *shape* of the feedback differs by

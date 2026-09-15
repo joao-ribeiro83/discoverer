@@ -83,7 +83,7 @@ export function ExportsPage() {
   async function download(job: ExportJob) {
     try {
       const res = await apiClient.exports.download(job.jobId)
-      const ext = job.format === 'CSV' ? 'csv' : 'xlsx'
+      const ext = job.format === 'CSV' ? 'csv' : job.format === 'PDF' ? 'pdf' : 'xlsx'
       const name = mapNameById.get(job.mapId) ?? job.mapId
       downloadBlob(res.data, `${safeFilename(name)}.${ext}`)
     } catch (err) {

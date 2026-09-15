@@ -69,7 +69,7 @@ export const sharePermissionEnum = pgEnum('share_permission_level', [
   'EXPORT',
 ]);
 
-export const exportFormatEnum = pgEnum('export_format', ['XLSX', 'CSV']);
+export const exportFormatEnum = pgEnum('export_format', ['XLSX', 'CSV', 'PDF']);
 
 export const exportStatusEnum = pgEnum('export_status', [
   'PENDING',

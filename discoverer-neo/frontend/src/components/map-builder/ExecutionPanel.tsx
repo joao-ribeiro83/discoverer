@@ -269,6 +269,20 @@ export function ExecutionPanel({
                 )}
                 {t('mapViewer:execution.csv')}
               </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 gap-1 text-xs"
+                disabled={exportCtl.isExporting || !mapId}
+                onClick={() => exportCtl.exportFormat('PDF')}
+              >
+                {exportCtl.isExporting && exportCtl.format === 'PDF' ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Download className="h-3.5 w-3.5" />
+                )}
+                {t('mapViewer:execution.pdf')}
+              </Button>
             </>
           )}
           {onClose && (

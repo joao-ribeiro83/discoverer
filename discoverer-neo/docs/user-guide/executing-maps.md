@@ -179,6 +179,22 @@ nothing can recover it. Open the map in the builder, open a column and set
 *Crosstab edge* to *Across the top* to get the pivot back. See
 [Building Maps](building-maps.md).
 
+## Drill to Detail
+
+Double-click any row to see the raw rows behind it — Discoverer's own Drill to
+Detail. The worksheet reruns with every column's aggregation stripped and that
+row's values pinned, so a total or grouped figure opens into the individual
+rows it was computed from.
+
+Drilling on a row from a worksheet that fans out across more than one set of
+detail rows is declined for the same reason a total is: there is no single row
+to drill from without guessing which set it came from.
+
+**Drilling up or down a hierarchy level is not available.** Every hierarchy in
+this estate is Discoverer's own auto-generated date boilerplate, which Neo
+correctly does not migrate — there is no hierarchy to drill along. Drill to
+Detail on a row is the equivalent Neo offers.
+
 ## Pagination
 
 For large result sets:
@@ -212,7 +228,8 @@ Hover over column headers for options:
 
 ## Download Results
 
-See [Exporting Data](exporting-data.md).
+Export the results grid to Excel, CSV, or PDF. See
+[Exporting Data](exporting-data.md).
 
 ## Async Execution (Long Queries)
 
