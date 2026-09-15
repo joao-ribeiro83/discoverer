@@ -423,6 +423,26 @@ describe('executeMapAsync (background job)', () => {
     expect(job.rowCount).toBe(2);
     expect(job.result?.rows).toEqual([{ C1: 5 }, { C1: 6 }]);
   });
+
+  it('evicts old finished jobs once the registry passes its count cap (BE-03)', async () => {
+    // ASYNC_JOB_MAX_COUNT is 200 — run comfortably past it so the cap, not
+    // TTL, is what's under test (everything here finishes well inside the
+    // 30-minute TTL).
+    const { conn } = makeRowsConn([{ C1: 1 }]);
+    const { deps } = makeDeps(conn);
+
+    let firstJobId = '';
+    for (let i = 0; i < 210; i++) {
+      const { jobId } = await executeMapAsync(MAP_ID, {}, USER_ID, {}, deps);
+      if (i === 0) firstJobId = jobId;
+      await waitFor(() => getExecutionStatus(jobId)?.status === 'COMPLETED');
+    }
+
+    // The registry never held more than 210 at once and prunes on every
+    // insert, so the very first job — long finished — is gone, while the
+    // most recent one survives.
+    expect(getExecutionStatus(firstJobId)).toBeNull();
+  });
 });
 
 // ---------------------------------------------------------------------------
