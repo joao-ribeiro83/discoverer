@@ -59,3 +59,7 @@ backend/openapi-spec.json
 # Temporary-password files written by a migration. NEVER commit these:
 # they contain working credentials for provisioned accounts.
 credentials/
+
+# TLS cert + private key for docker-compose.prod.yml's nginx (see
+# nginx/nginx-ssl.conf's header for how to generate). NEVER commit these.
+certs/
