@@ -73,6 +73,34 @@ describe('evaluateConditionalFormat', () => {
     expect(evaluateConditionalFormat(mkRule({ operator: '>', value: 'M' }), 'West')).toBe(true)
     expect(evaluateConditionalFormat(mkRule({ operator: '>', value: 'M' }), 'East')).toBe(false)
   })
+
+  it('returns false when the rule has no operator', () => {
+    expect(evaluateConditionalFormat(mkRule({ operator: null }), 5)).toBe(false)
+  })
+
+  it('returns false when the rule value is null for a comparison operator', () => {
+    expect(evaluateConditionalFormat(mkRule({ operator: '=', value: null }), 5)).toBe(false)
+  })
+
+  it('returns false for an operator it does not recognize', () => {
+    expect(
+      evaluateConditionalFormat(mkRule({ operator: 'BOGUS' as never, value: '1' }), 5),
+    ).toBe(false)
+  })
+
+  it('BETWEEN with a malformed value (no upper bound) returns false', () => {
+    expect(evaluateConditionalFormat(mkRule({ operator: 'BETWEEN', value: '10' }), 15)).toBe(false)
+  })
+
+  it('compares Date cell values numerically against their epoch millis', () => {
+    const rule = mkRule({ operator: '>', value: String(new Date('2020-01-01').getTime()) })
+    expect(evaluateConditionalFormat(rule, new Date('2020-06-01'))).toBe(true)
+    expect(evaluateConditionalFormat(rule, new Date('2019-01-01'))).toBe(false)
+  })
+
+  it('falls back to string comparison for a non-primitive, non-Date cell value', () => {
+    expect(evaluateConditionalFormat(mkRule({ operator: '=', value: 'true' }), true)).toBe(true)
+  })
 })
 
 describe('styleForCell', () => {
@@ -100,6 +128,24 @@ describe('styleForCell', () => {
       backgroundColor: '#222222',
       fontWeight: 'bold',
       fontStyle: 'italic',
+    })
+  })
+
+  it('ignores a rule with no target column', () => {
+    const rules = [mkRule({ targetAlias: undefined })]
+    expect(styleForCell('AMOUNT', { AMOUNT: 1500 }, rules)).toEqual({})
+  })
+
+  it('ignores a rule whose test does not match the row', () => {
+    const rules = [mkRule({ operator: '>', value: '99999' })]
+    expect(styleForCell('AMOUNT', { AMOUNT: 1500 }, rules)).toEqual({})
+  })
+
+  it('applies textColor and underline independently of backgroundColor', () => {
+    const rules = [mkRule({ backgroundColor: null, textColor: '#ffffff', isUnderline: true })]
+    expect(styleForCell('AMOUNT', { AMOUNT: 1500 }, rules)).toEqual({
+      color: '#ffffff',
+      textDecoration: 'underline',
     })
   })
 })

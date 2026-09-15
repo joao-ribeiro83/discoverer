@@ -32,7 +32,7 @@ import {
 } from '../db/schema.js';
 import { decrypt } from '../lib/encryption.js';
 import { importOracleDb } from './oracle-driver.js';
-import { usernameToEmailLocal, MIGRATED_EMAIL_DOMAIN } from '@discoverer-neo/core/migration';
+import { usernameToEmailLocal, MIGRATED_EMAIL_DOMAIN } from './migration.service.js';
 import { loadMapDefinition } from './sql-generator.js';
 import { planQuery } from '../lib/sql/planner.js';
 
