@@ -1,1364 +1,2187 @@
 # API Endpoints Reference
 
-Complete reference for Discoverer Neo REST API endpoints. All endpoints require JWT authentication (except `/api/auth/login`).
+<!-- GENERATED FILE. Do not edit by hand — run `npm run generate-spec --workspace backend`.
+     Source of truth: backend/src/routes/**, rendered via @fastify/swagger. -->
+
+Reference for every Discoverer Neo REST API endpoint, generated directly from the live
+OpenAPI spec. Endpoints marked **Public** need no token; every other endpoint requires the
+`Authorization: Bearer <token>` header (see [Authentication Guide](authentication.md)).
 
 ## Base URL
+
 - Development: `http://localhost:3000/api`
-- Production: `https://your-domain/api`
+- Production: the deployed origin's `/api`
 
-## Interactive Documentation
+## Interactive documentation
 
-The API automatically generates interactive Swagger/OpenAPI documentation available at `/api/docs` when the backend is running.
+The backend serves this same spec as interactive Swagger UI at `/api/docs` while running.
 
-## Authentication
+## Endpoints by category
 
-See [Authentication Guide](authentication.md) for JWT flow details.
+### Health
 
-## Endpoints by Category
+#### GET /health — **Public**
 
-### Health Check
+**Responses:**
 
-#### GET /api/health
-Health check endpoint (no authentication required).
+| Status | Body |
+| --- | --- |
+| 200 | { status?: "ok" \| "degraded" version?: string uptime?: number database?: "connected" \| "disconnected" redis?: "connected" \| "disconnected" oracleClient?: "thin" \| "thick_ready" \| "thick_unavailable" timestamp?: string (date-time) } |
+| 503 | { status?: "ok" \| "degraded" version?: string uptime?: number database?: "connected" \| "disconnected" redis?: "connected" \| "disconnected" oracleClient?: "thin" \| "thick_ready" \| "thick_unavailable" timestamp?: string (date-time) } |
 
-**Response:** `200 OK`
-```json
+#### GET /api/health — **Public**
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { status?: "ok" \| "degraded" version?: string uptime?: number database?: "connected" \| "disconnected" redis?: "connected" \| "disconnected" oracleClient?: "thin" \| "thick_ready" \| "thick_unavailable" timestamp?: string (date-time) } |
+| 503 | { status?: "ok" \| "degraded" version?: string uptime?: number database?: "connected" \| "disconnected" redis?: "connected" \| "disconnected" oracleClient?: "thin" \| "thick_ready" \| "thick_unavailable" timestamp?: string (date-time) } |
+
+#### GET /live — **Public**
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { status?: "ok" uptime?: number } |
+
+#### GET /api/live — **Public**
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { status?: "ok" uptime?: number } |
+
+### Auth
+
+#### POST /api/auth/login — **Public**
+
+**Request body:**
+```
 {
-  "status": "ok",
-  "timestamp": "2026-07-19T12:00:00Z"
+  email: string (email)
+  password: string
 }
 ```
 
----
+**Responses:**
 
-### Authentication
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { token?: string refreshToken?: string user?: { id?: string email?: string name?: string role?: string locale?: string theme?: string colorPalette?: string mustChangePassword?: boolean } } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string } |
+| 429 | { error?: string } |
 
-#### POST /api/auth/login
-Log in with email and password.
+#### POST /api/auth/refresh — **Public**
 
-**Request Body:**
-```json
+**Request body:**
+```
 {
-  "email": "user@example.com",
-  "password": "password"
+  refreshToken: string
 }
 ```
 
-**Response:** `200 OK`
-```json
-{
-  "data": {
-    "token": "eyJhbGciOiJIUzI1NiIs...",
-    "refreshToken": "3f1c2a9e-8d4b-4f6e-9a7c-1b2d3e4f5a6b.q8Zr0x1vW2...",
-    "user": {
-      "id": "550e8400-e29b-41d4-a716-446655440000",
-      "email": "user@example.com",
-      "name": "John Doe",
-      "role": "USER",
-      "mustChangePassword": false
-    }
-  }
-}
-```
+**Responses:**
 
-**`mustChangePassword`** — `true` for an account provisioned with a temporary
-password (an EUL migration). While it is `true` the token is accepted but
-**every endpoint except the three below returns `403`**:
-
-```json
-{ "error": "Password change required", "code": "PASSWORD_CHANGE_REQUIRED" }
-```
-
-The exempt routes are `POST /api/auth/change-password`, `GET /api/auth/me` and
-`POST /api/auth/logout`. Clients should branch on the `code` field rather than
-the message.
-
-#### POST /api/auth/change-password
-Change the caller's own password. Reachable while `mustChangePassword` is set —
-it is how an account gets out of that state.
-
-**Authentication:** Required
-
-**Request Body:**
-```json
-{
-  "currentPassword": "ufNnRksjgR7U%M6X",
-  "newPassword": "a-new-password-of-yours"
-}
-```
-
-- `newPassword` must be **at least 12 characters** and different from the
-  current one.
-- The current password is re-verified even though the caller holds a valid
-  token, so a borrowed session cannot take ownership of the account.
-
-**Response:** `200 OK`
-```json
-{ "data": { "message": "Password changed" } }
-```
-
-**Errors:**
-- `401` — current password incorrect
-- `400` — new password too short, or identical to the current one
-
-The existing token stays valid; the flag is re-read from the database on each
-request, so the next call succeeds without signing in again.
-
-#### POST /api/auth/refresh
-Exchange the refresh token from login for a new access token and a new refresh
-token. The old refresh token stops working at once. The access token is not
-accepted here. Role and account status are re-read from the database. See
-[Authentication](authentication.md#post-apiauthrefresh).
-
-**Request Body:**
-```json
-{
-  "refreshToken": "3f1c2a9e-8d4b-4f6e-9a7c-1b2d3e4f5a6b.q8Zr0x1vW2..."
-}
-```
-
-**Response:** `200 OK`
-```json
-{
-  "data": {
-    "token": "eyJhbGciOiJIUzI1NiIs...",
-    "refreshToken": "3f1c2a9e-8d4b-4f6e-9a7c-1b2d3e4f5a6b.Vb7kP2m..."
-  }
-}
-```
-
-**Errors:**
-- `401 Unauthorized` — `Invalid refresh token`: unknown, already used, revoked
-  by logout, past the session's 7-day expiry, or the account is deleted or
-  deactivated
+| Status | Body |
+| --- | --- |
+| 200 | — |
 
 #### POST /api/auth/logout
-Log out. Blacklists the current access token and deletes the session's refresh token.
 
-**Authentication:** Required (Bearer token)
+**Responses:**
 
-**Response:** `200 OK`
-```json
-{
-  "data": {
-    "message": "Logged out successfully"
-  }
-}
-```
+| Status | Body |
+| --- | --- |
+| 200 | — |
 
 #### GET /api/auth/me
-Get currently authenticated user info.
 
-**Authentication:** Required (Bearer token)
+**Responses:**
 
-**Response:** `200 OK`
-```json
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string email?: string name?: string role?: string locale?: string theme?: string colorPalette?: string } } |
+| 401 | { error?: string } |
+
+#### POST /api/auth/change-password
+
+**Request body:**
+```
 {
-  "data": {
-    "id": "550e8400-e29b-41d4-a716-446655440000",
-    "email": "user@example.com",
-    "name": "John Doe",
-    "role": "USER"
-  }
+  currentPassword: string
+  newPassword: string
 }
 ```
 
----
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
 
 ### Data Sources
 
 #### GET /api/data-sources
-List all data sources (Oracle/PostgreSQL connections).
 
-**Authentication:** Required (ADMIN only)
+**Responses:**
 
-**Query Parameters:**
-- `active` (optional, boolean) — Filter by active status
-
-**Response:** `200 OK`
-```json
-{
-  "data": [
-    {
-      "id": "550e8400-e29b-41d4-a716-446655440000",
-      "name": "Oracle Production",
-      "description": "Production ERP database",
-      "connectionType": "oracle",
-      "host": "prod-oracle.example.com",
-      "port": 1521,
-      "serviceName": "PROD",
-      "isActive": true,
-      "createdAt": "2026-01-01T00:00:00Z",
-      "updatedAt": "2026-07-19T00:00:00Z"
-    }
-  ]
-}
-```
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string name?: string description?: null,string connectionType?: "oracle" \| "postgres" host?: null,string port?: null,integer serviceName?: null,string sid?: null,string username?: null,string isActive?: boolean createdAt?: string updatedAt?: string hasPassword?: boolean hasConnectionString?: boolean }[] } |
+| 401 | { error?: string } |
+| 403 | { error?: string } |
 
 #### POST /api/data-sources
-Create a new data source.
 
-**Authentication:** Required (ADMIN only)
-
-**Request Body:**
-```json
+**Request body:**
+```
 {
-  "name": "Oracle Production",
-  "description": "Production ERP database",
-  "connectionType": "oracle",
-  "host": "prod-oracle.example.com",
-  "port": 1521,
-  "serviceName": "PROD",
-  "username": "eul5_us",
-  "password": "secret_password"
+  name: string
+  description?: string
+  connectionType: "oracle" | "postgres"
+  host?: string
+  port?: integer
+  serviceName?: string
+  sid?: string
+  username?: string
+  passwordEnc?: string
+  connectionString?: string
 }
 ```
 
-**Response:** `201 Created`
+**Responses:**
 
-#### GET /api/data-sources/:id
-Get a single data source (sensitive fields redacted).
+| Status | Body |
+| --- | --- |
+| 201 | { data?: { id?: string name?: string description?: null,string connectionType?: "oracle" \| "postgres" host?: null,string port?: null,integer serviceName?: null,string sid?: null,string username?: null,string isActive?: boolean createdAt?: string updatedAt?: string hasPassword?: boolean hasConnectionString?: boolean } } |
+| 400 | { error?: string details?: any } |
+| 409 | { error?: string } |
 
-**Authentication:** Required (ADMIN only)
+#### GET /api/data-sources/{id}
 
-#### PUT /api/data-sources/:id
-Update a data source.
+**Parameters:**
 
-**Authentication:** Required (ADMIN only)
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
 
-#### DELETE /api/data-sources/:id
-Delete a data source (soft delete).
+**Responses:**
 
-**Authentication:** Required (ADMIN only)
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string name?: string description?: null,string connectionType?: "oracle" \| "postgres" host?: null,string port?: null,integer serviceName?: null,string sid?: null,string username?: null,string isActive?: boolean createdAt?: string updatedAt?: string hasPassword?: boolean hasConnectionString?: boolean } } |
+| 400 | { error?: string } |
+| 404 | { error?: string } |
 
-#### POST /api/data-sources/:id/test
-Test connectivity to a data source.
+#### PUT /api/data-sources/{id}
 
-**Authentication:** Required (ADMIN only)
+**Parameters:**
 
-**Response:** `200 OK`
-```json
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Request body:**
+```
 {
-  "data": {
-    "connected": true,
-    "message": "Successfully connected to database"
-  }
+  name?: string
+  description?: string
+  connectionType?: "oracle" | "postgres"
+  host?: string
+  port?: integer
+  serviceName?: string
+  sid?: string
+  username?: string
+  passwordEnc?: string,null
+  connectionString?: string,null
 }
 ```
 
----
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string name?: string description?: null,string connectionType?: "oracle" \| "postgres" host?: null,string port?: null,integer serviceName?: null,string sid?: null,string username?: null,string isActive?: boolean createdAt?: string updatedAt?: string hasPassword?: boolean hasConnectionString?: boolean } } |
+| 400 | { error?: string details?: any } |
+| 404 | { error?: string } |
+
+#### DELETE /api/data-sources/{id}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { message?: string } } |
+| 400 | { error?: string } |
+| 404 | { error?: string } |
+
+#### POST /api/data-sources/{id}/test
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { success?: boolean message?: string latencyMs?: integer } } |
+| 400 | { error?: string } |
+| 404 | { error?: string } |
 
 ### Business Areas
 
 #### GET /api/business-areas
-List all business areas the user has access to (or all if ADMIN).
 
-**Authentication:** Required
+**Responses:**
 
-**Response:** `200 OK`
-```json
-{
-  "data": [
-    {
-      "id": "550e8400-e29b-41d4-a716-446655440000",
-      "name": "Sales",
-      "description": "Sales and revenue analytics",
-      "createdBy": "550e8400-e29b-41d4-a716-446655440001",
-      "createdAt": "2026-01-01T00:00:00Z",
-      "updatedBy": "550e8400-e29b-41d4-a716-446655440001",
-      "updatedAt": "2026-07-19T00:00:00Z",
-      "isActive": true
-    }
-  ]
-}
-```
-
-#### GET /api/business-areas/:id
-Get a business area with grants and user permissions.
-
-**Authentication:** Required (VIEW grant or ADMIN)
-
-**Response:** `200 OK`
-```json
-{
-  "data": {
-    "id": "550e8400-e29b-41d4-a716-446655440000",
-    "name": "Sales",
-    "description": "Sales and revenue analytics",
-    "grants": [
-      {
-        "id": "550e8400-e29b-41d4-a716-446655440100",
-        "userId": "550e8400-e29b-41d4-a716-446655440001",
-        "userEmail": "manager@example.com",
-        "userName": "Jane Smith",
-        "permissionLevel": "CREATE",
-        "grantedBy": "550e8400-e29b-41d4-a716-446655440001",
-        "grantedAt": "2026-07-01T00:00:00Z"
-      }
-    ],
-    "permissions": ["VIEW", "CREATE", "EDIT"]
-  }
-}
-```
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string name?: string description?: null,string createdBy?: null,string createdAt?: string updatedBy?: null,string updatedAt?: string isActive?: boolean }[] } |
+| 401 | { error?: string details?: any } |
 
 #### POST /api/business-areas
-Create a new business area.
 
-**Authentication:** Required (ADMIN only)
-
-**Request Body:**
-```json
+**Request body:**
+```
 {
-  "name": "Finance",
-  "description": "Financial reporting and analysis"
+  name: string
+  description?: string
 }
 ```
 
-**Response:** `201 Created`
+**Responses:**
 
-#### PUT /api/business-areas/:id
-Update a business area.
+| Status | Body |
+| --- | --- |
+| 201 | { data?: { id?: string name?: string description?: null,string createdBy?: null,string createdAt?: string updatedBy?: null,string updatedAt?: string isActive?: boolean } } |
+| 400 | { error?: string details?: any } |
+| 409 | { error?: string details?: any } |
 
-**Authentication:** Required (EDIT grant or ADMIN)
+#### GET /api/business-areas/{id}
 
-**Request Body:**
-```json
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string name?: string description?: null,string createdBy?: null,string createdAt?: string updatedBy?: null,string updatedAt?: string isActive?: boolean grants?: { id?: string userId?: string userEmail?: string userName?: null,string permissionLevel?: "CREATE" \| "EDIT" \| "DELETE" \| "EXPORT" \| "SCHEDULE" \| "VIEW" grantedBy?: null,string grantedAt?: string }[] permissions?: string[] } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
+| 404 | { error?: string details?: any } |
+
+#### PUT /api/business-areas/{id}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Request body:**
+```
 {
-  "name": "Finance Updated",
-  "description": "Updated description"
+  name?: string
+  description?: string,null
 }
 ```
 
-#### DELETE /api/business-areas/:id
-Delete a business area (soft delete).
+**Responses:**
 
-**Authentication:** Required (ADMIN only)
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string name?: string description?: null,string createdBy?: null,string createdAt?: string updatedBy?: null,string updatedAt?: string isActive?: boolean } } |
+| 400 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
+| 404 | { error?: string details?: any } |
 
-#### POST /api/business-areas/:id/grant
-Grant a user permission in a business area.
+#### DELETE /api/business-areas/{id}
 
-**Authentication:** Required (ADMIN or user with EDIT grant)
+**Parameters:**
 
-**Request Body:**
-```json
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { message?: string } } |
+| 400 | { error?: string details?: any } |
+| 404 | { error?: string details?: any } |
+
+#### GET /api/business-areas/{id}/grants
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string userId?: string userEmail?: string userName?: null,string permissionLevel?: "CREATE" \| "EDIT" \| "DELETE" \| "EXPORT" \| "SCHEDULE" \| "VIEW" grantedBy?: null,string grantedAt?: string }[] } |
+| 400 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
+| 404 | { error?: string details?: any } |
+
+#### POST /api/business-areas/{id}/grants
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Request body:**
+```
 {
-  "userId": "550e8400-e29b-41d4-a716-446655440002",
-  "permissionLevel": "CREATE"
+  userId: string (uuid)
+  permissionLevel: "CREATE" | "EDIT" | "DELETE" | "EXPORT" | "SCHEDULE" | "VIEW"
 }
 ```
 
-**Response:** `200 OK` with grant details
+**Responses:**
 
-#### DELETE /api/business-areas/:id/grant/:grantId
-Revoke a user's permission in a business area.
+| Status | Body |
+| --- | --- |
+| 201 | { data?: { id?: string userId?: string userEmail?: string userName?: null,string permissionLevel?: "CREATE" \| "EDIT" \| "DELETE" \| "EXPORT" \| "SCHEDULE" \| "VIEW" grantedBy?: null,string grantedAt?: string } } |
+| 400 | { error?: string details?: any } |
+| 404 | { error?: string details?: any } |
 
-**Authentication:** Required (ADMIN or user with EDIT grant)
+#### DELETE /api/business-areas/{id}/grants/{userId}
 
-**Response:** `200 OK`
+**Parameters:**
 
----
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+| `userId` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { message?: string } } |
+| 400 | { error?: string details?: any } |
+| 404 | { error?: string details?: any } |
+
+#### GET /api/business-areas/{id}/users
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { userId?: string email?: string name?: null,string permissions?: "CREATE" \| "EDIT" \| "DELETE" \| "EXPORT" \| "SCHEDULE" \| "VIEW"[] }[] } |
+| 400 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
+| 404 | { error?: string details?: any } |
 
 ### Folders
 
-Folders are containers for Items (columns/attributes) within a Business Area. They typically represent tables or views from a data source.
+#### GET /api/business-areas/{baId}/folders
 
-> **Phase 6.2 — recorded here, regenerated in Phase 8.4.** `GET /api/folders/:id`,
-> `GET /api/items/:id`, `GET /api/items/:id/descendants`, `GET /api/joins/:id` and
-> `GET /api/hierarchies/:id` require a VIEW grant on a business area the object
-> belongs to (or ADMIN), and return `403 Forbidden` otherwise.
-> `PUT /api/folders/:id` validates `customSql` exactly as create does, and returns
-> `400` with the same message for a rejected statement.
+**Parameters:**
 
-#### GET /api/business-areas/:baId/folders
-List folders in a business area.
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `baId` | path | yes | string (uuid) |
 
-**Authentication:** Required (VIEW grant or ADMIN)
+**Responses:**
 
-**Query Parameters:**
-- `dataSourceId` (optional) — Filter by data source
-- `type` (optional) — Filter by folder type: `TABLE`, `VIEW`, `DERIVED`, `COMPLEX`, `JOIN`, `SUMMARY`
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string businessAreaId?: string name?: string description?: null,string folderType?: "TABLE" \| "VIEW" \| "DERIVED" \| "COMPLEX" \| "JOIN" \| "SUMMARY" tableName?: null,string tableOwner?: null,string customSql?: null,string dataSourceId?: null,string displayOrder?: integer isActive?: boolean createdBy?: null,string createdAt?: string updatedAt?: string dataSourceName?: null,string isShared?: boolean }[] } |
+| 400 | { error?: string } |
+| 401 | { error?: string } |
+| 403 | { error?: string } |
 
-**Response:** `200 OK`
-```json
+#### POST /api/business-areas/{baId}/folders
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `baId` | path | yes | string (uuid) |
+
+**Request body:**
+```
 {
-  "data": [
-    {
-      "id": "550e8400-e29b-41d4-a716-446655440010",
-      "businessAreaId": "550e8400-e29b-41d4-a716-446655440000",
-      "dataSourceId": "550e8400-e29b-41d4-a716-446655440200",
-      "name": "CUSTOMERS",
-      "description": "Customer master data",
-      "type": "TABLE",
-      "schemaName": "SALES",
-      "tableName": "CUSTOMERS",
-      "sqlText": null,
-      "isActive": true,
-      "isShared": false,
-      "createdAt": "2026-01-01T00:00:00Z"
-    }
-  ]
+  name: string
+  description?: string
+  folderType: "TABLE" | "VIEW" | "DERIVED" | "COMPLEX" | "JOIN" | "SUMMARY"
+  tableName?: string
+  tableOwner?: string
+  customSql?: string
+  dataSourceId?: string (uuid)
+  displayOrder?: integer
 }
 ```
 
-**`isShared`** — `false` when this business area *owns* the folder, `true` when
-the folder belongs to another area and has been shared into this one. The list
-is the union of both.
+**Responses:**
 
-#### GET /api/folders/:id/business-areas
-List the business areas a folder has been shared into. Does **not** include the
-owning area, which is `folder.businessAreaId`.
+| Status | Body |
+| --- | --- |
+| 201 | { data?: { id?: string businessAreaId?: string name?: string description?: null,string folderType?: "TABLE" \| "VIEW" \| "DERIVED" \| "COMPLEX" \| "JOIN" \| "SUMMARY" tableName?: null,string tableOwner?: null,string customSql?: null,string dataSourceId?: null,string displayOrder?: integer isActive?: boolean createdBy?: null,string createdAt?: string updatedAt?: string dataSourceName?: null,string isShared?: boolean } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string } |
+| 403 | { error?: string } |
 
-**Authentication:** Required (VIEW grant or ADMIN)
+#### GET /api/folders/{id}
 
-**Response:** `200 OK`
-```json
-{ "data": ["550e8400-e29b-41d4-a716-446655440001"] }
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string businessAreaId?: string name?: string description?: null,string folderType?: "TABLE" \| "VIEW" \| "DERIVED" \| "COMPLEX" \| "JOIN" \| "SUMMARY" tableName?: null,string tableOwner?: null,string customSql?: null,string dataSourceId?: null,string displayOrder?: integer isActive?: boolean createdBy?: null,string createdAt?: string updatedAt?: string dataSourceName?: null,string isShared?: boolean } } |
+| 400 | { error?: string } |
+| 401 | { error?: string } |
+| 404 | { error?: string } |
+
+#### PUT /api/folders/{id}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Request body:**
 ```
-
-#### POST /api/folders/:id/business-areas
-Share a folder into an additional business area. Discoverer models
-folder↔business-area as many-to-many; this is the equivalent of a second
-`BA_OBJ_LINKS` row.
-
-**Authentication:** Required (EDIT grant or ADMIN)
-
-**Request Body:**
-```json
-{ "businessAreaId": "550e8400-e29b-41d4-a716-446655440001" }
-```
-
-**Response:** `201 Created`
-
-**Errors:**
-- `404` — folder not found
-- `409` — the folder already belongs to that business area (including when it
-  is the owning one, which is recorded on the folder itself)
-
-#### DELETE /api/folders/:id/business-areas/:baId
-Remove a share.
-
-**Authentication:** Required (EDIT grant or ADMIN)
-
-**Response:** `200 OK`
-
-**Errors:**
-- `409` — `:baId` is the folder's **owning** business area. It cannot be
-  unshared, because every folder must belong to exactly one owner.
-
-#### POST /api/business-areas/:baId/folders
-Create a folder (typically imported from Oracle/Postgres).
-
-**Authentication:** Required (CREATE grant or ADMIN)
-
-#### GET /api/business-areas/:baId/folders/:folderId
-Get folder details with items.
-
-**Authentication:** Required (VIEW grant)
-
-#### PUT /api/business-areas/:baId/folders/:folderId
-Update folder metadata.
-
-**Authentication:** Required (EDIT grant)
-
-#### DELETE /api/business-areas/:baId/folders/:folderId
-Delete a folder and its items.
-
-**Authentication:** Required (DELETE grant)
-
-#### POST /api/business-areas/:baId/folders/:folderId/introspect
-Discover tables/views from a data source and create folders.
-
-**Authentication:** Required (CREATE grant)
-
-**Request Body:**
-```json
 {
-  "dataSourceId": "550e8400-e29b-41d4-a716-446655440200",
-  "schema": "SALES",
-  "tables": ["CUSTOMERS", "ORDERS"]
+  name?: string
+  description?: string,null
+  folderType?: "TABLE" | "VIEW" | "DERIVED" | "COMPLEX" | "JOIN" | "SUMMARY"
+  tableName?: string,null
+  tableOwner?: string,null
+  customSql?: string,null
+  dataSourceId?: string,null
+  displayOrder?: integer
 }
 ```
 
----
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string businessAreaId?: string name?: string description?: null,string folderType?: "TABLE" \| "VIEW" \| "DERIVED" \| "COMPLEX" \| "JOIN" \| "SUMMARY" tableName?: null,string tableOwner?: null,string customSql?: null,string dataSourceId?: null,string displayOrder?: integer isActive?: boolean createdBy?: null,string createdAt?: string updatedAt?: string dataSourceName?: null,string isShared?: boolean } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string } |
+| 403 | { error?: string details?: string } |
+| 404 | { error?: string } |
+
+#### DELETE /api/folders/{id}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { message?: string } } |
+| 400 | { error?: string } |
+| 401 | { error?: string } |
+| 403 | { error?: string details?: string } |
+| 404 | { error?: string } |
+
+#### GET /api/folders/{id}/business-areas
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### POST /api/folders/{id}/business-areas
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### DELETE /api/folders/{id}/business-areas/{baId}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+| `baId` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### POST /api/data-sources/{dsId}/introspect
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `tableOwner` | query | no | string |
+| `dsId` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { tables?: { tableName?: string tableOwner?: string columns?: { columnName?: string dataType?: string dataLength?: null,integer nullable?: boolean }[] }[] count?: integer cached?: boolean } } |
+| 400 | { error?: string } |
+| 401 | { error?: string } |
+| 403 | { error?: string } |
+| 404 | { error?: string } |
+
+#### GET /api/data-sources/{dsId}/tables
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `tableOwner` | query | no | string |
+| `limit` | query | no | integer |
+| `offset` | query | no | integer |
+| `dsId` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { tables?: { tableName?: string tableOwner?: string columns?: { columnName?: string dataType?: string dataLength?: null,integer nullable?: boolean }[] }[] count?: integer total?: integer limit?: integer offset?: integer } } |
+| 400 | { error?: string } |
+| 401 | { error?: string } |
+| 403 | { error?: string } |
+| 404 | { error?: string } |
+
+#### POST /api/data-sources/{dsId}/import
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `dsId` | path | yes | string (uuid) |
+
+**Request body:**
+```
+{
+  tableNames: string[]
+  tableOwner: string
+  businessAreaId: string (uuid)
+}
+```
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { created?: { folderId?: string name?: string tableName?: string }[] skipped?: { tableName?: string reason?: string }[] } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string } |
+| 403 | { error?: string } |
+| 404 | { error?: string } |
 
 ### Items
 
-Items are columns/attributes within a Folder.
+#### GET /api/folders/{folderId}/items
 
-#### GET /api/business-areas/:baId/folders/:folderId/items
-List items in a folder.
+**Parameters:**
 
-**Authentication:** Required (VIEW grant)
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `folderId` | path | yes | string (uuid) |
 
-**Response:** `200 OK`
-```json
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string folderId?: string name?: string description?: null,string itemType?: "CI" \| "CU" \| "CO" \| "JI" \| "HI" \| "AG" \| "FU" columnName?: null,string formula?: null,string dataType?: null,string formatMask?: null,string aggFunction?: null,string displayOrder?: integer isHidden?: boolean isActive?: boolean parentItemId?: null,string createdBy?: null,string createdAt?: string updatedAt?: string }[] } |
+| 400 | { error?: string } |
+| 401 | { error?: string } |
+| 403 | { error?: string } |
+
+#### POST /api/folders/{folderId}/items
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `folderId` | path | yes | string (uuid) |
+
+**Request body:**
+```
 {
-  "data": [
-    {
-      "id": "550e8400-e29b-41d4-a716-446655440100",
-      "folderId": "550e8400-e29b-41d4-a716-446655440010",
-      "name": "CUSTOMER_ID",
-      "type": "CI",
-      "dataType": "NUMBER",
-      "columnName": "CUSTOMER_ID",
-      "displayName": "Customer ID",
-      "description": "Unique customer identifier",
-      "isKey": true,
-      "isHidden": false,
-      "isRequired": false,
-      "displayOrder": 1,
-      "createdAt": "2026-01-01T00:00:00Z"
-    }
-  ]
+  name: string
+  description?: string
+  itemType: "CI" | "CU" | "CO" | "JI" | "HI" | "AG" | "FU"
+  columnName?: string
+  formula?: string
+  dataType?: string
+  formatMask?: string
+  aggFunction?: string
+  displayOrder?: integer
+  isHidden?: boolean
+  parentItemId?: string,null
 }
 ```
 
-#### POST /api/business-areas/:baId/folders/:folderId/items
-Create an item.
+**Responses:**
 
-**Authentication:** Required (CREATE grant)
+| Status | Body |
+| --- | --- |
+| 201 | { data?: { id?: string folderId?: string name?: string description?: null,string itemType?: "CI" \| "CU" \| "CO" \| "JI" \| "HI" \| "AG" \| "FU" columnName?: null,string formula?: null,string dataType?: null,string formatMask?: null,string aggFunction?: null,string displayOrder?: integer isHidden?: boolean isActive?: boolean parentItemId?: null,string createdBy?: null,string createdAt?: string updatedAt?: string } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string } |
+| 403 | { error?: string } |
 
-#### PUT /api/business-areas/:baId/items/:itemId
-Update an item.
+#### GET /api/items/{id}
 
-**Authentication:** Required (EDIT grant)
+**Parameters:**
 
-#### DELETE /api/business-areas/:baId/items/:itemId
-Delete an item.
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
 
-**Authentication:** Required (DELETE grant)
+**Responses:**
 
----
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string folderId?: string name?: string description?: null,string itemType?: "CI" \| "CU" \| "CO" \| "JI" \| "HI" \| "AG" \| "FU" columnName?: null,string formula?: null,string dataType?: null,string formatMask?: null,string aggFunction?: null,string displayOrder?: integer isHidden?: boolean isActive?: boolean parentItemId?: null,string createdBy?: null,string createdAt?: string updatedAt?: string } } |
+| 400 | { error?: string } |
+| 401 | { error?: string } |
+| 404 | { error?: string } |
+
+#### PUT /api/items/{id}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Request body:**
+```
+{
+  name?: string
+  description?: string,null
+  itemType?: "CI" | "CU" | "CO" | "JI" | "HI" | "AG" | "FU"
+  columnName?: string,null
+  formula?: string,null
+  dataType?: string,null
+  formatMask?: string,null
+  aggFunction?: string,null
+  displayOrder?: integer
+  isHidden?: boolean
+  parentItemId?: string,null
+}
+```
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string folderId?: string name?: string description?: null,string itemType?: "CI" \| "CU" \| "CO" \| "JI" \| "HI" \| "AG" \| "FU" columnName?: null,string formula?: null,string dataType?: null,string formatMask?: null,string aggFunction?: null,string displayOrder?: integer isHidden?: boolean isActive?: boolean parentItemId?: null,string createdBy?: null,string createdAt?: string updatedAt?: string } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string } |
+| 403 | { error?: string } |
+| 404 | { error?: string } |
+
+#### DELETE /api/items/{id}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { message?: string } } |
+| 400 | { error?: string } |
+| 401 | { error?: string } |
+| 403 | { error?: string } |
+| 404 | { error?: string } |
+
+#### POST /api/folders/{folderId}/items/import
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `folderId` | path | yes | string (uuid) |
+
+**Request body:**
+```
+{
+  columns: {
+    columnName: string
+    dataType: string
+    dataLength?: integer,null
+    nullable?: boolean
+  }[]
+}
+```
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { created?: { itemId?: string name?: string columnName?: string }[] skipped?: { columnName?: string reason?: string }[] } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string } |
+| 403 | { error?: string } |
+
+#### GET /api/items/{id}/values
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `search` | query | no | string |
+| `limit` | query | no | integer |
+| `offset` | query | no | integer |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { mode?: "values" \| "search" values?: string[] truncated?: boolean itemClassId?: null,string cardinality?: null,integer } } |
+| 400 | { error?: string } |
+| 401 | { error?: string } |
+| 403 | { error?: string } |
+| 404 | { error?: string } |
+| 422 | { error?: string } |
+
+#### GET /api/items/{id}/descendants
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string folderId?: string name?: string description?: null,string itemType?: "CI" \| "CU" \| "CO" \| "JI" \| "HI" \| "AG" \| "FU" columnName?: null,string formula?: null,string dataType?: null,string formatMask?: null,string aggFunction?: null,string displayOrder?: integer isHidden?: boolean isActive?: boolean parentItemId?: null,string createdBy?: null,string createdAt?: string updatedAt?: string }[] } |
+| 400 | { error?: string } |
+| 401 | { error?: string } |
+| 404 | { error?: string } |
 
 ### Joins
 
-Joins define relationships between folders.
+#### GET /api/business-areas/{baId}/joins
 
-#### GET /api/business-areas/:baId/joins
-List joins in a business area.
+**Parameters:**
 
-**Authentication:** Required (VIEW grant)
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `baId` | path | yes | string (uuid) |
 
-#### POST /api/business-areas/:baId/joins
-Create a join.
+**Responses:**
 
-**Authentication:** Required (CREATE grant)
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string name?: string leftFolderId?: string rightFolderId?: string leftItemId?: null,string rightItemId?: null,string joinType?: "INNER" \| "LEFT" \| "RIGHT" isActive?: boolean createdAt?: string leftFolderName?: string rightFolderName?: string leftItemName?: null,string rightItemName?: null,string businessAreaId?: string }[] } |
+| 400 | { error?: string } |
+| 401 | { error?: string } |
+| 403 | { error?: string } |
 
-**Request Body:**
-```json
+#### POST /api/business-areas/{baId}/joins
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `baId` | path | yes | string (uuid) |
+
+**Request body:**
+```
 {
-  "name": "Customers to Orders",
-  "folderId1": "550e8400-e29b-41d4-a716-446655440010",
-  "folderId2": "550e8400-e29b-41d4-a716-446655440020",
-  "joinType": "INNER",
-  "conditions": [
-    {
-      "itemId1": "550e8400-e29b-41d4-a716-446655440100",
-      "itemId2": "550e8400-e29b-41d4-a716-446655440200",
-      "operator": "="
-    }
-  ]
+  name: string
+  leftFolderId: string (uuid)
+  rightFolderId: string (uuid)
+  leftItemId?: string,null
+  rightItemId?: string,null
+  joinType: "INNER" | "LEFT" | "RIGHT"
 }
 ```
 
-#### PUT /api/business-areas/:baId/joins/:joinId
-Update a join.
+**Responses:**
 
-**Authentication:** Required (EDIT grant)
+| Status | Body |
+| --- | --- |
+| 201 | { data?: { id?: string name?: string leftFolderId?: string rightFolderId?: string leftItemId?: null,string rightItemId?: null,string joinType?: "INNER" \| "LEFT" \| "RIGHT" isActive?: boolean createdAt?: string } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string } |
+| 403 | { error?: string } |
 
-#### DELETE /api/business-areas/:baId/joins/:joinId
-Delete a join.
+#### GET /api/joins/{id}
 
-**Authentication:** Required (DELETE grant)
+**Parameters:**
 
----
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string name?: string leftFolderId?: string rightFolderId?: string leftItemId?: null,string rightItemId?: null,string joinType?: "INNER" \| "LEFT" \| "RIGHT" isActive?: boolean createdAt?: string leftFolderName?: string rightFolderName?: string leftItemName?: null,string rightItemName?: null,string businessAreaId?: string } } |
+| 400 | { error?: string } |
+| 401 | { error?: string } |
+| 404 | { error?: string } |
+
+#### PUT /api/joins/{id}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Request body:**
+```
+{
+  name?: string
+  leftFolderId?: string (uuid)
+  rightFolderId?: string (uuid)
+  leftItemId?: string,null
+  rightItemId?: string,null
+  joinType?: "INNER" | "LEFT" | "RIGHT"
+}
+```
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string name?: string leftFolderId?: string rightFolderId?: string leftItemId?: null,string rightItemId?: null,string joinType?: "INNER" \| "LEFT" \| "RIGHT" isActive?: boolean createdAt?: string } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string } |
+| 403 | { error?: string } |
+| 404 | { error?: string } |
+
+#### DELETE /api/joins/{id}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { message?: string } } |
+| 400 | { error?: string } |
+| 401 | { error?: string } |
+| 403 | { error?: string } |
+| 404 | { error?: string } |
+
+#### GET /api/folders/{folderId}/joins/suggestions
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `folderId` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { leftFolderId?: string rightFolderId?: string leftItemId?: string rightItemId?: string leftColumnName?: string rightColumnName?: string suggestedJoinType?: "INNER" \| "LEFT" \| "RIGHT" reason?: string }[] } |
+| 400 | { error?: string } |
+| 401 | { error?: string } |
+| 403 | { error?: string } |
+| 404 | { error?: string } |
 
 ### Hierarchies
 
-Hierarchies enable drill-down navigation on dimensions.
+#### GET /api/business-areas/{baId}/hierarchies
 
-#### GET /api/business-areas/:baId/hierarchies
-List hierarchies in a business area.
+**Parameters:**
 
-**Authentication:** Required (VIEW grant)
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `baId` | path | yes | string (uuid) |
 
-#### POST /api/business-areas/:baId/hierarchies
-Create a hierarchy.
+**Responses:**
 
-**Authentication:** Required (CREATE grant)
-
-**Request Body:**
-```json
-{
-  "name": "Calendar",
-  "description": "Time hierarchy",
-  "folderId": "550e8400-e29b-41d4-a716-446655440010",
-  "levels": [
-    {
-      "itemId": "550e8400-e29b-41d4-a716-446655440100",
-      "levelName": "Year",
-      "levelNumber": 1
-    },
-    {
-      "itemId": "550e8400-e29b-41d4-a716-446655440101",
-      "levelName": "Month",
-      "levelNumber": 2
-    }
-  ]
-}
-```
-
-#### PUT /api/business-areas/:baId/hierarchies/:hierarchyId
-Update a hierarchy.
-
-**Authentication:** Required (EDIT grant)
-
-#### DELETE /api/business-areas/:baId/hierarchies/:hierarchyId
-Delete a hierarchy.
-
-**Authentication:** Required (DELETE grant)
-
----
-
-### Maps
-
-Maps are saved queries (similar to Discoverer Workbooks).
-
-#### GET /api/maps
-Get current user's maps (own + shared with them).
-
-**Authentication:** Required
-
-**Response:** `200 OK`
-```json
-{
-  "data": {
-    "mine": [
-      {
-        "id": "550e8400-e29b-41d4-a716-446655440300",
-        "businessAreaId": "550e8400-e29b-41d4-a716-446655440000",
-        "name": "Customer Sales Report",
-        "description": "Sales by customer",
-        "mapType": "TABLE",
-        "createdBy": "550e8400-e29b-41d4-a716-446655440001",
-        "createdAt": "2026-07-01T00:00:00Z",
-        "isPublic": false,
-        "items": [],
-        "conditions": [],
-        "parameters": [],
-        "calculatedFields": []
-      }
-    ],
-    "shared": []
-  }
-}
-```
-
-#### GET /api/business-areas/:baId/maps
-List maps in a business area.
-
-**Authentication:** Required (VIEW grant)
-
-#### GET /api/maps/:id
-Get full map definition.
-
-**Authentication:** Required (VIEW access)
-
-**Response:** `200 OK`
-```json
-{
-  "data": {
-    "id": "550e8400-e29b-41d4-a716-446655440300",
-    "businessAreaId": "550e8400-e29b-41d4-a716-446655440000",
-    "name": "Customer Sales Report",
-    "mapType": "TABLE",
-    "items": [
-      {
-        "itemId": "550e8400-e29b-41d4-a716-446655440100",
-        "displayName": "Customer",
-        "displayOrder": 1,
-        "sortDirection": "ASC",
-        "sortOrder": 1
-      }
-    ],
-    "conditions": [
-      {
-        "itemId": "550e8400-e29b-41d4-a716-446655440100",
-        "operator": ">",
-        "value": "2026-01-01",
-        "conditionType": "STATIC"
-      }
-    ],
-    "parameters": [
-      {
-        "name": "start_date",
-        "paramType": "DATE",
-        "isRequired": true,
-        "defaultValue": "2026-01-01"
-      }
-    ],
-    "calculatedFields": [
-      {
-        "name": "total_revenue",
-        "formula": "AMOUNT * QUANTITY",
-        "displayOrder": 10
-      }
-    ]
-  }
-}
-```
-
-#### POST /api/business-areas/:baId/maps
-Create a map.
-
-**Authentication:** Required (CREATE grant)
-
-**Request Body:**
-```json
-{
-  "name": "Sales Report",
-  "description": "Sales by region",
-  "mapType": "TABLE",
-  "isPublic": false,
-  "selectDistinct": false,
-  "items": [
-    {
-      "itemId": "550e8400-e29b-41d4-a716-446655440100",
-      "displayOrder": 1,
-      "displayName": "Region",
-      "formatMask": "999,999.00",
-      "aggFunction": null,
-      "sortDirection": "ASC",
-      "sortOrder": 1,
-      "sortGroup": true,
-      "columnWidth": 120,
-      "axisType": "AXIS",
-      "axisEdge": "COLUMN",
-      "axisOrder": 0,
-      "isHidden": false
-    }
-  ],
-  "conditions": [],
-  "parameters": []
-}
-```
-
-**Worksheet fields on an item.** All optional; omitted means "not recorded",
-which is how every map built in Neo starts.
-
-| Field | Effect |
+| Status | Body |
 | --- | --- |
-| `axisType` | `AXIS` groups, `MEASURE` is aggregated, `PAGE` filters the sheet. An `AXIS` column is never given the source item's default aggregation. |
-| `axisEdge` | `ROW` or `COLUMN` — which crosstab edge. A `CROSSTAB` map needs at least one `COLUMN` column before it can be pivoted. |
-| `sortGroup` | Group/break sort. Emitted ahead of every plain sort, suppresses repeated values, and gives a subtotal its boundary. |
-| `isHidden` | The query names the column but draws nothing for it — so a filter, a sort or a total can still use it. |
+| 200 | { data?: { id?: string name?: string description?: null,string businessAreaId?: string isActive?: boolean createdAt?: string updatedAt?: string }[] } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
 
-**Response:** `201 Created`
+#### POST /api/business-areas/{baId}/hierarchies
 
-#### PUT /api/maps/:id
-Update a map (replaces items, conditions, parameters if provided).
+**Parameters:**
 
-Send every field of an item you want kept: an update replaces the column list
-outright, so an item posted without its `axisType`, `sortGroup` or `isHidden`
-loses them.
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `baId` | path | yes | string (uuid) |
 
-**Authentication:** Required (EDIT access)
-
-#### DELETE /api/maps/:id
-Soft-delete a map.
-
-**Authentication:** Required (DELETE access)
-
-#### POST /api/maps/:id/duplicate
-Deep-copy a map.
-
-**Authentication:** Required (VIEW access + CREATE permission in business area)
-
-**Request Body:**
-```json
+**Request body:**
+```
 {
-  "name": "Sales Report - Copy"
+  name: string
+  description?: string
+  levels: {
+    levelName: string
+    itemId: string (uuid)
+    levelNumber: integer
+  }[]
 }
 ```
 
-**Response:** `201 Created` with new map
+**Responses:**
 
-#### GET /api/maps/:id/export
-Export map definition as XML.
-
-**Authentication:** Required (EXPORT access)
-
----
-
-### Map Execution
-
-Execute maps and retrieve results.
-
-#### POST /api/maps/:id/execute
-Execute map synchronously and return first page of results.
-
-**Authentication:** Required (VIEW access)
-
-**Request Body:**
-```json
-{
-  "parameters": {
-    "start_date": "2026-01-01",
-    "region": "EMEA"
-  },
-  "timeoutMs": 30000,
-  "offset": 0,
-  "calculatedFields": [
-    {
-      "name": "revenue_pct",
-      "formula": "REVENUE / SUM(REVENUE) OVER ()"
-    }
-  ]
-}
-```
-
-**Response:** `200 OK`
-
-Rows are objects keyed by the column `name` Oracle reported, not positional
-arrays.
-
-```json
-{
-  "data": {
-    "columns": [
-      {
-        "name": "REGION",
-        "label": "Region",
-        "isAggregate": false,
-        "dataType": "VARCHAR2",
-        "axisType": "AXIS"
-      },
-      {
-        "name": "AMOUNT",
-        "label": "Amount",
-        "isAggregate": true,
-        "dataType": "NUMBER",
-        "formatMask": "999,999.00",
-        "columnWidth": 120,
-        "axisType": "MEASURE"
-      }
-    ],
-    "rows": [
-      { "REGION": "EMEA", "AMOUNT": 50000 },
-      { "REGION": "APAC", "AMOUNT": 75000 }
-    ],
-    "rowCount": 2,
-    "executionTimeMs": 812,
-    "truncated": false,
-    "sql": "SELECT DISTINCT f1.\"REGION\" AS REGION, ...",
-    "groupBreakAliases": ["REGION"],
-    "totals": [
-      {
-        "breakAlias": null,
-        "totals": [
-          {
-            "id": "…",
-            "kind": "TOTAL",
-            "alias": "SUM_AMOUNT",
-            "targetAlias": "AMOUNT",
-            "targetLabel": "Amount",
-            "aggFunction": "SUM",
-            "displayOrder": 0
-          }
-        ],
-        "rows": [{ "SUM_AMOUNT": 125000 }]
-      }
-    ],
-    "warnings": [
-      "A total on \"Policy Count\" was skipped: its Discoverer aggregate did not migrate"
-    ]
-  }
-}
-```
-
-**Worksheet fields.** These carry a migrated Discoverer worksheet's layout and
-are omitted when the map defines none.
-
-| Field | Meaning |
+| Status | Body |
 | --- | --- |
-| `columns[].formatMask` | Oracle-style mask (`999,999.00`, `DD-MON-YYYY`). Read for its meaning and rendered in the reader's locale. |
-| `columns[].columnWidth`, `alignment`, `wordWrap`, `headingFormatMask` | Presentation the worksheet recorded. `alignment`/`wordWrap` are null on migrated maps — the source codes are undecoded. |
-| `columns[].axisType` | `AXIS` (group by), `MEASURE` (aggregated) or `PAGE`. |
-| `columns[].axisEdge` | `ROW` or `COLUMN` — which crosstab edge. Always null on migrated maps: Discoverer has no such field. |
-| `groupBreakAliases` | Columns the query sorted on first, outermost first. Draw a break at each change; repeated values are suppressed. |
-| `totals` | One entry per totals statement. `breakAlias: null` is the grand total and has one row; a subtotal group has one row per break value, carrying that value under `breakAlias`. Totals cover the **whole filtered set**, not the page. |
-| `totals[].totals[].aggFunction` | `SUM`/`COUNT`/`AVG`/`MIN`/`MAX`, or `INLINE` when the target is a calculation that already aggregates. |
-| `totals[].totals[].label` | Discoverer's template, interpolation intact (`Total for &value`). Substitute `&value` and `&item` when drawing. |
-| `warnings` | Map semantics this run could not honour. Advisory — the rows are valid. |
+| 201 | { data?: { id?: string name?: string description?: null,string businessAreaId?: string isActive?: boolean createdAt?: string updatedAt?: string levels?: { id?: string hierarchyId?: string levelName?: string itemId?: string levelNumber?: integer createdAt?: string }[] } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
 
-**Pagination and totals.** `offset` pages the detail rows only. Each page
-re-runs the totals over the whole filtered set, so the figures do not change as
-you load more.
+#### GET /api/hierarchies/{id}
 
-**Errors:**
-- `400 Bad Request` — Invalid parameters or configuration
-- `502 Bad Gateway` — Database connection failed
-- `504 Gateway Timeout` — Query exceeded timeout
+**Parameters:**
 
-#### POST /api/maps/:id/execute-async
-Queue map execution asynchronously (for long-running queries).
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
 
-**Authentication:** Required (VIEW access)
+**Responses:**
 
-**Request Body:** Same as synchronous execute
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string name?: string description?: null,string businessAreaId?: string isActive?: boolean createdAt?: string updatedAt?: string levels?: { id?: string hierarchyId?: string levelName?: string itemId?: string levelNumber?: integer createdAt?: string }[] } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 404 | { error?: string details?: any } |
 
-**Response:** `202 Accepted`
-```json
+#### PUT /api/hierarchies/{id}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Request body:**
+```
 {
-  "data": {
-    "jobId": "550e8400-e29b-41d4-a716-446655440400"
-  }
+  name?: string
+  description?: string,null
+  levels?: {
+    levelName: string
+    itemId: string (uuid)
+    levelNumber: integer
+  }[]
 }
 ```
 
-#### GET /api/maps/:id/executions/:jobId
-Check status of async execution.
+**Responses:**
 
-**Authentication:** Required (VIEW access)
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string name?: string description?: null,string businessAreaId?: string isActive?: boolean createdAt?: string updatedAt?: string levels?: { id?: string hierarchyId?: string levelName?: string itemId?: string levelNumber?: integer createdAt?: string }[] } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
+| 404 | { error?: string details?: any } |
 
-**Response:** `200 OK`
-```json
+#### DELETE /api/hierarchies/{id}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { message?: string } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
+| 404 | { error?: string details?: any } |
+
+#### POST /api/business-areas/{baId}/hierarchies/validate-levels
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `baId` | path | yes | string (uuid) |
+
+**Request body:**
+```
 {
-  "data": {
-    "jobId": "550e8400-e29b-41d4-a716-446655440400",
-    "mapId": "550e8400-e29b-41d4-a716-446655440300",
-    "status": "PROCESSING",
-    "progress": { "rowsProcessed": 5000, "totalRows": 10000 },
-    "startedAt": "2026-07-19T12:00:00Z"
-  }
+  levels: {
+    levelName: string
+    itemId: string (uuid)
+    levelNumber: integer
+  }[]
 }
 ```
 
-**Statuses:** `PENDING`, `PROCESSING`, `COMPLETED`, `FAILED`
+**Responses:**
 
-#### DELETE /api/maps/:id/executions/:jobId
-Cancel a running async execution.
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { valid?: boolean } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
 
-**Authentication:** Required (VIEW access)
+### Custom Functions
 
-**Response:** `200 OK`
-```json
+#### GET /api/custom-functions
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string name?: string description?: null,string functionType?: "SQL" \| "PLSQL" \| "PACKAGE" parameters?: any returnType?: null,string isActive?: boolean createdAt?: string }[] } |
+| 401 | { error?: string details?: any } |
+
+#### POST /api/custom-functions
+
+**Request body:**
+```
 {
-  "data": {
-    "cancelled": true,
-    "message": "Execution cancelled"
-  }
+  name: string
+  description?: string
+  functionType: "SQL" | "PLSQL" | "PACKAGE"
+  parameters?: {
+    name: string
+    type: string
+    required?: boolean
+    defaultValue?: any
+  }[]
+  returnType?: string
 }
 ```
 
-#### GET /api/maps/:id/history
-Get execution history (recent runs) for a map.
+**Responses:**
 
-**Authentication:** Required (VIEW access)
+| Status | Body |
+| --- | --- |
+| 201 | { data?: { id?: string name?: string description?: null,string functionType?: "SQL" \| "PLSQL" \| "PACKAGE" parameters?: any returnType?: null,string isActive?: boolean createdAt?: string } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
 
-**Query Parameters:**
-- `limit` (optional, 1–200, default: 20) — Number of entries
+#### GET /api/custom-functions/{id}
 
-**Response:** `200 OK`
-```json
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string name?: string description?: null,string functionType?: "SQL" \| "PLSQL" \| "PACKAGE" parameters?: any returnType?: null,string isActive?: boolean createdAt?: string } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 404 | { error?: string details?: any } |
+
+#### PUT /api/custom-functions/{id}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Request body:**
+```
 {
-  "data": [
-    {
-      "id": "550e8400-e29b-41d4-a716-446655440401",
-      "mapId": "550e8400-e29b-41d4-a716-446655440300",
-      "executedBy": "550e8400-e29b-41d4-a716-446655440001",
-      "executedAt": "2026-07-19T12:00:00Z",
-      "status": "SUCCESS",
-      "rowsReturned": 150,
-      "durationMs": 1234
-    }
-  ]
+  name?: string
+  description?: string,null
+  functionType?: "SQL" | "PLSQL" | "PACKAGE"
+  parameters?: array,null
+  returnType?: string,null
 }
 ```
 
----
+**Responses:**
 
-### Map Shares
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string name?: string description?: null,string functionType?: "SQL" \| "PLSQL" \| "PACKAGE" parameters?: any returnType?: null,string isActive?: boolean createdAt?: string } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
+| 404 | { error?: string details?: any } |
 
-Share maps with other users.
+#### DELETE /api/custom-functions/{id}
 
-#### GET /api/maps/:id/shares
-List map share permissions.
+**Parameters:**
 
-**Authentication:** Required (owner or ADMIN)
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
 
-#### POST /api/maps/:id/shares
-Grant another user access to a map.
+**Responses:**
 
-**Authentication:** Required (owner or ADMIN)
-
-**Request Body:**
-```json
-{
-  "userId": "550e8400-e29b-41d4-a716-446655440002",
-  "permissionLevel": "VIEW"
-}
-```
-
-**Response:** `201 Created`
-
-#### DELETE /api/maps/:id/shares/:shareId
-Revoke map access from a user.
-
-**Authentication:** Required (owner or ADMIN)
-
----
-
-### Exports
-
-Async export jobs (Excel, CSV).
-
-#### POST /api/exports
-Start an export job.
-
-**Authentication:** Required (EXPORT permission)
-
-**Request Body:**
-```json
-{
-  "mapId": "550e8400-e29b-41d4-a716-446655440300",
-  "format": "XLSX",
-  "parameters": {
-    "start_date": "2026-01-01"
-  }
-}
-```
-
-**Response:** `201 Created`
-```json
-{
-  "data": {
-    "jobId": "550e8400-e29b-41d4-a716-446655440500",
-    "status": "PENDING",
-    "format": "XLSX",
-    "createdAt": "2026-07-19T12:00:00Z"
-  }
-}
-```
-
-#### GET /api/exports/:jobId
-Check export job status.
-
-**Authentication:** Required
-
-**Response:** `200 OK`
-```json
-{
-  "data": {
-    "jobId": "550e8400-e29b-41d4-a716-446655440500",
-    "status": "COMPLETED",
-    "format": "XLSX",
-    "fileSize": 1024000,
-    "downloadUrl": "/api/exports/550e8400-e29b-41d4-a716-446655440500/download",
-    "expiresAt": "2026-07-26T12:00:00Z"
-  }
-}
-```
-
-#### GET /api/exports/:jobId/download
-Download completed export file.
-
-**Authentication:** Required
-
-**Response:** `200 OK` (binary file)
-
-#### DELETE /api/exports/:jobId
-Delete export job and file.
-
-**Authentication:** Required
-
----
-
-### Schedules
-
-Cron-based scheduled map execution.
-
-#### GET /api/schedules
-List user's scheduled jobs.
-
-**Authentication:** Required
-
-#### POST /api/schedules
-Create a scheduled job.
-
-**Authentication:** Required (SCHEDULE permission)
-
-**Request Body:**
-```json
-{
-  "mapId": "550e8400-e29b-41d4-a716-446655440300",
-  "name": "Daily Sales Report",
-  "cronExpression": "0 9 * * MON-FRI",
-  "isActive": true,
-  "parameters": {
-    "region": "EMEA"
-  },
-  "notificationEmail": "manager@example.com"
-}
-```
-
-**Response:** `201 Created`
-
-#### GET /api/schedules/:scheduleId
-Get schedule details.
-
-**Authentication:** Required
-
-#### PUT /api/schedules/:scheduleId
-Update a schedule.
-
-**Authentication:** Required
-
-#### DELETE /api/schedules/:scheduleId
-Delete a schedule.
-
-**Authentication:** Required
-
-#### GET /api/schedules/:scheduleId/runs
-List execution history for a schedule.
-
-**Authentication:** Required
-
----
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { message?: string } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
+| 404 | { error?: string details?: any } |
 
 ### Users
 
-User management (ADMIN only).
+#### GET /api/users/search
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `q` | query | no | string |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string name?: string email?: string }[] } |
+| 401 | { error?: string details?: any } |
 
 #### GET /api/users
-List all users.
 
-**Authentication:** Required (ADMIN only)
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string email?: string name?: string role?: "ADMIN" \| "MANAGER" \| "USER" \| "VIEWER" isActive?: boolean createdAt?: string updatedAt?: string }[] } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
 
 #### POST /api/users
-Create a user.
 
-**Authentication:** Required (ADMIN only)
-
-**Request Body:**
-```json
+**Request body:**
+```
 {
-  "email": "newuser@example.com",
-  "name": "New User",
-  "password": "initial_password",
-  "role": "USER"
+  email: string (email)
+  password: string
+  name: string
+  role?: "ADMIN" | "MANAGER" | "USER" | "VIEWER"
 }
 ```
 
-#### PUT /api/users/:userId
-Update user profile/role.
+**Responses:**
 
-**Authentication:** Required (ADMIN or self)
+| Status | Body |
+| --- | --- |
+| 201 | { data?: { id?: string email?: string name?: string role?: "ADMIN" \| "MANAGER" \| "USER" \| "VIEWER" isActive?: boolean createdAt?: string updatedAt?: string } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
+| 409 | { error?: string details?: any } |
 
-#### DELETE /api/users/:userId
-Delete a user (soft delete).
+#### GET /api/users/{id}
 
-**Authentication:** Required (ADMIN only)
+**Parameters:**
 
----
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string email?: string name?: string role?: "ADMIN" \| "MANAGER" \| "USER" \| "VIEWER" isActive?: boolean createdAt?: string updatedAt?: string } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
+| 404 | { error?: string details?: any } |
+
+#### PUT /api/users/{id}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Request body:**
+```
+{
+  email?: string (email)
+  password?: string
+  name?: string
+  role?: "ADMIN" | "MANAGER" | "USER" | "VIEWER"
+  isActive?: boolean
+}
+```
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string email?: string name?: string role?: "ADMIN" \| "MANAGER" \| "USER" \| "VIEWER" isActive?: boolean createdAt?: string updatedAt?: string } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
+| 404 | { error?: string details?: any } |
+| 409 | { error?: string details?: any } |
+
+#### DELETE /api/users/{id}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { message?: string } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
+| 404 | { error?: string details?: any } |
+
+### User Preferences
+
+#### GET /api/users/me/preferences
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { locale?: "en" \| "pt-PT" \| "fr-FR" \| "es-ES" theme?: "light" \| "dark" \| "high-contrast" colorPalette?: "default" \| "navy" } } |
+| 401 | { error?: string details?: any } |
+
+#### PATCH /api/users/me/preferences
+
+**Request body:**
+```
+{
+  locale?: "en" | "pt-PT" | "fr-FR" | "es-ES"
+  theme?: "light" | "dark" | "high-contrast"
+  colorPalette?: "default" | "navy"
+}
+```
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { locale?: "en" \| "pt-PT" \| "fr-FR" \| "es-ES" theme?: "light" \| "dark" \| "high-contrast" colorPalette?: "default" \| "navy" } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+
+### Maps
+
+#### GET /api/business-areas/{baId}/maps
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `baId` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### POST /api/business-areas/{baId}/maps
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `baId` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### GET /api/maps
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `scope` | query | no | "owned" \| "all" |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### GET /api/maps/shared-with-me
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### GET /api/maps/{id}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### PUT /api/maps/{id}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### DELETE /api/maps/{id}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### POST /api/maps/{id}/duplicate
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### GET /api/maps/{id}/export
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### GET /api/maps/{id}/conditional-formats
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### POST /api/maps/{id}/conditional-formats
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### PUT /api/maps/{id}/conditional-formats/{formatId}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+| `formatId` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### DELETE /api/maps/{id}/conditional-formats/{formatId}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+| `formatId` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+### Export
+
+#### POST /api/maps/{id}/export
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### GET /api/exports
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `limit` | query | no | integer |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### GET /api/exports/{jobId}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `jobId` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### GET /api/exports/{jobId}/download
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `jobId` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+### Workbooks
+
+#### GET /api/workbooks
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+### Dashboard
+
+#### GET /api/dashboard/stats
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+### Map Shares
+
+#### GET /api/maps/{id}/shares
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### POST /api/maps/{id}/shares
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### PUT /api/maps/{id}/shares/{userId}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+| `userId` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### DELETE /api/maps/{id}/shares/{userId}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+| `userId` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+### Map Execution
+
+#### POST /api/maps/plan
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### POST /api/maps/{id}/execute
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### POST /api/maps/{id}/drill-to-detail
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### POST /api/maps/{id}/execute-async
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### GET /api/maps/{id}/executions/{jobId}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+| `jobId` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### DELETE /api/maps/{id}/executions/{jobId}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+| `jobId` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### GET /api/maps/{id}/history
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `limit` | query | no | integer |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+### Schedules
+
+#### GET /api/maps/{mapId}/schedules
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `mapId` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### POST /api/maps/{mapId}/schedules
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `mapId` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### GET /api/schedules
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### GET /api/schedules/{id}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### PUT /api/schedules/{id}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### DELETE /api/schedules/{id}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### POST /api/schedules/{id}/toggle
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### POST /api/schedules/{id}/trigger
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### GET /api/schedules/{id}/history
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `limit` | query | no | integer |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### GET /api/schedules/{id}/results/{resultId}/download
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+| `resultId` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
 
 ### Security
 
-Row-level security policies.
+#### GET /api/security/policies
 
-#### GET /api/business-areas/:baId/security
-List security policies for a business area.
+**Responses:**
 
-**Authentication:** Required (ADMIN or EDIT grant)
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string name?: string description?: string policyType?: string isActive?: boolean createdAt?: string ruleCount?: number assignmentCount?: number rules?: { id?: string policyId?: string targetId?: string targetType?: "BUSINESS_AREA" \| "FOLDER" sqlPredicate?: string createdAt?: string }[] }[] } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
 
-#### POST /api/business-areas/:baId/security
-Create a security policy.
+#### POST /api/security/policies
 
-**Authentication:** Required (ADMIN only)
+**Responses:**
 
-**Request Body:**
-```json
-{
-  "name": "Sales by Region",
-  "description": "Users see only their region's data",
-  "targetType": "FOLDER",
-  "targetId": "550e8400-e29b-41d4-a716-446655440010",
-  "predicate": "REGION = NVL2(SYS_CONTEXT('dn_user_context', 'region'), SYS_CONTEXT('dn_user_context', 'region'), REGION)",
-  "isActive": true
-}
-```
+| Status | Body |
+| --- | --- |
+| 201 | { data?: { id?: string name?: string description?: string policyType?: string isActive?: boolean createdAt?: string ruleCount?: number assignmentCount?: number rules?: { id?: string policyId?: string targetId?: string targetType?: "BUSINESS_AREA" \| "FOLDER" sqlPredicate?: string createdAt?: string }[] } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
+| 404 | { error?: string details?: any } |
+| 409 | { error?: string details?: any } |
 
-#### PUT /api/business-areas/:baId/security/:policyId
-Update a policy.
+#### GET /api/security/policies/{id}
 
-**Authentication:** Required (ADMIN only)
+**Parameters:**
 
-#### DELETE /api/business-areas/:baId/security/:policyId
-Delete a policy.
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string |
 
-**Authentication:** Required (ADMIN only)
+**Responses:**
 
----
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string name?: string description?: string policyType?: string isActive?: boolean createdAt?: string ruleCount?: number assignmentCount?: number rules?: { id?: string policyId?: string targetId?: string targetType?: "BUSINESS_AREA" \| "FOLDER" sqlPredicate?: string createdAt?: string }[] } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
+| 404 | { error?: string details?: any } |
 
-### Audit Logs
+#### PUT /api/security/policies/{id}
 
-System audit trail (ADMIN only).
+**Parameters:**
 
-#### GET /api/audit
-List audit events.
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string |
 
-**Authentication:** Required (ADMIN only)
+**Responses:**
 
-**Query Parameters:**
-- `limit` (optional, default: 100) — Number of entries
-- `entityType` (optional) — Filter by entity type
-- `action` (optional) — Filter by action (CREATE, UPDATE, DELETE, EXECUTE)
-- `startDate` (optional) — Filter by date range start
-- `endDate` (optional) — Filter by date range end
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string name?: string description?: string policyType?: string isActive?: boolean createdAt?: string ruleCount?: number assignmentCount?: number rules?: { id?: string policyId?: string targetId?: string targetType?: "BUSINESS_AREA" \| "FOLDER" sqlPredicate?: string createdAt?: string }[] } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
+| 404 | { error?: string details?: any } |
+| 409 | { error?: string details?: any } |
 
-**Response:** `200 OK`
-```json
-{
-  "data": [
-    {
-      "id": "550e8400-e29b-41d4-a716-446655440600",
-      "timestamp": "2026-07-19T12:00:00Z",
-      "userId": "550e8400-e29b-41d4-a716-446655440001",
-      "userEmail": "user@example.com",
-      "action": "CREATE",
-      "entityType": "MAP",
-      "entityId": "550e8400-e29b-41d4-a716-446655440300",
-      "entityName": "Sales Report",
-      "changes": { "name": "Sales Report", "mapType": "TABLE" }
-    }
-  ]
-}
-```
+#### DELETE /api/security/policies/{id}
 
----
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { deleted?: boolean } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
+| 404 | { error?: string details?: any } |
+
+#### GET /api/security/policies/{id}/assignments
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string policyId?: string userId?: string roleName?: string userEmail?: string userName?: string }[] } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
+| 404 | { error?: string details?: any } |
+
+#### POST /api/security/policies/{id}/assignments
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 201 | { data?: { id?: string policyId?: string userId?: string roleName?: string userEmail?: string userName?: string } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
+| 404 | { error?: string details?: any } |
+| 409 | { error?: string details?: any } |
+
+#### DELETE /api/security/policies/{id}/assignments/{assignmentId}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string |
+| `assignmentId` | path | yes | string |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { deleted?: boolean } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
+| 404 | { error?: string details?: any } |
+
+#### POST /api/security/policies/test
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { originalSql?: string securedSql?: string predicates?: string[] } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
+| 404 | { error?: string details?: any } |
 
 ### Migration
 
-EUL migration from Oracle Discoverer. Every endpoint is **ADMIN only**.
-
-Oracle credentials are never accepted over HTTP: a request names a registered
-`data_sources` row and the backend decrypts its stored password. The target is
-always the backend's own database.
-
 #### POST /api/migration/detect
-Detect the EUL version of a data source.
 
-**Request Body:**
-```json
-{
-  "dataSourceId": "550e8400-e29b-41d4-a716-446655440200",
-  "schemaOwner": "EUL5_US"
-}
-```
+**Responses:**
 
-`schemaOwner` is optional; it defaults to the connecting user's schema.
-
-**Response:** `200` — the detected version, prefix, Discoverer release, the EUL
-tables found, and any warnings.
+| Status | Body |
+| --- | --- |
+| 200 | { data?: object } |
+| 400 | { error?: string } |
+| 401 | { error?: string } |
+| 403 | { error?: string } |
+| 404 | { error?: string } |
+| 409 | { error?: string } |
 
 #### POST /api/migration/analyze
-Full assessment report: object counts, readiness score, validation issues and
-the estimated migration effort. Reads the EUL; writes nothing.
 
-**Request Body:** same as `/detect`.
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: object } |
+| 400 | { error?: string } |
+| 401 | { error?: string } |
+| 403 | { error?: string } |
+| 404 | { error?: string } |
+| 409 | { error?: string } |
 
 #### POST /api/migration/run
-Start a migration (or a dry run). Returns immediately with a job.
 
-**Request Body:**
-```json
-{
-  "dataSourceId": "550e8400-e29b-41d4-a716-446655440200",
-  "schemaOwner": "EUL5_US",
-  "dryRun": false,
-  "version": "auto"
-}
-```
+**Responses:**
 
-- `dryRun` — run the whole pipeline and report, writing nothing
-- `version` — `auto` (default), `eul4` or `eul5`, overriding detection
-
-**Response:** `202` with the job. Poll `/api/migration/jobs/:jobId`.
-
-**`409`** when a migration is already running. The run also refuses a target
-that already holds a migration — one migration per database.
+| Status | Body |
+| --- | --- |
+| 202 | { data?: object } |
+| 400 | { error?: string } |
+| 401 | { error?: string } |
+| 403 | { error?: string } |
+| 404 | { error?: string } |
+| 409 | { error?: string } |
 
 #### POST /api/migration/reimport-maps
-Rebuild the migrated maps from the EUL's workbooks, in place.
 
-Exists because a database accepts exactly one full migration: a target whose
-maps are empty — migrated before the tool could read `DOC_DOCUMENT` — cannot be
-fixed by re-running `/run`. This replaces **only** the maps, resolving every
-worksheet column against the items already in the database. Users, business
-areas, folders, items and grants are untouched.
+**Responses:**
 
-**Request Body:**
-```json
-{
-  "dataSourceId": "550e8400-e29b-41d4-a716-446655440200",
-  "schemaOwner": "EUL5_US",
-  "dryRun": true
-}
-```
-
-**Response:** `202` with the job, whose `kind` is `"MAPS"`. Its `mapsResult`
-carries `replacedMaps`, the rows `planned`/`written` per table, and the counts
-of columns and conditions that could not be resolved.
-
-> **Destructive for migrated maps.** Every map in the migration's host business
-> area (*Migrated Workbooks*) is deleted and rebuilt, cascading to its columns,
-> conditions, parameters, calculated fields, shares, schedules and export jobs.
-> Edits made to a migrated map since the original run are lost. Maps in other
-> business areas are never touched. Run with `"dryRun": true` first.
-
-The delete and the rebuild share one transaction: a failure leaves the old
-maps in place.
+| Status | Body |
+| --- | --- |
+| 202 | { data?: object } |
+| 400 | { error?: string } |
+| 401 | { error?: string } |
+| 403 | { error?: string } |
+| 404 | { error?: string } |
+| 409 | { error?: string } |
 
 #### GET /api/migration/jobs
-Recent migration jobs, newest first.
 
-#### GET /api/migration/jobs/:jobId
-Poll one job: `status`, `progress`, `currentPhase`, `logs`, and the `result`
-(a full migration) or `mapsResult` (a maps re-import). `kind` says which.
+**Responses:**
 
-**`404`** when the job id is unknown — the registry is in-memory and does not
-survive a backend restart.
+| Status | Body |
+| --- | --- |
+| 200 | { data?: object[] } |
+| 401 | { error?: string } |
+| 403 | { error?: string } |
 
----
+#### GET /api/migration/jobs/{jobId}
 
-## Error Responses
+**Parameters:**
 
-All error responses follow this format:
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `jobId` | path | yes | string |
 
-```json
-{
-  "error": "Human-readable error message",
-  "statusCode": 400,
-  "kind": "ERROR_KIND"
-}
-```
+**Responses:**
 
-### Common HTTP Status Codes
+| Status | Body |
+| --- | --- |
+| 200 | { data?: object } |
+| 400 | { error?: string } |
+| 401 | { error?: string } |
+| 403 | { error?: string } |
+| 404 | { error?: string } |
+| 409 | { error?: string } |
 
-| Status | Meaning |
-|--------|---------|
-| `200 OK` | Success |
-| `201 Created` | Resource created |
-| `202 Accepted` | Async job queued |
-| `400 Bad Request` | Invalid input or validation failure |
-| `401 Unauthorized` | Missing or invalid JWT token |
-| `403 Forbidden` | Insufficient permissions |
-| `404 Not Found` | Resource not found |
-| `409 Conflict` | Resource already exists or state conflict |
-| `500 Internal Server Error` | Unexpected server error |
-| `502 Bad Gateway` | Database or data source connection failed |
-| `504 Gateway Timeout` | Query execution exceeded timeout |
+### Audit
 
----
+#### GET /api/audit
 
-**See Also:** [Authentication Guide](authentication.md), [Project README](../README.md)
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string userId?: string userName?: string userEmail?: string action?: string entityType?: string entityId?: string details?: any ipAddress?: string createdAt?: string }[] total?: number limit?: number offset?: number } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
+
+#### GET /api/audit/stats
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { totalActions?: number byDay?: { date?: string count?: number }[] byUser?: { userId?: string userName?: string count?: number }[] byActionType?: { action?: string count?: number }[] } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
+
+#### GET /api/audit/entity/{type}/{id}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `type` | path | yes | string |
+| `id` | path | yes | string |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string userId?: string userName?: string userEmail?: string action?: string entityType?: string entityId?: string details?: any ipAddress?: string createdAt?: string }[] } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
+
+#### GET /api/audit/user/{id}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string userId?: string userName?: string userEmail?: string action?: string entityType?: string entityId?: string details?: any ipAddress?: string createdAt?: string }[] } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |

@@ -1,7 +1,9 @@
 openapi: 3.0.3
 info:
   title: Discoverer Neo API
-  description: REST API for Oracle Discoverer Neo metadata management backend. Manage data sources, business areas, folders, items, joins, hierarchies, and custom functions.
+  description: >-
+    REST API for Oracle Discoverer Neo metadata management backend. Manage data sources, business
+    areas, folders, items, joins, hierarchies, and custom functions.
   version: 0.1.0
   contact:
     name: Discoverer Neo
@@ -42,6 +44,7 @@ paths:
                     type: string
                     enum:
                       - ok
+                      - degraded
                   version:
                     type: string
                   uptime:
@@ -56,6 +59,47 @@ paths:
                     enum:
                       - connected
                       - disconnected
+                  oracleClient:
+                    type: string
+                    enum:
+                      - thin
+                      - thick_ready
+                      - thick_unavailable
+                  timestamp:
+                    type: string
+                    format: date-time
+        '503':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - ok
+                      - degraded
+                  version:
+                    type: string
+                  uptime:
+                    type: number
+                  database:
+                    type: string
+                    enum:
+                      - connected
+                      - disconnected
+                  redis:
+                    type: string
+                    enum:
+                      - connected
+                      - disconnected
+                  oracleClient:
+                    type: string
+                    enum:
+                      - thin
+                      - thick_ready
+                      - thick_unavailable
                   timestamp:
                     type: string
                     format: date-time
@@ -75,6 +119,7 @@ paths:
                     type: string
                     enum:
                       - ok
+                      - degraded
                   version:
                     type: string
                   uptime:
@@ -89,9 +134,86 @@ paths:
                     enum:
                       - connected
                       - disconnected
+                  oracleClient:
+                    type: string
+                    enum:
+                      - thin
+                      - thick_ready
+                      - thick_unavailable
                   timestamp:
                     type: string
                     format: date-time
+        '503':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - ok
+                      - degraded
+                  version:
+                    type: string
+                  uptime:
+                    type: number
+                  database:
+                    type: string
+                    enum:
+                      - connected
+                      - disconnected
+                  redis:
+                    type: string
+                    enum:
+                      - connected
+                      - disconnected
+                  oracleClient:
+                    type: string
+                    enum:
+                      - thin
+                      - thick_ready
+                      - thick_unavailable
+                  timestamp:
+                    type: string
+                    format: date-time
+  /live:
+    get:
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - ok
+                  uptime:
+                    type: number
+  /api/live:
+    get:
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - ok
+                  uptime:
+                    type: number
   /api/auth/login:
     post:
       tags:
@@ -138,6 +260,14 @@ paths:
                             type: string
                           role:
                             type: string
+                          locale:
+                            type: string
+                          theme:
+                            type: string
+                          colorPalette:
+                            type: string
+                          mustChangePassword:
+                            type: boolean
         '400':
           description: Default Response
           content:
@@ -220,6 +350,12 @@ paths:
                         type: string
                       role:
                         type: string
+                      locale:
+                        type: string
+                      theme:
+                        type: string
+                      colorPalette:
+                        type: string
         '401':
           description: Default Response
           content:
@@ -229,6 +365,31 @@ paths:
                 properties:
                   error:
                     type: string
+  /api/auth/change-password:
+    post:
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - currentPassword
+                - newPassword
+              properties:
+                currentPassword:
+                  type: string
+                  minLength: 1
+                newPassword:
+                  type: string
+                  minLength: 12
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Default Response
   /api/data-sources:
     get:
       tags:
@@ -1482,6 +1643,8 @@ paths:
                           type:
                             - 'null'
                             - string
+                        isShared:
+                          type: boolean
         '400':
           description: Default Response
           content:
@@ -1621,6 +1784,8 @@ paths:
                         type:
                           - 'null'
                           - string
+                      isShared:
+                        type: boolean
         '400':
           description: Default Response
           content:
@@ -1724,6 +1889,8 @@ paths:
                         type:
                           - 'null'
                           - string
+                      isShared:
+                        type: boolean
         '400':
           description: Default Response
           content:
@@ -1867,6 +2034,8 @@ paths:
                         type:
                           - 'null'
                           - string
+                      isShared:
+                        type: boolean
         '400':
           description: Default Response
           content:
@@ -1969,6 +2138,59 @@ paths:
                 properties:
                   error:
                     type: string
+  /api/folders/{id}/business-areas:
+    get:
+      tags:
+        - Folders
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: id
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Default Response
+    post:
+      tags:
+        - Folders
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: id
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Default Response
+  /api/folders/{id}/business-areas/{baId}:
+    delete:
+      tags:
+        - Folders
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: id
+          required: true
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: baId
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Default Response
   /api/data-sources/{dsId}/introspect:
     post:
       tags:
@@ -2073,6 +2295,21 @@ paths:
           name: tableOwner
           required: false
         - schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 500
+          in: query
+          name: limit
+          required: false
+        - schema:
+            type: integer
+            minimum: 0
+            default: 0
+          in: query
+          name: offset
+          required: false
+        - schema:
             type: string
             format: uuid
           in: path
@@ -2116,6 +2353,12 @@ paths:
                                   nullable:
                                     type: boolean
                       count:
+                        type: integer
+                      total:
+                        type: integer
+                      limit:
+                        type: integer
+                      offset:
                         type: integer
         '400':
           description: Default Response
@@ -2974,6 +3217,113 @@ paths:
                 properties:
                   error:
                     type: string
+  /api/items/{id}/values:
+    get:
+      tags:
+        - Items
+      parameters:
+        - schema:
+            type: string
+            maxLength: 255
+          in: query
+          name: search
+          required: false
+        - schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+          in: query
+          name: limit
+          required: false
+        - schema:
+            type: integer
+            minimum: 0
+          in: query
+          name: offset
+          required: false
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: id
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      mode:
+                        type: string
+                        enum:
+                          - values
+                          - search
+                      values:
+                        type: array
+                        items:
+                          type: string
+                      truncated:
+                        type: boolean
+                      itemClassId:
+                        type:
+                          - 'null'
+                          - string
+                      cardinality:
+                        type:
+                          - 'null'
+                          - integer
+        '400':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '401':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '422':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
   /api/items/{id}/descendants:
     get:
       tags:
@@ -3133,7 +3483,6 @@ paths:
                             - INNER
                             - LEFT
                             - RIGHT
-                            - FULL
                         isActive:
                           type: boolean
                         createdAt:
@@ -3220,7 +3569,6 @@ paths:
                     - INNER
                     - LEFT
                     - RIGHT
-                    - FULL
       parameters:
         - schema:
             type: string
@@ -3263,7 +3611,6 @@ paths:
                           - INNER
                           - LEFT
                           - RIGHT
-                          - FULL
                       isActive:
                         type: boolean
                       createdAt:
@@ -3342,7 +3689,6 @@ paths:
                           - INNER
                           - LEFT
                           - RIGHT
-                          - FULL
                       isActive:
                         type: boolean
                       createdAt:
@@ -3424,7 +3770,6 @@ paths:
                     - INNER
                     - LEFT
                     - RIGHT
-                    - FULL
       parameters:
         - schema:
             type: string
@@ -3467,7 +3812,6 @@ paths:
                           - INNER
                           - LEFT
                           - RIGHT
-                          - FULL
                       isActive:
                         type: boolean
                       createdAt:
@@ -3614,7 +3958,6 @@ paths:
                             - INNER
                             - LEFT
                             - RIGHT
-                            - FULL
                         reason:
                           type: string
         '400':
@@ -4724,6 +5067,8 @@ paths:
                             - MANAGER
                             - USER
                             - VIEWER
+                        isActive:
+                          type: boolean
                         createdAt:
                           type: string
                         updatedAt:
@@ -4805,6 +5150,8 @@ paths:
                           - MANAGER
                           - USER
                           - VIEWER
+                      isActive:
+                        type: boolean
                       createdAt:
                         type: string
                       updatedAt:
@@ -4886,6 +5233,8 @@ paths:
                           - MANAGER
                           - USER
                           - VIEWER
+                      isActive:
+                        type: boolean
                       createdAt:
                         type: string
                       updatedAt:
@@ -4957,6 +5306,8 @@ paths:
                     - MANAGER
                     - USER
                     - VIEWER
+                isActive:
+                  type: boolean
       parameters:
         - schema:
             type: string
@@ -4990,6 +5341,8 @@ paths:
                           - MANAGER
                           - USER
                           - VIEWER
+                      isActive:
+                        type: boolean
                       createdAt:
                         type: string
                       updatedAt:
@@ -5109,6 +5462,130 @@ paths:
                   error:
                     type: string
                   details: {}
+  /api/users/me/preferences:
+    get:
+      tags:
+        - User Preferences
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      locale:
+                        type: string
+                        enum:
+                          - en
+                          - pt-PT
+                          - fr-FR
+                          - es-ES
+                      theme:
+                        type: string
+                        enum:
+                          - light
+                          - dark
+                          - high-contrast
+                      colorPalette:
+                        type: string
+                        enum:
+                          - default
+                          - navy
+        '401':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details: {}
+    patch:
+      tags:
+        - User Preferences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  enum:
+                    - en
+                    - pt-PT
+                    - fr-FR
+                    - es-ES
+                theme:
+                  type: string
+                  enum:
+                    - light
+                    - dark
+                    - high-contrast
+                colorPalette:
+                  type: string
+                  enum:
+                    - default
+                    - navy
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      locale:
+                        type: string
+                        enum:
+                          - en
+                          - pt-PT
+                          - fr-FR
+                          - es-ES
+                      theme:
+                        type: string
+                        enum:
+                          - light
+                          - dark
+                          - high-contrast
+                      colorPalette:
+                        type: string
+                        enum:
+                          - default
+                          - navy
+        '400':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details: {}
+        '401':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details: {}
   /api/business-areas/{baId}/maps:
     get:
       tags:
@@ -5144,6 +5621,15 @@ paths:
     get:
       tags:
         - Maps
+      parameters:
+        - schema:
+            type: string
+            enum:
+              - owned
+              - all
+          in: query
+          name: scope
+          required: false
       security:
         - bearerAuth: []
       responses:
@@ -5251,6 +5737,24 @@ paths:
       responses:
         '200':
           description: Default Response
+  /api/workbooks:
+    get:
+      tags:
+        - Workbooks
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Default Response
+  /api/dashboard/stats:
+    get:
+      tags:
+        - Dashboard
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Default Response
   /api/maps/{id}/shares:
     get:
       tags:
@@ -5325,7 +5829,32 @@ paths:
       responses:
         '200':
           description: Default Response
+  /api/maps/plan:
+    post:
+      tags:
+        - Map Execution
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Default Response
   /api/maps/{id}/execute:
+    post:
+      tags:
+        - Map Execution
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: id
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Default Response
+  /api/maps/{id}/drill-to-detail:
     post:
       tags:
         - Map Execution
@@ -5467,6 +5996,78 @@ paths:
             format: uuid
           in: path
           name: jobId
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Default Response
+  /api/maps/{id}/conditional-formats:
+    get:
+      tags:
+        - Maps
+      security:
+        - bearerAuth: []
+      parameters:
+        - schema:
+            type: string
+          in: path
+          name: id
+          required: true
+      responses:
+        '200':
+          description: Default Response
+    post:
+      tags:
+        - Maps
+      security:
+        - bearerAuth: []
+      parameters:
+        - schema:
+            type: string
+          in: path
+          name: id
+          required: true
+      responses:
+        '200':
+          description: Default Response
+  /api/maps/{id}/conditional-formats/{formatId}:
+    put:
+      tags:
+        - Maps
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: id
+          required: true
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: formatId
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Default Response
+    delete:
+      tags:
+        - Maps
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: id
+          required: true
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: formatId
           required: true
       security:
         - bearerAuth: []
@@ -5638,9 +6239,9 @@ paths:
           description: Default Response
   /api/security/policies:
     get:
-      tags:
+      tags: &ref_0
         - Security
-      security:
+      security: &ref_1
         - bearerAuth: []
       responses:
         '200':
@@ -5713,10 +6314,8 @@ paths:
                     type: string
                   details: {}
     post:
-      tags:
-        - Security
-      security:
-        - bearerAuth: []
+      tags: *ref_0
+      security: *ref_1
       responses:
         '201':
           description: Default Response
@@ -5817,10 +6416,8 @@ paths:
                   details: {}
   /api/security/policies/{id}:
     get:
-      tags:
-        - Security
-      security:
-        - bearerAuth: []
+      tags: *ref_0
+      security: *ref_1
       parameters:
         - schema:
             type: string
@@ -5916,10 +6513,8 @@ paths:
                     type: string
                   details: {}
     put:
-      tags:
-        - Security
-      security:
-        - bearerAuth: []
+      tags: *ref_0
+      security: *ref_1
       parameters:
         - schema:
             type: string
@@ -6025,10 +6620,8 @@ paths:
                     type: string
                   details: {}
     delete:
-      tags:
-        - Security
-      security:
-        - bearerAuth: []
+      tags: *ref_0
+      security: *ref_1
       parameters:
         - schema:
             type: string
@@ -6090,10 +6683,8 @@ paths:
                   details: {}
   /api/security/policies/{id}/assignments:
     get:
-      tags:
-        - Security
-      security:
-        - bearerAuth: []
+      tags: *ref_0
+      security: *ref_1
       parameters:
         - schema:
             type: string
@@ -6170,10 +6761,8 @@ paths:
                     type: string
                   details: {}
     post:
-      tags:
-        - Security
-      security:
-        - bearerAuth: []
+      tags: *ref_0
+      security: *ref_1
       parameters:
         - schema:
             type: string
@@ -6259,10 +6848,8 @@ paths:
                   details: {}
   /api/security/policies/{id}/assignments/{assignmentId}:
     delete:
-      tags:
-        - Security
-      security:
-        - bearerAuth: []
+      tags: *ref_0
+      security: *ref_1
       parameters:
         - schema:
             type: string
@@ -6329,10 +6916,8 @@ paths:
                   details: {}
   /api/security/policies/test:
     post:
-      tags:
-        - Security
-      security:
-        - bearerAuth: []
+      tags: *ref_0
+      security: *ref_1
       responses:
         '200':
           description: Default Response
@@ -6394,9 +6979,9 @@ paths:
                   details: {}
   /api/migration/detect:
     post:
-      tags:
+      tags: &ref_2
         - Migration
-      security:
+      security: &ref_3
         - bearerAuth: []
       responses:
         '200':
@@ -6457,10 +7042,8 @@ paths:
                     type: string
   /api/migration/analyze:
     post:
-      tags:
-        - Migration
-      security:
-        - bearerAuth: []
+      tags: *ref_2
+      security: *ref_3
       responses:
         '200':
           description: Default Response
@@ -6520,10 +7103,69 @@ paths:
                     type: string
   /api/migration/run:
     post:
-      tags:
-        - Migration
-      security:
-        - bearerAuth: []
+      tags: *ref_2
+      security: *ref_3
+      responses:
+        '202':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    additionalProperties: true
+                additionalProperties: true
+        '400':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '401':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '409':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /api/migration/reimport-maps:
+    post:
+      tags: *ref_2
+      security: *ref_3
       responses:
         '202':
           description: Default Response
@@ -6583,10 +7225,8 @@ paths:
                     type: string
   /api/migration/jobs:
     get:
-      tags:
-        - Migration
-      security:
-        - bearerAuth: []
+      tags: *ref_2
+      security: *ref_3
       responses:
         '200':
           description: Default Response
@@ -6621,10 +7261,8 @@ paths:
                     type: string
   /api/migration/jobs/{jobId}:
     get:
-      tags:
-        - Migration
-      security:
-        - bearerAuth: []
+      tags: *ref_2
+      security: *ref_3
       parameters:
         - schema:
             type: string
@@ -6690,9 +7328,9 @@ paths:
                     type: string
   /api/audit:
     get:
-      tags:
+      tags: &ref_4
         - Audit
-      security:
+      security: &ref_5
         - bearerAuth: []
       responses:
         '200':
@@ -6769,10 +7407,8 @@ paths:
                   details: {}
   /api/audit/stats:
     get:
-      tags:
-        - Audit
-      security:
-        - bearerAuth: []
+      tags: *ref_4
+      security: *ref_5
       responses:
         '200':
           description: Default Response
@@ -6849,10 +7485,8 @@ paths:
                   details: {}
   /api/audit/entity/{type}/{id}:
     get:
-      tags:
-        - Audit
-      security:
-        - bearerAuth: []
+      tags: *ref_4
+      security: *ref_5
       parameters:
         - schema:
             type: string
@@ -6933,10 +7567,8 @@ paths:
                   details: {}
   /api/audit/user/{id}:
     get:
-      tags:
-        - Audit
-      security:
-        - bearerAuth: []
+      tags: *ref_4
+      security: *ref_5
       parameters:
         - schema:
             type: string
