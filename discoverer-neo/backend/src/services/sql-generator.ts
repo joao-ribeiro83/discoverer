@@ -79,7 +79,7 @@ export function generateSql(
   // FROM is built last so every folder already has its alias.
   const from = buildFromClause(def, ctx, { plan });
   const groupBy = buildGroupByClause(select.hasAggregates, select.nonAggregateExprs);
-  const pagination = buildPagination(options);
+  const pagination = buildPagination(options, orderBy.sql !== '');
 
   const sql = [select.sql, from, where.sql, groupBy, orderBy.sql, pagination.sql]
     .filter(Boolean)
@@ -180,7 +180,10 @@ function generateRewrite(
   options: SqlGenerationOptions,
 ): GeneratedSql {
   const { sql, bindParams, columns } = renderRewrite(def, plan, options);
-  const pagination = buildPagination(options);
+  // renderRewrite embeds its own ORDER BY (or none) directly into `sql` — see
+  // rewrite.ts's orderByAliases — so its presence is read back from the text
+  // rather than re-derived from `def`.
+  const pagination = buildPagination(options, /\bORDER BY\b/i.test(sql));
 
   const totalCount = def.totals?.length ?? 0;
   const warnings = totalCount

@@ -1026,8 +1026,13 @@ describe('exports carry the same predicates as the screen query (D-016)', () => 
     expect(exportPrepared.sql).toContain("(REGION = 'EMEA')");
 
     const screenSql = await captureSql(plainMapId, userOkId);
+    // Cut at ORDER BY, not just FETCH: this map configures no sort, so the
+    // screen path's OFFSET/FETCH pagination picks up BE-06's deterministic
+    // `ORDER BY 1` tiebreaker while the export path (unpaginated — it streams
+    // every row) does not. That is a real, correct difference in sort
+    // clauses, not in the predicates this test is about.
     const whereOf = (sql: string) =>
-      sql.slice(sql.indexOf('WHERE')).split('FETCH')[0]!.trim();
+      sql.slice(sql.indexOf('WHERE')).split(/\bORDER BY\b/)[0]!.trim();
     expect(whereOf(exportPrepared.sql)).toBe(whereOf(screenSql));
   });
 
