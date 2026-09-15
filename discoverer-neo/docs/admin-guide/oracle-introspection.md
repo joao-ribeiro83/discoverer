@@ -204,9 +204,8 @@ To automate large-scale introspection (e.g., after deploying a new ERP):
 1. Use migration tool CLI or API to bulk-create folders
 2. Write script to introspect via API:
    ```bash
-   curl -X POST http://localhost:3000/api/business-areas/:baId/folders/:folderId/introspect \
-     -H "Authorization: Bearer $TOKEN" \
-     -d '{"dataSourceId":"...","schema":"SALES"}'
+   curl -X POST "http://localhost:3000/api/data-sources/$DATA_SOURCE_ID/introspect?tableOwner=SALES" \
+     -H "Authorization: Bearer $TOKEN"
    ```
 
 ## Next Steps

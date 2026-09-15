@@ -204,9 +204,8 @@ Pour automatiser une introspection à grande échelle (p. ex. après le déploie
 1. Utilisez l'interface en ligne de commande ou l'API de l'outil de migration pour créer des dossiers en masse
 2. Écrivez un script pour introspecter via l'API :
    ```bash
-   curl -X POST http://localhost:3000/api/business-areas/:baId/folders/:folderId/introspect \
-     -H "Authorization: Bearer $TOKEN" \
-     -d '{"dataSourceId":"...","schema":"SALES"}'
+   curl -X POST "http://localhost:3000/api/data-sources/$DATA_SOURCE_ID/introspect?tableOwner=SALES" \
+     -H "Authorization: Bearer $TOKEN"
    ```
 
 ## Étapes suivantes
