@@ -11,6 +11,20 @@ export const pool = new Pool({
   connectionTimeoutMillis: config.DATABASE_POOL_CONNECTION_TIMEOUT_MS,
 });
 
+// node-postgres emits 'error' on the pool when an idle client's connection
+// dies underneath it (Postgres restarting, an admin killing the connection,
+// a network blip) — 'error' is a special EventEmitter name, so with no
+// listener Node's default behaviour is to throw and crash the process. That
+// turned "Postgres is briefly unreachable" into "the whole backend
+// crash-loops until Postgres comes back" (found running docker-compose.prod
+// against a stopped Postgres — INF-02/Phase 8.1). The health-check probe
+// already reports disconnected on its own failed query; a broken idle
+// client is nothing more for the process to do than log and let the pool
+// replace it on next use.
+pool.on('error', (err) => {
+  console.error('Unexpected error on idle Postgres client', err);
+});
+
 // Times every query issued through the pool for the `db_query_duration_seconds`
 // metric. Wraps `pool.query` (not per-client) because drizzle-orm/node-postgres
 // checks a client out of the pool per statement rather than holding one across

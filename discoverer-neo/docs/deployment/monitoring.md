@@ -6,10 +6,38 @@ Monitor Discoverer Neo health, performance, and resource usage.
 
 ### Service Health Endpoints
 
-**Backend:**
+The backend exposes two endpoints that answer different questions — do not
+point an orchestrator at the wrong one, or you get exactly the failure this
+section exists to prevent (INF-02): a "healthy" instance that cannot actually
+reach its database.
+
+**`/health` (+ `/api/health`) — readiness: can this instance serve traffic.**
+Checks Postgres and Redis and returns `503` the moment either is
+unreachable. This is what container healthchecks, `depends_on: condition:
+service_healthy`, and a load balancer's routing decision should all point
+at — an instance that cannot reach its database should stop receiving
+requests, not keep answering 200.
+
 ```bash
-curl http://localhost:3000/api/health
-# Response: { "status": "ok", "timestamp": "2026-07-19T12:00:00Z" }
+curl http://localhost:3000/health
+# {"status":"ok","version":"0.1.0","uptime":123.4,"database":"connected",
+#  "redis":"connected","oracleClient":"thin","timestamp":"..."}   → HTTP 200
+#
+# With Postgres or Redis down:
+# {"status":"degraded",...,"database":"disconnected",...}          → HTTP 503
+```
+
+**`/live` (+ `/api/live`) — liveness: is the process itself still running.**
+No dependency checks at all, by design: a Postgres or Redis outage must not
+make an orchestrator conclude the *process* is broken and kill/restart it —
+restarting a healthy process does nothing to a database that is still down,
+and just adds churn. Use this only for "is the process wedged" — a
+Kubernetes `livenessProbe`, for instance, where readiness already has its own
+`readinessProbe` pointed at `/health`.
+
+```bash
+curl http://localhost:3000/live
+# {"status":"ok","uptime":123.4}   → always HTTP 200 while the process runs
 ```
 
 **Frontend:**
@@ -17,12 +45,18 @@ curl http://localhost:3000/api/health
 curl http://localhost:80/health
 # Response: healthy
 ```
+This is the frontend container's own static check (nginx is up) — unrelated
+to the backend's readiness/liveness above.
 
 **Docker:**
 ```bash
 docker compose ps
 # Services should show "Up (healthy)"
 ```
+The backend's `HEALTHCHECK` (see `backend/Dockerfile`) and
+`docker-compose.prod.yml`'s `depends_on: condition: service_healthy` both
+point at `/health` (readiness) — so `frontend` and `nginx` do not start
+routing to a `backend` that is up but cannot reach Postgres or Redis.
 
 ## Prometheus Metrics
 
