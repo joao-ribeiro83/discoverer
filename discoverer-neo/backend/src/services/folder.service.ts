@@ -464,45 +464,48 @@ export async function importFromOracle(
       continue;
     }
 
-    // Create the folder
-    const folderName = generateFolderName(tableData);
-    const [folder] = await db
-      .insert(folders)
-      .values({
-        businessAreaId,
-        name: folderName,
-        description: `Imported from Oracle table ${tableData.tableOwner}.${tableData.tableName}`,
-        folderType: 'TABLE',
-        tableName: tableData.tableName,
-        tableOwner: tableData.tableOwner,
-        dataSourceId,
-        displayOrder: 0,
-        createdBy,
-      })
-      .returning();
+    // Create the folder and its items atomically — a failed items insert must
+    // not leave a folder with no columns behind (BE-08).
+    const folder = await db.transaction(async (tx) => {
+      const [newFolder] = await tx
+        .insert(folders)
+        .values({
+          businessAreaId,
+          name: generateFolderName(tableData),
+          description: `Imported from Oracle table ${tableData.tableOwner}.${tableData.tableName}`,
+          folderType: 'TABLE',
+          tableName: tableData.tableName,
+          tableOwner: tableData.tableOwner,
+          dataSourceId,
+          displayOrder: 0,
+          createdBy,
+        })
+        .returning();
 
-    // Auto-create items from columns
-    const itemRows: Array<typeof items.$inferInsert> = tableData.columns.map(
-      (col, idx) => ({
-        folderId: folder!.id,
-        name: col.columnName,
-        description: `${col.dataType}${col.dataLength ? `(${col.dataLength})` : ''}`,
-        itemType: 'CI',
-        columnName: col.columnName,
-        dataType: col.dataType,
-        displayOrder: idx,
-        isHidden: false,
-        createdBy,
-      }),
-    );
+      const itemRows: Array<typeof items.$inferInsert> = tableData.columns.map(
+        (col, idx) => ({
+          folderId: newFolder!.id,
+          name: col.columnName,
+          description: `${col.dataType}${col.dataLength ? `(${col.dataLength})` : ''}`,
+          itemType: 'CI',
+          columnName: col.columnName,
+          dataType: col.dataType,
+          displayOrder: idx,
+          isHidden: false,
+          createdBy,
+        }),
+      );
 
-    if (itemRows.length > 0) {
-      await db.insert(items).values(itemRows);
-    }
+      if (itemRows.length > 0) {
+        await tx.insert(items).values(itemRows);
+      }
+
+      return newFolder!;
+    });
 
     result.created.push({
-      folderId: folder!.id,
-      name: folder!.name,
+      folderId: folder.id,
+      name: folder.name,
       tableName: tableData.tableName,
     });
   }
