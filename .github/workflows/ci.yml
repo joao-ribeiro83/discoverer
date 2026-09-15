@@ -79,6 +79,15 @@ jobs:
       - name: Build migrate workspace
         run: npm run build --workspace @discoverer-neo/core
 
+      # DOC-05: docs/api/endpoints.md was hand-maintained and drifted to 51%
+      # accurate. It and openapi.yaml are now generated from the live route
+      # schemas; this fails the build the moment a route change isn't
+      # reflected, instead of letting the docs drift again.
+      - name: Generate API docs and check for drift (DOC-05)
+        run: |
+          npm run generate-spec --workspace @discoverer-neo/backend
+          git diff --exit-code -- docs/api/openapi.yaml docs/api/endpoints.md
+
       - name: Lint
         run: npm run lint --workspace @discoverer-neo/backend
 
