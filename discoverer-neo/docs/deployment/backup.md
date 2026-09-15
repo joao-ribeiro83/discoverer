@@ -1,236 +1,125 @@
 # Backup and Restore
 
-Backup and restore strategy for Discoverer Neo.
+The real tooling is `scripts/backup.sh` and `scripts/restore.sh` — read those
+first; this page is the schedule, the retention policy, and the restore
+procedure, not a re-explanation of what the scripts already document in their
+own headers.
 
-## What to Backup
+## What gets backed up
 
-1. **PostgreSQL Database** — Metadata (business areas, maps, users, audit logs)
-2. **Export Files** — Generated Excel/CSV files (temporary, retention = 7 days)
-3. **Scheduled Results** — Output from cron-driven map runs
+`scripts/backup.sh` takes three things in one run:
 
-## PostgreSQL Backup
+1. **Postgres** — `pg_dump --format=custom`, gzip'd. Custom format restores
+   selectively (`pg_restore` can pull one table) and is smaller than plain SQL.
+2. **Redis** — the whole `/data` directory (RDB snapshot + AOF), tarball'd.
+   Redis holds BullMQ job state (export queue, scheduler queue), not just a
+   cache — an RDB-only backup would silently drop the AOF half on restore.
+3. **Generated files** — the `export_files` and `scheduled_results_files`
+   volumes.
 
-### Full Database Dump
+## Where backups live
+
+`BACKUP_DIR` defaults to `~/discoverer-neo-backups` — **outside the repo
+working tree** on purpose. A dump under the repo is one `git add -A` away
+from committing `data_sources` (encrypted Oracle credentials) and
+`audit_log` (cleartext passwords) — this happened once already (see
+`AUDIT_DETAILED_FINDINGS.md` INF-06); the two dumps it produced are gone
+and `.gitignore` now has `discoverer-neo/*.sql` so it can't happen the same
+way again.
+
+Every backup subdirectory is `chmod 700` by the script. Point `BACKUP_DIR`
+at a separate disk or volume for a real deployment — ideally one that is
+itself replicated off-host; this repo does not manage off-site replication
+(a deployment decision, not a code one).
+
+## Scheduling
+
+`backup.sh` is a plain script, not a container — schedule it with the host's
+own cron:
+
+```cron
+0 2 * * * cd /path/to/discoverer-neo && COMPOSE_FILE=docker-compose.prod.yml ./scripts/backup.sh >> /var/log/discoverer-neo-backup.log 2>&1
+```
+
+Retention defaults to 30 days (`BACKUP_RETENTION_DAYS`), pruned by the script
+itself on every run — nothing else needs to clean up old backups.
+
+## Restoring
 
 ```bash
-# Using docker
-docker compose exec -T postgres pg_dump -U discoverer discoverer_neo > backup.sql
-
-# Using psql (direct connection)
-pg_dump -h localhost -U discoverer discoverer_neo > backup.sql
+./scripts/restore.sh --postgres backups/postgres/discoverer_neo_<ts>.dump.gz \
+                      --redis backups/redis/data_<ts>.tar.gz \
+                      --files backups/files/generated_files_<ts>.tar.gz \
+                      --compose-file docker-compose.prod.yml
 ```
 
-**Options:**
-```bash
-# Custom format (compressed)
-docker compose exec -T postgres pg_dump -U discoverer discoverer_neo -Fc > backup.dump
+Each source is independent — pass only what you need. This is **destructive**:
+the Postgres restore drops and recreates every object in the target database
+first; the Redis restore replaces `/data` entirely and restarts Redis.
+Confirmed interactively unless `FORCE=1`.
 
-# Include data only (for migration)
-docker compose exec -T postgres pg_dump -U discoverer discoverer_neo -a > data-only.sql
-```
+## Restore verification
 
-### Automated Backups
-
-Create backup script (`backup.sh`):
+A backup nobody has restored is not a backup. `scripts/verify-restore.sh`
+restores a Postgres dump into a throwaway scratch database
+(`<db>_restoretest`) and diffs row counts against the live database,
+table by table, then drops the scratch database:
 
 ```bash
-#!/bin/bash
-BACKUP_DIR="/backups"
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-BACKUP_FILE="$BACKUP_DIR/discoverer_neo_$TIMESTAMP.sql"
-
-docker compose exec -T postgres pg_dump \
-  -U discoverer \
-  discoverer_neo \
-  > "$BACKUP_FILE"
-
-# Keep only 7 days of backups
-find "$BACKUP_DIR" -name "discoverer_neo_*.sql" -mtime +7 -delete
-
-echo "Backup saved: $BACKUP_FILE"
+./scripts/verify-restore.sh backups/postgres/discoverer_neo_<ts>.dump.gz
 ```
 
-Schedule with cron:
-
-```bash
-# Daily at 2 AM
-0 2 * * * /path/to/backup.sh
-```
-
-### Restore Database
-
-```bash
-# From SQL dump
-docker compose exec -T postgres psql -U discoverer discoverer_neo < backup.sql
-
-# From compressed dump
-docker compose exec -T postgres pg_restore -U discoverer -d discoverer_neo backup.dump
-```
-
-## Volume Snapshots
-
-### Docker Named Volumes
-
-Backup PostgreSQL volume:
-
-```bash
-# Create backup container
-docker run --rm -v discoverer-neo_postgres_data:/data \
-  -v /backups:/backup \
-  alpine tar czf /backup/postgres_data_$(date +%Y%m%d).tar.gz -C /data .
-
-# Restore from backup
-docker run --rm -v discoverer-neo_postgres_data:/data \
-  -v /backups:/backup \
-  alpine tar xzf /backup/postgres_data_YYYYMMDD.tar.gz -C /data
-```
-
-### Cloud Storage (AWS S3)
-
-```bash
-# Backup to S3
-aws s3 cp backup.sql s3://my-backups/discoverer_neo_backup.sql
-
-# Restore from S3
-aws s3 cp s3://my-backups/discoverer_neo_backup.sql backup.sql
-```
-
-## Export Files & Scheduled Results
-
-These are temporary outputs. Retention strategy:
-
-- **Exports:** 7 days (configurable: `EXPORT_RETENTION_DAYS`)
-- **Scheduled Results:** User-specified TTL
-
-**Cleanup (automatic):**
-- Backend periodically purges expired files
-- Interval: `EXPORT_CLEANUP_INTERVAL_MINUTES` (default 60 min)
-
-**Manual cleanup:**
-```bash
-# Remove files > 7 days old
-docker compose exec -T backend find /app/exports -type f -mtime +7 -delete
-```
-
-**Archive important exports:**
-```bash
-# Before 7-day retention expires
-docker compose exec -T backend cp /app/exports/* /archive/
-```
-
-## Backup Strategy
-
-### Development
-- Daily backups for 7 days
-- Sufficient for recovering from accidental deletes
-
-### Staging
-- Daily full backups for 30 days
-- Weekly compressed archives (S3)
-- Pre-release snapshots (tag with version)
-
-### Production
-- **Daily:** Full backup at 2 AM (UTC)
-- **Weekly:** Compressed archive (S3)
-- **Monthly:** Off-site archive
-- **Real-time:** Write Ahead Logging (PostgreSQL default, WAL)
-
-## Point-in-Time Recovery (PITR)
-
-PostgreSQL Write Ahead Log (WAL) enables recovery to any point in time:
-
-```bash
-# Configure WAL archiving in postgresql.conf
-archive_mode = on
-archive_command = 'cp %p /archive/%f'
-```
-
-Then recover:
-
-```bash
-# Restore from base backup
-pg_restore ... backup.dump
-
-# PostgreSQL replays WAL up to specified time
-recovery_target_time = '2026-07-19 14:30:00'
-```
-
-## Testing Backups
-
-Regularly test restore:
-
-```bash
-# Weekly test restore
-1. Create test database
-2. Restore backup
-3. Verify data integrity
-4. Delete test database
-
-# Example
-docker compose exec -T postgres createdb test_discoverer_neo
-docker compose exec -T postgres psql -U discoverer test_discoverer_neo < backup.sql
-docker compose exec -T postgres psql -U discoverer test_discoverer_neo -c "SELECT COUNT(*) FROM maps;"
-docker compose exec -T postgres dropdb test_discoverer_neo
-```
-
-## Documentation
-
-For each backup, record:
-- **Date/Time:** When backup was taken
-- **Size:** Backup file size
-- **Type:** Full, incremental, snapshot
-- **Location:** Where backup is stored
-- **Tested:** Whether restore was tested
-- **Owner:** Who is responsible
-
-Example log:
+This has been run for real, not just written. Against the
+`discoverer_neo_20260915-092448.dump.gz` dump taken from the live
+migrated-EUL database on 2026-09-15:
 
 ```
-2026-07-19 02:00 | Full | discoverer_neo_20260719.sql | 1.2GB | s3://backups | Tested 2026-07-20 | admin@example.com
-2026-07-20 02:00 | Full | discoverer_neo_20260720.sql | 1.2GB | s3://backups | Pending | admin@example.com
+business_areas: 7 (match)
+data_sources: 1 (match)
+folders: 212 (match)
+items: 9626 (match)
+joins: 10 (match)
+maps: 926 (match)
+map_items: 25968 (match)
+users: 19 (match)
+audit_log: 16759 (match)
+==> Restore verification PASSED — all row counts match
 ```
 
-## Disaster Recovery Plan
+Run `verify-restore.sh` after every schema migration that adds a table worth
+checking — the table list is a fixed set in the script (`TABLES=...`), not
+auto-discovered, so a new table needs adding there to be covered.
 
-### Database Corruption
+## Redis persistence
 
-1. Restore latest clean backup
-2. Run integrity check: `REINDEX`
-3. Verify user data
-4. Document incident
+`docker-compose.prod.yml` runs Redis with `--appendonly yes --appendfsync
+everysec`. This was an explicit change (INF-11): Redis is BullMQ's system of
+record for job state, not just a cache, and the previous RDB-only
+configuration (`save 3600 1 300 100 60 10000`) had a worst-case one-hour
+window in which a crash could discard in-flight and delayed jobs. `everysec`
+accepts at most ~1 second of job loss against the alternative
+(`appendfsync always`) fsync-per-write throughput cost — the standard trade.
 
-### Data Loss
+Verified: a Redis container running this config, hard-killed mid-write and
+restarted, recovered a key written immediately before the kill.
 
-1. Restore from backup
-2. Use PITR if available to minimize data loss
-3. Notify users of recovery time
-4. Document incident
+## Disaster recovery
 
-### Complete Data Center Failure
+1. Provision Postgres + Redis (fresh `docker compose up -d postgres redis`).
+2. `./scripts/restore.sh --postgres <latest dump> --redis <latest dump>
+   --compose-file docker-compose.prod.yml`
+3. Bring up `backend` and `frontend`; `/health` should report `database` and
+   `redis` both `connected` (see
+   [troubleshooting/health-check.md](../troubleshooting/health-check.md)).
+4. Spot-check a known map executes correctly.
 
-1. Provision new infrastructure
-2. Restore from off-site backup
-3. Verify all services
-4. Update DNS/routing
-5. Notify users
+For Postgres-only corruption, restore just `--postgres`; Redis's queue state
+recovers on its own once BullMQ workers reconnect to a healthy Redis (jobs
+already completed are gone from the queue either way — this restores the
+metadata database, not export history).
 
-## Compliance & Retention
+## What's next?
 
-**Typical requirements:**
-- Financial/audit data: 7 years
-- User data: 1–3 years
-- Backups: At least 30 days
-
-**GDPR compliance:**
-- Right to deletion: Must be able to remove user data
-- Data portability: Must export in standard format
-
-## What's Next?
-
-- **[Monitoring](monitoring.md)** — Health and metrics
-- **[Docker Deployment](docker.md)** — Container setup
-- **[Configuration](configuration.md)** — Environment variables
-
----
-
-**See Also:** [Deployment Guide](../deployment/), [Docker Deployment](docker.md)
+- [Monitoring](monitoring.md) — health and metrics
+- [Docker Deployment](docker.md) — container setup
+- [Configuration](configuration.md) — environment variables
