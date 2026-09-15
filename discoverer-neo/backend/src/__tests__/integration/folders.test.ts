@@ -786,6 +786,37 @@ describe('Oracle import', () => {
     expect(second.json().data.skipped[0].reason).toMatch(/already exists/i);
   });
 
+  it('leaves no orphan folder when an item insert fails (BE-08)', async () => {
+    // A column name past the `items.name` varchar(255) limit fails the items
+    // insert. Before BE-08 this left a folder with zero items behind.
+    const poisonedTable = {
+      tableName: 'POISONED',
+      tableOwner: 'HR',
+      columns: [{ columnName: 'X'.repeat(300), dataType: 'VARCHAR2', dataLength: 50, nullable: true }],
+    };
+    await app.redis.setex(
+      `oracle:introspection:${testDataSourceId}`,
+      300,
+      JSON.stringify([...mockTables, poisonedTable]),
+    );
+
+    const response = await app.inject({
+      method: 'POST',
+      url: `/api/data-sources/${testDataSourceId}/import`,
+      headers: { authorization: `Bearer ${adminToken}` },
+      payload: {
+        tableNames: ['POISONED'],
+        tableOwner: 'HR',
+        businessAreaId: testBusinessAreaId,
+      },
+    });
+
+    expect(response.statusCode).toBe(500);
+
+    const orphan = await db.select().from(folders).where(eq(folders.tableName, 'POISONED'));
+    expect(orphan).toHaveLength(0);
+  });
+
   it('returns 400 for missing required fields', async () => {
     const response = await app.inject({
       method: 'POST',
