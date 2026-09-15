@@ -92,9 +92,15 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
-      # Rebuild with --build-arg INSTALL_ORACLE_CLIENT=true (and set
-      # ORACLE_THICK_MODE=true below) only if a source EUL is older than
-      # Oracle 12.1 — see backend/Dockerfile's header.
+      # Driven by the same .env value the container reads at runtime
+      # (ORACLE_THICK_MODE below): a build that skips the Instant Client but
+      # then sets ORACLE_THICK_MODE=true fails fast at boot with a clear
+      # error (server.ts's verifyOracleClient), but there is no reason to
+      # make an operator set the same fact twice. See backend/Dockerfile's
+      # header for when thick mode is actually needed (sources older than
+      # Oracle 12.1).
+      args:
+        INSTALL_ORACLE_CLIENT: ${ORACLE_THICK_MODE:-false}
     container_name: discoverer-neo-backend
     restart: unless-stopped
     env_file: .env
