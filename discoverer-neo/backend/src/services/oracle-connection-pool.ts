@@ -54,6 +54,42 @@ export class OraclePoolError extends Error {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Oracle server version gate (D-019)
+// ---------------------------------------------------------------------------
+
+/**
+ * Floor for every Oracle source this app talks to. Below 12.1, thin mode
+ * cannot even authenticate (pre-12.1 password verifiers), and this app has
+ * never run against, or been asked to support, anything older — a capability
+ * table for a second version this estate does not have would be speculative
+ * generality (D-019). Revisit if a source below this floor is ever real.
+ *
+ * Numeric encoding matches oracledb's own `oracleServerVersion`: for version
+ * a.b.c.d.e it is (100000000*a) + (1000000*b) + (10000*c) + (100*d) + e.
+ */
+const MIN_ORACLE_SERVER_VERSION = 1_201_000_000; // 12.1.0.0.0
+const MIN_ORACLE_SERVER_VERSION_STRING = '12.1.0.0.0';
+
+/**
+ * Refuse a connection to an Oracle server below the supported floor, loudly
+ * and by name — not a silent fallback and not a capability table. Pure
+ * function over the version oracledb reports, so it is testable without a
+ * live Oracle connection (same shape as config.ts's assertProductionSecrets).
+ */
+export function assertSupportedOracleVersion(
+  serverVersion: number,
+  serverVersionString: string,
+): void {
+  if (serverVersion >= MIN_ORACLE_SERVER_VERSION) return;
+  throw new OraclePoolError(
+    `Oracle Database ${serverVersionString} is below the minimum supported ` +
+      `version ${MIN_ORACLE_SERVER_VERSION_STRING} (D-019). Pre-12.1 servers ` +
+      `use a password verifier node-oracledb thin mode cannot authenticate ` +
+      `against; upgrade the database, or point this data source at a 12.1+ server.`,
+  );
+}
+
 
 // ---------------------------------------------------------------------------
 // Driver loading (dynamic, cached)
@@ -259,8 +295,9 @@ export async function getConnection(dataSourceId: string): Promise<Connection> {
   // timeouts is enough to drain a pool to nothing.
   const acquisition = pool.getConnection();
 
+  let connection: Connection;
   try {
-    return await Promise.race([acquisition, timeout]);
+    connection = await Promise.race([acquisition, timeout]);
   } catch (err) {
     acquisitionsTimedOut += 1;
     discardLateAcquisition(acquisition);
@@ -268,6 +305,23 @@ export async function getConnection(dataSourceId: string): Promise<Connection> {
   } finally {
     if (timer) clearTimeout(timer);
   }
+
+  // Version gate (D-019). Checked here, not at pool creation: the pool build
+  // above is lazy and opens no socket, so this is the first point a real
+  // connection — and therefore a real server version — exists at all.
+  // oracledb populates both properties from the connect handshake already in
+  // flight, so this costs no extra round trip.
+  try {
+    assertSupportedOracleVersion(
+      connection.oracleServerVersion,
+      connection.oracleServerVersionString,
+    );
+  } catch (err) {
+    await connection.close().catch(() => undefined);
+    throw err;
+  }
+
+  return connection;
 }
 
 // ---------------------------------------------------------------------------
