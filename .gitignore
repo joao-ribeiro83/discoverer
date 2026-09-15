@@ -39,3 +39,9 @@ discoverer-neo/migrate/corpus/*.private.json
 # existed before the repository root was deleted; the tree was clean at the
 # start of that session, so it is restored here rather than added.)
 discoverer-neo/backups/
+
+# Ad-hoc SQL dumps taken by hand instead of via scripts/backup.sh (INF-06):
+# two of these — backup-before-reset.sql, map_tables_backup.sql — sat tracked
+# in git for weeks holding data_sources credentials and audit_log passwords
+# in the clear. Use scripts/backup.sh; it writes outside the tree entirely.
+discoverer-neo/*.sql

@@ -4,7 +4,9 @@
 #
 # Backs up:
 #   1. Postgres (pg_dump, custom format, gzip'd)
-#   2. Redis (BGSAVE snapshot, copied out of the container)
+#   2. Redis — the whole `/data` dir (RDB snapshot + AOF), tarball'd. Redis is
+#      BullMQ's system of record for job state, not just a cache (INF-11), so
+#      a dump.rdb-only backup would silently drop the AOF half on restore.
 #   3. Generated files — the `export_files` + `scheduled_results_files`
 #      volumes, via a throwaway container sharing the backend's mounts
 #      (so this never has to guess the compose-generated volume name)
@@ -23,7 +25,11 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.yml}"
-BACKUP_DIR="${BACKUP_DIR:-$(pwd)/backups}"
+# Outside the working tree by default (INF-06): a dump under the repo is one
+# `git add -A` away from committing data-source credentials and audit-log
+# passwords in the clear. Override with BACKUP_DIR for a real deployment's
+# mount point (a separate disk/volume, ideally off-host too).
+BACKUP_DIR="${BACKUP_DIR:-$HOME/discoverer-neo-backups}"
 RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-30}"
 TIMESTAMP="$(date -u +%Y%m%d-%H%M%S)"
 
@@ -51,6 +57,9 @@ POSTGRES_USER="${POSTGRES_USER:-$(env_value POSTGRES_USER discoverer)}"
 POSTGRES_DB="${POSTGRES_DB:-$(env_value POSTGRES_DB discoverer_neo)}"
 
 mkdir -p "$BACKUP_DIR/postgres" "$BACKUP_DIR/redis" "$BACKUP_DIR/files"
+# Restricted permissions: dumps contain data_sources (encrypted Oracle
+# credentials) and audit_log (cleartext, per INF-04/BE-XX) — owner-only.
+chmod 700 "$BACKUP_DIR" "$BACKUP_DIR/postgres" "$BACKUP_DIR/redis" "$BACKUP_DIR/files"
 
 echo "==> Discoverer Neo backup — $TIMESTAMP"
 echo "    compose file: $COMPOSE_FILE"
@@ -65,10 +74,10 @@ docker compose -f "$COMPOSE_FILE" exec -T postgres \
 echo "    $(du -h "$PG_OUT" | cut -f1) written"
 
 # --- 2. Redis ------------------------------------------------------------
-REDIS_OUT="$BACKUP_DIR/redis/dump_${TIMESTAMP}.rdb"
+REDIS_OUT="$BACKUP_DIR/redis/data_${TIMESTAMP}.tar.gz"
 echo "==> Snapshotting Redis -> $REDIS_OUT"
 docker compose -f "$COMPOSE_FILE" exec -T redis redis-cli SAVE > /dev/null
-docker compose -f "$COMPOSE_FILE" cp "redis:/data/dump.rdb" "$REDIS_OUT"
+docker compose -f "$COMPOSE_FILE" exec -T redis tar czf - -C /data . > "$REDIS_OUT"
 echo "    $(du -h "$REDIS_OUT" | cut -f1) written"
 
 # --- 3. Export + scheduled-result files ----------------------------------
