@@ -29,6 +29,7 @@ import {
   closeAll,
   poolCount,
   OraclePoolError,
+  assertSupportedOracleVersion,
 } from '../../services/oracle-connection-pool.js';
 import { importOracleDb } from '../../services/oracle-driver.js';
 
@@ -175,6 +176,30 @@ describe('connection helpers', () => {
     await closeAll();
     expect(poolCount()).toBe(0);
   }, 30_000);
+});
+
+describe('assertSupportedOracleVersion (D-019)', () => {
+  it('accepts the floor version, 12.1.0.0.0', () => {
+    expect(() => assertSupportedOracleVersion(1_201_000_000, '12.1.0.0.0')).not.toThrow();
+  });
+
+  it('accepts the live estate version, 12.2.0.1.0', () => {
+    expect(() => assertSupportedOracleVersion(1_202_000_100, '12.2.0.1.0')).not.toThrow();
+  });
+
+  it('refuses an 11.2 server, naming both the found and required versions', () => {
+    expect(() => assertSupportedOracleVersion(1_102_000_400, '11.2.0.4.0')).toThrow(
+      OraclePoolError,
+    );
+    try {
+      assertSupportedOracleVersion(1_102_000_400, '11.2.0.4.0');
+      throw new Error('expected assertSupportedOracleVersion to throw');
+    } catch (err) {
+      expect(err).toBeInstanceOf(OraclePoolError);
+      expect((err as Error).message).toContain('11.2.0.4.0');
+      expect((err as Error).message).toContain('12.1.0.0.0');
+    }
+  });
 });
 
 describe('importOracleDb', () => {
