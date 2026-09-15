@@ -1,12 +1,16 @@
 import { Worker, type Job } from 'bullmq';
 import { redisConnection } from '../queues/export.queue.js';
-import { SCHEDULER_QUEUE_NAME, type ScheduleJobData } from '../queues/scheduler.queue.js';
+import {
+  SCHEDULER_QUEUE_NAME,
+  schedulerQueue,
+  type ScheduleJobData,
+} from '../queues/scheduler.queue.js';
 import {
   processScheduleRun,
   recordScheduleFailure,
   ScheduleRunError,
 } from '../services/scheduler.service.js';
-import { recordScheduleOutcome } from '../plugins/metrics.js';
+import { recordScheduleOutcome, setSchedulerQueueDepth } from '../plugins/metrics.js';
 
 // ---------------------------------------------------------------------------
 // The scheduler worker.
@@ -92,10 +96,31 @@ export function startSchedulerWorker(logger: WorkerLogger): SchedulerWorkerHandl
     logger.error({ err }, 'Scheduler worker error');
   });
 
+  // Queue-depth gauges, mirroring export.worker.ts's pattern (INF-10).
+  const metricsTimer = setInterval(() => {
+    void worker.client
+      .then(async () => {
+        const counts = await schedulerQueue().getJobCounts(
+          'waiting',
+          'active',
+          'delayed',
+          'failed',
+        );
+        setSchedulerQueueDepth(counts);
+      })
+      .catch(() => {
+        // Metrics are advisory; never let them disturb the worker.
+      });
+  }, 15_000);
+  metricsTimer.unref();
+
   logger.info({}, 'Scheduler worker started');
 
   return {
     worker,
-    close: () => worker.close(),
+    close: async () => {
+      clearInterval(metricsTimer);
+      await worker.close();
+    },
   };
 }

@@ -166,6 +166,18 @@ describe('connection helpers', () => {
     expect(Array.isArray(poolSnapshots())).toBe(true);
   });
 
+  it('reports waiting/acquireFailures/avgAcquireMs for a live pool (INF-10)', async () => {
+    await getPool(oracleDsId);
+    const [snapshot] = poolSnapshots();
+    expect(snapshot).toMatchObject({
+      dataSourceId: oracleDsId,
+      waiting: 0,
+      acquireFailures: 0,
+      avgAcquireMs: 0,
+    });
+    await closePool(oracleDsId);
+  }, 30_000);
+
   it('closePool is a no-op for an unknown data source', async () => {
     await expect(closePool('never-created')).resolves.toBeUndefined();
   });

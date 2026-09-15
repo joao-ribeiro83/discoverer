@@ -1,6 +1,7 @@
 import fp from 'fastify-plugin';
 
 import { poolSnapshots, timedOutAcquisitions } from '../services/oracle-connection-pool.js';
+import { hasRunningJob, listJobs } from '../services/migration.service.js';
 import {
   Registry,
   collectDefaultMetrics,
@@ -60,6 +61,19 @@ const exportJobDuration = new Histogram({
 export function setExportQueueDepth(counts: Record<string, number>): void {
   for (const [state, value] of Object.entries(counts)) {
     exportQueueDepth.set({ state }, value);
+  }
+}
+
+const schedulerQueueDepth = new Gauge({
+  name: 'scheduler_queue_jobs',
+  help: 'Scheduled-run jobs in the queue by state',
+  labelNames: ['state'],
+  registers: [registry],
+});
+
+export function setSchedulerQueueDepth(counts: Record<string, number>): void {
+  for (const [state, value] of Object.entries(counts)) {
+    schedulerQueueDepth.set({ state }, value);
   }
 }
 
@@ -139,6 +153,7 @@ const oraclePoolConnections = new Gauge({
       this.set({ data_source_id: pool.dataSourceId, state: 'open' }, pool.open);
       this.set({ data_source_id: pool.dataSourceId, state: 'in_use' }, pool.inUse);
       this.set({ data_source_id: pool.dataSourceId, state: 'max' }, pool.max);
+      this.set({ data_source_id: pool.dataSourceId, state: 'waiting' }, pool.waiting);
     }
   },
 });
@@ -155,10 +170,76 @@ const oraclePoolAcquisitionTimeouts = new Gauge({
   },
 });
 
+const oraclePoolAcquisitionFailures = new Gauge({
+  name: 'oracle_pool_acquisition_failures_total',
+  help: 'Connection acquisitions that failed (driver/database errors), by data source, since pool creation',
+  labelNames: ['data_source_id'],
+  registers: [registry],
+  collect() {
+    this.reset();
+    for (const pool of poolSnapshots()) {
+      this.set({ data_source_id: pool.dataSourceId }, pool.acquireFailures);
+    }
+  },
+});
+
+const oraclePoolAcquisitionDuration = new Gauge({
+  name: 'oracle_pool_acquisition_duration_avg_milliseconds',
+  help: 'Average time a request spent queued waiting for a connection, by data source',
+  labelNames: ['data_source_id'],
+  registers: [registry],
+  collect() {
+    this.reset();
+    for (const pool of poolSnapshots()) {
+      this.set({ data_source_id: pool.dataSourceId }, pool.avgAcquireMs);
+    }
+  },
+});
+
 // Referenced so the collectors are not dropped as unused; prom-client drives
-// both through the registry.
+// all four through the registry.
 void oraclePoolConnections;
 void oraclePoolAcquisitionTimeouts;
+void oraclePoolAcquisitionFailures;
+void oraclePoolAcquisitionDuration;
+
+// ---------------------------------------------------------------------------
+// Migration progress (INF-10, migration portion)
+//
+// A migration is a rare, long-running admin operation (migration.service.ts)
+// with an in-memory job registry already tracking phase and percent — this
+// just reads the most recent job on scrape rather than duplicating that state.
+// ---------------------------------------------------------------------------
+
+const migrationRunning = new Gauge({
+  name: 'migration_running',
+  help: '1 if a migration or maps re-import job is currently running, else 0',
+  registers: [registry],
+  collect() {
+    this.set(hasRunningJob() ? 1 : 0);
+  },
+});
+
+const migrationProgress = new Gauge({
+  name: 'migration_progress_percent',
+  help: "Percent complete (0-100) of the most recent migration job",
+  // kind/status/phase are all drawn from this codebase's own small fixed enums
+  // (migration.service.ts), never from EUL content — no cardinality risk.
+  labelNames: ['kind', 'status', 'phase'],
+  registers: [registry],
+  collect() {
+    this.reset();
+    const [latest] = listJobs();
+    if (!latest) return;
+    this.set(
+      { kind: latest.kind, status: latest.status, phase: latest.currentPhase ?? 'unknown' },
+      latest.progress,
+    );
+  },
+});
+
+void migrationRunning;
+void migrationProgress;
 
 export default fp(
   (fastify) => {
