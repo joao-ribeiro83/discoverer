@@ -249,6 +249,11 @@ export type {
   MapReimportCounts,
 } from './services/map-reimport.js';
 
+// --- Incremental delta (Phase 9.2) ------------------------------------------
+export { runDelta, DeltaRefusedError, commitShaFromEnv } from './services/delta.js';
+export type { DeltaDb, DeltaResult, DeltaChange, DeltaOptions } from './services/delta.js';
+export { createDeltaDb } from './services/delta-db.js';
+
 // --- Provisioned credentials (temporary passwords) -------------------------
 export {
   generateTemporaryPassword,
@@ -273,6 +278,8 @@ export {
   commandExport,
   commandValidate,
   commandRun,
+  commandDelta,
+  commandVerify,
   commandValidateMigration,
   CliUsageError,
   EXIT_OK,
