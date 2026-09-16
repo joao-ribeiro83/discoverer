@@ -390,6 +390,19 @@ describe('transformItem', () => {
     });
   });
 
+  it('reads the EUL data-type code as the word the rest of Neo tests for', () => {
+    // 1 text, 2 number, 4 date. The backend wraps a date bound in TO_DATE only
+    // when `items.data_type` reads `DATE`, and every migrated item carried the
+    // raw code — so no migrated date condition ever took that path.
+    expect(transformItem(item({ dataType: '4' }), 'EUL4').dataType).toBe('DATE');
+    expect(transformItem(item({ dataType: '2' }), 'EUL4').dataType).toBe('NUMBER');
+    expect(transformItem(item({ dataType: '1' }), 'EUL4').dataType).toBe('TEXT');
+    // A code with no established reading passes through, never guessed at.
+    expect(transformItem(item({ dataType: '8' }), 'EUL4').dataType).toBe('8');
+    // An EUL that already stores a word is left alone.
+    expect(transformItem(item({ dataType: 'VARCHAR2' }), 'EUL5').dataType).toBe('VARCHAR2');
+  });
+
   it('keeps a real aggregation function', () => {
     expect(transformItem(item({ aggregation: 'SUM' }), 'EUL5').aggFunction).toBe('SUM');
   });
@@ -930,6 +943,32 @@ describe('transformWorkbook', () => {
     expect(codes(two?.warnings ?? [])).not.toContain('CONDITIONS_NOT_APPLIED');
   });
 
+  it('migrates a condition on an expression as a hidden calculation it filters', () => {
+    const content = buildWorkbookFixture({
+      items: [{ folderLabel: 'M M27', itemLabel: 'Dt Com' }],
+      parameters: [{ name: 'Dt Fim' }],
+      conditions: [{ sql: 'TRUNC(Dt Com) <= :Dt Fim', tokens: '[1,85]([1,49]([6,3]),[8,4])' }],
+      worksheets: [{ name: 'S', columns: [{ item: 'Dt Com' }] }],
+    });
+    const [map] = transformWorkbook(workbook({ content }), 'EUL4');
+
+    // The expression becomes a field of its own — hidden, carrying the token
+    // form `verify --compile` renders into SQL.
+    expect(map?.calculatedFields).toEqual([
+      expect.objectContaining({
+        name: '[1,49](Dt Com)',
+        sourceTokens: '[1,49]([6,3])',
+        sourceElementId: -1,
+        isHidden: true,
+      }),
+    ]);
+    expect(map?.conditions[0]).toMatchObject({
+      calculationElementId: -1,
+      itemSourceId: null,
+      paramName: 'DT_FIM',
+    });
+  });
+
   it('migrates only the calculations a worksheet uses, and what they reference', () => {
     // Elements: 3 the item, 4 the condition, 5-8 the calculations — all in the
     // shared section, which the first worksheet's range starts with.
@@ -963,6 +1002,9 @@ describe('transformWorkbook', () => {
       ['Total', false],
       ['Base', true],
     ]);
+    // The condition filters element 7, the calculation "Teste" — so the row
+    // points at the calculated field, not at an item (ARCH M4).
+    expect(one?.conditions.map((c) => [c.itemSourceId, c.calculationElementId])).toEqual([[null, 7]]);
   });
 
   it('falls back to DOC_CREATED_BY when there is no workbook owner (EUL4)', () => {
@@ -1898,6 +1940,7 @@ describe('buildMapConditionRows', () => {
     overrides: Partial<TransformedMapCondition> = {},
   ): TransformedMapCondition => ({
     itemSourceId: 1,
+    calculationElementId: null,
     folderLabel: 'F',
     itemLabel: 'A',
     operator: '=',
@@ -1924,6 +1967,7 @@ describe('buildMapConditionRows', () => {
       'map-1',
       () => 'item-1',
       genId,
+      () => undefined,
     );
     expect(skipped).toEqual([]);
     expect(rows[0]?.groupId).toBe(rows[1]?.groupId);
@@ -1938,8 +1982,8 @@ describe('buildMapConditionRows', () => {
       condition({ groupKey: 'c0g0' }),
       condition({ groupKey: 'c0g0', displayOrder: 1 }),
     ];
-    const first = buildMapConditionRows(conditions, 'map-1', () => 'item-1', genId);
-    const second = buildMapConditionRows(conditions, 'map-2', () => 'item-1', genId);
+    const first = buildMapConditionRows(conditions, 'map-1', () => 'item-1', genId, () => undefined);
+    const second = buildMapConditionRows(conditions, 'map-2', () => 'item-1', genId, () => undefined);
     expect(first.rows[0]?.groupId).not.toBe(second.rows[0]?.groupId);
   });
 
@@ -1955,6 +1999,7 @@ describe('buildMapConditionRows', () => {
       'map-1',
       (c) => (c.itemLabel === 'B' ? undefined : 'item-1'),
       genId,
+      () => undefined,
     );
     expect(rows.map((r) => r.displayOrder)).toEqual([2]);
     expect(skipped).toHaveLength(1);

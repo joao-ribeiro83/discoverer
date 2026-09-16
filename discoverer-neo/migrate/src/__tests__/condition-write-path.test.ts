@@ -26,6 +26,7 @@ const condition = (
   overrides: Partial<TransformedMapCondition> = {},
 ): TransformedMapCondition => ({
   itemSourceId: 1,
+  calculationElementId: null,
   folderLabel: 'F',
   itemLabel: 'A',
   operator: '=',
@@ -62,6 +63,7 @@ describe('map_conditions write path', () => {
       'map-1',
       () => 'item-1',
       genId,
+      () => undefined,
     );
 
     const columns = new Set(Object.keys(getTableColumns(mapConditions)));
@@ -80,10 +82,42 @@ describe('map_conditions write path', () => {
       'map-1',
       () => 'item-1',
       genId,
+      () => undefined,
     );
 
     expect(rows).toHaveLength(2);
     expect(rows[0]?.groupId).not.toBeNull();
     expect(rows[0]?.groupId).toBe(rows[1]?.groupId);
+  });
+
+  it('points a condition on a calculation at the calculated field, not an item', () => {
+    // ARCH M4 / the `map_conditions_reference_ck` constraint: exactly one of
+    // the two references is set, so the item resolver must not be consulted.
+    const { rows, skipped } = buildMapConditionRows(
+      [condition({ itemSourceId: null, calculationElementId: 42, sourceText: 'RAMO Pag1 LIKE x' })],
+      'map-1',
+      () => {
+        throw new Error('the item resolver must not be called for a calculation');
+      },
+      genId,
+      (c) => (c.calculationElementId === 42 ? 'calc-1' : undefined),
+    );
+
+    expect(skipped).toEqual([]);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ itemId: null, calculatedFieldId: 'calc-1' });
+  });
+
+  it('drops the condition when the calculation it filters did not migrate', () => {
+    const { rows, skipped } = buildMapConditionRows(
+      [condition({ itemSourceId: null, calculationElementId: 42 })],
+      'map-1',
+      () => 'item-1',
+      genId,
+      () => undefined,
+    );
+
+    expect(rows).toEqual([]);
+    expect(skipped[0]?.reason).toContain('calculation');
   });
 });

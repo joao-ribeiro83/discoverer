@@ -193,6 +193,27 @@ export function transformFolder(folder: Folder, version: EulVersion): Transforme
 // Item
 // ---------------------------------------------------------------------------
 
+/**
+ * An EUL item's `EXP_DATA_TYPE` in the vocabulary the rest of Neo reads.
+ *
+ * The column holds a code on this source — 1 text, 2 number, 4 date, the same
+ * three a workbook calculation's `0x00e3` carries — while the backend tests
+ * `items.data_type` for the words: a date condition only binds through
+ * `TO_DATE` when it reads `DATE`, and a numeric condition value only converts
+ * when it reads `NUMBER`. All 9 626 migrated items carried the raw code, so
+ * neither path ever ran on a migrated map (551 conditions filter a date item).
+ *
+ * A code with no established reading passes through untouched rather than
+ * being guessed at, which also leaves an EUL that already stores a word alone.
+ */
+export function itemDataType(raw: string): string {
+  const code = raw.trim();
+  if (code === '1') return 'TEXT';
+  if (code === '2') return 'NUMBER';
+  if (code === '4') return 'DATE';
+  return raw;
+}
+
 export function transformItem(item: Item, _version: EulVersion): TransformedItem {
   const warnings: TransformWarning[] = [];
   const rawType = (item.expType ?? '').toUpperCase();
@@ -235,7 +256,7 @@ export function transformItem(item: Item, _version: EulVersion): TransformedItem
     itemType,
     columnName: item.columnName ? clamp(item.columnName, NAME_MAX) : null,
     formula: item.formula,
-    dataType: item.dataType ? clamp(item.dataType, 64) : null,
+    dataType: item.dataType ? clamp(itemDataType(item.dataType), 64) : null,
     formatMask: item.formatMask ? clamp(item.formatMask, NAME_MAX) : null,
     aggFunction: normalizeAggregation(item.aggregation),
     displayOrder: item.sequence ?? 0,
@@ -1185,6 +1206,24 @@ export function transformWorkbook(
       ? parameters.filter((_, index) => boundParameters.has(document.parameters[index]!.elementId))
       : parameters;
 
+    // Expressions a condition filters (`TRUNC(Dt Com) <= :Dt Fim`): each one
+    // becomes a hidden calculated field, named after the readable formula and
+    // kept apart from the worksheet's own names.
+    const expressionFields: TransformedMapCalculatedField[] = [];
+    const takenCalculationNames = new Set(sheetCalculations.map((c) => clamp(c.name, NAME_MAX)));
+    const calculationNameFor = (text: string): string => {
+      const base = clamp(text.trim() === '' ? 'Filtro' : text.trim(), NAME_MAX);
+      let name = base;
+      let n = 2;
+      while (takenCalculationNames.has(name)) {
+        const suffix = ` (${n})`;
+        name = `${base.slice(0, NAME_MAX - suffix.length)}${suffix}`;
+        n += 1;
+      }
+      takenCalculationNames.add(name);
+      return name;
+    };
+
     // A Discoverer condition is a tree; a Neo condition is a row. One source
     // condition therefore produces one row per test it makes, tied together by
     // `groupKey` so the generated SQL brackets them the way Discoverer did.
@@ -1210,8 +1249,34 @@ export function transformWorkbook(
         const groupKey =
           group.predicates.length > 1 ? `c${index}g${groupIndex}` : null;
         for (const [predicateIndex, predicate] of group.predicates.entries()) {
+          // The left side, when it is an expression, migrates as a hidden
+          // calculated field and the row filters that — the one place
+          // `map_conditions` can hold it. A negative element id says
+          // "synthesised here"; every real one is the positive id the element
+          // carries in the workbook.
+          let calculationElementId = predicate.calculationElementId;
+          if (predicate.expression !== null) {
+            calculationElementId = -(expressionFields.length + 1);
+            expressionFields.push({
+              name: calculationNameFor(predicate.expression.formula),
+              formula: predicate.expression.formula,
+              sourceTokens: predicate.expression.tokens,
+              sourceElementId: calculationElementId,
+              sourceAttrs: { elementBindings: predicate.expression.bindings },
+              // Nothing in the source says what the expression returns, and a
+              // guess here would pick the wrong comparison in the generator.
+              dataType: null,
+              description: null,
+              formatMask: null,
+              sourceIdentifier: null,
+              displayOrder: 0,
+              axisType: null,
+              isHidden: true,
+            });
+          }
           conditions.push({
             itemSourceId: predicate.itemSourceId,
+            calculationElementId,
             folderLabel: predicate.folderLabel,
             itemLabel: predicate.itemLabel,
             operator: predicate.neoOperator,
@@ -1272,6 +1337,13 @@ export function transformWorkbook(
         isHidden: (layout && !named.has(calculation.elementId)) || (calculation.hidden ?? false),
       }),
     );
+
+    // The expressions the conditions filter come after the worksheet's own
+    // calculations, so a display order already handed out never moves.
+    const drawnCalculations = calculatedFields.length;
+    expressionFields.forEach((field, index) => {
+      calculatedFields.push({ ...field, displayOrder: drawnCalculations + index });
+    });
 
     // --- totals (§7.8.7, §7.12) --------------------------------------------
     //
@@ -1936,7 +2008,10 @@ export interface MapConditionRow {
   [column: string]: unknown;
   id: string;
   mapId: string;
-  itemId: string;
+  /** Null exactly when the row filters a calculated field instead. */
+  itemId: string | null;
+  /** The calculated field filtered, when the condition tests one (ARCH M4). */
+  calculatedFieldId: string | null;
   operator: NeoMapOperator;
   value: string | null;
   paramName: string | null;
@@ -1974,6 +2049,12 @@ export function buildMapConditionRows(
   mapId: string,
   resolveItem: (condition: TransformedMapCondition) => string | undefined,
   genId: () => string,
+  /**
+   * The `map_calculated_fields` row a condition on a calculation points at,
+   * by the calculation's `source_element_id`. Discoverer lets a condition test
+   * a worksheet calculation, and the row holds that instead of an item.
+   */
+  resolveCalculatedField: (condition: TransformedMapCondition) => string | undefined,
 ): MapConditionRowsResult {
   const rows: MapConditionRow[] = [];
   const skipped: MapConditionRowsResult['skipped'] = [];
@@ -1989,19 +2070,25 @@ export function buildMapConditionRows(
   for (const group of bySource.values()) {
     const resolved = group.map((condition) => ({
       condition,
-      itemId: resolveItem(condition),
+      itemId: condition.calculationElementId === null ? resolveItem(condition) : undefined,
+      calculatedFieldId:
+        condition.calculationElementId === null ? undefined : resolveCalculatedField(condition),
     }));
-    const missing = resolved.find((entry) => entry.itemId === undefined);
+    const missing = resolved.find(
+      (entry) => entry.itemId === undefined && entry.calculatedFieldId === undefined,
+    );
     if (missing !== undefined) {
       const { condition } = missing;
       skipped.push({
         reason:
           `condition ${JSON.stringify(condition.sourceText ?? '')} on ` +
-          `"${condition.folderLabel ?? '?'}.${condition.itemLabel ?? '?'}" — item not migrated`,
+          (condition.calculationElementId === null
+            ? `"${condition.folderLabel ?? '?'}.${condition.itemLabel ?? '?'}" — item not migrated`
+            : `a worksheet calculation — the calculation did not migrate`),
       });
       continue;
     }
-    for (const { condition, itemId } of resolved) {
+    for (const { condition, itemId, calculatedFieldId } of resolved) {
       let groupId: string | null = null;
       if (condition.groupKey !== null) {
         groupId = groupIds.get(condition.groupKey) ?? genId();
@@ -2010,7 +2097,8 @@ export function buildMapConditionRows(
       rows.push({
         id: genId(),
         mapId,
-        itemId: itemId!,
+        itemId: itemId ?? null,
+        calculatedFieldId: calculatedFieldId ?? null,
         // A transformed condition only carries an operator Neo accepts; the
         // ones it does not were dropped with a warning by `transformWorkbook`.
         operator: condition.operator!,

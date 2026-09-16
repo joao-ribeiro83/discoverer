@@ -504,6 +504,12 @@ export interface TransformedMapJoin {
 export interface TransformedMapCondition {
   /** EUL `EXPRESSIONS.EXP_ID` of the item filtered, when the workbook records one. */
   itemSourceId: number | null;
+  /**
+   * `source_element_id` of the calculated field this row filters, when it
+   * filters a calculation rather than an item (`map_conditions` holds one or
+   * the other, never both). Null on an ordinary item condition.
+   */
+  calculationElementId: number | null;
   folderLabel: string | null;
   itemLabel: string | null;
   /** Neo `map_operator` value; null when the source operator has no Neo equivalent. */

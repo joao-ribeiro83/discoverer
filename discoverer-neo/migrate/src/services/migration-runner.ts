@@ -1110,6 +1110,9 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
       // total that names it is dropped below rather than left dangling.
       const mapItemIdByOrder = new Map<number, string>();
       const calculatedFieldIdByOrder = new Map<number, string>();
+      // A condition can filter a calculation rather than an item, and it names
+      // it by the element id the workbook gave it.
+      const calculatedFieldIdByElement = new Map<number, string>();
 
       for (const mi of t.items) {
         // A calculation column has no EUL item behind it — it is carried by
@@ -1165,25 +1168,6 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
         });
       }
 
-      // A condition Neo cannot express never reaches here — `transformWorkbook`
-      // drops it with a warning. What is left can still fail to resolve to a
-      // migrated item, and then the whole source condition goes, not part of it.
-      const conditionRows = buildMapConditionRows(
-        t.conditions,
-        mapId,
-        (cond) =>
-          (cond.itemSourceId !== null ? itemIdBySource.get(cond.itemSourceId) : undefined) ??
-          (cond.folderLabel !== null && cond.itemLabel !== null
-            ? itemIdByLabel.get(itemLabelKey(cond.folderLabel, cond.itemLabel))
-            : undefined),
-        deps.genId,
-      );
-      mapConditionRows.push(...conditionRows.rows);
-      for (const { reason } of conditionRows.skipped) {
-        unresolvedMapConditions += 1;
-        skipped.push({ table: 'map_conditions', sourceId: t.sourceId, reason });
-      }
-
       // Neo has no unique index on (map_id, name) for parameters, but a
       // workbook can define the same prompt twice; deduping keeps the map's
       // parameter list usable. (It does have one on (map_id, bind_name), and a
@@ -1209,6 +1193,9 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
         if (calc.formula === '') continue;
         const calculatedFieldId = deps.genId();
         calculatedFieldIdByOrder.set(calc.displayOrder, calculatedFieldId);
+        if (calc.sourceElementId !== null) {
+          calculatedFieldIdByElement.set(calc.sourceElementId, calculatedFieldId);
+        }
         mapCalculatedFieldRows.push({
           id: calculatedFieldId,
           mapId,
@@ -1229,6 +1216,31 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
           axisType: calc.axisType,
           isHidden: calc.isHidden,
         });
+      }
+
+      // Conditions come after the calculated fields, because one can filter a
+      // calculation and needs that row's id. A condition Neo cannot express
+      // never reaches here — `transformWorkbook` drops it with a warning. What
+      // is left can still fail to resolve, and then the whole source condition
+      // goes, not part of it.
+      const conditionRows = buildMapConditionRows(
+        t.conditions,
+        mapId,
+        (cond) =>
+          (cond.itemSourceId !== null ? itemIdBySource.get(cond.itemSourceId) : undefined) ??
+          (cond.folderLabel !== null && cond.itemLabel !== null
+            ? itemIdByLabel.get(itemLabelKey(cond.folderLabel, cond.itemLabel))
+            : undefined),
+        deps.genId,
+        (cond) =>
+          cond.calculationElementId === null
+            ? undefined
+            : calculatedFieldIdByElement.get(cond.calculationElementId),
+      );
+      mapConditionRows.push(...conditionRows.rows);
+      for (const { reason } of conditionRows.skipped) {
+        unresolvedMapConditions += 1;
+        skipped.push({ table: 'map_conditions', sourceId: t.sourceId, reason });
       }
 
       // Totals (§7.8.7). Written after the two tables they reference, from the

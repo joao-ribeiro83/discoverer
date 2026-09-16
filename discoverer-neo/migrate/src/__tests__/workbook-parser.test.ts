@@ -18,6 +18,7 @@ import {
   parseConditionTokens,
   parseFormulaTree,
   parseWorkbookDocument,
+  serializeFormulaTokens,
   planCondition,
   readWorkbookElements,
 } from '../services/workbook-parser.js';
@@ -221,6 +222,7 @@ describe('planCondition', () => {
             operatorCode: 81,
             neoOperator: '=',
             itemRef: 4,
+            leftExpression: null,
             parameterRef: null,
             literals: ['V'],
             negated: false,
@@ -333,6 +335,7 @@ describe('planCondition', () => {
           operatorCode: 81,
           neoOperator: '=',
           itemRef: 4,
+          leftExpression: null,
           parameterRef: null,
           literals: ['V'],
           negated: true,
@@ -388,10 +391,22 @@ describe('planCondition', () => {
   });
 
   describe('tests Neo cannot express', () => {
-    it('refuses a function on the left rather than filtering the bare item', () => {
+    it('carries a function on the left as an expression, never as the bare item', () => {
+      // `TRUNC(item) BETWEEN :a AND :b`. Filtering `item` instead would return
+      // rows Discoverer excluded, so the expression travels with the row and
+      // becomes the calculated field the condition points at.
       const result = plan('[1,92]([1,49]([6,16]),[8,17],[8,18])');
+      expect(result.unsupported).toBeNull();
+      expect(result.groups[0]?.predicates).toMatchObject([
+        { neoOperator: '>=', itemRef: null, leftExpression: '[1,49]([6,16])', parameterRef: 17 },
+        { neoOperator: '<=', itemRef: null, leftExpression: '[1,49]([6,16])', parameterRef: 18 },
+      ]);
+    });
+
+    it('still refuses a test whose left side is a bare value', () => {
+      // `'V' = item` is not an expression to make a calculation out of.
+      const result = plan('[1,81]([5,1,"V"],[6,4])');
       expect(result.groups).toEqual([]);
-      expect(result.unsupported).toContain('TRUNC(item #16)');
       expect(result.unsupported).toContain('not to a plain item');
     });
 
@@ -681,6 +696,83 @@ describe('parseWorkbookDocument', () => {
       { neoOperator: '=', itemLabel: 'Estado', folderLabel: 'M M27', value: 'V' },
       { neoOperator: 'LIKE', itemLabel: 'Ramo', parameterName: 'Ramo', value: null },
     ]);
+  });
+
+  it('writes a tree back as tokens it reads identically', () => {
+    // The round trip is what lets a condition's left-hand expression reach
+    // `source_tokens`: the parser keeps no source spans to cut it out with.
+    const tokens = '[1,102]([6,3],[5,1,"a,b"],[5,2,"2"],[8,4],[2,9]())';
+    const { tree } = parseFormulaTree(tokens);
+    expect(tree).not.toBeNull();
+    expect(parseFormulaTree(serializeFormulaTokens(tree!)).tree).toEqual(tree);
+  });
+
+  it('reads a test applied to an expression as a calculation the condition filters', () => {
+    // `TRUNC(Dt Com) <= :Dt Fim`, the source's biggest refused shape — 473 of
+    // its applied conditions. Elements: 3 the item, 4 the parameter.
+    const doc = parseWorkbookDocument(
+      buildWorkbookFixture({
+        items: [{ folderLabel: 'M M27', itemLabel: 'Dt Com' }],
+        parameters: [{ name: 'Dt Fim' }],
+        conditions: [{ sql: 'TRUNC(Dt Com) <= :Dt Fim', tokens: '[1,85]([1,49]([6,3]),[8,4])' }],
+        worksheets: [{ name: 'S', columns: [{ item: 'Dt Com' }] }],
+      }),
+    );
+
+    expect(doc.conditions[0]?.unsupported).toBeNull();
+    const [predicate] = doc.conditions[0]!.groups.flatMap((g) => g.predicates);
+    expect(predicate).toMatchObject({
+      neoOperator: '<=',
+      // No element on the left: the expression carries it instead.
+      itemRef: null,
+      parameterName: 'Dt Fim',
+      expression: { tokens: '[1,49]([6,3])', formula: '[1,49](Dt Com)' },
+    });
+    expect(predicate?.expression?.bindings.items).toEqual({ '3': 'Dt Com' });
+  });
+
+  it('reads a date bound written as TO_DATE(:prompt, mask) as the parameter inside it', () => {
+    // Elements: 3 the item, 4 and 5 the parameters. 157 of the source's
+    // applied conditions write their date bounds this way.
+    const doc = parseWorkbookDocument(
+      buildWorkbookFixture({
+        items: [{ folderLabel: 'M M58d', itemLabel: 'Dt Contabilistico' }],
+        parameters: [{ name: 'DT Inicio' }, { name: 'DT Fim' }],
+        conditions: [
+          {
+            sql: "Dt Contabilistico BETWEEN TO_DATE(:DT Inicio,'DD-MM-YYYY') AND TO_DATE(:DT Fim,'DD-MM-YYYY')",
+            tokens: '[1,92]([6,3],[1,58]([8,4],[5,1,"DD-MM-YYYY"]),[1,58]([8,5],[5,1,"DD-MM-YYYY"]))',
+          },
+        ],
+        worksheets: [{ name: 'S', columns: [{ item: 'Dt Contabilistico' }] }],
+      }),
+    );
+
+    expect(doc.conditions[0]?.unsupported).toBeNull();
+    // Two bounds over two prompts expand exactly as a bare BETWEEN does.
+    expect(doc.conditions[0]?.groups.flatMap((g) => g.predicates)).toMatchObject([
+      { neoOperator: '>=', parameterName: 'DT Inicio' },
+      { neoOperator: '<=', parameterName: 'DT Fim' },
+    ]);
+  });
+
+  it('still refuses a date bound with arithmetic around it', () => {
+    const doc = parseWorkbookDocument(
+      buildWorkbookFixture({
+        items: [{ itemLabel: 'Dt Contabilistico' }],
+        parameters: [{ name: 'DT Fim' }],
+        conditions: [
+          {
+            // `TO_DATE(:DT Fim, mask) + 0.999` — Discoverer's "to the end of
+            // that day", which a map_conditions row has nowhere to put.
+            sql: 'Dt Contabilistico <= TO_DATE(:DT Fim) + 0.999',
+            tokens: '[1,85]([6,3],[1,94]([1,58]([8,4],[5,1,"DD-MM-YYYY"]),[5,2,"0.999"]))',
+          },
+        ],
+        worksheets: [{ name: 'S', columns: [{ item: 'Dt Contabilistico' }] }],
+      }),
+    );
+    expect(doc.conditions[0]?.unsupported).toContain('expression rather than a value');
   });
 
   it('reports a condition that names an element the workbook does not define', () => {
