@@ -63,6 +63,23 @@ describe('compileStoredFormula', () => {
     expect(verdict.bucket).not.toBe('COMPILED');
   });
 
+  it('returns the value behind every literal bind, under a name unique to the row', () => {
+    // Every calculation numbers its literals from 1, so the row's own id is
+    // what keeps two of them apart inside one statement.
+    const verdict = compileStoredFormula(
+      row({
+        id: '1a2b-3c4d-5e6f',
+        sourceTokens: '[1,97]([6,27],[5,2,"100"])',
+        bindings: bindings({ items: { '27': 'AMOUNT' } }),
+      }),
+      scope(),
+    );
+
+    expect(verdict.bucket).toBe('COMPILED_UNVERIFIED');
+    expect(verdict.sql).toContain(':f1a2b3c4d_1');
+    expect(verdict.binds).toEqual({ f1a2b3c4d_1: '100' });
+  });
+
   it('reads containsAggregate off the tree, for BE-05', () => {
     const mixed = compileStoredFormula(
       row({

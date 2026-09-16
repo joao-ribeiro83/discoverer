@@ -380,7 +380,7 @@ export type SqlRenderResult =
  * … and collects their values. Callers with their own numbering pass their
  * own `bind` instead.
  */
-export function createBindCollector(): {
+export function createBindCollector(prefix = 'v'): {
   bind: (value: string) => string;
   values: Record<string, string>;
 } {
@@ -389,7 +389,7 @@ export function createBindCollector(): {
   return {
     bind(value) {
       n += 1;
-      const name = `v${n}`;
+      const name = `${prefix}${n}`;
       values[name] = value;
       return `:${name}`;
     },

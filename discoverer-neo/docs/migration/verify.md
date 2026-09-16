@@ -119,13 +119,14 @@ By default this check only reads, so it is safe against a live estate. Add
 npx dn-migrate verify --target <connection> --compile
 ```
 
-That fills three columns on `map_calculated_fields`:
+That fills four columns on `map_calculated_fields`:
 
 | Column | Holds |
 | --- | --- |
 | `compile_status` | The bucket. `NULL` means no compile run has seen the row — a fifth state on purpose, so an unvisited row is not read as a clean one. |
 | `compile_reason` | The reason code, on a quarantined or failed row. |
 | `compiled_sql` | The Oracle expression, or `NULL` if the row was declined. |
+| `compiled_binds` | The value of each literal bind in `compiled_sql`, by bind name, or `NULL` if the row was declined. |
 
 ```sql
 SELECT compile_status, count(*) FROM map_calculated_fields GROUP BY 1;
@@ -135,10 +136,12 @@ Re-run it as often as you like. The compiled expression is derived from
 `source_tokens`, which a compile run never writes, so a later run with a better
 renderer simply replaces a derived value.
 
-`compiled_sql` is **evidence, not an execution path.** Column references in it
-are unqualified, because the table alias a column needs is chosen per query at
-generation time and a stored string cannot know it. What the column proves is
-that the formula has a reading at all.
+`compiled_sql` is **what a migrated calculated field runs as.** Every literal in
+it is a bind (`:f1a2b3c4d_1`), and `compiled_binds` holds the values, so the two
+are written together and must stay together: SQL compiled before
+`compiled_binds` existed fails with `ORA-01008` until the next `--compile` run.
+Column references in it are unqualified, because the table alias a column needs
+is chosen per query at generation time and a stored string cannot know it.
 
 ### If every row says `NO_SOURCE_TOKENS`
 

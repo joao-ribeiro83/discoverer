@@ -571,10 +571,11 @@ export function calculatedFieldSql(
     sourceTokens: string | null;
     compiledSql: string | null;
     compileStatus: string | null;
+    compiledBinds?: Record<string, string> | null;
   },
   resolveItem: ItemResolver,
   opts: { requireCompiled?: boolean } = {},
-): ParsedFormula {
+): ParsedFormula & { binds: Record<string, string> } {
   if (field.sourceTokens != null || opts.requireCompiled) {
     if (
       field.compiledSql &&
@@ -585,6 +586,9 @@ export function calculatedFieldSql(
         containsAggregate: containsAggregateCall(field.compiledSql),
         referencedItems: [],
         bareReferences: [],
+        // The renderer writes every literal as a bind (D-054). These are the
+        // values; whichever statement carries `sql` has to bind them.
+        binds: field.compiledBinds ?? {},
       };
     }
     throw new SqlGenerationError(
@@ -592,7 +596,23 @@ export function calculatedFieldSql(
         `(status: ${field.compileStatus ?? 'not verified'}) and cannot be used in a query`,
     );
   }
-  return parseFormula(field.formula, resolveItem);
+  return { ...parseFormula(field.formula, resolveItem), binds: {} };
+}
+
+/**
+ * Add a calculated field's literal binds to a statement's bind set.
+ *
+ * The same field in two clauses brings the same values, which is harmless. A
+ * name already bound to another value is refused rather than overwritten: one
+ * of the two expressions would quietly compare against the wrong value.
+ */
+export function mergeBinds(into: Record<string, unknown>, binds: Record<string, unknown>): void {
+  for (const [name, value] of Object.entries(binds)) {
+    if (name in into && into[name] !== value) {
+      throw new SqlGenerationError(`Bind variable :${name} would carry two different values`);
+    }
+    into[name] = value;
+  }
 }
 
 /** Validate a formula without emitting SQL (for save-time checks). */
