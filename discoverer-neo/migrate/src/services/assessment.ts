@@ -508,22 +508,6 @@ export function collectWarnings(eul: EulReadResult, orphans: OrphanReport): Migr
     });
   }
 
-  // Conditions live on the workbook, not the worksheet, so a multi-worksheet
-  // workbook cannot say which of its worksheets used which condition.
-  const ambiguous = data.workbooks.filter(
-    (wb) => wb.document.conditionsAreWorkbookWide && wb.document.conditions.length > 0,
-  );
-  if (ambiguous.length > 0) {
-    warnings.push({
-      severity: 'info',
-      code: 'WORKBOOK_CONDITIONS_SHARED',
-      message:
-        `${ambiguous.length} multi-worksheet workbook(s) carry conditions Discoverer stores ` +
-        'per workbook rather than per worksheet. Every condition is attached to every map ' +
-        'the workbook produces; review each map and remove the ones it did not use.',
-    });
-  }
-
   return warnings;
 }
 

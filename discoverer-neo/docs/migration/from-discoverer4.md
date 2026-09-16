@@ -313,13 +313,10 @@ columns, conditions and parameters their worksheet had. Before handing them to
 users:
 
 1. Open a map and check its column list against the original report.
-2. On maps from a multi-worksheet workbook, remove the conditions that
-   worksheet did not use — Discoverer stored them per workbook, so they were
-   attached to every map it produced.
-3. Rewrite any calculated field's formula as SQL. They arrive in Discoverer's
+2. Rewrite any calculated field's formula as SQL. They arrive in Discoverer's
    token language, which Neo cannot execute.
-4. Move the maps into the business areas they belong to.
-5. Run each map and confirm the results match.
+3. Move the maps into the business areas they belong to.
+4. Run each map and confirm the results match.
 
 If the maps arrived **empty** — no columns at all — the workbook body could not
 be read. See [Maps migrated without their

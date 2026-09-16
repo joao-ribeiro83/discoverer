@@ -352,20 +352,6 @@ the workbooks declare, and how many of a sample decode. If it reports
 `body column: NONE FOUND`, the source has no readable workbook bodies and only
 names can migrate; those maps must be rebuilt by hand.
 
-### A migrated map returns more rows than the original report
-
-**Cause:** the map came from a workbook with several worksheets. Discoverer
-stores conditions per *workbook*, not per worksheet, and the file does not
-record which worksheet used which — so every condition was attached to every
-map the workbook produced. A map may therefore carry filters its worksheet
-never applied.
-
-The migration warns about this per map (`CONDITIONS_WORKBOOK_WIDE`), and the
-assessment report flags it before you start.
-
-**Solution:** open the map, compare its conditions with the original worksheet,
-and delete the ones that do not belong.
-
 ### A condition did not migrate
 
 **Cause:** Discoverer supports condition forms Neo has no equivalent for —
@@ -382,33 +368,23 @@ map_conditions — condition "Estado NOT IN ('M','A')" — operator has no Neo e
 
 **Solution:** recreate them in the map by hand.
 
-### A worksheet carries conditions it never used
+### A workbook condition is on none of its maps
 
-**Cause:** Discoverer stores a workbook's conditions once, in a pool shared by
-every worksheet in that workbook — it does not record which worksheet
-activates which condition. A worksheet re-import therefore attaches the whole
-pool to every worksheet's map. This is not a migration bug and there is
-nothing to fix in the tool: the source `.DIS` file itself does not carry the
-missing link. See `workbook-parser.ts`'s note on `conditionsAreWorkbookWide`.
+**Cause:** no worksheet of the workbook applied it. Discoverer stores a
+workbook's conditions once, and each worksheet's query names the ones it
+applies; a condition that no query names was never switched on. Neo has no
+inactive condition to keep it in, so it does not migrate. Each map gets exactly
+the conditions, parameters and calculations its own worksheet used.
 
-**Find them:** the job log reports `CONDITIONS_WORKBOOK_WIDE`, one line per
-affected worksheet, naming the workbook and how many conditions it carries.
+**Find them:** the job log reports `CONDITIONS_NOT_APPLIED` once per workbook,
+on its first map, with the count.
 
-**Is it safe to leave?** Yes. An unused condition with no value filled in
-does not change what the worksheet returns — it just asks for a parameter
-nobody has to answer. Removing one by guessing which worksheet "really" uses
-it is the wrong direction: a wrong guess would silently change that
-worksheet's results, which is worse than the noise.
+**Solution:** recreate the condition in the map if it is still wanted.
 
-**Reviewed as known-noise:**
-
-| Workbook (source id) | Worksheets | Conditions | Reviewed | Finding |
-|---|---|---|---|---|
-| `GD_M.M67B_V07.DIS` (211152) | 5 | 26 | 2026-09-14 | Checked against the live database: mostly parameter prompts (unit code, date range, policy/document number) plus a few fixed values. Consistent with several report variants sharing one condition pool. Left as-is. |
-
-`M67B_V08` through `V12` (source ids 231479, 233056, 241043, 241908, 244393)
-carry the same shape — 5 worksheets, 26 conditions each — but were not
-individually reviewed; add a row above if one of them is checked.
+Maps imported before 2026-09-15 got every condition, parameter and calculation
+of their workbook. Such a map can refuse with "No join path connects folder",
+ask for parameters Discoverer never asked for, or filter on another worksheet's
+conditions. Re-import the maps to fix them.
 
 ### A worksheet column was dropped
 

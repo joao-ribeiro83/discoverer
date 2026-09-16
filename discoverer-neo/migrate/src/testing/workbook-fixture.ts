@@ -561,6 +561,11 @@ export interface FixtureWorksheet {
   /** Parameter values saved with the worksheet, by parameter name. */
   parameterValues?: Array<{ parameter: string; values: string[] }>;
   /**
+   * Indexes into `FixtureWorkbook.conditions` of the conditions the worksheet's
+   * query applies (`0x0126`, and the layout's `0x0265`). Every one when omitted.
+   */
+  conditions?: number[];
+  /**
    * Write the worksheet's columns, but no layout element and no view element,
    * so the worksheet element names neither.
    *
@@ -817,7 +822,11 @@ export function buildWorkbookFixture(spec: FixtureWorkbook = {}): Buffer {
     }
   }
 
+  // Remembered by name so a column or a hidden item can name one, as a real
+  // query request names a calculation element.
+  const calculationIds = new Map<string, number>();
   for (const calculation of spec.calculations ?? []) {
+    calculationIds.set(calculation.name, b.peekNextId());
     b.element(FIXTURE_CLASS.CALCULATION).string(FIXTURE_TAG.ITEM_LABEL, calculation.name);
     if (calculation.identifier !== undefined) {
       b.string(FIXTURE_TAG.CALC_IDENTIFIER, calculation.identifier);
@@ -863,6 +872,13 @@ export function buildWorkbookFixture(spec: FixtureWorkbook = {}): Buffer {
     const columnIds: number[] = [];
     const axisItemIds: number[] = [];
     const measureItemIds: number[] = [];
+    const filterIds = (worksheet.conditions ?? conditionElementIds.map((_, index) => index)).map(
+      (index) => {
+        const id = conditionElementIds[index];
+        if (id === undefined) throw new Error(`fixture worksheet references condition ${index}`);
+        return id;
+      },
+    );
     /**
      * Element ids a sort of *this* worksheet may name: the shared items, plus
      * the item or calculation element a column writes for itself. A real
@@ -879,7 +895,7 @@ export function buildWorkbookFixture(spec: FixtureWorkbook = {}): Buffer {
       // only the reference, resolved when the column element is emitted below.
       let itemElementId: number | null = null;
       if (column.item !== undefined) {
-        const id = itemIds.get(column.item);
+        const id = itemIds.get(column.item) ?? calculationIds.get(column.item);
         if (id === undefined) {
           throw new Error(`fixture column references unknown item "${column.item}"`);
         }
@@ -976,7 +992,7 @@ export function buildWorkbookFixture(spec: FixtureWorkbook = {}): Buffer {
     // sheet `Items :-` list a superset of the layout's columns.
     for (const entry of worksheet.hiddenItems ?? []) {
       const hidden = typeof entry === 'string' ? { item: entry, axis: 'AXIS' as const } : entry;
-      const id = itemIds.get(hidden.item);
+      const id = itemIds.get(hidden.item) ?? calculationIds.get(hidden.item);
       if (id === undefined) {
         throw new Error(`fixture worksheet references unknown item "${hidden.item}"`);
       }
@@ -1054,7 +1070,7 @@ export function buildWorkbookFixture(spec: FixtureWorkbook = {}): Buffer {
       .refVector(FIXTURE_TAG.QUERY_AXIS_ITEMS, axisItemIds)
       .refVector(FIXTURE_TAG.QUERY_MEASURE_ITEMS, measureItemIds)
       .refVector(FIXTURE_TAG.QUERY_SORTS, sortIds)
-      .refVector(FIXTURE_TAG.QUERY_FILTERS, conditionElementIds)
+      .refVector(FIXTURE_TAG.QUERY_FILTERS, filterIds)
       .refVector(FIXTURE_TAG.QUERY_JOINS, joinElementIds);
     const queryLinkId = b.peekNextId();
     b.element(FIXTURE_CLASS.QUERY_LINK).ref(FIXTURE_TAG.QUERY_LINK_REF, queryId);
@@ -1126,7 +1142,7 @@ export function buildWorkbookFixture(spec: FixtureWorkbook = {}): Buffer {
     if (sortListId !== 0) {
       b.number(FIXTURE_TYPE.INT32_ALT, FIXTURE_TAG.LAYOUT_SORT_LIST_REF, sortListId);
     }
-    b.refVector(FIXTURE_TAG.LAYOUT_FILTERS, conditionElementIds)
+    b.refVector(FIXTURE_TAG.LAYOUT_FILTERS, filterIds)
       .refVector(FIXTURE_TAG.LAYOUT_TOTALS, totalIds)
       .refVector(FIXTURE_TAG.LAYOUT_PARAMETER_VALUES, parameterValueIds)
       .vector(FIXTURE_TYPE.INT32_ALT, FIXTURE_TAG.LAYOUT_QUERY_LINKS, [queryLinkId]);

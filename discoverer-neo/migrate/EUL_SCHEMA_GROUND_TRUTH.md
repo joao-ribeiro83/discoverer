@@ -1086,13 +1086,36 @@ them `STATIC` with a null value, which raises `SqlGenerationError` the first
 time anyone runs the map. Fewer conditions now, and each one is the filter
 Discoverer had.
 
-Conditions and parameters are **workbook-scoped**: all 3 395 conditions and
-3 859 parameters sit in the shared section before the first worksheet, and
-nothing in a worksheet's own section references them. Which worksheet activates
-which condition is therefore not recoverable, so every condition is attached to
-every map the workbook produces and multi-worksheet workbooks get an explicit
-warning. Calculations, by contrast, are written into each worksheet's own
-section and are scoped there.
+Conditions and parameters are **defined** once per workbook: all 3 395
+conditions and 3 859 parameters sit in the shared section before the first
+worksheet. **Which worksheet applies which is recoverable.** This paragraph used
+to say it was not, and the migration attached every condition, parameter and
+offered calculation to every map. **Corrected 2026-09-15 (Phase 9.1)**, measured
+on the 564-workbook corpus of §7.8:
+
+- A worksheet's query request lists the conditions it applies (`0x0126`,
+  §7.8.3), and its layout lists the same ones (`0x0265`, §7.8.4) — identical on
+  all 923 worksheets. That is 2 582 uses; attaching the workbook's list made
+  7 376. **1 152 of the 3 427 conditions are applied by no worksheet.**
+- Discoverer's own statements for the four sheets of `GD_M.M58D_V09.DIS`
+  (scheduler views `EUL4_B260506220828Q1V1`..`Q4V1`, §3.8) each read one table,
+  and each `WHERE` is exactly the conditions that sheet's `0x0126` names.
+- A condition names the parameters it binds (`0x010c`). Those, with the ones the
+  sheet's calculations bind (`[8,n]`), total 3 035 over the corpus, and on every
+  worksheet they contain the parameters the sheet saved values for (`0x026a`,
+  also 3 035). On all 29 scheduled sheets they are exactly the ones
+  `EUL4_BATCH_PARAMS` supplied. The workbook's lists totalled 7 788.
+- A worksheet offers far more calculations than its query selects: 49 819
+  offered, 8 615 named by the queries' axis and measure items
+  (`0x0123`/`0x0124`). Those reference 335 more — 117 written outside the
+  referencing worksheet's own section, so matched by element id — and the
+  sheets' conditions 102 more: 9 052 in all. The four statements' `E_<n>`
+  columns are exactly the named set (17 of the 41 offered, 17, 10, 7). A
+  calculation only a condition references is written into the `WHERE`, not the
+  `SELECT`; Neo keeps every calculation the query does not name hidden.
+
+Multi-worksheet maps with a condition on a folder none of their items use: 347
+of 570 before the correction, 31 after — those are the sheet's own conditions.
 
 ### 7.7 Verified against Oracle's own dump tool
 
