@@ -2479,6 +2479,51 @@ the column list Neo writes is not the one Discoverer drew.
 
 ---
 
+## 7.13 What "changed" means in EUL4 **[SQL — live EUL4, 2026-09-16]**
+
+Probed with `backend/src/scripts/probe-eul-change-detection.ts` over
+`ALL_TAB_COLUMNS` and every `EUL4_%` table on SIID_TESTES.
+
+**What the EUL carries.** Every metadata table the migration reads has four
+audit columns and a counter: `<p>_CREATED_DATE`, `<p>_UPDATED_DATE`,
+`<p>_UPDATED_BY`, `<p>_ELEMENT_STATE`, and `NOTM`. `NOTM` counts saves: up to
+294 on `OBJS`, 291 on `EXPRESSIONS`, 60 on `DOCUMENTS`. `SUMMARY_OBJS` also has
+`SUMO_ITEM_DELETED`, and it is empty.
+
+**Why none of it can drive a delta.**
+
+- **A delete leaves nothing behind.** `ELEMENT_STATE` is `0` on every live row
+  of every table the migration reads (only `ASM_POLICIES` holds `2`). Discoverer
+  removes the row. So no timestamp query can find a deleted folder, item,
+  workbook or grant.
+- **Coverage has gaps.** `ELEM_XREFS` (which items a workbook uses) and
+  `VERSIONS` have no audit columns. `NAMED_ELEMS` has dates but no state.
+  `BQ_TABLES.BQT_UPDATED_DATE` is null on all 16 rows.
+- **A parent does not move when a child does.** 216 items have an
+  `EXP_UPDATED_DATE` later than their folder's `OBJ_UPDATED_DATE`.
+- **A migrated object depends on other objects.** A map's columns resolve
+  against items, and a workbook's rows change when an item it names appears or
+  goes. The source row's own date says nothing about that.
+- **`VERSIONS` is identity, not a change counter.** One row:
+  `VER_RELEASE 4.1.11.0.0`, `VER_MIN_CODE_VER 4.1.35.0.0`,
+  `VER_EUL_TIMESTAMP 20101111181137` (the EUL's creation). It does not move
+  when content changes. Record it for reproducibility, not for detection.
+- `ORA_ROWSCN` is readable but block-granular (12 distinct values over 213
+  `OBJS` rows), and it also cannot see a delete.
+
+**So a delta is a content diff.** "Changed" means: the rows Discoverer Neo
+would write for an object differ from the rows recorded for it at the last
+run. Deleted means: an object recorded at the last run is not in the source
+any more. Phase 9.2's delta is built on that definition — see
+`docs/migration/incremental-delta.md`.
+
+Latest dates on the live source, for scale: `DOCUMENTS` and `BATCH_*`
+2026-08-27, `EXPRESSIONS`/`OBJS`/`ACCESS_PRIVS` 2026-07-15, `HIERARCHIES`
+2025-11-20, `EUL_USERS` 2021-03-30, `FUNCTIONS` 2019-09-06, `KEY_CONS`
+2010-11-12. Workbooks and items change; joins and functions do not.
+
+---
+
 ## Provenance — how the fabricated schema got in
 
 `oracle_discoverer_complete_reference.md` and `EUL_VERSION_REFERENCE.md` contain
