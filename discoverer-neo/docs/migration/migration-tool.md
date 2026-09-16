@@ -136,6 +136,19 @@ dn-migrate run   --connection '{"host":"oracle.example.com","user":"EUL5_US","pa
 > migrate again, reset the target first — see
 > [Troubleshooting](troubleshooting.md#target-database-already-contains-a-migration).
 
+### delta
+
+Bring an already-migrated database up to date with a source that kept
+changing. It writes only what changed, refuses to delete what the source lost,
+and ends by running the verifier. See [`incremental-delta.md`](incremental-delta.md).
+
+```bash
+npx dn-migrate delta --connection eul.json --target postgres://… --dry-run
+```
+
+Prefer it to the maps re-import below. The delta updates worksheets in place,
+so their schedules and shares survive.
+
 ### Re-importing just the maps
 
 There is one exception to *one migration per database*: the **maps**. If a
