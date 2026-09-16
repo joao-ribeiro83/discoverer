@@ -1433,9 +1433,10 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     ['workbooks', workbookRows],
     ['maps', mapRows],
     ['map_items', mapItemRows],
-    ['map_conditions', mapConditionRows],
     ['map_parameters', mapParameterRows],
+    // Before the conditions: one can filter a calculated field by id.
     ['map_calculated_fields', mapCalculatedFieldRows],
+    ['map_conditions', mapConditionRows],
     ['map_layouts', mapLayoutRows],
     ['map_totals', mapTotalRows],
     ['map_page_setup', mapPageSetupRows],

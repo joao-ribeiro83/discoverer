@@ -17,6 +17,8 @@ export interface FakeWriterState {
   transactionCalls: number;
   logs: MigrationLogInput[];
   tables: FakeTables;
+  /** Every insert, in call order — a real target enforces foreign keys. */
+  insertOrder: TargetTable[];
   /** Pre-existing row counts, to emulate a non-empty target database. */
   baseline: Partial<Record<TargetTable, number>>;
 }
@@ -82,6 +84,7 @@ export function createFakeWriter(options: FakeWriterOptions = {}): FakeWriter {
     transactionCalls: 0,
     logs: [],
     tables: options.tables ?? emptyTargetTables(),
+    insertOrder: [],
     baseline: options.baseline ?? {},
   };
 
@@ -99,6 +102,7 @@ export function createFakeWriter(options: FakeWriterOptions = {}): FakeWriter {
       if (options.failOnInsert === table) {
         return Promise.reject(new Error(`fake insert failure on ${table}`));
       }
+      state.insertOrder.push(table);
       tables[table].push(...rows);
       return Promise.resolve();
     },
