@@ -542,7 +542,9 @@ describe('Migration seam tests', () => {
     it('keeps the checked-in declaration well formed', () => {
       expect(EXPECTED_LOSS_ALLOWANCES.length).toBeGreaterThan(0);
       for (const a of EXPECTED_LOSS_ALLOWANCES) {
-        expect(a.table).toMatch(/^[a-z_][a-z0-9_]*$/);
+        // A concept with no table is never written: its loss is the whole source.
+        if (a.table === null) expect([a.expectedTarget, a.sourceCount === null]).toEqual([0, false]);
+        else expect(a.table).toMatch(/^[a-z_][a-z0-9_]*$/);
         expect(a.expectedTarget).toBeGreaterThanOrEqual(0);
         // Every gap carries a stated reason, whether or not it is understood.
         expect(a.why.length).toBeGreaterThan(10);
@@ -796,7 +798,9 @@ describe('Migration seam tests', () => {
     it('keeps the checked-in declaration well formed', () => {
       expect(EXPECTED_LOSS_ALLOWANCES.length).toBeGreaterThan(0);
       for (const a of EXPECTED_LOSS_ALLOWANCES) {
-        expect(a.table).toMatch(/^[a-z_][a-z0-9_]*$/);
+        // A concept with no table is never written: its loss is the whole source.
+        if (a.table === null) expect([a.expectedTarget, a.sourceCount === null]).toEqual([0, false]);
+        else expect(a.table).toMatch(/^[a-z_][a-z0-9_]*$/);
         expect(a.expectedTarget).toBeGreaterThanOrEqual(0);
         // Every gap carries a stated reason, whether or not it is understood.
         expect(a.why.length).toBeGreaterThan(10);

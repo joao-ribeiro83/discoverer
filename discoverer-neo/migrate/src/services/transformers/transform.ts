@@ -1173,6 +1173,8 @@ export function transformWorkbook(
       ),
     ]);
     const used = new Set<number>();
+    // What those calculations reference that is not itself a calculation.
+    const reachedByCalculation = new Set<number>();
     const pending = [
       ...named,
       ...sheetConditions.flatMap((condition) => [
@@ -1185,7 +1187,42 @@ export function transformWorkbook(
       const calculation = calculationById.get(id);
       if (calculation === undefined || used.has(id)) continue;
       used.add(id);
-      pending.push(...calculation.itemRefs, ...tokenRefs(calculation.tokens, 6));
+      const refs = [...calculation.itemRefs, ...tokenRefs(calculation.tokens, 6)];
+      for (const ref of refs) reachedByCalculation.add(ref);
+      pending.push(...refs);
+    }
+
+    // An EUL item a sheet's calculation needs is part of that sheet's query
+    // even when the query request does not list it: the "TOTALIZADORES" sheets
+    // name only calculations, so without these rows their maps had no item, no
+    // folder and nothing a `[6,n]` could resolve against (24 maps, 198
+    // quarantined calculations on the live estate). They migrate hidden, like
+    // the query items no column draws — no SELECT column, no GROUP BY entry,
+    // only the folder and the exact EXP_ID.
+    if (layout) {
+      for (const element of document.itemElements) {
+        if (!reachedByCalculation.has(element.elementId) || named.has(element.elementId)) continue;
+        items.push({
+          itemSourceId: element.itemSourceId,
+          folderLabel: element.folderLabel,
+          itemLabel: element.itemLabel,
+          displayName: null,
+          formatMask: null,
+          displayOrder: Math.max(-1, ...items.map((item) => item.displayOrder)) + 1,
+          isCalculation: false,
+          axisType: null,
+          axisOrder: null,
+          isHidden: true,
+          columnWidth: null,
+          dataType: null,
+          headingFormatMask: null,
+          alignment: null,
+          wordWrap: null,
+          sourceElementId: element.elementId,
+          sourceAttrs: null,
+          ...NO_SORT,
+        });
+      }
     }
     const scoped = new globalThis.Map<number, (typeof worksheet.calculations)[number]>();
     for (const calculation of [...worksheet.calculations, ...document.calculations]) {

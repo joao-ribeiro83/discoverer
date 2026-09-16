@@ -674,7 +674,10 @@ export async function checkReferentialClosure(
         refs AS (
           SELECT s.id AS map_id, mi.item_id FROM scoped s JOIN map_items mi ON mi.map_id = s.id
           UNION ALL
+          -- A condition that filters a calculated field has no item by design
+          -- (Phase 5.3); it is checked against its own field below instead.
           SELECT s.id, mc.item_id FROM scoped s JOIN map_conditions mc ON mc.map_id = s.id
+          WHERE mc.calculated_field_id IS NULL
         )
         SELECT
           count(*)::int AS refs,
@@ -727,6 +730,18 @@ export async function checkReferentialClosure(
           AND (mi.id IS NULL OR mi.map_id <> t.map_id)`,
   );
 
+  // A condition on a calculated field must name a field of its own map.
+  const [strayCalculatedConditions] = await rows(
+    db,
+    sql`SELECT count(*)::int AS c
+        FROM map_conditions mc
+        JOIN maps ON maps.id = mc.map_id
+        LEFT JOIN map_calculated_fields cf ON cf.id = mc.calculated_field_id
+        WHERE maps.is_active AND ${scope}
+          AND mc.calculated_field_id IS NOT NULL
+          AND (cf.id IS NULL OR cf.map_id <> mc.map_id)`,
+  );
+
   const num = (row: Row | undefined, key: string): number => Number(row?.[key] ?? 0);
 
   const metrics: Record<string, number> = {
@@ -740,6 +755,7 @@ export async function checkReferentialClosure(
     mapsSpanningDataSources: num(spread, 'c'),
     mapsWithNoColumns: num(empty, 'c'),
     strayTotals: num(strayTotals, 'c'),
+    strayCalculatedConditions: num(strayCalculatedConditions, 'c'),
   };
 
   const violations = Object.entries(metrics).filter(([key, value]) => key !== 'references' && value > 0);
@@ -1161,17 +1177,42 @@ export async function checkReconciliation(
 
   const findings: string[] = [];
   let matched = 0;
+  let notCounted = 0;
   let rowsLost = 0;
   let unexplained = 0;
 
   for (const allowance of allowances) {
+    if (allowance.table === null) {
+      // Never written, so nothing to count — but a declaration that expects
+      // rows with nowhere to hold them, or a loss nobody measured, would be an
+      // invisible hole. Refuse both.
+      if (allowance.expectedTarget !== 0 || allowance.sourceCount === null) {
+        throw new Error(
+          `"${allowance.concept}" has no table, so it needs expectedTarget 0 and a measured sourceCount`,
+        );
+      }
+      notCounted += 1;
+      rowsLost += allowance.sourceCount;
+      if (!allowance.explained && allowance.sourceCount !== 0) unexplained += 1;
+      continue;
+    }
     if (!BARE_IDENTIFIER.test(allowance.table)) {
       throw new Error(`Refusing to count "${allowance.table}": not a bare table name`);
     }
     const table = sql.raw(allowance.table);
-    const where =
-      prefix === undefined ? sql`TRUE` : sql`${sql.raw(allowance.table)}.id::text LIKE ${prefix + '%'}`;
-    const [row] = await rows(db, sql`SELECT count(*)::int AS c FROM ${table} WHERE ${where}`);
+    const inPrefix =
+      prefix === undefined ? sql`TRUE` : sql`${table}.id::text LIKE ${prefix + '%'}`;
+    // A map built by hand in Neo is not the migration's to account for.
+    const migrated = sql`(SELECT m.id FROM maps m JOIN workbooks w ON w.id = m.workbook_id WHERE w.source_id IS NOT NULL)`;
+    const inMigrated = !allowance.migratedMapsOnly
+      ? sql`TRUE`
+      : allowance.table === 'maps'
+        ? sql`maps.id IN ${migrated}`
+        : sql`${table}.map_id IN ${migrated}`;
+    const [row] = await rows(
+      db,
+      sql`SELECT count(*)::int AS c FROM ${table} WHERE ${inPrefix} AND ${inMigrated}`,
+    );
     const actual = Number(row?.c ?? 0);
 
     if (allowance.sourceCount !== null) rowsLost += Math.max(0, allowance.sourceCount - actual);
@@ -1189,7 +1230,7 @@ export async function checkReconciliation(
     }
   }
 
-  const drifted = allowances.length - matched;
+  const drifted = allowances.length - notCounted - matched;
   return {
     id: 'reconciliation',
     name,
@@ -1198,6 +1239,7 @@ export async function checkReconciliation(
       concepts: allowances.length,
       matched,
       drifted,
+      notCounted,
       rowsLostToAllowances: rowsLost,
       unexplainedAllowances: unexplained,
     },
