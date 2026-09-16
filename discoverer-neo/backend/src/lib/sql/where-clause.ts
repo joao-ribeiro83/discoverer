@@ -137,7 +137,13 @@ export function buildWhereClause(
     const { condition, item, folder, calculatedField } = entry;
     const label = item ? item.name : calculatedField.name;
     const dataType = item ? item.dataType : calculatedField.dataType;
-    let isDate = !!(dataType && /DATE|TIMESTAMP/i.test(dataType));
+    // An expression condition (a calculated field the source never typed)
+    // carries no data type of its own. Ask the bound parameter before falling
+    // back to text — this must happen before `caseFold` below, not after,
+    // or a date parameter still gets wrapped in UPPER() as if it were text.
+    const paramTypeForCondition = condition.paramName ? paramTypes.get(condition.paramName) : undefined;
+    let isDate =
+      !!(dataType && /DATE|TIMESTAMP/i.test(dataType)) || (!dataType && paramTypeForCondition === 'DATE');
     const isNumeric = !!(dataType && /NUMBER|INTEGER|FLOAT|DECIMAL/i.test(dataType));
     // Oracle's case-insensitive flag is a text-comparison setting — folding a
     // DATE or NUMBER expression through UPPER() would be a no-op at best.
@@ -197,16 +203,14 @@ export function buildWhereClause(
       // bad one here means something wrote the row bypassing that path.
       validateBindName(paramName);
       const paramLabel = paramLabels.get(paramName) ?? paramName;
-      const paramType = paramTypes.get(paramName);
+      const paramType = paramTypeForCondition;
       const provided = paramValues[paramName];
 
-      // A condition on an expression carries no data type of its own — the
-      // source never says what `TRUNC(x)` returns — and without one the value
-      // would go to Oracle as text for NLS_DATE_FORMAT to guess at. The
-      // parameter's own declared type is what says it is a date.
-      if (!isDate && !dataType && paramType === 'DATE') isDate = true;
-
-      if (op === 'IN') {
+      // A LIST parameter can never correctly satisfy a scalar `=` — supplying
+      // several values only makes sense as membership. Discoverer stores `=`
+      // for these conditions regardless; the parameter's own type is what
+      // says several values can arrive.
+      if (op === 'IN' || (op === '=' && paramType === 'LIST')) {
         // LIST parameters expand to one bind per value when values are
         // available; otherwise a single bind placeholder is emitted.
         const values =

@@ -188,6 +188,23 @@ export function buildSelectClause(
   // Formulas may hide aggregates inside item expressions too.
   if (ctx.containsAggregate) hasAggregates = true;
 
+  // A hidden item normally contributes nothing to the query — Neo's model is
+  // deliberately narrower than Discoverer's there ("is FLAT when the detail
+  // contributes only a hidden item"), so a hidden item alongside a real column
+  // must stay unaliased or it would drag an untouched folder into fan-trap
+  // planning. But when NOTHING has aliased a folder at all — a
+  // "TOTALIZADORES" sheet naming only a calculation, migrated with its
+  // reference as a hidden map_item purely so the map has a folder to query —
+  // there is no query without one, since a compiled calculated field's SQL is
+  // trusted text, never re-resolved by name. Only that all-or-nothing case
+  // falls back to aliasing every hidden item's folder, so the map can run
+  // instead of refusing with "The query references no folders".
+  if (ctx.usedFolderIds().length === 0) {
+    for (const { item, folder, mapItem } of def.items) {
+      if (mapItem.isHidden && item.columnName) ctx.aliasFor(folder.id);
+    }
+  }
+
   const distinct = def.map.selectDistinct === true;
 
   return {

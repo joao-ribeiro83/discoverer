@@ -813,6 +813,12 @@ export async function checkMeasureSet(
   const name = 'the estate carries a non-empty measure set for the fan-trap guard';
   const scope = mapScope(options.mapIdPrefix);
 
+  // A hidden item is never placed in the workbook's layout, so it correctly
+  // carries no axis_type — that is not the gap this seam exists to catch (see
+  // the docstring above). Counting it as `unclassified` anyway is what turned
+  // 2 genuine gaps into 7 675 once `reachedByCalculation` started migrating
+  // calc-only references as hidden map_items: real signal buried in noise,
+  // not a new defect.
   const [counts] = await rows(
     db,
     sql`SELECT
@@ -828,7 +834,7 @@ export async function checkMeasureSet(
             AS maps_with_a_measure
         FROM map_items mi
         JOIN maps ON maps.id = mi.map_id
-        WHERE maps.is_active AND ${scope}`,
+        WHERE maps.is_active AND NOT mi.is_hidden AND ${scope}`,
   );
 
   const num = (row: Row | undefined, key: string): number => Number(row?.[key] ?? 0);
