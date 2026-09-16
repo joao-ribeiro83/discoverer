@@ -22,6 +22,17 @@
 # Restores are the inverse operation — see ./scripts/restore.sh.
 set -euo pipefail
 
+# A failed step stops the run with a non-zero exit and removes the partial
+# archive that step was writing, so a truncated file never passes for a backup.
+OUT=""
+trap 'rc=$?; echo "!! Backup FAILED (exit $rc)${OUT:+ — removed partial $OUT}" >&2; [ -z "$OUT" ] || rm -f "$OUT"; exit $rc' ERR
+
+# A step that "succeeds" with an empty archive has still failed.
+written() {
+  [ -s "$OUT" ] || { echo "!! $OUT is empty" >&2; return 1; }
+  echo "    $(du -h "$OUT" | cut -f1) written"
+}
+
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.yml}"
@@ -66,26 +77,34 @@ echo "    compose file: $COMPOSE_FILE"
 echo "    backup dir:   $BACKUP_DIR"
 
 # --- 1. Postgres --------------------------------------------------------
-PG_OUT="$BACKUP_DIR/postgres/${POSTGRES_DB}_${TIMESTAMP}.dump.gz"
-echo "==> Dumping Postgres ($POSTGRES_DB) -> $PG_OUT"
+OUT="$BACKUP_DIR/postgres/${POSTGRES_DB}_${TIMESTAMP}.dump.gz"
+echo "==> Dumping Postgres ($POSTGRES_DB) -> $OUT"
 docker compose -f "$COMPOSE_FILE" exec -T postgres \
   pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --format=custom \
-  | gzip > "$PG_OUT"
-echo "    $(du -h "$PG_OUT" | cut -f1) written"
+  | gzip > "$OUT"
+written
+
+# MSYS_NO_PATHCONV=1 on the docker calls below: Git Bash on Windows rewrites a
+# container-side argument such as `/data` or `/` to `C:/Program Files/Git/...`
+# before docker sees it. The variable is inert on Linux. It is scoped per call,
+# not exported, because COMPOSE_FILE is a host path that may need converting.
 
 # --- 2. Redis ------------------------------------------------------------
-REDIS_OUT="$BACKUP_DIR/redis/data_${TIMESTAMP}.tar.gz"
-echo "==> Snapshotting Redis -> $REDIS_OUT"
+OUT="$BACKUP_DIR/redis/data_${TIMESTAMP}.tar.gz"
+echo "==> Snapshotting Redis -> $OUT"
 docker compose -f "$COMPOSE_FILE" exec -T redis redis-cli SAVE > /dev/null
-docker compose -f "$COMPOSE_FILE" exec -T redis tar czf - -C /data . > "$REDIS_OUT"
-echo "    $(du -h "$REDIS_OUT" | cut -f1) written"
+MSYS_NO_PATHCONV=1 docker compose -f "$COMPOSE_FILE" exec -T redis tar czf - -C /data . > "$OUT"
+written
 
 # --- 3. Export + scheduled-result files ----------------------------------
-FILES_OUT="$BACKUP_DIR/files/generated_files_${TIMESTAMP}.tar.gz"
-echo "==> Archiving export/scheduled-result volumes -> $FILES_OUT"
-docker run --rm --volumes-from "$BACKEND_CONTAINER" alpine \
-  tar czf - -C / app/exports app/scheduled-results 2>/dev/null > "$FILES_OUT" \
-  || echo "    (skipped — no exports/scheduled-results yet, or backend container not running)"
+# The mount points exist even when the volumes are empty, and --volumes-from
+# works on a stopped container, so a failure here is real — not "nothing yet".
+OUT="$BACKUP_DIR/files/generated_files_${TIMESTAMP}.tar.gz"
+echo "==> Archiving export/scheduled-result volumes -> $OUT"
+MSYS_NO_PATHCONV=1 docker run --rm --volumes-from "$BACKEND_CONTAINER" alpine \
+  tar czf - -C / app/exports app/scheduled-results > "$OUT"
+written
+OUT=""
 
 # --- Retention -------------------------------------------------------------
 echo "==> Pruning backups older than ${RETENTION_DAYS}d"
