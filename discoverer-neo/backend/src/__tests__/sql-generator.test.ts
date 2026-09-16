@@ -189,6 +189,7 @@ function mkCalcField(
     compiledSql: null,
     compileStatus: null,
     compileReason: null,
+    compiledBinds: null,
     createdAt: NOW,
     ...overrides,
   };
@@ -918,6 +919,60 @@ describe('SQL generator', () => {
       const result = generateSql(def);
       expect(norm(result.sql)).toContain('WHERE ("AMOUNT" * 2) > :c0');
       expect(result.bindParams).toEqual({ c0: 100 });
+    });
+
+    it("binds a drawn calculation's literals — only for the SQL that names them", () => {
+      const f = salesFixture();
+      const compiled = (
+        name: string,
+        compiledSql: string,
+        compiledBinds: Record<string, string>,
+        over: Partial<MapCalculatedField> = {},
+      ) =>
+        mkCalcField({
+          name,
+          formula: '[1,1](...)',
+          sourceTokens: '[1,1](...)',
+          compiledSql,
+          compiledBinds,
+          compileStatus: 'COMPILED_UNVERIFIED',
+          ...over,
+        });
+      // Each field numbers its literals from 1 under its own prefix.
+      const estado = compiled('Estado', 'DECODE("REGION", :fa_1, :fa_2)', { fa_1: 'N', fa_2: 'Norte' });
+      const margem = compiled('Margem', 'NVL("AMOUNT", :fb_1)', { fb_1: '0' });
+      // Not drawn, so not in the SQL — Oracle refuses a bind the SQL does not name.
+      const helper = compiled('Helper', 'NVL("AMOUNT", :fc_1)', { fc_1: '9' }, { isHidden: true });
+      const def = mkDef({
+        items: [{ mapItem: mkMapItem(f.region), item: f.region, folder: f.sales }],
+        calculatedFields: [estado, margem, helper],
+        totals: [mkTotal({ mapCalculatedFieldId: margem.id })],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def);
+      expect(result.bindParams).toEqual({ fa_1: 'N', fa_2: 'Norte', fb_1: '0' });
+      expect(result.totals[0]?.bindParams).toEqual({ fb_1: '0' });
+    });
+
+    it('refuses two calculations that bind one name to different values', () => {
+      const f = salesFixture();
+      const field = (name: string, value: string) =>
+        mkCalcField({
+          name,
+          formula: '[1,1](...)',
+          sourceTokens: '[1,1](...)',
+          compiledSql: 'NVL("AMOUNT", :fa_1)',
+          compiledBinds: { fa_1: value },
+          compileStatus: 'COMPILED_UNVERIFIED',
+        });
+      const def = mkDef({
+        items: [{ mapItem: mkMapItem(f.region), item: f.region, folder: f.sales }],
+        calculatedFields: [field('One', '1'), field('Two', '2')],
+        formulaItems: f.formulaItems,
+      });
+
+      expect(() => generateSql(def)).toThrow(/two different values/);
     });
 
     it('refuses a condition on a calculated field that has never compiled', () => {

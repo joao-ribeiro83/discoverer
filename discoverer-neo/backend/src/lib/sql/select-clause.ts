@@ -8,6 +8,7 @@ import type { GenerationContext } from './context.js';
 import { makeColumnAlias } from './identifiers.js';
 import {
   calculatedFieldSql,
+  mergeBinds,
   AGGREGATE_FUNCTIONS,
   containsAggregateCall,
 } from './formula-parser.js';
@@ -32,6 +33,8 @@ export interface SelectClauseResult {
   aliasByMapItemId: globalThis.Map<string, string>;
   /** `map_calculated_fields.id` → the column alias drawn for it. */
   aliasByCalcFieldId: globalThis.Map<string, string>;
+  /** The literal binds of the calculated fields this clause drew. */
+  bindParams: Record<string, unknown>;
 }
 
 /**
@@ -96,6 +99,7 @@ export function buildSelectClause(
   const positionByMapItemId = new globalThis.Map<string, number>();
   const aliasByMapItemId = new globalThis.Map<string, string>();
   const aliasByCalcFieldId = new globalThis.Map<string, string>();
+  const bindParams: Record<string, unknown> = {};
   let hasAggregates = false;
 
   const sortedItems = [...def.items]
@@ -155,6 +159,7 @@ export function buildSelectClause(
     );
     const isAggregate = parsed.containsAggregate;
     if (isAggregate) hasAggregates = true;
+    mergeBinds(bindParams, parsed.binds);
 
     const alias = makeColumnAlias(field.name, takenAliases);
     parts.push(`${parsed.sql} AS ${alias}`);
@@ -194,5 +199,6 @@ export function buildSelectClause(
     positionByMapItemId,
     aliasByMapItemId,
     aliasByCalcFieldId,
+    bindParams,
   };
 }

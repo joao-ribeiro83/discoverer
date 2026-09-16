@@ -11,7 +11,7 @@ import {
   bracketingError,
   referencedBindNames,
 } from './security-predicates.js';
-import { calculatedFieldSql } from './formula-parser.js';
+import { calculatedFieldSql, mergeBinds } from './formula-parser.js';
 
 export interface WhereClauseResult {
   /** "WHERE ..." or empty string when there are no conditions. */
@@ -127,6 +127,7 @@ export function buildWhereClause(
         `Calculated field "${field.name}" aggregates, and an aggregate cannot appear in a WHERE clause`,
       );
     }
+    mergeBinds(bindParams, parsed.binds);
     return `(${parsed.sql})`;
   }
 

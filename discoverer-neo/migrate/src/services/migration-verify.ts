@@ -161,7 +161,7 @@ export interface VerifyOptions extends VerifyHooks {
   maxMaps?: number;
   /**
    * Write seam 2's verdict back to `compile_status` / `compile_reason` /
-   * `compiled_sql` — `dn-migrate verify --compile`.
+   * `compiled_sql` / `compiled_binds` — `dn-migrate verify --compile`.
    *
    * Off by default, so the verifier stays read-only and can be pointed at a
    * live estate without changing it. On, it is still safe to re-run: the
@@ -628,15 +628,19 @@ async function persistVerdicts(
   writes: readonly { id: string; verdict: CompileVerdict }[],
 ): Promise<void> {
   const values = writes.map(
-    (w) => sql`(${w.id}::uuid, ${w.verdict.bucket}, ${w.verdict.reason ?? null}, ${w.verdict.sql})`,
+    (w) =>
+      sql`(${w.id}::uuid, ${w.verdict.bucket}, ${w.verdict.reason ?? null}, ${w.verdict.sql}, ${
+        w.verdict.binds === undefined ? null : JSON.stringify(w.verdict.binds)
+      }::jsonb)`,
   );
   await db.execute(
     sql`UPDATE map_calculated_fields AS f
         SET compile_status = v.status,
             compile_reason = v.reason,
-            compiled_sql = v.compiled
+            compiled_sql = v.compiled,
+            compiled_binds = v.binds
         FROM (VALUES ${sql.join(values, sql`, `)})
-             AS v(id, status, reason, compiled)
+             AS v(id, status, reason, compiled, binds)
         WHERE f.id = v.id`,
   );
 }

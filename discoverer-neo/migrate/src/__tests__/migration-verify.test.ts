@@ -242,6 +242,8 @@ describe('seam 2 — formula compile rate', () => {
     expect(statements).toContain('UPDATE map_calculated_fields');
     expect(statements).toContain('compile_status');
     expect(statements).toContain('compiled_sql');
+    // The literal values the SQL's binds need, written beside it.
+    expect(statements).toContain('compiled_binds');
     // D-055: the compiled expression is derived, so the write must never reach
     // the two columns it was derived from.
     expect(statements).not.toContain('SET source_tokens');

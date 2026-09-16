@@ -32,6 +32,27 @@ describe('calculatedFieldSql', () => {
     expect(result.bareReferences).toEqual([]);
   });
 
+  it("returns a compiled field's literal binds, and none for a Neo-authored one", () => {
+    const compiled = calculatedFieldSql(
+      {
+        name: 'ESTADO',
+        formula: '[1,102](...)',
+        sourceTokens: '[1,102](...)',
+        compiledSql: 'DECODE("CDESTADO", :fab12_1, :fab12_2, :fab12_3)',
+        compileStatus: 'COMPILED_UNVERIFIED',
+        compiledBinds: { fab12_1: '1', fab12_2: 'Activo', fab12_3: 'Anulado' },
+      },
+      resolveItem,
+    );
+    expect(compiled.binds).toEqual({ fab12_1: '1', fab12_2: 'Activo', fab12_3: 'Anulado' });
+
+    const authored = calculatedFieldSql(
+      { name: 'Doubled', formula: 'AMOUNT * 2', sourceTokens: null, compiledSql: null, compileStatus: null },
+      resolveItem,
+    );
+    expect(authored.binds).toEqual({});
+  });
+
   it('accepts COMPILED the same as COMPILED_UNVERIFIED', () => {
     const result = calculatedFieldSql(
       {

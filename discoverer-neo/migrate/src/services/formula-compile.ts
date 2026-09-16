@@ -17,11 +17,12 @@
  *   FAILED               a path we do not handle. Raised by the caller when
  *                        this throws, never returned.
  *
- * **`compiled_sql` is evidence, not an execution path.** Column references are
- * emitted unqualified, because the folder alias a column needs is assigned by
- * the planner at generation time and a stored string cannot know it. The
- * runtime still generates its own SQL per query; what this column proves is
- * that the formula has a reading at all, which is the question F-02 left open.
+ * **`compiled_sql` is what the runtime executes** for a migrated field
+ * (`calculatedFieldSql` in the backend, since Phase 7.2), with `compiled_binds`
+ * holding the values of its literal binds — without them Oracle refuses the
+ * statement (ORA-01008). Column references are emitted unqualified, because the
+ * folder alias a column needs is assigned by the planner at generation time and
+ * a stored string cannot know it.
  *
  * Security (Phase 4.5): a reason is a CODE, never a formula body and never the
  * detail string, which can carry customer item labels. The partition is
@@ -56,6 +57,12 @@ export interface CompileVerdict {
   sql: string | null;
   /** Read from the tree, for BE-05's GROUP BY. Never re-derived from text. */
   containsAggregate: boolean;
+  /**
+   * The value behind each literal bind in `sql`, by bind name. The renderer
+   * writes every literal as a bind (D-054), so `sql` cannot run without them.
+   * Absent when the row did not compile.
+   */
+  binds?: Record<string, string>;
 }
 
 /** One stored row, as seam 2 reads it. */
@@ -171,7 +178,10 @@ export function compileStoredFormula(row: StoredFormula, scope: CompileScope): C
       (elementId) => scope.treeByCalcElementId.get(elementId) ?? null,
     );
 
-    const collector = createBindCollector();
+    // Named after the row, so two calculations in one statement never share a
+    // placeholder — each numbers its literals from 1. Eight characters of the
+    // id keep the name well inside Oracle's 30.
+    const collector = createBindCollector(`f${row.id.replace(/[^A-Za-z0-9]/g, '').slice(0, 8)}_`);
     const ctx: SqlRenderContext = {
       resolveItem: (elementId) => {
         const name = named('items', elementId);
@@ -199,6 +209,7 @@ export function compileStoredFormula(row: StoredFormula, scope: CompileScope): C
       bucket: 'COMPILED_UNVERIFIED',
       sql: result.sql,
       containsAggregate: result.containsAggregate,
+      binds: collector.values,
     };
   } catch (err) {
     // Expansion refuses with `Quarantined` too — CALCULATION_CYCLE,

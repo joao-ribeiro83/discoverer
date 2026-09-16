@@ -24,6 +24,7 @@ import {
   type SqlGenerationOptions,
 } from '../types/sql.js';
 import { GenerationContext } from '../lib/sql/context.js';
+import { mergeBinds } from '../lib/sql/formula-parser.js';
 import { buildSelectClause } from '../lib/sql/select-clause.js';
 import { buildFromClause } from '../lib/sql/from-clause.js';
 import { buildWhereClause } from '../lib/sql/where-clause.js';
@@ -102,6 +103,15 @@ export function generateSql(
     ? `FROM (\n${[select.sql, from, where.sql, groupBy].filter(Boolean).join('\n')}\n) ${DISTINCT_TOTALS_ALIAS}`
     : from;
   const totalsWhere = select.distinct ? '' : where.sql;
+  // A totals statement binds what it names: its own SELECT list, the WHERE it
+  // shares, and under DISTINCT the main SELECT it wraps. Oracle refuses a bind
+  // the statement does not name, so nothing else goes in.
+  const totalsBinds = (entry: (typeof totalsPlan.entries)[number]): Record<string, unknown> => {
+    const binds = { ...where.bindParams };
+    mergeBinds(binds, entry.bindParams);
+    if (select.distinct) mergeBinds(binds, select.bindParams);
+    return binds;
+  };
   const totals = totalsPlan.entries.map((entry) => ({
     breakAlias: entry.breakAlias,
     breakLabel: entry.breakLabel,
@@ -115,13 +125,17 @@ export function generateSql(
     ]
       .filter(Boolean)
       .join('\n'),
-    bindParams: { ...where.bindParams },
+    bindParams: totalsBinds(entry),
     totals: entry.totals,
   }));
 
+  // SELECT and WHERE can both carry a calculated field's literal binds.
+  const bindParams = { ...where.bindParams };
+  mergeBinds(bindParams, select.bindParams);
+
   return {
     sql,
-    bindParams: { ...where.bindParams, ...pagination.bindParams },
+    bindParams: { ...bindParams, ...pagination.bindParams },
     hasAggregates: select.hasAggregates,
     columns: select.columns,
     distinct: select.distinct,

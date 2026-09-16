@@ -2,7 +2,7 @@ import type { MapTotal } from '../../db/schema.js';
 import type { GeneratedTotal, MapDefinition } from '../../types/sql.js';
 import type { GenerationContext } from './context.js';
 import { makeColumnAlias, quoteIdentifier } from './identifiers.js';
-import { calculatedFieldSql, AGGREGATE_FUNCTIONS } from './formula-parser.js';
+import { calculatedFieldSql, mergeBinds, AGGREGATE_FUNCTIONS } from './formula-parser.js';
 import type { SelectClauseResult } from './select-clause.js';
 import type { QueryPlan } from './query-plan.js';
 
@@ -43,6 +43,8 @@ export interface TotalsPlanEntry {
   /** GROUP BY expression for an `AT_CHANGE` set; absent on the grand total. */
   groupByExpr?: string;
   totals: GeneratedTotal[];
+  /** The literal binds of the calculated fields `selectParts` totals. */
+  bindParams: Record<string, unknown>;
 }
 
 export interface TotalsPlan {
@@ -124,9 +126,13 @@ export function planTotals(
    * caller wraps this target in `total.aggFunction` same as any other
    * target once DISTINCT is in play; it does not stay unwrapped.
    */
-  function targetExpression(
-    total: MapTotal,
-  ): { sql: string; label: string; alias?: string; aggregates: boolean } | null {
+  function targetExpression(total: MapTotal): {
+    sql: string;
+    label: string;
+    alias?: string;
+    aggregates: boolean;
+    binds: Record<string, unknown>;
+  } | null {
     if (total.mapItemId) {
       const entry = mapItemById.get(total.mapItemId);
       if (!entry) return null;
@@ -138,6 +144,7 @@ export function planTotals(
         label: entry.mapItem.displayName || entry.item.name,
         alias,
         aggregates: info.containsAggregate,
+        binds: {},
       };
     }
     if (total.mapCalculatedFieldId) {
@@ -153,6 +160,8 @@ export function planTotals(
         label: field.name,
         alias,
         aggregates: parsed.containsAggregate,
+        // Under DISTINCT the target is the wrapper's column, which names no bind.
+        binds: select.distinct ? {} : parsed.binds,
       };
     }
     return null;
@@ -198,6 +207,7 @@ export function planTotals(
   for (const breakKey of breakKeys) {
     const taken = new Set<string>();
     const selectParts: string[] = [];
+    let bindParams: Record<string, unknown> = {};
     let breakAlias: string | null = null;
     let breakLabel: string | undefined;
     let breakTargetAlias: string | undefined;
@@ -292,6 +302,7 @@ export function planTotals(
         branchId: total.mapItemId ? branchOf(total.mapItemId) : null,
       });
       selectParts.push(`${expr} AS ${alias}`);
+      mergeBinds(bindParams, target.binds);
       planned.push({
         id: total.id,
         kind: total.kind,
@@ -327,6 +338,8 @@ export function planTotals(
         selectParts[index] = `NULL AS ${planned[k]!.alias}`;
         planned[k]!.aggFunction = 'SUPPRESSED';
       });
+      // Every total is NULL now, and Oracle refuses a bind the SQL no longer names.
+      bindParams = {};
       warnings.push(
         breakLabel
           ? `Subtotals by "${breakLabel}" are shown blank: this worksheet totals columns that ` +
@@ -343,6 +356,7 @@ export function planTotals(
       selectParts,
       groupByExpr,
       totals: planned,
+      bindParams,
     });
   }
 
