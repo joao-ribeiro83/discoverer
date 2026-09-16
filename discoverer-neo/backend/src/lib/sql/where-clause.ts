@@ -137,7 +137,7 @@ export function buildWhereClause(
     const { condition, item, folder, calculatedField } = entry;
     const label = item ? item.name : calculatedField.name;
     const dataType = item ? item.dataType : calculatedField.dataType;
-    const isDate = !!(dataType && /DATE|TIMESTAMP/i.test(dataType));
+    let isDate = !!(dataType && /DATE|TIMESTAMP/i.test(dataType));
     const isNumeric = !!(dataType && /NUMBER|INTEGER|FLOAT|DECIMAL/i.test(dataType));
     // Oracle's case-insensitive flag is a text-comparison setting — folding a
     // DATE or NUMBER expression through UPPER() would be a no-op at best.
@@ -199,6 +199,12 @@ export function buildWhereClause(
       const paramLabel = paramLabels.get(paramName) ?? paramName;
       const paramType = paramTypes.get(paramName);
       const provided = paramValues[paramName];
+
+      // A condition on an expression carries no data type of its own — the
+      // source never says what `TRUNC(x)` returns — and without one the value
+      // would go to Oracle as text for NLS_DATE_FORMAT to guess at. The
+      // parameter's own declared type is what says it is a date.
+      if (!isDate && !dataType && paramType === 'DATE') isDate = true;
 
       if (op === 'IN') {
         // LIST parameters expand to one bind per value when values are
