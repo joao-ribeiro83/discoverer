@@ -1030,6 +1030,46 @@ describe('SQL generator', () => {
       expect(() => generateSql(def)).toThrow(/has not compiled/);
     });
 
+    it('converts a date value when only the parameter says it is a date', () => {
+      // A condition on an expression (`TRUNC(Dt Com) <= :Dt Fim`, migrated as a
+      // hidden calculated field) has no data type of its own — the source never
+      // says what TRUNC returns — so without the parameter's own type the value
+      // would reach Oracle as text for NLS_DATE_FORMAT to guess at.
+      const f = salesFixture();
+      const truncated = mkCalcField({
+        name: 'TRUNC(Dt Com)',
+        formula: '[1,49](...)',
+        sourceTokens: '[1,49](...)',
+        compiledSql: 'TRUNC("DT_COM")',
+        compiledBinds: {},
+        compileStatus: 'COMPILED_UNVERIFIED',
+        isHidden: true,
+      });
+      const def = mkDef({
+        items: [{ mapItem: mkMapItem(f.region), item: f.region, folder: f.sales }],
+        parameters: [mkParameter({ name: 'DT_FIM', paramType: 'DATE' })],
+        calculatedFields: [truncated],
+        conditions: [
+          {
+            condition: mkCondition(f.amount, {
+              itemId: null,
+              calculatedFieldId: truncated.id,
+              operator: '<=',
+              value: null,
+              paramName: 'DT_FIM',
+              conditionType: 'PARAMETER',
+            }),
+            calculatedField: truncated,
+          },
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def, { parameterValues: { DT_FIM: '2026-01-31' } });
+      expect(norm(result.sql)).toContain(`(TRUNC("DT_COM")) <= TO_DATE(:DT_FIM, 'YYYY-MM-DD')`);
+      expect(result.bindParams).toEqual({ DT_FIM: '2026-01-31' });
+    });
+
     it('refuses a condition on a quarantined calculated field', () => {
       const f = salesFixture();
       const quarantined = mkCalcField({
