@@ -112,11 +112,8 @@ export function generateSql(
     if (select.distinct) mergeBinds(binds, select.bindParams);
     return binds;
   };
-  const totals = totalsPlan.entries.map((entry) => ({
-    breakAlias: entry.breakAlias,
-    breakLabel: entry.breakLabel,
-    breakTargetAlias: entry.breakTargetAlias,
-    sql: [
+  const totals = totalsPlan.entries.map((entry) => {
+    const totalsSql = [
       `SELECT ${entry.selectParts.join(',\n       ')}`,
       totalsFrom,
       totalsWhere,
@@ -124,14 +121,23 @@ export function generateSql(
       entry.groupByExpr ? 'ORDER BY 1' : '',
     ]
       .filter(Boolean)
-      .join('\n'),
-    bindParams: totalsBinds(entry),
-    totals: entry.totals,
-  }));
+      .join('\n');
+    const binds = totalsBinds(entry);
+    bindParametersNamedIn(totalsSql, def, options, binds);
+    return {
+      breakAlias: entry.breakAlias,
+      breakLabel: entry.breakLabel,
+      breakTargetAlias: entry.breakTargetAlias,
+      sql: totalsSql,
+      bindParams: binds,
+      totals: entry.totals,
+    };
+  });
 
   // SELECT and WHERE can both carry a calculated field's literal binds.
   const bindParams = { ...where.bindParams };
   mergeBinds(bindParams, select.bindParams);
+  bindParametersNamedIn(sql, def, options, bindParams);
 
   return {
     sql,
@@ -171,6 +177,36 @@ export function generateSql(
 }
 
 /**
+ * Bind a parameter that only a calculation names.
+ *
+ * A compiled calculation can reference a workbook parameter — Discoverer's
+ * `[8,n]`, emitted as `:DT_FIM` — that no condition filters on, and
+ * `buildWhereClause` binds only the parameters its own conditions name. The
+ * statement then reaches Oracle with that placeholder unbound (`ORA-01008`),
+ * which is where 181 of this estate's drawn calculations stood. The value is
+ * the same resolved, defaulted one the conditions use; a caller that generates
+ * SQL with no parameter values at all — the planner, the verifier — has nothing
+ * to bind and invents nothing.
+ */
+function bindParametersNamedIn(
+  sql: string,
+  def: MapDefinition,
+  options: SqlGenerationOptions,
+  bindParams: Record<string, unknown>,
+): void {
+  const provided = options.parameterValues ?? {};
+  for (const parameter of def.parameters) {
+    const name = parameter.bindName;
+    if (name in bindParams || provided[name] === undefined) continue;
+    if (!/^[A-Za-z][A-Za-z0-9_]*$/.test(name)) continue;
+    // The lookahead is what keeps `:DT_FIM` from matching `:DT_FIM_lo`.
+    if (new RegExp(`:${name}(?![A-Za-z0-9_])`, 'i').test(sql)) {
+      bindParams[name] = provided[name];
+    }
+  }
+}
+
+/**
  * The fan-trap rewrite path: one inline view per branch, joined back on the
  * master key (`legacy-analysis.md` §1.4, emitted by `renderRewrite`).
  *
@@ -194,6 +230,9 @@ function generateRewrite(
   options: SqlGenerationOptions,
 ): GeneratedSql {
   const { sql, bindParams, columns } = renderRewrite(def, plan, options);
+  // A condition on a calculated field can name a parameter no other condition
+  // does, inside a branch's WHERE — the same gap as the flat path's.
+  bindParametersNamedIn(sql, def, options, bindParams);
   // renderRewrite embeds its own ORDER BY (or none) directly into `sql` — see
   // rewrite.ts's orderByAliases — so its presence is read back from the text
   // rather than re-derived from `def`.

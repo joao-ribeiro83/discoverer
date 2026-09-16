@@ -955,6 +955,32 @@ describe('SQL generator', () => {
       expect(result.totals[0]?.bindParams).toEqual({ fb_1: '0' });
     });
 
+    it('binds a parameter that only a calculation names', () => {
+      const f = salesFixture();
+      const asOf = mkCalcField({
+        name: 'Idade',
+        formula: '[1,1](...)',
+        sourceTokens: '[1,1](...)',
+        // Discoverer's own formula wraps the parameter, so the value travels
+        // as the text it was given.
+        compiledSql: '((TO_DATE(:DT_FIM)) - ("AMOUNT"))',
+        compiledBinds: {},
+        compileStatus: 'COMPILED_UNVERIFIED',
+      });
+      const def = mkDef({
+        items: [{ mapItem: mkMapItem(f.region), item: f.region, folder: f.sales }],
+        parameters: [mkParameter({ name: 'DT_FIM', paramType: 'DATE', isRequired: true })],
+        calculatedFields: [asOf],
+        formulaItems: f.formulaItems,
+      });
+
+      // No condition names it, so the WHERE clause never binds it.
+      const result = generateSql(def, { parameterValues: { DT_FIM: '2026-01-31' } });
+      expect(result.bindParams).toEqual({ DT_FIM: '2026-01-31' });
+      // Generating with no values at all — the planner, the verifier — invents nothing.
+      expect(generateSql(def).bindParams).toEqual({});
+    });
+
     it('refuses two calculations that bind one name to different values', () => {
       const f = salesFixture();
       const field = (name: string, value: string) =>
