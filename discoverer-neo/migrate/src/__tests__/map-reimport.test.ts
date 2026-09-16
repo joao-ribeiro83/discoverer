@@ -114,6 +114,20 @@ describe('reimportMaps', () => {
     expect(rowsOf(state, 'map_items').length).not.toBe(staleCount);
   });
 
+  it('writes the calculated fields before the conditions that filter them', async () => {
+    // A condition can carry `calculatedFieldId`, so the real target rejects the
+    // insert unless that row is already there. The fake writer keeps no foreign
+    // keys, so the order is the only thing a test can hold on to.
+    const { writer, state } = await migratedTarget();
+    state.insertOrder.length = 0; // The full run that set the target up.
+
+    await reimportMaps({ source: mockExecutor(eul5Db()), writer, deps: deterministicDeps() });
+
+    const order = state.insertOrder;
+    expect(order.indexOf('map_calculated_fields')).toBeGreaterThanOrEqual(0);
+    expect(order.indexOf('map_calculated_fields')).toBeLessThan(order.indexOf('map_conditions'));
+  });
+
   it('does not touch maps outside the host business area', async () => {
     const { writer, state } = await migratedTarget();
     // A map a user built in Neo, in a real business area.
