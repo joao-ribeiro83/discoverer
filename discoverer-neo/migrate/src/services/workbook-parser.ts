@@ -1795,6 +1795,9 @@ export interface WorkbookColumn {
   axisOrder: number | null;
 }
 
+/** An EUL item element, identified the way a query item is. */
+export type WorkbookItemElement = Omit<WorkbookQueryItem, 'isCalculation' | 'axisKind' | 'axisOrder'>;
+
 /** Which of a query request's two item lists names an item. */
 export type WorkbookQueryAxisKind = 'AXIS' | 'MEASURE';
 
@@ -2362,6 +2365,12 @@ export interface ParsedWorkbookDocument {
   parameters: WorkbookParameter[];
   /** Every calculation in the workbook, across all worksheets, deduped by element id. */
   calculations: WorkbookCalculation[];
+  /**
+   * Every EUL item element (`0x00db`) in the workbook, deduped by element id.
+   * A calculation's `[6,n]` names one of these, and a sheet whose query names
+   * only calculations reaches its items through nothing else.
+   */
+  itemElements: WorkbookItemElement[];
   /** Names of registered custom functions the workbook calls. */
   functionNames: string[];
   /** Bytes read from `DOC_DOCUMENT`. */
@@ -2397,6 +2406,7 @@ function emptyDocument(format: WorkbookContentFormat, byteLength: number): Parse
     conditions: [],
     parameters: [],
     calculations: [],
+    itemElements: [],
     functionNames: [],
     byteLength,
     warnings: [],
@@ -3131,6 +3141,18 @@ function parseDisDocument(data: Buffer): ParsedWorkbookDocument {
           caseSensitive: firstFlag(element, TAG.CONDITION_CASE_SENSITIVE),
           itemRefs: numberVector(element, TAG.CONDITION_ITEM_REFS),
           parameterRefs: numberVector(element, TAG.CONDITION_PARAMETER_REFS),
+        });
+        break;
+      }
+      case CLASS.ITEM_REF: {
+        if (doc.itemElements.some((item) => item.elementId === element.id)) break;
+        doc.itemElements.push({
+          elementId: element.id,
+          itemSourceId: itemSourceId(element),
+          folderName: firstString(element, TAG.FOLDER_NAME),
+          folderLabel: firstString(element, TAG.FOLDER_LABEL),
+          itemName: firstString(element, TAG.ITEM_NAME),
+          itemLabel: firstString(element, TAG.ITEM_LABEL),
         });
         break;
       }

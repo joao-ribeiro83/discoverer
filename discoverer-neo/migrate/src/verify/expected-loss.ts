@@ -26,8 +26,20 @@
 export interface ExpectedLossAllowance {
   /** What is being counted, in the domain's words. */
   concept: string;
-  /** Target table holding it. Must be a bare identifier — it is interpolated. */
-  table: string;
+  /**
+   * Target table holding it. Must be a bare identifier — it is interpolated.
+   * null = the migration never writes this concept, so there is no row to
+   * count: the whole `sourceCount` is lost by definition and `expectedTarget`
+   * must be 0. The loss stays visible only through the concept that WOULD
+   * have held the rows, which `why` must name.
+   */
+  table: string | null;
+  /**
+   * Count only rows of a map whose workbook came from the EUL
+   * (`workbooks.source_id` set). A map somebody built by hand in Neo is not
+   * the migration's to account for. The table must be `maps` or carry `map_id`.
+   */
+  migratedMapsOnly?: boolean;
   /** Rows the source held, or null where the source figure was never measured. */
   sourceCount: number | null;
   /** Rows the target must hold. Seam 4 fails on any drift from this. */
@@ -85,6 +97,7 @@ export const EXPECTED_LOSS_ALLOWANCES: readonly ExpectedLossAllowance[] = [
   {
     concept: 'worksheets → maps',
     table: 'maps',
+    migratedMapsOnly: true,
     sourceCount: 923,
     expectedTarget: 923,
     why: 'One map per worksheet, decoded from DOC_DOCUMENT.',
@@ -93,6 +106,7 @@ export const EXPECTED_LOSS_ALLOWANCES: readonly ExpectedLossAllowance[] = [
   {
     concept: 'worksheet page setup',
     table: 'map_page_setup',
+    migratedMapsOnly: true,
     sourceCount: 923,
     expectedTarget: 923,
     why: 'One row per worksheet.',
@@ -111,6 +125,7 @@ export const EXPECTED_LOSS_ALLOWANCES: readonly ExpectedLossAllowance[] = [
   {
     concept: 'worksheet totals',
     table: 'map_totals',
+    migratedMapsOnly: true,
     sourceCount: 19639,
     expectedTarget: 19632,
     why: 'A read-only pass over DOC_DOCUMENT found 19 639 summary elements; 7 could not be attributed to a column and are dropped.',
@@ -135,6 +150,7 @@ export const EXPECTED_LOSS_ALLOWANCES: readonly ExpectedLossAllowance[] = [
   {
     concept: 'worksheet layouts',
     table: 'map_layouts',
+    migratedMapsOnly: true,
     sourceCount: 923,
     expectedTarget: 923,
     why: 'F-04, recovered in Phase 5.4: the 899-row gap was stale target data, not a code defect — POST /api/migration/reimport-maps rebuilds map_layouts unconditionally and now produces one row per migrated worksheet.',
@@ -142,10 +158,10 @@ export const EXPECTED_LOSS_ALLOWANCES: readonly ExpectedLossAllowance[] = [
   },
   {
     concept: 'items on a folder with no business area (MIG-08)',
-    table: 'items',
+    table: null,
     sourceCount: 171,
     expectedTarget: 0,
-    why: 'The owning folder has no EUL4_BA_OBJ_LINKS row (FOLDER_NO_BA), so the folder itself is never migrated and every item on it is skipped as a consequence — one cause, not 171 independent losses. A folder with no business area is not reachable through Discoverer’s own UI either, so this is a source-data gap, not a migration defect. The `items` allowance above (9 626 → 9 626) is scoped to items on migrated folders and does not include these.',
+    why: 'The owning folder has no EUL4_BA_OBJ_LINKS row (FOLDER_NO_BA), so the folder itself is never migrated and every item on it is skipped as a consequence — one cause, not 171 independent losses. A folder with no business area is not reachable through Discoverer’s own UI either, so this is a source-data gap, not a migration defect. Nothing is written for them, so there is no row to count (until 2026-09-16 this line counted the whole items table and always reported 9 626). The `items` allowance above (9 626 → 9 626) is the guard: it is scoped to items on migrated folders, so any further item this rule skips shows up there as "short by".',
     explained: true,
   },
   {
@@ -159,6 +175,7 @@ export const EXPECTED_LOSS_ALLOWANCES: readonly ExpectedLossAllowance[] = [
   {
     concept: 'conditional formats (Exceptions)',
     table: 'map_conditional_formats',
+    migratedMapsOnly: true,
     sourceCount: null,
     expectedTarget: 0,
     why: 'Decision 10. No element class in the .DIS format has been identified as conditional-format data — EUL_SCHEMA_GROUND_TRUTH.md §7.8.11 decoded the earlier candidate (0x0898) as saved parameter values instead, and the remaining unmodelled classes total 40 elements corpus-wide, too sparse to reverse-engineer. The schema and the application’s own write path (map.service.ts) are ready; migration-time population needs new binary evidence (a d4dumps-style corpus) this decoding pass does not have.',
