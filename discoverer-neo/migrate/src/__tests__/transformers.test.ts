@@ -1111,6 +1111,37 @@ describe('transformWorkbook', () => {
     );
   });
 
+  it("migrates an item only a calculation reaches, hidden, when the query names just the calculation", () => {
+    // The live "TOTALIZADORES" sheets: every column a calculation, so the
+    // query request lists no EUL item at all. Without the item the map had no
+    // folder and every `[6,n]` in it quarantined as UNRESOLVED_ELEMENT.
+    const content = buildWorkbookFixture({
+      name: 'Totais',
+      items: [
+        { folderLabel: 'Garantias', itemLabel: 'V Sol Com', sourceId: 111017 },
+        { folderLabel: 'Garantias', itemLabel: 'Nao Usado', sourceId: 111018 },
+      ],
+      calculations: [
+        { name: 'TOT SOL COM', formula: '[1,1]([6,1])', itemRefs: ['V Sol Com'], placement: 1, hidden: false },
+      ],
+      worksheets: [{ name: 'Totalizadores', columns: [{ item: 'TOT SOL COM', axisType: 1 }] }],
+    });
+    const [map] = transformWorkbook(workbook({ content }), 'EUL4');
+
+    expect(map?.items.filter((item) => item.isHidden)).toEqual([
+      expect.objectContaining({
+        itemLabel: 'V Sol Com',
+        itemSourceId: 111017,
+        isCalculation: false,
+        axisType: null,
+        // After the calculation column.
+        displayOrder: 1,
+      }),
+    ]);
+    // An item no calculation reaches stays out.
+    expect(map?.items.some((item) => item.itemLabel === 'Nao Usado')).toBe(false);
+  });
+
   it("carries a calculation's Placement and Hidden onto its calculated field", () => {
     const [map] = transformWorkbook(workbook({ content: layoutWorkbook() }), 'EUL4');
     // "Nao Usada" (Placement 0, not placed on this sheet) is offered by the
