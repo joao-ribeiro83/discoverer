@@ -41,6 +41,9 @@ import type {
 import { runMigration, TARGET_TABLE_ORDER, validateMigration } from './services/migration-runner.js';
 import type { VerifyDb } from './services/migration-verify.js';
 import { formatVerifyReport, verifyMigration } from './services/migration-verify.js';
+import { commitShaFromEnv, countChanges, runDelta } from './services/delta.js';
+import type { DeltaDb } from './services/delta.js';
+import { createDeltaDb } from './services/delta-db.js';
 
 // ---------------------------------------------------------------------------
 // Injectable dependencies
@@ -513,6 +516,7 @@ export async function commandRun(
     version: options.version,
     dryRun: options.dryRun,
     dataSourceId: options.dataSourceId,
+    commitSha: commitShaFromEnv(),
     deps: options.migrationDeps,
     onEvent,
   });
@@ -639,6 +643,68 @@ export async function commandReimportJoins(
     : EXIT_ERROR;
 }
 
+/**
+ * `delta` — apply to an already-migrated target only what changed in the
+ * source since the last recorded run (Phase 9.2, `services/delta.ts`).
+ *
+ * A real delta always ends by running the verifier, so the operator never
+ * holds a changed target that nobody checked. It publishes the formula
+ * partition (`--compile`) when a worksheet was written, because a rewritten
+ * worksheet's calculations have no compiled SQL until then.
+ *
+ * Exit code 1 when the verifier finds blockers, and also when the source lost
+ * an object the delta refused to delete: that needs a person.
+ */
+export async function commandDelta(
+  source: EulSource,
+  db: DeltaDb,
+  verify: (compile: boolean) => Promise<number>,
+  options: {
+    readOptions: ReadEulOptions;
+    version: 'auto' | EulVersion;
+    dryRun: boolean;
+    json: boolean;
+    dataSourceId?: string;
+  },
+  io: CliIO,
+): Promise<number> {
+  const result = await runDelta({
+    source,
+    db,
+    readOptions: options.readOptions,
+    version: options.version,
+    dryRun: options.dryRun,
+    dataSourceId: options.dataSourceId,
+    commitSha: commitShaFromEnv(),
+  });
+  const counts = countChanges(result.changes);
+
+  if (options.json) {
+    io.out(JSON.stringify({ ...result, counts }, null, 2));
+  } else {
+    io.out(`${result.dryRun ? 'DRY RUN — ' : ''}delta over ${result.objects} source object(s)`);
+    if (result.adopted) io.out('  baseline adopted from the target (first delta)');
+    if (result.noop) io.out('  no change since the last recorded run');
+    for (const [kind, tables] of Object.entries(counts)) {
+      for (const [table, n] of Object.entries(tables)) io.out(`${pad(`  ${kind}`)}${n} ${table}`);
+    }
+    // Named, not counted: each one is waiting for a decision.
+    for (const c of result.changes) {
+      if (c.kind === 'deleted') io.out(`  REFUSED DELETE ${c.key} — remove it in Neo if it should go`);
+      if (c.kind === 'missing') io.out(`  MISSING ${c.key} — recorded, but no longer in the target`);
+    }
+  }
+
+  const refused = result.changes.some((c) => c.kind === 'deleted' || c.kind === 'missing');
+  if (result.dryRun) return refused ? EXIT_ERROR : EXIT_OK;
+
+  const wroteMaps = result.changes.some(
+    (c) => c.table === 'maps' && (c.kind === 'added' || c.kind === 'changed'),
+  );
+  const verified = await verify(wroteMaps);
+  return verified === EXIT_OK && !refused ? EXIT_OK : EXIT_ERROR;
+}
+
 export async function commandVerify(
   db: VerifyDb,
   options: { json: boolean; sampleLimit?: number; compile?: boolean },
@@ -707,7 +773,7 @@ function parseArgs(argv: string[]) {
     .option('data-source-id', {
       type: 'string',
       describe:
-        'Target data_sources UUID to stamp on every migrated folder (run). Without it, no map can execute.',
+        'Target data_sources UUID to stamp on every migrated folder (run, delta). Without it, no map can execute.',
     })
     .option('samples', {
       type: 'number',
@@ -727,10 +793,14 @@ function parseArgs(argv: string[]) {
       'Run the six seam checks against an already-migrated --target (D-070); add --compile to publish the formula partition',
     )
     .command(
+      'delta',
+      'Apply only what changed in the EUL since the last recorded run to an already-migrated --target, then verify',
+    )
+    .command(
       'reimport-joins',
       'Re-read KEY_CONS and rewrite --target joins and their predicates (Phase 3.2)',
     )
-    .demandCommand(1, 'Specify a command: analyze, export, validate, run, or verify')
+    .demandCommand(1, 'Specify a command: analyze, export, validate, run, delta, or verify')
     .strict()
     .exitProcess(false)
     // Throw parse/validation failures instead of printing to the real console,
@@ -921,6 +991,23 @@ export async function runCli(argv: string[], deps: CliDeps = {}): Promise<number
             version: versionOverride === 'auto' ? undefined : versionOverride,
             dryRun: parsed.dryRun === true,
             json: parsed.json === true,
+          },
+          io,
+        );
+      }
+      case 'delta': {
+        const target = createTargetDb(await loadTargetConfig(targetArg, readFile));
+        writerCleanup.push(target.close);
+        return await commandDelta(
+          source,
+          createDeltaDb(target.db),
+          (compile) => commandVerify(target.db, { json: parsed.json === true, compile }, io),
+          {
+            readOptions: options,
+            version: versionOverride,
+            dryRun: parsed.dryRun === true,
+            json: parsed.json === true,
+            dataSourceId: runOptions.dataSourceId,
           },
           io,
         );

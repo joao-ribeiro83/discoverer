@@ -46,3 +46,30 @@ CREATE INDEX IF NOT EXISTS migration_log_run_idx ON migration_log (run_id);
 `;
 
 export type NewMigrationLogRow = typeof migrationLog.$inferInsert;
+
+/**
+ * `migration_objects` — the baseline an incremental delta diffs against: one
+ * row per migrated source object, naming the target row it became and a hash
+ * of the rows it was written as (`delta.ts`). Owned by the migrator for the
+ * same reason as `migration_log`.
+ */
+export const migrationObjects = pgTable('migration_objects', {
+  /** Source key, e.g. `folder:200`, `map:<DOC_ID>:<worksheet GUID>`. */
+  key: text('key').primaryKey(),
+  targetId: uuid('target_id').notNull(),
+  hash: varchar('hash', { length: 64 }).notNull(),
+  /** The `migration_log.run_id` that last wrote this row. */
+  runId: uuid('run_id').notNull(),
+  recordedAt: timestamp('recorded_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** DDL for `migration_objects`, run by the delta's `ensureSchema()`. */
+export const MIGRATION_OBJECTS_DDL = `
+CREATE TABLE IF NOT EXISTS migration_objects (
+  key text PRIMARY KEY,
+  target_id uuid NOT NULL,
+  hash varchar(64) NOT NULL,
+  run_id uuid NOT NULL,
+  recorded_at timestamptz NOT NULL DEFAULT now()
+);
+`;

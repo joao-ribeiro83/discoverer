@@ -180,6 +180,8 @@ function chooseOwner(
 interface EulIdentity {
   schemaVersion: string;
   discVersion: string | null;
+  minCodeVersion?: string;
+  eulTimestamp?: string;
 }
 
 async function readEulIdentity(
@@ -212,7 +214,12 @@ async function readEulIdentity(
     const schemaVersion = row.VER_RELEASE ? dbString(row.VER_RELEASE) : 'unknown';
     // The EUL stamps its own release, not the client build that wrote it —
     // the Discoverer release is derived from it (describeDiscovererRelease).
-    return { schemaVersion, discVersion: null };
+    return {
+      schemaVersion,
+      discVersion: null,
+      minCodeVersion: row.VER_MIN_CODE_VER ? dbString(row.VER_MIN_CODE_VER) : undefined,
+      eulTimestamp: row.VER_EUL_TIMESTAMP ? dbString(row.VER_EUL_TIMESTAMP) : undefined,
+    };
   } catch (err) {
     if (isTableNotFoundError(err)) {
       warnings.push(
@@ -341,6 +348,8 @@ export async function detectEulVersionFromExecutor(
     prefix,
     discovererVersion,
     schemaVersion: identity.schemaVersion,
+    minCodeVersion: identity.minCodeVersion,
+    eulTimestamp: identity.eulTimestamp,
     tableNames: versionTables,
     owner,
     supported,

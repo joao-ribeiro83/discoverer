@@ -119,7 +119,27 @@ export interface RunMigrationOptions {
    */
   dataSourceId?: string;
   onEvent?: (event: MigrationEvent) => void;
+  /**
+   * Receives the complete plan before anything is written — on a dry run too.
+   * The incremental delta (`delta.ts`) replays the pipeline this way and diffs
+   * the result, so it can never drift from what a full run would write.
+   */
+  onPlan?: (plan: MigrationPlan) => void;
+  /** The migrating commit, recorded with the source state (D-078). */
+  commitSha?: string;
   deps?: Partial<MigrationRunnerDeps>;
+}
+
+/** Everything a run would insert, and which source object each top-level row came from. */
+export interface MigrationPlan {
+  /** Rows per table, in insert order. */
+  tables: Array<[TargetTable, Record<string, unknown>[]]>;
+  /**
+   * Planned row id → a key naming its source object, stable across runs
+   * (`folder:200`, `map:<DOC_ID>:<worksheet GUID>`). Child rows — a map's
+   * columns, a join's predicates — have no key; they belong to their parent.
+   */
+  keyById: Map<string, string>;
 }
 
 export interface SkipRecord {
@@ -346,6 +366,31 @@ export function describeAlreadyMigrated(email: string): string {
   );
 }
 
+/** Source key of the migration's own service account. */
+export const SERVICE_USER_KEY = 'user:#service';
+/** Source key of the auto-created business area that hosts workbook maps. */
+export const HOST_BA_KEY = 'ba:#host';
+
+/**
+ * A worksheet's source key. The GUID survives a rename and a reorder; the index
+ * is the fallback for the rare worksheet the parser found no GUID for.
+ */
+export function mapKey(docSourceId: number, guid: string | null, index: number | null): string {
+  return `map:${docSourceId}:${guid ?? `#${index ?? '?'}`}`;
+}
+
+/** The `VERSIONS` row and commit a run records, so it can be reproduced (D-078). */
+export function sourceStateDetail(version: EulVersionInfo, commitSha: string | undefined) {
+  return {
+    eulVersion: version.version,
+    owner: version.owner ?? null,
+    release: version.schemaVersion,
+    minCodeVersion: version.minCodeVersion ?? null,
+    eulTimestamp: version.eulTimestamp ?? null,
+    commitSha: commitSha ?? 'unknown',
+  };
+}
+
 /** Case-insensitive username key. */
 function ukey(username: string): string {
   return username.trim().toUpperCase();
@@ -429,12 +474,14 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     phase: string,
     message: string,
     sourceId?: number,
+    detail?: unknown,
   ): Promise<void> => {
     options.onEvent?.({ type: 'log', level, phase, message });
     if (!dryRun && runId) {
-      await writer.log({ runId, level, phase, message, sourceId: sourceId ?? null });
+      await writer.log({ runId, level, phase, message, sourceId: sourceId ?? null, detail });
     }
   };
+  const keyById = new Map<string, string>();
   const progress = (phase: string, current: number, total: number): void => {
     options.onEvent?.({ type: 'progress', level: 'INFO', phase, message: `${current}/${total}`, current, total });
   };
@@ -488,6 +535,13 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     );
   }
   await emit('INFO', 'read', `Source is ${version.version} (Discoverer ${version.discovererVersion}).`);
+  await emit(
+    'INFO',
+    'source-state',
+    `Source VERSIONS ${version.schemaVersion}, migrating commit ${options.commitSha ?? 'unknown'}.`,
+    undefined,
+    sourceStateDetail(version, options.commitSha),
+  );
 
   const sourceValidation = validateEulData(eul);
   for (const issue of sourceValidation.issues) {
@@ -507,6 +561,7 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
 
   // --- 1. users -------------------------------------------------------------
   const migrationUserId = deps.genId();
+  keyById.set(migrationUserId, SERVICE_USER_KEY);
   usedEmails.add(migrationEmail.toLowerCase());
 
   const userRows: Record<string, unknown>[] = [
@@ -542,6 +597,7 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     usedEmails.add(email.toLowerCase());
     const id = deps.genId();
     userIdByUsername.set(key, id);
+    keyById.set(id, `user:${key}`);
 
     // Provision a temporary credential for real people. Roles never get one —
     // they exist to hold grants, not to be signed into.
@@ -585,6 +641,7 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     collect(t.warnings);
     const id = deps.genId();
     baIdBySource.set(t.sourceId, id);
+    keyById.set(id, `ba:${t.sourceId}`);
     baRows.push({
       id,
       name: uniquify(t.name, usedBaNames),
@@ -602,6 +659,7 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
   let syntheticBusinessAreas = 0;
   if (eul.data.workbooks.length > 0) {
     workbookBaId = deps.genId();
+    keyById.set(workbookBaId, HOST_BA_KEY);
     syntheticBusinessAreas = 1;
     baRows.push({
       id: workbookBaId,
@@ -631,6 +689,7 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     }
     const id = deps.genId();
     folderIdBySource.set(t.sourceId, id);
+    keyById.set(id, `folder:${t.sourceId}`);
     if (t.businessAreaSourceId !== null) folderBaSource.set(t.sourceId, t.businessAreaSourceId);
     folderRows.push({
       id,
@@ -725,6 +784,7 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     }
     const id = deps.genId();
     itemIdBySource.set(t.sourceId, id);
+    keyById.set(id, `item:${t.sourceId}`);
     itemFolderUuid.set(t.sourceId, folderId);
     const row: Record<string, unknown> = {
       id,
@@ -782,6 +842,7 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     collect(t.warnings);
     const id = deps.genId();
     itemClassIdBySource.set(t.sourceId, id);
+    keyById.set(id, `item_class:${t.sourceId}`);
     const resolveItem = (sourceId: number | null): string | null => {
       if (sourceId === null) return null;
       const uuid = itemIdBySource.get(sourceId);
@@ -896,6 +957,7 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     // two-folder joins, each with a third of the condition. The components now
     // live in `join_predicates` and the join stays one join.
     const joinId = deps.genId();
+    keyById.set(joinId, `join:${t.sourceId}`);
     joinRows.push({
       id: joinId,
       name: t.name,
@@ -965,6 +1027,7 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     }
     const id = deps.genId();
     hierarchyIdBySource.set(t.sourceId, id);
+    keyById.set(id, `hierarchy:${t.sourceId}`);
     hierarchyRows.push({
       id,
       name: t.name,
@@ -1014,8 +1077,10 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
   for (const eulFn of eul.data.customFunctions) {
     const t = transformCustomFunction(eulFn, version.version);
     collect(t.warnings);
+    const functionId = deps.genId();
+    keyById.set(functionId, `function:${t.sourceId}`);
     functionRows.push({
-      id: deps.genId(),
+      id: functionId,
       name: t.name,
       description: t.description,
       functionType: t.functionType,
@@ -1069,6 +1134,7 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
 
     // One `workbooks` row per source workbook; every map below points at it.
     const workbookId = deps.genId();
+    keyById.set(workbookId, `workbook:${eulWb.sourceId}`);
     const [head] = worksheetMaps;
     if (head) {
       workbookRows.push(
@@ -1085,6 +1151,7 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
       collect(t.warnings);
       if (!workbookBaId) continue; // unreachable (set when workbooks exist), defensive
       const mapId = deps.genId();
+      keyById.set(mapId, mapKey(eulWb.sourceId, t.layout.worksheetGuid, t.layout.worksheetIndex));
       const owner = resolveUser(t.ownerUsername) ?? migrationUserId;
       mapRows.push({
         workbookId,
@@ -1406,8 +1473,10 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     const dedupeKey = `${userId}|${baId}|${t.permissionLevel}`;
     if (seenGrants.has(dedupeKey)) continue;
     seenGrants.add(dedupeKey);
+    const grantId = deps.genId();
+    keyById.set(grantId, `grant:${ukey(t.granteeUsername)}|${baSource}|${t.permissionLevel}`);
     grantRows.push({
-      id: deps.genId(),
+      id: grantId,
       userId,
       businessAreaId: baId,
       permissionLevel: t.permissionLevel,
@@ -1442,6 +1511,8 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     ['map_page_setup', mapPageSetupRows],
     ['user_business_area_grants', grantRows],
   ];
+
+  options.onPlan?.({ tables: plan, keyById });
 
   let validation: MigrationValidationResult | undefined;
 
