@@ -232,7 +232,23 @@ describe('SQL emission', () => {
     const result = renderSql(tree('[1,95]([6,1],[5,2,"200"])'), ctx({ bind: binder.bind }));
     if (!result.ok) throw new Error('expected a render');
     expect(result.sql).toBe('(("T1"."COL_1") - (:v1))');
+    // As a number: bound as text, Oracle types a CASE branch CHAR (ORA-00932).
+    expect(binder.values).toEqual({ v1: 200 });
+  });
+
+  it('keeps a text literal that looks numeric text, and refuses a number that is not one', () => {
+    const binder = createBindCollector();
+    const result = renderSql(tree('[1,68]([6,1],[5,1,"200"])'), ctx({ bind: binder.bind }));
+    if (!result.ok) throw new Error('expected a render');
     expect(binder.values).toEqual({ v1: '200' });
+
+    // Each would bind as a different number, or as none: '' is 0, 1e5 is 100000.
+    for (const payload of ['', '1e5', '0x10', '1234567890123456']) {
+      expect(renderSql(tree(`[1,95]([6,1],[5,2,"${payload}"])`), ctx())).toMatchObject({
+        ok: false,
+        reason: 'UNKNOWN_LITERAL_KIND',
+      });
+    }
   });
 
   it('rejects an identifier containing a quote rather than escaping it', () => {

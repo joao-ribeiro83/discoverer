@@ -62,7 +62,7 @@ export interface CompileVerdict {
    * writes every literal as a bind (D-054), so `sql` cannot run without them.
    * Absent when the row did not compile.
    */
-  binds?: Record<string, string>;
+  binds?: Record<string, string | number>;
 }
 
 /** One stored row, as seam 2 reads it. */

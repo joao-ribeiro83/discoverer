@@ -77,7 +77,8 @@ describe('compileStoredFormula', () => {
 
     expect(verdict.bucket).toBe('COMPILED_UNVERIFIED');
     expect(verdict.sql).toContain(':f1a2b3c4d_1');
-    expect(verdict.binds).toEqual({ f1a2b3c4d_1: '100' });
+    // A `[5,2]` number stays a number, so Oracle binds it as NUMBER.
+    expect(verdict.binds).toEqual({ f1a2b3c4d_1: 100 });
   });
 
   it('reads containsAggregate off the tree, for BE-05', () => {
