@@ -183,7 +183,7 @@ const NATURAL_KEY: Partial<Record<TargetTable, readonly string[]>> = {
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const NUMERIC = /^-?\d+(\.\d+)?$/;
 
-interface Unit {
+export interface Unit {
   key: string;
   table: TargetTable;
   row: Row;
@@ -219,7 +219,7 @@ function substitute(value: unknown, sub: (s: string) => string): unknown {
   return value;
 }
 
-type Columns = Map<TargetTable, string[]>;
+export type Columns = Map<TargetTable, string[]>;
 
 /** The columns the migration writes, per table — the only ones a hash may look at. */
 function columnsOf(plan: MigrationPlan): Columns {
@@ -241,28 +241,45 @@ function rowText(table: TargetTable, row: Row, columns: Columns, sub: (s: string
  * Hash one object with its children. An id pointing outside the object becomes
  * the key of what it names; an id pointing at a sibling child (a total naming a
  * column) becomes a name derived from that sibling's own content, since child
- * rows have no key of their own.
+ * rows have no key of their own. An id that names no row at all — a condition's
+ * `groupId`, minted fresh on every run — becomes a token numbered by first use,
+ * so only which rows share it counts.
  */
 export function unitHash(unit: Unit, columns: Columns, keyOf: (id: string) => string | undefined): string {
+  return sha(unitLines(unit, columns, keyOf).join('\n'));
+}
+
+function unitLines(unit: Unit, columns: Columns, keyOf: (id: string) => string | undefined): string[] {
   const selfId = String(unit.row.id);
   const rows: Array<[TargetTable, Row]> = [[unit.table, unit.row], ...unit.children];
   const local = new Set(rows.flatMap(([, r]) => (typeof r.id === 'string' ? [r.id] : [])));
-  const outside = (s: string): string => (UUID.test(s) ? (keyOf(s) ?? s) : s);
+  const known = (s: string): string | undefined => (UUID.test(s) ? keyOf(s) : undefined);
 
-  const blanked = rows.map(([t, r]) => rowText(t, r, columns, (s) => (local.has(s) ? '@local' : outside(s))));
+  const blanked = rows
+    .map(([t, r], i) => ({
+      i,
+      text: rowText(t, r, columns, (s) => (local.has(s) ? '@local' : (known(s) ?? (UUID.test(s) ? '@token' : s)))),
+    }))
+    .sort((a, b) => (a.text < b.text ? -1 : a.text > b.text ? 1 : 0));
+
   const seen = new Map<string, number>();
   const localName = new Map<string, string>();
-  rows.forEach(([, r], i) => {
-    const text = blanked[i] ?? '';
+  for (const { i, text } of blanked) {
     const n = seen.get(text) ?? 0;
     seen.set(text, n + 1);
-    if (typeof r.id === 'string') localName.set(r.id, `@${sha(text).slice(0, 16)}#${n}`);
-  });
+    const id = rows[i]?.[1].id;
+    if (typeof id === 'string') localName.set(id, `@${sha(text).slice(0, 16)}#${n}`);
+  }
 
-  const lines = rows.map(([t, r]) =>
-    rowText(t, r, columns, (s) => (s === selfId ? '@self' : (localName.get(s) ?? outside(s)))),
-  );
-  return sha(lines.sort().join('\n'));
+  const tokens = new Map<string, string>();
+  const name = (s: string): string => {
+    if (s === selfId) return '@self';
+    const found = localName.get(s) ?? known(s);
+    if (found !== undefined || !UUID.test(s)) return found ?? s;
+    if (!tokens.has(s)) tokens.set(s, `@token${tokens.size}`);
+    return tokens.get(s) as string;
+  };
+  return blanked.map(({ i }) => rowText(rows[i]![0], rows[i]![1], columns, name)).sort();
 }
 
 /** Group rows into objects. Rows with no key (target rows Neo authored) are left out. */

@@ -9,7 +9,7 @@ import { describe, expect, it } from '@jest/globals';
 
 import type { TargetTable } from '../db/schema.js';
 import { commandDelta, EXIT_ERROR, EXIT_OK } from '../cli.js';
-import { DeltaRefusedError, runDelta } from '../services/delta.js';
+import { DeltaRefusedError, runDelta, unitHash } from '../services/delta.js';
 import type { BaselineEntry, DeltaDb, DeltaTx } from '../services/delta.js';
 import { MigrationRunError, runMigration } from '../services/migration-runner.js';
 import { createFakeWriter } from '../testing/fake-writer.js';
@@ -315,5 +315,31 @@ describe('commandDelta', () => {
     expect(verified).toBe(false);
     expect(code).toBe(EXIT_OK);
     expect(out.lines).toContain('  no change since the last recorded run');
+  });
+});
+
+describe('unitHash', () => {
+  // A condition group id is minted per run: only which rows share it may count.
+  const columns = new Map<TargetTable, string[]>([
+    ['maps', ['name']],
+    ['map_conditions', ['groupId', 'mapId', 'operator']],
+  ]);
+  const unit = (groups: [string, string, string]) => ({
+    key: 'map:1:#0',
+    table: 'maps' as const,
+    row: { id: 'aaaaaaaa-0000-4000-8000-000000000000', name: 'Sheet 1' },
+    children: groups.map((groupId, i): ['map_conditions', Row] => [
+      'map_conditions',
+      { id: `cccccccc-0000-4000-8000-00000000000${i}`, mapId: 'aaaaaaaa-0000-4000-8000-000000000000', operator: ['=', '>', '<'][i], groupId },
+    ]),
+  });
+  const g1 = '11111111-1111-4111-8111-111111111111';
+  const g2 = '22222222-2222-4222-8222-222222222222';
+  const g3 = '33333333-3333-4333-8333-333333333333';
+  const none = () => undefined;
+
+  it('ignores the value of a per-run token but not how rows share it', () => {
+    expect(unitHash(unit([g1, g1, g2]), columns, none)).toBe(unitHash(unit([g3, g3, g1]), columns, none));
+    expect(unitHash(unit([g1, g1, g2]), columns, none)).not.toBe(unitHash(unit([g1, g2, g2]), columns, none));
   });
 });
