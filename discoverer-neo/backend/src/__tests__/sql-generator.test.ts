@@ -535,6 +535,36 @@ describe('SQL generator', () => {
 
       expect(() => generateSql(def)).toThrow('The map selects no columns');
     });
+
+    it('draws a compiled calculation over a folder no other item touches (GD_M.M89_V04)', () => {
+      // A "TOTALIZADORES" sheet names no item, only a calculation over one —
+      // migrated as a hidden map_item purely so the map has a folder to
+      // query (reachedByCalculation). The calculation's SQL is pre-compiled
+      // trusted text, so nothing re-resolves it by name, and a hidden item's
+      // folder was only ever *registered*, not *aliased* — so without this,
+      // the folder never joins the query and the map refuses with
+      // "The query references no folders".
+      const f = salesFixture();
+      const doubled = mkCalcField({
+        name: 'Doubled',
+        formula: 'Amount * 2',
+        sourceTokens: '[1,1]([6,1](...))',
+        compiledSql: '("AMOUNT") * 2',
+        compileStatus: 'COMPILED_UNVERIFIED',
+      });
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.amount, { isHidden: true }), item: f.amount, folder: f.sales },
+        ],
+        calculatedFields: [doubled],
+        formulaItems: f.formulaItems,
+      });
+
+      expect(() => generateSql(def)).not.toThrow();
+      const result = generateSql(def);
+      expect(norm(result.sql)).toContain('FROM');
+      expect(norm(result.sql)).toContain('AMOUNT');
+    });
   });
 
   describe('joins', () => {
@@ -1070,6 +1100,47 @@ describe('SQL generator', () => {
       expect(result.bindParams).toEqual({ DT_FIM: '2026-01-31' });
     });
 
+    it('does not case-fold a date value known only through the parameter (M61_V10)', () => {
+      // Same expression condition as above, but case-insensitive. Discoverer's
+      // own case-insensitive flag is a text setting; wrapping a date compare in
+      // UPPER() forces both sides through NLS_DATE_FORMAT and compares text —
+      // "RR.MM.DD" against "31-MAR-2026" — which is silently wrong, not an error.
+      const f = salesFixture();
+      const truncated = mkCalcField({
+        name: 'TRUNC(Dt Com)',
+        formula: '[1,49](...)',
+        sourceTokens: '[1,49](...)',
+        compiledSql: 'TRUNC("DT_COM")',
+        compiledBinds: {},
+        compileStatus: 'COMPILED_UNVERIFIED',
+        isHidden: true,
+      });
+      const def = mkDef({
+        items: [{ mapItem: mkMapItem(f.region), item: f.region, folder: f.sales }],
+        parameters: [mkParameter({ name: 'DT_FIM', paramType: 'DATE' })],
+        calculatedFields: [truncated],
+        conditions: [
+          {
+            condition: mkCondition(f.amount, {
+              itemId: null,
+              calculatedFieldId: truncated.id,
+              operator: '<=',
+              value: null,
+              paramName: 'DT_FIM',
+              conditionType: 'PARAMETER',
+              caseSensitive: false,
+            }),
+            calculatedField: truncated,
+          },
+        ],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def, { parameterValues: { DT_FIM: '2026-01-31' } });
+      expect(result.sql).not.toContain('UPPER(');
+      expect(norm(result.sql)).toContain(`(TRUNC("DT_COM")) <= TO_DATE(:DT_FIM, 'YYYY-MM-DD')`);
+    });
+
     it('refuses a condition on a quarantined calculated field', () => {
       const f = salesFixture();
       const quarantined = mkCalcField({
@@ -1315,6 +1386,41 @@ describe('SQL generator', () => {
           {
             condition: mkCondition(f.region, {
               operator: 'IN',
+              conditionType: 'PARAMETER',
+              paramName: 'p_regions',
+            }),
+            item: f.region,
+            folder: f.sales,
+          },
+        ],
+        parameters: [mkParameter({ name: 'p_regions', paramType: 'LIST' })],
+        formulaItems: f.formulaItems,
+      });
+
+      const result = generateSql(def, {
+        parameterValues: { p_regions: ['EMEA', 'APAC'] },
+      });
+      expect(norm(result.sql)).toContain('IN (:p_regions_0, :p_regions_1)');
+      expect(result.bindParams).toEqual({
+        p_regions_0: 'EMEA',
+        p_regions_1: 'APAC',
+      });
+    });
+
+    it('expands a LIST parameter into IN binds even when the condition is stored as "="', () => {
+      // Discoverer stores this condition's operator as "=" regardless of how
+      // many values the bound parameter carries — M61_V10's CDRAMO condition
+      // does this with 8 values. Binding the whole list under one "=" bind
+      // makes Oracle compare the column against one joined string.
+      const f = salesFixture();
+      const def = mkDef({
+        items: [
+          { mapItem: mkMapItem(f.region), item: f.region, folder: f.sales },
+        ],
+        conditions: [
+          {
+            condition: mkCondition(f.region, {
+              operator: '=',
               conditionType: 'PARAMETER',
               paramName: 'p_regions',
             }),
