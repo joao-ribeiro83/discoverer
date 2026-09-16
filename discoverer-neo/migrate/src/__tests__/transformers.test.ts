@@ -901,22 +901,68 @@ describe('transformWorkbook', () => {
     expect(codes(map?.warnings ?? [])).not.toContain('CONDITION_OPERATOR_UNMAPPED');
   });
 
-  it('warns that conditions are workbook-wide when there are several worksheets', () => {
+  it('gives each worksheet only the conditions and parameters its query applies', () => {
     const content = buildWorkbookFixture({
       name: 'WB',
-      items: [{ itemLabel: 'A' }],
-      conditions: [{ sql: 'A = 1', operatorCode: 81, item: 'A', literals: ['1'] }],
+      items: [
+        { folderLabel: 'F1', itemLabel: 'A' },
+        { folderLabel: 'F2', itemLabel: 'B' },
+      ],
+      parameters: [{ name: 'PA' }, { name: 'PB' }, { name: 'PX' }],
+      conditions: [
+        { sql: 'A = :PA', operatorCode: 81, item: 'A', parameter: 'PA' },
+        { sql: 'B = :PB', operatorCode: 81, item: 'B', parameter: 'PB' },
+        // Named by no worksheet's query: Discoverer never applied it.
+        { sql: 'A = :PX', operatorCode: 81, item: 'A', parameter: 'PX' },
+      ],
       worksheets: [
-        { name: 'One', columns: [{ itemLabel: 'A' }] },
-        { name: 'Two', columns: [{ itemLabel: 'A' }] },
+        { name: 'One', columns: [{ item: 'A' }], conditions: [0] },
+        { name: 'Two', columns: [{ item: 'B' }], conditions: [1] },
       ],
     });
-    const maps = transformWorkbook(workbook({ content }), 'EUL4');
-    expect(maps).toHaveLength(2);
-    for (const map of maps) {
-      expect(codes(map.warnings)).toContain('CONDITIONS_WORKBOOK_WIDE');
-      expect(map.conditions).toHaveLength(1);
-    }
+    const [one, two] = transformWorkbook(workbook({ content }), 'EUL4');
+    expect(one?.conditions.map((c) => c.sourceText)).toEqual(['A = :PA']);
+    expect(two?.conditions.map((c) => c.sourceText)).toEqual(['B = :PB']);
+    expect(one?.parameters.map((p) => p.name)).toEqual(['PA']);
+    expect(two?.parameters.map((p) => p.name)).toEqual(['PB']);
+    // Said once per workbook, not once per map.
+    expect(codes(one?.warnings ?? [])).toContain('CONDITIONS_NOT_APPLIED');
+    expect(codes(two?.warnings ?? [])).not.toContain('CONDITIONS_NOT_APPLIED');
+  });
+
+  it('migrates only the calculations a worksheet uses, and what they reference', () => {
+    // Elements: 3 the item, 4 the condition, 5-8 the calculations — all in the
+    // shared section, which the first worksheet's range starts with.
+    const content = buildWorkbookFixture({
+      items: [{ folderLabel: 'Vendas', itemLabel: 'Valor' }],
+      conditions: [{ sql: 'Teste = 1', tokens: '[1,81]([6,7],[5,2,"1"])' }],
+      calculations: [
+        { name: 'Base', formula: '[1,1]([6,3])' },
+        // The queries name Total, and Total names Base.
+        { name: 'Total', formula: '[1,94]([6,5],[5,2,"1"])' },
+        { name: 'Teste', formula: '[1,1]([6,3])' },
+        // Offered by the section, used by nothing.
+        { name: 'Sobra', formula: '[1,1]([6,3])' },
+      ],
+      worksheets: [
+        { name: 'One', columns: [{ item: 'Valor' }, { item: 'Total', axisType: 1 }] },
+        // Names Total from outside its section, so the parser reads it again.
+        { name: 'Two', columns: [{ item: 'Total', axisType: 1 }], conditions: [] },
+      ],
+    });
+    const [one, two] = transformWorkbook(workbook({ content }), 'EUL4');
+    // Only a calculation the query names is a column. Discoverer writes the
+    // rest into the expression that uses them: Base into Total, Teste into the
+    // WHERE.
+    expect(one?.calculatedFields.map((c) => [c.name, c.isHidden])).toEqual([
+      ['Base', true],
+      ['Total', false],
+      ['Teste', true],
+    ]);
+    expect(two?.calculatedFields.map((c) => [c.name, c.isHidden])).toEqual([
+      ['Total', false],
+      ['Base', true],
+    ]);
   });
 
   it('falls back to DOC_CREATED_BY when there is no workbook owner (EUL4)', () => {
@@ -975,7 +1021,7 @@ describe('transformWorkbook', () => {
             { item: 'Ano', axisType: 2 },
             { item: 'Valor', axisType: 1 },
           ],
-          hiddenItems: ['Custo'],
+          hiddenItems: ['Custo', { item: 'Margem', axis: 'MEASURE' }],
         },
       ],
     });
@@ -1005,7 +1051,8 @@ describe('transformWorkbook', () => {
 
   it('migrates an item the query names but no column displays, as hidden', () => {
     const [map] = transformWorkbook(workbook({ content: layoutWorkbook() }), 'EUL4');
-    expect(map?.items).toHaveLength(4);
+    // Custo, then the calculation Margem: axis items before measures.
+    expect(map?.items).toHaveLength(5);
     expect(map?.items[3]).toEqual(
       expect.objectContaining({
         itemLabel: 'Custo',
@@ -1024,11 +1071,10 @@ describe('transformWorkbook', () => {
 
   it("carries a calculation's Placement and Hidden onto its calculated field", () => {
     const [map] = transformWorkbook(workbook({ content: layoutWorkbook() }), 'EUL4');
+    // "Nao Usada" (Placement 0, not placed on this sheet) is offered by the
+    // section but named by no query, so it does not migrate.
     expect(map?.calculatedFields).toEqual([
       expect.objectContaining({ name: 'Margem', axisType: 'MEASURE', isHidden: false }),
-      // Placement 0 is "not placed on this sheet", which `isHidden` records —
-      // it is not a third axis.
-      expect.objectContaining({ name: 'Nao Usada', axisType: null, isHidden: true }),
     ]);
   });
 

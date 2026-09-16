@@ -614,6 +614,15 @@ export function inferParameterType(
 }
 
 /**
+ * Element ids a token string cites as `[6,n]` (an item or a calculation) or
+ * `[8,n]` (a parameter).
+ */
+function tokenRefs(tokens: string | null, kind: 6 | 8): number[] {
+  const pattern = kind === 6 ? /\[6,(\d+)\]/g : /\[8,(\d+)\]/g;
+  return [...(tokens ?? '').matchAll(pattern)].map((match) => Number(match[1]));
+}
+
+/**
  * A calculation's `Placement` (`0x00e2`) as a Neo axis.
  *
  * `1` is a measure and `2` an axis — the observed values, **[DUMP]**-matched
@@ -871,11 +880,9 @@ export function transformWorkbook(
     ];
   }
 
-  // Conditions, parameters and calculations are stored once per workbook, and
-  // nothing in a worksheet's own section of the body says which worksheet
-  // activates which. They are therefore attached to every map the workbook
-  // produces — dropping them would lose real filters, and a multi-worksheet
-  // workbook gets an explicit warning to review them.
+  // Conditions and parameters are stored once per workbook; each worksheet's
+  // query request names the conditions it applies, so each map takes only its
+  // own — see "what this worksheet uses" below.
   //
   // The prompt is what its author typed; a bind variable has to be an Oracle
   // identifier. Both are derived once per workbook so that every map the
@@ -908,15 +915,23 @@ export function transformWorkbook(
   const pageSetup = document.pageSetup ? buildPageSetup(document.pageSetup) : null;
   const joinsByElement = new globalThis.Map(document.joins.map((join) => [join.elementId, join]));
 
-  return document.worksheets.map((worksheet) => {
+  // A condition no worksheet's query names is one Discoverer never applied —
+  // 1 152 of the source's 3 427. Only countable when every layout decoded.
+  const appliedAnywhere = new Set(
+    document.worksheets.flatMap((sheet) => sheet.queries.flatMap((query) => query.filterRefs)),
+  );
+  const unappliedConditions = document.worksheets.every((sheet) => sheet.layoutDecoded)
+    ? document.conditions.filter((condition) => !appliedAnywhere.has(condition.elementId)).length
+    : 0;
+
+  return document.worksheets.map((worksheet, sheetIndex) => {
     const warnings: TransformWarning[] = [];
 
     // A condition can name a prompt the workbook never declared — Discoverer
     // resolved those case-insensitively and did not always write the
     // declaration back. It still needs a bind name, and one that cannot
     // collide with a declared prompt's. Allocated per map because the bind
-    // names have to be unique per map, and every worksheet of this workbook
-    // sees the same condition list, so every map gets the same answer.
+    // names have to be unique per map.
     const undeclaredBinds = new Set(declaredBinds);
     const undeclaredByPrompt = new globalThis.Map<string, string>();
     const bindNameFor = (prompt: string): string => {
@@ -1105,11 +1120,79 @@ export function transformWorkbook(
     // allows it.
     const joins = resolveWorksheetJoins(worksheet, joinsByElement);
 
+    // --- what this worksheet uses, not everything its workbook defines -------
+    //
+    // Discoverer's own statements for the four sheets of GD_M.M58D_V09.DIS
+    // (scheduler views EUL4_B260506220828Q1V1..Q4V1) settle it: each WHERE is
+    // exactly the conditions that sheet's query request names (`0x0126`), and
+    // each SELECT exactly the calculations its query items reach — 17 of the
+    // 41 "RECIBOS VENCIDOS" offers. The parameters those conditions and
+    // calculations bind are, on every sheet of the source, the ones Discoverer
+    // saved values for, and on all 29 scheduled sheets the ones each run
+    // supplied. An undecoded layout names no query request, so it keeps the
+    // whole workbook, as it did before §7.8.
+    const filterRefs = new Set(worksheet.queries.flatMap((query) => query.filterRefs));
+    const sheetConditions = layout
+      ? document.conditions.filter((condition) => filterRefs.has(condition.elementId))
+      : document.conditions;
+
+    // Calculations: the ones the query names, and every calculation they or
+    // this worksheet's conditions reference. Only a named one is a column —
+    // Discoverer writes the rest into the expression that uses them. A
+    // worksheet can name a calculation written in another worksheet's section,
+    // which the parser then reads twice, so they are matched by element id,
+    // this worksheet's own reading first.
+    const calculationById = new globalThis.Map(
+      document.calculations.map((calculation) => [calculation.elementId, calculation]),
+    );
+    const named = new Set([
+      ...worksheet.queryItemRefs,
+      ...worksheet.columns.flatMap((column) =>
+        column.itemElementRef === null ? [] : [column.itemElementRef],
+      ),
+    ]);
+    const used = new Set<number>();
+    const pending = [
+      ...named,
+      ...sheetConditions.flatMap((condition) => [
+        ...condition.itemRefs,
+        ...tokenRefs(condition.tokens, 6),
+      ]),
+    ];
+    while (pending.length > 0) {
+      const id = pending.pop()!;
+      const calculation = calculationById.get(id);
+      if (calculation === undefined || used.has(id)) continue;
+      used.add(id);
+      pending.push(...calculation.itemRefs, ...tokenRefs(calculation.tokens, 6));
+    }
+    const scoped = new globalThis.Map<number, (typeof worksheet.calculations)[number]>();
+    for (const calculation of [...worksheet.calculations, ...document.calculations]) {
+      if (used.has(calculation.elementId) && !scoped.has(calculation.elementId)) {
+        scoped.set(calculation.elementId, calculation);
+      }
+    }
+    const sheetCalculations = layout ? [...scoped.values()] : worksheet.calculations;
+
+    const boundParameters = new Set([
+      ...sheetConditions.flatMap((condition) => [
+        ...condition.parameterRefs,
+        ...tokenRefs(condition.tokens, 8),
+      ]),
+      ...sheetCalculations.flatMap((calculation) => tokenRefs(calculation.tokens, 8)),
+    ]);
+    const sheetParameters = layout
+      ? parameters.filter((_, index) => boundParameters.has(document.parameters[index]!.elementId))
+      : parameters;
+
     // A Discoverer condition is a tree; a Neo condition is a row. One source
     // condition therefore produces one row per test it makes, tied together by
     // `groupKey` so the generated SQL brackets them the way Discoverer did.
     const conditions: TransformedMapCondition[] = [];
     document.conditions.forEach((condition, index) => {
+      // Skipped in place rather than pre-filtered, so `sourceIndex` stays the
+      // condition's position in the workbook.
+      if (!sheetConditions.includes(condition)) return;
       const sourceText = condition.sql ?? condition.name;
       if (condition.unsupported !== null) {
         warnings.push({
@@ -1156,9 +1239,8 @@ export function transformWorkbook(
       }
     });
 
-    // Calculations belong to the worksheet that offers them — the workbook
-    // writes them once per worksheet section.
-    const calculatedFields: TransformedMapCalculatedField[] = worksheet.calculations.map(
+    // Calculations: see "what this worksheet uses" above.
+    const calculatedFields: TransformedMapCalculatedField[] = sheetCalculations.map(
       (calculation, index) => ({
         name: clamp(calculation.name, NAME_MAX),
         // The reader-facing string: the token form with item and parameter
@@ -1187,7 +1269,7 @@ export function transformWorkbook(
         // calculations of the source corpus — so they do not depend on the
         // layout decoding.
         axisType: axisTypeForPlacement(calculation.placementCode),
-        isHidden: calculation.hidden ?? false,
+        isHidden: (layout && !named.has(calculation.elementId)) || (calculation.hidden ?? false),
       }),
     );
 
@@ -1202,10 +1284,10 @@ export function transformWorkbook(
     const columnByElement = layout
       ? indexTotalColumns(worksheet.columns)
       : new globalThis.Map<number, TotalColumnTarget>();
-    // `worksheet.calculations` is what becomes `map_calculated_fields`, in
-    // order, so a calculation's index there is its `display_order`.
+    // `sheetCalculations` is what becomes `map_calculated_fields`, in order, so
+    // a calculation's index there is its `display_order`.
     const calculationOrderByElement = new globalThis.Map<number, number>();
-    worksheet.calculations.forEach((calculation, index) => {
+    sheetCalculations.forEach((calculation, index) => {
       calculationOrderByElement.set(calculation.elementId, index);
     });
 
@@ -1375,14 +1457,15 @@ export function transformWorkbook(
       });
     }
 
-    if (document.conditionsAreWorkbookWide && document.conditions.length > 0) {
+    // Neo has no inactive condition to keep one in, so it is not migrated —
+    // said once, on the workbook's first map.
+    if (sheetIndex === 0 && unappliedConditions > 0) {
       warnings.push({
-        code: 'CONDITIONS_WORKBOOK_WIDE',
+        code: 'CONDITIONS_NOT_APPLIED',
         message:
-          `Workbook "${workbookName}" has ${document.worksheets.length} worksheets and ` +
-          `${document.conditions.length} condition(s). Discoverer stores conditions per ` +
-          'workbook, not per worksheet, so every condition was attached to every map it ' +
-          `produced — review "${name}" and remove the ones that worksheet did not use.`,
+          `Workbook "${workbookName}" defines ${unappliedConditions} condition(s) that none of ` +
+          'its worksheets applied in Discoverer; they were not migrated. Recreate one in ' +
+          'Discoverer Neo if it is still wanted.',
         sourceId: workbook.sourceId,
       });
     }
@@ -1410,7 +1493,7 @@ export function transformWorkbook(
       selectDistinct: worksheet.selectDistinct === true,
       items,
       conditions,
-      parameters,
+      parameters: sheetParameters,
       calculatedFields,
       totals,
       pageSetup,

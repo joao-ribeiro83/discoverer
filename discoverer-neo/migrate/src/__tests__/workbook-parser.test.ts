@@ -814,18 +814,6 @@ describe('parseWorkbookDocument', () => {
     expect(totalGeral?.readableFormula).toBe(`[2,22](${secondGestor?.name})`);
   });
 
-  it('flags a multi-worksheet workbook whose conditions cannot be attributed', () => {
-    const single = parseWorkbookDocument(
-      buildWorkbookFixture({ worksheets: [{ name: 'A' }] }),
-    );
-    expect(single.conditionsAreWorkbookWide).toBe(false);
-
-    const many = parseWorkbookDocument(
-      buildWorkbookFixture({ worksheets: [{ name: 'A' }, { name: 'B' }] }),
-    );
-    expect(many.conditionsAreWorkbookWide).toBe(true);
-  });
-
   it('never throws on a body that is not a workbook', () => {
     expect(parseWorkbookDocument(Buffer.from([0xff, 0x00, 0x08, 0x99]))).toMatchObject({
       format: 'UNKNOWN',

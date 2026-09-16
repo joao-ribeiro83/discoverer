@@ -286,7 +286,8 @@ describe('reimportMaps', () => {
             { item: 'Region', axisType: 0 },
             { item: 'Invoice Amount', axisType: 1 },
           ],
-          hiddenItems: ['Amount With Tax'],
+          // The query names Margem; a calculation it does not name is not migrated.
+          hiddenItems: ['Amount With Tax', { item: 'Margem', axis: 'MEASURE' }],
         },
       ],
     });

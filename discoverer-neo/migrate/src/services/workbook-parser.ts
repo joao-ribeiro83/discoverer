@@ -113,11 +113,10 @@
  * the whole worksheet model, decoded in `EUL_SCHEMA_GROUND_TRUTH.md` §7.8 and
  * exposed on `ParsedWorksheet`.
  *
- * Conditions and parameters are workbook-scoped: on every workbook examined
- * they sit in the shared section before the first worksheet, and nothing in a
- * worksheet's own section references them. Which worksheet activates which
- * condition is therefore not recoverable — see `parseWorkbookDocument`'s
- * `conditionsAreWorkbookWide` warning.
+ * Conditions and parameters sit in the shared section before the first
+ * worksheet. A worksheet reaches the conditions it applies through its query
+ * request (`0x0126`) and layout (`0x0265`), and a condition names the
+ * parameters it binds (`0x010c`) — see `transformWorkbook`.
  *
  * ## EUL5
  *
@@ -2261,10 +2260,10 @@ export interface ParsedWorkbookDocument {
   nls: string | null;
   worksheets: ParsedWorksheet[];
   /**
-   * Conditions and parameters are workbook-scoped: on every workbook examined
-   * they appear only in the shared section before the first worksheet, and
-   * nothing in a worksheet's own section references them. See
-   * `conditionsAreWorkbookWide`.
+   * Every condition and parameter the workbook defines, from the shared section
+   * before the first worksheet. A worksheet applies the conditions its query
+   * request's `filterRefs` name; 1 152 of the source's 3 427 are applied by no
+   * worksheet at all.
    */
   conditions: WorkbookCondition[];
   parameters: WorkbookParameter[];
@@ -2272,12 +2271,6 @@ export interface ParsedWorkbookDocument {
   calculations: WorkbookCalculation[];
   /** Names of registered custom functions the workbook calls. */
   functionNames: string[];
-  /**
-   * True when the workbook has more than one worksheet, in which case its
-   * conditions and parameters cannot be attributed to a single worksheet:
-   * nothing in a worksheet's own section of the blob references them.
-   */
-  conditionsAreWorkbookWide: boolean;
   /** Bytes read from `DOC_DOCUMENT`. */
   byteLength: number;
   /** Non-fatal problems worth reporting to an operator. */
@@ -2312,7 +2305,6 @@ function emptyDocument(format: WorkbookContentFormat, byteLength: number): Parse
     parameters: [],
     calculations: [],
     functionNames: [],
-    conditionsAreWorkbookWide: false,
     byteLength,
     warnings: [],
     joins: [],
@@ -3094,8 +3086,6 @@ function parseDisDocument(data: Buffer): ParsedWorkbookDocument {
       doc.calculations.push(calculation);
     }
   }
-
-  doc.conditionsAreWorkbookWide = doc.worksheets.length > 1;
 
   if (doc.worksheets.length === 0) {
     doc.warnings.push(
