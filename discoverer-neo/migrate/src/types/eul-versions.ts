@@ -106,6 +106,10 @@ export interface EulVersionInfo {
   discovererVersion: string;
   /** Raw EUL*_EUL.EU_VERSION value, e.g. '5.1.0.0.0', or 'unknown'. */
   schemaVersion: string;
+  /** `VERSIONS.VER_MIN_CODE_VER`, when the row exists. */
+  minCodeVersion?: string;
+  /** `VERSIONS.VER_EUL_TIMESTAMP` — the EUL's creation stamp, not a change counter. */
+  eulTimestamp?: string;
   /** Actual EUL% table names found in the source DB (uppercase, unqualified). */
   tableNames: string[];
   /** Schema owner the tables live under (uppercase), when known. */
