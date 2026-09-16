@@ -1183,11 +1183,12 @@ export const mapCalculatedFields = pgTable(
     compiledSql: text('compiled_sql'),
     /**
      * The value behind each literal bind in `compiled_sql`, by bind name
-     * (`f1a2b3c4d_1` → `'NAPL'`). The renderer writes every literal as a bind
-     * (D-054), so the SQL cannot run without these. Written with it, by
+     * (`f1a2b3c4d_1` → `'NAPL'`, `f1a2b3c4d_2` → `0`). The renderer writes every
+     * literal as a bind (D-054), so the SQL cannot run without these. A number
+     * literal stays a JSON number, so it binds as NUMBER. Written with it, by
      * `dn-migrate verify --compile`.
      */
-    compiledBinds: jsonb('compiled_binds').$type<Record<string, string>>(),
+    compiledBinds: jsonb('compiled_binds').$type<Record<string, string | number>>(),
     /**
      * The D-059 bucket this row's formula landed in. Null means "no compile
      * run has seen this row" — deliberately a fifth state, so an unvisited row

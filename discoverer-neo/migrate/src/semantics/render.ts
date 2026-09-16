@@ -354,8 +354,11 @@ export interface SqlRenderContext {
    * system cannot name is a call it must not emit.
    */
   resolveFunction(elementId: number): FunctionBinding | null;
-  /** Register a runtime value; returns the placeholder to write, e.g. `:v1`. */
-  bind(value: string): string;
+  /**
+   * Register a runtime value; returns the placeholder to write, e.g. `:v1`.
+   * A `[5,2]` literal arrives as a number, so it binds as Oracle NUMBER.
+   */
+  bind(value: string | number): string;
 }
 
 /** Mirrors `ParsedFormula` in `backend/src/lib/sql/formula-parser.ts`. */
@@ -381,10 +384,10 @@ export type SqlRenderResult =
  * own `bind` instead.
  */
 export function createBindCollector(prefix = 'v'): {
-  bind: (value: string) => string;
-  values: Record<string, string>;
+  bind: (value: string | number) => string;
+  values: Record<string, string | number>;
 } {
-  const values: Record<string, string> = {};
+  const values: Record<string, string | number> = {};
   let n = 0;
   return {
     bind(value) {
@@ -508,7 +511,19 @@ class SqlEmitter {
   private literal(kind: number, value: string): string {
     // Every runtime value is a bind. Nothing is spliced, not even a number:
     // a "number" here is whatever bytes the workbook happened to store.
-    if (kind === 1 || kind === 2) return this.ctx.bind(value);
+    if (kind === 1) return this.ctx.bind(value);
+    if (kind === 2) {
+      // Bound as a number, because Discoverer spliced it as one. As text, a
+      // CASE branch turns CHAR and Oracle refuses it (ORA-00932 on 31 of the
+      // estate's drawn CASE calculations), and a DECODE result turns text.
+      // Only a plain decimal a double holds exactly is taken, which all 11 324
+      // of the estate's are; anything else refuses rather than become a
+      // different number (`''` would be a silent 0).
+      if (!/^-?\d+(\.\d+)?$/.test(value) || value.replace(/\D/g, '').length > 15) {
+        throw new Quarantined('UNKNOWN_LITERAL_KIND', `[5,2,"${value}"] is not a plain decimal`);
+      }
+      return this.ctx.bind(Number(value));
+    }
     if (kind === 4) {
       // A `[5,4]` payload is `YYYYMMDDHHMISS` and Discoverer showed it
       // `'01.12.01'`. Emitting *that* would make the century depend on

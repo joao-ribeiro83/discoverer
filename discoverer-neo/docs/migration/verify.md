@@ -140,6 +140,9 @@ renderer simply replaces a derived value.
 it is a bind (`:f1a2b3c4d_1`), and `compiled_binds` holds the values, so the two
 are written together and must stay together: SQL compiled before
 `compiled_binds` existed fails with `ORA-01008` until the next `--compile` run.
+A number literal is stored as a JSON number, so it binds as `NUMBER`. Values
+written before that were all text, and a `CASE` over them fails with
+`ORA-00932` until the next `--compile` run.
 Column references in it are unqualified, because the table alias a column needs
 is chosen per query at generation time and a stored string cannot know it.
 

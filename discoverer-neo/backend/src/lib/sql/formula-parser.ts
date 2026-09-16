@@ -571,11 +571,11 @@ export function calculatedFieldSql(
     sourceTokens: string | null;
     compiledSql: string | null;
     compileStatus: string | null;
-    compiledBinds?: Record<string, string> | null;
+    compiledBinds?: Record<string, string | number> | null;
   },
   resolveItem: ItemResolver,
   opts: { requireCompiled?: boolean } = {},
-): ParsedFormula & { binds: Record<string, string> } {
+): ParsedFormula & { binds: Record<string, string | number> } {
   if (field.sourceTokens != null || opts.requireCompiled) {
     if (
       field.compiledSql &&
