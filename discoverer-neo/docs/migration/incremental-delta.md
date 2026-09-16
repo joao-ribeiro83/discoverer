@@ -148,6 +148,29 @@ after the database was migrated, not from new Discoverer edits:
   were re-imported on 2026-09-06.
 - **The host business area** has the description of an older migrator.
 
+### The first live delta on this estate (2026-09-16, commit `1f190b5`)
+
+Backup first: `discoverer_neo_20260916-132802.dump.gz`. Then:
+
+- **Applied** the 1 263 changes above, and recorded 12 013 baseline rows.
+- **A second dry run found no change.** So the hashes are stable over a real
+  replay, not only in the tests.
+- **Nothing else moved.** Every `maps.id`, all 29 schedules (all still
+  disabled) and all 60 grants were identical before and after. Items with an
+  `agg_function`: 0 before, 1 238 after.
+- **The verifier reported the same blockers before and after**, number for
+  number. The pre-delta figures came from the backup, restored into a scratch
+  database. So the delta caused none of them.
+- **Rollback, on real Postgres.** On the restored copy, a trigger made the
+  `maps` update fail after the business area and all 1 238 items were written.
+  Afterwards no item had changed, `migration_objects` was empty, and
+  `migration_log` held `Delta rolled back`.
+
+The verifier still exits `COMPLETED_WITH_BLOCKERS` on this estate, so every
+live delta exits 1 until those blockers are fixed. One of them is not a real
+loss: the reconciliation concept *items on a folder with no business area*
+compares the whole `items` table (9 626) with 0.
+
 ## Limits
 
 - **Full read every time.** The delta reads the whole EUL and every migrated
