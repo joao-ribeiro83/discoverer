@@ -281,6 +281,12 @@ describe('seam 3 — referential closure', () => {
     expect(result.reason).toContain('4 closure invariant');
   });
 
+  it("fails a condition whose calculated field is missing or on another map", async () => {
+    const result = await checkReferentialClosure(fakeDb([...clean, [{ c: 2 }]]));
+    expect(result.status).toBe('FAIL');
+    expect(result.findings).toEqual(['2x strayCalculatedConditions']);
+  });
+
   it('treats a missing count column as zero', async () => {
     const result = await checkReferentialClosure(fakeDb([[{}], [{}], [{}], [{}]]));
     expect(result.status).toBe('PASS');
@@ -340,6 +346,44 @@ describe('seam 4 — reconciliation', () => {
         allowances: [{ ...one, table: 'users; DROP TABLE users' }],
       }),
     ).rejects.toThrow('not a bare table name');
+  });
+
+  it('does not count a concept the migration never writes, but still books its loss', async () => {
+    const skipped = { ...one, concept: 'skipped items', table: null, sourceCount: 171, expectedTarget: 0 };
+    // One query only: the skipped concept must not consume a result set.
+    const result = await checkReconciliation(fakeDb([[{ c: 212 }]]), { allowances: [skipped, one] });
+    expect(result.status).toBe('PASS');
+    expect(result.metrics).toMatchObject({ concepts: 2, matched: 1, drifted: 0, notCounted: 1 });
+    expect(result.metrics.rowsLostToAllowances).toBe(171);
+  });
+
+  it('refuses a table-less concept that expects rows or never measured its source', async () => {
+    const skipped = { ...one, table: null, sourceCount: 171, expectedTarget: 0 };
+    await expect(
+      checkReconciliation(fakeDb([]), { allowances: [{ ...skipped, expectedTarget: 5 }] }),
+    ).rejects.toThrow('has no table');
+    await expect(
+      checkReconciliation(fakeDb([]), { allowances: [{ ...skipped, sourceCount: null }] }),
+    ).rejects.toThrow('has no table');
+  });
+
+  it('scopes a migrated-maps concept to maps whose workbook came from the EUL', async () => {
+    const statements: string[] = [];
+    const db: VerifyDb = {
+      execute: (query) => {
+        statements.push(JSON.stringify(query));
+        return Promise.resolve({ rows: [{ c: 923 }] });
+      },
+    };
+    const maps = { ...one, table: 'maps', migratedMapsOnly: true, sourceCount: 923, expectedTarget: 923 };
+    const layouts = { ...maps, table: 'map_layouts' };
+    const folders = { ...one, expectedTarget: 923 };
+    const result = await checkReconciliation(db, { allowances: [maps, folders, layouts] });
+    expect(result.status).toBe('PASS');
+    expect(statements[0]).toContain('maps.id IN');
+    expect(statements[0]).toContain('source_id IS NOT NULL');
+    expect(statements[1]).not.toContain('source_id');
+    expect(statements[2]).toContain('.map_id IN');
   });
 
   it('defaults to the checked-in declaration', async () => {
