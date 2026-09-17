@@ -187,7 +187,15 @@ These preferences are self-service and per-user. Each user can access Settings v
 
 ### Active/Inactive
 
-Set `isActive` on the account through the API. The Users screen has no toggle yet.
+On the Users screen, the **Status** column shows each account as Active or Inactive.
+
+1. Open **Users** in the admin sidebar.
+2. To deactivate a user, click the **Deactivate** button (person with a cross) in their row, then click **Deactivate** in the confirmation dialog.
+3. To activate an inactive user, click the **Activate** button (person with a tick) in their row. No confirmation is asked.
+
+You cannot deactivate your own account; its button is disabled.
+
+You can also set `isActive` through the API:
 
 ```bash
 curl -X PUT http://localhost:3000/api/users/<user-id> \

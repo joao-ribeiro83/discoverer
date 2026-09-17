@@ -312,7 +312,20 @@
     "adminOnlyMessage": "Seuls les administrateurs peuvent gérer les utilisateurs.",
     "columns": {
       "email": "E-mail",
-      "role": "Rôle"
+      "role": "Rôle",
+      "status": "Statut"
+    },
+    "status": {
+      "active": "Actif",
+      "inactive": "Inactif",
+      "activate": "Activer",
+      "deactivate": "Désactiver",
+      "cannotDeactivateSelf": "Vous ne pouvez pas désactiver votre propre compte",
+      "deactivating": "Désactivation..."
+    },
+    "deactivateDialog": {
+      "title": "Désactiver l'utilisateur ?",
+      "description": "{{name}} est déconnecté à sa prochaine requête et ne peut plus se connecter tant que vous n'avez pas réactivé le compte."
     },
     "dialog": {
       "editTitle": "Modifier l'utilisateur",
@@ -331,7 +344,9 @@
     "toast": {
       "updated": "Utilisateur mis à jour",
       "created": "Utilisateur créé",
-      "deleted": "Utilisateur supprimé"
+      "deleted": "Utilisateur supprimé",
+      "activated": "Utilisateur activé",
+      "deactivated": "Utilisateur désactivé"
     }
   }
 }

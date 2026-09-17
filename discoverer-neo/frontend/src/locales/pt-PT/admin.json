@@ -312,7 +312,20 @@
     "adminOnlyMessage": "Apenas os administradores podem gerir utilizadores.",
     "columns": {
       "email": "Email",
-      "role": "Função"
+      "role": "Função",
+      "status": "Estado"
+    },
+    "status": {
+      "active": "Ativo",
+      "inactive": "Inativo",
+      "activate": "Ativar",
+      "deactivate": "Desativar",
+      "cannotDeactivateSelf": "Não pode desativar a sua própria conta",
+      "deactivating": "A desativar..."
+    },
+    "deactivateDialog": {
+      "title": "Desativar utilizador?",
+      "description": "{{name}} termina a sessão no próximo pedido e não pode iniciar sessão até ativar novamente a conta."
     },
     "dialog": {
       "editTitle": "Editar Utilizador",
@@ -331,7 +344,9 @@
     "toast": {
       "updated": "Utilizador atualizado",
       "created": "Utilizador criado",
-      "deleted": "Utilizador eliminado"
+      "deleted": "Utilizador eliminado",
+      "activated": "Utilizador ativado",
+      "deactivated": "Utilizador desativado"
     }
   }
 }

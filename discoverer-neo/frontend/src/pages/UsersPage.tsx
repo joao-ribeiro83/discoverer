@@ -5,7 +5,7 @@ import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
 import type { ColumnDef } from '@tanstack/react-table'
-import { Plus, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, UserCheck, UserX } from 'lucide-react'
 import { apiClient, getErrorMessage } from '@/lib/api'
 import type { AppUser } from '@/lib/types'
 import { useToast } from '@/hooks/use-toast'
@@ -18,6 +18,14 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import {
   Select,
   SelectContent,
@@ -58,6 +66,7 @@ export function UsersPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<AppUser | null>(null)
   const [deleting, setDeleting] = useState<AppUser | null>(null)
+  const [deactivating, setDeactivating] = useState<AppUser | null>(null)
 
   const { data: users, isLoading } = useQuery({
     queryKey: ['users'],
@@ -121,29 +130,84 @@ export function UsersPage() {
     },
   })
 
+  const activeMutation = useMutation({
+    mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) =>
+      (await apiClient.users.update(id, { isActive })).data.data,
+    onSuccess: (_data, { isActive }) => {
+      void queryClient.invalidateQueries({ queryKey: ['users'] })
+      toast({ title: isActive ? t('admin:users.toast.activated') : t('admin:users.toast.deactivated') })
+      setDeactivating(null)
+    },
+    onError: (err) => {
+      toast({
+        title: t('admin:shared.saveFailed'),
+        description: getErrorMessage(err),
+        variant: 'destructive',
+      })
+    },
+  })
+
   const columns: ColumnDef<AppUser>[] = [
     { accessorKey: 'name', header: t('common:labels.name') },
     { accessorKey: 'email', header: t('admin:users.columns.email') },
     { accessorKey: 'role', header: t('admin:users.columns.role'), cell: ({ row }) => <Badge variant="outline">{row.original.role}</Badge> },
     {
+      id: 'status',
+      header: t('admin:users.columns.status'),
+      cell: ({ row }) =>
+        row.original.isActive === false ? (
+          <Badge variant="secondary">{t('admin:users.status.inactive')}</Badge>
+        ) : (
+          <Badge variant="outline">{t('admin:users.status.active')}</Badge>
+        ),
+    },
+    {
       id: 'actions',
       header: '',
-      cell: ({ row }) => (
+      cell: ({ row }) => {
+        const user = row.original
+        const active = user.isActive !== false
+        const isSelf = user.id === currentUser?.id
+        return (
         <div className="flex justify-end gap-1">
-          <Button variant="ghost" size="icon" onClick={() => openEdit(row.original)} title={t('common:actions.edit')}>
+          <Button variant="ghost" size="icon" onClick={() => openEdit(user)} title={t('common:actions.edit')}>
             <Pencil className="h-4 w-4" />
           </Button>
+          {active ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setDeactivating(user)}
+              title={isSelf ? t('admin:users.status.cannotDeactivateSelf') : t('admin:users.status.deactivate')}
+              aria-label={t('admin:users.status.deactivate')}
+              disabled={isSelf}
+            >
+              <UserX className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => activeMutation.mutate({ id: user.id, isActive: true })}
+              title={t('admin:users.status.activate')}
+              aria-label={t('admin:users.status.activate')}
+              disabled={activeMutation.isPending}
+            >
+              <UserCheck className="h-4 w-4" />
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setDeleting(row.original)}
+            onClick={() => setDeleting(user)}
             title={t('common:actions.delete')}
-            disabled={row.original.id === currentUser?.id}
+            disabled={isSelf}
           >
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
-      ),
+        )
+      },
     },
   ]
 
@@ -228,6 +292,29 @@ export function UsersPage() {
           isPending={deleteMutation.isPending}
         />
       )}
+
+      <Dialog open={!!deactivating} onOpenChange={(open) => !open && setDeactivating(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('admin:users.deactivateDialog.title')}</DialogTitle>
+            <DialogDescription>
+              {t('admin:users.deactivateDialog.description', { name: deactivating?.name ?? '' })}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeactivating(null)} disabled={activeMutation.isPending}>
+              {t('common:actions.cancel')}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => deactivating && activeMutation.mutate({ id: deactivating.id, isActive: false })}
+              disabled={activeMutation.isPending}
+            >
+              {activeMutation.isPending ? t('admin:users.status.deactivating') : t('admin:users.status.deactivate')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminPageWrapper>
   )
 }

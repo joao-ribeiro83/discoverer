@@ -181,6 +181,8 @@ export interface AppUser {
    * (EUL_USERS.EU_ROLE_FLAG), not a person. Roles hold grants and cannot sign in.
    */
   isRole?: boolean
+  /** False once an admin deactivates the account; absent means active. */
+  isActive?: boolean
   createdAt: string
 }
 
