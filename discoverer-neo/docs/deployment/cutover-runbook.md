@@ -31,6 +31,9 @@ the team must record.
    (Phase 7.2). **Decided 2026-09-17: migrate the rows into `scheduled_results`
    before the legacy source is decommissioned** — do not discard them, and do
    not leave them stranded in a source about to be read-only-then-gone.
+   **Implemented** (`src/scripts/import-batch-results.ts`, run after
+   `import-schedules.ts` — see `docs/migration/migration-tool.md`); not yet
+   run against the live estate.
 2. **Date-hierarchy regeneration** (D-074). **Already resolved, no action
    needed at cutover**: all 508 hierarchies in this estate are Discoverer's own
    date-template machinery (6 `DBH` templates + 502 stamped instances), not
@@ -92,6 +95,18 @@ automatically, on every non-dry-run — **but only if `DN_MIGRATE_COMMIT` (or
   end to end, against a real restored copy of the current estate; only the
   Oracle-to-Postgres transform step itself needs a human to run once, with
   real credentials, outside an agent session.
+
+**Then, against the same new database** — schedules and their historical
+results are runtime-only tables `dn-migrate run` never writes:
+
+```bash
+docker compose exec backend npx tsx src/scripts/import-schedules.ts <dataSourceId> --live
+docker compose exec backend npx tsx src/scripts/import-batch-results.ts <dataSourceId> --live
+```
+
+This is [blocking decision 1](#blocking-decisions) — do not skip the second
+command, or the nine `EUL4_B*Q*R1` tables' rows are stranded when the source
+is decommissioned.
 
 ## Step 3 — Verify before promoting
 
