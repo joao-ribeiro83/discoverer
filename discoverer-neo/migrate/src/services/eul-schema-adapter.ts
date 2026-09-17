@@ -27,6 +27,7 @@ import type {
   ColumnMapping,
   ColumnType,
   CustomFunction,
+  CustomFunctionArgument,
   DateTemplateLevel,
   EulSchemaAdapter,
   EulUser,
@@ -350,7 +351,23 @@ const FUN_OPTIONAL_COLUMNS = [
   'FUN_EXT_NAME',
   'FUN_EXT_PACKAGE',
   'FUN_EXT_OWNER',
+  'FUN_EXT_DB_LINK',
+  'FUN_DATA_TYPE',
+  'FUN_BUILT_IN',
 ] as const;
+
+/**
+ * `FUN_ARGUMENTS` — one row per argument, `FA_FUN_ID` → `FUNCTIONS.FUN_ID`.
+ * Column names from Oracle's seed script in `DISCVR4/DCESQRES.DLL`; a live
+ * EUL4 adds `FA_NAME_S`, which is probed.
+ */
+const FA_COLUMNS: ColumnSpec[] = [
+  { name: 'FA_FUN_ID', type: 'number', required: true, mapsTo: 'functionId' },
+  { name: 'FA_POSITION', type: 'number', required: true, mapsTo: 'position' },
+  { name: 'FA_DATA_TYPE', type: 'number', required: false, mapsTo: 'dataType', defaultValue: null },
+  { name: 'FA_OPTIONAL', type: 'number', required: false, mapsTo: 'optional', defaultValue: 0 },
+  { name: 'FA_DEVELOPER_KEY', type: 'string', required: false, mapsTo: 'developerKey', defaultValue: null },
+];
 
 /**
  * `ACCESS_PRIVS` — privileges. The grantee is `AP_EU_ID` → `EUL_USERS.EU_ID`;
@@ -1479,14 +1496,74 @@ export async function readCustomFunctions(
       ...adapter.getFunctionColumns(),
       ...optionalMappings(present, [
         ...(descCol ? [{ name: descCol, type: 'string' as const, mapsTo: 'description' }] : []),
+        { name: 'FUN_EXT_NAME', type: 'string', mapsTo: 'extName' },
+        { name: 'FUN_EXT_PACKAGE', type: 'string', mapsTo: 'extPackage' },
+        { name: 'FUN_EXT_OWNER', type: 'string', mapsTo: 'extOwner' },
+        { name: 'FUN_EXT_DB_LINK', type: 'string', mapsTo: 'extDbLink' },
+        { name: 'FUN_DATA_TYPE', type: 'number', mapsTo: 'dataType' },
+        { name: 'FUN_BUILT_IN', type: 'number', mapsTo: 'builtIn' },
       ]),
     ],
     { orderBy: 'FUN_NAME' },
   );
-  return rows.map((row) => ({
-    ...(row as unknown as CustomFunction),
-    description: (row.description as string | null) ?? null,
-  }));
+
+  const argsByFunction = await readFunctionArguments(execute, adapter);
+  // The 222 built-ins (SUM, TRUNC, DECODE…) are Oracle's own, reached through
+  // `[1,n]` — they are not customer functions and must not become rows.
+  return rows
+    .filter((row) => !row.builtIn)
+    .map(({ builtIn: _builtIn, ...row }) => ({
+      ...(row as unknown as CustomFunction),
+      description: (row.description as string | null) ?? null,
+      arguments: argsByFunction ? (argsByFunction.get(row.sourceId as number) ?? []) : undefined,
+    }));
+}
+
+/**
+ * `FUN_ARGUMENTS`, grouped by function and ordered by position — or null when
+ * the source has no such table, which is "signature unknown", not "no
+ * arguments".
+ */
+async function readFunctionArguments(
+  execute: OracleExecutor,
+  adapter: EulSchemaAdapter,
+): Promise<Map<number, CustomFunctionArgument[]> | null> {
+  if (!adapter.hasTable('FUN_ARGUMENTS')) return null;
+  const byFunction = new Map<number, CustomFunctionArgument[]>();
+  const present = await probeColumns(
+    execute,
+    adapter.version.owner,
+    adapter.getTableName('FUN_ARGUMENTS'),
+    ['FA_NAME_S'],
+  );
+  let rows: Array<Record<string, unknown>>;
+  try {
+    rows = await readEntity(
+      execute,
+      adapter,
+      'FUN_ARGUMENTS',
+      [
+        ...toMappings(FA_COLUMNS, adapter.version.version),
+        ...optionalMappings(present, [{ name: 'FA_NAME_S', type: 'string', mapsTo: 'name' }]),
+      ],
+      { orderBy: 'FA_FUN_ID, FA_POSITION' },
+    );
+  } catch (err) {
+    if (!(err instanceof EulReadError) || !isTableNotFoundError(err.cause)) throw err;
+    return null;
+  }
+  for (const row of rows) {
+    const list = byFunction.get(row.functionId as number) ?? [];
+    list.push({
+      name: (row.name as string | null) ?? (row.developerKey as string | null) ?? null,
+      dataType: (row.dataType as number | null) ?? null,
+      optional: Number(row.optional ?? 0) !== 0,
+      position: row.position as number,
+    });
+    byFunction.set(row.functionId as number, list);
+  }
+  for (const list of byFunction.values()) list.sort((a, b) => a.position - b.position);
+  return byFunction;
 }
 
 /**
