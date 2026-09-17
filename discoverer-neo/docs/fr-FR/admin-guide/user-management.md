@@ -206,7 +206,15 @@ Ces préférences sont en libre-service et propres à chaque utilisateur. Chaque
 
 ### Actif/Inactif
 
-Définissez `isActive` sur le compte via l'API. L'écran Utilisateurs ne propose pas encore de bascule.
+Dans l'écran Utilisateurs, la colonne **Statut** indique si chaque compte est Actif ou Inactif.
+
+1. Ouvrez **Utilisateurs** dans la barre latérale d'administration.
+2. Pour désactiver un utilisateur, cliquez sur le bouton **Désactiver** (personne avec une croix) de sa ligne, puis cliquez sur **Désactiver** dans la boîte de confirmation.
+3. Pour activer un utilisateur inactif, cliquez sur le bouton **Activer** (personne avec une coche) de sa ligne. Aucune confirmation n'est demandée.
+
+Vous ne pouvez pas désactiver votre propre compte ; son bouton est désactivé.
+
+Vous pouvez aussi définir `isActive` via l'API :
 
 ```bash
 curl -X PUT http://localhost:3000/api/users/<user-id> \
