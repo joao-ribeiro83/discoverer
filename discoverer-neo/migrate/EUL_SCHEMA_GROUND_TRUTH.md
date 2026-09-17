@@ -589,8 +589,12 @@ in `BQ_RESULT_SQL_*` is substituted with at run time. Named
 empty, one (`EUL4_B260506220828Q1R1`) holds 861 rows. Columns are always
 generic `BRVCn` (VARCHAR2) / `BRNn` (NUMBER) / `BRDn` (DATE) — meaningless
 without the `E<expr_id>` alias map from the owning `BATCH_QUERIES` row.
-**Decision:** drop all nine rather than migrate their contents — see
-[`docs/decisions/scheduled-result-retention.md`](../docs/decisions/scheduled-result-retention.md).
+**Decision (2026-09-17, reversed from an earlier drop-them decision):**
+migrate all nine's row contents into `scheduled_results` — see
+[`docs/decisions/scheduled-result-retention.md`](../docs/decisions/scheduled-result-retention.md)
+and `backend/src/services/batch-result-import.service.ts`, which reconstructs
+the table-to-schedule link from the table name (no stored FK exists) and
+decodes the alias map above to give the generic columns real names.
 
 ---
 
