@@ -1,13 +1,35 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { sql } from 'drizzle-orm';
+import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { buildApp } from './app.js';
 import { config } from './config.js';
 import { verifyOracleClient } from './services/oracle-connection-pool.js';
-import { pool as postgresPool } from './db/index.js';
+import { db, pool as postgresPool } from './db/index.js';
+import { users } from './db/schema.js';
+import { seed } from './db/seed.js';
 
 /** Max time to let in-flight requests (and onClose hooks) finish before forcing exit. */
 const SHUTDOWN_TIMEOUT_MS = 10_000;
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 async function main() {
   const app = await buildApp();
+
+  // Applies pending Drizzle migrations, then seeds the admin account when the
+  // database has no users yet. Runs on every boot — migrate is a no-op once
+  // caught up, and the seed only fires on a genuinely empty `users` table —
+  // so a container restart against an already-provisioned database is a
+  // no-op too. Without this, a fresh `docker compose up --build` starts the
+  // API against an empty, unmigrated database and admin@discoverer.local
+  // never gets created.
+  await migrate(db, { migrationsFolder: path.join(__dirname, '../drizzle') });
+  const [row] = await db.select({ count: sql<number>`count(*)::int` }).from(users);
+  if (Number(row?.count ?? 0) === 0) {
+    app.log.info('No users found — seeding initial admin account');
+    await seed();
+  }
 
   // Fail fast on an image that has thick mode switched on but carries no
   // Instant Client. Deliberately here rather than in buildApp(), which the
