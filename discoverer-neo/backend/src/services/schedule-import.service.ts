@@ -20,6 +20,7 @@
 
 import { randomUUID } from 'node:crypto';
 import { eq, inArray } from 'drizzle-orm';
+import type { Connection } from 'oracledb';
 import { db } from '../db/index.js';
 import {
   dataSources,
@@ -36,7 +37,54 @@ import { usernameToEmailLocal, MIGRATED_EMAIL_DOMAIN } from './migration.service
 import { loadMapDefinition } from './sql-generator.js';
 import { planQuery } from '../lib/sql/planner.js';
 
-const OBJ_FORMAT = { outFormat: 4002 };
+export const OBJ_FORMAT = { outFormat: 4002 };
+
+export interface EulConnection {
+  conn: Connection;
+  schema: string;
+  /** The EUL table prefix (`EUL4_`, `EUL5_`, …), including the trailing underscore. */
+  prefix: string;
+}
+
+/**
+ * Open the Oracle connection this data source describes, and resolve the
+ * connecting schema and EUL table prefix — the same bootstrap every EUL
+ * reader in this file (and the batch-result backfill) needs before it can
+ * query anything. Caller owns `conn.close()`.
+ */
+export async function connectToEul(dataSourceId: string, schemaOwner?: string): Promise<EulConnection> {
+  const [ds] = await db.select().from(dataSources).where(eq(dataSources.id, dataSourceId)).limit(1);
+  if (!ds) throw new Error(`data source ${dataSourceId} not found`);
+
+  const oracledb = await importOracleDb();
+  if (process.env.ORACLE_THICK_MODE === 'true') {
+    try {
+      oracledb.initOracleClient({ libDir: process.env.ORACLE_CLIENT_PATH || '/opt/oracle/instantclient' });
+    } catch {
+      /* already initialised */
+    }
+  }
+
+  const conn = await oracledb.getConnection({
+    user: ds.username ?? undefined,
+    password: ds.passwordEnc ? decrypt(ds.passwordEnc) : '',
+    connectString:
+      ds.connectionString ||
+      `(DESCRIPTION=(ADDRESS=(HOST=${ds.host})(PORT=${ds.port})(PROTOCOL=TCP))(CONNECT_DATA=(SERVICE_NAME=${ds.serviceName || ds.sid})))`,
+  });
+
+  const who = await conn.execute(`SELECT USER AS U FROM DUAL`, {}, OBJ_FORMAT);
+  const schema = (schemaOwner || '').toUpperCase() || (who.rows as { U: string }[])[0]!.U;
+
+  const pfx = await conn.execute(
+    `SELECT table_name FROM all_tables WHERE owner = :o AND table_name LIKE 'EUL%BAS'`,
+    { o: schema },
+    OBJ_FORMAT,
+  );
+  const prefix = ((pfx.rows as { TABLE_NAME: string }[])[0]?.TABLE_NAME ?? 'EUL4_BAS').replace(/BAS$/, '');
+
+  return { conn, schema, prefix };
+}
 
 export type FrequencyUnit = 'MINUTES' | 'HOURS' | 'DAYS' | 'WEEKS' | 'MONTHS' | 'YEARS';
 
@@ -153,38 +201,9 @@ interface EulSource {
 }
 
 async function readEulSource(dataSourceId: string, schemaOwner?: string): Promise<EulSource> {
-  const [ds] = await db.select().from(dataSources).where(eq(dataSources.id, dataSourceId)).limit(1);
-  if (!ds) throw new Error(`data source ${dataSourceId} not found`);
-
-  const oracledb = await importOracleDb();
-  if (process.env.ORACLE_THICK_MODE === 'true') {
-    try {
-      oracledb.initOracleClient({ libDir: process.env.ORACLE_CLIENT_PATH || '/opt/oracle/instantclient' });
-    } catch {
-      /* already initialised */
-    }
-  }
-
-  const conn = await oracledb.getConnection({
-    user: ds.username ?? undefined,
-    password: ds.passwordEnc ? decrypt(ds.passwordEnc) : '',
-    connectString:
-      ds.connectionString ||
-      `(DESCRIPTION=(ADDRESS=(HOST=${ds.host})(PORT=${ds.port})(PROTOCOL=TCP))(CONNECT_DATA=(SERVICE_NAME=${ds.serviceName || ds.sid})))`,
-  });
+  const { conn, schema, prefix } = await connectToEul(dataSourceId, schemaOwner);
 
   try {
-    const who = await conn.execute(`SELECT USER AS U FROM DUAL`, {}, OBJ_FORMAT);
-    const schema = (schemaOwner || '').toUpperCase() || (who.rows as { U: string }[])[0]!.U;
-
-    const pfx = await conn.execute(
-      `SELECT table_name FROM all_tables WHERE owner = :o AND table_name LIKE 'EUL%BAS'`,
-      { o: schema },
-      OBJ_FORMAT,
-    );
-    const prefix =
-      ((pfx.rows as { TABLE_NAME: string }[])[0]?.TABLE_NAME ?? 'EUL4_BAS').replace(/BAS$/, '');
-
     const reportsRes = await conn.execute(
       `SELECT BR_ID, BR_NAME, BR_WORKBOOK_NAME, BR_NEXT_RUN_DATE, BR_NUM_FREQ_UNITS,
               BR_EU_ID, BR_RFU_ID, BR_AUTO_REFRESH

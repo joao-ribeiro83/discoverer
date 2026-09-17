@@ -198,6 +198,36 @@ It defaults to a dry run; add `--live` to perform the replacement.
 The whole operation runs in one transaction: if any part fails, the old maps
 are still there.
 
+### Scheduled batch reports and their historical results
+
+Two more one-time backfills, run in order, from the backend container. Neither
+goes through `MigrationWriter` — `schedules` and `scheduled_results` are
+runtime-only tables the core migrator never writes (see
+`backend/src/db/schema.ts`'s header comment). Both default to a dry run.
+
+```bash
+# 1. Migrate EUL4_BATCH_REPORTS/_SHEETS/_PARAMS into schedules (disabled).
+docker compose exec backend npx tsx src/scripts/import-schedules.ts <dataSourceId> --live
+
+# 2. Attach each schedule's historical result rows, read from the nine
+#    EUL4_B<timestamp>Q<n>R1 tables Discoverer materialised them into.
+docker compose exec backend npx tsx src/scripts/import-batch-results.ts <dataSourceId> --live
+```
+
+The second step reconstructs which physical result table belongs to which
+schedule from the table's own name (`<prefix>B<run timestamp>Q<query index>R1`
+— there is no stored foreign key, see `migrate/EUL_SCHEMA_GROUND_TRUTH.md`
+§3.8), decodes the table's generic `BRVCn`/`BRNn`/`BRDn` columns through the
+`E<expr_id>` alias map in `BATCH_QUERIES.BQ_RESULT_SQL_*`, and writes an
+export file (XLSX/CSV, matching the schedule's own output format) plus a
+`scheduled_results` row per schedule. Every migrated schedule stays disabled;
+this only fills in historical data, it never runs anything.
+
+This decision reverses an earlier one
+([`docs/decisions/scheduled-result-retention.md`](../decisions/scheduled-result-retention.md)):
+the tables are migrated, not dropped, and not left behind when the legacy
+source is decommissioned.
+
 ## Connection Configuration
 
 ### Inline JSON
