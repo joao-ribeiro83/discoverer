@@ -327,7 +327,9 @@ export default function customFunctionRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/api/data-sources/:dsId/functions',
     {
-      preHandler: adminManagerPreHandler,
+      // Spelled out rather than reusing `adminManagerPreHandler`: SEC-03's scan
+      // reads the registration block and only sees a gate it can name there.
+      preHandler: [fastify.authenticate, fastify.authorize('ADMIN', 'MANAGER')],
       schema: {
         tags: ['Custom Functions'],
         security: [{ bearerAuth: [] }],
