@@ -28,6 +28,7 @@ import {
   createTargetDb,
   detectEulVersion,
   generateAssessmentReport,
+  generateTemporaryPassword,
   MIGRATED_EMAIL_DOMAIN,
   readEulSchema,
   reimportMaps,
@@ -55,11 +56,12 @@ import { hashPassword } from '../lib/password.js';
 import { writeCredentialFile } from './credential-file.service.js';
 import { verifyOracleClient } from './oracle-connection-pool.js';
 
-// Re-exported so other backend services (e.g. schedule-import.service.ts) can
-// derive a migrated user's email the same way the migrator does, without
-// reaching into @discoverer-neo/core/migration directly — see this file's
+// Re-exported so other backend services (e.g. schedule-import.service.ts,
+// server.ts's startup seed) can derive a migrated user's email or generate a
+// credential the same way the migrator does, without reaching into
+// @discoverer-neo/core/migration directly — see this file's
 // no-restricted-imports entry in eslint.config.js.
-export { usernameToEmailLocal, MIGRATED_EMAIL_DOMAIN };
+export { usernameToEmailLocal, MIGRATED_EMAIL_DOMAIN, generateTemporaryPassword };
 
 // ---------------------------------------------------------------------------
 // Errors

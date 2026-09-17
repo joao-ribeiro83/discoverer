@@ -1,35 +1,79 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { sql } from 'drizzle-orm';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { buildApp } from './app.js';
 import { config } from './config.js';
 import { verifyOracleClient } from './services/oracle-connection-pool.js';
 import { db, pool as postgresPool } from './db/index.js';
-import { users } from './db/schema.js';
 import { seed } from './db/seed.js';
+import { writeCredentialFile } from './services/credential-file.service.js';
+import { generateTemporaryPassword } from './services/migration.service.js';
+import type { FastifyInstance } from 'fastify';
 
 /** Max time to let in-flight requests (and onClose hooks) finish before forcing exit. */
 const SHUTDOWN_TIMEOUT_MS = 10_000;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+// Arbitrary fixed key for a Postgres session advisory lock. Scaling to
+// multiple backend replicas (docs/deployment/docker.md "Multiple Backend
+// Instances") means several processes can call ensureDatabaseReady() at
+// once; without serializing them here, two could both see an empty `users`
+// table and both run seed()'s destructive delete-then-insert concurrently.
+const STARTUP_LOCK_KEY = 7_927_384_950_123;
+
+/**
+ * Applies pending Drizzle migrations, then seeds the admin account when the
+ * database has no users yet. Runs on every boot — migrate is a no-op once
+ * caught up, and the seed only fires on a genuinely empty `users` table — so
+ * a restart against an already-provisioned database does nothing. Without
+ * this, a fresh `docker compose up --build` starts the API against an
+ * empty, unmigrated database and admin@discoverer.local never gets created.
+ *
+ * The whole sequence runs under a Postgres advisory lock held on a single
+ * dedicated connection, so concurrently starting replicas queue up instead
+ * of racing: only one can ever be inside the empty-check-then-seed section
+ * at a time, and by the time the next one gets the lock the table is no
+ * longer empty.
+ */
+async function ensureDatabaseReady(app: FastifyInstance) {
+  const client = await postgresPool.connect();
+  try {
+    await client.query('SELECT pg_advisory_lock($1)', [STARTUP_LOCK_KEY]);
+
+    await migrate(db, { migrationsFolder: path.join(__dirname, '../drizzle') });
+
+    const { rows } = await client.query<{ count: number }>(
+      'SELECT count(*)::int AS count FROM users',
+    );
+    if (Number(rows[0]?.count ?? 0) === 0) {
+      // A random, single-use password — never the well-known `admin123` that
+      // `npm run db:seed` uses for local dev — because this path runs
+      // unattended against whatever database a fresh `docker compose up`
+      // happens to be pointed at, including a real deployment. Handed off
+      // the same way the EUL migration hands off passwords it provisions:
+      // a 0600 file in CREDENTIALS_DIR, never logged (credential-file.service.ts).
+      const temporaryPassword = generateTemporaryPassword();
+      await seed({ password: temporaryPassword, mustChangePassword: true });
+      const { path: credentialsFile } = await writeCredentialFile([
+        { username: 'admin', email: 'admin@discoverer.local', temporaryPassword },
+      ]);
+      app.log.warn(
+        { credentialsFile },
+        'No users found — seeded initial admin account with a one-time password; ' +
+          'retrieve it from the credentials file above and change it at first login',
+      );
+    }
+  } finally {
+    await client.query('SELECT pg_advisory_unlock($1)', [STARTUP_LOCK_KEY]);
+    client.release();
+  }
+}
+
 async function main() {
   const app = await buildApp();
 
-  // Applies pending Drizzle migrations, then seeds the admin account when the
-  // database has no users yet. Runs on every boot — migrate is a no-op once
-  // caught up, and the seed only fires on a genuinely empty `users` table —
-  // so a container restart against an already-provisioned database is a
-  // no-op too. Without this, a fresh `docker compose up --build` starts the
-  // API against an empty, unmigrated database and admin@discoverer.local
-  // never gets created.
-  await migrate(db, { migrationsFolder: path.join(__dirname, '../drizzle') });
-  const [row] = await db.select({ count: sql<number>`count(*)::int` }).from(users);
-  if (Number(row?.count ?? 0) === 0) {
-    app.log.info('No users found — seeding initial admin account');
-    await seed();
-  }
+  await ensureDatabaseReady(app);
 
   // Fail fast on an image that has thick mode switched on but carries no
   // Instant Client. Deliberately here rather than in buildApp(), which the
