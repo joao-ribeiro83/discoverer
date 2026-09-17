@@ -4596,6 +4596,26 @@ paths:
                           type:
                             - 'null'
                             - string
+                        extOwner:
+                          type:
+                            - 'null'
+                            - string
+                        extPackage:
+                          type:
+                            - 'null'
+                            - string
+                        extName:
+                          type:
+                            - 'null'
+                            - string
+                        extDbLink:
+                          type:
+                            - 'null'
+                            - string
+                        dataSourceId:
+                          type:
+                            - 'null'
+                            - string
                         isActive:
                           type: boolean
                         createdAt:
@@ -4652,9 +4672,36 @@ paths:
                       required:
                         type: boolean
                       defaultValue: {}
+                      position:
+                        type: integer
                 returnType:
                   type: string
                   maxLength: 64
+                extOwner:
+                  type:
+                    - string
+                    - 'null'
+                  maxLength: 128
+                extPackage:
+                  type:
+                    - string
+                    - 'null'
+                  maxLength: 128
+                extName:
+                  type:
+                    - string
+                    - 'null'
+                  maxLength: 128
+                extDbLink:
+                  type:
+                    - string
+                    - 'null'
+                  maxLength: 128
+                dataSourceId:
+                  type:
+                    - string
+                    - 'null'
+                  format: uuid
       security:
         - bearerAuth: []
       responses:
@@ -4684,6 +4731,26 @@ paths:
                           - PACKAGE
                       parameters: {}
                       returnType:
+                        type:
+                          - 'null'
+                          - string
+                      extOwner:
+                        type:
+                          - 'null'
+                          - string
+                      extPackage:
+                        type:
+                          - 'null'
+                          - string
+                      extName:
+                        type:
+                          - 'null'
+                          - string
+                      extDbLink:
+                        type:
+                          - 'null'
+                          - string
+                      dataSourceId:
                         type:
                           - 'null'
                           - string
@@ -4764,6 +4831,26 @@ paths:
                         type:
                           - 'null'
                           - string
+                      extOwner:
+                        type:
+                          - 'null'
+                          - string
+                      extPackage:
+                        type:
+                          - 'null'
+                          - string
+                      extName:
+                        type:
+                          - 'null'
+                          - string
+                      extDbLink:
+                        type:
+                          - 'null'
+                          - string
+                      dataSourceId:
+                        type:
+                          - 'null'
+                          - string
                       isActive:
                         type: boolean
                       createdAt:
@@ -4841,11 +4928,38 @@ paths:
                       required:
                         type: boolean
                       defaultValue: {}
+                      position:
+                        type: integer
                 returnType:
                   type:
                     - string
                     - 'null'
                   maxLength: 64
+                extOwner:
+                  type:
+                    - string
+                    - 'null'
+                  maxLength: 128
+                extPackage:
+                  type:
+                    - string
+                    - 'null'
+                  maxLength: 128
+                extName:
+                  type:
+                    - string
+                    - 'null'
+                  maxLength: 128
+                extDbLink:
+                  type:
+                    - string
+                    - 'null'
+                  maxLength: 128
+                dataSourceId:
+                  type:
+                    - string
+                    - 'null'
+                  format: uuid
       parameters:
         - schema:
             type: string
@@ -4882,6 +4996,26 @@ paths:
                           - PACKAGE
                       parameters: {}
                       returnType:
+                        type:
+                          - 'null'
+                          - string
+                      extOwner:
+                        type:
+                          - 'null'
+                          - string
+                      extPackage:
+                        type:
+                          - 'null'
+                          - string
+                      extName:
+                        type:
+                          - 'null'
+                          - string
+                      extDbLink:
+                        type:
+                          - 'null'
+                          - string
+                      dataSourceId:
                         type:
                           - 'null'
                           - string
@@ -4954,6 +5088,112 @@ paths:
                     properties:
                       message:
                         type: string
+        '400':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details: {}
+        '401':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details: {}
+        '403':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details: {}
+        '404':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details: {}
+  /api/data-sources/{dsId}/functions:
+    get:
+      tags:
+        - Custom Functions
+      parameters:
+        - schema:
+            type: string
+            maxLength: 128
+          in: query
+          name: owner
+          required: false
+        - schema:
+            type: string
+            maxLength: 128
+          in: query
+          name: search
+          required: false
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: dsId
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      owner:
+                        type: string
+                      truncated:
+                        type: boolean
+                      functions:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            owner:
+                              type: string
+                            packageName:
+                              type:
+                                - 'null'
+                                - string
+                            name:
+                              type: string
+                            overload:
+                              type:
+                                - 'null'
+                                - string
+                            returnType:
+                              type: string
+                            parameters: {}
+                            callableFromSql:
+                              type: boolean
+                            reason:
+                              type:
+                                - 'null'
+                                - string
         '400':
           description: Default Response
           content:

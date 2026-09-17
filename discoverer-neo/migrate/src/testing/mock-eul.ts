@@ -224,6 +224,7 @@ const EUL5_TABLE_NAMES = [
 /** Real EUL4 inventory — identical to EUL5's plus the tables EUL5 retired. */
 const EUL4_TABLE_NAMES = [
   ...EUL5_TABLE_NAMES.map((t) => t.replace('EUL5_', 'EUL4_')),
+  'EUL4_FUN_ARGUMENTS',
   'EUL4_NAMED_ELEMS',
   'EUL4_ODBC_CATALOGS',
   'EUL4_ODBC_SCHEMAS',
@@ -642,7 +643,18 @@ export function eul4Db(): MockDb {
         { HI_ID: 50, BA_ID: 10, HI_NAME: 'Account Hierarchy', HI_DESCRIPTION: null },
       ],
       EUL4_HI_NODES: [{ HN_ID: 51, HN_HI_ID: 50, HN_EXP_ID: 30, HN_NAME: 'Company' }],
-      EUL4_FUNCTIONS: [{ FUN_ID: 60, FUN_NAME: 'GL_PERIOD_NAME', FUN_DESCRIPTION: null }],
+      // Shaped on the live EUL4: a built-in (not a customer function) and a
+      // packaged function whose label differs from its database name, with
+      // arguments starting at FA_POSITION 2.
+      EUL4_FUNCTIONS: [
+        { FUN_ID: 1, FUN_NAME: 'SUM', FUN_DESCRIPTION: null, FUN_BUILT_IN: 1, FUN_EXT_NAME: 'SUM', FUN_EXT_PACKAGE: null, FUN_EXT_OWNER: null, FUN_EXT_DB_LINK: null, FUN_DATA_TYPE: 2 },
+        { FUN_ID: 60, FUN_NAME: 'GL_PERIOD_NAME1', FUN_DESCRIPTION: null, FUN_BUILT_IN: 0, FUN_EXT_NAME: 'GL_PERIOD_NAME', FUN_EXT_PACKAGE: 'PKG_GL_UTIL', FUN_EXT_OWNER: 'APPS', FUN_EXT_DB_LINK: null, FUN_DATA_TYPE: 1 },
+      ],
+      EUL4_FUN_ARGUMENTS: [
+        { FA_ID: 62, FA_NAME_S: 'P_DATE', FA_DEVELOPER_KEY: 'P_DATE', FA_DATA_TYPE: 4, FA_OPTIONAL: 1, FA_POSITION: 3, FA_FUN_ID: 60 },
+        { FA_ID: 61, FA_NAME_S: 'P_LEDGER', FA_DEVELOPER_KEY: 'P_LEDGER', FA_DATA_TYPE: 2, FA_OPTIONAL: 0, FA_POSITION: 2, FA_FUN_ID: 60 },
+        { FA_ID: 5, FA_NAME_S: null, FA_DEVELOPER_KEY: 'EUL_5', FA_DATA_TYPE: 2, FA_OPTIONAL: 0, FA_POSITION: 1, FA_FUN_ID: 1 },
+      ],
       EUL4_DOCUMENTS: [
         {
           DOC_ID: 70,

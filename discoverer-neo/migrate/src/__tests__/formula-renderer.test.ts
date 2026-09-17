@@ -332,6 +332,43 @@ describe('custom functions', () => {
     expect(result.ok ? '' : result.detail).toContain('DROP TABLE');
   });
 
+  it('calls the function by owner, package and database name', () => {
+    const result = renderSql(
+      tree('[2,17]([6,1],[5,2,"3"])'),
+      ctx({
+        resolveFunction: () => ({
+          name: 'GET_VCEP',
+          package: 'PKG_ENTIDADES_UTIL',
+          owner: 'SIID_TESTES',
+          arity: [2, 2],
+        }),
+      }),
+    );
+    if (!result.ok) throw new Error('expected a render');
+    expect(result.sql).toBe('SIID_TESTES.PKG_ENTIDADES_UTIL.GET_VCEP("T1"."COL_1", :v1)');
+  });
+
+  it('appends a database link, dotted parts and all', () => {
+    const result = renderSql(
+      tree('[2,17]([6,1])'),
+      ctx({ resolveFunction: () => ({ name: 'F', owner: 'O', dbLink: 'REMOTE.EXAMPLE.COM', arity: null }) }),
+    );
+    if (!result.ok) throw new Error('expected a render');
+    expect(result.sql).toBe('O.F@REMOTE.EXAMPLE.COM("T1"."COL_1")');
+  });
+
+  it.each([
+    ['package', { package: 'PKG"; DROP' }],
+    ['owner', { owner: 'A B' }],
+    ['link', { dbLink: 'LINK..X' }],
+  ])('rejects a hostile %s rather than quoting it', (_part, over) => {
+    const result = renderSql(
+      tree('[2,17]([6,1])'),
+      ctx({ resolveFunction: () => ({ name: 'CALC', arity: null, ...over }) }),
+    );
+    expect(result).toMatchObject({ ok: false, reason: 'INVALID_IDENTIFIER' });
+  });
+
   it('rejects a package-qualified name, which is not one identifier', () => {
     const result = renderSql(
       tree('[2,17]([6,1])'),
@@ -349,9 +386,8 @@ describe('custom functions', () => {
   });
 
   it('accepts any arity when the migrated row carries no signature', () => {
-    // Every row this estate migrated has parameters: null and a
-    // FUNCTION_SIGNATURE_DEFAULTED warning — the EUL read carries no argument
-    // list. Refusing on that would make all 593 permanently uncallable.
+    // A row with no signature (a source with no FUN_ARGUMENTS, or a function
+    // authored in Neo) is not guessed into one.
     const result = renderSql(
       tree('[2,17]([6,1],[6,2],[6,3])'),
       ctx({ resolveFunction: () => ({ name: 'CALC_PREMIO', arity: null }) }),

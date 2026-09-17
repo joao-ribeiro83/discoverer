@@ -805,6 +805,19 @@ export const customFunctions = pgTable('custom_functions', {
   functionType: functionTypeEnum('function_type').notNull(),
   parameters: jsonb('parameters'),
   returnType: varchar('return_type', { length: 64 }),
+  /**
+   * What SQL actually calls: `ext_owner.ext_package.ext_name@ext_db_link`.
+   * `name` is only Discoverer's label for it (`FUN_NAME`) and is what a
+   * workbook references; the two differ, and `ext_name` alone is not unique.
+   */
+  extOwner: varchar('ext_owner', { length: 128 }),
+  extPackage: varchar('ext_package', { length: 128 }),
+  extName: varchar('ext_name', { length: 128 }),
+  extDbLink: varchar('ext_db_link', { length: 128 }),
+  /** The database the function lives in — the one it was migrated from. */
+  dataSourceId: uuid('data_source_id').references(() => dataSources.id, {
+    onDelete: 'set null',
+  }),
   isActive: boolean('is_active').notNull().default(true),
   createdAt: timestamp('created_at', { withTimezone: true })
     .notNull()

@@ -176,6 +176,13 @@
       "when": 1791000000000,
       "tag": "0024_calculated_field_compiled_binds",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1791100000000,
+      "tag": "0025_custom_function_reference",
+      "breakpoints": true
     }
   ]
 }

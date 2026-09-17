@@ -1104,7 +1104,7 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 
 | Status | Body |
 | --- | --- |
-| 200 | { data?: { id?: string name?: string description?: null,string functionType?: "SQL" \| "PLSQL" \| "PACKAGE" parameters?: any returnType?: null,string isActive?: boolean createdAt?: string }[] } |
+| 200 | { data?: { id?: string name?: string description?: null,string functionType?: "SQL" \| "PLSQL" \| "PACKAGE" parameters?: any returnType?: null,string extOwner?: null,string extPackage?: null,string extName?: null,string extDbLink?: null,string dataSourceId?: null,string isActive?: boolean createdAt?: string }[] } |
 | 401 | { error?: string details?: any } |
 
 #### POST /api/custom-functions
@@ -1120,8 +1120,14 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
     type: string
     required?: boolean
     defaultValue?: any
+    position?: integer
   }[]
   returnType?: string
+  extOwner?: string,null
+  extPackage?: string,null
+  extName?: string,null
+  extDbLink?: string,null
+  dataSourceId?: string,null
 }
 ```
 
@@ -1129,7 +1135,7 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 
 | Status | Body |
 | --- | --- |
-| 201 | { data?: { id?: string name?: string description?: null,string functionType?: "SQL" \| "PLSQL" \| "PACKAGE" parameters?: any returnType?: null,string isActive?: boolean createdAt?: string } } |
+| 201 | { data?: { id?: string name?: string description?: null,string functionType?: "SQL" \| "PLSQL" \| "PACKAGE" parameters?: any returnType?: null,string extOwner?: null,string extPackage?: null,string extName?: null,string extDbLink?: null,string dataSourceId?: null,string isActive?: boolean createdAt?: string } } |
 | 400 | { error?: string details?: any } |
 | 401 | { error?: string details?: any } |
 | 403 | { error?: string details?: any } |
@@ -1146,7 +1152,7 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 
 | Status | Body |
 | --- | --- |
-| 200 | { data?: { id?: string name?: string description?: null,string functionType?: "SQL" \| "PLSQL" \| "PACKAGE" parameters?: any returnType?: null,string isActive?: boolean createdAt?: string } } |
+| 200 | { data?: { id?: string name?: string description?: null,string functionType?: "SQL" \| "PLSQL" \| "PACKAGE" parameters?: any returnType?: null,string extOwner?: null,string extPackage?: null,string extName?: null,string extDbLink?: null,string dataSourceId?: null,string isActive?: boolean createdAt?: string } } |
 | 400 | { error?: string details?: any } |
 | 401 | { error?: string details?: any } |
 | 404 | { error?: string details?: any } |
@@ -1167,6 +1173,11 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
   functionType?: "SQL" | "PLSQL" | "PACKAGE"
   parameters?: array,null
   returnType?: string,null
+  extOwner?: string,null
+  extPackage?: string,null
+  extName?: string,null
+  extDbLink?: string,null
+  dataSourceId?: string,null
 }
 ```
 
@@ -1174,7 +1185,7 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 
 | Status | Body |
 | --- | --- |
-| 200 | { data?: { id?: string name?: string description?: null,string functionType?: "SQL" \| "PLSQL" \| "PACKAGE" parameters?: any returnType?: null,string isActive?: boolean createdAt?: string } } |
+| 200 | { data?: { id?: string name?: string description?: null,string functionType?: "SQL" \| "PLSQL" \| "PACKAGE" parameters?: any returnType?: null,string extOwner?: null,string extPackage?: null,string extName?: null,string extDbLink?: null,string dataSourceId?: null,string isActive?: boolean createdAt?: string } } |
 | 400 | { error?: string details?: any } |
 | 401 | { error?: string details?: any } |
 | 403 | { error?: string details?: any } |
@@ -1193,6 +1204,26 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 | Status | Body |
 | --- | --- |
 | 200 | { data?: { message?: string } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
+| 404 | { error?: string details?: any } |
+
+#### GET /api/data-sources/{dsId}/functions
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `owner` | query | no | string |
+| `search` | query | no | string |
+| `dsId` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { owner?: string truncated?: boolean functions?: { owner?: string packageName?: null,string name?: string overload?: null,string returnType?: string parameters?: any callableFromSql?: boolean reason?: null,string }[] } } |
 | 400 | { error?: string details?: any } |
 | 401 | { error?: string details?: any } |
 | 403 | { error?: string details?: any } |

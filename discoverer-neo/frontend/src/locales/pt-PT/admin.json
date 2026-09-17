@@ -221,7 +221,10 @@
     "columns": {
       "parameters": "Parâmetros",
       "parametersCount": "{{count}} parâmetro(s)",
-      "returnType": "Tipo de Retorno"
+      "returnType": "Tipo de Retorno",
+      "databaseFunction": "Função da Base de Dados",
+      "noReference": "Não definida",
+      "dataSource": "Origem de Dados"
     },
     "dialog": {
       "editTitle": "Editar Função Personalizada",
@@ -232,17 +235,35 @@
       "returnTypeLabel": "Tipo de Retorno",
       "returnTypePlaceholder": "p. ex. NUMBER",
       "parametersLabel": "Parâmetros (JSON)",
-      "parametersPlaceholder": "[\n  { \"name\": \"p_id\", \"type\": \"NUMBER\", \"required\": true }\n]"
+      "parametersPlaceholder": "[\n  { \"name\": \"p_id\", \"type\": \"NUMBER\", \"required\": true }\n]",
+      "databaseFunctionLegend": "Função da base de dados",
+      "dataSourceLabel": "Origem de dados",
+      "dataSourcePlaceholder": "Escolha uma origem de dados",
+      "extOwnerLabel": "Proprietário",
+      "extPackageLabel": "Package",
+      "extNameLabel": "Nome da função",
+      "extDbLinkLabel": "Database link"
     },
     "validation": {
       "parametersMustBeArray": "Os parâmetros devem ser um array JSON",
       "parameterNeedsNameAndType": "Cada parâmetro precisa de um \"name\" e um \"type\"",
-      "invalidJson": "JSON inválido"
+      "invalidJson": "JSON inválido",
+      "invalidIdentifier": "Use apenas letras, dígitos, _, $ ou #, a começar por uma letra"
     },
     "toast": {
       "updated": "Função atualizada",
       "created": "Função criada",
       "deactivated": "Função desativada"
+    },
+    "filterPlaceholder": "Filtrar por nome ou função da base de dados…",
+    "search": {
+      "ownerLabel": "Proprietário",
+      "searchLabel": "Procurar uma função",
+      "searchPlaceholder": "Nome da função ou do package",
+      "button": "Procurar",
+      "noResults": "Nenhuma função encontrada.",
+      "notCallable": "Não pode ser chamada em SQL: {{reason}}",
+      "truncated": "Há mais funções. Escreva mais do nome para restringir a pesquisa."
     }
   },
   "dataSources": {

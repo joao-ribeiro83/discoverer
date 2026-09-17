@@ -33,6 +33,7 @@ import {
   type NeoFolderType,
   type NeoItemType,
   type TransformedBusinessArea,
+  type CustomFunctionParameter,
   type TransformedCustomFunction,
   type TransformedFolder,
   type TransformedGrant,
@@ -531,22 +532,67 @@ export function transformCustomFunction(
   const warnings: TransformWarning[] = [];
   let name = (fn.name ?? '').trim();
   if (name === '') name = `Function ${fn.sourceId}`;
+  const text = (v: string | null | undefined): string | null => v?.trim() || null;
 
-  // EUL FUNCTIONS metadata carries no argument list or return type in the
-  // normalized read, so these default and should be reviewed post-migration.
-  warnings.push({
-    code: 'FUNCTION_SIGNATURE_DEFAULTED',
-    message: `Custom function "${name}" migrated as PL/SQL with no parameters/return type; complete its signature in Neo.`,
-    sourceId: fn.sourceId,
-  });
+  // `FUN_NAME` is only a label. Falling back to it is a guess about the
+  // database name, so it is said out loud.
+  let extName = text(fn.extName);
+  if (extName === null) {
+    extName = name;
+    warnings.push({
+      code: 'FUNCTION_NO_DATABASE_NAME',
+      message: `Custom function "${name}" has no FUN_EXT_NAME; its label is used as the database name.`,
+      sourceId: fn.sourceId,
+    });
+  }
 
+  const unmapped = new Set<number>();
+  const typeOf = (code: number | null | undefined): string | null => {
+    if (code === null || code === undefined) return null;
+    const mapped = itemDataType(String(code));
+    if (mapped === String(code)) unmapped.add(code);
+    return mapped;
+  };
+
+  let parameters: CustomFunctionParameter[] | null = null;
+  if (fn.arguments === undefined) {
+    warnings.push({
+      code: 'FUNCTION_SIGNATURE_DEFAULTED',
+      message: `Custom function "${name}" has no FUN_ARGUMENTS in the source; its parameters are unknown.`,
+      sourceId: fn.sourceId,
+    });
+  } else {
+    parameters = [...fn.arguments]
+      .sort((a, b) => a.position - b.position)
+      .map((arg) => ({
+        name: text(arg.name) ?? `ARG${arg.position}`,
+        type: typeOf(arg.dataType) ?? 'UNKNOWN',
+        required: !arg.optional,
+        position: arg.position,
+      }));
+  }
+  const returnType = typeOf(fn.dataType);
+
+  if (unmapped.size > 0) {
+    warnings.push({
+      code: 'FUNCTION_DATA_TYPE_UNMAPPED',
+      message: `Custom function "${name}" uses data type code(s) ${[...unmapped].join(', ')}, which no source decodes; kept as the raw code.`,
+      sourceId: fn.sourceId,
+    });
+  }
+
+  const extPackage = text(fn.extPackage);
   return {
     sourceId: fn.sourceId,
     name: clamp(name, NAME_MAX),
     description: fn.description,
-    functionType: 'PLSQL',
-    returnType: null,
-    parameters: null,
+    functionType: extPackage ? 'PACKAGE' : 'PLSQL',
+    returnType,
+    parameters,
+    extOwner: text(fn.extOwner),
+    extPackage,
+    extName,
+    extDbLink: text(fn.extDbLink),
     isActive: true,
     warnings,
   };
