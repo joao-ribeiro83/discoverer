@@ -40,6 +40,8 @@ const SHARED_TABLES = [
   'map_totals',
   'map_page_setup',
   'map_conditional_formats',
+  // Shared since the migrator started writing Discoverer's workbook grants.
+  'map_shares',
 ];
 
 const BACKEND_SCHEMA = join(__dirname, '..', 'db', 'schema.ts');

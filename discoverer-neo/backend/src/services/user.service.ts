@@ -1,4 +1,8 @@
-import { and, eq, ilike, ne, or } from 'drizzle-orm';
+import { and, eq, ilike, inArray, ne, or } from 'drizzle-orm';
+import {
+  generateTemporaryPassword,
+  type ProvisionedCredential,
+} from './credential-file.service.js';
 import { db } from '../db/index.js';
 import { users, type User } from '../db/schema.js';
 import { hashPassword } from '../lib/password.js';
@@ -124,6 +128,51 @@ export async function update(id: string, data: UpdateUserInput): Promise<SafeUse
 
   const [row] = await db.update(users).set(values).where(eq(users.id, id)).returning();
   return row ? toSafe(row) : null;
+}
+
+/**
+ * Issue a fresh temporary password to each named account and force a change
+ * at next login.
+ *
+ * This is how an operator recovers from the one-way step in a migration: the
+ * passwords it generated were hashed on the way in and written to a
+ * credentials file that is deleted on a timer, so once that file is gone
+ * nobody can hand a migrated user their password — the only way back is to
+ * issue a new one. A database role is skipped: it holds grants and can never
+ * sign in, so a credential for it would be a credential nobody should use.
+ *
+ * Returns plaintext. The caller hands it straight to the administrator who
+ * asked; nothing here logs it or stores it anywhere but the hash column.
+ */
+export async function issueTemporaryPasswords(
+  userIds: string[],
+): Promise<ProvisionedCredential[]> {
+  const ids = [...new Set(userIds)];
+  if (ids.length === 0) return [];
+
+  const rows = await db
+    .select({ id: users.id, email: users.email, name: users.name, isRole: users.isRole })
+    .from(users)
+    .where(and(inArray(users.id, ids), eq(users.isRole, false)));
+
+  const issued: ProvisionedCredential[] = [];
+  for (const row of rows) {
+    const temporaryPassword = generateTemporaryPassword();
+    await db
+      .update(users)
+      .set({
+        passwordHash: await hashPassword(temporaryPassword),
+        mustChangePassword: true,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, row.id));
+    issued.push({
+      username: row.name ?? row.email,
+      email: row.email,
+      temporaryPassword,
+    });
+  }
+  return issued;
 }
 
 export async function remove(id: string): Promise<boolean> {

@@ -348,6 +348,12 @@
       "deleted": "Utilisateur supprimé",
       "activated": "Utilisateur activé",
       "deactivated": "Utilisateur désactivé"
+    },
+    "credentials": {
+      "button": "Fichier d'identifiants",
+      "hint": "Émettre un nouveau mot de passe temporaire pour chaque compte qui en a encore un, et télécharger la liste en CSV",
+      "issued": "Fichier d'identifiants téléchargé",
+      "failed": "Impossible d'émettre les identifiants"
     }
   }
 }

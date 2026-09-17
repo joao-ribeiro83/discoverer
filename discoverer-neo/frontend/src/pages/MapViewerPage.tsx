@@ -118,7 +118,13 @@ export function MapViewerPage() {
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">{map.name}</h2>
-          {map.description && <p className="text-muted-foreground">{map.description}</p>}
+          {/* After a run the heading shows the parameters that were entered;
+              before one it shows their defaults. */}
+          {(result?.heading?.description ?? map.description) && (
+            <p className="whitespace-pre-line text-muted-foreground">
+              {result?.heading?.description ?? map.description}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <div className="flex flex-col items-end gap-1">

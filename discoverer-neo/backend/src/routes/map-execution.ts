@@ -1,6 +1,7 @@
 import type { FastifyInstance, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { loadMapWithAccess } from './maps.js';
+import { resolveHeading } from '../services/map.service.js';
 import { SqlGenerationError, planDraft } from '../services/sql-generator.js';
 import {
   executeMap,
@@ -210,7 +211,10 @@ export default function mapExecutionRoutes(fastify: FastifyInstance) {
             correlationId: request.id,
           },
         );
-        return { data: result };
+        // The heading carries `&Date`, `&Time` and `&<ParamName>` tokens. Only
+        // here are the real values known, so only here can they be printed.
+        const heading = await resolveHeading(map.id, parsed.data.parameters ?? {});
+        return { data: { ...result, heading } };
       } catch (err) {
         if (handleExecutionError(reply, err, request.id)) return;
         throw err;

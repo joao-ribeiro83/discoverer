@@ -348,6 +348,12 @@
       "deleted": "Utilizador eliminado",
       "activated": "Utilizador ativado",
       "deactivated": "Utilizador desativado"
+    },
+    "credentials": {
+      "button": "Ficheiro de credenciais",
+      "hint": "Emitir uma nova palavra-passe temporária para cada conta que ainda tenha uma e transferir a lista em CSV",
+      "issued": "Ficheiro de credenciais transferido",
+      "failed": "Não foi possível emitir as credenciais"
     }
   }
 }

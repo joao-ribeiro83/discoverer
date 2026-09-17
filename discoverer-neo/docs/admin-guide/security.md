@@ -369,6 +369,28 @@ active policy already targeted — and became the full fail-closed in Phase 6.3.
 `ROW_LEVEL_FAIL_MODE=OPEN` brings the narrower rule back; it never lets a
 folder that a policy targets run unfiltered.
 
+### 4. A grant below CREATE no longer shows you other people's maps
+
+A business-area grant of `VIEW`, `EXPORT` or `SCHEDULE` is a **data**
+entitlement. It lets you build and run your own maps over that business area;
+it does not put every map somebody else saved there into your list.
+
+Seeing another person's map needs one of: you own it, it is public, it was
+shared with you (`map_shares`), or you hold an **authoring** grant — `CREATE`,
+`EDIT` or `DELETE` — on its business area.
+
+This matches Discoverer, where a business-area grant let you write worksheets
+over that data while opening somebody else's saved workbook needed an explicit
+workbook grant (`ACCESS_PRIVS.AP_TYPE = 'GD'`). Those workbook grants now
+migrate into `map_shares`, one share per worksheet, at `EXPORT` level — which
+lets the assignee run the map, export the result and schedule it, but not edit
+it.
+
+**What you may see:** a migrated user whose map list is suddenly short. Every
+grant a migration writes is below `CREATE`, so before this change one `VIEW`
+grant showed every map in the business area. The fix is to share the maps that
+person is meant to have, or raise their grant to `CREATE` if they are an author.
+
 ## Object-level access
 
 Reading one folder, item, join or hierarchy by its id needs the same grant as

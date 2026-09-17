@@ -339,6 +339,15 @@ export const apiClient = {
     create: (data: unknown) => api.post<Envelope<AppUser>>('/users', data),
     update: (id: string, data: unknown) => api.put<Envelope<AppUser>>(`/users/${id}`, data),
     delete: (id: string) => api.delete<Envelope<{ message: string }>>(`/users/${id}`),
+    /**
+     * Re-issue temporary passwords and download them as a CSV. Omit `userIds`
+     * for every account still on a temporary password — the migrated ones.
+     * The response is the file itself, not JSON.
+     */
+    issueCredentials: (userIds?: string[]) =>
+      api.post<string>('/users/credentials', userIds ? { userIds } : {}, {
+        responseType: 'text',
+      }),
     // Unlike the CRUD methods above (admin-only), search is available to any
     // authenticated user — it backs the map-sharing user picker.
     search: (q: string) => api.get<Envelope<UserOption[]>>('/users/search', { params: { q } }),

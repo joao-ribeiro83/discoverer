@@ -1,10 +1,10 @@
 /**
  * The single Drizzle definition of every table shared by the migrator and the
- * backend — all 21 of them.
+ * backend — all 22 of them.
  *
  * This file is the one place those tables are declared.
- * `backend/src/db/schema.ts` re-exports it and adds the 10 runtime-only
- * tables (map shares, query execution log, export jobs, schedules, scheduled
+ * `backend/src/db/schema.ts` re-exports it and adds the 9 runtime-only
+ * tables (query execution log, export jobs, schedules, scheduled
  * results, security policies and the audit log). Drift between the two
  * workspaces is therefore not possible: there is nothing to drift from.
  *
@@ -1486,6 +1486,48 @@ export const mapConditionalFormats = pgTable(
 );
 
 // ---------------------------------------------------------------------------
+// map_shares
+// ---------------------------------------------------------------------------
+
+/**
+ * Who a map was assigned to.
+ *
+ * Shared rather than runtime-only because the migrator writes it: a Discoverer
+ * workbook grant (`ACCESS_PRIVS.AP_TYPE = 'GD'`, `GD_DOC_ID`) is a share on
+ * every worksheet of that workbook, and it is the only thing in the source
+ * that says "this person may open someone else's saved map".
+ */
+export const sharePermissionEnum = pgEnum('share_permission_level', [
+  'VIEW',
+  'EDIT',
+  'EXPORT',
+]);
+
+export const mapShares = pgTable(
+  'map_shares',
+  {
+    id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+    mapId: uuid('map_id')
+      .notNull()
+      .references(() => maps.id, { onDelete: 'cascade' }),
+    sharedWithUserId: uuid('shared_with_user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    permissionLevel: sharePermissionEnum('permission_level').notNull(),
+    sharedBy: uuid('shared_by')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    sharedAt: timestamp('shared_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('map_shares_map_user_idx').on(t.mapId, t.sharedWithUserId),
+    index('map_shares_user_idx').on(t.sharedWithUserId),
+  ],
+);
+
+// ---------------------------------------------------------------------------
 // Inferred insert types
 // ---------------------------------------------------------------------------
 
@@ -1534,6 +1576,8 @@ export const TARGET_TABLES = {
   map_page_setup: mapPageSetup,
   map_conditional_formats: mapConditionalFormats,
   user_business_area_grants: userBusinessAreaGrants,
+  // Last: a share points at a map, so the maps must already be in.
+  map_shares: mapShares,
 } as const;
 
 export type TargetTable = keyof typeof TARGET_TABLES;

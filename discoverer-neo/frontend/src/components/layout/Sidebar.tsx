@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Separator } from '@/components/ui/separator'
+import { useAuthStore } from '@/store/auth'
 
 const mainNavItems = [
   { to: '/dashboard', labelKey: 'items.dashboard', icon: LayoutDashboard },
@@ -42,9 +43,14 @@ const mapsNavItems = [
   { to: '/maps', labelKey: 'items.maps', icon: Map },
 ]
 
+/** A plain user can run, schedule and export their maps — nothing else. */
 const otherNavItems = [
   { to: '/schedules', labelKey: 'items.schedules', icon: CalendarClock },
   { to: '/exports', labelKey: 'items.exports', icon: Download },
+]
+
+/** Modelling the EUL is an administrator's job; a user can do none of it. */
+const adminOnlyOtherNavItems = [
   { to: '/admin/migration', labelKey: 'items.migration', icon: ArrowRightLeft },
 ]
 
@@ -85,6 +91,11 @@ function NavSection({
 
 export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const { t } = useTranslation('nav')
+  const role = useAuthStore((s) => s.user?.role)
+  // MANAGER shares the data-modelling routes with ADMIN (see the backend's
+  // `authorize('ADMIN', 'MANAGER')` gates); everyone else gets nothing there,
+  // so the section is noise at best and a wall of 403s at worst.
+  const canModel = role === 'ADMIN' || role === 'MANAGER'
   return (
     <>
       <div className="flex h-14 items-center gap-2 border-b px-4">
@@ -93,16 +104,24 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
       </div>
       <nav className="flex-1 overflow-y-auto py-2">
         <NavSection title={t('sections.overview')} items={mainNavItems} onNavigate={onNavigate} />
-        <Separator className="my-2" />
-        <NavSection
-          title={t('sections.dataModeling')}
-          items={adminNavItems}
-          onNavigate={onNavigate}
-        />
+        {canModel && (
+          <>
+            <Separator className="my-2" />
+            <NavSection
+              title={t('sections.dataModeling')}
+              items={adminNavItems}
+              onNavigate={onNavigate}
+            />
+          </>
+        )}
         <Separator className="my-2" />
         <NavSection title={t('sections.maps')} items={mapsNavItems} onNavigate={onNavigate} />
         <Separator className="my-2" />
-        <NavSection title={t('sections.other')} items={otherNavItems} onNavigate={onNavigate} />
+        <NavSection
+          title={t('sections.other')}
+          items={canModel ? [...otherNavItems, ...adminOnlyOtherNavItems] : otherNavItems}
+          onNavigate={onNavigate}
+        />
       </nav>
       <div className="border-t p-3">
         <NavLink

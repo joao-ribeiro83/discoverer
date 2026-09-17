@@ -559,6 +559,12 @@ export interface ExecuteResult {
    * The rows are still valid.
    */
   warnings?: string[]
+  /**
+   * The worksheet heading with its `&Date`, `&Time` and `&<ParamName>` tokens
+   * replaced by the values this run actually used. Present on `/execute` only:
+   * before a run there is no "now" and no entered parameter to print.
+   */
+  heading?: { title: string | null; description: string | null }
 }
 
 export interface ExecuteMapBody {

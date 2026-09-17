@@ -348,6 +348,12 @@
       "deleted": "User deleted",
       "activated": "User activated",
       "deactivated": "User deactivated"
+    },
+    "credentials": {
+      "button": "Credentials file",
+      "hint": "Issue a new temporary password to every account that still has one, and download the list as a CSV",
+      "issued": "Credentials file downloaded",
+      "failed": "Could not issue credentials"
     }
   }
 }
