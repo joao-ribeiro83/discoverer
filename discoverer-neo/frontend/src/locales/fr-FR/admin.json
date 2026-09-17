@@ -221,7 +221,10 @@
     "columns": {
       "parameters": "Paramètres",
       "parametersCount": "{{count}} paramètre(s)",
-      "returnType": "Type de retour"
+      "returnType": "Type de retour",
+      "databaseFunction": "Fonction de la base",
+      "noReference": "Non définie",
+      "dataSource": "Source de données"
     },
     "dialog": {
       "editTitle": "Modifier la fonction personnalisée",
@@ -232,17 +235,35 @@
       "returnTypeLabel": "Type de retour",
       "returnTypePlaceholder": "p. ex. NUMBER",
       "parametersLabel": "Paramètres (JSON)",
-      "parametersPlaceholder": "[\n  { \"name\": \"p_id\", \"type\": \"NUMBER\", \"required\": true }\n]"
+      "parametersPlaceholder": "[\n  { \"name\": \"p_id\", \"type\": \"NUMBER\", \"required\": true }\n]",
+      "databaseFunctionLegend": "Fonction de la base de données",
+      "dataSourceLabel": "Source de données",
+      "dataSourcePlaceholder": "Choisissez une source de données",
+      "extOwnerLabel": "Propriétaire",
+      "extPackageLabel": "Package",
+      "extNameLabel": "Nom de la fonction",
+      "extDbLinkLabel": "Lien de base de données"
     },
     "validation": {
       "parametersMustBeArray": "Les paramètres doivent être un tableau JSON",
       "parameterNeedsNameAndType": "Chaque paramètre nécessite un « name » et un « type »",
-      "invalidJson": "JSON non valide"
+      "invalidJson": "JSON non valide",
+      "invalidIdentifier": "Lettres, chiffres, _, $ ou # uniquement, en commençant par une lettre"
     },
     "toast": {
       "updated": "Fonction mise à jour",
       "created": "Fonction créée",
       "deactivated": "Fonction désactivée"
+    },
+    "filterPlaceholder": "Filtrer par nom ou fonction de la base…",
+    "search": {
+      "ownerLabel": "Propriétaire",
+      "searchLabel": "Rechercher une fonction",
+      "searchPlaceholder": "Nom de la fonction ou du package",
+      "button": "Rechercher",
+      "noResults": "Aucune fonction trouvée.",
+      "notCallable": "Ne peut pas être appelée en SQL : {{reason}}",
+      "truncated": "D'autres fonctions correspondent. Saisissez plus du nom pour affiner."
     }
   },
   "dataSources": {

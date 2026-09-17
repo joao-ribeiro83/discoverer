@@ -14,6 +14,7 @@ import type {
   JoinSuggestion,
   Hierarchy,
   CustomFunction,
+  DatabaseFunction,
   AppUser,
   MapSummary,
   MapWithDetails,
@@ -307,6 +308,11 @@ export const apiClient = {
     create: (data: unknown) => api.post<Envelope<CustomFunction>>('/custom-functions', data),
     update: (id: string, data: unknown) => api.put<Envelope<CustomFunction>>(`/custom-functions/${id}`, data),
     delete: (id: string) => api.delete<Envelope<{ message: string }>>(`/custom-functions/${id}`),
+    searchDatabase: (dataSourceId: string, params: { owner?: string; search?: string }) =>
+      api.get<Envelope<{ owner: string; functions: DatabaseFunction[]; truncated: boolean }>>(
+        `/data-sources/${dataSourceId}/functions`,
+        { params },
+      ),
   },
   // Data Sources
   dataSources: {

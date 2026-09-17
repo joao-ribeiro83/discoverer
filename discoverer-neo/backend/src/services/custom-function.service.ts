@@ -16,9 +16,19 @@ export interface FunctionParameter {
   type: string;
   required?: boolean;
   defaultValue?: string | number | boolean | null;
+  position?: number;
 }
 
-export interface CreateCustomFunctionInput {
+/** What SQL calls: `extOwner.extPackage.extName@extDbLink`, in `dataSourceId`. */
+export interface FunctionReference {
+  extOwner?: string | null;
+  extPackage?: string | null;
+  extName?: string | null;
+  extDbLink?: string | null;
+  dataSourceId?: string | null;
+}
+
+export interface CreateCustomFunctionInput extends FunctionReference {
   name: string;
   description?: string | null;
   functionType: FunctionType;
@@ -26,7 +36,7 @@ export interface CreateCustomFunctionInput {
   returnType?: string | null;
 }
 
-export interface UpdateCustomFunctionInput {
+export interface UpdateCustomFunctionInput extends FunctionReference {
   name?: string;
   description?: string | null;
   functionType?: FunctionType;
@@ -146,6 +156,11 @@ export async function create(
       functionType: data.functionType,
       parameters: data.parameters ?? null,
       returnType: data.returnType ?? null,
+      extOwner: data.extOwner ?? null,
+      extPackage: data.extPackage ?? null,
+      extName: data.extName ?? null,
+      extDbLink: data.extDbLink ?? null,
+      dataSourceId: data.dataSourceId ?? null,
     })
     .returning();
 

@@ -628,9 +628,57 @@ describe('transformCustomFunction', () => {
       functionType: 'PLSQL',
       returnType: null,
       parameters: null,
+      extName: 'GET_FISCAL_YEAR',
       isActive: true,
     });
     expect(codes(t.warnings)).toContain('FUNCTION_SIGNATURE_DEFAULTED');
+    expect(codes(t.warnings)).toContain('FUNCTION_NO_DATABASE_NAME');
+  });
+
+  it('keeps the database reference, typed arguments and return type', () => {
+    const t = transformCustomFunction(
+      customFunction({
+        name: 'GET_VCEP1',
+        extName: 'GET_VCEP',
+        extPackage: 'PKG_ENTIDADES_UTIL',
+        extOwner: 'SIID_TESTES',
+        extDbLink: null,
+        dataType: 2,
+        arguments: [
+          { name: 'P_DATE', dataType: 4, optional: true, position: 4 },
+          { name: 'PI_CDPERSON', dataType: 2, optional: false, position: 2 },
+          { name: null, dataType: 1, optional: false, position: 3 },
+        ],
+      }),
+      'EUL4',
+    );
+    expect(t).toMatchObject({
+      name: 'GET_VCEP1',
+      functionType: 'PACKAGE',
+      extOwner: 'SIID_TESTES',
+      extPackage: 'PKG_ENTIDADES_UTIL',
+      extName: 'GET_VCEP',
+      extDbLink: null,
+      returnType: 'NUMBER',
+      parameters: [
+        { name: 'PI_CDPERSON', type: 'NUMBER', required: true, position: 2 },
+        { name: 'ARG3', type: 'TEXT', required: true, position: 3 },
+        { name: 'P_DATE', type: 'DATE', required: false, position: 4 },
+      ],
+    });
+    expect(t.warnings).toEqual([]);
+  });
+
+  it('keeps an undecoded type code and says so', () => {
+    const t = transformCustomFunction(
+      customFunction({
+        extName: 'GET_FISCAL_YEAR',
+        arguments: [{ name: 'P_X', dataType: 8, optional: false, position: 2 }],
+      }),
+      'EUL4',
+    );
+    expect(t.parameters).toEqual([{ name: 'P_X', type: '8', required: true, position: 2 }]);
+    expect(codes(t.warnings)).toEqual(['FUNCTION_DATA_TYPE_UNMAPPED']);
   });
 
   it('handles an EUL4 function with no description', () => {

@@ -963,8 +963,23 @@ describe('unified read functions', () => {
 
       const eul4 = await adapterFor(eul4Db());
       const eul4Functions = await readCustomFunctions(eul4.adapter, eul4.execute);
+      // The built-in SUM is dropped; the database reference and the arguments
+      // (in position order) come with the customer function.
       expect(eul4Functions).toEqual([
-        { sourceId: 60, name: 'GL_PERIOD_NAME', description: null },
+        {
+          sourceId: 60,
+          name: 'GL_PERIOD_NAME1',
+          description: null,
+          extName: 'GL_PERIOD_NAME',
+          extPackage: 'PKG_GL_UTIL',
+          extOwner: 'APPS',
+          extDbLink: null,
+          dataType: 1,
+          arguments: [
+            { name: 'P_LEDGER', dataType: 2, optional: false, position: 2 },
+            { name: 'P_DATE', dataType: 4, optional: true, position: 3 },
+          ],
+        },
       ]);
     });
   });
