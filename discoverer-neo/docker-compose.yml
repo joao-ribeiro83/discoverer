@@ -60,6 +60,7 @@ services:
       REDIS_URL: redis://redis:6379
       EXPORT_DIR: /app/exports
       SCHEDULE_RESULT_DIR: /app/scheduled-results
+      CREDENTIALS_DIR: /app/credentials
       # Thin mode by default — no Instant Client needed, supports Oracle 12.1+.
       # For an EUL on 11.2–12.0, set ORACLE_THICK_MODE=true in .env and rebuild:
       # the build arg above reads the same flag, so the image gets the Instant
@@ -75,6 +76,10 @@ services:
       - export_files:/app/exports
       # Same rationale, for scheduled-run output files.
       - scheduled_results_files:/app/scheduled-results
+      # Same rationale, for provisioned-credential files (temporary passwords
+      # for migrated/auto-seeded accounts) — must outlive a container
+      # recreate, since each is the operator's only copy of a password.
+      - credential_files:/app/credentials
     depends_on:
       postgres:
         condition: service_healthy
@@ -101,3 +106,4 @@ volumes:
   redis_data:
   export_files:
   scheduled_results_files:
+  credential_files:

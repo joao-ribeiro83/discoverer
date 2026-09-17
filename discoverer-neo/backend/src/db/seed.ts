@@ -8,7 +8,18 @@ import {
 } from './schema.js';
 import bcrypt from 'bcryptjs';
 
-export async function seed() {
+const DEFAULT_PASSWORD = 'admin123';
+
+export interface SeedOptions {
+  /** Defaults to the well-known dev password used by `npm run db:seed`. */
+  password?: string;
+  /** Force a password change before the account can do anything else. */
+  mustChangePassword?: boolean;
+}
+
+export async function seed(options: SeedOptions = {}) {
+  const { password = DEFAULT_PASSWORD, mustChangePassword = false } = options;
+
   console.log('🌱 Seeding database...');
 
   // Clean slate (respect FK order)
@@ -18,7 +29,7 @@ export async function seed() {
   await db.delete(users);
 
   // 1. Admin user
-  const passwordHash = await bcrypt.hash('admin123', 10);
+  const passwordHash = await bcrypt.hash(password, 10);
   const [admin] = await db
     .insert(users)
     .values({
@@ -26,6 +37,7 @@ export async function seed() {
       passwordHash,
       name: 'Discoverer Admin',
       role: 'ADMIN',
+      mustChangePassword,
     })
     .returning();
   if (!admin) throw new Error('Failed to create admin user');
@@ -97,7 +109,11 @@ export async function seed() {
   console.log('');
   console.log('Login credentials:');
   console.log('  email:    admin@discoverer.local');
-  console.log('  password: admin123');
+  console.log(
+    password === DEFAULT_PASSWORD
+      ? `  password: ${DEFAULT_PASSWORD}`
+      : '  password: (generated — see the credentials file, never logged)',
+  );
 }
 
 // Only run as a standalone script (`npm run db:seed`) — server.ts imports

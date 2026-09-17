@@ -113,6 +113,7 @@ services:
       REDIS_URL: redis://redis:6379
       EXPORT_DIR: /app/exports
       SCHEDULE_RESULT_DIR: /app/scheduled-results
+      CREDENTIALS_DIR: /app/credentials
       ORACLE_THICK_MODE: ${ORACLE_THICK_MODE:-false}
       # nginx is exactly one hop in front, and nothing else can reach the
       # backend — so its X-Forwarded-For is the real client IP that login
@@ -123,6 +124,7 @@ services:
     volumes:
       - export_files:/app/exports
       - scheduled_results_files:/app/scheduled-results
+      - credential_files:/app/credentials
     depends_on:
       postgres:
         condition: service_healthy
@@ -212,3 +214,4 @@ volumes:
   redis_data:
   export_files:
   scheduled_results_files:
+  credential_files:

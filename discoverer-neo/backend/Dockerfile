@@ -123,6 +123,15 @@ ENV EXPORT_DIR=/app/exports
 RUN mkdir -p /app/scheduled-results && chown -R appuser:appuser /app/scheduled-results
 ENV SCHEDULE_RESULT_DIR=/app/scheduled-results
 
+# Same rationale again, for provisioned-credential files (see
+# credential-file.service.ts). Without an explicit CREDENTIALS_DIR this
+# defaults to a path under WORKDIR (/app/backend), which the rest of this
+# stage never chowns to appuser — the startup seed's mkdir failed with EACCES
+# and crashed the process after already creating the admin user, losing its
+# only copy of the generated password.
+RUN mkdir -p /app/credentials && chown -R appuser:appuser /app/credentials
+ENV CREDENTIALS_DIR=/app/credentials
+
 # Set library path for Oracle client
 ENV LD_LIBRARY_PATH=/opt/oracle/instantclient
 ENV PATH=/opt/oracle/instantclient:$PATH
