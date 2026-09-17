@@ -479,10 +479,36 @@ export interface Hierarchy {
   updatedAt: Date | null;
 }
 
+/**
+ * A registered (customer) PL/SQL function. `name` is `FUN_NAME`, the label a
+ * workbook's `[2,n]` element carries; it is unique per EUL. What Oracle
+ * actually calls is `extOwner.extPackage.extName@extDbLink` — `FUN_EXT_NAME`
+ * is NOT unique (overloads share it) and differs from `FUN_NAME` on 27 of the
+ * reference estate's 371 functions.
+ */
 export interface CustomFunction {
   sourceId: number;
   name: string;
   description: string | null;
+  extName?: string | null;
+  extPackage?: string | null;
+  extOwner?: string | null;
+  extDbLink?: string | null;
+  /** `FUN_DATA_TYPE` — the return type code: 1 text, 2 number, 4 date. */
+  dataType?: number | null;
+  /** `FUN_ARGUMENTS` rows, ordered by `FA_POSITION`. */
+  arguments?: CustomFunctionArgument[];
+}
+
+export interface CustomFunctionArgument {
+  /** `FA_NAME_S`, else `FA_DEVELOPER_KEY`. */
+  name: string | null;
+  /** `FA_DATA_TYPE` — the same code space as `FUN_DATA_TYPE`. */
+  dataType: number | null;
+  /** `FA_OPTIONAL` is non-zero. */
+  optional: boolean;
+  /** `FA_POSITION`. Starts at 2 on the reference estate. */
+  position: number;
 }
 
 export interface Workbook {
