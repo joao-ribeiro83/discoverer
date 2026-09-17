@@ -187,7 +187,15 @@ Estas preferências são de autosserviço e por utilizador. Cada utilizador pode
 
 ### Ativo/Inativo
 
-Defina `isActive` na conta através da API. O ecrã de Utilizadores ainda não tem um interruptor.
+No ecrã de Utilizadores, a coluna **Estado** mostra cada conta como Ativa ou Inativa.
+
+1. Abra **Utilizadores** na barra lateral de administração.
+2. Para desativar um utilizador, clique no botão **Desativar** (pessoa com uma cruz) na respetiva linha e, em seguida, clique em **Desativar** na caixa de confirmação.
+3. Para ativar um utilizador inativo, clique no botão **Ativar** (pessoa com um visto) na respetiva linha. Não é pedida confirmação.
+
+Não pode desativar a sua própria conta; o respetivo botão está desativado.
+
+Também pode definir `isActive` através da API:
 
 ```bash
 curl -X PUT http://localhost:3000/api/users/<user-id> \

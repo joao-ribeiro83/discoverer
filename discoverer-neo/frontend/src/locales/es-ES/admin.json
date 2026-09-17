@@ -312,7 +312,20 @@
     "adminOnlyMessage": "Solo los administradores pueden administrar usuarios.",
     "columns": {
       "email": "Correo electrónico",
-      "role": "Rol"
+      "role": "Rol",
+      "status": "Estado"
+    },
+    "status": {
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "activate": "Activar",
+      "deactivate": "Desactivar",
+      "cannotDeactivateSelf": "No puede desactivar su propia cuenta",
+      "deactivating": "Desactivando..."
+    },
+    "deactivateDialog": {
+      "title": "¿Desactivar usuario?",
+      "description": "{{name}} cierra sesión en su próxima solicitud y no puede iniciar sesión hasta que vuelva a activar la cuenta."
     },
     "dialog": {
       "editTitle": "Editar usuario",
@@ -331,7 +344,9 @@
     "toast": {
       "updated": "Usuario actualizado",
       "created": "Usuario creado",
-      "deleted": "Usuario eliminado"
+      "deleted": "Usuario eliminado",
+      "activated": "Usuario activado",
+      "deactivated": "Usuario desactivado"
     }
   }
 }
