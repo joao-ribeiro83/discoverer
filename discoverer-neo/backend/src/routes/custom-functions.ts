@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
+import { isValidIdentifier } from '../lib/sql/identifiers.js';
 import {
   create,
   update,
@@ -20,7 +21,24 @@ const ParameterSchema = z.object({
   type: z.string().min(1),
   required: z.boolean().optional(),
   defaultValue: z.union([z.string(), z.number(), z.boolean()]).nullable().optional(),
+  position: z.number().int().optional(),
 });
+
+// These parts go into generated SQL as `owner.package.name@link`, so each must
+// be a plain identifier. A link may be dotted (`REMOTE.EXAMPLE.COM`).
+const IdentifierSchema = z.string().max(128).refine(isValidIdentifier, 'Must be a plain SQL identifier');
+const DbLinkSchema = z
+  .string()
+  .max(128)
+  .refine((v) => v.split('.').every(isValidIdentifier), 'Must be a plain database link name');
+
+const ReferenceSchema = {
+  extOwner: IdentifierSchema.nullable().optional(),
+  extPackage: IdentifierSchema.nullable().optional(),
+  extName: IdentifierSchema.nullable().optional(),
+  extDbLink: DbLinkSchema.nullable().optional(),
+  dataSourceId: z.string().uuid().nullable().optional(),
+};
 
 const CreateBodySchema = z.object({
   name: z.string().min(1).max(255),
@@ -28,6 +46,7 @@ const CreateBodySchema = z.object({
   functionType: FunctionTypeEnum,
   parameters: z.array(ParameterSchema).optional(),
   returnType: z.string().max(64).optional(),
+  ...ReferenceSchema,
 });
 
 const UpdateBodySchema = z.object({
@@ -36,7 +55,18 @@ const UpdateBodySchema = z.object({
   functionType: FunctionTypeEnum.optional(),
   parameters: z.array(ParameterSchema).nullable().optional(),
   returnType: z.string().max(64).nullable().optional(),
+  ...ReferenceSchema,
 });
+
+const DsIdParamSchema = z.object({ dsId: z.string().uuid() });
+
+const referenceJsonProperties = {
+  extOwner: { type: ['string', 'null'], maxLength: 128 },
+  extPackage: { type: ['string', 'null'], maxLength: 128 },
+  extName: { type: ['string', 'null'], maxLength: 128 },
+  extDbLink: { type: ['string', 'null'], maxLength: 128 },
+  dataSourceId: { type: ['string', 'null'], format: 'uuid' },
+} as const;
 
 const IdParamSchema = z.object({
   id: z.string().uuid(),
@@ -55,6 +85,12 @@ const customFunctionSchema = {
     functionType: { type: 'string', enum: ['SQL', 'PLSQL', 'PACKAGE'] },
     parameters: {},
     returnType: { type: ['string', 'null'] },
+    // What SQL calls: extOwner.extPackage.extName@extDbLink. Set by migration.
+    extOwner: { type: ['string', 'null'] },
+    extPackage: { type: ['string', 'null'] },
+    extName: { type: ['string', 'null'] },
+    extDbLink: { type: ['string', 'null'] },
+    dataSourceId: { type: ['string', 'null'] },
     isActive: { type: 'boolean' },
     createdAt: { type: 'string' },
   },
@@ -165,10 +201,12 @@ export default function customFunctionRoutes(fastify: FastifyInstance) {
                   type: { type: 'string', minLength: 1 },
                   required: { type: 'boolean' },
                   defaultValue: {},
+                  position: { type: 'integer' },
                 },
               },
             },
             returnType: { type: 'string', maxLength: 64 },
+            ...referenceJsonProperties,
           },
         },
         response: {
@@ -233,10 +271,12 @@ export default function customFunctionRoutes(fastify: FastifyInstance) {
                   type: { type: 'string', minLength: 1 },
                   required: { type: 'boolean' },
                   defaultValue: {},
+                  position: { type: 'integer' },
                 },
               },
             },
             returnType: { type: ['string', 'null'], maxLength: 64 },
+            ...referenceJsonProperties,
           },
         },
         response: {
@@ -276,6 +316,92 @@ export default function customFunctionRoutes(fastify: FastifyInstance) {
         const message = err instanceof Error ? err.message : String(err);
         if (err instanceof CustomFunctionValidationError) {
           return reply.code(400).send({ error: message, details: err.details });
+        }
+        throw err;
+      }
+    },
+  );
+
+  // GET /api/data-sources/:dsId/functions — search the database for a function
+  // to register. Read-only against ALL_ARGUMENTS.
+  fastify.get(
+    '/api/data-sources/:dsId/functions',
+    {
+      // Spelled out rather than reusing `adminManagerPreHandler`: SEC-03's scan
+      // reads the registration block and only sees a gate it can name there.
+      preHandler: [fastify.authenticate, fastify.authorize('ADMIN', 'MANAGER')],
+      schema: {
+        tags: ['Custom Functions'],
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          required: ['dsId'],
+          properties: { dsId: { type: 'string', format: 'uuid' } },
+        },
+        querystring: {
+          type: 'object',
+          properties: {
+            owner: { type: 'string', maxLength: 128 },
+            search: { type: 'string', maxLength: 128 },
+          },
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              data: {
+                type: 'object',
+                properties: {
+                  owner: { type: 'string' },
+                  truncated: { type: 'boolean' },
+                  functions: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        owner: { type: 'string' },
+                        packageName: { type: ['string', 'null'] },
+                        name: { type: 'string' },
+                        overload: { type: ['string', 'null'] },
+                        returnType: { type: 'string' },
+                        parameters: {},
+                        callableFromSql: { type: 'boolean' },
+                        reason: { type: ['string', 'null'] },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          400: errorResponse,
+          401: errorResponse,
+          403: errorResponse,
+          404: errorResponse,
+        },
+      },
+    },
+    async (request, reply) => {
+      const parsed = DsIdParamSchema.safeParse(request.params);
+      if (!parsed.success) {
+        return reply.code(400).send({ error: 'Invalid data source ID format' });
+      }
+      const { owner, search } = request.query as { owner?: string; search?: string };
+      if (owner?.trim() && !isValidIdentifier(owner.trim())) {
+        return reply.code(400).send({ error: 'Owner must be a plain SQL identifier' });
+      }
+
+      try {
+        const { searchDatabaseFunctions } = await import('../services/oracle-introspection.js');
+        const data = await searchDatabaseFunctions(parsed.data.dsId, { owner, search });
+        return reply.code(200).send({ data });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        if (message === 'Data source not found') {
+          return reply.code(404).send({ error: message });
+        }
+        if (message.includes('only supported for Oracle')) {
+          return reply.code(400).send({ error: message });
         }
         throw err;
       }

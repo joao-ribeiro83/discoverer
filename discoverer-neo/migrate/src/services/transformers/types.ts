@@ -384,10 +384,27 @@ export interface TransformedCustomFunction {
   description: string | null;
   functionType: NeoFunctionType;
   returnType: string | null;
-  /** JSON argument list; null when EUL carries no signature metadata. */
-  parameters: unknown;
+  /**
+   * `[{ name, type, required, position }]` in call order, from `FUN_ARGUMENTS`.
+   * An empty array is a zero-argument function; null only when the source
+   * has no argument table at all.
+   */
+  parameters: CustomFunctionParameter[] | null;
+  /** `FUN_EXT_*` — what the SQL calls. See `custom_functions.ext_name`. */
+  extOwner: string | null;
+  extPackage: string | null;
+  extName: string;
+  extDbLink: string | null;
   isActive: boolean;
   warnings: TransformWarning[];
+}
+
+export interface CustomFunctionParameter {
+  name: string;
+  /** `TEXT` / `NUMBER` / `DATE`, or the raw code when no reading is established. */
+  type: string;
+  required: boolean;
+  position: number;
 }
 
 /**

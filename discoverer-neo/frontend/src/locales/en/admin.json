@@ -221,7 +221,10 @@
     "columns": {
       "parameters": "Parameters",
       "parametersCount": "{{count}} param(s)",
-      "returnType": "Return Type"
+      "returnType": "Return Type",
+      "databaseFunction": "Database Function",
+      "noReference": "Not set",
+      "dataSource": "Data Source"
     },
     "dialog": {
       "editTitle": "Edit Custom Function",
@@ -232,17 +235,35 @@
       "returnTypeLabel": "Return Type",
       "returnTypePlaceholder": "e.g. NUMBER",
       "parametersLabel": "Parameters (JSON)",
-      "parametersPlaceholder": "[\n  { \"name\": \"p_id\", \"type\": \"NUMBER\", \"required\": true }\n]"
+      "parametersPlaceholder": "[\n  { \"name\": \"p_id\", \"type\": \"NUMBER\", \"required\": true }\n]",
+      "databaseFunctionLegend": "Database function",
+      "dataSourceLabel": "Data source",
+      "dataSourcePlaceholder": "Choose a data source",
+      "extOwnerLabel": "Owner",
+      "extPackageLabel": "Package",
+      "extNameLabel": "Function name",
+      "extDbLinkLabel": "Database link"
     },
     "validation": {
       "parametersMustBeArray": "Parameters must be a JSON array",
       "parameterNeedsNameAndType": "Each parameter needs a \"name\" and \"type\"",
-      "invalidJson": "Invalid JSON"
+      "invalidJson": "Invalid JSON",
+      "invalidIdentifier": "Use letters, digits, _, $ or # only, starting with a letter"
     },
     "toast": {
       "updated": "Function updated",
       "created": "Function created",
       "deactivated": "Function deactivated"
+    },
+    "filterPlaceholder": "Filter by name or database function…",
+    "search": {
+      "ownerLabel": "Owner",
+      "searchLabel": "Find a function",
+      "searchPlaceholder": "Function or package name",
+      "button": "Search",
+      "noResults": "No functions found.",
+      "notCallable": "Cannot be called from SQL: {{reason}}",
+      "truncated": "More functions match. Type more of the name to narrow the search."
     }
   },
   "dataSources": {

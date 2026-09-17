@@ -221,7 +221,10 @@
     "columns": {
       "parameters": "Parámetros",
       "parametersCount": "{{count}} parámetro(s)",
-      "returnType": "Tipo de retorno"
+      "returnType": "Tipo de retorno",
+      "databaseFunction": "Función de la Base de Datos",
+      "noReference": "Sin definir",
+      "dataSource": "Origen de Datos"
     },
     "dialog": {
       "editTitle": "Editar función personalizada",
@@ -232,17 +235,35 @@
       "returnTypeLabel": "Tipo de retorno",
       "returnTypePlaceholder": "p. ej. NUMBER",
       "parametersLabel": "Parámetros (JSON)",
-      "parametersPlaceholder": "[\n  { \"name\": \"p_id\", \"type\": \"NUMBER\", \"required\": true }\n]"
+      "parametersPlaceholder": "[\n  { \"name\": \"p_id\", \"type\": \"NUMBER\", \"required\": true }\n]",
+      "databaseFunctionLegend": "Función de la base de datos",
+      "dataSourceLabel": "Origen de datos",
+      "dataSourcePlaceholder": "Elija un origen de datos",
+      "extOwnerLabel": "Propietario",
+      "extPackageLabel": "Paquete",
+      "extNameLabel": "Nombre de la función",
+      "extDbLinkLabel": "Enlace de base de datos"
     },
     "validation": {
       "parametersMustBeArray": "Los parámetros deben ser una matriz JSON",
       "parameterNeedsNameAndType": "Cada parámetro necesita un «name» y un «type»",
-      "invalidJson": "JSON no válido"
+      "invalidJson": "JSON no válido",
+      "invalidIdentifier": "Solo letras, dígitos, _, $ o #, empezando por una letra"
     },
     "toast": {
       "updated": "Función actualizada",
       "created": "Función creada",
       "deactivated": "Función desactivada"
+    },
+    "filterPlaceholder": "Filtrar por nombre o función de la base de datos…",
+    "search": {
+      "ownerLabel": "Propietario",
+      "searchLabel": "Buscar una función",
+      "searchPlaceholder": "Nombre de la función o del paquete",
+      "button": "Buscar",
+      "noResults": "No se encontraron funciones.",
+      "notCallable": "No se puede llamar desde SQL: {{reason}}",
+      "truncated": "Hay más funciones. Escriba más del nombre para acotar la búsqueda."
     }
   },
   "dataSources": {

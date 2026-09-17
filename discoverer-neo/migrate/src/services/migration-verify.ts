@@ -384,16 +384,27 @@ async function loadMapScope(
  */
 async function loadFunctionTable(db: VerifyDb): Promise<ReadonlyMap<string, FunctionBinding>> {
   const byName = new globalThis.Map<string, FunctionBinding>();
-  for (const row of await rows(db, sql`SELECT name, parameters FROM custom_functions`)) {
+  const text = (v: unknown): string | null => (typeof v === 'string' && v !== '' ? v : null);
+  for (const row of await rows(
+    db,
+    sql`SELECT name, parameters, ext_owner, ext_package, ext_name, ext_db_link FROM custom_functions`,
+  )) {
     if (typeof row.name !== 'string') continue;
-    // `parameters` is null on every migrated row — the EUL's normalized
-    // FUNCTIONS read carries no argument list — so arity is left unenforced
-    // rather than defaulted. Refusing every call for want of a signature would
-    // make all 593 migrated functions permanently uncallable.
-    const arity = Array.isArray(row.parameters)
-      ? ([row.parameters.length, row.parameters.length] as const)
+    // A row with no signature (authored in Neo, or a source with no
+    // FUN_ARGUMENTS) leaves arity unenforced rather than guessed.
+    const params = Array.isArray(row.parameters) ? (row.parameters as { required?: unknown }[]) : null;
+    const arity = params
+      ? ([params.filter((p) => p?.required !== false).length, params.length] as const)
       : null;
-    byName.set(row.name.toUpperCase(), { name: row.name, arity });
+    // Keyed by the Discoverer label, which is what a workbook names; called by
+    // the database name, which is not unique and may differ from the label.
+    byName.set(row.name.toUpperCase(), {
+      name: text(row.ext_name) ?? row.name,
+      package: text(row.ext_package),
+      owner: text(row.ext_owner),
+      dbLink: text(row.ext_db_link),
+      arity,
+    });
   }
   return byName;
 }

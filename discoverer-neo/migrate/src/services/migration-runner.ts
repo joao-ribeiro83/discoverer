@@ -1115,6 +1115,13 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
       functionType: t.functionType,
       parameters: t.parameters,
       returnType: t.returnType,
+      extOwner: t.extOwner,
+      extPackage: t.extPackage,
+      extName: t.extName,
+      extDbLink: t.extDbLink,
+      // A function lives in the database it was migrated from, exactly as a
+      // folder's table does.
+      dataSourceId: options.dataSourceId ?? null,
       isActive: t.isActive,
     });
   }
