@@ -929,6 +929,34 @@ the codes are infix operators (`[1,94]` is `+`, `[1,106]` a bracket) and
 rendering only the prefix ones would produce something that reads like SQL and
 is not.
 
+#### Customer functions (`[2,n]`) and their arguments **[LIVE EUL4]**
+
+Column lists are Oracle's own seed script in `DCESQRES.DLL`; the counts are the
+live `SIID_TESTES` EUL, 2026-09-17.
+
+- `FUNCTIONS` carries `FUN_BUILT_IN` (1 on the 222 built-ins, 0 on the 371
+  customer functions), `FUN_DATA_TYPE` (return type), `FUN_MINIMUM_ARGS`,
+  `FUN_MAXIMUM_ARGS` and the database reference `FUN_EXT_OWNER`,
+  `FUN_EXT_PACKAGE`, `FUN_EXT_NAME`, `FUN_EXT_DB_LINK`. All 371 have owner and
+  package; none has a link.
+- **`FUN_NAME` is a label, not the database name.** It differs from
+  `FUN_EXT_NAME` on 27 functions (`FUN_NUM_ENT_GRUPO1` →
+  `FUN_NUM_ENT_GRUPO`). `FUN_NAME` is unique; `FUN_EXT_NAME` is not
+  (`GET_PACKINFO` is 7 overloads). A workbook's function element stores the
+  **label** — `FUN_NUM_ENT_GRUPO1` is referenced and exists only as a label.
+  So look up by `FUN_NAME`, call `OWNER.PACKAGE.EXT_NAME@LINK`.
+- `FUN_ARGUMENTS`: `FA_FUN_ID`, `FA_POSITION`, `FA_DATA_TYPE`, `FA_OPTIONAL`,
+  `FA_DEVELOPER_KEY`, and on a live EUL4 also `FA_NAME_S`. 1 286 rows over the
+  371 functions, 1 to 8 each. **Positions start at 2** (1 is the return slot).
+  Required and total counts equal `FUN_MINIMUM_ARGS`/`FUN_MAXIMUM_ARGS` on every
+  function.
+- Data type codes: 1 text, 2 number, 4 date (as for items). Code **8** appears
+  on 3 arguments and is not decoded.
+- Checked against Oracle's `ALL_ARGUMENTS`: 370 of the 371 references exist,
+  and 369 match an overload's argument count. The one missing is
+  `PKG_FORMULAS_COSEC_NEW.FUN_RIE_ACU_GRUPO_REAL` — the EUL names a function
+  the database no longer has.
+
 #### How deep the trees actually go
 
 Measured over all 3 395 conditions in the live source. A condition attaches to
