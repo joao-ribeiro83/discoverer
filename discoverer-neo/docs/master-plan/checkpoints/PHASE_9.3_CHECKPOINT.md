@@ -24,8 +24,11 @@ Migration-side summary: [`docs/migration/cutover-and-rollback.md`](../../migrati
 1. **`EUL4_B*Q*R1` historical result table retention** (Phase 7.2) — asked the
    user directly (no answer existed in the plan). **Decided: migrate the rows
    into `scheduled_results` before the legacy source is decommissioned.**
-   Not yet implemented — that's new scope for whoever executes the real
-   cutover, tracked here so it isn't lost.
+   **Implemented** — `backend/src/services/batch-result-import.service.ts`,
+   run via `src/scripts/import-batch-results.ts` after `import-schedules.ts`.
+   See `docs/migration/migration-tool.md`'s "Scheduled batch reports and
+   their historical results" section. Not yet run against the live estate —
+   that's part of executing the real cutover, same as the transform itself.
 2. **Date-hierarchy regeneration** (D-074) — already resolved at Phase 5.1,
    no action needed at cutover.
 3. **Accepted result-set differences** (Phase 9.1) — already recorded in
@@ -78,9 +81,9 @@ is executed for real.
 The runbook and its rehearsal record are the deliverable and are done. What's
 still open for whoever executes a real cutover:
 
-1. Implement the `EUL4_B*Q*R1` → `scheduled_results` migration (decision 1
-   above) — not built yet.
-2. Run Step 2 (the real Oracle transform) for real, once, with real
+1. Run Step 2 (the real Oracle transform) for real, once, with real
    credentials, outside an agent session — the one step this phase could not
    rehearse itself.
+2. Run `import-schedules.ts` then `import-batch-results.ts` (decision 1
+   above — implemented, not yet run live) against the real estate.
 3. Everything else in the runbook has already been proven to work.
