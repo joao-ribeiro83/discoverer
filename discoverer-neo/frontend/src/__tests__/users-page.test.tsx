@@ -93,3 +93,67 @@ describe('UsersPage active toggle', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 })
+
+describe('UsersPage create/edit dialog', () => {
+  it('creates a user from the New User form', async () => {
+    mockedApi.users.create = vi.fn().mockResolvedValue({ data: { data: bob } })
+    renderPage()
+    await waitFor(() => expect(screen.getByText('Bob User')).toBeInTheDocument())
+
+    fireEvent.click(screen.getByRole('button', { name: 'New User' }))
+    const dialog = await screen.findByRole('dialog')
+    fireEvent.change(within(dialog).getByLabelText('Name'), { target: { value: 'Dana New' } })
+    fireEvent.change(within(dialog).getByLabelText('Email'), { target: { value: 'dana@example.com' } })
+    fireEvent.change(within(dialog).getByLabelText('Password'), { target: { value: 'longenough' } })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }))
+
+    await waitFor(() =>
+      expect(mockedApi.users.create).toHaveBeenCalledWith(
+        expect.objectContaining({ name: 'Dana New', email: 'dana@example.com', password: 'longenough' }),
+      ),
+    )
+  })
+
+  it('shows a validation error instead of submitting an empty name', async () => {
+    renderPage()
+    await waitFor(() => expect(screen.getByText('Bob User')).toBeInTheDocument())
+
+    fireEvent.click(screen.getByRole('button', { name: 'New User' }))
+    const dialog = await screen.findByRole('dialog')
+    fireEvent.change(within(dialog).getByLabelText('Email'), { target: { value: 'dana@example.com' } })
+    fireEvent.change(within(dialog).getByLabelText('Password'), { target: { value: 'longenough' } })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }))
+
+    expect(await within(dialog).findByText('Name is required')).toBeInTheDocument()
+    expect(mockedApi.users.update).not.toHaveBeenCalled()
+  })
+
+  it('edits an existing user without changing the password when left blank', async () => {
+    renderPage()
+    await waitFor(() => expect(screen.getByText('Bob User')).toBeInTheDocument())
+
+    fireEvent.click(within(rowOf('Bob User')).getByRole('button', { name: 'Edit' }))
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByDisplayValue('bob@example.com')).toBeInTheDocument()
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }))
+
+    await waitFor(() =>
+      expect(mockedApi.users.update).toHaveBeenCalledWith(
+        'u-bob',
+        expect.objectContaining({ name: 'Bob User', email: 'bob@example.com' }),
+      ),
+    )
+    expect(mockedApi.users.update.mock.calls[0][1]).not.toHaveProperty('password')
+  })
+
+  it('cancelling the create dialog does not submit', async () => {
+    renderPage()
+    await waitFor(() => expect(screen.getByText('Bob User')).toBeInTheDocument())
+
+    fireEvent.click(screen.getByRole('button', { name: 'New User' }))
+    fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Cancel' }))
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(mockedApi.users.create).not.toHaveBeenCalled()
+  })
+})
