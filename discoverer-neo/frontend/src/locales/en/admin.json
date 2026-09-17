@@ -312,7 +312,20 @@
     "adminOnlyMessage": "Only administrators can manage users.",
     "columns": {
       "email": "Email",
-      "role": "Role"
+      "role": "Role",
+      "status": "Status"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "cannotDeactivateSelf": "You cannot deactivate your own account",
+      "deactivating": "Deactivating..."
+    },
+    "deactivateDialog": {
+      "title": "Deactivate user?",
+      "description": "{{name}} is signed out on their next request and cannot sign in until you activate the account again."
     },
     "dialog": {
       "editTitle": "Edit User",
@@ -331,7 +344,9 @@
     "toast": {
       "updated": "User updated",
       "created": "User created",
-      "deleted": "User deleted"
+      "deleted": "User deleted",
+      "activated": "User activated",
+      "deactivated": "User deactivated"
     }
   }
 }

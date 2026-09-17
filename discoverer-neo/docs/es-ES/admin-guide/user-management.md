@@ -203,7 +203,15 @@ Estas preferencias son de autoservicio y por usuario. Cada usuario puede acceder
 
 ### Activo/Inactivo
 
-Establezca `isActive` en la cuenta mediante la API. La pantalla de usuarios todavía no tiene un conmutador.
+En la pantalla de usuarios, la columna **Estado** muestra cada cuenta como Activa o Inactiva.
+
+1. Abra **Usuarios** en la barra lateral de administración.
+2. Para desactivar un usuario, haga clic en el botón **Desactivar** (persona con una cruz) de su fila y, a continuación, haga clic en **Desactivar** en el cuadro de confirmación.
+3. Para activar un usuario inactivo, haga clic en el botón **Activar** (persona con una marca de verificación) de su fila. No se pide confirmación.
+
+No puede desactivar su propia cuenta; su botón está deshabilitado.
+
+También puede establecer `isActive` mediante la API:
 
 ```bash
 curl -X PUT http://localhost:3000/api/users/<user-id> \
