@@ -321,6 +321,27 @@ describe('PUT /api/users/:id (admin update)', () => {
     expect(res.json().data.name).toBe('Updated Name');
     expect(res.json().data.role).toBe('VIEWER');
   });
+
+  it('400s deactivating your own account via the API, not just the UI button', async () => {
+    const res = await app.inject({
+      method: 'PUT',
+      url: `/api/users/${adminUserId}`,
+      headers: { authorization: `Bearer ${adminToken}` },
+      payload: { isActive: false },
+    });
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('lets an admin deactivate someone else', async () => {
+    const res = await app.inject({
+      method: 'PUT',
+      url: `/api/users/${targetId}`,
+      headers: { authorization: `Bearer ${adminToken}` },
+      payload: { isActive: false },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().data.isActive).toBe(false);
+  });
 });
 
 describe('DELETE /api/users/:id (admin delete)', () => {
