@@ -7,6 +7,7 @@ import {
   DndContext,
   closestCenter,
   PointerSensor,
+  KeyboardSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -14,6 +15,7 @@ import {
 import {
   SortableContext,
   verticalListSortingStrategy,
+  sortableKeyboardCoordinates,
   useSortable,
   arrayMove,
 } from '@dnd-kit/sortable'
@@ -120,7 +122,10 @@ export function HierarchiesPage() {
     setLevels((prev) => prev.map((l) => (l.key === key ? { ...l, ...patch } : l)))
   }
 
-  const sensors = useSensors(useSensor(PointerSensor))
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  )
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
@@ -323,7 +328,13 @@ function LevelRow({
 
   return (
     <div ref={setNodeRef} style={style} className="flex items-center gap-2 rounded-md border bg-background p-2">
-      <button type="button" className="cursor-grab text-muted-foreground" {...attributes} {...listeners}>
+      <button
+        type="button"
+        className="cursor-grab text-muted-foreground"
+        aria-label={t('admin:hierarchies.form.reorderAria')}
+        {...attributes}
+        {...listeners}
+      >
         <GripVertical className="h-4 w-4" />
       </button>
       <span className="w-6 text-xs text-muted-foreground">{index + 1}</span>

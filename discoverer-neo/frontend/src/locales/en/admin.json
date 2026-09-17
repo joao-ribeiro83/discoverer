@@ -203,7 +203,8 @@
       "addLevelButton": "Add Level",
       "noLevelsYet": "No levels yet — add at least one.",
       "levelNamePlaceholder": "Level name",
-      "itemPlaceholder": "Item"
+      "itemPlaceholder": "Item",
+      "reorderAria": "Reorder level"
     },
     "toast": {
       "updated": "Hierarchy updated",
