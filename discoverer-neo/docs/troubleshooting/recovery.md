@@ -49,3 +49,25 @@ Never assume a dump is good — prove it:
 Restores into a throwaway `<db>_restoretest` database, diffs row counts
 against the live database table by table, drops the scratch database, and
 exits non-zero on any mismatch.
+
+## A cutover step failed
+
+Full procedure: [`docs/deployment/cutover-runbook.md`](../deployment/cutover-runbook.md).
+Each step there has its own failure signal and rollback; the two general
+traps found while rehearsing it:
+
+- **A crashed container can still show `docker ps` as "running."** Under
+  `tsx watch` (dev-style boot), an uncaught exception at startup — e.g. the
+  production secrets guard refusing a default `JWT_SECRET` — is caught by
+  the watcher, logged, and the process stays up watching for a file change
+  that will never come. Check `docker logs` or `/health`, never container
+  status alone, to decide whether a boot actually succeeded.
+- **`docker run -e SOME_PATH=/opt/...` on Windows/Git Bash** gets its value
+  silently rewritten into a Windows path by MSYS's path conversion, breaking
+  anything that expects a Unix path (e.g. `ORACLE_CLIENT_PATH`). Prefix the
+  command with `MSYS_NO_PATHCONV=1`.
+
+If the verifier (`docs/migration/verify.md`) reports `COMPLETED_WITH_BLOCKERS`
+at cutover time, check each blocker against the known list in the runbook's
+Step 3 before treating it as new — a blocker Phase 3.4/4.x already tracked is
+not a reason to stop; an unlisted one is.

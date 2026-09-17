@@ -155,6 +155,23 @@ recibe una contraseña temporal y se borra en cuanto el usuario elige la suya.
 Para forzar una rotación en una cuenta existente, restablezca su contraseña; el
 restablecimiento devuelve la cuenta al mismo estado.
 
+### Re-aprovisionamiento en el cutover
+
+Consulte quién aún necesita qué — no asuma un número fijo de usuarios, cambia a
+medida que las personas completan el primer inicio de sesión:
+
+```sql
+-- Personas reales que necesitan una credencial completamente nueva (nunca re-aprovisionadas):
+SELECT count(*) FROM users WHERE password_hash = '!migrated-no-login' AND is_role = false;
+-- Personas reales que ya tienen una credencial, simplemente no han iniciado sesión aún:
+SELECT count(*) FROM users WHERE must_change_password = true AND password_hash != '!migrated-no-login';
+```
+
+Las cuentas de rol y servicio (`is_role = true`, además de la cuenta del servicio
+de migración) nunca se re-aprovisionan deliberadamente — llevan la marca
+`!migrated-no-login` para siempre por diseño. Procedimiento completo y un ensayo
+real de este flujo: [`docs/deployment/cutover-runbook.md`](../../deployment/cutover-runbook.md#step-6--re-provision-credentials).
+
 ## Roles de base de datos
 
 Los usuarios importados de Oracle Discoverer no son todos personas. Discoverer

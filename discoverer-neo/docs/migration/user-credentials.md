@@ -100,3 +100,15 @@ passwords being re-sent over chat.
 | `CREDENTIALS_DIR` | `storage/credentials` | Where the file is written. Dev compose sets `/app/credentials`, bind-mounted to `./credentials`. |
 
 `credentials/` is in `.gitignore`. Do not commit it.
+
+## Re-provisioning at cutover
+
+Don't assume a fixed headcount of people still needing a credential — query
+it live, and query the right thing. `must_change_password = true` alone
+over-counts: some of those rows already have a real credential and are just
+mid-flow, not still blocked. See
+[`docs/admin-guide/user-management.md`](../admin-guide/user-management.md#re-provisioning-at-cutover)
+for the two separate queries, and
+[`docs/deployment/cutover-runbook.md`](../deployment/cutover-runbook.md#step-6--re-provision-credentials)
+for a real rehearsal of the full login → gated → change-password → full-access
+sequence.
