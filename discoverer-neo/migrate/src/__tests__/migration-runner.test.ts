@@ -301,31 +301,69 @@ describe('runMigration — EUL5 source, end to end', () => {
 
     const grants = rowsOf(state, 'user_business_area_grants');
     const baId = first(rowsOf(state, 'business_areas')).id;
+    const users = rowsOf(state, 'users');
+    const idOf = (name: string) =>
+      users.find((u) => String(u.name).toUpperCase() === name)?.id;
     // AP 800 (JSMITH) and 802 (SALES_ROLE) are the business-area grants.
     expect(grants).toHaveLength(2);
-    for (const g of grants) {
-      expect(g.businessAreaId).toBe(baId);
-      expect(g.permissionLevel).toBe('VIEW');
-    }
+    for (const g of grants) expect(g.businessAreaId).toBe(baId);
 
-    // AP 801 is a workbook share, 803 an EUL-wide privilege. Both are counted
-    // and explained, not silently dropped.
+    // The level comes from the grantee's EUL-wide privileges, not from the
+    // grant row: JSMITH holds one (AP 803), SALES_ROLE holds none.
+    const levelOf = (name: string) =>
+      grants.find((g) => g.userId === idOf(name))?.permissionLevel;
+    expect(levelOf('JSMITH')).toBe('EXPORT');
+    expect(levelOf('SALES_ROLE')).toBe('VIEW');
+
+    // AP 803 is an EUL-wide privilege: counted and explained, not dropped
+    // silently. AP 801 is a workbook share, which now migrates.
     const reasons = result.skipped
       .filter((s) => s.table === 'user_business_area_grants')
       .map((s) => s.reason);
-    expect(reasons).toHaveLength(2);
-    expect(reasons.some((r) => r.includes('workbook'))).toBe(true);
+    expect(reasons).toHaveLength(1);
     expect(reasons.some((r) => r.includes('EUL-wide'))).toBe(true);
+  });
+
+  it('migrates a workbook grant as a share on every map of that workbook', async () => {
+    const { writer, state } = createFakeWriter();
+    await runMigration({ source: mockExecutor(eul5Db()), writer, deps: deterministicDeps() });
+
+    // AP 801 shares workbook 700 with MJONES (EU_ID 901).
+    const shares = rowsOf(state, 'map_shares');
+    const mapIds = new Set(rowsOf(state, 'maps').map((m) => m.id));
+    const mjones = rowsOf(state, 'users').find(
+      (u) => String(u.name).toUpperCase() === 'MJONES',
+    );
+    expect(shares.length).toBeGreaterThan(0);
+    for (const share of shares) {
+      expect(mapIds.has(share.mapId as string)).toBe(true);
+      expect(share.sharedWithUserId).toBe(mjones?.id);
+      // EXPORT lets the assignee run, export and schedule — not edit.
+      expect(share.permissionLevel).toBe('EXPORT');
+    }
+  });
+
+  it('gives the holder of the Administration privilege the ADMIN role', async () => {
+    const { writer, state } = createFakeWriter();
+    await runMigration({ source: mockExecutor(eul5Db()), writer, deps: deterministicDeps() });
+
+    const users = rowsOf(state, 'users');
+    // JSMITH holds GP_APP_ID 1006 (AP 803); nobody else holds any privilege.
+    expect(users.find((u) => String(u.name).toUpperCase() === 'JSMITH')?.role).toBe('ADMIN');
+    expect(users.find((u) => String(u.name).toUpperCase() === 'MJONES')?.role).toBe('USER');
+    // A database role holds grants and can never sign in, so it is never ADMIN.
+    expect(users.find((u) => String(u.name).toUpperCase() === 'SALES_ROLE')?.role).toBe('USER');
   });
 
   it('never migrates a grant broader than its source', async () => {
     const { writer, state } = createFakeWriter();
     await runMigration({ source: mockExecutor(eul5Db()), writer, deps: deterministicDeps() });
 
-    // A Discoverer business-area grant carries no permission level, so VIEW —
-    // the narrowest Neo has — is the only level a migration may write.
+    // A grant's level comes from the grantee's EUL-wide privileges and can
+    // never exceed SCHEDULE: nothing in Discoverer says "may author here", so
+    // no migrated grant may carry an authoring level.
     for (const g of rowsOf(state, 'user_business_area_grants')) {
-      expect(g.permissionLevel).toBe('VIEW');
+      expect(['VIEW', 'EXPORT', 'SCHEDULE']).toContain(g.permissionLevel);
     }
   });
 

@@ -596,11 +596,7 @@ async function loadChildren(mapId: string, tx: Tx | typeof db = db): Promise<Map
   // `&Date`, `&Time` and `&<ParamName>` substitute here, not at migration —
   // see `substituteTitleTokens`. Outside an actual execution the best
   // available value for a named token is the parameter's own default.
-  const paramValues = new Map(
-    parameterRows
-      .filter((p): p is typeof p & { defaultValue: string } => p.defaultValue !== null)
-      .map((p) => [p.name, p.defaultValue]),
-  );
+  const paramValues = defaultParamValues(parameterRows);
   const resolvedLayouts = layoutRows.map((layout) => ({
     ...layout,
     title: substituteTitleTokens(layout.title, paramValues),
@@ -763,7 +759,67 @@ export async function getById(id: string): Promise<MapWithDetails | null> {
   if (!map) return null;
 
   const children = await loadChildren(id);
-  return { ...map, ...children };
+  // The description carries the same `&Date (&Time) &<ParamName>` heading text
+  // as the worksheet title — every one of this estate's 923 maps has tokens in
+  // it — and it is what the viewer prints above the grid. Substituting the
+  // title but not the description left the tokens on screen.
+  return {
+    ...map,
+    description: substituteTitleTokens(map.description, defaultParamValues(children.parameters)),
+    ...children,
+  };
+}
+
+/** A map's parameter defaults, as `substituteTitleTokens` wants them. */
+function defaultParamValues(
+  parameters: Array<{ name: string; defaultValue: string | null }>,
+): globalThis.Map<string, string> {
+  return new globalThis.Map(
+    parameters
+      .filter((p): p is typeof p & { defaultValue: string } => p.defaultValue !== null)
+      .map((p) => [p.name, p.defaultValue]),
+  );
+}
+
+/**
+ * The map's heading text rendered with the parameter values an execution
+ * actually ran with, rather than the defaults `getById` can see.
+ *
+ * `&Date`/`&Time` print the moment of the run. A parameter the caller left out
+ * falls back to its default, and an unknown token is left as written — the
+ * same rules `substituteTitleTokens` applies everywhere else.
+ */
+export async function resolveHeading(
+  mapId: string,
+  supplied: Record<string, unknown> = {},
+  now: Date = new Date(),
+): Promise<{ title: string | null; description: string | null }> {
+  const [[map], parameterRows] = await Promise.all([
+    db.select({ description: maps.description }).from(maps).where(eq(maps.id, mapId)).limit(1),
+    db.select().from(mapParameters).where(eq(mapParameters.mapId, mapId)),
+  ]);
+  const [layout] = await db
+    .select({ title: mapLayouts.title })
+    .from(mapLayouts)
+    .where(eq(mapLayouts.mapId, mapId))
+    .orderBy(asc(mapLayouts.worksheetIndex))
+    .limit(1);
+
+  const values = defaultParamValues(parameterRows);
+  for (const p of parameterRows) {
+    const given = supplied[p.name];
+    // A parameter value arrives as JSON, so it can be any scalar. Only the
+    // ones that read back as themselves are printable in a heading.
+    if (typeof given === 'string' && given !== '') values.set(p.name, given);
+    else if (typeof given === 'number' || typeof given === 'boolean') {
+      values.set(p.name, String(given));
+    }
+  }
+
+  return {
+    title: substituteTitleTokens(layout?.title ?? null, values, now),
+    description: substituteTitleTokens(map?.description ?? null, values, now),
+  };
 }
 
 /** List active maps in a business area. */
@@ -819,7 +875,13 @@ export async function listAll(user: {
     db
       .select({ businessAreaId: userBusinessAreaGrants.businessAreaId })
       .from(userBusinessAreaGrants)
-      .where(eq(userBusinessAreaGrants.userId, user.sub)),
+      .where(
+        and(
+          eq(userBusinessAreaGrants.userId, user.sub),
+          // Mirrors canAccessMap: only an authoring grant shows the maps.
+          inArray(userBusinessAreaGrants.permissionLevel, [...AUTHORING_GRANT_LEVELS]),
+        ),
+      ),
     db
       .select({ mapId: mapShares.mapId })
       .from(mapShares)
@@ -1092,9 +1154,28 @@ export async function exportAsXml(id: string): Promise<string | null> {
 
 const SHARE_ALLOWS: Record<string, MapAction[]> = {
   VIEW: ['VIEW'],
-  EXPORT: ['VIEW', 'EXPORT'],
-  EDIT: ['VIEW', 'EXPORT', 'EDIT'],
+  // A person a map was assigned to is expected to run it, export the result,
+  // and put it on a schedule — that is what the map is for. SCHEDULE rides
+  // with EXPORT because both produce the same artifact; the only difference
+  // is who pressed the button. VIEW stays read-only, for a deliberately
+  // narrow share.
+  EXPORT: ['VIEW', 'EXPORT', 'SCHEDULE'],
+  EDIT: ['VIEW', 'EXPORT', 'SCHEDULE', 'EDIT'],
 };
+
+/**
+ * Business-area grant levels that also carry map-OBJECT visibility.
+ *
+ * A grant below CREATE is a data entitlement, not a licence to read every
+ * saved map in the business area. Discoverer drew the same line: a business
+ * area grant let you build your own worksheets over that data, while seeing
+ * someone else's saved workbook needed an explicit workbook grant
+ * (`ACCESS_PRIVS.AP_TYPE = 'GD'`), which migrates into `map_shares`.
+ *
+ * Without this, every migrated user holding the estate's default VIEW grant
+ * saw all 923 maps.
+ */
+const AUTHORING_GRANT_LEVELS = ['CREATE', 'EDIT', 'DELETE'] as const;
 
 /**
  * GATE 1 of 2 (D-016): may this user see this map OBJECT?
@@ -1143,12 +1224,17 @@ export async function canAccessMap(
 
   if (!map.businessAreaId) return false;
 
-  const { hasPermission } = await userHasPermission(
+  const { hasPermission, heldLevel } = await userHasPermission(
     user.sub,
     map.businessAreaId,
     action,
   );
-  return hasPermission;
+  // `heldLevel` must be an authoring grant — see AUTHORING_GRANT_LEVELS.
+  return (
+    hasPermission &&
+    heldLevel !== null &&
+    (AUTHORING_GRANT_LEVELS as readonly string[]).includes(heldLevel)
+  );
 }
 
 // ---------------------------------------------------------------------------

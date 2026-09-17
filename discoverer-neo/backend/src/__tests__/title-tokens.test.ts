@@ -23,6 +23,19 @@ describe('substituteTitleTokens', () => {
     expect(substituteTitleTokens('&Dt Fim', params, now)).toBe('A');
   });
 
+  it('substitutes a parameter whose name ends in punctuation', () => {
+    // This estate's own names. A trailing `\b` in the pattern never matched
+    // here — `=` is not a word character and neither is the newline after it —
+    // so these tokens used to survive into the rendered title.
+    const params = new Map([
+      ['Dt Registo >=', '01-JAN-2026'],
+      ['Dt Registo <=', '31-DEC-2026'],
+    ]);
+    expect(substituteTitleTokens('&Dt Registo >=\n&Dt Registo <=', params, now)).toBe(
+      '01-JAN-2026\n31-DEC-2026',
+    );
+  });
+
   it('leaves an unrecognized token exactly as written, like Discoverer itself', () => {
     expect(substituteTitleTokens('&NoSuchParameter', new Map(), now)).toBe('&NoSuchParameter');
   });

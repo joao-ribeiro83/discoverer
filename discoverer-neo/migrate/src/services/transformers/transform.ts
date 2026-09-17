@@ -24,10 +24,12 @@ import {
   clamp,
   DEFAULT_GRANT_PERMISSION,
   folderTypeMapFor,
+  grantLevelForEulPrivileges,
   ITEM_TYPE_MAP,
   MIGRATED_USER_PASSWORD_HASH,
   NEO_FOLDER_TYPES,
   normalizeAggregation,
+  roleForEulPrivileges,
   type NeoFolderType,
   type NeoItemType,
   type TransformedBusinessArea,
@@ -1639,7 +1641,16 @@ export function usernameToEmailLocal(username: string): string {
 
 export const MIGRATED_EMAIL_DOMAIN = 'migrated.local';
 
-export function transformUser(user: EulUser, _version: EulVersion): TransformedUser {
+export function transformUser(
+  user: EulUser,
+  _version: EulVersion,
+  /**
+   * The account's EUL-wide privilege codes (`ACCESS_PRIVS.AP_TYPE = 'GP'`).
+   * Holding the Administration privilege makes the account an admin in Neo —
+   * see `roleForEulPrivileges`. Empty means an ordinary user.
+   */
+  privCodes: ReadonlySet<number> = new Set(),
+): TransformedUser {
   const warnings: TransformWarning[] = [];
   const username = user.username.trim();
   const local = usernameToEmailLocal(username);
@@ -1670,7 +1681,9 @@ export function transformUser(user: EulUser, _version: EulVersion): TransformedU
     // The runner replaces this for real people, once it has a hasher. Roles
     // keep it: they hold grants and must never be able to authenticate.
     passwordHash: MIGRATED_USER_PASSWORD_HASH,
-    role: 'USER',
+    // A database role cannot sign in, so the level it would sign in AT is
+    // meaningless; leave it an ordinary USER even if it holds the privilege.
+    role: user.isRole ? 'USER' : roleForEulPrivileges(privCodes),
     isRole: user.isRole,
     // A role has no password to rotate; a person provisioned with a temporary
     // one must change it before the account is usable.
@@ -1683,13 +1696,22 @@ export function transformUser(user: EulUser, _version: EulVersion): TransformedU
 // Grant
 // ---------------------------------------------------------------------------
 
-export function transformGrant(grant: Grant, _version: EulVersion): TransformedGrant {
+export function transformGrant(
+  grant: Grant,
+  _version: EulVersion,
+  /** The grantee's EUL-wide privilege codes (`AP_TYPE = 'GP'`), if any. */
+  granteePrivileges: ReadonlySet<number> = new Set(),
+): TransformedGrant {
   const warnings: TransformWarning[] = [];
 
-  // A Discoverer business-area grant carries no permission level of its own -
-  // see DEFAULT_GRANT_PERMISSION. VIEW is the narrowest level Neo has, so this
-  // can only narrow, never widen.
-  const permissionLevel = DEFAULT_GRANT_PERMISSION;
+  // A Discoverer business-area grant carries no permission level of its own —
+  // what the grantee may DO comes from their EUL-wide privilege rows, which
+  // `grantLevelForEulPrivileges` reads. A grantee with no privilege row at all
+  // falls back to VIEW, the narrowest level Neo has.
+  const permissionLevel =
+    granteePrivileges.size > 0
+      ? grantLevelForEulPrivileges(granteePrivileges)
+      : DEFAULT_GRANT_PERMISSION;
   if (grant.level === 'BUSINESS_AREA' && grant.privLevel !== null && grant.privLevel !== 0) {
     warnings.push({
       code: 'GRANT_PRIV_LEVEL_UNMAPPED',
@@ -1701,9 +1723,9 @@ export function transformGrant(grant: Grant, _version: EulVersion): TransformedG
     });
   }
 
-  // Neo only models business-area grants. `ACCESS_PRIVS` has no folder-grant
-  // column, so the only other kinds are workbook shares and EUL-wide
-  // privileges - neither is representable, and both are reported.
+  // `ACCESS_PRIVS` has no folder-grant column, so there are three kinds: a
+  // business-area grant, a workbook share, and an EUL-wide privilege. The
+  // first two migrate; the third is not a grant on anything.
   let skip = false;
   if (grant.level === 'BUSINESS_AREA' && grant.businessAreaId === null) {
     skip = true;
@@ -1712,13 +1734,11 @@ export function transformGrant(grant: Grant, _version: EulVersion): TransformedG
       message: `Grant ${grant.sourceId} for "${grant.grantee}" has no business area; skipped.`,
       sourceId: grant.sourceId,
     });
-  } else if (grant.level === 'DOCUMENT') {
-    // ACCESS_PRIVS.GD_DOC_ID — a share on a single workbook. Neo has no
-    // workbook-level grant, and workbooks themselves are not migrated yet.
+  } else if (grant.level === 'DOCUMENT' && grant.documentId === null) {
     skip = true;
     warnings.push({
-      code: 'GRANT_ON_WORKBOOK',
-      message: `Grant ${grant.sourceId} for "${grant.grantee}" applies to workbook ${grant.documentId}; Neo has no workbook-level grant, so it was not migrated.`,
+      code: 'GRANT_NO_WORKBOOK',
+      message: `Grant ${grant.sourceId} for "${grant.grantee}" is a workbook share naming no workbook; skipped.`,
       sourceId: grant.sourceId,
     });
   } else if (grant.level === 'EUL') {
@@ -1737,6 +1757,7 @@ export function transformGrant(grant: Grant, _version: EulVersion): TransformedG
     granteeUsername: grant.grantee,
     granteeIsRole: grant.granteeIsRole,
     businessAreaSourceId: grant.businessAreaId,
+    documentSourceId: grant.documentId,
     level: grant.level,
     permissionLevel,
     warnings,

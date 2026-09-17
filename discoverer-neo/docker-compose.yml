@@ -76,10 +76,12 @@ services:
       - export_files:/app/exports
       # Same rationale, for scheduled-run output files.
       - scheduled_results_files:/app/scheduled-results
-      # Same rationale, for provisioned-credential files (temporary passwords
-      # for migrated/auto-seeded accounts) — must outlive a container
-      # recreate, since each is the operator's only copy of a password.
-      - credential_files:/app/credentials
+      # Provisioned-credential files (temporary passwords for migrated and
+      # auto-seeded accounts). A BIND mount, matching docker-compose.dev.yml:
+      # each file is the operator's only copy of a password, and inside a
+      # named volume it is only reachable with `docker cp`. Here it lands in
+      # ./credentials next to this file. Collect, distribute, then delete.
+      - ./credentials:/app/credentials
     depends_on:
       postgres:
         condition: service_healthy
@@ -106,4 +108,3 @@ volumes:
   redis_data:
   export_files:
   scheduled_results_files:
-  credential_files:

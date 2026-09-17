@@ -152,8 +152,65 @@ export const ITEM_TYPE_MAP: Record<string, NeoItemType> = {
  * ever narrow a grant, never widen one. A non-zero `AP_PRIV_LEVEL` raises
  * `GRANT_PRIV_LEVEL_UNMAPPED` so an administrator reviews it rather than the
  * loss being silent.
+ *
+ * Superseded as the *default*: the privilege rows do say what a grantee may
+ * do, they just say it somewhere else — see `grantLevelForEulPrivileges`.
+ * `VIEW` remains the floor for a grantee holding no privilege row at all.
  */
 export const DEFAULT_GRANT_PERMISSION: NeoPermissionLevel = 'VIEW';
+
+/**
+ * EUL-wide privilege codes (`ACCESS_PRIVS.AP_TYPE = 'GP'`, `GP_APP_ID`).
+ *
+ * The codes run 1000-1015 and split into the two groups the Administrator's
+ * "Privileges" dialog draws: a Desktop-and-Plus group and an Administration
+ * group, each headed by a parent check box that must be ticked before any
+ * privilege under it can be. Oracle publishes the names but never the numbers,
+ * so only the three below are asserted, and each rests on evidence:
+ *
+ *  - **1006 — Administration Privilege.** `discoverer10g/sql/batchusr.sql:3094`
+ *    selects the EUL's administrators as the users holding `GP_APP_ID` 1006
+ *    together with 1015. 1006 is therefore the Administration group's parent,
+ *    and 1015 (Manage Scheduled Workbooks) the batch privilege that script
+ *    needs. In this estate exactly one account holds either.
+ *  - **1012 — Schedule Workbooks.** It is one of only two Desktop-and-Plus
+ *    codes absent from PUBLIC's default set, and the two accounts holding it
+ *    are the only two owning rows in `BATCH_REPORTS` (20 and 4). The other
+ *    absentee is 1011, held by nobody — matching "Change Password: this
+ *    privilege is not used in this release".
+ *
+ * Everything else is carried through as a number and interpreted by nobody.
+ */
+export const EUL_PRIV_ADMINISTRATION = 1006;
+export const EUL_PRIV_SCHEDULE_WORKBOOKS = 1012;
+export const EUL_PRIV_MANAGE_SCHEDULED_WORKBOOKS = 1015;
+
+/**
+ * The Neo role an account's EUL-wide privileges earn it.
+ *
+ * Only the Administration parent maps, because it is the only code whose
+ * meaning an Oracle source states. MANAGER and VIEWER are Neo-only levels no
+ * Discoverer privilege corresponds to, so nothing is migrated into them.
+ */
+export function roleForEulPrivileges(privCodes: ReadonlySet<number>): NeoUserRole {
+  return privCodes.has(EUL_PRIV_ADMINISTRATION) ? 'ADMIN' : 'USER';
+}
+
+/**
+ * The business-area grant level an account's EUL-wide privileges earn it.
+ *
+ * A Discoverer business-area grant is still binary — the level comes entirely
+ * from the separate privilege rows. Every grantee who can open Discoverer at
+ * all may run a worksheet over the business area and take the result away, so
+ * `EXPORT` is the floor; holding Schedule Workbooks raises it to `SCHEDULE`.
+ * Both are below `CREATE`, so neither confers authoring rights, and neither
+ * makes another user's saved map visible — that needs a workbook grant.
+ */
+export function grantLevelForEulPrivileges(
+  privCodes: ReadonlySet<number>,
+): NeoPermissionLevel {
+  return privCodes.has(EUL_PRIV_SCHEDULE_WORKBOOKS) ? 'SCHEDULE' : 'EXPORT';
+}
 
 // ---------------------------------------------------------------------------
 // Transformed entity shapes (runner resolves the *SourceId / *Username refs)
@@ -755,11 +812,14 @@ export interface TransformedGrant {
   /** True when the grantee is a database role rather than a user. */
   granteeIsRole: boolean;
   businessAreaSourceId: number | null;
+  /** `GD_DOC_ID` — the workbook a `DOCUMENT` grant shares. */
+  documentSourceId: number | null;
   /**
-   * `DOCUMENT` (a workbook grant) and `EUL` (an EUL-wide privilege) have no
-   * Neo equivalent yet - both are carried through so they can be reported,
-   * and both set `skip`. There is no `FOLDER`: `ACCESS_PRIVS` has no
-   * folder-grant column.
+   * `DOCUMENT` is a workbook grant: it migrates into `map_shares`, one share
+   * per worksheet of that workbook, so it does not set `skip`. `EUL` is an
+   * EUL-wide privilege, which is not a grant on anything and does set `skip` —
+   * it is read separately, for the grantee's role and grant level. There is no
+   * `FOLDER`: `ACCESS_PRIVS` has no folder-grant column.
    */
   level: 'BUSINESS_AREA' | 'DOCUMENT' | 'EUL';
   permissionLevel: NeoPermissionLevel;

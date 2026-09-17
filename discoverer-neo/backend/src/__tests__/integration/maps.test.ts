@@ -8,7 +8,7 @@ import {
   afterEach,
 } from '@jest/globals';
 import type { FastifyInstance } from 'fastify';
-import { eq, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { buildApp } from '../../app.js';
 import { db } from '../../db/index.js';
 import {
@@ -465,16 +465,46 @@ describe('Map management', () => {
     expect(res.statusCode).toBe(403);
   });
 
-  it('returns the full map to a user with a VIEW grant', async () => {
+  // A business-area grant below CREATE is a DATA entitlement, not a licence to
+  // read every map somebody else saved in that area. Seeing another person's
+  // map needs a share — Discoverer's own rule, where a business-area grant let
+  // you write worksheets while opening a saved workbook needed a workbook
+  // grant. Every grant a migration writes is below CREATE, so without this a
+  // single VIEW grant showed all 923 maps in the estate.
+  it('refuses the map to a user holding only a VIEW grant on its business area', async () => {
     const res = await app.inject({
       method: 'GET',
       url: `/api/maps/${mapId}`,
       headers: { authorization: `Bearer ${viewerToken}` },
     });
-    expect(res.statusCode).toBe(200);
-    const { data } = res.json();
-    expect(data.id).toBe(mapId);
-    expect(data.items).toHaveLength(2);
+    expect(res.statusCode).toBe(403);
+  });
+
+  it('returns the full map once it is shared with that user', async () => {
+    await db
+      .insert(mapShares)
+      .values({
+        mapId,
+        sharedWithUserId: viewerId,
+        permissionLevel: 'VIEW',
+        sharedBy: ownerId,
+      })
+      .onConflictDoNothing();
+    try {
+      const res = await app.inject({
+        method: 'GET',
+        url: `/api/maps/${mapId}`,
+        headers: { authorization: `Bearer ${viewerToken}` },
+      });
+      expect(res.statusCode).toBe(200);
+      const { data } = res.json();
+      expect(data.id).toBe(mapId);
+      expect(data.items).toHaveLength(2);
+    } finally {
+      await db
+        .delete(mapShares)
+        .where(and(eq(mapShares.mapId, mapId), eq(mapShares.sharedWithUserId, viewerId)));
+    }
   });
 
   it('denies access to users with no grant, share, or ownership', async () => {
@@ -1164,8 +1194,8 @@ describe('Map management', () => {
 });
 
 // D-020: `workbooks` sits above maps and outside the authorisation path. The
-// viewer holds VIEW on the Maps Test BA only, so of two worksheets in one
-// workbook they may open the one in that area and nothing else.
+// viewer is assigned one of two worksheets in the same workbook, so sharing
+// that sheet must not carry its sibling along with it.
 describe('workbooks grant no access (D-020)', () => {
   let grantedSheetId: string;
   let siblingSheetId: string;
@@ -1188,6 +1218,13 @@ describe('workbooks grant no access (D-020)', () => {
       { mapId: grantedSheetId, itemId: itemId1, displayOrder: 0 },
       { mapId: siblingSheetId, itemId: foreignItemId, displayOrder: 0 },
     ]);
+    // The access path is the share, the way a migrated workbook grant arrives.
+    await db.insert(mapShares).values({
+      mapId: grantedSheetId,
+      sharedWithUserId: viewerId,
+      permissionLevel: 'VIEW',
+      sharedBy: ownerId,
+    });
   });
 
   it('opens the granted worksheet and refuses its sibling', async () => {

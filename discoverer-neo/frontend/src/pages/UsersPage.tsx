@@ -5,7 +5,7 @@ import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
 import type { ColumnDef } from '@tanstack/react-table'
-import { Plus, Pencil, Trash2, UserCheck, UserX } from 'lucide-react'
+import { KeyRound, Plus, Pencil, Trash2, UserCheck, UserX } from 'lucide-react'
 import { apiClient, getErrorMessage } from '@/lib/api'
 import type { AppUser } from '@/lib/types'
 import { useToast } from '@/hooks/use-toast'
@@ -90,6 +90,30 @@ export function UsersPage() {
     form.reset({ name: user.name, email: user.email, password: '', role: user.role })
     setDialogOpen(true)
   }
+
+  // Re-issues a temporary password to every account still on one and hands
+  // back the CSV. The migration's own file is swept on a timer, so without
+  // this an operator who missed it has no way to get the passwords at all.
+  const credentialsMutation = useMutation({
+    mutationFn: async () => (await apiClient.users.issueCredentials()).data,
+    onSuccess: (csv) => {
+      const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `discoverer-neo-credentials-${new Date().toISOString().slice(0, 10)}.csv`
+      a.click()
+      URL.revokeObjectURL(url)
+      void queryClient.invalidateQueries({ queryKey: ['users'] })
+      toast({ title: t('admin:users.credentials.issued') })
+    },
+    onError: (err) => {
+      toast({
+        title: t('admin:users.credentials.failed'),
+        description: getErrorMessage(err),
+        variant: 'destructive',
+      })
+    },
+  })
 
   const saveMutation = useMutation({
     mutationFn: async (values: FormValues) => {
@@ -224,9 +248,19 @@ export function UsersPage() {
       title={t('admin:users.title')}
       description={t('admin:users.description')}
       action={
-        <Button onClick={openCreate}>
-          <Plus className="h-4 w-4" /> {t('admin:users.createButton')}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => credentialsMutation.mutate()}
+            disabled={credentialsMutation.isPending}
+            title={t('admin:users.credentials.hint')}
+          >
+            <KeyRound className="h-4 w-4" /> {t('admin:users.credentials.button')}
+          </Button>
+          <Button onClick={openCreate}>
+            <Plus className="h-4 w-4" /> {t('admin:users.createButton')}
+          </Button>
+        </div>
       }
     >
       <DataTable columns={columns} data={users ?? []} isLoading={isLoading} emptyMessage={t('admin:users.emptyMessage')} />
