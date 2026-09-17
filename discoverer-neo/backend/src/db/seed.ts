@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url';
 import { db, pool } from './index.js';
 import {
   users,
@@ -7,7 +8,7 @@ import {
 } from './schema.js';
 import bcrypt from 'bcryptjs';
 
-async function seed() {
+export async function seed() {
   console.log('🌱 Seeding database...');
 
   // Clean slate (respect FK order)
@@ -97,11 +98,16 @@ async function seed() {
   console.log('Login credentials:');
   console.log('  email:    admin@discoverer.local');
   console.log('  password: admin123');
-
-  await pool.end();
 }
 
-seed().catch((err) => {
-  console.error('❌ Seed failed:', err);
-  process.exit(1);
-});
+// Only run as a standalone script (`npm run db:seed`) — server.ts imports
+// `seed` directly to auto-provision the admin account on a fresh database
+// and must not have this close the shared pool or exit the process.
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
+  seed()
+    .then(() => pool.end())
+    .catch((err) => {
+      console.error('❌ Seed failed:', err);
+      process.exit(1);
+    });
+}
