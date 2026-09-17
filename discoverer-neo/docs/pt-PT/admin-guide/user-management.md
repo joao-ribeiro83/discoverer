@@ -156,6 +156,23 @@ utilizador escolhe a sua.
 Para forçar a alteração numa conta existente, redefina a palavra-passe; a
 redefinição coloca a conta no mesmo estado de "tem de alterar".
 
+### Re-aprovisionamento no cutover
+
+Verifique quem ainda precisa do quê — não assuma um número fixo de utilizadores,
+muda conforme as pessoas completam o primeiro início de sessão:
+
+```sql
+-- Pessoas reais que precisam de uma credencial completamente nova (nunca re-aprovisionadas):
+SELECT count(*) FROM users WHERE password_hash = '!migrated-no-login' AND is_role = false;
+-- Pessoas reais que já têm uma credencial, simplesmente não iniciaram sessão ainda:
+SELECT count(*) FROM users WHERE must_change_password = true AND password_hash != '!migrated-no-login';
+```
+
+Contas de função e serviço (`is_role = true`, mais a conta do serviço de
+migração) nunca são intencionalmente re-aprovisionadas — portam a sentinela
+`!migrated-no-login` para sempre por design. Procedimento completo e um ensaio
+real deste fluxo: [`docs/deployment/cutover-runbook.md`](../../deployment/cutover-runbook.md#step-6--re-provision-credentials).
+
 ## Funções de Base de Dados
 
 Os utilizadores importados do Oracle Discoverer não são todos pessoas. O

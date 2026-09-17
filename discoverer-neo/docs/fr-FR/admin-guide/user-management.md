@@ -157,6 +157,23 @@ le sien.
 Pour forcer une rotation sur un compte existant, réinitialisez son mot de passe ;
 la réinitialisation replace le compte dans le même état.
 
+### Réapprovisionement au basculement
+
+Interrogez qui a besoin de quoi — ne supposez pas un effectif fixe, cela varie
+au fur et à mesure que les utilisateurs complètent leur première connexion :
+
+```sql
+-- Vraies personnes ayant besoin d'une accréditation entièrement nouvelle (jamais réapprovisionées):
+SELECT count(*) FROM users WHERE password_hash = '!migrated-no-login' AND is_role = false;
+-- Vraies personnes qui ont déjà une accréditation, n'ont simplement pas encore ouvert de session:
+SELECT count(*) FROM users WHERE must_change_password = true AND password_hash != '!migrated-no-login';
+```
+
+Les comptes de rôle et de service (`is_role = true`, plus le compte du service
+de migration) ne sont intentionnellement jamais réapprovisionne — ils portent la
+sentinelle `!migrated-no-login` à jamais par conception. Procédure complète et
+une répétition réelle de ce flux : [`docs/deployment/cutover-runbook.md`](../../deployment/cutover-runbook.md#step-6--re-provision-credentials).
+
 ## Rôles de base de données
 
 Les utilisateurs importés d'Oracle Discoverer ne sont pas tous des personnes.

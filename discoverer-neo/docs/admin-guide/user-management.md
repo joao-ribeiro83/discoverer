@@ -174,6 +174,23 @@ the account back into the same "must change" state.
 
 User will be prompted to change password next login.
 
+### Re-provisioning at cutover
+
+Query who still needs what — do not assume a fixed headcount, it drifts as
+people complete first login:
+
+```sql
+-- Real people needing a brand-new credential (never re-provisioned):
+SELECT count(*) FROM users WHERE password_hash = '!migrated-no-login' AND is_role = false;
+-- Real people who already have a credential, just haven't logged in yet:
+SELECT count(*) FROM users WHERE must_change_password = true AND password_hash != '!migrated-no-login';
+```
+
+Role and service accounts (`is_role = true`, plus the migration service
+account) are deliberately never re-provisioned — they carry the
+`!migrated-no-login` sentinel forever by design. Full procedure and a real
+rehearsal of this flow: [`docs/deployment/cutover-runbook.md`](../deployment/cutover-runbook.md#step-6--re-provision-credentials).
+
 ## User Preferences
 
 Users can manage their own interface preferences without administrator involvement:

@@ -49,3 +49,25 @@ Nunca assuma que um despejo é bom — prove-o:
 Restaura para uma base de dados descartável `<db>_restoretest`, diferencia
 contagens de linhas versus a base de dados activa tabela por tabela, solta a
 base de dados de scratch, e sai com código não-zero em qualquer incompatibilidade.
+
+## Um passo do cutover falhou
+
+Procedimento completo: [`docs/deployment/cutover-runbook.md`](../deployment/cutover-runbook.md).
+Cada passo tem seu próprio sinal de falha e reversão; os dois armadilhas gerais
+encontradas durante o ensaio:
+
+- **Um contentor falhado ainda pode mostrar `docker ps` como "em execução".** Sob
+  `tsx watch` (inicialização estilo desenvolvimento), uma excepção não capturada ao iniciar — p.ex.
+  a protecção de segredos de produção recusando um `JWT_SECRET` padrão — é capturada pelo
+  observador, registada, e o processo fica esperando uma mudança de ficheiro que nunca virá.
+  Verifique `docker logs` ou `/health`, não apenas o estado do contentor, para decidir
+  se uma inicialização realmente funcionou.
+- **`docker run -e SOME_PATH=/opt/...` no Windows/Git Bash** tem seu valor
+  silenciosamente reescrito num caminho Windows pela conversão de caminhos do MSYS,
+  quebrando qualquer coisa que espere um caminho Unix (p.ex. `ORACLE_CLIENT_PATH`).
+  Prefixe o comando com `MSYS_NO_PATHCONV=1`.
+
+Se o verificador (`docs/migration/verify.md`) reporta `COMPLETED_WITH_BLOCKERS`
+no momento do cutover, verifique cada bloqueador contra a lista conhecida no
+Passo 3 do runbook antes de o tratar como novo — um bloqueador Fase 3.4/4.x
+já rastreado não é motivo para parar; um não listado é.
