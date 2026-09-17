@@ -256,6 +256,10 @@ export default function userRoutes(fastify: FastifyInstance) {
         });
       }
 
+      if (bodyParsed.data.isActive === false && request.user.sub === paramParsed.data.id) {
+        return reply.code(400).send({ error: 'You cannot deactivate your own account' });
+      }
+
       if (bodyParsed.data.email) {
         const existing = await getByEmail(bodyParsed.data.email);
         if (existing && existing.id !== paramParsed.data.id) {

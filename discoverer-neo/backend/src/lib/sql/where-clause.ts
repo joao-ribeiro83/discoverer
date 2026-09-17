@@ -142,7 +142,7 @@ export function buildWhereClause(
     // back to text — this must happen before `caseFold` below, not after,
     // or a date parameter still gets wrapped in UPPER() as if it were text.
     const paramTypeForCondition = condition.paramName ? paramTypes.get(condition.paramName) : undefined;
-    let isDate =
+    const isDate =
       !!(dataType && /DATE|TIMESTAMP/i.test(dataType)) || (!dataType && paramTypeForCondition === 'DATE');
     const isNumeric = !!(dataType && /NUMBER|INTEGER|FLOAT|DECIMAL/i.test(dataType));
     // Oracle's case-insensitive flag is a text-comparison setting — folding a

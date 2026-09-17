@@ -241,7 +241,13 @@ async function writeResultFile(
 export interface BatchResultImportWarning {
   brId: number;
   brName: string;
-  reason: 'NO_RUN' | 'AMBIGUOUS_RUN' | 'UNRESOLVED_MAP' | 'AMBIGUOUS_MAP' | 'UNRESOLVED_SCHEDULE';
+  reason:
+    | 'NO_RUN'
+    | 'AMBIGUOUS_RUN'
+    | 'UNRESOLVED_MAP'
+    | 'AMBIGUOUS_MAP'
+    | 'UNRESOLVED_SCHEDULE'
+    | 'NO_RESULT_COLUMNS';
   detail: string;
 }
 
@@ -365,10 +371,27 @@ export async function importBatchResults(
         const rowCount = Number((countRes.rows as Array<{ CNT: number }>)[0]!.CNT);
         const outcome = classifyRunOutcome(run.errCode, run.errText);
 
-        let filePath: string | null = null;
-        if (rowCount > 0) {
+        // Looked up before writing a file so a rerun reuses the prior file
+        // instead of writing a new one and orphaning the old one on disk.
+        const [existing] = await db
+          .select({ id: scheduledResults.id, filePath: scheduledResults.filePath })
+          .from(scheduledResults)
+          .where(and(eq(scheduledResults.scheduleId, scheduleRow.id), eq(scheduledResults.executedAt, run.runDate)))
+          .limit(1);
+
+        let filePath: string | null = existing?.filePath ?? null;
+        if (rowCount > 0 && !filePath) {
           const query = queryByBsId.get(sheet.bsId);
           const aliasPairs = query ? parseResultAliasMap(query.resultSql) : [];
+          if (aliasPairs.length === 0) {
+            warnings.push({
+              brId: report.brId,
+              brName: report.name,
+              reason: 'NO_RESULT_COLUMNS',
+              detail: `table ${table.tableName} has ${rowCount} row(s) but its BQ_RESULT_SQL has no recognizable result columns — skipped rather than recording a row count with no data`,
+            });
+            continue;
+          }
           const exprInfo = await readExpressionInfo(
             conn,
             schema,
@@ -385,7 +408,7 @@ export async function importBatchResults(
             };
           });
 
-          if (columns.length > 0 && !dryRun) {
+          if (!dryRun) {
             const rowsRes = await conn.execute(`SELECT * FROM ${schema}.${table.tableName}`, {}, OBJ_FORMAT);
             const rows = rowsRes.rows as Record<string, unknown>[];
             const resultId = randomUUID();
@@ -400,12 +423,6 @@ export async function importBatchResults(
         rowsMigrated += rowCount;
 
         if (!dryRun) {
-          const [existing] = await db
-            .select({ id: scheduledResults.id })
-            .from(scheduledResults)
-            .where(and(eq(scheduledResults.scheduleId, scheduleRow.id), eq(scheduledResults.executedAt, run.runDate)))
-            .limit(1);
-
           if (existing) {
             await db
               .update(scheduledResults)
