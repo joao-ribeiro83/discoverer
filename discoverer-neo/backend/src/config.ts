@@ -139,6 +139,38 @@ const EnvSchema = z.object({
   ORACLE_CONNECT_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
 
   /**
+   * How long a map's statement may run on Oracle.
+   *
+   * These were a pair of hard-coded 30-second constants with no way to raise
+   * them, which is not what this application replaces: a Discoverer estate
+   * runs reports that take minutes, and scheduled workbooks exist precisely
+   * because some take far longer. A 30-second ceiling turns an ordinary
+   * end-of-month report into "Query timed out".
+   *
+   * `QUERY_TIMEOUT_MS` is what a request gets when it asks for nothing;
+   * `QUERY_TIMEOUT_MAX_MS` is the ceiling a request may ask for, and 30
+   * minutes matches what the estate's own users expect.
+   *
+   * A long SYNCHRONOUS run also has to survive everything between the browser
+   * and the backend — `proxy_read_timeout` in `frontend/nginx.conf` is the one
+   * that bites, and it is set to match. For anything genuinely long the
+   * background run is the better tool: it polls, so no single request has to
+   * stay open at all.
+   */
+  QUERY_TIMEOUT_MS: z.coerce.number().int().positive().default(300_000),
+  QUERY_TIMEOUT_MAX_MS: z.coerce.number().int().positive().default(1_800_000),
+
+  /**
+   * Seconds a list-of-values page stays cached in Redis.
+   *
+   * The query behind a pick-list is a `SELECT DISTINCT` over a fact table —
+   * 16-27 seconds each, measured. At the previous 120 seconds a person opening
+   * the same prompt twice in a sitting paid it twice. The values are a prompt,
+   * not an answer: whatever is picked is then queried live.
+   */
+  LOV_CACHE_TTL_SECONDS: z.coerce.number().int().positive().default(3_600),
+
+  /**
    * Export jobs processed concurrently by one worker process.
    *
    * Deliberately explicit rather than left to BullMQ's default. Each export
