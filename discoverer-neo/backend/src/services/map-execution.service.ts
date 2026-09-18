@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { desc, eq } from 'drizzle-orm';
 import type { BindParameters, Connection } from 'oracledb';
+import { config } from '../config.js';
 import { db } from '../db/index.js';
 import { queryExecutionLog, users } from '../db/schema.js';
 import {
@@ -47,9 +48,16 @@ import {
 
 /** Rows returned by a synchronous execution before truncation kicks in. */
 export const MAX_SYNC_ROWS = 1000;
-/** Default and hard-max statement timeout. */
-export const DEFAULT_TIMEOUT_MS = 30_000;
-export const MAX_TIMEOUT_MS = 30_000;
+/**
+ * Default and hard-max statement timeout, both environment-tunable.
+ *
+ * These were 30 seconds, hard-coded, with no override — so a report that takes
+ * a minute could not be run at all, and the estate this replaces is full of
+ * them. See `QUERY_TIMEOUT_MS` / `QUERY_TIMEOUT_MAX_MS` in config.ts for why
+ * the ceiling is 30 minutes and what else has to allow it.
+ */
+export const DEFAULT_TIMEOUT_MS = config.QUERY_TIMEOUT_MS;
+export const MAX_TIMEOUT_MS = config.QUERY_TIMEOUT_MAX_MS;
 /** Upper bound on rows an async job buffers in memory. */
 export const ASYNC_MAX_ROWS = 100_000;
 const ASYNC_FETCH_BATCH = 1_000;

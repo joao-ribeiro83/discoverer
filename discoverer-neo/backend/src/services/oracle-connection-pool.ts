@@ -155,7 +155,40 @@ function initOracleClientOnce(oracledb: OracleDbModule): void {
  */
 export async function verifyOracleClient(): Promise<void> {
   if (!config.ORACLE_THICK_MODE) return;
+  warnIfThreadPoolTooSmall();
   await loadOracleDb();
+}
+
+/**
+ * Thick mode runs every Oracle call on a libuv thread pool slot, held for the
+ * WHOLE call. Node's default pool is 4 threads, and `getaddrinfo` shares it —
+ * so once `ORACLE_POOL_MAX` concurrent queries exceed the pool, the next
+ * Postgres connection cannot even resolve its hostname and dies on
+ * `connectionTimeoutMillis`.
+ *
+ * That is not a theoretical failure. Four list-of-values queries running
+ * 16-27s each took all four threads; the map execution that arrived next
+ * reported `timeout exceeded when trying to connect` against `map_parameters`
+ * and returned a 500 — while Postgres sat idle with two connections open. The
+ * error names Postgres and the cause is Oracle, which is exactly the kind of
+ * thing nobody finds twice.
+ *
+ * `UV_THREADPOOL_SIZE` is read by libuv when the pool is first used and cannot
+ * be set from inside the process, so this warns rather than fixes. Set it in
+ * the container environment, at `ORACLE_POOL_MAX` plus headroom for DNS, file
+ * and crypto work.
+ */
+export function warnIfThreadPoolTooSmall(): void {
+  const configured = Number(process.env.UV_THREADPOOL_SIZE);
+  const threads = Number.isInteger(configured) && configured > 0 ? configured : 4;
+  const needed = config.ORACLE_POOL_MAX + 4;
+  if (threads >= needed) return;
+  console.warn(
+    `UV_THREADPOOL_SIZE is ${threads}${process.env.UV_THREADPOOL_SIZE ? '' : ' (Node default)'} ` +
+      `but thick-mode Oracle can hold ORACLE_POOL_MAX=${config.ORACLE_POOL_MAX} of them at once. ` +
+      `Set UV_THREADPOOL_SIZE>=${needed} in the container environment, or a burst of slow Oracle ` +
+      'queries will starve Postgres connections and surface as unrelated 500s.',
+  );
 }
 
 /**
