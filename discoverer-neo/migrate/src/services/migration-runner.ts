@@ -1214,6 +1214,9 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
         isPublic: t.isPublic,
         isActive: true,
         selectDistinct: t.selectDistinct,
+        // Null rather than [] when nothing was lost, so "this map is complete"
+        // and "this map predates the column" stay distinguishable.
+        droppedFilters: t.droppedFilters.length > 0 ? t.droppedFilters : null,
         createdAt: t.createdAt ?? deps.now(),
         updatedAt: t.updatedAt ?? deps.now(),
       });
@@ -1346,10 +1349,7 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
             ? itemIdByLabel.get(itemLabelKey(cond.folderLabel, cond.itemLabel))
             : undefined),
         deps.genId,
-        (cond) =>
-          cond.calculationElementId === null
-            ? undefined
-            : calculatedFieldIdByElement.get(cond.calculationElementId),
+        (elementId) => calculatedFieldIdByElement.get(elementId),
       );
       mapConditionRows.push(...conditionRows.rows);
       for (const { reason } of conditionRows.skipped) {

@@ -20,6 +20,7 @@ import type {
   Join,
 } from '../../types/eul-versions.js';
 import type { ParsedWorkbook } from '../eul-reader.js';
+import type { ElementBindings } from '../workbook-parser.js';
 import {
   clamp,
   DEFAULT_GRANT_PERMISSION,
@@ -913,6 +914,9 @@ export function transformWorkbook(
         selectDistinct: false,
         items: [],
         conditions: [],
+        // Nothing decoded means nothing to drop — the loss is the whole
+        // worksheet, which is already reported as such.
+        droppedFilters: [],
         parameters: [],
         calculatedFields: [],
         totals: [],
@@ -1313,6 +1317,15 @@ export function transformWorkbook(
     // condition therefore produces one row per test it makes, tied together by
     // `groupKey` so the generated SQL brackets them the way Discoverer did.
     const conditions: TransformedMapCondition[] = [];
+    /**
+     * Filters this worksheet had and this map will not.
+     *
+     * A dropped filter is the one migration failure with no symptom: the map
+     * still runs, and returns MORE rows than Discoverer did. Recording it is
+     * what lets the viewer say the result is under-filtered rather than
+     * letting it read as complete.
+     */
+    const droppedFilters: Array<{ text: string; reason: string }> = [];
     document.conditions.forEach((condition, index) => {
       // Skipped in place rather than pre-filtered, so `sourceIndex` stays the
       // condition's position in the workbook.
@@ -1325,6 +1338,10 @@ export function transformWorkbook(
             `Map "${name}": condition ${JSON.stringify(sourceText ?? '')} was not migrated ` +
             `as a filter because ${condition.unsupported}; recreate it manually.`,
           sourceId: workbook.sourceId,
+        });
+        droppedFilters.push({
+          text: sourceText ?? '(unnamed condition)',
+          reason: condition.unsupported,
         });
         return;
       }
@@ -1339,15 +1356,16 @@ export function transformWorkbook(
           // `map_conditions` can hold it. A negative element id says
           // "synthesised here"; every real one is the positive id the element
           // carries in the workbook.
-          let calculationElementId = predicate.calculationElementId;
-          if (predicate.expression !== null) {
-            calculationElementId = -(expressionFields.length + 1);
+          const asHiddenField = (
+            expression: { tokens: string; formula: string; bindings: ElementBindings },
+          ): number => {
+            const elementId = -(expressionFields.length + 1);
             expressionFields.push({
-              name: calculationNameFor(predicate.expression.formula),
-              formula: predicate.expression.formula,
-              sourceTokens: predicate.expression.tokens,
-              sourceElementId: calculationElementId,
-              sourceAttrs: { elementBindings: predicate.expression.bindings },
+              name: calculationNameFor(expression.formula),
+              formula: expression.formula,
+              sourceTokens: expression.tokens,
+              sourceElementId: elementId,
+              sourceAttrs: { elementBindings: expression.bindings },
               // Nothing in the source says what the expression returns, and a
               // guess here would pick the wrong comparison in the generator.
               dataType: null,
@@ -1358,10 +1376,24 @@ export function transformWorkbook(
               axisType: null,
               isHidden: true,
             });
+            return elementId;
+          };
+
+          let calculationElementId = predicate.calculationElementId;
+          if (predicate.expression !== null) {
+            calculationElementId = asHiddenField(predicate.expression);
           }
+          // Symmetrically for the right side. `TO_DATE(:p,'DD-MON-RRRR') +
+          // 0.99999` is not a value any column can hold, so it becomes a field
+          // of its own and the row compares against that.
+          const valueCalculationElementId =
+            predicate.valueExpression === null
+              ? null
+              : asHiddenField(predicate.valueExpression);
           conditions.push({
             itemSourceId: predicate.itemSourceId,
             calculationElementId,
+            valueCalculationElementId,
             folderLabel: predicate.folderLabel,
             itemLabel: predicate.itemLabel,
             operator: predicate.neoOperator,
@@ -1650,6 +1682,7 @@ export function transformWorkbook(
       selectDistinct: worksheet.selectDistinct === true,
       items,
       conditions,
+      droppedFilters,
       parameters: sheetParameters,
       calculatedFields,
       totals,
@@ -2116,6 +2149,8 @@ export interface MapConditionRow {
   itemId: string | null;
   /** The calculated field filtered, when the condition tests one (ARCH M4). */
   calculatedFieldId: string | null;
+  /** The calculated field compared AGAINST, when the right side is an expression. */
+  valueCalculatedFieldId: string | null;
   operator: NeoMapOperator;
   value: string | null;
   paramName: string | null;
@@ -2158,7 +2193,12 @@ export function buildMapConditionRows(
    * by the calculation's `source_element_id`. Discoverer lets a condition test
    * a worksheet calculation, and the row holds that instead of an item.
    */
-  resolveCalculatedField: (condition: TransformedMapCondition) => string | undefined,
+  /**
+   * A synthesised/worksheet calculation's element id → its Neo row id. Takes
+   * the id rather than the condition because a row can name two of them now:
+   * the field it filters, and the field it compares against.
+   */
+  resolveCalculatedField: (elementId: number) => string | undefined,
 ): MapConditionRowsResult {
   const rows: MapConditionRow[] = [];
   const skipped: MapConditionRowsResult['skipped'] = [];
@@ -2176,7 +2216,15 @@ export function buildMapConditionRows(
       condition,
       itemId: condition.calculationElementId === null ? resolveItem(condition) : undefined,
       calculatedFieldId:
-        condition.calculationElementId === null ? undefined : resolveCalculatedField(condition),
+        condition.calculationElementId === null
+          ? undefined
+          : resolveCalculatedField(condition.calculationElementId),
+      // The right side, when it compares against an expression. Unlike the
+      // left, an unresolved one does NOT drop the condition — see below.
+      valueCalculatedFieldId:
+        condition.valueCalculationElementId === null
+          ? null
+          : (resolveCalculatedField(condition.valueCalculationElementId) ?? null),
     }));
     const missing = resolved.find(
       (entry) => entry.itemId === undefined && entry.calculatedFieldId === undefined,
@@ -2192,7 +2240,23 @@ export function buildMapConditionRows(
       });
       continue;
     }
-    for (const { condition, itemId, calculatedFieldId } of resolved) {
+    // A right-hand expression whose field did not migrate would leave the row
+    // comparing against nothing, which reads as "no filter" — the exact silent
+    // over-return this work exists to remove. Drop the condition and say so.
+    const danglingValue = resolved.find(
+      (entry) =>
+        entry.condition.valueCalculationElementId !== null && entry.valueCalculatedFieldId === null,
+    );
+    if (danglingValue !== undefined) {
+      skipped.push({
+        reason:
+          `condition ${JSON.stringify(danglingValue.condition.sourceText ?? '')} compares ` +
+          'against an expression whose calculated field did not migrate',
+      });
+      continue;
+    }
+
+    for (const { condition, itemId, calculatedFieldId, valueCalculatedFieldId } of resolved) {
       let groupId: string | null = null;
       if (condition.groupKey !== null) {
         groupId = groupIds.get(condition.groupKey) ?? genId();
@@ -2203,6 +2267,7 @@ export function buildMapConditionRows(
         mapId,
         itemId: itemId ?? null,
         calculatedFieldId: calculatedFieldId ?? null,
+        valueCalculatedFieldId,
         // A transformed condition only carries an operator Neo accepts; the
         // ones it does not were dropped with a warning by `transformWorkbook`.
         operator: condition.operator!,

@@ -124,6 +124,8 @@ function toDrillDetailDefinition(
         mapId: def.map.id,
         itemId: item.id,
         calculatedFieldId: null,
+        // A drill pin compares against a literal value, never an expression.
+        valueCalculatedFieldId: null,
         operator: isNull ? 'IS_NULL' : '=',
         value: isNull ? null : conditionValueOf(value),
         paramName: null,

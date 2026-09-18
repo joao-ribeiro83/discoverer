@@ -221,5 +221,8 @@
     "revokeFailed": "Could not remove access",
     "none": "Nobody holds this workbook yet.",
     "sheetsHeld": "{{held}} of {{total}} worksheets"
+  },
+  "droppedFilters": {
+    "summary": "{{count}} filter(s) from Discoverer could not be migrated — this result may include more rows than the original"
   }
 }

@@ -584,6 +584,13 @@ export interface TransformedMapCondition {
    * the other, never both). Null on an ordinary item condition.
    */
   calculationElementId: number | null;
+  /**
+   * `source_element_id` of the hidden calculated field this row compares
+   * AGAINST, when the right side is an expression rather than a value —
+   * `TO_DATE(:Dt Fim,'DD-MON-RRRR') + 0.99999`. Null on an ordinary
+   * value/parameter comparison.
+   */
+  valueCalculationElementId: number | null;
   folderLabel: string | null;
   itemLabel: string | null;
   /** Neo `map_operator` value; null when the source operator has no Neo equivalent. */
@@ -783,6 +790,13 @@ export interface TransformedWorkbook {
   selectDistinct: boolean;
   items: TransformedMapItem[];
   conditions: TransformedMapCondition[];
+  /**
+   * Filters the source worksheet had that this map does not, each with the
+   * condition as its author wrote it. Written to `maps.dropped_filters` so the
+   * viewer can say the result is under-filtered — a dropped filter otherwise
+   * has no symptom at all, since the map still runs and simply returns more.
+   */
+  droppedFilters: Array<{ text: string; reason: string }>;
   parameters: TransformedMapParameter[];
   calculatedFields: TransformedMapCalculatedField[];
   /** Totals defined on this worksheet, in the order the body writes them. */

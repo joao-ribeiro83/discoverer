@@ -1017,6 +1017,66 @@ describe('transformWorkbook', () => {
     });
   });
 
+  // The RIGHT side can be an expression too, and until this it was the single
+  // biggest migration loss: 205 filters across 152 of 923 maps, every one of
+  // them dropped, which does not fail — it silently widens the result.
+  it('migrates a condition that compares against an expression as a hidden calculation', () => {
+    const content = buildWorkbookFixture({
+      items: [{ folderLabel: 'M M164', itemLabel: 'Data Comparacion' }],
+      parameters: [{ name: 'Dt Fim' }],
+      conditions: [
+        {
+          // Discoverer's "to the end of that day": the bound is the parameter
+          // converted and pushed to 23:59:59. [1,94] is +, [1,48] is TO_DATE.
+          sql: "Data Comparacion <= TO_DATE(:Dt Fim,'DD-MON-RRRR') + 0.99999",
+          tokens: '[1,85]([6,3],[1,94]([1,48]([8,4],[5,1,"DD-MON-RRRR"]),[5,2,"0.99999"]))',
+        },
+      ],
+      worksheets: [{ name: 'S', columns: [{ item: 'Data Comparacion' }] }],
+    });
+    const [map] = transformWorkbook(workbook({ content }), 'EUL4');
+
+    // The bound becomes a hidden field, and the row compares against it. The
+    // parameter inside it still binds — its [8,n] is in the stored tokens.
+    expect(map?.calculatedFields).toEqual([
+      expect.objectContaining({
+        sourceTokens: '[1,94]([1,48]([8,4],[5,1,"DD-MON-RRRR"]),[5,2,"0.99999"])',
+        sourceElementId: -1,
+        isHidden: true,
+      }),
+    ]);
+    expect(map?.conditions[0]).toMatchObject({
+      itemLabel: 'Data Comparacion',
+      calculationElementId: null,
+      valueCalculationElementId: -1,
+      operator: '<=',
+    });
+    // Nothing was lost, so nothing is reported as lost.
+    expect(map?.droppedFilters).toEqual([]);
+  });
+
+  it('records a filter it still cannot express, so the viewer can say so', () => {
+    const content = buildWorkbookFixture({
+      items: [{ folderLabel: 'Vendas', itemLabel: 'Ramo' }],
+      parameters: [{ name: 'Ramo' }],
+      conditions: [
+        {
+          // An expression inside an IN list: one row each, ORed, which is the
+          // bracket level Neo does not have.
+          sql: "Ramo IN (UPPER(:Ramo), 'A')",
+          tokens: '[1,88]([6,3],[1,79]([8,4]),[5,1,"A"])',
+        },
+      ],
+      worksheets: [{ name: 'S', columns: [{ item: 'Ramo' }] }],
+    });
+    const [map] = transformWorkbook(workbook({ content }), 'EUL4');
+
+    expect(map?.conditions).toHaveLength(0);
+    expect(map?.droppedFilters).toHaveLength(1);
+    expect(map?.droppedFilters[0]?.text).toContain('Ramo IN');
+    expect(map?.droppedFilters[0]?.reason).toContain('expression');
+  });
+
   it('migrates only the calculations a worksheet uses, and what they reference', () => {
     // Elements: 3 the item, 4 the condition, 5-8 the calculations — all in the
     // shared section, which the first worksheet's range starts with.
@@ -2021,6 +2081,7 @@ describe('buildMapConditionRows', () => {
   ): TransformedMapCondition => ({
     itemSourceId: 1,
     calculationElementId: null,
+    valueCalculationElementId: null,
     folderLabel: 'F',
     itemLabel: 'A',
     operator: '=',

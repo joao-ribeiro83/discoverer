@@ -221,5 +221,8 @@
     "revokeFailed": "Não foi possível remover o acesso",
     "none": "Ainda ninguém tem este livro.",
     "sheetsHeld": "{{held}} de {{total}} folhas"
+  },
+  "droppedFilters": {
+    "summary": "Não foi possível migrar {{count}} filtro(s) do Discoverer — este resultado pode incluir mais linhas do que o original"
   }
 }

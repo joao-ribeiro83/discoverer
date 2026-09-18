@@ -100,6 +100,7 @@ function mkMap(): Map {
     isPublic: false,
     isActive: true,
     selectDistinct: false,
+    droppedFilters: null,
     workbookId: null,
     createdAt: NOW,
     updatedAt: NOW,
