@@ -121,7 +121,10 @@
       "title": "Drill to Detail",
       "description": "The raw rows behind this row's values.",
       "loading": "Drilling…"
-    }
+    },
+    "explain": "Plan",
+    "explainFailed": "Could not read the execution plan",
+    "nothingToExplain": "Run the map first"
   },
   "parameters": {
     "title": "Run parameters",
@@ -204,5 +207,22 @@
       "why": "To total across a one-to-many join, each set of detail rows is summarised first and the parts are then combined. Adding up sums gives the right answer, and so do smallest and largest. Averages, counts of distinct values, standard deviation and variance cannot be rebuilt from parts: an average of averages is not the average.",
       "whatToChange": "Use Sum, Count, Minimum or Maximum, or total this column on a worksheet that uses one folder only."
     }
+  },
+  "workbookShare": {
+    "title": "Share \"{{name}}\"",
+    "description": "Give someone every worksheet in this workbook — {{count}} in total.",
+    "pickUser": "Choose a person first",
+    "shareButton": "Share workbook",
+    "revokeButton": "Remove access",
+    "shared": "Shared {{count}} worksheet(s)",
+    "refused": "Not shared: {{names}}",
+    "shareFailed": "Could not share the workbook",
+    "revoked": "Access removed",
+    "revokeFailed": "Could not remove access",
+    "none": "Nobody holds this workbook yet.",
+    "sheetsHeld": "{{held}} of {{total}} worksheets"
+  },
+  "droppedFilters": {
+    "summary": "{{count}} filter(s) from Discoverer could not be migrated — this result may include more rows than the original"
   }
 }

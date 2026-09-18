@@ -155,7 +155,96 @@ function initOracleClientOnce(oracledb: OracleDbModule): void {
  */
 export async function verifyOracleClient(): Promise<void> {
   if (!config.ORACLE_THICK_MODE) return;
+  warnIfThreadPoolTooSmall();
   await loadOracleDb();
+}
+
+/**
+ * The `ALTER SESSION` statements this deployment's NLS settings amount to.
+ *
+ * Built from three separately-validated settings rather than one free-text
+ * string, so nothing here can carry SQL: `config.ts` pins each to a shape
+ * (two non-numeric characters, a date mask, a language name) and anything else
+ * fails at startup. The values are still quoted, because validation is a
+ * guard, not a reason to stop quoting.
+ *
+ * Exported for the test — the statements are the whole behaviour, and the
+ * alternative is asserting against a live Oracle.
+ */
+export function nlsStatements(): string[] {
+  const quoted = (value: string) => `'${value.replaceAll("'", "''")}'`;
+  const out: string[] = [];
+  if (config.ORACLE_NLS_NUMERIC_CHARACTERS) {
+    out.push(`ALTER SESSION SET NLS_NUMERIC_CHARACTERS = ${quoted(config.ORACLE_NLS_NUMERIC_CHARACTERS)}`);
+  }
+  if (config.ORACLE_NLS_DATE_FORMAT) {
+    out.push(`ALTER SESSION SET NLS_DATE_FORMAT = ${quoted(config.ORACLE_NLS_DATE_FORMAT)}`);
+  }
+  if (config.ORACLE_NLS_DATE_LANGUAGE) {
+    out.push(`ALTER SESSION SET NLS_DATE_LANGUAGE = ${quoted(config.ORACLE_NLS_DATE_LANGUAGE)}`);
+  }
+  return out;
+}
+
+/**
+ * Apply this deployment's NLS to a newly created pooled session.
+ *
+ * Discoverer ran every query under the author's own NLS, and the formulas it
+ * stored assume it — see `ORACLE_NLS_NUMERIC_CHARACTERS` in config.ts for the
+ * expression that made this necessary. A session that does not match reads
+ * `458.33` as a broken number and the map dies on ORA-01722.
+ *
+ * Failure is fatal to the session on purpose. Continuing would hand out a
+ * connection whose numbers and dates parse differently from every other one,
+ * which is worse than not connecting: the query would succeed and be wrong.
+ */
+function nlsSessionCallback(
+  conn: Connection,
+  _requestedTag: string,
+  callback: (err?: Error) => void,
+): void {
+  // Callback-style, not async: the driver hands us a callback and expects a
+  // void return, so the promise is started here and settled through it.
+  void (async () => {
+    try {
+      for (const statement of nlsStatements()) await conn.execute(statement);
+      callback();
+    } catch (err) {
+      callback(err instanceof Error ? err : new Error(String(err)));
+    }
+  })();
+}
+
+/**
+ * Thick mode runs every Oracle call on a libuv thread pool slot, held for the
+ * WHOLE call. Node's default pool is 4 threads, and `getaddrinfo` shares it —
+ * so once `ORACLE_POOL_MAX` concurrent queries exceed the pool, the next
+ * Postgres connection cannot even resolve its hostname and dies on
+ * `connectionTimeoutMillis`.
+ *
+ * That is not a theoretical failure. Four list-of-values queries running
+ * 16-27s each took all four threads; the map execution that arrived next
+ * reported `timeout exceeded when trying to connect` against `map_parameters`
+ * and returned a 500 — while Postgres sat idle with two connections open. The
+ * error names Postgres and the cause is Oracle, which is exactly the kind of
+ * thing nobody finds twice.
+ *
+ * `UV_THREADPOOL_SIZE` is read by libuv when the pool is first used and cannot
+ * be set from inside the process, so this warns rather than fixes. Set it in
+ * the container environment, at `ORACLE_POOL_MAX` plus headroom for DNS, file
+ * and crypto work.
+ */
+export function warnIfThreadPoolTooSmall(): void {
+  const configured = Number(process.env.UV_THREADPOOL_SIZE);
+  const threads = Number.isInteger(configured) && configured > 0 ? configured : 4;
+  const needed = config.ORACLE_POOL_MAX + 4;
+  if (threads >= needed) return;
+  console.warn(
+    `UV_THREADPOOL_SIZE is ${threads}${process.env.UV_THREADPOOL_SIZE ? '' : ' (Node default)'} ` +
+      `but thick-mode Oracle can hold ORACLE_POOL_MAX=${config.ORACLE_POOL_MAX} of them at once. ` +
+      `Set UV_THREADPOOL_SIZE>=${needed} in the container environment, or a burst of slow Oracle ` +
+      'queries will starve Postgres connections and surface as unrelated 500s.',
+  );
 }
 
 /**
@@ -231,6 +320,10 @@ async function buildPool(dataSourceId: string): Promise<Pool> {
       user: ds.username ?? undefined,
       password: ds.password ?? '',
       connectString,
+      // Runs once per newly created session, which is where NLS belongs: set
+      // on acquire it would re-run for every query, and set at connect time it
+      // would be lost when the pool grows.
+      sessionCallback: nlsSessionCallback,
       poolAlias: `ds:${dataSourceId}`,
       poolMin: POOL_MIN,
       poolMax: POOL_MAX,

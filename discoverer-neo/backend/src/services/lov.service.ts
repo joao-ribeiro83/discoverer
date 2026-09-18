@@ -1,6 +1,7 @@
 import type { Redis } from 'ioredis';
 import type { BindParameters, Connection } from 'oracledb';
 import { and, eq } from 'drizzle-orm';
+import { config } from '../config.js';
 import { db } from '../db/index.js';
 import { folders, itemClasses, items } from '../db/schema.js';
 import { assertDataEntitlement, businessAreasForFolders } from './business-area.service.js';
@@ -66,9 +67,23 @@ export const LOV_MAX_LIMIT = 1000;
  */
 export const LOV_SEARCH_THRESHOLD = 500;
 
-/** Redis namespace and TTL. Short — the point of a live LOV is that it is live. */
+/**
+ * Redis namespace and TTL.
+ *
+ * This was 120 seconds, on the reasoning that the point of a live list of
+ * values is that it is live. That is true and it was still far too short: the
+ * query behind it is a `SELECT DISTINCT` over a fact table, measured at 16-27
+ * seconds each on the reference estate, and a two-minute window means a person
+ * who opens the same prompt twice in one sitting pays it twice. Four of them
+ * ran at once and took every libuv thread with them.
+ *
+ * An hour is the compromise, and `LOV_CACHE_TTL_SECONDS` moves it. What a
+ * pick-list offers is the distinct values of a dimension column — new ones
+ * appear over days, not minutes — and the values are a prompt, not the answer:
+ * the query itself always runs live against whatever was picked.
+ */
 const CACHE_PREFIX = 'lov:';
-const CACHE_TTL_SECONDS = 120;
+const CACHE_TTL_SECONDS = config.LOV_CACHE_TTL_SECONDS;
 
 /** node-oracledb's OUT_FORMAT_OBJECT, hard-coded as elsewhere in this codebase. */
 const OUT_FORMAT_OBJECT = 4002;

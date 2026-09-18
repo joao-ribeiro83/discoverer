@@ -47,6 +47,7 @@ export function emptyTargetTables(): FakeTables {
     map_page_setup: [],
     map_conditional_formats: [],
     user_business_area_grants: [],
+    map_shares: [],
   };
 }
 

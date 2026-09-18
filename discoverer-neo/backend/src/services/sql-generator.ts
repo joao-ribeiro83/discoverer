@@ -510,8 +510,21 @@ async function assembleDefinition({
     // The CHECK on map_conditions guarantees exactly one of itemId /
     // calculatedFieldId is set; this mirrors that with the same either/or.
     conditions: conditionRows.map((c) => {
+      // The RIGHT side, when the condition compares against an expression
+      // rather than a value. Resolved for both left-hand shapes, because
+      // either side can be an expression independently of the other.
+      let valueCalculatedField: MapCalculatedField | undefined;
+      if (c.valueCalculatedFieldId !== null) {
+        valueCalculatedField = calcFieldById.get(c.valueCalculatedFieldId);
+        if (!valueCalculatedField) {
+          throw new SqlGenerationError(
+            `Condition compares against calculated field "${c.valueCalculatedFieldId}", ` +
+              'which no longer exists on this map',
+          );
+        }
+      }
       if (c.itemId !== null) {
-        return { condition: c, ...itemWithFolder(c.itemId) };
+        return { condition: c, ...itemWithFolder(c.itemId), valueCalculatedField };
       }
       const calculatedField = calcFieldById.get(c.calculatedFieldId!);
       if (!calculatedField) {
@@ -519,7 +532,7 @@ async function assembleDefinition({
           `Condition references calculated field "${c.calculatedFieldId}", which no longer exists on this map`,
         );
       }
-      return { condition: c, calculatedField };
+      return { condition: c, calculatedField, valueCalculatedField };
     }),
     parameters: parameterRows,
     calculatedFields: calculatedFieldRows,
@@ -584,6 +597,8 @@ export async function planDraft(items: DraftItem[]): Promise<QueryPlan> {
     isPublic: false,
     isActive: true,
     selectDistinct: false,
+    // A draft has no migration history, so it lost no filters.
+    droppedFilters: null,
     workbookId: null,
     createdAt: now,
     updatedAt: now,

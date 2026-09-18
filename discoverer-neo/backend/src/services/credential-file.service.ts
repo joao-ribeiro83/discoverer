@@ -24,7 +24,20 @@ import { createHash, randomUUID } from 'node:crypto';
 import { chmod, mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { isAbsolute, join, resolve } from 'node:path';
 
-import type { ProvisionedCredential } from '@discoverer-neo/core/migration';
+import {
+  generateTemporaryPassword,
+  type ProvisionedCredential,
+} from '@discoverer-neo/core/migration';
+
+/**
+ * Re-exported so request-path code can issue a credential without importing
+ * the migration pipeline directly (an ESLint `no-restricted-imports` rule
+ * keeps that pipeline out of the request path; this one helper is a pure
+ * CSPRNG string generator and opens nothing).
+ */
+export { generateTemporaryPassword };
+export type { ProvisionedCredential };
+
 import { config } from '../config.js';
 
 /** Owner-only, for both the directory and the file. */

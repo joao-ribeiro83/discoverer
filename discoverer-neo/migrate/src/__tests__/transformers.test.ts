@@ -628,9 +628,57 @@ describe('transformCustomFunction', () => {
       functionType: 'PLSQL',
       returnType: null,
       parameters: null,
+      extName: 'GET_FISCAL_YEAR',
       isActive: true,
     });
     expect(codes(t.warnings)).toContain('FUNCTION_SIGNATURE_DEFAULTED');
+    expect(codes(t.warnings)).toContain('FUNCTION_NO_DATABASE_NAME');
+  });
+
+  it('keeps the database reference, typed arguments and return type', () => {
+    const t = transformCustomFunction(
+      customFunction({
+        name: 'GET_VCEP1',
+        extName: 'GET_VCEP',
+        extPackage: 'PKG_ENTIDADES_UTIL',
+        extOwner: 'SIID_TESTES',
+        extDbLink: null,
+        dataType: 2,
+        arguments: [
+          { name: 'P_DATE', dataType: 4, optional: true, position: 4 },
+          { name: 'PI_CDPERSON', dataType: 2, optional: false, position: 2 },
+          { name: null, dataType: 1, optional: false, position: 3 },
+        ],
+      }),
+      'EUL4',
+    );
+    expect(t).toMatchObject({
+      name: 'GET_VCEP1',
+      functionType: 'PACKAGE',
+      extOwner: 'SIID_TESTES',
+      extPackage: 'PKG_ENTIDADES_UTIL',
+      extName: 'GET_VCEP',
+      extDbLink: null,
+      returnType: 'NUMBER',
+      parameters: [
+        { name: 'PI_CDPERSON', type: 'NUMBER', required: true, position: 2 },
+        { name: 'ARG3', type: 'TEXT', required: true, position: 3 },
+        { name: 'P_DATE', type: 'DATE', required: false, position: 4 },
+      ],
+    });
+    expect(t.warnings).toEqual([]);
+  });
+
+  it('keeps an undecoded type code and says so', () => {
+    const t = transformCustomFunction(
+      customFunction({
+        extName: 'GET_FISCAL_YEAR',
+        arguments: [{ name: 'P_X', dataType: 8, optional: false, position: 2 }],
+      }),
+      'EUL4',
+    );
+    expect(t.parameters).toEqual([{ name: 'P_X', type: '8', required: true, position: 2 }]);
+    expect(codes(t.warnings)).toEqual(['FUNCTION_DATA_TYPE_UNMAPPED']);
   });
 
   it('handles an EUL4 function with no description', () => {
@@ -956,7 +1004,7 @@ describe('transformWorkbook', () => {
     // form `verify --compile` renders into SQL.
     expect(map?.calculatedFields).toEqual([
       expect.objectContaining({
-        name: '[1,49](Dt Com)',
+        name: 'TRUNC(Dt Com)',
         sourceTokens: '[1,49]([6,3])',
         sourceElementId: -1,
         isHidden: true,
@@ -967,6 +1015,66 @@ describe('transformWorkbook', () => {
       itemSourceId: null,
       paramName: 'DT_FIM',
     });
+  });
+
+  // The RIGHT side can be an expression too, and until this it was the single
+  // biggest migration loss: 205 filters across 152 of 923 maps, every one of
+  // them dropped, which does not fail — it silently widens the result.
+  it('migrates a condition that compares against an expression as a hidden calculation', () => {
+    const content = buildWorkbookFixture({
+      items: [{ folderLabel: 'M M164', itemLabel: 'Data Comparacion' }],
+      parameters: [{ name: 'Dt Fim' }],
+      conditions: [
+        {
+          // Discoverer's "to the end of that day": the bound is the parameter
+          // converted and pushed to 23:59:59. [1,94] is +, [1,48] is TO_DATE.
+          sql: "Data Comparacion <= TO_DATE(:Dt Fim,'DD-MON-RRRR') + 0.99999",
+          tokens: '[1,85]([6,3],[1,94]([1,48]([8,4],[5,1,"DD-MON-RRRR"]),[5,2,"0.99999"]))',
+        },
+      ],
+      worksheets: [{ name: 'S', columns: [{ item: 'Data Comparacion' }] }],
+    });
+    const [map] = transformWorkbook(workbook({ content }), 'EUL4');
+
+    // The bound becomes a hidden field, and the row compares against it. The
+    // parameter inside it still binds — its [8,n] is in the stored tokens.
+    expect(map?.calculatedFields).toEqual([
+      expect.objectContaining({
+        sourceTokens: '[1,94]([1,48]([8,4],[5,1,"DD-MON-RRRR"]),[5,2,"0.99999"])',
+        sourceElementId: -1,
+        isHidden: true,
+      }),
+    ]);
+    expect(map?.conditions[0]).toMatchObject({
+      itemLabel: 'Data Comparacion',
+      calculationElementId: null,
+      valueCalculationElementId: -1,
+      operator: '<=',
+    });
+    // Nothing was lost, so nothing is reported as lost.
+    expect(map?.droppedFilters).toEqual([]);
+  });
+
+  it('records a filter it still cannot express, so the viewer can say so', () => {
+    const content = buildWorkbookFixture({
+      items: [{ folderLabel: 'Vendas', itemLabel: 'Ramo' }],
+      parameters: [{ name: 'Ramo' }],
+      conditions: [
+        {
+          // An expression inside an IN list: one row each, ORed, which is the
+          // bracket level Neo does not have.
+          sql: "Ramo IN (UPPER(:Ramo), 'A')",
+          tokens: '[1,88]([6,3],[1,79]([8,4]),[5,1,"A"])',
+        },
+      ],
+      worksheets: [{ name: 'S', columns: [{ item: 'Ramo' }] }],
+    });
+    const [map] = transformWorkbook(workbook({ content }), 'EUL4');
+
+    expect(map?.conditions).toHaveLength(0);
+    expect(map?.droppedFilters).toHaveLength(1);
+    expect(map?.droppedFilters[0]?.text).toContain('Ramo IN');
+    expect(map?.droppedFilters[0]?.reason).toContain('expression');
   });
 
   it('migrates only the calculations a worksheet uses, and what they reference', () => {
@@ -1157,9 +1265,10 @@ describe('transformWorkbook', () => {
     // read the `.DIS` — and improving the renderer would mean re-migrating.
     const [map] = transformWorkbook(workbook({ content: layoutWorkbook() }), 'EUL4');
     expect(map?.calculatedFields[0]).toMatchObject({
-      // `[1,1]` is SUM and is left as a code — which is exactly why `formula`
-      // is a reader's string and not a compilable one.
-      formula: '[1,1](Regiao)',
+      // `formula` is the readable form — the token tree rendered as Discoverer
+      // displayed it. It is still a reader's string, not a compilable one:
+      // `compiled_sql` is what executes, and it is built from `sourceTokens`.
+      formula: 'SUM(Regiao)',
       sourceTokens: '[1,1]([6,3])',
       sourceAttrs: {
         elementBindings: { items: { '3': 'Regiao' }, parameters: {}, functions: {} },
@@ -1972,6 +2081,7 @@ describe('buildMapConditionRows', () => {
   ): TransformedMapCondition => ({
     itemSourceId: 1,
     calculationElementId: null,
+    valueCalculationElementId: null,
     folderLabel: 'F',
     itemLabel: 'A',
     operator: '=',

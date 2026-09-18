@@ -224,6 +224,7 @@ describe('planCondition', () => {
             itemRef: 4,
             leftExpression: null,
             parameterRef: null,
+            rightExpression: null,
             literals: ['V'],
             negated: false,
           },
@@ -337,6 +338,7 @@ describe('planCondition', () => {
           itemRef: 4,
           leftExpression: null,
           parameterRef: null,
+          rightExpression: null,
           literals: ['V'],
           negated: true,
         },
@@ -424,12 +426,30 @@ describe('planCondition', () => {
       ]);
     });
 
-    it('refuses an expression on the right rather than harvesting its literals', () => {
-      // TO_DATE(:p,'DD-MON-RRRR')+0.99999 — the old scan stored the format
-      // mask and the 0.99999 as the condition's value.
+    it('carries an expression on the right rather than harvesting its literals', () => {
+      // TO_DATE(:p,'DD-MON-RRRR')+0.99999 — Discoverer's "to the end of that
+      // day". The old scan stored the format mask and the 0.99999 as the
+      // condition's VALUE; the refusal that replaced it dropped the filter
+      // outright. Now the whole bound is kept, as tokens, for the transform to
+      // migrate as a hidden calculated field.
       const result = plan('[1,85]([6,16],[1,94]([1,58]([8,76],[5,1,"DD-MON-RRRR"]),[5,2,"0.99999"]))');
+      expect(result.unsupported).toBeNull();
+      expect(result.groups[0]?.predicates).toMatchObject([
+        {
+          neoOperator: '<=',
+          itemRef: 16,
+          // Not harvested into `literals` — that was the bug this replaced.
+          literals: [],
+          rightExpression: '[1,94]([1,58]([8,76],[5,1,"DD-MON-RRRR"]),[5,2,"0.99999"])',
+        },
+      ]);
+    });
+
+    it('still refuses an expression inside an IN list', () => {
+      // One row per entry, ORed, which is the bracket level Neo does not have.
+      const result = plan('[1,88]([6,4],[1,79]([8,5]),[5,1,"A"])');
       expect(result.groups).toEqual([]);
-      expect(result.unsupported).toContain('an expression rather than a value');
+      expect(result.unsupported).toContain('expression');
     });
 
     it('refuses an IN value whose comma Neo would read as a separator', () => {
@@ -726,7 +746,10 @@ describe('parseWorkbookDocument', () => {
       // No element on the left: the expression carries it instead.
       itemRef: null,
       parameterName: 'Dt Fim',
-      expression: { tokens: '[1,49]([6,3])', formula: '[1,49](Dt Com)' },
+      // `formula` is the readable form: the token tree rendered the way
+      // Discoverer displayed it, with element references resolved to names.
+      // `[1,49]` is TRUNC.
+      expression: { tokens: '[1,49]([6,3])', formula: 'TRUNC(Dt Com)' },
     });
     expect(predicate?.expression?.bindings.items).toEqual({ '3': 'Dt Com' });
   });
@@ -756,7 +779,7 @@ describe('parseWorkbookDocument', () => {
     ]);
   });
 
-  it('still refuses a date bound with arithmetic around it', () => {
+  it('migrates a date bound with arithmetic around it, as an expression', () => {
     const doc = parseWorkbookDocument(
       buildWorkbookFixture({
         items: [{ itemLabel: 'Dt Contabilistico' }],
@@ -764,7 +787,8 @@ describe('parseWorkbookDocument', () => {
         conditions: [
           {
             // `TO_DATE(:DT Fim, mask) + 0.999` — Discoverer's "to the end of
-            // that day", which a map_conditions row has nowhere to put.
+            // that day". The row holds it as `valueExpression`, which the
+            // transform migrates as a hidden calculated field.
             sql: 'Dt Contabilistico <= TO_DATE(:DT Fim) + 0.999',
             tokens: '[1,85]([6,3],[1,94]([1,58]([8,4],[5,1,"DD-MM-YYYY"]),[5,2,"0.999"]))',
           },
@@ -772,7 +796,15 @@ describe('parseWorkbookDocument', () => {
         worksheets: [{ name: 'S', columns: [{ item: 'Dt Contabilistico' }] }],
       }),
     );
-    expect(doc.conditions[0]?.unsupported).toContain('expression rather than a value');
+    expect(doc.conditions[0]?.unsupported).toBeNull();
+    expect(doc.conditions[0]?.groups.flatMap((g) => g.predicates)).toMatchObject([
+      {
+        neoOperator: '<=',
+        valueExpression: {
+          tokens: '[1,94]([1,58]([8,4],[5,1,"DD-MM-YYYY"]),[5,2,"0.999"])',
+        },
+      },
+    ]);
   });
 
   it('reports a condition that names an element the workbook does not define', () => {
@@ -819,9 +851,40 @@ describe('parseWorkbookDocument', () => {
         worksheets: [{ name: 'S' }],
       }),
     );
-    // Function codes stay as written — Oracle's code table is not available,
-    // so naming them would present a guess as fact.
+    // `[2,20]` is a CUSTOM function, and this workbook carries no name for it,
+    // so it stays as written. Builtin `[1,n]` codes do not — see below.
     expect(doc.calculations[0]?.readableFormula).toBe('[2,20](Valor,:Taxa)');
+  });
+
+  // The readable formula is the token tree RENDERED the way Discoverer showed
+  // it, not the token string with names dropped into it. Substituting alone
+  // left every builtin code in the output: 8 891 of the reference estate's
+  // 9 560 calculated fields read as `[1,102](Cap Pago,...)`.
+  it('renders builtin codes into their display form, with names resolved', () => {
+    const doc = parseWorkbookDocument(
+      buildWorkbookFixture({
+        items: [{ itemLabel: 'Cap Pago' }],
+        // [1,102] is DECODE and [1,115] is NULL, both fitted in Phase 4.1.
+        calculations: [
+          { name: 'VALOR CAP PAGO', formula: '[1,102]([6,3],[5,2,"0"],[1,115](),[6,3])' },
+        ],
+        worksheets: [{ name: 'S' }],
+      }),
+    );
+    expect(doc.calculations[0]?.readableFormula).toBe('DECODE(Cap Pago,0,NULL,Cap Pago)');
+  });
+
+  it('falls back to the substituted tokens when a code has no fitted rendering', () => {
+    const doc = parseWorkbookDocument(
+      buildWorkbookFixture({
+        items: [{ itemLabel: 'Valor' }],
+        // 9999 is in no code table, so the renderer quarantines the tree and
+        // the reader still gets every name it could resolve.
+        calculations: [{ name: 'UNFITTED', formula: '[1,9999]([6,3])' }],
+        worksheets: [{ name: 'S' }],
+      }),
+    );
+    expect(doc.calculations[0]?.readableFormula).toBe('[1,9999](Valor)');
   });
 
   it('scopes calculations to the worksheet that offers them, deduped by name', () => {

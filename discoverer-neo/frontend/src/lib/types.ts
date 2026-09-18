@@ -157,6 +157,19 @@ export interface FunctionParameter {
   type: string
   required?: boolean
   defaultValue?: string | number | boolean | null
+  position?: number
+}
+
+/** A function found in a data source's database, ready to register. */
+export interface DatabaseFunction {
+  owner: string
+  packageName: string | null
+  name: string
+  overload: string | null
+  returnType: string
+  parameters: FunctionParameter[]
+  callableFromSql: boolean
+  reason: string | null
 }
 
 export interface CustomFunction {
@@ -166,6 +179,11 @@ export interface CustomFunction {
   functionType: FunctionType
   parameters: FunctionParameter[] | null
   returnType: string | null
+  extOwner: string | null
+  extPackage: string | null
+  extName: string | null
+  extDbLink: string | null
+  dataSourceId: string | null
   isActive: boolean
 }
 
@@ -322,6 +340,22 @@ export interface WorkbookWithMaps {
   maps: MapSummary[]
 }
 
+/**
+ * Who holds a workbook. The shares are per worksheet, so `sheets` out of
+ * `total` is how much of it each person actually has; `permissionLevel` is
+ * the narrowest level they hold across those sheets.
+ */
+export interface WorkbookShares {
+  total: number
+  shares: Array<{
+    userId: string
+    email: string | null
+    name: string | null
+    permissionLevel: string
+    sheets: number
+  }>
+}
+
 export interface DashboardStats {
   totalExecutions: number
   scheduledMaps: number
@@ -333,6 +367,13 @@ export interface MapWithDetails extends MapSummary {
   conditions: MapCondition[]
   parameters: MapParameter[]
   calculatedFields: MapCalculatedField[]
+  /**
+   * Filters this worksheet had in Discoverer and this map does not, each with
+   * the condition as its author wrote it. Present only on a migrated map that
+   * lost one — and it matters, because a lost filter has no other symptom: the
+   * map runs, and quietly returns more rows than the original did.
+   */
+  droppedFilters?: Array<{ text: string; reason: string }> | null
 }
 
 export type SharePermissionLevel = 'VIEW' | 'EDIT' | 'EXPORT'
@@ -559,6 +600,12 @@ export interface ExecuteResult {
    * The rows are still valid.
    */
   warnings?: string[]
+  /**
+   * The worksheet heading with its `&Date`, `&Time` and `&<ParamName>` tokens
+   * replaced by the values this run actually used. Present on `/execute` only:
+   * before a run there is no "now" and no entered parameter to print.
+   */
+  heading?: { title: string | null; description: string | null }
 }
 
 export interface ExecuteMapBody {

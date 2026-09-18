@@ -1,7 +1,12 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { Share2 } from 'lucide-react'
 import { apiClient } from '@/lib/api'
+import { useAuthStore } from '@/store/auth'
+import { Button } from '@/components/ui/button'
+import { WorkbookShareDialog } from './WorkbookShareDialog'
 
 /**
  * Workbooks as Discoverer users think of them: a named document holding
@@ -10,6 +15,11 @@ import { apiClient } from '@/lib/api'
  */
 export function WorkbookBrowseSection() {
   const { t } = useTranslation(['mapViewer', 'common'])
+  const role = useAuthStore((s) => s.user?.role)
+  // Handing a workbook to someone is an administrator's job, and a manager's
+  // whole job. Everyone else just reads the list.
+  const canShare = role === 'ADMIN' || role === 'MANAGER'
+  const [sharing, setSharing] = useState<{ id: string; name: string } | null>(null)
 
   const workbooksQuery = useQuery({
     queryKey: ['workbooks'],
@@ -34,8 +44,24 @@ export function WorkbookBrowseSection() {
             <details key={wb.id} className="px-3 py-2">
               <summary className="flex cursor-pointer list-none items-center justify-between">
                 <span className="truncate font-medium">{wb.name}</span>
-                <span className="ml-2 shrink-0 text-xs text-muted-foreground">
+                <span className="ml-2 flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
                   {t('mapViewer:mapsList.workbooks.worksheetCount', { count: wb.maps.length })}
+                  {canShare && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      title={t('mapViewer:workbookShare.shareButton')}
+                      onClick={(e) => {
+                        // Inside a <summary>: a click would toggle the details.
+                        e.preventDefault()
+                        e.stopPropagation()
+                        setSharing({ id: wb.id, name: wb.name })
+                      }}
+                    >
+                      <Share2 className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
                 </span>
               </summary>
               <ul className="mt-2 space-y-1 border-t pt-2 pl-4">
@@ -50,6 +76,15 @@ export function WorkbookBrowseSection() {
             </details>
           ))}
         </div>
+      )}
+
+      {sharing && (
+        <WorkbookShareDialog
+          open
+          onOpenChange={(open) => { if (!open) setSharing(null) }}
+          workbookId={sharing.id}
+          workbookName={sharing.name}
+        />
       )}
     </div>
   )

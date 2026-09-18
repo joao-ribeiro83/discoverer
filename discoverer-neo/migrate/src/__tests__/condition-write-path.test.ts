@@ -27,6 +27,7 @@ const condition = (
 ): TransformedMapCondition => ({
   itemSourceId: 1,
   calculationElementId: null,
+  valueCalculationElementId: null,
   folderLabel: 'F',
   itemLabel: 'A',
   operator: '=',
@@ -100,7 +101,7 @@ describe('map_conditions write path', () => {
         throw new Error('the item resolver must not be called for a calculation');
       },
       genId,
-      (c) => (c.calculationElementId === 42 ? 'calc-1' : undefined),
+      (elementId) => (elementId === 42 ? 'calc-1' : undefined),
     );
 
     expect(skipped).toEqual([]);

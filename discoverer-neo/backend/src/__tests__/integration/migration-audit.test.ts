@@ -128,6 +128,7 @@ async function countPrefixed(table: TargetTable): Promise<number> {
     map_page_setup: sql`SELECT count(*)::int AS c FROM map_page_setup WHERE id::text LIKE ${PREFIX + '%'}`,
     map_conditional_formats: sql`SELECT count(*)::int AS c FROM map_conditional_formats WHERE id::text LIKE ${PREFIX + '%'}`,
     user_business_area_grants: sql`SELECT count(*)::int AS c FROM user_business_area_grants WHERE id::text LIKE ${PREFIX + '%'}`,
+    map_shares: sql`SELECT count(*)::int AS c FROM map_shares WHERE id::text LIKE ${PREFIX + '%'}`,
   };
   const result = (await db.execute(map[table])) as unknown as { rows: Array<{ c: number }> };
   return result.rows[0]?.c ?? 0;
