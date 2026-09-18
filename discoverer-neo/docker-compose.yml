@@ -74,6 +74,13 @@ services:
       # Client. The backend refuses to start if thick mode is on without a usable
       # client, so a mismatch fails loudly at boot rather than at first query.
       ORACLE_THICK_MODE: ${ORACLE_THICK_MODE:-false}
+      # Discoverer ran each query under its author's own NLS and the migrated
+      # formulas assume it — this estate has TO_NUMBER(REPLACE(col,'.',',')),
+      # which only reads as a number where the comma IS the decimal separator.
+      # Unset means "leave the session as the database hands it over".
+      ORACLE_NLS_NUMERIC_CHARACTERS: ${ORACLE_NLS_NUMERIC_CHARACTERS:-}
+      ORACLE_NLS_DATE_FORMAT: ${ORACLE_NLS_DATE_FORMAT:-}
+      ORACLE_NLS_DATE_LANGUAGE: ${ORACLE_NLS_DATE_LANGUAGE:-}
     ports:
       - "${BACKEND_PORT:-3000}:3000"
     volumes:

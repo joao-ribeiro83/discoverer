@@ -1,4 +1,4 @@
-import { normalizeDateInput } from '../lib/sql/date-input.js';
+import { dateFieldOrder, normalizeDateInput } from '../lib/sql/date-input.js';
 
 describe('normalizeDateInput', () => {
   it('passes ISO through', () => {
@@ -14,20 +14,49 @@ describe('normalizeDateInput', () => {
   });
 
   // The estate also stores `22.10.31`, which is 22 Oct 2031 read day-first and
-  // 31 Oct 2022 read year-first. Nothing in the value decides, so it is
-  // refused: a wrong decade in a date filter returns wrong rows silently.
-  it('refuses an all-two-digit date rather than pick a decade', () => {
-    expect(normalizeDateInput('22.10.31')).toBeNull();
-    expect(normalizeDateInput('01-02-03')).toBeNull();
+  // 31 Oct 2022 read year-first. Nothing in the VALUE decides, so with no mask
+  // it is refused: a wrong decade returns wrong rows silently. The mask does
+  // decide it — see the next test.
+  it('refuses an all-two-digit date when nothing says how it was written', () => {
+    expect(normalizeDateInput('22.10.31', null)).toBeNull();
+    expect(normalizeDateInput('01-02-03', null)).toBeNull();
+  });
+
+  // The database's own NLS_DATE_FORMAT is what these values were written
+  // under, so it is the authority — this estate reports RR.MM.DD.
+  it('resolves an ambiguous date from the configured date format', () => {
+    const yearFirst = dateFieldOrder('RR.MM.DD');
+    expect(yearFirst).toEqual(['y', 'm', 'd']);
+    expect(normalizeDateInput('22.10.31', yearFirst)).toBe('2022-10-31');
+
+    const dayFirst = dateFieldOrder('DD/MM/RRRR');
+    expect(normalizeDateInput('22.10.31', dayFirst)).toBe('2031-10-22');
+  });
+
+  it('lets the mask decide day-first from month-first on a four-digit year', () => {
+    expect(normalizeDateInput('01/02/2022', dateFieldOrder('MM/DD/YYYY'))).toBe('2022-01-02');
+    expect(normalizeDateInput('01/02/2022', dateFieldOrder('DD/MM/YYYY'))).toBe('2022-02-01');
+    // No mask: day-first, as documented.
+    expect(normalizeDateInput('01/02/2022', null)).toBe('2022-02-01');
+  });
+
+  it('reads a mask only when all three fields are unambiguous in it', () => {
+    expect(dateFieldOrder(undefined)).toBeNull();
+    expect(dateFieldOrder('YYYY-MM')).toBeNull(); // no day
+    // DDD is the day of the YEAR and D the day of the WEEK — neither says how
+    // a day of the month was written.
+    expect(dateFieldOrder('YYYY-MM-DDD')).toBeNull();
+    // Quoted text is literal, not fields.
+    expect(dateFieldOrder(`DD 'de' MON 'de' YYYY`)).toEqual(['d', 'm', 'y']);
   });
 
   it('accepts a two-digit date whose first part cannot be a day', () => {
-    expect(normalizeDateInput('99.10.31')).toBe('1999-10-31');
+    expect(normalizeDateInput('99.10.31', null)).toBe('1999-10-31');
   });
 
   it('reads the all-numeric forms day-first', () => {
-    expect(normalizeDateInput('31/12/2025')).toBe('2025-12-31');
-    expect(normalizeDateInput('01-02-2022')).toBe('2022-02-01');
+    expect(normalizeDateInput('31/12/2025', null)).toBe('2025-12-31');
+    expect(normalizeDateInput('01-02-2022', null)).toBe('2022-02-01');
   });
 
   it('applies Oracle’s RR rule to a two-digit year', () => {
@@ -37,7 +66,7 @@ describe('normalizeDateInput', () => {
 
   it('drops a time component', () => {
     expect(normalizeDateInput('2026-09-18T14:30:00')).toBe('2026-09-18');
-    expect(normalizeDateInput('18/09/2026 14:30')).toBe('2026-09-18');
+    expect(normalizeDateInput('18/09/2026 14:30', null)).toBe('2026-09-18');
   });
 
   it('refuses a day the month does not have, rather than rolling it over', () => {
