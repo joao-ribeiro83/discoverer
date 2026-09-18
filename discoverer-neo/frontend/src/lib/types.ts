@@ -367,6 +367,13 @@ export interface MapWithDetails extends MapSummary {
   conditions: MapCondition[]
   parameters: MapParameter[]
   calculatedFields: MapCalculatedField[]
+  /**
+   * Filters this worksheet had in Discoverer and this map does not, each with
+   * the condition as its author wrote it. Present only on a migrated map that
+   * lost one — and it matters, because a lost filter has no other symptom: the
+   * map runs, and quietly returns more rows than the original did.
+   */
+  droppedFilters?: Array<{ text: string; reason: string }> | null
 }
 
 export type SharePermissionLevel = 'VIEW' | 'EDIT' | 'EXPORT'

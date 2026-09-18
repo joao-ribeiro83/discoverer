@@ -903,6 +903,18 @@ export const maps = pgTable(
      */
     selectDistinct: boolean('select_distinct').notNull().default(false),
     /**
+     * Filters this map had in Discoverer and does NOT have here, each with the
+     * condition as its author wrote it and the reason it could not migrate.
+     *
+     * The point is honesty about a failure that is otherwise invisible. A
+     * dropped filter does not make the map refuse; it makes it return more
+     * rows than the original, and a reader has no way to tell. Recording them
+     * lets the viewer say so. Null or `[]` means nothing was lost.
+     */
+    droppedFilters: jsonb('dropped_filters').$type<
+      Array<{ text: string; reason: string }>
+    >(),
+    /**
      * The workbook this map is a worksheet of. Grouping only — never read by
      * an access check (D-020). Null for a map built in Neo outside a workbook.
      */
@@ -1070,6 +1082,26 @@ export const mapConditions = pgTable(
       { onDelete: 'cascade' },
     ),
     operator: operatorEnum('operator').notNull(),
+    /**
+     * The RIGHT side, when the condition compares against an expression rather
+     * than a value — `Data Comparacion <= TO_DATE(:Dt Fim,'DD-MON-RRRR') +
+     * 0.99999`, Discoverer's "to the end of that day" idiom and the commonest
+     * filter this estate writes.
+     *
+     * Symmetric with `calculatedFieldId` on the left, and stored the same way:
+     * a hidden calculated field the generator inlines. Before it existed the
+     * whole condition was dropped, and a dropped filter is not a visible
+     * failure — the map simply returns more rows. 205 filters across 152 maps
+     * were being lost that way.
+     *
+     * Set together with `value`/`paramName` being null: an expression IS the
+     * right side, not a wrapper around one. A parameter nested inside it still
+     * binds, because the compiled expression carries its `[8,n]`.
+     */
+    valueCalculatedFieldId: uuid('value_calculated_field_id').references(
+      () => mapCalculatedFields.id,
+      { onDelete: 'cascade' },
+    ),
     value: text('value'),
     /**
      * For a PARAMETER condition, the `bind_name` of the map parameter that

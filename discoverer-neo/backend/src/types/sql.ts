@@ -27,9 +27,27 @@ export interface MapDefinition {
    * it filters — exactly one of the two, matching `map_conditions`' own CHECK
    * constraint (ARCH M4).
    */
+  /**
+   * The left side is an item or a calculated field, never both. The RIGHT side
+   * is a value unless `valueCalculatedField` is set, in which case the
+   * condition compares against that expression — independent of which shape
+   * the left side took.
+   */
   conditions: Array<
-    | { condition: MapCondition; item: Item; folder: Folder; calculatedField?: undefined }
-    | { condition: MapCondition; item?: undefined; folder?: undefined; calculatedField: MapCalculatedField }
+    | {
+        condition: MapCondition;
+        item: Item;
+        folder: Folder;
+        calculatedField?: undefined;
+        valueCalculatedField?: MapCalculatedField;
+      }
+    | {
+        condition: MapCondition;
+        item?: undefined;
+        folder?: undefined;
+        calculatedField: MapCalculatedField;
+        valueCalculatedField?: MapCalculatedField;
+      }
   >;
   parameters: MapParameter[];
   calculatedFields: MapCalculatedField[];

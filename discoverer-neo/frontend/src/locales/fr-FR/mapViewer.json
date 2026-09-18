@@ -221,5 +221,8 @@
     "revokeFailed": "Impossible de retirer l’accès",
     "none": "Personne ne détient encore ce classeur.",
     "sheetsHeld": "{{held}} feuilles sur {{total}}"
+  },
+  "droppedFilters": {
+    "summary": "{{count}} filtre(s) de Discoverer n'ont pas pu être migrés — ce résultat peut contenir plus de lignes que l'original"
   }
 }

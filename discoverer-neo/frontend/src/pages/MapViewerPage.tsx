@@ -125,6 +125,23 @@ export function MapViewerPage() {
               {result?.heading?.description ?? map.description}
             </p>
           )}
+          {/* A filter that did not migrate has no other symptom: the map runs
+              and returns more rows than Discoverer did. Say so. */}
+          {map.droppedFilters && map.droppedFilters.length > 0 && (
+            <details className="mt-2 rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-sm">
+              <summary className="cursor-pointer font-medium text-warning-foreground">
+                {t('mapViewer:droppedFilters.summary', { count: map.droppedFilters.length })}
+              </summary>
+              <ul className="mt-2 space-y-1">
+                {map.droppedFilters.map((f, i) => (
+                  <li key={i} className="text-muted-foreground">
+                    <code className="text-xs">{f.text}</code>
+                    <span className="block text-xs">{f.reason}</span>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <div className="flex flex-col items-end gap-1">

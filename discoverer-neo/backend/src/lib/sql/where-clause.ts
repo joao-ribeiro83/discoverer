@@ -159,7 +159,7 @@ export function buildWhereClause(
   function renderCondition(
     entry: MapDefinition['conditions'][number],
   ): RenderedCondition {
-    const { condition, item, folder, calculatedField } = entry;
+    const { condition, item, folder, calculatedField, valueCalculatedField } = entry;
     const label = item ? item.name : calculatedField.name;
     const dataType = item ? item.dataType : calculatedField.dataType;
     // An expression condition (a calculated field the source never typed)
@@ -180,6 +180,40 @@ export function buildWhereClause(
     const op = condition.operator;
 
     let sql: string;
+
+    // The right side is an EXPRESSION — Discoverer's own, migrated as a hidden
+    // calculated field. `TO_DATE(:Dt Fim,'DD-MON-RRRR') + 0.99999` is not a
+    // value any bind can carry, and dropping the condition, which is what used
+    // to happen, silently widened the result. It is inlined exactly the way a
+    // left-hand expression is, binds and all; a parameter inside it binds
+    // through its own `[8,n]`, so the prompt still reaches Oracle.
+    if (valueCalculatedField !== undefined && op !== 'IS_NULL') {
+      // IN and BETWEEN take several operands and the migrator never writes an
+      // expression for them — one per entry would need a row each, ORed.
+      if (op === 'IN' || op === 'BETWEEN') {
+        throw new SqlGenerationError(
+          `Condition on "${label}" uses ${op} against an expression, which has no single operand`,
+        );
+      }
+      const rhs = calculatedFieldSql(
+        valueCalculatedField,
+        (name) => ctx.resolveFormulaReference(name),
+        { requireCompiled: true },
+      );
+      if (rhs.containsAggregate) {
+        throw new SqlGenerationError(
+          `Calculated field "${valueCalculatedField.name}" aggregates, and an aggregate ` +
+            'cannot appear in a WHERE clause',
+        );
+      }
+      mergeBinds(bindParams, rhs.binds);
+      const compared = `${lhs} ${op} (${rhs.sql})`;
+      return {
+        sql: condition.negated ? `NOT (${compared})` : compared,
+        logicOperator: condition.logicOperator,
+        displayOrder: condition.displayOrder,
+      };
+    }
 
     if (op === 'IS_NULL') {
       sql = `${lhs} IS NULL`;
