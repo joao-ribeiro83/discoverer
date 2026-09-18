@@ -1237,6 +1237,33 @@ export async function canAccessMap(
   );
 }
 
+/**
+ * May this user hand this map to somebody else?
+ *
+ * Three ways in:
+ *  - an admin, who may do anything;
+ *  - the map's owner, sharing their own work;
+ *  - a MANAGER who can see the map.
+ *
+ * The MANAGER branch is what the role is FOR. This estate's `MAPTESTES`
+ * account held fifty workbook grants on `SIID_TESTES`'s workbooks and existed
+ * to pass them on to the people who needed them — it authored nothing. Sharing
+ * used to need an EDIT right, so an account in that position could see fifty
+ * maps and distribute none of them.
+ *
+ * Receiving an EDIT share still does not let you re-share: an ordinary user
+ * matches none of the three branches.
+ */
+export async function canManageShares(
+  user: { sub: string; role: string },
+  map: Map,
+): Promise<boolean> {
+  if (user.role === 'ADMIN') return true;
+  if (map.createdBy === user.sub) return true;
+  if (user.role === 'MANAGER') return canAccessMap(user, map, 'VIEW');
+  return false;
+}
+
 // ---------------------------------------------------------------------------
 // Sharing
 // ---------------------------------------------------------------------------

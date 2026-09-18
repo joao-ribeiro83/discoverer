@@ -121,7 +121,10 @@
       "title": "Explorer le détail",
       "description": "Les lignes brutes derrière les valeurs de cette ligne.",
       "loading": "Exploration en cours…"
-    }
+    },
+    "explain": "Plan",
+    "explainFailed": "Impossible de lire le plan d'exécution",
+    "nothingToExplain": "Exécutez d'abord la carte"
   },
   "parameters": {
     "title": "Paramètres d'exécution",
@@ -204,5 +207,19 @@
       "why": "Pour totaliser à travers une jointure un-à-plusieurs, chaque ensemble de lignes de détail est d’abord résumé, puis les parties sont combinées. Additionner des sommes donne le bon résultat, tout comme le minimum et le maximum. Les moyennes, les comptages de valeurs distinctes, l’écart-type et la variance ne peuvent pas être reconstitués à partir de parties : une moyenne de moyennes n’est pas la moyenne.",
       "whatToChange": "Utilisez Somme, Nombre, Minimum ou Maximum, ou totalisez cette colonne sur une feuille n’utilisant qu’un seul dossier."
     }
+  },
+  "workbookShare": {
+    "title": "Partager « {{name}} »",
+    "description": "Donner à quelqu’un toutes les feuilles de ce classeur — {{count}} au total.",
+    "pickUser": "Choisissez d’abord une personne",
+    "shareButton": "Partager le classeur",
+    "revokeButton": "Retirer l’accès",
+    "shared": "{{count}} feuille(s) partagée(s)",
+    "refused": "Non partagé : {{names}}",
+    "shareFailed": "Impossible de partager le classeur",
+    "revoked": "Accès retiré",
+    "revokeFailed": "Impossible de retirer l’accès",
+    "none": "Personne ne détient encore ce classeur.",
+    "sheetsHeld": "{{held}} feuilles sur {{total}}"
   }
 }

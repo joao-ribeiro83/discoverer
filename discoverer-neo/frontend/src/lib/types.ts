@@ -340,6 +340,22 @@ export interface WorkbookWithMaps {
   maps: MapSummary[]
 }
 
+/**
+ * Who holds a workbook. The shares are per worksheet, so `sheets` out of
+ * `total` is how much of it each person actually has; `permissionLevel` is
+ * the narrowest level they hold across those sheets.
+ */
+export interface WorkbookShares {
+  total: number
+  shares: Array<{
+    userId: string
+    email: string | null
+    name: string | null
+    permissionLevel: string
+    sheets: number
+  }>
+}
+
 export interface DashboardStats {
   totalExecutions: number
   scheduledMaps: number

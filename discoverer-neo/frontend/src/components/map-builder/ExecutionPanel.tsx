@@ -9,6 +9,7 @@ import {
   ChevronDown,
   ChevronUp,
   Loader2,
+  Network,
   Download,
   PlayCircle,
 } from 'lucide-react'
@@ -100,6 +101,26 @@ export function ExecutionPanel({
   const [sqlOpen, setSqlOpen] = useState(false)
   const [bgJobId, setBgJobId] = useState<string | null>(null)
   const [drillRow, setDrillRow] = useState<Record<string, unknown> | null>(null)
+  const [explainPlan, setExplainPlan] = useState<string | null>(null)
+
+  // Oracle's plan for the statement this map would run. Administrator-only at
+  // the route; the button only appears when the backend sent the SQL, which
+  // it does for administrators and nobody else.
+  const explainMutation = useMutation({
+    mutationFn: async () => {
+      if (!mapId) throw new Error(t('mapViewer:execution.nothingToExplain'))
+      return (await apiClient.maps.explain(mapId, { parameters })).data.data
+    },
+    onSuccess: (data) => setExplainPlan(data.plan),
+    onError: (err) => {
+      setExplainPlan(null)
+      toast({
+        title: t('mapViewer:execution.explainFailed'),
+        description: getErrorMessage(err),
+        variant: 'destructive',
+      })
+    },
+  })
 
   const exportCtl = useMapExport(mapId, mapName, parameters)
 
@@ -224,6 +245,8 @@ export function ExecutionPanel({
                 <AlertTriangle className="h-3.5 w-3.5" /> {t('mapViewer:execution.moreRowsAvailable')}
               </Badge>
             )}
+            {/* The backend sends `sql` to administrators only — it names every
+                table and predicate behind the map. Same for the plan. */}
             {result.sql && (
               <Button
                 variant="ghost"
@@ -233,6 +256,18 @@ export function ExecutionPanel({
               >
                 {sqlOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
                 {t('mapViewer:execution.sql')}
+              </Button>
+            )}
+            {result.sql && mapId && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 gap-1 text-xs"
+                disabled={explainMutation.isPending}
+                onClick={() => explainMutation.mutate()}
+              >
+                <Network className="h-3.5 w-3.5" />
+                {t('mapViewer:execution.explain')}
               </Button>
             )}
           </>
@@ -302,6 +337,12 @@ export function ExecutionPanel({
       {result?.sql && sqlOpen && (
         <pre className="max-h-40 overflow-auto border-b bg-muted/30 px-4 py-2 text-xs">
           <code>{result.sql}</code>
+        </pre>
+      )}
+
+      {explainPlan && (
+        <pre className="max-h-64 overflow-auto border-b bg-muted/30 px-4 py-2 text-xs">
+          <code>{explainPlan}</code>
         </pre>
       )}
 

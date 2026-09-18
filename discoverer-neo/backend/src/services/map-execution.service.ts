@@ -4,6 +4,7 @@ import type { BindParameters, Connection } from 'oracledb';
 import { db } from '../db/index.js';
 import { queryExecutionLog, users } from '../db/schema.js';
 import {
+  explainSql,
   generateSql,
   loadMapDefinition,
   planQuery,
@@ -1348,6 +1349,58 @@ export async function getExecutionHistory(
     .where(eq(queryExecutionLog.mapId, mapId))
     .orderBy(desc(queryExecutionLog.executedAt))
     .limit(capped);
+}
+
+/**
+ * Oracle's execution plan for the SQL this map would run.
+ *
+ * `EXPLAIN PLAN` accepts a statement with its bind placeholders still in it, so
+ * the query is prepared exactly as `executeMap` would prepare it — same
+ * generator, same row-level security predicates, same parameter values — and
+ * nothing is executed against the real tables. Two statements go to Oracle:
+ * the `EXPLAIN PLAN` itself (which returns no rows) and a `DBMS_XPLAN.DISPLAY`
+ * read of what it wrote.
+ *
+ * Administrator-only at the route. The plan names every table, index and
+ * predicate behind the map, which is the schema detail SEC-07 keeps out of an
+ * ordinary user's reach — and the same reason the generated SQL is withheld.
+ */
+export async function explainMap(
+  mapId: string,
+  parameterValues: Record<string, unknown>,
+  userId: string,
+  options: { timeoutMs?: number; correlationId?: string } = {},
+  deps: MapExecutionDeps = defaultDeps(),
+): Promise<{ sql: string; plan: string }> {
+  const correlationId = options.correlationId ?? randomUUID();
+  const prepared = await deps.prepareQuery(mapId, parameterValues, userId, 1, undefined);
+  const explain = explainSql(prepared.sql, `DN_${Date.now().toString(36).toUpperCase()}`);
+
+  let conn: Connection | undefined;
+  try {
+    conn = await deps.getConnection(prepared.dataSourceId);
+  } catch (err) {
+    throw wrapExecutionError(err, 'CONNECT', correlationId);
+  }
+  try {
+    conn.callTimeout = clampTimeout(options.timeoutMs);
+    await conn.execute(explain.explainStatement, prepared.bindParams as BindParameters);
+    const read = await conn.execute(explain.planQuery, {}, { outFormat: OUT_FORMAT_OBJECT });
+    const plan = ((read.rows ?? []) as Array<{ PLAN_TABLE_OUTPUT: string }>)
+      .map((r) => r.PLAN_TABLE_OUTPUT)
+      .join('\n');
+    // A PLAN_TABLE row lives until something deletes it, and the statement id
+    // is unique per call, so clean up rather than grow the table forever.
+    await conn
+      .execute(`DELETE FROM PLAN_TABLE WHERE STATEMENT_ID = :id`, { id: explain.statementId })
+      .catch(() => undefined);
+    await conn.commit().catch(() => undefined);
+    return { sql: prepared.sql, plan };
+  } catch (err) {
+    throw wrapExecutionError(err, isTimeoutError(err) ? 'TIMEOUT' : 'QUERY', correlationId);
+  } finally {
+    if (conn) await deps.releaseConnection(prepared.dataSourceId, conn);
+  }
 }
 
 /** Test-only: clear in-memory async job state between test cases. */
