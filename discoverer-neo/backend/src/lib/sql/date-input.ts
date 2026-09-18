@@ -16,17 +16,25 @@
  * JS `Date` bound through the driver would be converted against the session
  * zone and could land a day either side.
  *
- * **Day-first for the all-numeric forms.** `31/12/2025` is unambiguous, but
- * `01/02/2022` is not, and guessing wrong silently returns the wrong rows.
- * Day-first is the documented reading because it is what this database itself
- * uses — its own stored values are `DD-MON-YYYY` — and it is the convention in
- * every locale this application ships. It is a convention, not a detection:
- * a month-first estate must state its dates in ISO.
+ * **The all-numeric forms read from `ORACLE_NLS_DATE_FORMAT`.** `31/12/2025` is
+ * unambiguous, but `01/02/2022` is not, and `22.10.31` is not even decidable
+ * between day-first and year-first. Guessing returns the wrong rows silently.
+ *
+ * The database's own `NLS_DATE_FORMAT` is the right authority, because it is
+ * the setting these values were written under: this estate reports `RR.MM.DD`,
+ * which makes `22.10.31` the 31st of October 2022 and nothing else. Set it via
+ * `ORACLE_NLS_DATE_FORMAT` — the same value the Oracle session gets.
+ *
+ * Without it, a four-digit year still pins its own position, `DD-MM-YYYY`
+ * falls back to day-first as the convention in every locale this application
+ * ships, and an all-two-digit date is REFUSED rather than guessed.
  *
  * Anything that does not match one of the accepted forms is refused by name
  * rather than passed through to become an Oracle error, or worse, a silent
  * mis-read.
  */
+
+import { config } from '../../config.js';
 
 /** Month abbreviations Oracle prints under the NLS languages this estate uses. */
 const MONTH_NAMES: Record<string, number> = {
@@ -70,7 +78,57 @@ function expandTwoDigitYear(yy: number): number {
  * willing to read. A leading/trailing time component is dropped: the operand
  * is a DATE column and Discoverer's prompts were date-only.
  */
-export function normalizeDateInput(raw: string): string | null {
+export type Field = 'y' | 'm' | 'd';
+
+/** What day-first means, as a field order. */
+const DAY_FIRST: readonly Field[] = ['d', 'm', 'y'];
+
+/**
+ * The year/month/day order of an Oracle date mask — `RR.MM.DD` is
+ * `['y','m','d']` — or null when the mask does not carry all three plainly.
+ *
+ * Only the unambiguous tokens count. `DDD` is the day of the YEAR and `D` the
+ * day of the WEEK, neither of which is a day of the month; `MI` is minutes,
+ * not months. A mask using any of those tells us nothing about how a bare
+ * `22.10.31` was written, so it is treated as no mask at all rather than being
+ * read optimistically.
+ */
+export function dateFieldOrder(mask: string | undefined | null): Field[] | null {
+  if (!mask) return null;
+  // A quoted section is literal text — `'de'` in `DD "de" MON` must not be
+  // scanned for field letters.
+  const scannable = mask.replace(/'[^']*'/g, ' ').replace(/"[^"]*"/g, ' ').toUpperCase();
+
+  // Longest first, so MONTH is not read as MM + TH.
+  const TOKENS: Array<[RegExp, Field]> = [
+    [/\bMONTH\b/, 'm'],
+    [/\bMON\b/, 'm'],
+    [/\bRRRR\b/, 'y'],
+    [/\bYYYY\b/, 'y'],
+    [/\bRR\b/, 'y'],
+    [/\bYY\b/, 'y'],
+    [/\bMM\b/, 'm'],
+    [/\bDD\b/, 'd'],
+  ];
+
+  const found = new globalThis.Map<Field, number>();
+  for (const [pattern, field] of TOKENS) {
+    const at = scannable.search(pattern);
+    if (at >= 0 && !found.has(field)) found.set(field, at);
+  }
+  if (found.size !== 3) return null;
+  return [...found.entries()].sort((x, y) => x[1] - y[1]).map(([field]) => field);
+}
+
+/**
+ * @param fieldOrder how the source writes an all-numeric date. Defaults to the
+ *   database's own `ORACLE_NLS_DATE_FORMAT`, which is the setting under which
+ *   these values were written; pass one explicitly in tests.
+ */
+export function normalizeDateInput(
+  raw: string,
+  fieldOrder: Field[] | null = dateFieldOrder(config.ORACLE_NLS_DATE_FORMAT),
+): string | null {
   const value = raw.trim();
   if (value === '') return null;
 
@@ -93,20 +151,35 @@ export function normalizeDateInput(raw: string): string | null {
     return iso(year, month, Number(monMatch[1]));
   }
 
-  // All-numeric. Four-digit year first tells us which end it is on; otherwise
-  // day-first, per the note at the top of this file.
+  // All-numeric — the only genuinely ambiguous shape, and the one the
+  // database's own `NLS_DATE_FORMAT` settles when it is configured.
   const numeric = /^(\d{1,4})[-/.](\d{1,2})[-/.](\d{1,4})$/.exec(dateOnly);
   if (numeric) {
-    const [a, b, c] = [numeric[1]!, numeric[2]!, numeric[3]!];
+    const parts: [string, string, string] = [numeric[1]!, numeric[2]!, numeric[3]!];
+    const [a, b, c] = parts;
+
+    // A four-digit field is a year wherever it sits, and that pins the rest:
+    // stronger evidence than any configured mask, so it is checked first.
     if (a.length === 4) return iso(Number(a), Number(b), Number(c)); // YYYY-M-D
-    if (c.length === 4) return iso(Number(c), Number(b), Number(a)); // D-M-YYYY
-    // Two-digit everything, e.g. this estate's stored `22.10.31`. Day-first
-    // makes it 22 Oct 2031; year-first makes it 31 Oct 2022. Both are real
-    // readings and nothing in the value decides between them, so it is
-    // REFUSED. Day-first resolves the four-digit-year forms above because the
-    // year is pinned there; here it is not, and a date filter that quietly
-    // picks the wrong decade returns wrong rows with no error to notice.
-    // A leading value above 31 cannot be a day, which does settle it.
+    if (c.length === 4) {
+      // The remaining question is only whether the first field is the day or
+      // the month. The mask answers it; without one, day-first.
+      const order = fieldOrder ?? DAY_FIRST;
+      return order.indexOf('m') < order.indexOf('d')
+        ? iso(Number(c), Number(a), Number(b)) // M-D-YYYY
+        : iso(Number(c), Number(b), Number(a)); // D-M-YYYY
+    }
+
+    // Two-digit everything, e.g. this estate's stored `22.10.31`. Day-first it
+    // is 22 Oct 2031; year-first, 31 Oct 2022. Both are real readings, and a
+    // date filter that quietly picks the wrong decade returns wrong rows with
+    // nothing to notice — so this resolves ONLY from the database's own
+    // `NLS_DATE_FORMAT`, which is what wrote the value in the first place.
+    // A leading value above 31 cannot be a day, which settles it regardless.
+    if (fieldOrder) {
+      const at = (field: Field) => Number(parts[fieldOrder.indexOf(field)]);
+      return iso(expandTwoDigitYear(at('y')), at('m'), at('d'));
+    }
     if (Number(a) > 31) return iso(expandTwoDigitYear(Number(a)), Number(b), Number(c));
     return null;
   }

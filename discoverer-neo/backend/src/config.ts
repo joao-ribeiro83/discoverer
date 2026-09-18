@@ -14,6 +14,13 @@ export const INSECURE_DEFAULTS = {
   ENCRYPTION_KEY: 'dev-only-insecure-encryption-key-change-me',
 } as const;
 
+/** An optional NLS setting: validated when present, absent when blank. */
+const optionalNls = (pattern: RegExp, message: string) =>
+  z.preprocess(
+    (value) => (value === '' ? undefined : value),
+    z.string().regex(pattern, message).optional(),
+  );
+
 const EnvSchema = z.object({
   NODE_ENV: z
     .enum(['development', 'production', 'test'])
@@ -139,6 +146,39 @@ const EnvSchema = z.object({
   ORACLE_CONNECT_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
 
   /**
+   * NLS settings applied to every Oracle session this app opens.
+   *
+   * Discoverer ran each user's queries under that user's own NLS, and the
+   * formulas its authors wrote assume it. This estate has
+   * `TO_NUMBER(REPLACE("PREMIO_MIN", '.', ','))` — swap the dot for a comma,
+   * which only reads as a number where the comma IS the decimal separator.
+   * The session opened here had `NLS_NUMERIC_CHARACTERS = '.,'`, so the map
+   * failed with ORA-01722 on data reading `458.33`, and the client saw only
+   * "The query could not be completed".
+   *
+   * Three named settings rather than free text: an `ALTER SESSION` built from
+   * an arbitrary string is an injection surface, and each of these has a shape
+   * narrow enough to validate. Unset means "leave the session as the database
+   * hands it over", which is the old behaviour.
+   */
+  //
+  // `optionalNls` treats an empty string as absent: compose writes
+  // `${VAR:-}` as "", not as an unset variable, so a plain `.optional()`
+  // rejects every deployment that simply left the setting alone.
+  ORACLE_NLS_NUMERIC_CHARACTERS: optionalNls(
+    /^[^0-9+-]{2}$/,
+    'must be exactly two characters: decimal separator then group separator',
+  ),
+  ORACLE_NLS_DATE_FORMAT: optionalNls(
+    /^[A-Za-z0-9 ,./:-]{1,40}$/,
+    'must be an Oracle date format mask',
+  ),
+  ORACLE_NLS_DATE_LANGUAGE: optionalNls(
+    /^[A-Za-z ]{1,40}$/,
+    'must be an Oracle NLS language name',
+  ),
+
+  /**
    * How long a map's statement may run on Oracle.
    *
    * These were a pair of hard-coded 30-second constants with no way to raise
@@ -150,6 +190,13 @@ const EnvSchema = z.object({
    * `QUERY_TIMEOUT_MS` is what a request gets when it asks for nothing;
    * `QUERY_TIMEOUT_MAX_MS` is the ceiling a request may ask for, and 30
    * minutes matches what the estate's own users expect.
+   *
+   * **This is not a wall-clock limit.** It becomes `connection.callTimeout`,
+   * which in thick mode bounds each ROUND TRIP rather than the statement: a
+   * query making two round trips under the limit can take twice it in total.
+   * Measured — a 5-minute setting let a real map run for ten before Oracle
+   * raised ORA-03156. Treat it as "no single round trip may stall for longer
+   * than this", and use the background run when a hard bound matters.
    *
    * A long SYNCHRONOUS run also has to survive everything between the browser
    * and the backend — `proxy_read_timeout` in `frontend/nginx.conf` is the one
