@@ -233,6 +233,7 @@ export const TARGET_TABLE_ORDER: readonly TargetTable[] = [
   'map_page_setup',
   'map_conditional_formats',
   'user_business_area_grants',
+  'map_shares',
 ];
 
 const EMPTY_COUNTS = (): TableCounts => ({
@@ -258,6 +259,7 @@ const EMPTY_COUNTS = (): TableCounts => ({
   map_page_setup: 0,
   map_conditional_formats: 0,
   user_business_area_grants: 0,
+  map_shares: 0,
 });
 
 /** Raised when the insert transaction fails; the run has been rolled back. */
@@ -584,8 +586,27 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
   /** Plaintext temp passwords. Handed to the sink; never returned or logged. */
   const provisioned: ProvisionedCredential[] = [];
 
+  /**
+   * username → the EUL-wide privilege codes it holds (`AP_TYPE = 'GP'`).
+   *
+   * These rows sit in `ACCESS_PRIVS` alongside the business-area grants, but
+   * they are not grants on anything — they are what the account may DO. They
+   * decide its Neo role and its grant level, so they have to be indexed before
+   * the first user row is built.
+   */
+  const privsByUsername = new Map<string, Set<number>>();
+  for (const g of eul.data.grants) {
+    if (g.level !== 'EUL' || g.privCode === null) continue;
+    const key = ukey(g.grantee);
+    let codes = privsByUsername.get(key);
+    if (!codes) privsByUsername.set(key, (codes = new Set<number>()));
+    codes.add(g.privCode);
+  }
+  const privsFor = (username: string): ReadonlySet<number> =>
+    privsByUsername.get(ukey(username)) ?? new Set<number>();
+
   for (const eulUser of eul.data.users) {
-    const t = transformUser(eulUser, version.version);
+    const t = transformUser(eulUser, version.version, privsFor(eulUser.username));
     collect(t.warnings);
     const key = ukey(t.username);
     if (userIdByUsername.has(key)) continue; // reader already dedups, belt-and-braces
@@ -623,6 +644,14 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     });
   }
   planned.users = userRows.length;
+  const admins = userRows.filter((r) => r.role === 'ADMIN').length;
+  await emit(
+    admins > 0 ? 'INFO' : 'WARN',
+    'users',
+    admins > 0
+      ? `${admins} account(s) hold Discoverer's Administration privilege (GP_APP_ID 1006) and were migrated as ADMIN.`
+      : 'No source account holds the Administration privilege; every migrated account is an ordinary user.',
+  );
   await emit(
     'INFO',
     'users',
@@ -1086,6 +1115,13 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
       functionType: t.functionType,
       parameters: t.parameters,
       returnType: t.returnType,
+      extOwner: t.extOwner,
+      extPackage: t.extPackage,
+      extName: t.extName,
+      extDbLink: t.extDbLink,
+      // A function lives in the database it was migrated from, exactly as a
+      // folder's table does.
+      dataSourceId: options.dataSourceId ?? null,
       isActive: t.isActive,
     });
   }
@@ -1120,6 +1156,14 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
   const mapPageSetupRows: Record<string, unknown>[] = [];
   const mapLayoutRows: Record<string, unknown>[] = [];
   const usedMapNames = new Set<string>();
+  /**
+   * EUL workbook id → the maps migrated from its worksheets.
+   *
+   * A Discoverer workbook grant (`GD_DOC_ID`) shares the whole workbook, and
+   * Neo's unit of sharing is the map, so one grant becomes one share per
+   * worksheet.
+   */
+  const mapIdsByWorkbookSource = new Map<number, string[]>();
   let unresolvedMapItems = 0;
   let unresolvedMapConditions = 0;
   /** Join usage (§7.8.9) naming a EUL join that did not migrate. */
@@ -1152,6 +1196,9 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
       if (!workbookBaId) continue; // unreachable (set when workbooks exist), defensive
       const mapId = deps.genId();
       keyById.set(mapId, mapKey(eulWb.sourceId, t.layout.worksheetGuid, t.layout.worksheetIndex));
+      const siblings = mapIdsByWorkbookSource.get(eulWb.sourceId);
+      if (siblings) siblings.push(mapId);
+      else mapIdsByWorkbookSource.set(eulWb.sourceId, [mapId]);
       const owner = resolveUser(t.ownerUsername) ?? migrationUserId;
       mapRows.push({
         workbookId,
@@ -1167,6 +1214,9 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
         isPublic: t.isPublic,
         isActive: true,
         selectDistinct: t.selectDistinct,
+        // Null rather than [] when nothing was lost, so "this map is complete"
+        // and "this map predates the column" stay distinguishable.
+        droppedFilters: t.droppedFilters.length > 0 ? t.droppedFilters : null,
         createdAt: t.createdAt ?? deps.now(),
         updatedAt: t.updatedAt ?? deps.now(),
       });
@@ -1299,10 +1349,7 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
             ? itemIdByLabel.get(itemLabelKey(cond.folderLabel, cond.itemLabel))
             : undefined),
         deps.genId,
-        (cond) =>
-          cond.calculationElementId === null
-            ? undefined
-            : calculatedFieldIdByElement.get(cond.calculationElementId),
+        (elementId) => calculatedFieldIdByElement.get(elementId),
       );
       mapConditionRows.push(...conditionRows.rows);
       for (const { reason } of conditionRows.skipped) {
@@ -1441,28 +1488,71 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
 
   // --- 9. grants ------------------------------------------------------------
   const grantRows: Record<string, unknown>[] = [];
+  const mapShareRows: Record<string, unknown>[] = [];
   const seenGrants = new Set<string>(); // userId|baId|perm — Neo unique index
+  const seenShares = new Set<string>(); // mapId|userId — Neo unique index
   for (const eulGrant of eul.data.grants) {
-    const t = transformGrant(eulGrant, version.version);
+    const t = transformGrant(eulGrant, version.version, privsFor(eulGrant.grantee));
     collect(t.warnings);
     if (t.skip) {
       skipped.push({
-        table: 'user_business_area_grants',
+        table: t.level === 'DOCUMENT' ? 'map_shares' : 'user_business_area_grants',
         sourceId: t.sourceId,
         reason:
           t.level === 'DOCUMENT'
-            ? 'workbook share — Neo has no workbook-level grant'
+            ? 'workbook share naming no workbook'
             : t.level === 'EUL'
-              ? 'EUL-wide privilege — not a business-area grant'
+              ? 'EUL-wide privilege — read for the grantee’s role and grant level, not a grant on an object'
               : 'no business area reference',
       });
       continue;
     }
     const userId = resolveUser(t.granteeUsername);
     if (!userId) {
-      skipped.push({ table: 'user_business_area_grants', sourceId: t.sourceId, reason: `grantee "${t.granteeUsername}" not a migrated user` });
+      skipped.push({
+        table: t.level === 'DOCUMENT' ? 'map_shares' : 'user_business_area_grants',
+        sourceId: t.sourceId,
+        reason: `grantee "${t.granteeUsername}" not a migrated user`,
+      });
       continue;
     }
+
+    // A workbook grant is the only thing in the source that says "this person
+    // may open a map someone else saved" — it becomes one share per worksheet.
+    if (t.level === 'DOCUMENT') {
+      const mapIds = t.documentSourceId === null
+        ? undefined
+        : mapIdsByWorkbookSource.get(t.documentSourceId);
+      if (!mapIds || mapIds.length === 0) {
+        skipped.push({
+          table: 'map_shares',
+          sourceId: t.sourceId,
+          reason: `workbook ${t.documentSourceId} was not migrated, or has no readable worksheet`,
+        });
+        continue;
+      }
+      for (const mapId of mapIds) {
+        const shareKey = `${mapId}|${userId}`;
+        if (seenShares.has(shareKey)) continue;
+        seenShares.add(shareKey);
+        const shareId = deps.genId();
+        keyById.set(shareId, `map_share:${t.documentSourceId}|${ukey(t.granteeUsername)}`);
+        mapShareRows.push({
+          id: shareId,
+          mapId,
+          sharedWithUserId: userId,
+          // Discoverer's workbook grant carries no level. EXPORT is the level
+          // that lets the assignee do what the grant was for: run the map,
+          // take the result away, and put it on a schedule. It stops short of
+          // EDIT, so they cannot change someone else's map.
+          permissionLevel: 'EXPORT',
+          sharedBy: migrationUserId,
+          sharedAt: deps.now(),
+        });
+      }
+      continue;
+    }
+
     // A grant names a business area directly (`GBA_BA_ID`) or nothing at all.
     const baSource = t.businessAreaSourceId;
     const baId = baSource !== null ? baIdBySource.get(baSource) : undefined;
@@ -1485,6 +1575,14 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     });
   }
   planned.user_business_area_grants = grantRows.length;
+  planned.map_shares = mapShareRows.length;
+  if (mapShareRows.length > 0) {
+    await emit(
+      'INFO',
+      'map_shares',
+      `${mapShareRows.length} map share(s) migrated from Discoverer workbook grants.`,
+    );
+  }
 
   // --- write ----------------------------------------------------------------
   const plan: Array<[TargetTable, Record<string, unknown>[]]> = [
@@ -1510,6 +1608,8 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     ['map_totals', mapTotalRows],
     ['map_page_setup', mapPageSetupRows],
     ['user_business_area_grants', grantRows],
+    // After maps: a share points at one.
+    ['map_shares', mapShareRows],
   ];
 
   options.onPlan?.({ tables: plan, keyById });

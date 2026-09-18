@@ -196,9 +196,12 @@ describe('runDelta', () => {
 
     const result = await runDelta({ source: mockExecutor(source), db });
 
+    // MJONES also held a workbook grant, so its map shares go with it: an
+    // account the source deleted keeps no access to anyone's maps.
     expect(result.changes.filter(other('changed')).map((c) => [c.kind, c.key]).sort()).toEqual([
       ['deactivated', 'user:MJONES'],
       ['revoked', 'grant:SALES_ROLE|100|VIEW'],
+      ['revoked', 'map_share:700|MJONES'],
     ]);
     expect(state.tables.user_business_area_grants).toHaveLength(grantsBefore - 1);
     expect(state.tables.users.find((u) => String(u.name).toUpperCase().includes('MJONES'))?.isActive).toBe(false);

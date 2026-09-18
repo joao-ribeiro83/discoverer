@@ -1,6 +1,20 @@
+import { randomUUID } from 'node:crypto';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { create, update, getById, getByEmail, list, remove, search } from '../services/user.service.js';
+import {
+  create,
+  update,
+  getById,
+  getByEmail,
+  issueTemporaryPasswords,
+  list,
+  remove,
+  search,
+} from '../services/user.service.js';
+import {
+  buildCredentialCsv,
+  writeCredentialFile,
+} from '../services/credential-file.service.js';
 
 // ---------------------------------------------------------------------------
 // Validation schemas
@@ -25,6 +39,11 @@ const UpdateBodySchema = z.object({
 
 const IdParamSchema = z.object({
   id: z.string().uuid(),
+});
+
+/** Omit `userIds` to re-issue for every account still on a temporary password. */
+const CredentialsBodySchema = z.object({
+  userIds: z.array(z.string().uuid()).min(1).max(1000).optional(),
 });
 
 // ---------------------------------------------------------------------------
@@ -123,6 +142,70 @@ export default function userRoutes(fastify: FastifyInstance) {
     async (_request, reply) => {
       const rows = await list();
       return reply.code(200).send({ data: rows });
+    },
+  );
+
+  // POST /api/users/credentials — re-issue temporary passwords, as a CSV
+  //
+  // The migration's own credentials file is written to disk and swept after
+  // CREDENTIAL_FILE_TTL_HOURS, which is right for a secret but leaves an
+  // operator with no copy and no way to make one. This is that way: the same
+  // CSV, generated on demand, downloaded by the administrator who asked for
+  // it. A copy still lands in CREDENTIALS_DIR so the issue is traceable.
+  fastify.post(
+    '/api/users/credentials',
+    {
+      preHandler: adminPreHandler,
+      schema: {
+        tags: ['Users'],
+        security: [{ bearerAuth: [] }],
+        body: {
+          type: 'object',
+          properties: {
+            userIds: { type: 'array', items: { type: 'string', format: 'uuid' } },
+          },
+        },
+        // 200 is a CSV body, not JSON — no response schema, or Fastify's
+        // serializer would try to shape a string into an object.
+        response: { 400: errorResponse, 401: errorResponse, 403: errorResponse },
+        produces: ['text/csv'],
+      },
+    },
+    async (request, reply) => {
+      const parsed = CredentialsBodySchema.safeParse(request.body ?? {});
+      if (!parsed.success) {
+        return reply.code(400).send({ error: 'Validation failed', details: parsed.error.flatten() });
+      }
+
+      // No list given means "everyone who still has not set their own
+      // password" — the migrated accounts, which is the whole point of this.
+      const targets =
+        parsed.data.userIds ??
+        (await list())
+          .filter((u) => u.mustChangePassword && !u.isRole && u.isActive)
+          .map((u) => u.id);
+
+      const issued = await issueTemporaryPasswords(targets);
+      if (issued.length === 0) {
+        return reply
+          .code(400)
+          .send({ error: 'No account to issue a credential for (database roles are skipped)' });
+      }
+
+      const runId = randomUUID();
+      const csv = buildCredentialCsv(issued, { runId, generatedAt: new Date() });
+      // Best effort: the administrator is getting the CSV either way, and a
+      // failure to keep the on-disk copy must not lose them the passwords.
+      await writeCredentialFile(issued, { runId }).catch(() => undefined);
+
+      request.log.info(
+        { issued: issued.length, by: request.user.sub },
+        'temporary credentials re-issued',
+      );
+      return reply
+        .header('content-type', 'text/csv; charset=utf-8')
+        .header('content-disposition', `attachment; filename="credentials-${runId}.csv"`)
+        .send(csv);
     },
   );
 

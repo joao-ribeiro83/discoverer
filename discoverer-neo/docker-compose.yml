@@ -61,12 +61,26 @@ services:
       EXPORT_DIR: /app/exports
       SCHEDULE_RESULT_DIR: /app/scheduled-results
       CREDENTIALS_DIR: /app/credentials
+      # Thick-mode Oracle holds a libuv thread pool slot for the WHOLE of every
+      # call, and Node's default pool is 4 threads — shared with getaddrinfo.
+      # Four slow list-of-values queries took all four, and the next Postgres
+      # connection could not resolve "postgres" before its 10s timeout: a 500
+      # naming map_parameters, caused entirely by Oracle. Keep this at
+      # ORACLE_POOL_MAX plus headroom; the backend warns at boot if it is low.
+      UV_THREADPOOL_SIZE: ${UV_THREADPOOL_SIZE:-16}
       # Thin mode by default — no Instant Client needed, supports Oracle 12.1+.
       # For an EUL on 11.2–12.0, set ORACLE_THICK_MODE=true in .env and rebuild:
       # the build arg above reads the same flag, so the image gets the Instant
       # Client. The backend refuses to start if thick mode is on without a usable
       # client, so a mismatch fails loudly at boot rather than at first query.
       ORACLE_THICK_MODE: ${ORACLE_THICK_MODE:-false}
+      # Discoverer ran each query under its author's own NLS and the migrated
+      # formulas assume it — this estate has TO_NUMBER(REPLACE(col,'.',',')),
+      # which only reads as a number where the comma IS the decimal separator.
+      # Unset means "leave the session as the database hands it over".
+      ORACLE_NLS_NUMERIC_CHARACTERS: ${ORACLE_NLS_NUMERIC_CHARACTERS:-}
+      ORACLE_NLS_DATE_FORMAT: ${ORACLE_NLS_DATE_FORMAT:-}
+      ORACLE_NLS_DATE_LANGUAGE: ${ORACLE_NLS_DATE_LANGUAGE:-}
     ports:
       - "${BACKEND_PORT:-3000}:3000"
     volumes:
@@ -76,10 +90,12 @@ services:
       - export_files:/app/exports
       # Same rationale, for scheduled-run output files.
       - scheduled_results_files:/app/scheduled-results
-      # Same rationale, for provisioned-credential files (temporary passwords
-      # for migrated/auto-seeded accounts) — must outlive a container
-      # recreate, since each is the operator's only copy of a password.
-      - credential_files:/app/credentials
+      # Provisioned-credential files (temporary passwords for migrated and
+      # auto-seeded accounts). A BIND mount, matching docker-compose.dev.yml:
+      # each file is the operator's only copy of a password, and inside a
+      # named volume it is only reachable with `docker cp`. Here it lands in
+      # ./credentials next to this file. Collect, distribute, then delete.
+      - ./credentials:/app/credentials
     depends_on:
       postgres:
         condition: service_healthy
@@ -106,4 +122,3 @@ volumes:
   redis_data:
   export_files:
   scheduled_results_files:
-  credential_files:

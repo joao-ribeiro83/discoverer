@@ -118,7 +118,30 @@ export function MapViewerPage() {
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">{map.name}</h2>
-          {map.description && <p className="text-muted-foreground">{map.description}</p>}
+          {/* After a run the heading shows the parameters that were entered;
+              before one it shows their defaults. */}
+          {(result?.heading?.description ?? map.description) && (
+            <p className="whitespace-pre-line text-muted-foreground">
+              {result?.heading?.description ?? map.description}
+            </p>
+          )}
+          {/* A filter that did not migrate has no other symptom: the map runs
+              and returns more rows than Discoverer did. Say so. */}
+          {map.droppedFilters && map.droppedFilters.length > 0 && (
+            <details className="mt-2 rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-sm">
+              <summary className="cursor-pointer font-medium text-warning-foreground">
+                {t('mapViewer:droppedFilters.summary', { count: map.droppedFilters.length })}
+              </summary>
+              <ul className="mt-2 space-y-1">
+                {map.droppedFilters.map((f, i) => (
+                  <li key={i} className="text-muted-foreground">
+                    <code className="text-xs">{f.text}</code>
+                    <span className="block text-xs">{f.reason}</span>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <div className="flex flex-col items-end gap-1">

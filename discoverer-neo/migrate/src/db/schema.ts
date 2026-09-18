@@ -1,10 +1,10 @@
 /**
  * The single Drizzle definition of every table shared by the migrator and the
- * backend — all 21 of them.
+ * backend — all 22 of them.
  *
  * This file is the one place those tables are declared.
- * `backend/src/db/schema.ts` re-exports it and adds the 10 runtime-only
- * tables (map shares, query execution log, export jobs, schedules, scheduled
+ * `backend/src/db/schema.ts` re-exports it and adds the 9 runtime-only
+ * tables (query execution log, export jobs, schedules, scheduled
  * results, security policies and the audit log). Drift between the two
  * workspaces is therefore not possible: there is nothing to drift from.
  *
@@ -805,6 +805,19 @@ export const customFunctions = pgTable('custom_functions', {
   functionType: functionTypeEnum('function_type').notNull(),
   parameters: jsonb('parameters'),
   returnType: varchar('return_type', { length: 64 }),
+  /**
+   * What SQL actually calls: `ext_owner.ext_package.ext_name@ext_db_link`.
+   * `name` is only Discoverer's label for it (`FUN_NAME`) and is what a
+   * workbook references; the two differ, and `ext_name` alone is not unique.
+   */
+  extOwner: varchar('ext_owner', { length: 128 }),
+  extPackage: varchar('ext_package', { length: 128 }),
+  extName: varchar('ext_name', { length: 128 }),
+  extDbLink: varchar('ext_db_link', { length: 128 }),
+  /** The database the function lives in — the one it was migrated from. */
+  dataSourceId: uuid('data_source_id').references(() => dataSources.id, {
+    onDelete: 'set null',
+  }),
   isActive: boolean('is_active').notNull().default(true),
   createdAt: timestamp('created_at', { withTimezone: true })
     .notNull()
@@ -889,6 +902,18 @@ export const maps = pgTable(
      * built before this column existed did, so the default is behaviour-neutral.
      */
     selectDistinct: boolean('select_distinct').notNull().default(false),
+    /**
+     * Filters this map had in Discoverer and does NOT have here, each with the
+     * condition as its author wrote it and the reason it could not migrate.
+     *
+     * The point is honesty about a failure that is otherwise invisible. A
+     * dropped filter does not make the map refuse; it makes it return more
+     * rows than the original, and a reader has no way to tell. Recording them
+     * lets the viewer say so. Null or `[]` means nothing was lost.
+     */
+    droppedFilters: jsonb('dropped_filters').$type<
+      Array<{ text: string; reason: string }>
+    >(),
     /**
      * The workbook this map is a worksheet of. Grouping only — never read by
      * an access check (D-020). Null for a map built in Neo outside a workbook.
@@ -1057,6 +1082,26 @@ export const mapConditions = pgTable(
       { onDelete: 'cascade' },
     ),
     operator: operatorEnum('operator').notNull(),
+    /**
+     * The RIGHT side, when the condition compares against an expression rather
+     * than a value — `Data Comparacion <= TO_DATE(:Dt Fim,'DD-MON-RRRR') +
+     * 0.99999`, Discoverer's "to the end of that day" idiom and the commonest
+     * filter this estate writes.
+     *
+     * Symmetric with `calculatedFieldId` on the left, and stored the same way:
+     * a hidden calculated field the generator inlines. Before it existed the
+     * whole condition was dropped, and a dropped filter is not a visible
+     * failure — the map simply returns more rows. 205 filters across 152 maps
+     * were being lost that way.
+     *
+     * Set together with `value`/`paramName` being null: an expression IS the
+     * right side, not a wrapper around one. A parameter nested inside it still
+     * binds, because the compiled expression carries its `[8,n]`.
+     */
+    valueCalculatedFieldId: uuid('value_calculated_field_id').references(
+      () => mapCalculatedFields.id,
+      { onDelete: 'cascade' },
+    ),
     value: text('value'),
     /**
      * For a PARAMETER condition, the `bind_name` of the map parameter that
@@ -1486,6 +1531,48 @@ export const mapConditionalFormats = pgTable(
 );
 
 // ---------------------------------------------------------------------------
+// map_shares
+// ---------------------------------------------------------------------------
+
+/**
+ * Who a map was assigned to.
+ *
+ * Shared rather than runtime-only because the migrator writes it: a Discoverer
+ * workbook grant (`ACCESS_PRIVS.AP_TYPE = 'GD'`, `GD_DOC_ID`) is a share on
+ * every worksheet of that workbook, and it is the only thing in the source
+ * that says "this person may open someone else's saved map".
+ */
+export const sharePermissionEnum = pgEnum('share_permission_level', [
+  'VIEW',
+  'EDIT',
+  'EXPORT',
+]);
+
+export const mapShares = pgTable(
+  'map_shares',
+  {
+    id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+    mapId: uuid('map_id')
+      .notNull()
+      .references(() => maps.id, { onDelete: 'cascade' }),
+    sharedWithUserId: uuid('shared_with_user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    permissionLevel: sharePermissionEnum('permission_level').notNull(),
+    sharedBy: uuid('shared_by')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    sharedAt: timestamp('shared_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('map_shares_map_user_idx').on(t.mapId, t.sharedWithUserId),
+    index('map_shares_user_idx').on(t.sharedWithUserId),
+  ],
+);
+
+// ---------------------------------------------------------------------------
 // Inferred insert types
 // ---------------------------------------------------------------------------
 
@@ -1534,6 +1621,8 @@ export const TARGET_TABLES = {
   map_page_setup: mapPageSetup,
   map_conditional_formats: mapConditionalFormats,
   user_business_area_grants: userBusinessAreaGrants,
+  // Last: a share points at a map, so the maps must already be in.
+  map_shares: mapShares,
 } as const;
 
 export type TargetTable = keyof typeof TARGET_TABLES;

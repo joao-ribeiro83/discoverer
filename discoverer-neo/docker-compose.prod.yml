@@ -114,6 +114,13 @@ services:
       EXPORT_DIR: /app/exports
       SCHEDULE_RESULT_DIR: /app/scheduled-results
       CREDENTIALS_DIR: /app/credentials
+      # Thick-mode Oracle holds a libuv thread pool slot for the WHOLE of every
+      # call, and Node's default pool is 4 threads — shared with getaddrinfo.
+      # Four slow list-of-values queries took all four, and the next Postgres
+      # connection could not resolve "postgres" before its 10s timeout: a 500
+      # naming map_parameters, caused entirely by Oracle. Keep this at
+      # ORACLE_POOL_MAX plus headroom; the backend warns at boot if it is low.
+      UV_THREADPOOL_SIZE: ${UV_THREADPOOL_SIZE:-16}
       ORACLE_THICK_MODE: ${ORACLE_THICK_MODE:-false}
       # nginx is exactly one hop in front, and nothing else can reach the
       # backend — so its X-Forwarded-For is the real client IP that login

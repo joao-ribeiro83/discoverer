@@ -20,17 +20,21 @@ import type {
   Join,
 } from '../../types/eul-versions.js';
 import type { ParsedWorkbook } from '../eul-reader.js';
+import type { ElementBindings } from '../workbook-parser.js';
 import {
   clamp,
   DEFAULT_GRANT_PERMISSION,
   folderTypeMapFor,
+  grantLevelForEulPrivileges,
   ITEM_TYPE_MAP,
   MIGRATED_USER_PASSWORD_HASH,
   NEO_FOLDER_TYPES,
   normalizeAggregation,
+  roleForEulPrivileges,
   type NeoFolderType,
   type NeoItemType,
   type TransformedBusinessArea,
+  type CustomFunctionParameter,
   type TransformedCustomFunction,
   type TransformedFolder,
   type TransformedGrant,
@@ -529,22 +533,67 @@ export function transformCustomFunction(
   const warnings: TransformWarning[] = [];
   let name = (fn.name ?? '').trim();
   if (name === '') name = `Function ${fn.sourceId}`;
+  const text = (v: string | null | undefined): string | null => v?.trim() || null;
 
-  // EUL FUNCTIONS metadata carries no argument list or return type in the
-  // normalized read, so these default and should be reviewed post-migration.
-  warnings.push({
-    code: 'FUNCTION_SIGNATURE_DEFAULTED',
-    message: `Custom function "${name}" migrated as PL/SQL with no parameters/return type; complete its signature in Neo.`,
-    sourceId: fn.sourceId,
-  });
+  // `FUN_NAME` is only a label. Falling back to it is a guess about the
+  // database name, so it is said out loud.
+  let extName = text(fn.extName);
+  if (extName === null) {
+    extName = name;
+    warnings.push({
+      code: 'FUNCTION_NO_DATABASE_NAME',
+      message: `Custom function "${name}" has no FUN_EXT_NAME; its label is used as the database name.`,
+      sourceId: fn.sourceId,
+    });
+  }
 
+  const unmapped = new Set<number>();
+  const typeOf = (code: number | null | undefined): string | null => {
+    if (code === null || code === undefined) return null;
+    const mapped = itemDataType(String(code));
+    if (mapped === String(code)) unmapped.add(code);
+    return mapped;
+  };
+
+  let parameters: CustomFunctionParameter[] | null = null;
+  if (fn.arguments === undefined) {
+    warnings.push({
+      code: 'FUNCTION_SIGNATURE_DEFAULTED',
+      message: `Custom function "${name}" has no FUN_ARGUMENTS in the source; its parameters are unknown.`,
+      sourceId: fn.sourceId,
+    });
+  } else {
+    parameters = [...fn.arguments]
+      .sort((a, b) => a.position - b.position)
+      .map((arg) => ({
+        name: text(arg.name) ?? `ARG${arg.position}`,
+        type: typeOf(arg.dataType) ?? 'UNKNOWN',
+        required: !arg.optional,
+        position: arg.position,
+      }));
+  }
+  const returnType = typeOf(fn.dataType);
+
+  if (unmapped.size > 0) {
+    warnings.push({
+      code: 'FUNCTION_DATA_TYPE_UNMAPPED',
+      message: `Custom function "${name}" uses data type code(s) ${[...unmapped].join(', ')}, which no source decodes; kept as the raw code.`,
+      sourceId: fn.sourceId,
+    });
+  }
+
+  const extPackage = text(fn.extPackage);
   return {
     sourceId: fn.sourceId,
     name: clamp(name, NAME_MAX),
     description: fn.description,
-    functionType: 'PLSQL',
-    returnType: null,
-    parameters: null,
+    functionType: extPackage ? 'PACKAGE' : 'PLSQL',
+    returnType,
+    parameters,
+    extOwner: text(fn.extOwner),
+    extPackage,
+    extName,
+    extDbLink: text(fn.extDbLink),
     isActive: true,
     warnings,
   };
@@ -865,6 +914,9 @@ export function transformWorkbook(
         selectDistinct: false,
         items: [],
         conditions: [],
+        // Nothing decoded means nothing to drop — the loss is the whole
+        // worksheet, which is already reported as such.
+        droppedFilters: [],
         parameters: [],
         calculatedFields: [],
         totals: [],
@@ -1265,6 +1317,15 @@ export function transformWorkbook(
     // condition therefore produces one row per test it makes, tied together by
     // `groupKey` so the generated SQL brackets them the way Discoverer did.
     const conditions: TransformedMapCondition[] = [];
+    /**
+     * Filters this worksheet had and this map will not.
+     *
+     * A dropped filter is the one migration failure with no symptom: the map
+     * still runs, and returns MORE rows than Discoverer did. Recording it is
+     * what lets the viewer say the result is under-filtered rather than
+     * letting it read as complete.
+     */
+    const droppedFilters: Array<{ text: string; reason: string }> = [];
     document.conditions.forEach((condition, index) => {
       // Skipped in place rather than pre-filtered, so `sourceIndex` stays the
       // condition's position in the workbook.
@@ -1277,6 +1338,10 @@ export function transformWorkbook(
             `Map "${name}": condition ${JSON.stringify(sourceText ?? '')} was not migrated ` +
             `as a filter because ${condition.unsupported}; recreate it manually.`,
           sourceId: workbook.sourceId,
+        });
+        droppedFilters.push({
+          text: sourceText ?? '(unnamed condition)',
+          reason: condition.unsupported,
         });
         return;
       }
@@ -1291,15 +1356,16 @@ export function transformWorkbook(
           // `map_conditions` can hold it. A negative element id says
           // "synthesised here"; every real one is the positive id the element
           // carries in the workbook.
-          let calculationElementId = predicate.calculationElementId;
-          if (predicate.expression !== null) {
-            calculationElementId = -(expressionFields.length + 1);
+          const asHiddenField = (
+            expression: { tokens: string; formula: string; bindings: ElementBindings },
+          ): number => {
+            const elementId = -(expressionFields.length + 1);
             expressionFields.push({
-              name: calculationNameFor(predicate.expression.formula),
-              formula: predicate.expression.formula,
-              sourceTokens: predicate.expression.tokens,
-              sourceElementId: calculationElementId,
-              sourceAttrs: { elementBindings: predicate.expression.bindings },
+              name: calculationNameFor(expression.formula),
+              formula: expression.formula,
+              sourceTokens: expression.tokens,
+              sourceElementId: elementId,
+              sourceAttrs: { elementBindings: expression.bindings },
               // Nothing in the source says what the expression returns, and a
               // guess here would pick the wrong comparison in the generator.
               dataType: null,
@@ -1310,10 +1376,24 @@ export function transformWorkbook(
               axisType: null,
               isHidden: true,
             });
+            return elementId;
+          };
+
+          let calculationElementId = predicate.calculationElementId;
+          if (predicate.expression !== null) {
+            calculationElementId = asHiddenField(predicate.expression);
           }
+          // Symmetrically for the right side. `TO_DATE(:p,'DD-MON-RRRR') +
+          // 0.99999` is not a value any column can hold, so it becomes a field
+          // of its own and the row compares against that.
+          const valueCalculationElementId =
+            predicate.valueExpression === null
+              ? null
+              : asHiddenField(predicate.valueExpression);
           conditions.push({
             itemSourceId: predicate.itemSourceId,
             calculationElementId,
+            valueCalculationElementId,
             folderLabel: predicate.folderLabel,
             itemLabel: predicate.itemLabel,
             operator: predicate.neoOperator,
@@ -1602,6 +1682,7 @@ export function transformWorkbook(
       selectDistinct: worksheet.selectDistinct === true,
       items,
       conditions,
+      droppedFilters,
       parameters: sheetParameters,
       calculatedFields,
       totals,
@@ -1639,7 +1720,16 @@ export function usernameToEmailLocal(username: string): string {
 
 export const MIGRATED_EMAIL_DOMAIN = 'migrated.local';
 
-export function transformUser(user: EulUser, _version: EulVersion): TransformedUser {
+export function transformUser(
+  user: EulUser,
+  _version: EulVersion,
+  /**
+   * The account's EUL-wide privilege codes (`ACCESS_PRIVS.AP_TYPE = 'GP'`).
+   * Holding the Administration privilege makes the account an admin in Neo —
+   * see `roleForEulPrivileges`. Empty means an ordinary user.
+   */
+  privCodes: ReadonlySet<number> = new Set(),
+): TransformedUser {
   const warnings: TransformWarning[] = [];
   const username = user.username.trim();
   const local = usernameToEmailLocal(username);
@@ -1670,7 +1760,9 @@ export function transformUser(user: EulUser, _version: EulVersion): TransformedU
     // The runner replaces this for real people, once it has a hasher. Roles
     // keep it: they hold grants and must never be able to authenticate.
     passwordHash: MIGRATED_USER_PASSWORD_HASH,
-    role: 'USER',
+    // A database role cannot sign in, so the level it would sign in AT is
+    // meaningless; leave it an ordinary USER even if it holds the privilege.
+    role: user.isRole ? 'USER' : roleForEulPrivileges(privCodes),
     isRole: user.isRole,
     // A role has no password to rotate; a person provisioned with a temporary
     // one must change it before the account is usable.
@@ -1683,13 +1775,22 @@ export function transformUser(user: EulUser, _version: EulVersion): TransformedU
 // Grant
 // ---------------------------------------------------------------------------
 
-export function transformGrant(grant: Grant, _version: EulVersion): TransformedGrant {
+export function transformGrant(
+  grant: Grant,
+  _version: EulVersion,
+  /** The grantee's EUL-wide privilege codes (`AP_TYPE = 'GP'`), if any. */
+  granteePrivileges: ReadonlySet<number> = new Set(),
+): TransformedGrant {
   const warnings: TransformWarning[] = [];
 
-  // A Discoverer business-area grant carries no permission level of its own -
-  // see DEFAULT_GRANT_PERMISSION. VIEW is the narrowest level Neo has, so this
-  // can only narrow, never widen.
-  const permissionLevel = DEFAULT_GRANT_PERMISSION;
+  // A Discoverer business-area grant carries no permission level of its own —
+  // what the grantee may DO comes from their EUL-wide privilege rows, which
+  // `grantLevelForEulPrivileges` reads. A grantee with no privilege row at all
+  // falls back to VIEW, the narrowest level Neo has.
+  const permissionLevel =
+    granteePrivileges.size > 0
+      ? grantLevelForEulPrivileges(granteePrivileges)
+      : DEFAULT_GRANT_PERMISSION;
   if (grant.level === 'BUSINESS_AREA' && grant.privLevel !== null && grant.privLevel !== 0) {
     warnings.push({
       code: 'GRANT_PRIV_LEVEL_UNMAPPED',
@@ -1701,9 +1802,9 @@ export function transformGrant(grant: Grant, _version: EulVersion): TransformedG
     });
   }
 
-  // Neo only models business-area grants. `ACCESS_PRIVS` has no folder-grant
-  // column, so the only other kinds are workbook shares and EUL-wide
-  // privileges - neither is representable, and both are reported.
+  // `ACCESS_PRIVS` has no folder-grant column, so there are three kinds: a
+  // business-area grant, a workbook share, and an EUL-wide privilege. The
+  // first two migrate; the third is not a grant on anything.
   let skip = false;
   if (grant.level === 'BUSINESS_AREA' && grant.businessAreaId === null) {
     skip = true;
@@ -1712,13 +1813,11 @@ export function transformGrant(grant: Grant, _version: EulVersion): TransformedG
       message: `Grant ${grant.sourceId} for "${grant.grantee}" has no business area; skipped.`,
       sourceId: grant.sourceId,
     });
-  } else if (grant.level === 'DOCUMENT') {
-    // ACCESS_PRIVS.GD_DOC_ID — a share on a single workbook. Neo has no
-    // workbook-level grant, and workbooks themselves are not migrated yet.
+  } else if (grant.level === 'DOCUMENT' && grant.documentId === null) {
     skip = true;
     warnings.push({
-      code: 'GRANT_ON_WORKBOOK',
-      message: `Grant ${grant.sourceId} for "${grant.grantee}" applies to workbook ${grant.documentId}; Neo has no workbook-level grant, so it was not migrated.`,
+      code: 'GRANT_NO_WORKBOOK',
+      message: `Grant ${grant.sourceId} for "${grant.grantee}" is a workbook share naming no workbook; skipped.`,
       sourceId: grant.sourceId,
     });
   } else if (grant.level === 'EUL') {
@@ -1737,6 +1836,7 @@ export function transformGrant(grant: Grant, _version: EulVersion): TransformedG
     granteeUsername: grant.grantee,
     granteeIsRole: grant.granteeIsRole,
     businessAreaSourceId: grant.businessAreaId,
+    documentSourceId: grant.documentId,
     level: grant.level,
     permissionLevel,
     warnings,
@@ -2049,6 +2149,8 @@ export interface MapConditionRow {
   itemId: string | null;
   /** The calculated field filtered, when the condition tests one (ARCH M4). */
   calculatedFieldId: string | null;
+  /** The calculated field compared AGAINST, when the right side is an expression. */
+  valueCalculatedFieldId: string | null;
   operator: NeoMapOperator;
   value: string | null;
   paramName: string | null;
@@ -2091,7 +2193,12 @@ export function buildMapConditionRows(
    * by the calculation's `source_element_id`. Discoverer lets a condition test
    * a worksheet calculation, and the row holds that instead of an item.
    */
-  resolveCalculatedField: (condition: TransformedMapCondition) => string | undefined,
+  /**
+   * A synthesised/worksheet calculation's element id → its Neo row id. Takes
+   * the id rather than the condition because a row can name two of them now:
+   * the field it filters, and the field it compares against.
+   */
+  resolveCalculatedField: (elementId: number) => string | undefined,
 ): MapConditionRowsResult {
   const rows: MapConditionRow[] = [];
   const skipped: MapConditionRowsResult['skipped'] = [];
@@ -2109,7 +2216,15 @@ export function buildMapConditionRows(
       condition,
       itemId: condition.calculationElementId === null ? resolveItem(condition) : undefined,
       calculatedFieldId:
-        condition.calculationElementId === null ? undefined : resolveCalculatedField(condition),
+        condition.calculationElementId === null
+          ? undefined
+          : resolveCalculatedField(condition.calculationElementId),
+      // The right side, when it compares against an expression. Unlike the
+      // left, an unresolved one does NOT drop the condition — see below.
+      valueCalculatedFieldId:
+        condition.valueCalculationElementId === null
+          ? null
+          : (resolveCalculatedField(condition.valueCalculationElementId) ?? null),
     }));
     const missing = resolved.find(
       (entry) => entry.itemId === undefined && entry.calculatedFieldId === undefined,
@@ -2125,7 +2240,23 @@ export function buildMapConditionRows(
       });
       continue;
     }
-    for (const { condition, itemId, calculatedFieldId } of resolved) {
+    // A right-hand expression whose field did not migrate would leave the row
+    // comparing against nothing, which reads as "no filter" — the exact silent
+    // over-return this work exists to remove. Drop the condition and say so.
+    const danglingValue = resolved.find(
+      (entry) =>
+        entry.condition.valueCalculationElementId !== null && entry.valueCalculatedFieldId === null,
+    );
+    if (danglingValue !== undefined) {
+      skipped.push({
+        reason:
+          `condition ${JSON.stringify(danglingValue.condition.sourceText ?? '')} compares ` +
+          'against an expression whose calculated field did not migrate',
+      });
+      continue;
+    }
+
+    for (const { condition, itemId, calculatedFieldId, valueCalculatedFieldId } of resolved) {
       let groupId: string | null = null;
       if (condition.groupKey !== null) {
         groupId = groupIds.get(condition.groupKey) ?? genId();
@@ -2136,6 +2267,7 @@ export function buildMapConditionRows(
         mapId,
         itemId: itemId ?? null,
         calculatedFieldId: calculatedFieldId ?? null,
+        valueCalculatedFieldId,
         // A transformed condition only carries an operator Neo accepts; the
         // ones it does not were dropped with a warning by `transformWorkbook`.
         operator: condition.operator!,

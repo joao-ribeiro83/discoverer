@@ -6,6 +6,8 @@ import {
   getExecutionStatus,
   cancelExecution,
   resolveDataSourceId,
+  DEFAULT_TIMEOUT_MS,
+  MAX_TIMEOUT_MS,
   MapExecutionError,
   _resetAsyncState,
   type MapExecutionDeps,
@@ -196,7 +198,8 @@ describe('executeMap (synchronous)', () => {
     // maxRows probes one extra row (1000 + 1) to detect truncation.
     expect(options.maxRows).toBe(1001);
     // Statement timeout applied (default 30s).
-    expect(raw.callTimeout).toBe(30_000);
+    // The default, not a literal: it is environment-tunable now.
+    expect(raw.callTimeout).toBe(DEFAULT_TIMEOUT_MS);
   });
 
   it('truncates at MAX_SYNC_ROWS and flags the result', async () => {
@@ -269,9 +272,9 @@ describe('executeMap (synchronous)', () => {
     const { conn, raw } = makeRowsConn([{ C1: 1 }]);
     const { deps } = makeDeps(conn);
 
-    await executeMap(MAP_ID, {}, USER_ID, { timeoutMs: 999_999 }, deps);
+    await executeMap(MAP_ID, {}, USER_ID, { timeoutMs: MAX_TIMEOUT_MS + 1 }, deps);
 
-    expect(raw.callTimeout).toBe(30_000);
+    expect(raw.callTimeout).toBe(MAX_TIMEOUT_MS);
   });
 });
 

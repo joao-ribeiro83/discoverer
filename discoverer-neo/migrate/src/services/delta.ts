@@ -153,7 +153,7 @@ const CHILD_OWNER: Partial<Record<TargetTable, [TargetTable, string]>> = {
 };
 
 /** Never compared: ids are per-run, and timestamps move without content moving. */
-const NOT_HASHED = new Set(['id', 'createdAt', 'updatedAt', 'grantedAt']);
+const NOT_HASHED = new Set(['id', 'createdAt', 'updatedAt', 'grantedAt', 'sharedAt']);
 
 /**
  * Columns a delta neither compares nor overwrites. A user's address, credential
@@ -178,6 +178,8 @@ const NATURAL_KEY: Partial<Record<TargetTable, readonly string[]>> = {
   workbooks: ['sourceId'],
   maps: ['workbookId', '#worksheet'],
   user_business_area_grants: ['userId', 'businessAreaId', 'permissionLevel'],
+  // A workbook grant migrated per worksheet — one row per (map, grantee).
+  map_shares: ['mapId', 'sharedWithUserId'],
 };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -514,7 +516,8 @@ export async function runDelta(options: DeltaOptions): Promise<DeltaResult> {
     }
   }
   const resolved: string[] = [];
-  const revoke: Array<[string, BaselineEntry]> = [];
+  /** [key, baseline, which table the row is in] — grants and shares both revoke. */
+  const revoke: Array<[string, BaselineEntry, TargetTable]> = [];
   const deactivate: Array<[string, BaselineEntry]> = [];
   const targetTableOf = new Map<string, TargetTable>();
   for (const [table, rows] of target) for (const r of rows) targetTableOf.set(String(r.id), table);
@@ -523,8 +526,11 @@ export async function runDelta(options: DeltaOptions): Promise<DeltaResult> {
     const table = targetTableOf.get(base.targetId);
     if (!table) {
       resolved.push(key); // gone from both sides: the operator removed it
-    } else if (table === 'user_business_area_grants') {
-      revoke.push([key, base]);
+    } else if (table === 'user_business_area_grants' || table === 'map_shares') {
+      // Access the source took away is taken away here too — unlike an object,
+      // which D-080 refuses to delete. Leaving it would keep a grant the
+      // administrator has already revoked in Discoverer.
+      revoke.push([key, base, table]);
       changes.push({ key, table, kind: 'revoked' });
     } else if (table === 'users') {
       // Already inactive from an earlier delta: nothing left to do.
@@ -595,8 +601,12 @@ export async function runDelta(options: DeltaOptions): Promise<DeltaResult> {
         await tx.insert(table, added);
       }
 
-      if (revoke.length > 0) {
-        await tx.deleteWhere('user_business_area_grants', 'id', revoke.map(([, b]) => b.targetId));
+      for (const revokeTable of new Set(revoke.map(([, , t]) => t))) {
+        await tx.deleteWhere(
+          revokeTable,
+          'id',
+          revoke.filter(([, , t]) => t === revokeTable).map(([, b]) => b.targetId),
+        );
       }
       for (const [, base] of deactivate) await tx.update('users', base.targetId, { isActive: false });
 

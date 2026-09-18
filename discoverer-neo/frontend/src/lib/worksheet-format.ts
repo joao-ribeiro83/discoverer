@@ -39,7 +39,8 @@ export function stringifyCell(value: unknown): string {
 }
 
 /** Mask elements that only ever appear in a date mask. */
-const DATE_MASK_RE = /(YYYY|YY|MONTH|MON|MM|DD|DAY|DY|HH24|HH|MI|SS|AM|PM)/i
+const DATE_MASK_RE =
+  /(YYYY|RRRR|YY|RR|MONTH|MON|MM|DD|DAY|DY|HH24|HH12|HH|MI|SS|AM|PM)/i
 /** Mask elements that only ever appear in a number mask. */
 const NUMBER_MASK_RE = /[90]/
 
@@ -109,36 +110,66 @@ function pad2(n: number): string {
  *
  * Month and day names come from `Intl` in the active locale, so `DD-MON-YYYY`
  * renders `05-AGO-2026` for a Spanish user and `05-AUG-2026` for an English
- * one. Longest elements are replaced first (`YYYY` before `YY`, `MONTH` before
- * `MON` before `MM`) — otherwise a short element eats part of a long one.
+ * one. Oracle's own capitalisation rule applies to them: `MON` gives `AUG`,
+ * `Mon` gives `Aug` and `mon` gives `aug`.
+ *
+ * `RRRR` and `RR` are Oracle's round-year tokens and mean the same thing here
+ * as `YYYY` and `YY` — a stored year is already unambiguous, and the rounding
+ * only ever applied to *input*. They are not optional trivia in this estate:
+ * `DD-MON-RRRR` is the mask on 2 732 of its 3 720 date columns, and leaving
+ * `RRRR` unhandled printed it literally (`30-SEP-RRRR`, no year at all).
+ *
+ * One pass, longest token first, so a substituted month name can never be
+ * rescanned as another token.
  */
+const DATE_TOKEN_RE = /YYYY|RRRR|MONTH|DAY|HH24|HH12|MON|DY|YY|RR|MM|DD|HH|MI|SS|AM|PM/gi
+
+/** Oracle's rule: the token's own case decides the name's case. */
+function matchCase(token: string, value: string): string {
+  if (token === token.toUpperCase()) return value.toUpperCase()
+  if (token === token.toLowerCase()) return value.toLowerCase()
+  return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase()
+}
+
 export function applyDateMask(date: Date, mask: string, locale: string): string {
   const loc = resolveLocale(locale)
-  const monthLong = new Intl.DateTimeFormat(loc, { month: 'long' }).format(date)
-  const monthShort = new Intl.DateTimeFormat(loc, { month: 'short' }).format(date)
-  const dayLong = new Intl.DateTimeFormat(loc, { weekday: 'long' }).format(date)
-  const dayShort = new Intl.DateTimeFormat(loc, { weekday: 'short' }).format(date)
+  const name = (opts: Intl.DateTimeFormatOptions) =>
+    new Intl.DateTimeFormat(loc, opts).format(date).replace(/\.$/, '')
   const hours12 = date.getHours() % 12 === 0 ? 12 : date.getHours() % 12
 
-  const replacements: Array<[RegExp, string]> = [
-    [/YYYY/g, String(date.getFullYear())],
-    [/YY/g, pad2(date.getFullYear() % 100)],
-    [/MONTH/gi, monthLong.toUpperCase()],
-    [/MON/g, monthShort.toUpperCase().replace(/\.$/, '')],
-    [/MM/g, pad2(date.getMonth() + 1)],
-    [/DAY/g, dayLong.toUpperCase()],
-    [/DY/g, dayShort.toUpperCase().replace(/\.$/, '')],
-    [/DD/g, pad2(date.getDate())],
-    [/HH24/g, pad2(date.getHours())],
-    [/HH/g, pad2(hours12)],
-    [/MI/g, pad2(date.getMinutes())],
-    [/SS/g, pad2(date.getSeconds())],
-    [/AM|PM/g, date.getHours() < 12 ? 'AM' : 'PM'],
-  ]
-
-  let out = mask
-  for (const [pattern, value] of replacements) out = out.replace(pattern, value)
-  return out
+  return mask.replace(DATE_TOKEN_RE, (token) => {
+    switch (token.toUpperCase()) {
+      case 'YYYY':
+      case 'RRRR':
+        return String(date.getFullYear())
+      case 'YY':
+      case 'RR':
+        return pad2(date.getFullYear() % 100)
+      case 'MONTH':
+        return matchCase(token, name({ month: 'long' }))
+      case 'MON':
+        return matchCase(token, name({ month: 'short' }))
+      case 'MM':
+        return pad2(date.getMonth() + 1)
+      case 'DAY':
+        return matchCase(token, name({ weekday: 'long' }))
+      case 'DY':
+        return matchCase(token, name({ weekday: 'short' }))
+      case 'DD':
+        return pad2(date.getDate())
+      case 'HH24':
+        return pad2(date.getHours())
+      case 'HH12':
+      case 'HH':
+        return pad2(hours12)
+      case 'MI':
+        return pad2(date.getMinutes())
+      case 'SS':
+        return pad2(date.getSeconds())
+      default:
+        return date.getHours() < 12 ? 'AM' : 'PM'
+    }
+  })
 }
 
 /**

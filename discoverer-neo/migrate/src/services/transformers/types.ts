@@ -152,8 +152,65 @@ export const ITEM_TYPE_MAP: Record<string, NeoItemType> = {
  * ever narrow a grant, never widen one. A non-zero `AP_PRIV_LEVEL` raises
  * `GRANT_PRIV_LEVEL_UNMAPPED` so an administrator reviews it rather than the
  * loss being silent.
+ *
+ * Superseded as the *default*: the privilege rows do say what a grantee may
+ * do, they just say it somewhere else — see `grantLevelForEulPrivileges`.
+ * `VIEW` remains the floor for a grantee holding no privilege row at all.
  */
 export const DEFAULT_GRANT_PERMISSION: NeoPermissionLevel = 'VIEW';
+
+/**
+ * EUL-wide privilege codes (`ACCESS_PRIVS.AP_TYPE = 'GP'`, `GP_APP_ID`).
+ *
+ * The codes run 1000-1015 and split into the two groups the Administrator's
+ * "Privileges" dialog draws: a Desktop-and-Plus group and an Administration
+ * group, each headed by a parent check box that must be ticked before any
+ * privilege under it can be. Oracle publishes the names but never the numbers,
+ * so only the three below are asserted, and each rests on evidence:
+ *
+ *  - **1006 — Administration Privilege.** `discoverer10g/sql/batchusr.sql:3094`
+ *    selects the EUL's administrators as the users holding `GP_APP_ID` 1006
+ *    together with 1015. 1006 is therefore the Administration group's parent,
+ *    and 1015 (Manage Scheduled Workbooks) the batch privilege that script
+ *    needs. In this estate exactly one account holds either.
+ *  - **1012 — Schedule Workbooks.** It is one of only two Desktop-and-Plus
+ *    codes absent from PUBLIC's default set, and the two accounts holding it
+ *    are the only two owning rows in `BATCH_REPORTS` (20 and 4). The other
+ *    absentee is 1011, held by nobody — matching "Change Password: this
+ *    privilege is not used in this release".
+ *
+ * Everything else is carried through as a number and interpreted by nobody.
+ */
+export const EUL_PRIV_ADMINISTRATION = 1006;
+export const EUL_PRIV_SCHEDULE_WORKBOOKS = 1012;
+export const EUL_PRIV_MANAGE_SCHEDULED_WORKBOOKS = 1015;
+
+/**
+ * The Neo role an account's EUL-wide privileges earn it.
+ *
+ * Only the Administration parent maps, because it is the only code whose
+ * meaning an Oracle source states. MANAGER and VIEWER are Neo-only levels no
+ * Discoverer privilege corresponds to, so nothing is migrated into them.
+ */
+export function roleForEulPrivileges(privCodes: ReadonlySet<number>): NeoUserRole {
+  return privCodes.has(EUL_PRIV_ADMINISTRATION) ? 'ADMIN' : 'USER';
+}
+
+/**
+ * The business-area grant level an account's EUL-wide privileges earn it.
+ *
+ * A Discoverer business-area grant is still binary — the level comes entirely
+ * from the separate privilege rows. Every grantee who can open Discoverer at
+ * all may run a worksheet over the business area and take the result away, so
+ * `EXPORT` is the floor; holding Schedule Workbooks raises it to `SCHEDULE`.
+ * Both are below `CREATE`, so neither confers authoring rights, and neither
+ * makes another user's saved map visible — that needs a workbook grant.
+ */
+export function grantLevelForEulPrivileges(
+  privCodes: ReadonlySet<number>,
+): NeoPermissionLevel {
+  return privCodes.has(EUL_PRIV_SCHEDULE_WORKBOOKS) ? 'SCHEDULE' : 'EXPORT';
+}
 
 // ---------------------------------------------------------------------------
 // Transformed entity shapes (runner resolves the *SourceId / *Username refs)
@@ -327,10 +384,27 @@ export interface TransformedCustomFunction {
   description: string | null;
   functionType: NeoFunctionType;
   returnType: string | null;
-  /** JSON argument list; null when EUL carries no signature metadata. */
-  parameters: unknown;
+  /**
+   * `[{ name, type, required, position }]` in call order, from `FUN_ARGUMENTS`.
+   * An empty array is a zero-argument function; null only when the source
+   * has no argument table at all.
+   */
+  parameters: CustomFunctionParameter[] | null;
+  /** `FUN_EXT_*` — what the SQL calls. See `custom_functions.ext_name`. */
+  extOwner: string | null;
+  extPackage: string | null;
+  extName: string;
+  extDbLink: string | null;
   isActive: boolean;
   warnings: TransformWarning[];
+}
+
+export interface CustomFunctionParameter {
+  name: string;
+  /** `TEXT` / `NUMBER` / `DATE`, or the raw code when no reading is established. */
+  type: string;
+  required: boolean;
+  position: number;
 }
 
 /**
@@ -510,6 +584,13 @@ export interface TransformedMapCondition {
    * the other, never both). Null on an ordinary item condition.
    */
   calculationElementId: number | null;
+  /**
+   * `source_element_id` of the hidden calculated field this row compares
+   * AGAINST, when the right side is an expression rather than a value —
+   * `TO_DATE(:Dt Fim,'DD-MON-RRRR') + 0.99999`. Null on an ordinary
+   * value/parameter comparison.
+   */
+  valueCalculationElementId: number | null;
   folderLabel: string | null;
   itemLabel: string | null;
   /** Neo `map_operator` value; null when the source operator has no Neo equivalent. */
@@ -709,6 +790,13 @@ export interface TransformedWorkbook {
   selectDistinct: boolean;
   items: TransformedMapItem[];
   conditions: TransformedMapCondition[];
+  /**
+   * Filters the source worksheet had that this map does not, each with the
+   * condition as its author wrote it. Written to `maps.dropped_filters` so the
+   * viewer can say the result is under-filtered — a dropped filter otherwise
+   * has no symptom at all, since the map still runs and simply returns more.
+   */
+  droppedFilters: Array<{ text: string; reason: string }>;
   parameters: TransformedMapParameter[];
   calculatedFields: TransformedMapCalculatedField[];
   /** Totals defined on this worksheet, in the order the body writes them. */
@@ -755,11 +843,14 @@ export interface TransformedGrant {
   /** True when the grantee is a database role rather than a user. */
   granteeIsRole: boolean;
   businessAreaSourceId: number | null;
+  /** `GD_DOC_ID` — the workbook a `DOCUMENT` grant shares. */
+  documentSourceId: number | null;
   /**
-   * `DOCUMENT` (a workbook grant) and `EUL` (an EUL-wide privilege) have no
-   * Neo equivalent yet - both are carried through so they can be reported,
-   * and both set `skip`. There is no `FOLDER`: `ACCESS_PRIVS` has no
-   * folder-grant column.
+   * `DOCUMENT` is a workbook grant: it migrates into `map_shares`, one share
+   * per worksheet of that workbook, so it does not set `skip`. `EUL` is an
+   * EUL-wide privilege, which is not a grant on anything and does set `skip` —
+   * it is read separately, for the grantee's role and grant level. There is no
+   * `FOLDER`: `ACCESS_PRIVS` has no folder-grant column.
    */
   level: 'BUSINESS_AREA' | 'DOCUMENT' | 'EUL';
   permissionLevel: NeoPermissionLevel;

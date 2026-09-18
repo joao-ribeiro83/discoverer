@@ -321,24 +321,24 @@ export interface ItemBinding {
  */
 export interface FunctionBinding {
   /**
-   * `custom_functions.name`, emitted verbatim as the call's identifier once
+   * The database name of the function — `custom_functions.ext_name`, NOT the
+   * Discoverer label a workbook looks it up by. Emitted verbatim once
    * validated. Never quoted: an unquoted Oracle identifier folds to upper
    * case and matches a function created the ordinary way, where quoting it
    * would make the call case-sensitive and miss.
    */
   name: string;
+  /** `ext_package` — the call is `package.name` when set. */
+  package?: string | null;
+  /** `ext_owner` — the schema qualifier in front of the package or name. */
+  owner?: string | null;
+  /** `ext_db_link` — appended as `@link`; may itself be dotted. */
+  dbLink?: string | null;
   /**
-   * Inclusive `[min, max]` argument count from `custom_functions.parameters`,
-   * or **null when the row carries no signature at all**.
-   *
-   * Null is the estate's normal case, not an edge one. `transformCustomFunction`
-   * writes `parameters: null` for every row and raises
-   * `FUNCTION_SIGNATURE_DEFAULTED`, because the EUL's normalized `FUNCTIONS`
-   * read carries no argument list. So the arity check below is real and
-   * enforced, and today it has nothing to bite on until somebody completes a
-   * signature in Neo. Refusing every call for want of a signature would make
-   * all 593 migrated functions permanently uncallable, which is not what the
-   * missing column means.
+   * Inclusive `[min, max]` argument count from `custom_functions.parameters`
+   * (required arguments, all arguments), or null when the row carries no
+   * signature. Null only happens for a source with no `FUN_ARGUMENTS` table
+   * or a function authored in Neo without one.
    */
   arity: readonly [number, number] | null;
 }
@@ -459,10 +459,11 @@ class SqlEmitter {
    *    `UNRESOLVED_FUNCTION` (D-057). Never a pass-through — emitting an
    *    unknown name would either fail at run time or, worse, hit a different
    *    function that happens to exist.
-   * 2. **The name must be an identifier.** `isValidIdentifier` is the same
+   * 2. **Every name part must be an identifier** — owner, package, name and
+   *    each dotted part of the link. `isValidIdentifier` is the same
    *    predicate the column path uses, so a name carrying a quote, a bracket,
    *    a space or a semicolon is rejected outright. It is never escaped and
-   *    never quoted into safety: a hostile `custom_functions.name` is a
+   *    never quoted into safety: a hostile `custom_functions.ext_*` is a
    *    metadata defect or an attack, and quoting it would hide both.
    * 3. **The arity must match** any signature the row carries.
    * 4. **The arguments go through the ordinary emitter**, so every literal
@@ -480,12 +481,22 @@ class SqlEmitter {
     if (binding === null) {
       throw new Quarantined('UNRESOLVED_FUNCTION', `[2,${node.elementId}]`);
     }
-    if (!isValidIdentifier(binding.name)) {
-      throw new Quarantined(
-        'INVALID_IDENTIFIER',
-        `[2,${node.elementId}] function ${JSON.stringify(binding.name)}`,
-      );
+    // Every part is one identifier; the dots and the `@` are written here,
+    // never taken from the data. A link name may be dotted (`LINK.DOMAIN`), so
+    // it is checked part by part.
+    const parts = [binding.owner, binding.package, binding.name].filter(
+      (p): p is string => p !== null && p !== undefined,
+    );
+    const linkParts = binding.dbLink ? binding.dbLink.split('.') : [];
+    for (const part of [...parts, ...linkParts]) {
+      if (!isValidIdentifier(part)) {
+        throw new Quarantined(
+          'INVALID_IDENTIFIER',
+          `[2,${node.elementId}] function ${JSON.stringify(part)}`,
+        );
+      }
     }
+    const callee = parts.join('.') + (binding.dbLink ? `@${binding.dbLink}` : '');
     if (binding.arity !== null) {
       const [min, max] = binding.arity;
       if (node.args.length < min || node.args.length > max) {
@@ -496,7 +507,7 @@ class SqlEmitter {
       }
     }
     const args = node.args.map((arg) => this.emit(arg));
-    return `${binding.name}(${args.join(', ')})`;
+    return `${callee}(${args.join(', ')})`;
   }
 
   private parameter(elementId: number): string {

@@ -1,10 +1,12 @@
 import type { FastifyInstance, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { loadMapWithAccess } from './maps.js';
+import { resolveHeading } from '../services/map.service.js';
 import { SqlGenerationError, planDraft } from '../services/sql-generator.js';
 import {
   executeMap,
   executeMapAsync,
+  explainMap,
   getExecutionStatus,
   cancelExecution,
   getExecutionHistory,
@@ -50,6 +52,14 @@ const PlanBodySchema = z.object({
     )
     .max(500),
 });
+
+/**
+ * The generated SQL and the execution plan are administrator views of a map,
+ * not parts of its result. Both name the schema behind it.
+ */
+function isAdmin(request: { user?: unknown }): boolean {
+  return (request.user as { role?: string } | undefined)?.role === 'ADMIN';
+}
 
 const HistoryQuerySchema = z.object({
   limit: z.coerce.number().int().positive().max(200).optional(),
@@ -210,7 +220,15 @@ export default function mapExecutionRoutes(fastify: FastifyInstance) {
             correlationId: request.id,
           },
         );
-        return { data: result };
+        // The heading carries `&Date`, `&Time` and `&<ParamName>` tokens. Only
+        // here are the real values known, so only here can they be printed.
+        const heading = await resolveHeading(map.id, parsed.data.parameters ?? {});
+        // The generated SQL names every table, column and predicate behind the
+        // map — the schema detail SEC-07 keeps out of an ordinary user's reach
+        // in error messages. It was going to everyone. Administrators only.
+        const { sql: _generatedSql, ...rest } = result;
+        const visible = isAdmin(request) ? result : rest;
+        return { data: { ...visible, heading } };
       } catch (err) {
         if (handleExecutionError(reply, err, request.id)) return;
         throw err;
@@ -324,7 +342,53 @@ export default function mapExecutionRoutes(fastify: FastifyInstance) {
       if (!job || job.mapId !== map.id || job.userId !== user.sub) {
         return reply.code(404).send({ error: 'Execution job not found' });
       }
+      // Same withholding as the synchronous path: the generated SQL is an
+      // administrator's view of the map, not a result column.
+      if (job.result && !isAdmin(request)) {
+        const { sql: _generatedSql, ...result } = job.result;
+        return { data: { ...job, result } };
+      }
       return { data: job };
+    },
+  );
+
+  // POST /api/maps/:id/explain — Oracle's execution plan for this map.
+  //
+  // Administrator-only, like the generated SQL it is a plan of: it names the
+  // tables, indexes and predicates behind the map. Nothing is run against the
+  // real data — EXPLAIN PLAN reads the statement, it does not execute it.
+  fastify.post(
+    '/api/maps/:id/explain',
+    {
+      preHandler: [fastify.authenticate, fastify.authorizeAdmin],
+      schema: {
+        tags: ['Map Execution'],
+        security: [{ bearerAuth: [] }],
+        params: idParamsSchema,
+      },
+    },
+    async (request, reply) => {
+      const map = await loadMapWithAccess(request, reply, 'VIEW');
+      if (!map) return;
+
+      const parsed = ExecuteBodySchema.safeParse(request.body ?? {});
+      if (!parsed.success) {
+        return reply
+          .code(400)
+          .send({ error: 'Invalid request body', details: parsed.error.issues });
+      }
+
+      const user = request.user as { sub: string };
+      try {
+        const result = await explainMap(map.id, parsed.data.parameters ?? {}, user.sub, {
+          timeoutMs: parsed.data.timeoutMs,
+          correlationId: request.id,
+        });
+        return { data: result };
+      } catch (err) {
+        if (handleExecutionError(reply, err, request.id)) return;
+        throw err;
+      }
     },
   );
 

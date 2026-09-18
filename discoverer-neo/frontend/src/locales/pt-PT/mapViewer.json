@@ -121,7 +121,10 @@
       "title": "Ver Detalhe",
       "description": "As linhas originais por detrás dos valores desta linha.",
       "loading": "A obter o detalhe…"
-    }
+    },
+    "explain": "Plano",
+    "explainFailed": "Não foi possível ler o plano de execução",
+    "nothingToExplain": "Execute o mapa primeiro"
   },
   "parameters": {
     "title": "Parâmetros de execução",
@@ -204,5 +207,22 @@
       "why": "Para totalizar através de uma ligação um-para-muitos, cada conjunto de linhas de detalhe é resumido primeiro e as partes são depois combinadas. Somar somas dá o resultado certo, tal como o mínimo e o máximo. Médias, contagens de valores distintos, desvio padrão e variância não podem ser reconstruídos a partir de partes: uma média de médias não é a média.",
       "whatToChange": "Utilize Soma, Contagem, Mínimo ou Máximo, ou totalize esta coluna numa folha que utilize apenas uma pasta."
     }
+  },
+  "workbookShare": {
+    "title": "Partilhar \"{{name}}\"",
+    "description": "Dar a alguém todas as folhas deste livro — {{count}} no total.",
+    "pickUser": "Escolha primeiro uma pessoa",
+    "shareButton": "Partilhar livro",
+    "revokeButton": "Remover acesso",
+    "shared": "{{count}} folha(s) partilhada(s)",
+    "refused": "Não partilhado: {{names}}",
+    "shareFailed": "Não foi possível partilhar o livro",
+    "revoked": "Acesso removido",
+    "revokeFailed": "Não foi possível remover o acesso",
+    "none": "Ainda ninguém tem este livro.",
+    "sheetsHeld": "{{held}} de {{total}} folhas"
+  },
+  "droppedFilters": {
+    "summary": "Não foi possível migrar {{count}} filtro(s) do Discoverer — este resultado pode incluir mais linhas do que o original"
   }
 }

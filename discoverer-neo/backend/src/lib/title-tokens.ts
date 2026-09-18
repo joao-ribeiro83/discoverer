@@ -43,7 +43,15 @@ export function substituteTitleTokens<T extends string | null>(
   const names = [...byLowerName.keys()]
     .sort((a, b) => b.length - a.length)
     .map(escapeRegExp);
-  const pattern = new RegExp(`&(${names.join('|')})\\b`, 'gi');
+  // A trailing `\b` drops every token whose name ends in punctuation. This
+  // estate has `&Dt Registo >=` and `&Dt Registo <=`: the last character is
+  // `=` and the next is a newline, so no boundary exists there and the token
+  // survived into the rendered title. The boundary only means anything when
+  // the name ends in a word character, so apply it only then.
+  const pattern = new RegExp(
+    `&(${names.map((n) => (/\w$/.test(n) ? `${n}\\b` : n)).join('|')})`,
+    'gi',
+  );
 
   return text.replace(pattern, (match, name: string) => byLowerName.get(name.toLowerCase()) ?? match) as T;
 }

@@ -14,10 +14,12 @@ import type {
   JoinSuggestion,
   Hierarchy,
   CustomFunction,
+  DatabaseFunction,
   AppUser,
   MapSummary,
   MapWithDetails,
   WorkbookWithMaps,
+  WorkbookShares,
   DashboardStats,
   CreateMapInput,
   UpdateMapInput,
@@ -307,6 +309,11 @@ export const apiClient = {
     create: (data: unknown) => api.post<Envelope<CustomFunction>>('/custom-functions', data),
     update: (id: string, data: unknown) => api.put<Envelope<CustomFunction>>(`/custom-functions/${id}`, data),
     delete: (id: string) => api.delete<Envelope<{ message: string }>>(`/custom-functions/${id}`),
+    searchDatabase: (dataSourceId: string, params: { owner?: string; search?: string }) =>
+      api.get<Envelope<{ owner: string; functions: DatabaseFunction[]; truncated: boolean }>>(
+        `/data-sources/${dataSourceId}/functions`,
+        { params },
+      ),
   },
   // Data Sources
   dataSources: {
@@ -339,6 +346,15 @@ export const apiClient = {
     create: (data: unknown) => api.post<Envelope<AppUser>>('/users', data),
     update: (id: string, data: unknown) => api.put<Envelope<AppUser>>(`/users/${id}`, data),
     delete: (id: string) => api.delete<Envelope<{ message: string }>>(`/users/${id}`),
+    /**
+     * Re-issue temporary passwords and download them as a CSV. Omit `userIds`
+     * for every account still on a temporary password — the migrated ones.
+     * The response is the file itself, not JSON.
+     */
+    issueCredentials: (userIds?: string[]) =>
+      api.post<string>('/users/credentials', userIds ? { userIds } : {}, {
+        responseType: 'text',
+      }),
     // Unlike the CRUD methods above (admin-only), search is available to any
     // authenticated user — it backs the map-sharing user picker.
     search: (q: string) => api.get<Envelope<UserOption[]>>('/users/search', { params: { q } }),
@@ -383,6 +399,9 @@ export const apiClient = {
       api.post<Envelope<ExecuteResult>>(`/maps/${id}/execute`, body),
     executeAsync: (id: string, body: ExecuteMapBody = {}) =>
       api.post<Envelope<{ jobId: string }>>(`/maps/${id}/execute-async`, body),
+    /** Oracle's execution plan for the map's statement. Administrators only. */
+    explain: (id: string, body: ExecuteMapBody = {}) =>
+      api.post<Envelope<{ sql: string; plan: string }>>(`/maps/${id}/explain`, body),
     drillToDetail: (id: string, body: DrillToDetailBody) =>
       api.post<Envelope<ExecuteResult>>(`/maps/${id}/drill-to-detail`, body),
     getExecutionStatus: (id: string, jobId: string) =>
@@ -427,6 +446,21 @@ export const apiClient = {
   // source workbook. Same visibility as maps.listAll(); see workbooks.ts.
   workbooks: {
     listBrowse: () => api.get<Envelope<WorkbookWithMaps[]>>('/workbooks'),
+    /** Who holds the workbook, and on how many of its worksheets. */
+    listShares: (id: string) =>
+      api.get<Envelope<WorkbookShares>>(`/workbooks/${id}/shares`),
+    /**
+     * Share every worksheet of a workbook at once — the unit Discoverer
+     * shared in. Admin and manager only. `refused` names any worksheet the
+     * caller could see but not pass on.
+     */
+    share: (id: string, userId: string, permissionLevel: SharePermissionLevel) =>
+      api.post<Envelope<{ shared: number; refused: string[] }>>(`/workbooks/${id}/shares`, {
+        userId,
+        permissionLevel,
+      }),
+    revokeShare: (id: string, userId: string) =>
+      api.delete<Envelope<{ revoked: number }>>(`/workbooks/${id}/shares/${userId}`),
   },
   // Export jobs. Addressed by their globally-unique job id rather than nested
   // under a map, which is what allows listing a user's exports across maps.

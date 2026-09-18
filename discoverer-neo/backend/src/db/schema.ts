@@ -7,8 +7,8 @@
  * declaration to drift from. Adding a `pgTable` call here for any of them
  * re-introduces exactly the hazard the move removed — don't.
  *
- * What *is* declared here: the 10 runtime-only tables the migrator never
- * writes (map shares, query execution log, export jobs, schedules, schedule
+ * What *is* declared here: the 9 runtime-only tables the migrator never
+ * writes (query execution log, export jobs, schedules, schedule
  * parameters, scheduled results, the three security-policy tables and the
  * audit log), their enums, and every `relations()` block — relations span
  * both halves, so they belong on the side that can see both.
@@ -27,7 +27,6 @@ import {
   jsonb,
   pgEnum,
   index,
-  uniqueIndex,
 } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
 
@@ -54,6 +53,7 @@ import {
   mapConditionalFormats,
   mapLayouts,
   mapPageSetup,
+  mapShares,
   mapTotals,
 } from '@discoverer-neo/core/db/schema';
 import type { customFunctions } from '@discoverer-neo/core/db/schema';
@@ -62,12 +62,6 @@ import type { customFunctions } from '@discoverer-neo/core/db/schema';
 // ---------------------------------------------------------------------------
 // Enums used only by the runtime-only tables below
 // ---------------------------------------------------------------------------
-
-export const sharePermissionEnum = pgEnum('share_permission_level', [
-  'VIEW',
-  'EDIT',
-  'EXPORT',
-]);
 
 export const exportFormatEnum = pgEnum('export_format', ['XLSX', 'CSV', 'PDF']);
 
@@ -91,33 +85,8 @@ export const targetTypeEnum = pgEnum('target_type', [
   'FOLDER',
 ]);
 
-// ---------------------------------------------------------------------------
-// 16. map_shares
-// ---------------------------------------------------------------------------
-
-export const mapShares = pgTable(
-  'map_shares',
-  {
-    id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
-    mapId: uuid('map_id')
-      .notNull()
-      .references(() => maps.id, { onDelete: 'cascade' }),
-    sharedWithUserId: uuid('shared_with_user_id')
-      .notNull()
-      .references(() => users.id, { onDelete: 'cascade' }),
-    permissionLevel: sharePermissionEnum('permission_level').notNull(),
-    sharedBy: uuid('shared_by')
-      .notNull()
-      .references(() => users.id, { onDelete: 'cascade' }),
-    sharedAt: timestamp('shared_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-  },
-  (t) => [
-    uniqueIndex('map_shares_map_user_idx').on(t.mapId, t.sharedWithUserId),
-    index('map_shares_user_idx').on(t.sharedWithUserId),
-  ],
-);
+// 16. map_shares moved to `@discoverer-neo/core/db/schema` (re-exported above):
+// the migrator writes it now, from Discoverer's workbook grants.
 
 // ---------------------------------------------------------------------------
 // 17. query_execution_log

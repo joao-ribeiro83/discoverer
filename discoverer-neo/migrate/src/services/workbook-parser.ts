@@ -127,6 +127,9 @@
  */
 
 import type { EulVersion } from '../types/eul-versions.js';
+// `render.ts` imports only the FormulaNode *type* from this file, so the cycle
+// is erased at compile time and there is none at runtime.
+import { DISPLAY_NAME_MARK, renderDisplay } from '../semantics/render.js';
 
 // ---------------------------------------------------------------------------
 // Record / element primitives
@@ -1286,6 +1289,20 @@ export interface ConditionPredicate {
   leftExpression: string | null;
   /** Element id of the parameter bound on the right, when there is one. */
   parameterRef: number | null;
+  /**
+   * The right side in token form when it is an expression rather than a value
+   * — `Data Comparacion <= TO_DATE(:Dt Fim,'DD-MON-RRRR') + 0.99999`.
+   *
+   * Symmetric with `leftExpression`, and for the same reason: it migrates as a
+   * hidden calculated field the row compares against, which is the one place
+   * `map_conditions` can hold it. Before this existed the whole condition was
+   * dropped — 205 of this estate's filters, across 152 maps, which then
+   * returned unfiltered rows with nothing to say so.
+   *
+   * A parameter nested inside is still bound: the compiled expression carries
+   * `[8,n]`, which the SQL renderer emits as that parameter's bind.
+   */
+  rightExpression: string | null;
   /** Literal operands on the right, in order. */
   literals: string[];
   /**
@@ -1478,16 +1495,27 @@ function readPredicates(node: FormulaNode): ConditionPredicate[] | string {
     neoOperator: NeoConditionOperator,
     name: string,
     operands: FormulaNode[],
-  ): ConditionPredicate => ({
-    operator: name,
-    operatorCode: node.code,
-    neoOperator,
-    itemRef: left.type === 'item' ? left.elementId : null,
-    leftExpression,
-    parameterRef: operands.find((operand) => operand.type === 'parameter')?.elementId ?? null,
-    literals: operands.flatMap((operand) => (operand.type === 'literal' ? [operand.value] : [])),
-    negated,
-  });
+  ): ConditionPredicate => {
+    // Exactly one operand may be an expression, and only when it is the whole
+    // right side — a list or a range of expressions would need a row each,
+    // ORed, which is the bracket level Neo does not have.
+    const expressionOperand =
+      operands.length === 1 && (operands[0]!.type === 'call' || operands[0]!.type === 'function')
+        ? operands[0]!
+        : undefined;
+    return {
+      operator: name,
+      operatorCode: node.code,
+      neoOperator,
+      itemRef: left.type === 'item' ? left.elementId : null,
+      leftExpression,
+      parameterRef: operands.find((operand) => operand.type === 'parameter')?.elementId ?? null,
+      rightExpression:
+        expressionOperand === undefined ? null : expressionTokens(expressionOperand),
+      literals: operands.flatMap((operand) => (operand.type === 'literal' ? [operand.value] : [])),
+      negated,
+    };
+  };
 
   if (operator.neo === 'IS_NULL') {
     return rawRight.length === 0
@@ -1499,11 +1527,28 @@ function readPredicates(node: FormulaNode): ConditionPredicate[] | string {
   // A date bound arrives wrapped in `TO_DATE(:prompt, mask)`; the parameter
   // inside it is the operand Neo stores. Everything else stays as written.
   const right = rawRight.map(unwrapDateParameter);
-  const expression = right.find((arg) => arg.type !== 'literal' && arg.type !== 'parameter');
+  /** A right-hand operand that is neither a literal nor a bare parameter. */
+  const isExpression = (arg: FormulaNode): boolean =>
+    arg.type === 'call' || arg.type === 'function';
+  const expression = right.find(
+    (arg) => arg.type !== 'literal' && arg.type !== 'parameter' && !isExpression(arg),
+  );
   if (expression !== undefined) {
     return (
       `${operator.name} compares against ${describeFormulaNode(expression)}, ` +
-      'which is an expression rather than a value'
+      'which is neither a value nor an expression'
+    );
+  }
+  // An expression that does not round-trip through the token grammar is
+  // refused rather than stored as text nothing can read back — the same rule
+  // `leftExpression` applies.
+  const unserializable = right.find(
+    (arg) => isExpression(arg) && expressionTokens(arg) === null,
+  );
+  if (unserializable !== undefined) {
+    return (
+      `${operator.name} compares against ${describeFormulaNode(unserializable)}, ` +
+      'which does not round-trip through the token grammar'
     );
   }
 
@@ -1541,6 +1586,13 @@ function readPredicates(node: FormulaNode): ConditionPredicate[] | string {
   if (operator.neo === 'IN') {
     if (withComma !== undefined) {
       return 'an IN value contains a comma, which Neo uses to separate the values';
+    }
+    // One expression per list entry would need a row each, ORed together, and
+    // an OR of rows cannot sit inside a group that is already ANDing. Unlike a
+    // scalar comparison, there is nowhere to put it.
+    const listExpression = right.find(isExpression);
+    if (listExpression !== undefined) {
+      return `IN lists ${describeFormulaNode(listExpression)}, which is an expression`;
     }
     if (right.every((arg) => arg.type === 'literal')) {
       return [row('IN', operator.name, right)];
@@ -2066,6 +2118,13 @@ export interface ResolvedConditionPredicate extends ConditionPredicate {
    * and the element-id → name table that makes both resolvable later (D-055).
    */
   expression: { tokens: string; formula: string; bindings: ElementBindings } | null;
+  /**
+   * The RIGHT-hand expression, in the same three parts. Set when the condition
+   * compares against something built rather than something stored —
+   * `TO_DATE(:Dt Fim,'DD-MON-RRRR') + 0.99999`, Discoverer's "to the end of
+   * that day" idiom, and the single most common filter this estate has.
+   */
+  valueExpression: { tokens: string; formula: string; bindings: ElementBindings } | null;
   /** Name of the parameter bound on the right, when there is one. */
   parameterName: string | null;
   /**
@@ -3245,6 +3304,16 @@ function resolveConditionPlan(
           unsupported: `the condition filters element #${predicate.itemRef}, which the workbook does not define`,
         };
       }
+      /** Everything an expression needs to become a calculated field (D-055). */
+      const asExpression = (tokens: string | null) =>
+        tokens === null
+          ? null
+          : {
+              tokens,
+              formula: humanizeFormula(tokens, byId, NO_CALCULATION_NAMES) ?? tokens,
+              bindings: collectElementBindings(tokens, byId, NO_CALCULATION_NAMES),
+            };
+
       let parameterName: string | null = null;
       if (predicate.parameterRef !== null) {
         parameterName = firstString(byId.get(predicate.parameterRef), TAG.PARAMETER_NAME);
@@ -3265,16 +3334,10 @@ function resolveConditionPlan(
         // Everything the expression needs to become a calculated field: the
         // token form the compile step renders, the readable text, and the
         // element-id → name table that keeps both resolvable (D-055).
-        expression:
-          predicate.leftExpression === null
-            ? null
-            : {
-                tokens: predicate.leftExpression,
-                formula:
-                  humanizeFormula(predicate.leftExpression, byId, NO_CALCULATION_NAMES) ??
-                  predicate.leftExpression,
-                bindings: collectElementBindings(predicate.leftExpression, byId, NO_CALCULATION_NAMES),
-              },
+        expression: asExpression(predicate.leftExpression),
+        // The same three things for the right side, when it compares against
+        // an expression rather than a value.
+        valueExpression: asExpression(predicate.rightExpression),
         parameterName,
         // Neo reads `IN` and `BETWEEN` values back by splitting on the comma,
         // so the join has to be the bare separator it expects.
@@ -3348,24 +3411,81 @@ function readCalculation(
  * one of several same-named worksheet siblings resolves to that one's own
  * disambiguated name instead of an arbitrary sibling's.
  */
+/**
+ * The readable form of a formula: what Discoverer showed the person who wrote
+ * it.
+ *
+ * This used to substitute element references into the token string and stop
+ * there, which left every `[1,n]` builtin code sitting in the output — 8 891
+ * of this estate's 9 560 calculated fields read as
+ * `[1,102](Cap Pago,[5,2,"0"],[1,115](),Cap Pago)` rather than
+ * `DECODE(Cap Pago,0,NULL,Cap Pago)`. The renderer that turns those codes into
+ * Oracle's own display form already existed, fitted in Phase 4.1 against
+ * 37 971 aligned (stored, displayed) pairs and measured at 93.19 % exact — it
+ * was simply never called here.
+ *
+ * `renderDisplay` writes element references as `i12` so a caller
+ * can substitute names without a name containing a bracket being re-read as a
+ * token. That substitution is the second half below, and it uses exactly the
+ * lookups the old code used.
+ *
+ * The old behaviour is kept as the fallback. A tree that does not parse, or a
+ * code the renderer refuses, still yields the substituted token string — worse
+ * to read, but never worse than nothing, and never a guess.
+ */
 function humanizeFormula(
   tokens: string,
   byId: Map<number, RawElement>,
   calcNameById: ReadonlyMap<number, string>,
 ): string {
-  return tokens.replace(/\[([68]),(\d+)\]/g, (whole, kind: string, id: string) => {
-    const elementId = Number(id);
+  const itemName = (elementId: number): string | null => {
     const element = byId.get(elementId);
-    if (kind === '8') {
-      const name = firstString(element, TAG.PARAMETER_NAME);
-      return name === null ? whole : `:${name}`;
-    }
-    const name =
-      element?.cls === CLASS.CALCULATION
-        ? (calcNameById.get(elementId) ?? firstString(element, TAG.ITEM_LABEL))
-        : (firstString(element, TAG.ITEM_LABEL) ?? firstString(element, TAG.ITEM_NAME));
-    return name ?? whole;
-  });
+    return element?.cls === CLASS.CALCULATION
+      ? (calcNameById.get(elementId) ?? firstString(element, TAG.ITEM_LABEL))
+      : (firstString(element, TAG.ITEM_LABEL) ?? firstString(element, TAG.ITEM_NAME));
+  };
+  const parameterName = (elementId: number): string | null => {
+    const name = firstString(byId.get(elementId), TAG.PARAMETER_NAME);
+    return name === null ? null : `:${name}`;
+  };
+  const functionName = (elementId: number): string | null =>
+    firstString(byId.get(elementId), TAG.FUNCTION_NAME);
+
+  const substituted = tokens.replace(
+    /\[([68]),(\d+)\]/g,
+    (whole, kind: string, id: string) =>
+      (kind === '8' ? parameterName(Number(id)) : itemName(Number(id))) ?? whole,
+  );
+
+  const parsed = parseFormulaTree(tokens);
+  if (parsed.tree === null) return substituted;
+  let display: string;
+  try {
+    display = renderDisplay(parsed.tree);
+  } catch {
+    // Quarantined — an unfitted code or an arity the table does not allow.
+    return substituted;
+  }
+
+  return display.replace(
+    new RegExp(`${DISPLAY_NAME_MARK}([ipf])(\\d+)${DISPLAY_NAME_MARK}`, 'g'),
+    (whole, kind: string, id: string) => {
+      const elementId = Number(id);
+      const name =
+        kind === 'i'
+          ? itemName(elementId)
+          : kind === 'p'
+            ? parameterName(elementId)
+            : functionName(elementId);
+      // An unresolvable reference falls back to its own token — the shape the
+      // old substitution left behind — rather than a raw control character,
+      // which would be invisible in the UI. `i` is `[6,n]`, `p` is `[8,n]`,
+      // and `f` is `[2,n]`, a custom function whose name this workbook does
+      // not carry.
+      const tokenKind = kind === 'p' ? 8 : kind === 'f' ? 2 : 6;
+      return name ?? `[${tokenKind},${elementId}]`;
+    },
+  );
 }
 
 // ---------------------------------------------------------------------------
