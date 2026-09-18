@@ -121,7 +121,10 @@
       "title": "Ver detalle",
       "description": "Las filas originales detrás de los valores de esta fila.",
       "loading": "Consultando el detalle…"
-    }
+    },
+    "explain": "Plan",
+    "explainFailed": "No se pudo leer el plan de ejecución",
+    "nothingToExplain": "Ejecute primero el mapa"
   },
   "parameters": {
     "title": "Parámetros de ejecución",
@@ -204,5 +207,19 @@
       "why": "Para totalizar a través de una unión uno-a-varios, cada conjunto de filas de detalle se resume primero y luego se combinan las partes. Sumar sumas da el resultado correcto, igual que el mínimo y el máximo. Los promedios, los recuentos de valores distintos, la desviación típica y la varianza no pueden reconstruirse a partir de partes: un promedio de promedios no es el promedio.",
       "whatToChange": "Use Suma, Recuento, Mínimo o Máximo, o totalice esta columna en una hoja que use una sola carpeta."
     }
+  },
+  "workbookShare": {
+    "title": "Compartir \"{{name}}\"",
+    "description": "Dar a alguien todas las hojas de este libro — {{count}} en total.",
+    "pickUser": "Elija primero una persona",
+    "shareButton": "Compartir libro",
+    "revokeButton": "Quitar acceso",
+    "shared": "{{count}} hoja(s) compartida(s)",
+    "refused": "No compartido: {{names}}",
+    "shareFailed": "No se pudo compartir el libro",
+    "revoked": "Acceso retirado",
+    "revokeFailed": "No se pudo quitar el acceso",
+    "none": "Todavía nadie tiene este libro.",
+    "sheetsHeld": "{{held}} de {{total}} hojas"
   }
 }

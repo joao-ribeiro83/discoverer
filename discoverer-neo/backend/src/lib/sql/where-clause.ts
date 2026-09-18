@@ -12,6 +12,7 @@ import {
   referencedBindNames,
 } from './security-predicates.js';
 import { calculatedFieldSql, mergeBinds } from './formula-parser.js';
+import { ACCEPTED_DATE_FORMATS, normalizeDateInput } from './date-input.js';
 
 export interface WhereClauseResult {
   /** "WHERE ..." or empty string when there are no conditions. */
@@ -83,6 +84,7 @@ export function buildWhereClause(
   function bindValueFor(
     dataType: string | null | undefined,
     raw: string,
+    isDate = false,
   ): unknown {
     if (dataType && /NUMBER|INTEGER|FLOAT|DECIMAL/i.test(dataType)) {
       const n = Number(raw);
@@ -93,7 +95,30 @@ export function buildWhereClause(
       }
       return n;
     }
+    if (isDate) return dateBind(raw, 'Condition value');
     return raw;
+  }
+
+  /**
+   * A date operand reaches Oracle through `TO_DATE(:bind, 'YYYY-MM-DD')`, so
+   * whatever was typed has to BE that shape by the time it is bound.
+   *
+   * Discoverer's convention was a text prompt converted inside the condition,
+   * so the values that actually arrive here look like `01-JAN-2022`,
+   * `31-DEZ-2025` and `22.10.31` — this estate's own stored schedule
+   * parameters, verbatim. Binding them unchanged is how they became
+   * `ORA-01861`. `normalizeDateInput` lists the forms accepted and says why
+   * the all-numeric ones read day-first.
+   */
+  function dateBind(raw: unknown, what: string): string {
+    const text = typeof raw === 'string' ? raw : String(raw);
+    const normalized = normalizeDateInput(text);
+    if (normalized === null) {
+      throw new SqlGenerationError(
+        `${what} "${text}" is not a date this query can read. Use ${ACCEPTED_DATE_FORMATS}.`,
+      );
+    }
+    return normalized;
   }
 
   /** A bind placeholder, wrapped in TO_DATE for DATE-typed operands. */
@@ -170,7 +195,7 @@ export function buildWhereClause(
         const values = condition.value.split(',').map((v) => v.trim());
         const names = values.map((v, i) => {
           const bind = `${base}_${i}`;
-          bindParams[bind] = bindValueFor(dataType, v);
+          bindParams[bind] = bindValueFor(dataType, v, isDate);
           return fold(placeholder(bind, isDate));
         });
         sql = `${lhs} IN (${names.join(', ')})`;
@@ -181,11 +206,11 @@ export function buildWhereClause(
             `BETWEEN condition on "${label}" needs two comma-separated values`,
           );
         }
-        bindParams[`${base}_lo`] = bindValueFor(dataType, parts[0]!);
-        bindParams[`${base}_hi`] = bindValueFor(dataType, parts[1]!);
+        bindParams[`${base}_lo`] = bindValueFor(dataType, parts[0]!, isDate);
+        bindParams[`${base}_hi`] = bindValueFor(dataType, parts[1]!, isDate);
         sql = `${lhs} BETWEEN ${fold(placeholder(`${base}_lo`, isDate))} AND ${fold(placeholder(`${base}_hi`, isDate))}`;
       } else {
-        bindParams[base] = bindValueFor(dataType, condition.value);
+        bindParams[base] = bindValueFor(dataType, condition.value, isDate);
         sql = `${lhs} ${op} ${fold(placeholder(base, isDate))}`;
       }
     } else {
@@ -218,12 +243,16 @@ export function buildWhereClause(
         if (values && values.length > 0) {
           const names = values.map((v, i) => {
             const bind = `${paramName}_${i}`;
-            bindParams[bind] = v;
+            bindParams[bind] = isDate ? dateBind(v, `Parameter "${paramLabel}"`) : v;
             return fold(placeholder(bind, isDate));
           });
           sql = `${lhs} IN (${names.join(', ')})`;
         } else {
-          if (provided !== undefined) bindParams[paramName] = provided;
+          if (provided !== undefined) {
+            bindParams[paramName] = isDate
+              ? dateBind(provided, `Parameter "${paramLabel}"`)
+              : provided;
+          }
           sql = `${lhs} IN (${fold(placeholder(paramName, isDate))})`;
         }
       } else if (op === 'BETWEEN') {
@@ -236,12 +265,16 @@ export function buildWhereClause(
               `Parameter "${paramLabel}" must supply two values for BETWEEN`,
             );
           }
-          bindParams[lo] = parts[0];
-          bindParams[hi] = parts[1];
+          bindParams[lo] = isDate ? dateBind(parts[0], `Parameter "${paramLabel}"`) : parts[0];
+          bindParams[hi] = isDate ? dateBind(parts[1], `Parameter "${paramLabel}"`) : parts[1];
         }
         sql = `${lhs} BETWEEN ${fold(placeholder(lo, isDate))} AND ${fold(placeholder(hi, isDate))}`;
       } else {
-        if (provided !== undefined) bindParams[paramName] = provided;
+        if (provided !== undefined) {
+          bindParams[paramName] = isDate
+            ? dateBind(provided, `Parameter "${paramLabel}"`)
+            : provided;
+        }
         sql = `${lhs} ${op} ${fold(placeholder(paramName, isDate))}`;
       }
     }

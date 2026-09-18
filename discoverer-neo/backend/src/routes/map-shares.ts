@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import {
+  canManageShares,
   listShares,
   shareWith,
   revokeShare,
@@ -31,9 +32,10 @@ const ShareParamSchema = z.object({
 // ---------------------------------------------------------------------------
 // Routes
 //
-// Sharing is managed by the map owner (or an admin). Access is enforced by
-// loadMapWithAccess with the EDIT action plus an owner/admin check, so a
-// user who merely received an EDIT share cannot re-share the map.
+// Sharing is managed by the map owner, an admin, or a MANAGER who can see the
+// map — see `canManageShares`. The map is loaded with the VIEW action and that
+// check decides the rest, so a user who merely received an EDIT share still
+// cannot re-share it.
 // ---------------------------------------------------------------------------
 
 export default function mapShareRoutes(fastify: FastifyInstance) {
@@ -53,8 +55,18 @@ export default function mapShareRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const map = await loadMapWithAccess(request, reply, 'EDIT');
+      const map = await loadMapWithAccess(request, reply, 'VIEW');
       if (!map) return;
+
+      // Who else holds a map is part of managing it, not part of seeing it:
+      // the list is other people's names and addresses.
+      const user = request.user as { sub: string; role: string };
+      if (!(await canManageShares(user, map))) {
+        return reply.code(403).send({
+          error: 'Forbidden',
+          details: 'Only the map owner, a manager who can see it, or an admin can manage sharing',
+        });
+      }
 
       const data = await listShares(map.id);
       return { data };
@@ -77,14 +89,14 @@ export default function mapShareRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const map = await loadMapWithAccess(request, reply, 'EDIT');
+      const map = await loadMapWithAccess(request, reply, 'VIEW');
       if (!map) return;
 
       const user = request.user as { sub: string; role: string };
-      if (user.role !== 'ADMIN' && map.createdBy !== user.sub) {
+      if (!(await canManageShares(user, map))) {
         return reply.code(403).send({
           error: 'Forbidden',
-          details: 'Only the map owner or an admin can manage sharing',
+          details: 'Only the map owner, a manager who can see it, or an admin can manage sharing',
         });
       }
 
@@ -131,14 +143,14 @@ export default function mapShareRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const map = await loadMapWithAccess(request, reply, 'EDIT');
+      const map = await loadMapWithAccess(request, reply, 'VIEW');
       if (!map) return;
 
       const user = request.user as { sub: string; role: string };
-      if (user.role !== 'ADMIN' && map.createdBy !== user.sub) {
+      if (!(await canManageShares(user, map))) {
         return reply.code(403).send({
           error: 'Forbidden',
-          details: 'Only the map owner or an admin can manage sharing',
+          details: 'Only the map owner, a manager who can see it, or an admin can manage sharing',
         });
       }
 
@@ -186,14 +198,14 @@ export default function mapShareRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const map = await loadMapWithAccess(request, reply, 'EDIT');
+      const map = await loadMapWithAccess(request, reply, 'VIEW');
       if (!map) return;
 
       const user = request.user as { sub: string; role: string };
-      if (user.role !== 'ADMIN' && map.createdBy !== user.sub) {
+      if (!(await canManageShares(user, map))) {
         return reply.code(403).send({
           error: 'Forbidden',
-          details: 'Only the map owner or an admin can manage sharing',
+          details: 'Only the map owner, a manager who can see it, or an admin can manage sharing',
         });
       }
 

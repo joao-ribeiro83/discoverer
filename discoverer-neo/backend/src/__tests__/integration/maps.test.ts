@@ -46,12 +46,16 @@ const ADMIN_EMAIL = 'maps-admin@example.com';
 const OWNER_EMAIL = 'maps-owner@example.com';
 const VIEWER_EMAIL = 'maps-viewer@example.com';
 const OUTSIDER_EMAIL = 'maps-outsider@example.com';
+const MANAGER_EMAIL = 'maps-manager@example.com';
 const TEST_PASSWORD = 'SecurePass123!';
 
 let adminToken: string;
 let ownerToken: string;
 let viewerToken: string;
 let outsiderToken: string;
+let managerToken: string;
+let managerId: string;
+let outsiderId: string;
 
 let ownerId: string;
 let viewerId: string;
@@ -108,6 +112,7 @@ async function cleanupTestData() {
     OWNER_EMAIL,
     VIEWER_EMAIL,
     OUTSIDER_EMAIL,
+    MANAGER_EMAIL,
   ]) {
     await db.delete(users).where(eq(users.email, email));
   }
@@ -155,7 +160,10 @@ beforeAll(async () => {
   await createTestUser(ADMIN_EMAIL, 'ADMIN');
   const owner = await createTestUser(OWNER_EMAIL, 'USER');
   const viewer = await createTestUser(VIEWER_EMAIL, 'USER');
-  await createTestUser(OUTSIDER_EMAIL, 'USER');
+  const outsider = await createTestUser(OUTSIDER_EMAIL, 'USER');
+  outsiderId = outsider.id;
+  const manager = await createTestUser(MANAGER_EMAIL, 'MANAGER');
+  managerId = manager.id;
   ownerId = owner.id;
   viewerId = viewer.id;
 
@@ -240,6 +248,7 @@ beforeAll(async () => {
   ownerToken = await login(OWNER_EMAIL);
   viewerToken = await login(VIEWER_EMAIL);
   outsiderToken = await login(OUTSIDER_EMAIL);
+  managerToken = await login(MANAGER_EMAIL);
 });
 
 afterAll(async () => {
@@ -1270,5 +1279,167 @@ describe('workbooks grant no access (D-020)', () => {
     await expect(assertDataEntitlement(viewerId, [foreignFolderId])).rejects.toBeInstanceOf(
       DataEntitlementError,
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The MANAGER role: hands maps out, authors nothing. Each block makes its own
+// map — `mapId` above is scoped to the CRUD describe.
+// ---------------------------------------------------------------------------
+
+describe('a manager distributes maps it can see', () => {
+  let sheetId: string;
+
+  beforeAll(async () => {
+    const [row] = await db
+      .insert(maps)
+      .values({
+        name: 'Manager share subject',
+        mapType: 'TABLE',
+        businessAreaId: baId,
+        createdBy: ownerId,
+      })
+      .returning();
+    sheetId = row!.id;
+  });
+
+  afterEach(async () => {
+    await db.delete(mapShares).where(eq(mapShares.mapId, sheetId));
+  });
+
+  it('refuses to share a map the manager cannot see', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/maps/${sheetId}/shares`,
+      headers: { authorization: `Bearer ${managerToken}` },
+      payload: { userId: viewerId, permissionLevel: 'VIEW' },
+    });
+    // 403 from the object gate, not the share gate: a manager holding neither
+    // a share nor an authoring grant does not see the map at all.
+    expect(res.statusCode).toBe(403);
+  });
+
+  it('shares a map it holds but does not own, which an ordinary user cannot', async () => {
+    // The same EXPORT share a migrated workbook grant writes.
+    await db.insert(mapShares).values({
+      mapId: sheetId,
+      sharedWithUserId: managerId,
+      permissionLevel: 'EXPORT',
+      sharedBy: ownerId,
+    });
+    const shared = await app.inject({
+      method: 'POST',
+      url: `/api/maps/${sheetId}/shares`,
+      headers: { authorization: `Bearer ${managerToken}` },
+      payload: { userId: outsiderId, permissionLevel: 'VIEW' },
+    });
+    expect(shared.statusCode).toBe(201);
+  });
+
+  it('still gives an ordinary user no way to re-share what was shared with them', async () => {
+    await db.insert(mapShares).values({
+      mapId: sheetId,
+      sharedWithUserId: viewerId,
+      permissionLevel: 'EDIT',
+      sharedBy: ownerId,
+    });
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/maps/${sheetId}/shares`,
+      headers: { authorization: `Bearer ${viewerToken}` },
+      payload: { userId: outsiderId, permissionLevel: 'VIEW' },
+    });
+    expect(res.statusCode).toBe(403);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Workbook-level sharing — the unit Discoverer actually granted.
+// ---------------------------------------------------------------------------
+
+describe('sharing a workbook shares its worksheets', () => {
+  let wbId: string;
+  let sheetCount: number;
+
+  beforeAll(async () => {
+    const [wb] = await db
+      .insert(workbooks)
+      .values({ name: 'GD_M.SHARE_TEST', sourceId: 99, createdBy: ownerId })
+      .returning();
+    wbId = wb!.id;
+    const rows = await db
+      .insert(maps)
+      .values([
+        { name: 'Share test \u2014 Sheet 1', mapType: 'TABLE', businessAreaId: baId, createdBy: ownerId, workbookId: wbId },
+        { name: 'Share test \u2014 Sheet 2', mapType: 'TABLE', businessAreaId: baId, createdBy: ownerId, workbookId: wbId },
+      ])
+      .returning();
+    sheetCount = rows.length;
+  });
+
+  it('writes one share per worksheet, lists who holds how much, and takes it all back', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/workbooks/${wbId}/shares`,
+      headers: { authorization: `Bearer ${adminToken}` },
+      payload: { userId: viewerId, permissionLevel: 'EXPORT' },
+    });
+    expect(res.statusCode).toBe(201);
+    expect(res.json().data.shared).toBe(sheetCount);
+
+    const listed = await app.inject({
+      method: 'GET',
+      url: `/api/workbooks/${wbId}/shares`,
+      headers: { authorization: `Bearer ${adminToken}` },
+    });
+    expect(listed.statusCode).toBe(200);
+    const held = (listed.json().data.shares as Array<{ userId: string; sheets: number }>).find(
+      (x) => x.userId === viewerId,
+    );
+    expect(held?.sheets).toBe(sheetCount);
+
+    const revoked = await app.inject({
+      method: 'DELETE',
+      url: `/api/workbooks/${wbId}/shares/${viewerId}`,
+      headers: { authorization: `Bearer ${adminToken}` },
+    });
+    expect(revoked.statusCode).toBe(200);
+    expect(revoked.json().data.revoked).toBe(sheetCount);
+  });
+
+  it('is closed to an ordinary user', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/workbooks/${wbId}/shares`,
+      headers: { authorization: `Bearer ${viewerToken}` },
+      payload: { userId: outsiderId, permissionLevel: 'VIEW' },
+    });
+    expect(res.statusCode).toBe(403);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The execution plan names every table and predicate behind a map, so it is
+// an administrator's view of it — not part of a result.
+// ---------------------------------------------------------------------------
+
+describe('the execution plan is administrator-only', () => {
+  it('refuses a non-admin before it reaches the map', async () => {
+    const [row] = await db
+      .insert(maps)
+      .values({
+        name: 'Explain subject',
+        mapType: 'TABLE',
+        businessAreaId: baId,
+        createdBy: ownerId,
+      })
+      .returning();
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/maps/${row!.id}/explain`,
+      headers: { authorization: `Bearer ${viewerToken}` },
+      payload: {},
+    });
+    expect(res.statusCode).toBe(403);
   });
 });
