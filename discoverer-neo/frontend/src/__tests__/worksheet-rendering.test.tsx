@@ -167,6 +167,24 @@ describe('worksheet format masks', () => {
       '2026-12-25 14:30:45 02 PM',
     )
   })
+
+  // `DD-MON-RRRR` is the mask on 2 732 of the live estate's 3 720 date
+  // columns. `RRRR` used to survive substitution and print itself, so the
+  // worksheet showed `30-SEP-RRRR` — the year simply missing.
+  it('renders Oracle round-year tokens as years', () => {
+    const date = new Date(2026, 8, 30) // 30 Sep 2026
+    expect(maskKind('DD-MON-RRRR')).toBe('date')
+    expect(applyDateMask(date, 'DD-MON-RRRR', 'en')).toBe('30-SEP-2026')
+    expect(applyDateMask(date, 'DD-MM-RR', 'en')).toBe('30-09-26')
+  })
+
+  // Oracle takes the name's case from the token's, and the estate has
+  // `DD-Mon-YY` masks that the old always-uppercase path could not honour.
+  it('takes a name element case from the token', () => {
+    const date = new Date(2026, 8, 30)
+    expect(applyDateMask(date, 'DD-Mon-YY', 'en')).toBe('30-Sep-26')
+    expect(applyDateMask(date, 'DD-mon-YY', 'en')).toBe('30-sep-26')
+  })
 })
 
 describe('stringifyCell', () => {
