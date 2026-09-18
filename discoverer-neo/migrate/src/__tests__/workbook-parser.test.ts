@@ -726,7 +726,10 @@ describe('parseWorkbookDocument', () => {
       // No element on the left: the expression carries it instead.
       itemRef: null,
       parameterName: 'Dt Fim',
-      expression: { tokens: '[1,49]([6,3])', formula: '[1,49](Dt Com)' },
+      // `formula` is the readable form: the token tree rendered the way
+      // Discoverer displayed it, with element references resolved to names.
+      // `[1,49]` is TRUNC.
+      expression: { tokens: '[1,49]([6,3])', formula: 'TRUNC(Dt Com)' },
     });
     expect(predicate?.expression?.bindings.items).toEqual({ '3': 'Dt Com' });
   });
@@ -819,9 +822,40 @@ describe('parseWorkbookDocument', () => {
         worksheets: [{ name: 'S' }],
       }),
     );
-    // Function codes stay as written — Oracle's code table is not available,
-    // so naming them would present a guess as fact.
+    // `[2,20]` is a CUSTOM function, and this workbook carries no name for it,
+    // so it stays as written. Builtin `[1,n]` codes do not — see below.
     expect(doc.calculations[0]?.readableFormula).toBe('[2,20](Valor,:Taxa)');
+  });
+
+  // The readable formula is the token tree RENDERED the way Discoverer showed
+  // it, not the token string with names dropped into it. Substituting alone
+  // left every builtin code in the output: 8 891 of the reference estate's
+  // 9 560 calculated fields read as `[1,102](Cap Pago,...)`.
+  it('renders builtin codes into their display form, with names resolved', () => {
+    const doc = parseWorkbookDocument(
+      buildWorkbookFixture({
+        items: [{ itemLabel: 'Cap Pago' }],
+        // [1,102] is DECODE and [1,115] is NULL, both fitted in Phase 4.1.
+        calculations: [
+          { name: 'VALOR CAP PAGO', formula: '[1,102]([6,3],[5,2,"0"],[1,115](),[6,3])' },
+        ],
+        worksheets: [{ name: 'S' }],
+      }),
+    );
+    expect(doc.calculations[0]?.readableFormula).toBe('DECODE(Cap Pago,0,NULL,Cap Pago)');
+  });
+
+  it('falls back to the substituted tokens when a code has no fitted rendering', () => {
+    const doc = parseWorkbookDocument(
+      buildWorkbookFixture({
+        items: [{ itemLabel: 'Valor' }],
+        // 9999 is in no code table, so the renderer quarantines the tree and
+        // the reader still gets every name it could resolve.
+        calculations: [{ name: 'UNFITTED', formula: '[1,9999]([6,3])' }],
+        worksheets: [{ name: 'S' }],
+      }),
+    );
+    expect(doc.calculations[0]?.readableFormula).toBe('[1,9999](Valor)');
   });
 
   it('scopes calculations to the worksheet that offers them, deduped by name', () => {

@@ -1004,7 +1004,7 @@ describe('transformWorkbook', () => {
     // form `verify --compile` renders into SQL.
     expect(map?.calculatedFields).toEqual([
       expect.objectContaining({
-        name: '[1,49](Dt Com)',
+        name: 'TRUNC(Dt Com)',
         sourceTokens: '[1,49]([6,3])',
         sourceElementId: -1,
         isHidden: true,
@@ -1205,9 +1205,10 @@ describe('transformWorkbook', () => {
     // read the `.DIS` — and improving the renderer would mean re-migrating.
     const [map] = transformWorkbook(workbook({ content: layoutWorkbook() }), 'EUL4');
     expect(map?.calculatedFields[0]).toMatchObject({
-      // `[1,1]` is SUM and is left as a code — which is exactly why `formula`
-      // is a reader's string and not a compilable one.
-      formula: '[1,1](Regiao)',
+      // `formula` is the readable form — the token tree rendered as Discoverer
+      // displayed it. It is still a reader's string, not a compilable one:
+      // `compiled_sql` is what executes, and it is built from `sourceTokens`.
+      formula: 'SUM(Regiao)',
       sourceTokens: '[1,1]([6,3])',
       sourceAttrs: {
         elementBindings: { items: { '3': 'Regiao' }, parameters: {}, functions: {} },
