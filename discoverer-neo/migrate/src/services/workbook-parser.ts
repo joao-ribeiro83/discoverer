@@ -1318,9 +1318,10 @@ export interface ConditionPredicate {
 /**
  * A parenthesised run of predicates joined by one operator.
  *
- * This is exactly what Neo's `map_conditions.group_id` expresses: rows sharing
- * a group are parenthesized together and joined by `inner`; the group as a
- * whole is joined to the previous group by `join`.
+ * Rows sharing a `map_conditions.group_id` are parenthesized together, so an
+ * AND-joined group becomes one `group_id`. Groups joined by OR do not: the whole
+ * condition becomes one `group_id` instead, or its OR would bind to the other
+ * conditions on the map — see `transformWorkbook`.
  */
 export interface ConditionGroup {
   /** How this group joins the one before it. 'AND' on the first group. */
@@ -1621,10 +1622,9 @@ function readPredicates(node: FormulaNode): ConditionPredicate[] | string {
  *
  * Measured over the source EUL's 3 395 conditions that is enough for all of
  * them — 92.6 % are a single test, 5.9 % a flat AND, 1.4 % a flat OR, and the
- * two remaining conditions are an OR of ANDs, which is exactly what a group
- * per AND expresses. See `EUL_SCHEMA_GROUND_TRUTH.md` §7.5. Anything deeper is
- * reported instead, rather than being reshaped into something that reads the
- * same and filters differently.
+ * two remaining conditions are an OR of ANDs. See `EUL_SCHEMA_GROUND_TRUTH.md`
+ * §7.5. Anything deeper is reported instead, rather than being reshaped into
+ * something that reads the same and filters differently.
  */
 export function planCondition(tree: FormulaNode | null): ConditionPlan {
   if (tree === null) return { groups: [], unsupported: 'the condition has no token tree', depth: 0 };
