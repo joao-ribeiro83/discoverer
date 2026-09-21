@@ -1,6 +1,8 @@
 import fs from 'node:fs';
 import PDFDocument from 'pdfkit';
+import { totalLabelsFor } from './total-labels.js';
 import {
+  headingLines,
   cellText,
   PROGRESS_ROW_INTERVAL,
   type ExportSource,
@@ -119,6 +121,7 @@ export async function writePdf(
   const printGridLines = pageSetup?.printGridLines ?? true;
   const printHeadings = pageSetup?.printHeadings ?? true;
   const dateFormat = new Intl.DateTimeFormat(options.locale ?? 'en');
+  const header = headingLines(options.heading, totalLabelsFor(options.locale), options.locale);
 
   const doc = new PDFDocument({
     size: 'A4',
@@ -227,12 +230,31 @@ export async function writePdf(
     cursorY += ROW_HEIGHT;
   }
 
+  /** The document header (title, description, parameters, run time) — first page only. */
+  function drawDocumentHeader(): void {
+    if (header.length === 0) return;
+    const width = doc.page.width - doc.page.margins.left - doc.page.margins.right;
+    header.forEach((line, i) => {
+      const first = i === 0 && line !== '';
+      doc.font(first ? 'Helvetica-Bold' : 'Helvetica').fontSize(first ? 11 : FONT_SIZE + 1);
+      if (line === '') {
+        cursorY += FONT_SIZE;
+        return;
+      }
+      const h = doc.heightOfString(line, { width });
+      doc.text(line, contentLeft, cursorY, { width });
+      cursorY += h + 2;
+    });
+    cursorY += ROW_HEIGHT / 2;
+  }
+
   function renderPageChrome(): void {
     contentTop = doc.page.margins.top + (hasHeaderText ? chromeHeight : 0);
     contentBottom = doc.page.height - doc.page.margins.bottom - (hasFooterText ? chromeHeight : 0);
     contentLeft = doc.page.margins.left;
     cursorY = contentTop;
     drawHeaderFooter();
+    if (pageNumber === 1) drawDocumentHeader();
     if (printHeadings) drawHeaderRow();
   }
 

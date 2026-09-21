@@ -19,6 +19,18 @@ export default defineConfig({
     baseURL: `http://localhost:${PORT}`,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
+    // The product default language is Portuguese (DEFAULT_LOCALE); the specs
+    // assert English copy, so every context starts with English remembered
+    // the same way a returning visitor's browser would.
+    storageState: {
+      cookies: [],
+      origins: [
+        {
+          origin: `http://localhost:${PORT}`,
+          localStorage: [{ name: 'discoverer-neo-locale', value: 'en' }],
+        },
+      ],
+    },
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {

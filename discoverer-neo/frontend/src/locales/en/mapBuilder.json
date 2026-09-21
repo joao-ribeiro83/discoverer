@@ -201,6 +201,16 @@
         "conditions": "Conditions",
         "parameters": "Parameters",
         "calculatedFields": "Calculated fields"
+      },
+      "insertVariable": "Insert variable",
+      "variableHint": "Variables such as &Date are replaced with real values each time the map runs or is exported.",
+      "variables": {
+        "date": "Run date",
+        "time": "Run time",
+        "workbook": "Workbook name",
+        "worksheet": "Worksheet name",
+        "parameters": "Parameters entered at run time",
+        "noParameters": "No parameters defined yet"
       }
     },
     "conditions": {

@@ -376,7 +376,7 @@ export function MapBuilderPage() {
               <MapCanvas onConfigure={setConfigKey} />
             </div>
             {(result || runMutation.isPending || runMutation.isError) && (
-              <div className="h-64 shrink-0 border-t">
+              <div className="h-[45%] min-h-64 shrink-0 border-t">
                 <ExecutionPanel
                   mapId={mapId}
                   mapName={mapName}

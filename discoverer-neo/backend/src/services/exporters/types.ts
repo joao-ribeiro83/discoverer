@@ -12,7 +12,54 @@ export interface ExportSource {
   batches: AsyncIterable<Record<string, unknown>[]>;
 }
 
+/**
+ * The document header written above the column labels of every export: what
+ * Discoverer printed above a worksheet. `title`/`description` arrive with
+ * their `&Date`/`&Time`/`&<ParamName>` tokens already substituted with the
+ * values this run used (`resolveHeading`), and `parameters` lists those same
+ * values so a reader of the file knows exactly what was asked for.
+ */
+export interface ExportHeading {
+  title: string | null;
+  description: string | null;
+  parameters: Array<{ name: string; value: string }>;
+  runAt: Date;
+}
+
+/**
+ * The header as plain lines, one per output row. Shared by all three writers
+ * so the file formats agree on what the header says; only the typography
+ * differs. Blank lines separate the three blocks (text, parameters, run time).
+ */
+export function headingLines(
+  heading: ExportHeading | undefined,
+  labels: { parameters: string; runAt: string },
+  locale?: string,
+): string[] {
+  if (!heading) return [];
+  const lines: string[] = [];
+  const text = [heading.title, heading.description]
+    .filter((t): t is string => !!t && t.trim() !== '')
+    .flatMap((t) => t.split(/\r?\n/))
+    .map((l) => l.trimEnd())
+    // The description opens by repeating the title on most migrated maps.
+    .filter((l, i, all) => all.indexOf(l) === i);
+  lines.push(...text);
+  if (heading.parameters.length > 0) {
+    if (lines.length > 0) lines.push('');
+    lines.push(labels.parameters);
+    for (const p of heading.parameters) lines.push(`${p.name}: ${p.value}`);
+  }
+  if (lines.length > 0) lines.push('');
+  lines.push(`${labels.runAt}: ${heading.runAt.toLocaleString(locale ?? 'en')}`);
+  return lines;
+}
+
 export interface ExportWriteOptions {
+  /** Document header to write above the column labels; omitted = none. */
+  heading?: ExportHeading;
+  /** Locale for the header's labels and its run-time stamp. Defaults to `en`. */
+  locale?: string;
   /**
    * Called as rows are written, with the running total. Exporters call this
    * once per batch (not per row) to keep progress cheap.

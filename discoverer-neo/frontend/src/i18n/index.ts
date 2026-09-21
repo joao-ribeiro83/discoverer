@@ -1,6 +1,5 @@
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
-import LanguageDetector from 'i18next-browser-languagedetector'
 
 /**
  * Supported UI locales. European variants were an explicit product decision
@@ -9,6 +8,17 @@ import LanguageDetector from 'i18next-browser-languagedetector'
 export const SUPPORTED_LOCALES = ['en', 'pt-PT', 'fr-FR', 'es-ES'] as const
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number]
 
+/**
+ * The language a visitor sees before any preference is known. Portuguese is
+ * the product default for every account (the users table defaults to it too).
+ */
+export const DEFAULT_LOCALE: SupportedLocale = 'pt-PT'
+
+/**
+ * Where a key missing from the active locale is read from. English is the
+ * source language every other locale is translated from, so it is the only
+ * one guaranteed complete — this is not the UI default, DEFAULT_LOCALE is.
+ */
 export const FALLBACK_LOCALE: SupportedLocale = 'en'
 
 /** Human-readable label for each locale, shown in the language switcher. */
@@ -19,8 +29,19 @@ export const LOCALE_LABELS: Record<SupportedLocale, string> = {
   'es-ES': 'Español (España)',
 }
 
-/** localStorage key the language detector reads/writes the active locale under. */
+/** localStorage key the active locale is remembered under between visits. */
 export const LOCALE_STORAGE_KEY = 'discoverer-neo-locale'
+
+function readStoredLocale(): SupportedLocale | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const stored = window.localStorage.getItem(LOCALE_STORAGE_KEY)
+    return isSupportedLocale(stored) ? stored : null
+  } catch {
+    // localStorage can throw in locked-down/private-browsing contexts.
+    return null
+  }
+}
 
 /** Every translation namespace. Keep in step with the files in `src/locales/en/`. */
 export const NAMESPACES = [
@@ -72,12 +93,13 @@ export function isSupportedLocale(code: string | undefined | null): code is Supp
 
 void i18n
   // Resolution order (spec §4): the authenticated user's saved locale is applied
-  // explicitly on login/`/me` (see useAuth). For anonymous or pre-login visits,
-  // the detector falls back to localStorage → browser `navigator.language` → en.
-  .use(LanguageDetector)
+  // explicitly on login/`/me` (see useAuth). For anonymous or pre-login visits:
+  // the locale remembered in localStorage, else DEFAULT_LOCALE. The browser
+  // language is deliberately not consulted — Portuguese is the product default.
   .use(initReactI18next)
   .init({
     resources,
+    lng: readStoredLocale() ?? DEFAULT_LOCALE,
     supportedLngs: [...SUPPORTED_LOCALES],
     fallbackLng: FALLBACK_LOCALE,
     ns: [...NAMESPACES],
@@ -88,11 +110,6 @@ void i18n
     // suspend on. Disabling Suspense keeps components that render without a
     // Suspense boundary (including many unit tests) from throwing.
     react: { useSuspense: false },
-    detection: {
-      order: ['localStorage', 'navigator'],
-      lookupLocalStorage: LOCALE_STORAGE_KEY,
-      caches: ['localStorage'],
-    },
     returnNull: false,
   })
   .then(() => {
@@ -103,10 +120,16 @@ void i18n
     }
   })
 
-// Keep the document language attribute in sync for a11y / screen readers.
+// Keep the document language attribute in sync for a11y / screen readers, and
+// remember the choice for the next visit.
 i18n.on('languageChanged', (lng) => {
   if (typeof document !== 'undefined') {
     document.documentElement.setAttribute('lang', lng)
+  }
+  try {
+    window.localStorage.setItem(LOCALE_STORAGE_KEY, lng)
+  } catch {
+    // Best-effort — the UI language has already changed.
   }
 })
 

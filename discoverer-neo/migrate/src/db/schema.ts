@@ -244,7 +244,7 @@ export const themeEnum = pgEnum('theme', ['light', 'dark', 'high-contrast']);
  * never [data-palette]) — that AAA-contrast guarantee must not depend on
  * which palette a user last picked.
  */
-export const colorPaletteEnum = pgEnum('color_palette', ['default', 'navy']);
+export const colorPaletteEnum = pgEnum('color_palette', ['default', 'navy', 'forest', 'wine', 'ocean', 'ochre']);
 
 // ---------------------------------------------------------------------------
 // 1. users
@@ -282,7 +282,7 @@ export const users = pgTable(
     passwordHash: varchar('password_hash', { length: 255 }).notNull(),
     name: varchar('name', { length: 255 }).notNull(),
     role: userRoleEnum('role').notNull().default('USER'),
-    locale: localeEnum('locale').notNull().default('en'),
+    locale: localeEnum('locale').notNull().default('pt-PT'),
     theme: themeEnum('theme').notNull().default('light'),
     colorPalette: colorPaletteEnum('color_palette').notNull().default('navy'),
     createdAt: timestamp('created_at', { withTimezone: true })

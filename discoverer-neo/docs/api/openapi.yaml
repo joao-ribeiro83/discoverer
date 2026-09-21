@@ -5737,6 +5737,10 @@ paths:
                         enum:
                           - default
                           - navy
+                          - forest
+                          - wine
+                          - ocean
+                          - ochre
         '401':
           description: Default Response
           content:
@@ -5775,6 +5779,10 @@ paths:
                   enum:
                     - default
                     - navy
+                    - forest
+                    - wine
+                    - ocean
+                    - ochre
       security:
         - bearerAuth: []
       responses:
@@ -5806,6 +5814,10 @@ paths:
                         enum:
                           - default
                           - navy
+                          - forest
+                          - wine
+                          - ocean
+                          - ochre
         '400':
           description: Default Response
           content:

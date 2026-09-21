@@ -1,6 +1,8 @@
 import ExcelJS from 'exceljs';
 import type { ResultColumn } from '../map-execution.service.js';
+import { totalLabelsFor } from './total-labels.js';
 import {
+  headingLines,
   cellValue,
   cellText,
   isDateType,
@@ -243,6 +245,7 @@ export async function writeXlsx(
 
   const { columns } = source;
   const formats = columns.map(excelNumberFormat);
+  const header = headingLines(options.heading, totalLabelsFor(options.locale), options.locale);
   const iterator = source.batches[Symbol.asyncIterator]();
 
   // Pull batches until the sizing sample is full (or the data runs out). These
@@ -272,15 +275,29 @@ export async function writeXlsx(
 
   const openSheet = (name: string): ExcelJS.Worksheet => {
     const sheet = workbook.addWorksheet(name);
-    // Setting `columns` writes the header row and fixes widths; in a streaming
-    // writer this must happen before the sheet's first data row is committed.
+    // `columns` fixes keys and widths; in a streaming writer this must happen
+    // before the sheet's first row is committed. The column labels are NOT
+    // passed as `header` here: the document header rows have to come first,
+    // and ExcelJS writes a `header` at row 1.
     sheet.columns = columns.map((column, i) => ({
-      header: column.label,
       key: column.name,
       width: widths[i],
       style: formats[i] ? { numFmt: formats[i] } : undefined,
     }));
-    sheet.getRow(1).font = { bold: true };
+    header.forEach((line, i) => {
+      const row = sheet.addRow([line]);
+      // A text cell in a numeric column must not inherit that column's numFmt.
+      row.getCell(1).numFmt = '@';
+      if (i === 0 && line !== '') row.font = { bold: true, size: 12 };
+      row.commit();
+    });
+    if (header.length > 0) sheet.addRow([]).commit();
+    const labelRow = sheet.addRow(columns.map((c) => c.label));
+    labelRow.font = { bold: true };
+    labelRow.eachCell((cell) => {
+      cell.numFmt = '@';
+    });
+    labelRow.commit();
     return sheet;
   };
 

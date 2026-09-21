@@ -135,7 +135,7 @@ export function WorkbookShareDialog({
             onChange={(e) => setSearch(e.target.value)}
           />
           {usersQuery.data && usersQuery.data.length > 0 && (
-            <div className="max-h-32 overflow-auto rounded-md border divide-y">
+            <div className="max-h-[40vh] overflow-auto rounded-md border divide-y">
               {usersQuery.data.map((u) => (
                 <button
                   key={u.id}
@@ -184,7 +184,7 @@ export function WorkbookShareDialog({
         ) : (sharesQuery.data?.shares.length ?? 0) === 0 ? (
           <p className="text-sm text-muted-foreground">{t('mapViewer:workbookShare.none')}</p>
         ) : (
-          <ul className="max-h-40 space-y-1 overflow-auto">
+          <ul className="max-h-[40vh] space-y-1 overflow-auto">
             {sharesQuery.data?.shares.map((s) => (
               <li key={s.userId} className="flex items-center justify-between gap-2 text-sm">
                 <span className="truncate">

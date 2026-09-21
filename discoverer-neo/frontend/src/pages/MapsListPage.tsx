@@ -220,7 +220,7 @@ export function MapsListPage() {
             <span>{t('common:labels.updatedAt')}</span>
             <span className="text-right">{t('common:labels.actions')}</span>
           </div>
-          <div ref={parentRef} className="h-[560px] overflow-auto">
+          <div ref={parentRef} className="h-[max(320px,calc(100vh-22rem))] overflow-auto">
             <div style={{ height: rowVirtualizer.getTotalSize(), position: 'relative' }}>
               {rowVirtualizer.getVirtualItems().map((vi) => {
                 const row = filtered[vi.index]

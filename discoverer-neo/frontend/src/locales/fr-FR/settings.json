@@ -23,7 +23,11 @@
     "label": "Palette",
     "options": {
       "default": "Classique",
-      "navy": "Bleu marine"
+      "navy": "Bleu marine",
+      "forest": "Forêt",
+      "wine": "Vin",
+      "ocean": "Océan",
+      "ochre": "Ocre"
     }
   },
   "saved": "Préférences enregistrées"
