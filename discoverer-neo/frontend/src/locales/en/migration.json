@@ -8,7 +8,8 @@
     "analyze": "Analyze",
     "runDryRun": "Run dry run",
     "runMigration": "Run migration",
-    "reimportMaps": "Re-import maps"
+    "reimportMaps": "Re-import maps",
+    "reimportAll": "Re-import everything"
   },
   "source": {
     "title": "Source",
@@ -24,7 +25,8 @@
     "forceEul5": "Force EUL5",
     "dryRunLabel": "Dry run (validate without writing)",
     "liveMigrationWarning": "A live migration writes into this Discoverer Neo database. Run a dry run first and review the report below.",
-    "reimportMapsHelp": "Re-import maps rebuilds only the maps of a database that has already been migrated, from the workbooks in the EUL. It replaces every map in the \"Migrated Workbooks\" business area — edits made to one since the original migration are lost — and leaves users, folders, items and grants untouched. Run it as a dry run first."
+    "reimportMapsHelp": "Re-import maps rebuilds only the maps of a database that has already been migrated, from the workbooks in the EUL. It replaces every map in the \"Migrated Workbooks\" business area — edits made to one since the original migration are lost — and leaves users, folders, items and grants untouched. Run it as a dry run first.",
+    "reimportAllHelp": "Re-import everything replays the whole migration with the current version of the migrator and rewrites, object by object, whatever now differs: business areas, folders, items, joins, hierarchies, functions, users, grants and maps. Nothing is deleted and map ids survive, so schedules and shares are kept; objects removed from the EUL are only reported. A live run ends by compiling the calculated fields. Run it as a dry run first."
   },
   "detected": {
     "title": "Detected source",
@@ -90,7 +92,13 @@
     "droppedLogsNotice": "({{count}} earlier line(s) trimmed)",
     "noLogEntries": "No log entries yet.",
     "mapsReimportSummary": "Replaced {{replaced}} map(s) from {{workbooks}} workbook(s) holding {{worksheets}} worksheet(s), in {{duration}}s.",
-    "mapsReimportUnresolved": "{{columns}} column(s) and {{conditions}} condition(s) could not be migrated. See the log above."
+    "mapsReimportUnresolved": "{{columns}} column(s) and {{conditions}} condition(s) could not be migrated. See the log above.",
+    "deltaSummary": "{{verb}} the differences found over {{objects}} source object(s), in {{duration}}s.",
+    "deltaNoop": "Nothing differs from the last recorded run ({{objects}} source objects).",
+    "deltaWouldWrite": "Would write",
+    "deltaWrote": "Wrote",
+    "deltaRefused": "{{count}} object(s) were refused (removed from the EUL, or no longer in Neo). See the log above.",
+    "deltaVerify": "Verifier after the run: {{status}}."
   },
   "tables": {
     "users": "Users",
@@ -135,6 +143,7 @@
     "seeLogBelow": "See the log below.",
     "mapReimportStarted": "Map re-import started",
     "migrationBlockers": "Migration finished with blockers",
-    "migrationBlockersBody": "The rows landed, but the run's own reconciliation did not add up. Run dn-migrate verify against the target before using this estate."
+    "migrationBlockersBody": "The rows landed, but the run's own reconciliation did not add up. Run dn-migrate verify against the target before using this estate.",
+    "deltaStarted": "Re-import of everything started"
   }
 }

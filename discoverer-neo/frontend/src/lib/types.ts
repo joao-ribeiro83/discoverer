@@ -1011,7 +1011,19 @@ export interface MigrationLogLine {
 }
 
 /** 'FULL' is the whole pipeline; 'MAPS' rebuilds only the migrated maps. */
-export type MigrationJobKind = 'FULL' | 'MAPS'
+export type MigrationJobKind = 'FULL' | 'MAPS' | 'DELTA'
+
+/** Mirrors the backend's DeltaSummary — what a "re-import everything" job reports. */
+export interface DeltaSummary {
+  dryRun: boolean
+  adopted: boolean
+  noop: boolean
+  objects: number
+  durationMs: number
+  counts: Record<string, Record<string, number>>
+  refused: string[]
+  verifyStatus: string | null
+}
 
 export interface MigrationJob {
   id: string
@@ -1035,6 +1047,8 @@ export interface MigrationJob {
   result: MigrationResult | null
   /** Set instead of `result` when `kind` is 'MAPS'. */
   mapsResult: MapReimportResult | null
+  /** Set instead of `result` when `kind` is 'DELTA'. */
+  deltaResult: DeltaSummary | null
   error: string | null
 }
 

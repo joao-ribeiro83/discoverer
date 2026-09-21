@@ -437,7 +437,8 @@ export function MapBuilderPage() {
                   value={rightWidth}
                   min={220}
                   max={720}
-                  onDelta={resize('right', setRightWidth, 220, 720)}
+                  // The bar sits on the panel's LEFT edge: dragging right narrows it.
+                  onDelta={(d) => resize('right', setRightWidth, 220, 720)(-d)}
                 />
                 <aside style={{ width: rightWidth }}>
                   <RightPanelTabs />

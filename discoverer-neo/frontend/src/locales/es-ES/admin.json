@@ -79,7 +79,9 @@
       "itemsHint": "Cada columna marcada se convierte en un elemento. Las descripciones proceden de los comentarios de columna en Oracle; edítelas antes de guardar.",
       "descriptionPlaceholder": "Descripción",
       "selectAll": "Seleccionar todas",
-      "selectNone": "Limpiar"
+      "selectNone": "Limpiar",
+      "searchObjectsPlaceholder": "Filtrar por nombre o comentario…",
+      "objectsShown": "{{shown}} de {{total}}"
     },
     "toast": {
       "discoveryFailed": "Error al descubrir",
