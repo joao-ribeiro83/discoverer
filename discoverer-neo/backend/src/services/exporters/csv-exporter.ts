@@ -4,6 +4,7 @@ import { format as formatCsv } from 'fast-csv';
 import {
   cellValue,
   cellText,
+  headingText,
   isDateType,
   PROGRESS_ROW_INTERVAL,
   type ExportSource,
@@ -61,7 +62,11 @@ export async function writeCsv(
     (c) => isDateType(c.dataType) && !/TIMESTAMP/i.test(c.dataType ?? ''),
   );
 
-  const csv = formatCsv({ headers: columns.map((c) => c.label) });
+  // Column labels are written as an ordinary row so the document header can
+  // precede them — fast-csv's `headers` option can't. Discoverer's layout:
+  // header on row 1, row 2 blank, labels on row 3.
+  const csv = formatCsv({ headers: false });
+  const header = headingText(options.heading);
   const out = fs.createWriteStream(filePath);
   out.write(UTF8_BOM);
 
@@ -71,6 +76,11 @@ export async function writeCsv(
   // A generator feeding `pipeline` gives us backpressure for free: it is only
   // pulled from as fast as the file stream drains.
   async function* rows(): AsyncGenerator<string[]> {
+    if (header !== null) {
+      yield [header];
+      yield [];
+    }
+    yield columns.map((c) => c.label);
     for await (const batch of source.batches) {
       for (const row of batch) {
         yield columns.map((column, i) => toText(row[column.name], dateOnly[i]!));

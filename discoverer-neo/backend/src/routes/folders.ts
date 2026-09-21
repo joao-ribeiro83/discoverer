@@ -103,6 +103,7 @@ const introspectedColumnSchema = {
     dataType: { type: 'string' },
     dataLength: { type: ['integer', 'null'] },
     nullable: { type: 'boolean' },
+    comments: { type: ['string', 'null'] },
   },
 } as const;
 
@@ -111,6 +112,8 @@ const introspectedTableSchema = {
   properties: {
     tableName: { type: 'string' },
     tableOwner: { type: 'string' },
+    objectType: { type: 'string', enum: ['TABLE', 'VIEW'] },
+    comments: { type: ['string', 'null'] },
     columns: { type: 'array', items: introspectedColumnSchema },
   },
 } as const;

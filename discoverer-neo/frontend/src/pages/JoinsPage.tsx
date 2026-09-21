@@ -296,7 +296,7 @@ export function JoinsPage() {
           </div>
 
           {suggestions.length > 0 && (
-            <div className="max-h-32 space-y-1 overflow-y-auto rounded-md border p-2">
+            <div className="max-h-[40vh] space-y-1 overflow-y-auto rounded-md border p-2">
               {suggestions.map((s, i) => (
                 <button
                   type="button"

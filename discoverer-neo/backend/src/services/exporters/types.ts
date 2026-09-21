@@ -12,7 +12,43 @@ export interface ExportSource {
   batches: AsyncIterable<Record<string, unknown>[]>;
 }
 
+/**
+ * The document header of an export: what Discoverer printed above a
+ * worksheet, and what it wrote into the first row of an Excel export (the
+ * data started on row 3, row 2 left blank). `title`/`description` arrive with
+ * their `&Date`/`&Time`/`&<ParamName>` tokens already substituted with the
+ * values this run used (`resolveHeading`); `parameters` lists the values that
+ * the text did NOT already mention, so every parameter the run used is on
+ * the page exactly once.
+ */
+export interface ExportHeading {
+  title: string | null;
+  description: string | null;
+  parameters: Array<{ name: string; value: string }>;
+  runAt: Date;
+}
+
+/**
+ * The header as one block of text (line breaks inside), or null when there is
+ * nothing to print. Shared by all three writers so the formats agree on what
+ * the header says; only the typography differs.
+ */
+export function headingText(heading: ExportHeading | undefined): string | null {
+  if (!heading) return null;
+  const lines = [heading.title, heading.description]
+    .filter((t): t is string => !!t && t.trim() !== '')
+    .flatMap((t) => t.split(/\r?\n/))
+    .map((l) => l.trimEnd())
+    // The description opens by repeating the title on most migrated maps.
+    .filter((l, i, all) => all.indexOf(l) === i);
+  for (const p of heading.parameters) lines.push(`${p.name}: ${p.value}`);
+  const text = lines.join('\n').trim();
+  return text === '' ? null : text;
+}
+
 export interface ExportWriteOptions {
+  /** Document header to write above the column labels; omitted = none. */
+  heading?: ExportHeading;
   /**
    * Called as rows are written, with the running total. Exporters call this
    * once per batch (not per row) to keep progress cheap.

@@ -765,9 +765,22 @@ export async function getById(id: string): Promise<MapWithDetails | null> {
   // title but not the description left the tokens on screen.
   return {
     ...map,
-    description: substituteTitleTokens(map.description, defaultParamValues(children.parameters)),
+    description: substituteTitleTokens(
+      map.description,
+      withNameTokens(defaultParamValues(children.parameters), map.name),
+    ),
     ...children,
   };
+}
+
+/**
+ * Discoverer's other title text variables: `&Workbook` and `&Worksheet`. A Neo
+ * map is one worksheet, imported under its own name, so both print that name.
+ */
+function withNameTokens(values: globalThis.Map<string, string>, mapName: string) {
+  values.set('Workbook', mapName);
+  values.set('Worksheet', mapName);
+  return values;
 }
 
 /** A map's parameter defaults, as `substituteTitleTokens` wants them. */
@@ -793,9 +806,19 @@ export async function resolveHeading(
   mapId: string,
   supplied: Record<string, unknown> = {},
   now: Date = new Date(),
-): Promise<{ title: string | null; description: string | null }> {
+): Promise<{
+  title: string | null;
+  description: string | null;
+  /** Parameters with a value this run that the heading text does not already print. */
+  parameters: Array<{ name: string; value: string }>;
+  runAt: Date;
+}> {
   const [[map], parameterRows] = await Promise.all([
-    db.select({ description: maps.description }).from(maps).where(eq(maps.id, mapId)).limit(1),
+    db
+      .select({ name: maps.name, description: maps.description })
+      .from(maps)
+      .where(eq(maps.id, mapId))
+      .limit(1),
     db.select().from(mapParameters).where(eq(mapParameters.mapId, mapId)),
   ]);
   const [layout] = await db
@@ -816,9 +839,20 @@ export async function resolveHeading(
     }
   }
 
+  // The heading text already prints the parameters it names as `&<Name>`
+  // tokens; only the ones it does not mention are listed after it, so each
+  // value appears on the page exactly once.
+  const rawText = `${layout?.title ?? ''}\n${map?.description ?? ''}`.toLowerCase();
+  const parameters = parameterRows
+    .filter((p) => values.has(p.name) && !rawText.includes(`&${p.name.toLowerCase()}`))
+    .map((p) => ({ name: p.name, value: values.get(p.name)! }));
+  if (map) withNameTokens(values, map.name);
+
   return {
     title: substituteTitleTokens(layout?.title ?? null, values, now),
     description: substituteTitleTokens(map?.description ?? null, values, now),
+    parameters,
+    runAt: now,
   };
 }
 

@@ -20,6 +20,12 @@ import type { MapWithDetails, ExecuteResult } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import { useToast } from '@/hooks/use-toast'
 import { useMapExport } from '@/hooks/useMapExport'
+const SIZE_KEYS = {
+  left: 'discoverer-neo-builder-left',
+  right: 'discoverer-neo-builder-right',
+  results: 'discoverer-neo-builder-results',
+} as const
+
 import {
   useMapBuilderStore,
   columnLabel,
@@ -32,6 +38,7 @@ import { ColumnConfigDialog } from '@/components/map-builder/ColumnConfigDialog'
 import { RightPanelTabs } from '@/components/map-builder/panels/RightPanelTabs'
 import { ExecutionPanel } from '@/components/map-builder/ExecutionPanel'
 import { PlanPreflight } from '@/components/map-builder/PlanPreflight'
+import { ResizeHandle, readStoredSize, storeSize, clamp } from '@/components/ui/resize-handle'
 import { downloadXml } from '@/components/map-builder/export-utils'
 import {
   ParameterPromptDialog,
@@ -56,6 +63,17 @@ export function MapBuilderPage() {
   const [lastParameters, setLastParameters] = useState<Record<string, unknown>>({})
   const [paramPromptOpen, setParamPromptOpen] = useState(false)
   const [rightOpen, setRightOpen] = useState(true)
+  // The three draggable zones, remembered between visits.
+  const [leftWidth, setLeftWidth] = useState(() => readStoredSize(SIZE_KEYS.left, 250))
+  const [rightWidth, setRightWidth] = useState(() => readStoredSize(SIZE_KEYS.right, 300))
+  const [resultsHeight, setResultsHeight] = useState(() => readStoredSize(SIZE_KEYS.results, 320))
+  const resize = (key: keyof typeof SIZE_KEYS, set: (f: (v: number) => number) => void, min: number, max: number) =>
+    (delta: number) =>
+      set((v) => {
+        const next = clamp(v + delta, min, max)
+        storeSize(SIZE_KEYS[key], next)
+        return next
+      })
   const [activeLabel, setActiveLabel] = useState<string | null>(null)
 
   const mapId = useMapBuilderStore((s) => s.mapId)
@@ -366,9 +384,17 @@ export function MapBuilderPage() {
         onDragEnd={handleDragEnd}
       >
         <div className="flex min-h-0 flex-1 overflow-x-auto">
-          <aside className="w-[250px] shrink-0 border-r">
+          <aside className="shrink-0" style={{ width: leftWidth }}>
             <BusinessAreaTree />
           </aside>
+          <ResizeHandle
+            direction="col"
+            aria-label={t('mapBuilder:page.resizeTree')}
+            value={leftWidth}
+            min={160}
+            max={600}
+            onDelta={resize('left', setLeftWidth, 160, 600)}
+          />
 
           <div className="flex min-w-[360px] flex-1 flex-col">
             <PlanPreflight />
@@ -376,7 +402,16 @@ export function MapBuilderPage() {
               <MapCanvas onConfigure={setConfigKey} />
             </div>
             {(result || runMutation.isPending || runMutation.isError) && (
-              <div className="h-64 shrink-0 border-t">
+              <>
+                <ResizeHandle
+                  direction="row"
+                  aria-label={t('mapBuilder:page.resizeResults')}
+                  value={resultsHeight}
+                  min={120}
+                  max={1200}
+                  onDelta={(d) => resize('results', setResultsHeight, 120, 1200)(-d)}
+                />
+                <div className="shrink-0" style={{ height: resultsHeight }}>
                 <ExecutionPanel
                   mapId={mapId}
                   mapName={mapName}
@@ -388,15 +423,27 @@ export function MapBuilderPage() {
                   onResultChange={setResult}
                   onClose={() => setResult(null)}
                 />
-              </div>
+                </div>
+              </>
             )}
           </div>
 
-          <div className="flex shrink-0 border-l">
+          <div className="flex shrink-0">
             {rightOpen && (
-              <aside className="w-[300px]">
-                <RightPanelTabs />
-              </aside>
+              <>
+                <ResizeHandle
+                  direction="col"
+                  aria-label={t('mapBuilder:page.resizePanel')}
+                  value={rightWidth}
+                  min={220}
+                  max={720}
+                  // The bar sits on the panel's LEFT edge: dragging right narrows it.
+                  onDelta={(d) => resize('right', setRightWidth, 220, 720)(-d)}
+                />
+                <aside style={{ width: rightWidth }}>
+                  <RightPanelTabs />
+                </aside>
+              </>
             )}
             <button
               type="button"

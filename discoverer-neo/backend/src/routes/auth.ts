@@ -442,7 +442,7 @@ export default function authRoutes(fastify: FastifyInstance) {
           email: user.email,
           name: user.name,
           role: user.role,
-          locale: row?.locale ?? 'en',
+          locale: row?.locale ?? 'pt-PT',
           theme: row?.theme ?? 'light',
           colorPalette: row?.colorPalette ?? 'navy',
           mustChangePassword: row?.mustChangePassword ?? false,

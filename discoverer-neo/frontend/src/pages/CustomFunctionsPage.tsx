@@ -445,7 +445,7 @@ function DatabaseFunctionSearch({
 
       {results.isError && <p className="text-sm text-destructive">{getErrorMessage(results.error)}</p>}
       {results.data && (
-        <div className="max-h-56 overflow-y-auto rounded-md border">
+        <div className="max-h-[45vh] overflow-y-auto rounded-md border">
           {results.data.functions.length === 0 ? (
             <p className="p-3 text-sm text-muted-foreground">{t('admin:customFunctions.search.noResults')}</p>
           ) : (

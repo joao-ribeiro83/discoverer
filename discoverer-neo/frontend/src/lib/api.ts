@@ -330,10 +330,22 @@ export const apiClient = {
         undefined,
         { params: { tableOwner } }
       ),
-    tables: (id: string, tableOwner?: string) =>
-      api.get<Envelope<{ tables: IntrospectedTable[]; count: number }>>(`/data-sources/${id}/tables`, {
-        params: { tableOwner },
-      }),
+    // One page; the server caps a page at 1000 objects (F-14). `tablesAll`
+    // walks every page so a dialog can offer the whole schema.
+    tables: (id: string, tableOwner?: string, page: { limit?: number; offset?: number } = {}) =>
+      api.get<Envelope<{ tables: IntrospectedTable[]; count: number; total: number; limit: number; offset: number }>>(
+        `/data-sources/${id}/tables`,
+        { params: { tableOwner, ...page } },
+      ),
+    tablesAll: async (id: string, tableOwner?: string): Promise<IntrospectedTable[]> => {
+      const limit = 1000
+      const all: IntrospectedTable[] = []
+      for (let offset = 0; ; offset += limit) {
+        const { data } = (await apiClient.dataSources.tables(id, tableOwner, { limit, offset })).data
+        all.push(...data.tables)
+        if (data.tables.length === 0 || all.length >= data.total) return all
+      }
+    },
     importTables: (
       id: string,
       data: { tableNames: string[]; tableOwner: string; businessAreaId: string }
@@ -527,6 +539,9 @@ export const apiClient = {
     // migration docs.
     reimportMaps: (data: StartMapReimportInput) =>
       api.post<Envelope<MigrationJob>>('/migration/reimport-maps', data),
+    // Re-imports every object in place with the current migrator (delta).
+    reimportAll: (data: StartMapReimportInput) =>
+      api.post<Envelope<MigrationJob>>('/migration/delta', data),
     listJobs: () => api.get<Envelope<MigrationJob[]>>('/migration/jobs'),
     getJob: (jobId: string) => api.get<Envelope<MigrationJob>>(`/migration/jobs/${jobId}`),
   },

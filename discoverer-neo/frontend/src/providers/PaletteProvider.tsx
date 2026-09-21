@@ -11,7 +11,7 @@ import { apiClient } from '@/lib/api'
 import { useAuthStore } from '@/store/auth'
 
 /** Matches the backend's `colorPaletteEnum` (backend/src/db/schema.ts) exactly. */
-export const SUPPORTED_PALETTES = ['default', 'navy'] as const
+export const SUPPORTED_PALETTES = ['default', 'navy', 'forest', 'wine', 'ocean', 'ochre'] as const
 export type ColorPalette = (typeof SUPPORTED_PALETTES)[number]
 
 /**

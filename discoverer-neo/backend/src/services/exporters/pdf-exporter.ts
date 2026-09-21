@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import PDFDocument from 'pdfkit';
 import {
+  headingText,
   cellText,
   PROGRESS_ROW_INTERVAL,
   type ExportSource,
@@ -36,8 +37,18 @@ export interface PdfPageSetup {
   printHeadings?: boolean | null;
 }
 
+/** What a user can choose in the PDF export dialog, on top of `map_page_setup`. */
+export interface PdfExportRequest {
+  pageSize?: 'A4' | 'A3' | 'LETTER';
+  orientation?: 'PORTRAIT' | 'LANDSCAPE';
+  /** Result column names (`ResultColumn.name`) to print; omitted = all. */
+  columns?: string[];
+}
+
 export interface PdfExportOptions extends ExportWriteOptions {
   pageSetup?: PdfPageSetup | null;
+  /** Per-export choices; win over `pageSetup` where they overlap. */
+  request?: PdfExportRequest | null;
   /** The worksheet's own name — the default title, and the `&T` placeholder. */
   title?: string;
   /** BCP-47 tag for the `&D` placeholder's date format. Defaults to 'en'. */
@@ -77,15 +88,32 @@ function interpolateChrome(
     .replace(/&T/g, title);
 }
 
+/**
+ * How far the type has to shrink for every column to fit the page: 1 when
+ * they fit at full size, down to a floor below which the page is unreadable
+ * anyway and the rightmost columns are clipped instead. Discoverer printed
+ * extra pages across; a user who needs more than this picks fewer columns,
+ * A3, or landscape in the export dialog.
+ */
+const MIN_FONT_SCALE = 0.55;
+export function fontScaleFor(columnCount: number, usableWidth: number): number {
+  if (columnCount === 0) return 1;
+  return Math.max(MIN_FONT_SCALE, Math.min(1, usableWidth / (columnCount * MIN_COLUMN_WIDTH)));
+}
+
 /** Column widths in points, proportional to each column's own configured width (equal split when none set). */
-function computeColumnWidths(columns: ExportSource['columns'], usableWidth: number): number[] {
+function computeColumnWidths(
+  columns: ExportSource['columns'],
+  usableWidth: number,
+  minWidth = MIN_COLUMN_WIDTH,
+): number[] {
   const configured = columns.map((c) => (c.columnWidth && c.columnWidth > 0 ? c.columnWidth : null));
   const totalConfigured = configured.reduce<number>((sum, w) => sum + (w ?? 0), 0);
   const unconfiguredCount = configured.filter((w) => w == null).length;
 
   if (totalConfigured === 0) {
     const equal = usableWidth / columns.length;
-    return columns.map(() => Math.max(equal, MIN_COLUMN_WIDTH));
+    return columns.map(() => Math.max(equal, minWidth));
   }
 
   // Configured columns get their share of the usable width proportional to
@@ -94,7 +122,7 @@ function computeColumnWidths(columns: ExportSource['columns'], usableWidth: numb
   const shareForUnconfigured = unconfiguredCount > 0 ? remaining / unconfiguredCount : 0;
   const scale = totalConfigured > usableWidth ? usableWidth / totalConfigured : 1;
   return configured.map((w) =>
-    Math.max(w != null ? w * scale : shareForUnconfigured, MIN_COLUMN_WIDTH),
+    Math.max(w != null ? w * scale : shareForUnconfigured, minWidth),
   );
 }
 
@@ -115,14 +143,17 @@ export async function writePdf(
   options: PdfExportOptions = {},
 ): Promise<ExportWriteResult> {
   const pageSetup = options.pageSetup ?? null;
+  const request = options.request ?? null;
   const title = options.title ?? 'Export';
   const printGridLines = pageSetup?.printGridLines ?? true;
   const printHeadings = pageSetup?.printHeadings ?? true;
   const dateFormat = new Intl.DateTimeFormat(options.locale ?? 'en');
+  const header = headingText(options.heading);
+  const orientation = request?.orientation ?? pageSetup?.orientation ?? 'PORTRAIT';
 
   const doc = new PDFDocument({
-    size: 'A4',
-    layout: pageSetup?.orientation === 'LANDSCAPE' ? 'landscape' : 'portrait',
+    size: request?.pageSize ?? 'A4',
+    layout: orientation === 'LANDSCAPE' ? 'landscape' : 'portrait',
     margins: {
       top: inchesToPoints(pageSetup?.marginTop, DEFAULT_MARGIN_IN),
       bottom: inchesToPoints(pageSetup?.marginBottom, DEFAULT_MARGIN_IN),
@@ -140,12 +171,15 @@ export async function writePdf(
   });
   doc.pipe(out);
 
-  const { columns } = source;
+  const wanted = request?.columns?.length ? new Set(request.columns) : null;
+  const columns = wanted ? source.columns.filter((c) => wanted.has(c.name)) : source.columns;
   const hasHeaderText = !!(pageSetup?.headerLeft || pageSetup?.headerCenter || pageSetup?.headerRight);
   const hasFooterText = !!(pageSetup?.footerLeft || pageSetup?.footerCenter || pageSetup?.footerRight);
   const chromeHeight = CHROME_FONT_SIZE + 6;
 
   let pageNumber = 0;
+  let fontScale = 1;
+  let rowHeight = ROW_HEIGHT;
   let columnWidths: number[] = [];
   let contentTop = 0;
   let contentBottom = 0;
@@ -211,20 +245,30 @@ export async function writePdf(
   }
 
   function drawHeaderRow(): void {
-    doc.font('Helvetica-Bold').fontSize(HEADER_FONT_SIZE);
+    doc.font('Helvetica-Bold').fontSize(HEADER_FONT_SIZE * fontScale);
     let x = contentLeft;
     columns.forEach((column, i) => {
       const w = columnWidths[i]!;
-      if (printGridLines) doc.rect(x, cursorY, w, ROW_HEIGHT).stroke();
-      doc.text(column.label, x + CELL_PAD_X, cursorY + 4, {
+      if (printGridLines) doc.rect(x, cursorY, w, rowHeight).stroke();
+      doc.text(column.label, x + CELL_PAD_X, cursorY + 4 * fontScale, {
         width: w - CELL_PAD_X * 2,
-        height: ROW_HEIGHT - 4,
+        height: rowHeight - 4 * fontScale,
         ellipsis: true,
         lineBreak: false,
       });
       x += w;
     });
-    cursorY += ROW_HEIGHT;
+    cursorY += rowHeight;
+  }
+
+  /** The document header (description with its run values) — first page only. */
+  function drawDocumentHeader(): void {
+    if (header === null) return;
+    const width = doc.page.width - doc.page.margins.left - doc.page.margins.right;
+    doc.font('Helvetica-Bold').fontSize(10);
+    const h = doc.heightOfString(header, { width });
+    doc.text(header, contentLeft, cursorY, { width });
+    cursorY += h + ROW_HEIGHT;
   }
 
   function renderPageChrome(): void {
@@ -233,6 +277,7 @@ export async function writePdf(
     contentLeft = doc.page.margins.left;
     cursorY = contentTop;
     drawHeaderFooter();
+    if (pageNumber === 1) drawDocumentHeader();
     if (printHeadings) drawHeaderRow();
   }
 
@@ -247,30 +292,30 @@ export async function writePdf(
   // widths can be measured) doubles as the one-time width computation.
   doc.addPage();
   pageNumber = 1;
-  columnWidths = computeColumnWidths(
-    columns,
-    doc.page.width - doc.page.margins.left - doc.page.margins.right,
-  );
+  const usableWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
+  fontScale = fontScaleFor(columns.length, usableWidth);
+  rowHeight = Math.ceil(ROW_HEIGHT * fontScale);
+  columnWidths = computeColumnWidths(columns, usableWidth, MIN_COLUMN_WIDTH * fontScale);
   renderPageChrome();
 
   function drawDataRow(row: Record<string, unknown>): void {
-    if (cursorY + ROW_HEIGHT > contentBottom) {
+    if (cursorY + rowHeight > contentBottom) {
       startPage();
     }
-    doc.font('Helvetica').fontSize(FONT_SIZE);
+    doc.font('Helvetica').fontSize(FONT_SIZE * fontScale);
     let x = contentLeft;
     columns.forEach((column, i) => {
       const w = columnWidths[i]!;
-      if (printGridLines) doc.rect(x, cursorY, w, ROW_HEIGHT).stroke();
-      doc.text(cellText(row[column.name]), x + CELL_PAD_X, cursorY + 4, {
+      if (printGridLines) doc.rect(x, cursorY, w, rowHeight).stroke();
+      doc.text(cellText(row[column.name]), x + CELL_PAD_X, cursorY + 4 * fontScale, {
         width: w - CELL_PAD_X * 2,
-        height: ROW_HEIGHT - 4,
+        height: rowHeight - 4 * fontScale,
         ellipsis: true,
         lineBreak: false,
       });
       x += w;
     });
-    cursorY += ROW_HEIGHT;
+    cursorY += rowHeight;
   }
 
   let rowCount = 0;

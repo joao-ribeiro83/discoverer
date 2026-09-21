@@ -112,7 +112,7 @@ function CalculatedFieldRow({
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={cn('space-y-2 rounded-md border bg-card p-2', isDragging && 'opacity-50')}
     >
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
           className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
@@ -125,7 +125,7 @@ function CalculatedFieldRow({
           <GripVertical className="h-4 w-4" />
         </button>
         <Input
-          className="h-8 flex-1"
+          className="h-8 min-w-32 flex-1"
           value={field.name}
           onChange={(e) => onUpdate({ name: e.target.value })}
           placeholder={t('mapBuilder:panels.calculatedFields.namePlaceholder')}
@@ -159,7 +159,7 @@ function CalculatedFieldRow({
         type="button"
         variant="outline"
         size="sm"
-        className="w-full justify-start truncate font-mono text-xs font-normal"
+        className="h-auto min-h-8 w-full justify-start whitespace-pre-wrap break-all py-1.5 text-left font-mono text-xs font-normal"
         onClick={onEditFormula}
       >
         {field.formula.trim()
