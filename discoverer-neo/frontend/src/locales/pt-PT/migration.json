@@ -8,7 +8,8 @@
     "analyze": "Analisar",
     "runDryRun": "Executar simulação",
     "runMigration": "Executar migração",
-    "reimportMaps": "Reimportar mapas"
+    "reimportMaps": "Reimportar mapas",
+    "reimportAll": "Reimportar tudo"
   },
   "source": {
     "title": "Origem",
@@ -24,7 +25,8 @@
     "forceEul5": "Forçar EUL5",
     "dryRunLabel": "Simulação (validar sem escrever)",
     "liveMigrationWarning": "Uma migração real escreve nesta base de dados do Discoverer Neo. Execute primeiro uma simulação e reveja o relatório abaixo.",
-    "reimportMapsHelp": "A reimportação de mapas reconstrói apenas os mapas de uma base de dados já migrada, a partir dos livros do EUL. Substitui todos os mapas da área de negócio «Migrated Workbooks» — as alterações feitas desde a migração original perdem-se — e não toca em utilizadores, pastas, itens nem concessões. Execute primeiro como simulação."
+    "reimportMapsHelp": "A reimportação de mapas reconstrói apenas os mapas de uma base de dados já migrada, a partir dos livros do EUL. Substitui todos os mapas da área de negócio «Migrated Workbooks» — as alterações feitas desde a migração original perdem-se — e não toca em utilizadores, pastas, itens nem concessões. Execute primeiro como simulação.",
+    "reimportAllHelp": "Reimportar tudo repete toda a migração com a versão atual do migrador e reescreve, objeto a objeto, o que agora difere: áreas de negócio, pastas, itens, junções, hierarquias, funções, utilizadores, permissões e mapas. Nada é apagado e os ids dos mapas mantêm-se, por isso agendamentos e partilhas ficam; objetos removidos do EUL são apenas reportados. Uma execução real termina por compilar os campos calculados. Faça primeiro uma simulação."
   },
   "detected": {
     "title": "Origem detetada",
@@ -90,7 +92,13 @@
     "droppedLogsNotice": "({{count}} linha(s) anteriores omitidas)",
     "noLogEntries": "Ainda não existem entradas no registo.",
     "mapsReimportSummary": "Substituídos {{replaced}} mapa(s) a partir de {{workbooks}} livro(s) com {{worksheets}} folha(s), em {{duration}}s.",
-    "mapsReimportUnresolved": "Não foi possível migrar {{columns}} coluna(s) e {{conditions}} condição(ões). Consulte o registo acima."
+    "mapsReimportUnresolved": "Não foi possível migrar {{columns}} coluna(s) e {{conditions}} condição(ões). Consulte o registo acima.",
+    "deltaSummary": "{{verb}} as diferenças encontradas em {{objects}} objeto(s) de origem, em {{duration}}s.",
+    "deltaNoop": "Nada difere da última execução registada ({{objects}} objetos de origem).",
+    "deltaWouldWrite": "Escreveria",
+    "deltaWrote": "Escreveu",
+    "deltaRefused": "{{count}} objeto(s) recusado(s) (removidos do EUL ou já não existentes no Neo). Veja o registo acima.",
+    "deltaVerify": "Verificador após a execução: {{status}}."
   },
   "tables": {
     "users": "Utilizadores",
@@ -135,6 +143,7 @@
     "seeLogBelow": "Consulte o registo abaixo.",
     "mapReimportStarted": "Reimportação de mapas iniciada",
     "migrationBlockers": "Migracao terminou com bloqueios",
-    "migrationBlockersBody": "As linhas foram gravadas, mas a reconciliacao da propria execucao nao bate certo. Execute dn-migrate verify no destino antes de usar este ambiente."
+    "migrationBlockersBody": "As linhas foram gravadas, mas a reconciliacao da propria execucao nao bate certo. Execute dn-migrate verify no destino antes de usar este ambiente.",
+    "deltaStarted": "Reimportação de tudo iniciada"
   }
 }

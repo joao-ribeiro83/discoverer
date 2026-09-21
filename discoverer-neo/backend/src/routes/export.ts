@@ -28,6 +28,14 @@ const ExportBodySchema = z.object({
   calculatedFields: z.array(CalculatedFieldSchema).max(50).optional(),
   /** Locale for a grand/subtotal row's label text. Defaults to `en`. */
   locale: z.enum(['en', 'es-ES', 'fr-FR', 'pt-PT']).optional(),
+  /** PDF only: page size, orientation and which result columns to print. */
+  pdf: z
+    .object({
+      pageSize: z.enum(['A4', 'A3', 'LETTER']).optional(),
+      orientation: z.enum(['PORTRAIT', 'LANDSCAPE']).optional(),
+      columns: z.array(z.string().min(1).max(255)).max(500).optional(),
+    })
+    .optional(),
 });
 
 const idParamsSchema = {
@@ -157,6 +165,7 @@ export default function exportRoutes(fastify: FastifyInstance) {
         parameters: parsed.data.parameters,
         calculatedFields: parsed.data.calculatedFields,
         locale: parsed.data.locale,
+        pdf: parsed.data.format === 'PDF' ? parsed.data.pdf : undefined,
       });
       return reply.code(202).send({ data: { jobId, status: 'PENDING' } });
     },

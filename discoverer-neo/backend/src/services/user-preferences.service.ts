@@ -8,7 +8,7 @@ import { users } from '../db/schema.js';
 
 export type Locale = 'en' | 'pt-PT' | 'fr-FR' | 'es-ES';
 export type Theme = 'light' | 'dark' | 'high-contrast';
-export type ColorPalette = 'default' | 'navy';
+export type ColorPalette = 'default' | 'navy' | 'forest' | 'wine' | 'ocean' | 'ochre';
 
 export interface UserPreferences {
   locale: Locale;

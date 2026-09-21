@@ -96,6 +96,7 @@ function makeJob(over: Partial<MigrationJob> = {}): MigrationJob {
     id: 'job-1',
     kind: 'FULL',
     mapsResult: null,
+    deltaResult: null,
     status: 'RUNNING',
     dataSourceId: 'ds-oracle',
     dryRun: true,

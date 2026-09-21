@@ -11,7 +11,7 @@ import {
 
 const LOCALE_VALUES = ['en', 'pt-PT', 'fr-FR', 'es-ES'] as const;
 const THEME_VALUES = ['light', 'dark', 'high-contrast'] as const;
-const COLOR_PALETTE_VALUES = ['default', 'navy'] as const;
+const COLOR_PALETTE_VALUES = ['default', 'navy', 'forest', 'wine', 'ocean', 'ochre'] as const;
 
 const UpdateBodySchema = z
   .object({

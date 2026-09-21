@@ -140,7 +140,24 @@
     "exportQueuedTitle": "Exportación en cola",
     "exportQueuedDescription": "Esto puede tardar un momento con conjuntos de resultados grandes.",
     "downloadFailedTitle": "Error en la descarga",
-    "exportJobFailedFallback": "El trabajo de exportación ha fallado."
+    "exportJobFailedFallback": "El trabajo de exportación ha fallado.",
+    "pdfDialog": {
+      "title": "Exportar a PDF",
+      "description": "Elija el papel y las columnas. La descripción del mapa se imprime en la parte superior de la primera página.",
+      "pageSize": "Tamaño del papel",
+      "orientation": "Orientación",
+      "portrait": "Vertical",
+      "landscape": "Horizontal",
+      "columns": "Columnas ({{count}} seleccionadas)",
+      "selectAll": "Seleccionar todas",
+      "selectNone": "Limpiar",
+      "confirm": "Exportar",
+      "sizes": {
+        "A4": "A4",
+        "A3": "A3",
+        "LETTER": "Carta"
+      }
+    }
   },
   "exportHistory": {
     "title": "Exportaciones",

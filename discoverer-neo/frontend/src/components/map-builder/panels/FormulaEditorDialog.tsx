@@ -14,7 +14,6 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { apiClient, getErrorMessage } from '@/lib/api'
 import { useMapBuilderStore, columnLabel } from '@/store/mapBuilder'
 
@@ -312,7 +311,7 @@ export function FormulaEditorDialog({
             )}
           </div>
 
-          <ScrollArea className="h-[280px] rounded-md border p-2">
+          <div className="max-h-[45vh] overflow-y-auto rounded-md border p-2">
             <div className="space-y-3">
               <div>
                 <p className="mb-1 text-xs font-semibold text-muted-foreground">
@@ -357,7 +356,7 @@ export function FormulaEditorDialog({
                 </div>
               ))}
             </div>
-          </ScrollArea>
+          </div>
         </div>
 
         <DialogFooter>

@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useMapBuilderStore } from '@/store/mapBuilder'
@@ -9,16 +8,15 @@ import { ConditionsPanel } from './ConditionsPanel'
 import { SortPanel } from './SortPanel'
 import { ParametersPanel } from './ParametersPanel'
 import { CalculatedFieldsPanel } from './CalculatedFieldsPanel'
+import { DescriptionEditor } from './DescriptionEditor'
 
 export function RightPanelTabs() {
   const { t } = useTranslation(['mapBuilder', 'common'])
-  const description = useMapBuilderStore((s) => s.description)
   const isPublic = useMapBuilderStore((s) => s.isPublic)
   const selectedItems = useMapBuilderStore((s) => s.selectedItems)
   const conditions = useMapBuilderStore((s) => s.conditions)
   const parameters = useMapBuilderStore((s) => s.parameters)
   const calculatedFields = useMapBuilderStore((s) => s.calculatedFields)
-  const setDescription = useMapBuilderStore((s) => s.setDescription)
   const setIsPublic = useMapBuilderStore((s) => s.setIsPublic)
 
   const sortedCount = selectedItems.filter((i) => i.sortDirection !== null).length
@@ -49,16 +47,7 @@ export function RightPanelTabs() {
 
       <ScrollArea className="flex-1">
         <TabsContent value="properties" className="mt-0 space-y-4 p-4">
-          <div className="space-y-2">
-            <Label htmlFor="map-description">{t('common:labels.description')}</Label>
-            <Textarea
-              id="map-description"
-              rows={3}
-              value={description ?? ''}
-              onChange={(e) => setDescription(e.target.value || null)}
-              placeholder={t('mapBuilder:panels.properties.descriptionPlaceholder')}
-            />
-          </div>
+          <DescriptionEditor />
           <div className="flex items-center gap-2">
             <Checkbox
               id="map-public"

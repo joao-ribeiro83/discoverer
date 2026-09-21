@@ -73,7 +73,15 @@
       "dataSourceLabel": "Source de données",
       "selectDataSourcePlaceholder": "Sélectionner une source de données",
       "tableNameLabel": "Nom de la table",
-      "tableOwnerLabel": "Propriétaire de la table"
+      "tableOwnerLabel": "Propriétaire de la table",
+      "noObjectsForType": "Aucun objet de type {{type}} dans ce schéma. Changez le type de dossier pour voir les autres.",
+      "itemsHeading": "Éléments à créer ({{count}})",
+      "itemsHint": "Chaque colonne cochée devient un élément. Les descriptions viennent des commentaires de colonne dans Oracle ; modifiez-les avant d’enregistrer.",
+      "descriptionPlaceholder": "Description",
+      "selectAll": "Tout sélectionner",
+      "selectNone": "Effacer",
+      "searchObjectsPlaceholder": "Filtrer par nom ou commentaire…",
+      "objectsShown": "{{shown}} sur {{total}}"
     },
     "toast": {
       "discoveryFailed": "Échec de la découverte",

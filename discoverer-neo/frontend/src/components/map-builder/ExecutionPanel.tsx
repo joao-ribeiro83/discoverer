@@ -28,6 +28,7 @@ import { ResultsTable } from '@/components/data-table/ResultsTable'
 import { CrosstabTable, crosstabAxes } from '@/components/data-table/CrosstabTable'
 import { ExecutionRefusal } from '@/components/map-builder/ExecutionRefusal'
 import { DrillDialog } from '@/components/map-builder/DrillDialog'
+import { PdfExportDialog } from '@/components/map-builder/PdfExportDialog'
 import type {
   AsyncExecutionJob,
   AsyncJobStatus,
@@ -123,6 +124,7 @@ export function ExecutionPanel({
   })
 
   const exportCtl = useMapExport(mapId, mapName, parameters)
+  const [pdfOpen, setPdfOpen] = useState(false)
 
   // --- "Load more": re-executes with a growing offset, appending pages ------
   const loadMoreMutation = useMutation({
@@ -309,7 +311,7 @@ export function ExecutionPanel({
                 size="sm"
                 className="h-7 gap-1 text-xs"
                 disabled={exportCtl.isExporting || !mapId}
-                onClick={() => exportCtl.exportFormat('PDF')}
+                onClick={() => setPdfOpen(true)}
               >
                 {exportCtl.isExporting && exportCtl.format === 'PDF' ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -318,6 +320,12 @@ export function ExecutionPanel({
                 )}
                 {t('mapViewer:execution.pdf')}
               </Button>
+              <PdfExportDialog
+                open={pdfOpen}
+                onOpenChange={setPdfOpen}
+                columns={result.columns.map((c) => ({ name: c.name, label: c.label }))}
+                onConfirm={(pdf) => exportCtl.exportFormat('PDF', { pdf })}
+              />
             </>
           )}
           {onClose && (

@@ -297,7 +297,7 @@ function GrantsDialog({ businessArea, onClose }: { businessArea: BusinessArea; o
           </Button>
         </div>
 
-        <div className="max-h-64 space-y-2 overflow-y-auto rounded-md border p-2">
+        <div className="max-h-[50vh] space-y-2 overflow-y-auto rounded-md border p-2">
           {isLoading && <p className="text-sm text-muted-foreground">{t('admin:businessAreas.grants.loadingGrants')}</p>}
           {!isLoading && (grants ?? []).length === 0 && (
             <p className="text-sm text-muted-foreground">{t('admin:businessAreas.grants.noGrantsYet')}</p>

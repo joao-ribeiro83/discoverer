@@ -410,7 +410,7 @@ function ImportTablesDialog({ dataSource, onClose }: { dataSource: DataSource; o
           </Select>
         </div>
 
-        <div className="max-h-64 space-y-1 overflow-y-auto rounded-md border p-2">
+        <div className="max-h-[50vh] space-y-1 overflow-y-auto rounded-md border p-2">
           {tablesQuery.isFetching && <p className="text-sm text-muted-foreground">{t('admin:dataSources.import.discoveringTables')}</p>}
           {!tablesQuery.isFetching && (tablesQuery.data ?? []).length === 0 && (
             <p className="text-sm text-muted-foreground">{t('admin:dataSources.import.noTablesDiscovered')}</p>

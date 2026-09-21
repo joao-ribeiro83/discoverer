@@ -17,6 +17,7 @@ import {
   getJob,
   listJobs,
   startMapReimport,
+  startDelta,
   startMigration,
 } from '../services/migration.service.js';
 import { invalidateAll } from '../lib/metadata-cache.js';
@@ -250,6 +251,58 @@ export default function migrationRoutes(fastify: FastifyInstance) {
         request.log.error({ err }, 'Failed to start map re-import');
         return reply.code(400).send({
           error: `Failed to start map re-import: ${err instanceof Error ? err.message : String(err)}`,
+        });
+      }
+    },
+  );
+
+  // POST /api/migration/delta — re-import EVERY object in place
+  //
+  // The counterpart of /reimport-maps for the whole estate: replays the
+  // migration with the current transformer and rewrites, object by object,
+  // whatever now differs from the last recorded run (`dn-migrate delta`).
+  // Nothing is deleted; map ids, schedules and shares survive.
+  fastify.post(
+    '/api/migration/delta',
+    {
+      preHandler: adminPreHandler,
+      schema: {
+        tags,
+        security,
+        response: {
+          202: looseData,
+          400: errorResponse,
+          401: errorResponse,
+          403: errorResponse,
+          404: errorResponse,
+          409: errorResponse,
+        },
+      },
+    },
+    async (request, reply) => {
+      const parsed = ReimportMapsBodySchema.safeParse(request.body);
+      if (!parsed.success) {
+        return reply.code(400).send({ error: 'A valid dataSourceId is required' });
+      }
+      const userId = request.user?.sub;
+      if (!userId) return reply.code(401).send({ error: 'Unauthenticated' });
+
+      try {
+        const job = startDelta({
+          dataSourceId: parsed.data.dataSourceId,
+          schemaOwner: parsed.data.schemaOwner,
+          dryRun: parsed.data.dryRun === true,
+          startedBy: userId,
+          onSettled: () => invalidateAll(fastify.redis),
+        });
+        return reply.code(202).send({ data: job });
+      } catch (err) {
+        if (err instanceof MigrationError) {
+          return reply.code(err.statusCode).send({ error: err.message });
+        }
+        request.log.error({ err }, 'Failed to start delta re-import');
+        return reply.code(400).send({
+          error: `Failed to start re-import: ${err instanceof Error ? err.message : String(err)}`,
         });
       }
     },

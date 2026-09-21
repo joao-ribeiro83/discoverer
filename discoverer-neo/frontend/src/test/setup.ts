@@ -4,8 +4,12 @@
 // at runtime, but `tsc` no longer recognizes them).
 import '@testing-library/jest-dom/vitest'
 // Initialize i18next once for the whole test suite so components that call
-// useTranslation() render real English strings instead of raw keys.
-import '@/i18n'
+// useTranslation() render real English strings instead of raw keys. The
+// product default is Portuguese (FALLBACK_LOCALE), so the suite pins English
+// explicitly: the tests assert on English copy.
+import i18n from '@/i18n'
+
+await i18n.changeLanguage('en')
 
 // jsdom (as wired by this vitest version) doesn't populate window.localStorage /
 // window.sessionStorage, so provide a minimal in-memory Storage polyfill for tests.

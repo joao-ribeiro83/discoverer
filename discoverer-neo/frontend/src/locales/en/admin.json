@@ -73,7 +73,15 @@
       "dataSourceLabel": "Data Source",
       "selectDataSourcePlaceholder": "Select a data source",
       "tableNameLabel": "Table Name",
-      "tableOwnerLabel": "Table Owner"
+      "tableOwnerLabel": "Table Owner",
+      "noObjectsForType": "No {{type}} objects in this schema. Change the folder type to see the others.",
+      "itemsHeading": "Items to create ({{count}})",
+      "itemsHint": "Each ticked column becomes an item. Descriptions come from the column comments in Oracle; edit them before saving.",
+      "descriptionPlaceholder": "Description",
+      "selectAll": "Select all",
+      "selectNone": "Clear",
+      "searchObjectsPlaceholder": "Filter by name or comment…",
+      "objectsShown": "{{shown}} of {{total}}"
     },
     "toast": {
       "discoveryFailed": "Discovery failed",

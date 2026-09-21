@@ -1352,7 +1352,7 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 
 | Status | Body |
 | --- | --- |
-| 200 | { data?: { locale?: "en" \| "pt-PT" \| "fr-FR" \| "es-ES" theme?: "light" \| "dark" \| "high-contrast" colorPalette?: "default" \| "navy" } } |
+| 200 | { data?: { locale?: "en" \| "pt-PT" \| "fr-FR" \| "es-ES" theme?: "light" \| "dark" \| "high-contrast" colorPalette?: "default" \| "navy" \| "forest" \| "wine" \| "ocean" \| "ochre" } } |
 | 401 | { error?: string details?: any } |
 
 #### PATCH /api/users/me/preferences
@@ -1362,7 +1362,7 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 {
   locale?: "en" | "pt-PT" | "fr-FR" | "es-ES"
   theme?: "light" | "dark" | "high-contrast"
-  colorPalette?: "default" | "navy"
+  colorPalette?: "default" | "navy" | "forest" | "wine" | "ocean" | "ochre"
 }
 ```
 
@@ -1370,7 +1370,7 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 
 | Status | Body |
 | --- | --- |
-| 200 | { data?: { locale?: "en" \| "pt-PT" \| "fr-FR" \| "es-ES" theme?: "light" \| "dark" \| "high-contrast" colorPalette?: "default" \| "navy" } } |
+| 200 | { data?: { locale?: "en" \| "pt-PT" \| "fr-FR" \| "es-ES" theme?: "light" \| "dark" \| "high-contrast" colorPalette?: "default" \| "navy" \| "forest" \| "wine" \| "ocean" \| "ochre" } } |
 | 400 | { error?: string details?: any } |
 | 401 | { error?: string details?: any } |
 

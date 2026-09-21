@@ -22,9 +22,7 @@
     "exportCsv": "CSV (.csv)",
     "exportXml": "Definición del mapa (.xml)",
     "shareDisabledTitle": "Guarde el mapa antes de compartirlo",
-    "comingSoonTitle": "{{feature}} disponible próximamente",
-    "comingSoonDescription": "{{feature}} estará disponible en una próxima sesión.",
-    "featureScheduling": "Programación"
+    "scheduleDisabledTitle": "Guarde el mapa antes de programarlo"
   },
   "page": {
     "loading": "Cargando mapa…",
@@ -47,7 +45,10 @@
     "collapsePanel": "Contraer panel",
     "expandPanel": "Expandir panel",
     "runRefusedTitle": "Hoja no ejecutada",
-    "runRefusedDescription": "El planificador de consultas rechazó esta solicitud. El panel de resultados explica por qué."
+    "runRefusedDescription": "El planificador de consultas rechazó esta solicitud. El panel de resultados explica por qué.",
+    "resizeTree": "Redimensionar el panel de áreas de negocio",
+    "resizeResults": "Redimensionar el panel de resultados",
+    "resizePanel": "Redimensionar el panel de configuración"
   },
   "tree": {
     "title": "Áreas de negocio",
@@ -201,6 +202,16 @@
         "conditions": "Condiciones",
         "parameters": "Parámetros",
         "calculatedFields": "Campos calculados"
+      },
+      "insertVariable": "Insertar variable",
+      "variableHint": "Las variables como &Date se sustituyen por valores reales cada vez que el mapa se ejecuta o se exporta.",
+      "variables": {
+        "date": "Fecha de ejecución",
+        "time": "Hora de ejecución",
+        "workbook": "Nombre del libro",
+        "worksheet": "Nombre de la hoja",
+        "parameters": "Parámetros introducidos en la ejecución",
+        "noParameters": "Aún no hay parámetros definidos"
       }
     },
     "conditions": {

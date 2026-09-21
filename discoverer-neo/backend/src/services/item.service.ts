@@ -49,6 +49,10 @@ export interface OracleColumn {
   dataType: string;
   dataLength?: number | null;
   nullable?: boolean;
+  /** Item name to use; the column name when absent. */
+  name?: string;
+  /** Item description; the Oracle column comment when the caller has one. */
+  description?: string | null;
 }
 
 export interface ImportResult {
@@ -362,8 +366,9 @@ export async function importFromOracleColumns(
       .insert(items)
       .values({
         folderId,
-        name: col.columnName,
-        description: `${col.dataType}${col.dataLength ? `(${col.dataLength})` : ''}`,
+        name: col.name?.trim() || col.columnName,
+        description:
+          col.description?.trim() || `${col.dataType}${col.dataLength ? `(${col.dataLength})` : ''}`,
         itemType: 'CI',
         columnName: col.columnName,
         dataType: col.dataType,

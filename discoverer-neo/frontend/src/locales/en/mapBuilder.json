@@ -22,9 +22,7 @@
     "exportCsv": "CSV (.csv)",
     "exportXml": "Map definition (.xml)",
     "shareDisabledTitle": "Save the map before sharing it",
-    "comingSoonTitle": "{{feature}} coming soon",
-    "comingSoonDescription": "{{feature}} will be available in a later session.",
-    "featureScheduling": "Scheduling"
+    "scheduleDisabledTitle": "Save the map first to schedule it"
   },
   "page": {
     "loading": "Loading map…",
@@ -47,7 +45,10 @@
     "collapsePanel": "Collapse panel",
     "expandPanel": "Expand panel",
     "runRefusedTitle": "Worksheet not run",
-    "runRefusedDescription": "The query planner declined this request. The results panel explains why."
+    "runRefusedDescription": "The query planner declined this request. The results panel explains why.",
+    "resizeTree": "Resize the business areas panel",
+    "resizeResults": "Resize the results panel",
+    "resizePanel": "Resize the settings panel"
   },
   "tree": {
     "title": "Business Areas",
@@ -201,6 +202,16 @@
         "conditions": "Conditions",
         "parameters": "Parameters",
         "calculatedFields": "Calculated fields"
+      },
+      "insertVariable": "Insert variable",
+      "variableHint": "Variables such as &Date are replaced with real values each time the map runs or is exported.",
+      "variables": {
+        "date": "Run date",
+        "time": "Run time",
+        "workbook": "Workbook name",
+        "worksheet": "Worksheet name",
+        "parameters": "Parameters entered at run time",
+        "noParameters": "No parameters defined yet"
       }
     },
     "conditions": {
