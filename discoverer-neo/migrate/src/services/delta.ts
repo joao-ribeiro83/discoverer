@@ -581,6 +581,18 @@ export async function runDelta(options: DeltaOptions): Promise<DeltaResult> {
         if (ids) await tx.deleteWhere(child, column, ids);
       }
 
+      // Revoked access goes BEFORE the inserts: a share or grant re-keyed by a
+      // newer migrator (one workbook share → one per worksheet map) is
+      // "revoked" under its old key and "added" under the new one, and both
+      // name the same (map, user) pair — inserting first trips the unique key.
+      for (const revokeTable of new Set(revoke.map(([, , t]) => t))) {
+        await tx.deleteWhere(
+          revokeTable,
+          'id',
+          revoke.filter(([, , t]) => t === revokeTable).map(([, b]) => b.targetId),
+        );
+      }
+
       for (const [table, rows] of planned.tables) {
         const owner = CHILD_OWNER[table];
         if (owner) {
@@ -601,13 +613,6 @@ export async function runDelta(options: DeltaOptions): Promise<DeltaResult> {
         await tx.insert(table, added);
       }
 
-      for (const revokeTable of new Set(revoke.map(([, , t]) => t))) {
-        await tx.deleteWhere(
-          revokeTable,
-          'id',
-          revoke.filter(([, , t]) => t === revokeTable).map(([, b]) => b.targetId),
-        );
-      }
       for (const [, base] of deactivate) await tx.update('users', base.targetId, { isActive: false });
 
       await assertNoGrantWidening(tx, serviceUserId, plannedGrantKeys, baseline, write, planned, idMap);
