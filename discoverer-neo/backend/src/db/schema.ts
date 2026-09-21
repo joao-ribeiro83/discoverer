@@ -293,6 +293,10 @@ export const mapRunBatches = pgTable('map_run_batches', {
   runId: uuid('run_id').notNull().references(() => mapRuns.id, { onDelete: 'cascade' }),
   seq: integer('seq').notNull(),
   rows: jsonb('rows').notNull(),        // Record<string, unknown>[]
+  // Denormalised from `rows.length` so a page read (readRows) can sum batch
+  // sizes without detoasting/decompressing every batch's JSONB just to call
+  // jsonb_array_length on it.
+  rowCount: integer('row_count').notNull(),
 }, (t) => [primaryKey({ columns: [t.runId, t.seq] })]);
 
 // ---------------------------------------------------------------------------

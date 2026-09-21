@@ -33,6 +33,7 @@ CREATE TABLE "map_run_batches" (
 	"run_id" uuid NOT NULL,
 	"seq" integer NOT NULL,
 	"rows" jsonb NOT NULL,
+	"row_count" integer NOT NULL,
 	CONSTRAINT "map_run_batches_run_id_seq_pk" PRIMARY KEY("run_id","seq")
 );
 --> statement-breakpoint
