@@ -390,6 +390,9 @@ export function MapBuilderPage() {
           <ResizeHandle
             direction="col"
             aria-label={t('mapBuilder:page.resizeTree')}
+            value={leftWidth}
+            min={160}
+            max={600}
             onDelta={resize('left', setLeftWidth, 160, 600)}
           />
 
@@ -403,6 +406,9 @@ export function MapBuilderPage() {
                 <ResizeHandle
                   direction="row"
                   aria-label={t('mapBuilder:page.resizeResults')}
+                  value={resultsHeight}
+                  min={120}
+                  max={1200}
                   onDelta={(d) => resize('results', setResultsHeight, 120, 1200)(-d)}
                 />
                 <div className="shrink-0" style={{ height: resultsHeight }}>
@@ -428,6 +434,9 @@ export function MapBuilderPage() {
                 <ResizeHandle
                   direction="col"
                   aria-label={t('mapBuilder:page.resizePanel')}
+                  value={rightWidth}
+                  min={220}
+                  max={720}
                   onDelta={resize('right', setRightWidth, 220, 720)}
                 />
                 <aside style={{ width: rightWidth }}>

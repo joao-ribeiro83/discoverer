@@ -6,6 +6,10 @@ interface ResizeHandleProps {
   direction: 'col' | 'row'
   /** Pixels moved since the last call; positive = right/down. */
   onDelta: (delta: number) => void
+  /** The pane's current size and its bounds — a focusable separator must announce them. */
+  value: number
+  min: number
+  max: number
   'aria-label': string
   className?: string
 }
@@ -18,7 +22,7 @@ const KEY_STEP = 16
  * it too. It knows nothing about sizes — the parent applies the deltas to
  * whichever pane it wants, and persists them if it cares.
  */
-export function ResizeHandle({ direction, onDelta, className, ...aria }: ResizeHandleProps) {
+export function ResizeHandle({ direction, onDelta, value, min, max, className, ...aria }: ResizeHandleProps) {
   const last = useRef(0)
   const horizontal = direction === 'col'
 
@@ -28,6 +32,9 @@ export function ResizeHandle({ direction, onDelta, className, ...aria }: ResizeH
       tabIndex={0}
       aria-orientation={horizontal ? 'vertical' : 'horizontal'}
       aria-label={aria['aria-label']}
+      aria-valuenow={Math.round(value)}
+      aria-valuemin={min}
+      aria-valuemax={max}
       className={cn(
         'shrink-0 select-none bg-border transition-colors hover:bg-primary/50 focus-visible:bg-primary focus-visible:outline-none',
         horizontal ? 'w-1 cursor-col-resize' : 'h-1 cursor-row-resize',
