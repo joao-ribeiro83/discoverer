@@ -1566,7 +1566,11 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
         if (seenShares.has(shareKey)) continue;
         seenShares.add(shareKey);
         const shareId = deps.genId();
-        keyById.set(shareId, `map_share:${t.documentSourceId}|${ukey(t.granteeUsername)}`);
+        // One workbook grant becomes one share PER WORKSHEET map, so the key
+        // must carry the map's own key (`map:<DOC_ID>:<GUID>`), not the
+        // workbook id alone — or every sheet of a shared workbook collides and
+        // the delta refuses the whole run.
+        keyById.set(shareId, `map_share:${keyById.get(mapId) ?? t.documentSourceId}|${ukey(t.granteeUsername)}`);
         mapShareRows.push({
           id: shareId,
           mapId,
