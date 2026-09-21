@@ -140,6 +140,36 @@ describe('runDelta', () => {
     }
   });
 
+  it('re-adopts rows a maps re-import replaced under new ids, instead of calling them missing', async () => {
+    const { db, state } = await withBaseline()
+    // A maps re-import deletes every migrated map and writes it again with a
+    // fresh id (children and shares follow), without touching the record.
+    const mapChildren = ['map_items', 'map_conditions', 'map_parameters', 'map_calculated_fields', 'map_totals', 'map_layouts', 'map_page_setup', 'map_shares'] as const
+    const renamed = new Map<string, string>()
+    for (const row of state.tables.maps) {
+      const next = `11111111-2222-4333-8444-${String(renamed.size + 1).padStart(12, '0')}`
+      renamed.set(String(row.id), next)
+      row.id = next
+    }
+    for (const table of mapChildren) {
+      for (const row of state.tables[table] ?? []) {
+        const mapped = renamed.get(String(row.mapId))
+        if (mapped) row.mapId = mapped
+      }
+    }
+
+    const result = await runDelta({ source: mockExecutor(eul5Db()), db })
+
+    expect(result.changes.filter((c) => c.kind === 'missing')).toEqual([])
+    expect(result.changes.filter((c) => c.kind === 'added')).toEqual([])
+    expect(state.tables.maps.map((m) => m.id)).toEqual([...renamed.values()])
+    for (const key of [...state.baseline.keys()].filter((k) => k.startsWith('map:'))) {
+      expect(renamed.has(state.baseline.get(key)!.targetId)).toBe(false)
+      expect([...renamed.values()]).toContain(state.baseline.get(key)!.targetId)
+    }
+    expect((await runDelta({ source: mockExecutor(eul5Db()), db })).noop).toBe(true)
+  })
+
   it('a dry run reports the change and writes nothing', async () => {
     const { db, state } = await withBaseline();
     const source = eul5Db();

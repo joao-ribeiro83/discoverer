@@ -345,8 +345,12 @@ function adopt(
   plan: MigrationPlan,
   planUnits: Map<string, Unit>,
   target: Map<TargetTable, Row[]>,
+  /** target id → key for rows the recorded baseline already accounts for. */
+  known: ReadonlyMap<string, string> = new Map(),
+  /** Only these units look for a match; every unit when absent (first delta). */
+  consider: ReadonlySet<string> | null = null,
 ): Map<string, string> {
-  const targetKeyById = new Map<string, string>();
+  const targetKeyById = new Map<string, string>(known);
   const planSub = (s: string): string => plan.keyById.get(s) ?? s;
   const targetSub = (s: string): string => targetKeyById.get(s) ?? s;
   const ambiguous: string[] = [];
@@ -369,6 +373,7 @@ function adopt(
     }
     for (const unit of planUnits.values()) {
       if (unit.table !== table) continue;
+      if (consider && !consider.has(unit.key)) continue;
       const found = candidates.get(naturalSig(table, unit.row, unit, planSub)) ?? [];
       const free = found.filter((id) => !targetKeyById.has(id));
       if (found.length > 1 || (found.length === 1 && free.length === 0)) ambiguous.push(unit.key);
@@ -476,25 +481,41 @@ export async function runDelta(options: DeltaOptions): Promise<DeltaResult> {
   );
   const planHash = (key: string): string => planHashes.get(key) as string;
 
+  const targetIds = new Set<string>();
+  for (const [table, rows] of target) if (!CHILD_OWNER[table]) for (const r of rows) targetIds.add(String(r.id));
+
   // --- baseline -------------------------------------------------------------
-  let baseline = await db.readBaseline();
+  // A first delta adopts every target row by natural key. Every later delta
+  // does the same for whatever the record does not cover: a recorded object
+  // whose row is gone (the maps re-import replaced all 923 maps under new
+  // ids, so every share, schedule and map the record named was "missing" and
+  // every re-keyed share was "added" against a map that did not exist), and
+  // an object the record never saw. Anything still unmatched stays missing.
+  const baseline = await db.readBaseline();
   const adopted = baseline.size === 0;
-  if (adopted) {
-    const targetKeyById = adopt(planned, planUnits, target);
+  const stale = new Set<string>();
+  for (const [key, base] of baseline) {
+    if (!targetIds.has(base.targetId)) {
+      stale.add(key);
+      baseline.delete(key);
+    }
+  }
+  const unrecorded = new Set([...planUnits.keys()].filter((key) => !baseline.has(key)));
+  const readopted: Array<[string, BaselineEntry]> = [];
+  if (adopted || unrecorded.size > 0) {
+    const known = new Map([...baseline].map(([key, base]) => [base.targetId, key]));
+    const targetKeyById = adopt(planned, planUnits, target, known, adopted ? null : unrecorded);
     const { units: targetUnits } = assemble(
       [...target.entries()],
       (id) => targetKeyById.get(id),
     );
-    baseline = new Map(
-      [...targetUnits.values()].map((u) => [
-        u.key,
-        { targetId: String(u.row.id), hash: unitHash(u, columns, (id) => targetKeyById.get(id)) },
-      ]),
-    );
+    for (const u of targetUnits.values()) {
+      if (baseline.has(u.key)) continue;
+      const entry = { targetId: String(u.row.id), hash: unitHash(u, columns, (id) => targetKeyById.get(id)) };
+      baseline.set(u.key, entry);
+      readopted.push([u.key, entry]);
+    }
   }
-
-  const targetIds = new Set<string>();
-  for (const [table, rows] of target) if (!CHILD_OWNER[table]) for (const r of rows) targetIds.add(String(r.id));
 
   // --- diff -----------------------------------------------------------------
   const changes: DeltaChange[] = [];
@@ -503,10 +524,13 @@ export async function runDelta(options: DeltaOptions): Promise<DeltaResult> {
   for (const [key, unit] of planUnits) {
     const base = baseline.get(key);
     if (!base) {
+      if (stale.has(key)) {
+        // Recorded once, gone from the target, and nothing to adopt in its place.
+        changes.push({ key, table: unit.table, kind: 'missing' });
+        continue;
+      }
       write.set(key, 'added');
       changes.push({ key, table: unit.table, kind: 'added' });
-    } else if (!targetIds.has(base.targetId)) {
-      changes.push({ key, table: unit.table, kind: 'missing' });
     } else {
       idMap.set(String(unit.row.id), base.targetId);
       if (base.hash !== planHash(key)) {
@@ -516,6 +540,9 @@ export async function runDelta(options: DeltaOptions): Promise<DeltaResult> {
     }
   }
   const resolved: string[] = [];
+  // A stale record whose object the source no longer has either is gone from
+  // both sides: the operator removed it in Neo, so the record goes too.
+  for (const key of stale) if (!planUnits.has(key)) resolved.push(key);
   /** [key, baseline, which table the row is in] — grants and shares both revoke. */
   const revoke: Array<[string, BaselineEntry, TargetTable]> = [];
   const deactivate: Array<[string, BaselineEntry]> = [];
@@ -542,7 +569,7 @@ export async function runDelta(options: DeltaOptions): Promise<DeltaResult> {
     }
   }
 
-  const noop = write.size === 0 && revoke.length === 0 && deactivate.length === 0 && resolved.length === 0 && !adopted;
+  const noop = write.size === 0 && revoke.length === 0 && deactivate.length === 0 && resolved.length === 0 && readopted.length === 0;
   const counts = countChanges(changes);
   const summary = `${adopted ? 'Baseline adopted from the target. ' : ''}${describeCounts(counts)}`;
 
@@ -617,11 +644,15 @@ export async function runDelta(options: DeltaOptions): Promise<DeltaResult> {
 
       await assertNoGrantWidening(tx, serviceUserId, plannedGrantKeys, baseline, write, planned, idMap);
 
-      const upsert: Array<[string, BaselineEntry]> = adopted ? [...baseline] : [];
+      // Everything adopted this run is recorded, so the next run starts current.
+      const upsert: Array<[string, BaselineEntry]> = [...readopted];
       for (const [key] of write) {
         const unit = planUnits.get(key) as Unit;
         upsert.push([key, { targetId: idMap.get(String(unit.row.id)) ?? String(unit.row.id), hash: planHash(key) }]);
       }
+      // A stale record that was not re-adopted is dropped only when it is
+      // also gone from the source (`resolved`); one still in the source stays
+      // recorded so it keeps reporting as missing.
       await tx.saveBaseline(runId as string, upsert, [...resolved, ...revoke.map(([k]) => k)]);
     });
   } catch (err) {
