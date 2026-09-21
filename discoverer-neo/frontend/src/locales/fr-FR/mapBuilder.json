@@ -201,6 +201,16 @@
         "conditions": "Conditions",
         "parameters": "Paramètres",
         "calculatedFields": "Champs calculés"
+      },
+      "insertVariable": "Insérer une variable",
+      "variableHint": "Les variables comme &Date sont remplacées par des valeurs réelles à chaque exécution ou export de la carte.",
+      "variables": {
+        "date": "Date d'exécution",
+        "time": "Heure d'exécution",
+        "workbook": "Nom du classeur",
+        "worksheet": "Nom de la feuille",
+        "parameters": "Paramètres saisis à l'exécution",
+        "noParameters": "Aucun paramètre défini pour le moment"
       }
     },
     "conditions": {

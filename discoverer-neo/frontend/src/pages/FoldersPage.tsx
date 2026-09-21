@@ -298,7 +298,7 @@ export function FoldersPage() {
               </div>
 
               {discovered.length > 0 && (
-                <div className="max-h-32 space-y-1 overflow-y-auto rounded-md border p-2">
+                <div className="max-h-[40vh] space-y-1 overflow-y-auto rounded-md border p-2">
                   {discovered.map((dt) => (
                     <button
                       type="button"

@@ -765,9 +765,22 @@ export async function getById(id: string): Promise<MapWithDetails | null> {
   // title but not the description left the tokens on screen.
   return {
     ...map,
-    description: substituteTitleTokens(map.description, defaultParamValues(children.parameters)),
+    description: substituteTitleTokens(
+      map.description,
+      withNameTokens(defaultParamValues(children.parameters), map.name),
+    ),
     ...children,
   };
+}
+
+/**
+ * Discoverer's other title text variables: `&Workbook` and `&Worksheet`. A Neo
+ * map is one worksheet, imported under its own name, so both print that name.
+ */
+function withNameTokens(values: globalThis.Map<string, string>, mapName: string) {
+  values.set('Workbook', mapName);
+  values.set('Worksheet', mapName);
+  return values;
 }
 
 /** A map's parameter defaults, as `substituteTitleTokens` wants them. */
@@ -793,9 +806,19 @@ export async function resolveHeading(
   mapId: string,
   supplied: Record<string, unknown> = {},
   now: Date = new Date(),
-): Promise<{ title: string | null; description: string | null }> {
+): Promise<{
+  title: string | null;
+  description: string | null;
+  /** Every declared parameter that had a value this run, in declared order. */
+  parameters: Array<{ name: string; value: string }>;
+  runAt: Date;
+}> {
   const [[map], parameterRows] = await Promise.all([
-    db.select({ description: maps.description }).from(maps).where(eq(maps.id, mapId)).limit(1),
+    db
+      .select({ name: maps.name, description: maps.description })
+      .from(maps)
+      .where(eq(maps.id, mapId))
+      .limit(1),
     db.select().from(mapParameters).where(eq(mapParameters.mapId, mapId)),
   ]);
   const [layout] = await db
@@ -816,9 +839,16 @@ export async function resolveHeading(
     }
   }
 
+  const parameters = parameterRows
+    .filter((p) => values.has(p.name))
+    .map((p) => ({ name: p.name, value: values.get(p.name)! }));
+  if (map) withNameTokens(values, map.name);
+
   return {
     title: substituteTitleTokens(layout?.title ?? null, values, now),
     description: substituteTitleTokens(map?.description ?? null, values, now),
+    parameters,
+    runAt: now,
   };
 }
 

@@ -21,6 +21,10 @@
 @import "./styles/themes/dark.css";
 @import "./styles/themes/high-contrast.css";
 @import "./styles/palettes/navy.css";
+@import "./styles/palettes/forest.css";
+@import "./styles/palettes/wine.css";
+@import "./styles/palettes/ocean.css";
+@import "./styles/palettes/ochre.css";
 
 @theme inline {
   --color-background: var(--background);

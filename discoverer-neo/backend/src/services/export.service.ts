@@ -22,7 +22,8 @@ import {
 import { writeXlsx } from './exporters/excel-exporter.js';
 import { writeCsv } from './exporters/csv-exporter.js';
 import { writePdf } from './exporters/pdf-exporter.js';
-import type { ExportSource, ExportWriteResult } from './exporters/types.js';
+import type { ExportHeading, ExportSource, ExportWriteResult } from './exporters/types.js';
+import { resolveHeading } from './map.service.js';
 import {
   createWorksheetRowBuilder,
   formatTotalsRowRecord,
@@ -114,7 +115,14 @@ export interface ExportJobDeps {
     mapId: string,
     onRows?: (rows: number) => void,
     locale?: ExportLocale,
+    heading?: ExportHeading,
   ): Promise<ExportWriteResult>;
+  /**
+   * The map's heading text with the run's parameter values substituted, for
+   * the file's document header. Optional so a test's minimal deps object
+   * still works; production always supplies it.
+   */
+  resolveHeading?(mapId: string, parameters: Record<string, unknown>): Promise<ExportHeading>;
   /** Enqueue the background job that performs the export. */
   enqueue(data: ExportJobData): Promise<void>;
 }
@@ -179,13 +187,14 @@ async function defaultWriteExportFile(
   mapId: string,
   onRows?: (rows: number) => void,
   locale?: ExportLocale,
+  heading?: ExportHeading,
 ): Promise<ExportWriteResult> {
   await fsp.mkdir(path.dirname(filePath), { recursive: true });
   switch (format) {
     case 'XLSX':
-      return writeXlsx(filePath, source, { onRows });
+      return writeXlsx(filePath, source, { onRows, heading, locale });
     case 'CSV':
-      return writeCsv(filePath, source, { onRows });
+      return writeCsv(filePath, source, { onRows, heading, locale });
     case 'PDF': {
       const [map] = await db.select({ name: maps.name }).from(maps).where(eq(maps.id, mapId)).limit(1);
       const [setup] = await db
@@ -198,6 +207,7 @@ async function defaultWriteExportFile(
         pageSetup: setup ?? null,
         title: map?.name ?? 'Export',
         locale,
+        heading,
       });
     }
   }
@@ -221,6 +231,7 @@ export function defaultExportDeps(): ExportJobDeps {
     getJob: defaultGetJob,
     listJobs: defaultListJobs,
     writeExportFile: defaultWriteExportFile,
+    resolveHeading: (mapId, parameters) => resolveHeading(mapId, parameters),
     enqueue: defaultEnqueue,
   };
 }
@@ -428,6 +439,9 @@ export async function processExportJob(
 
     const source: ExportSource = { columns, batches };
     const filePath = buildExportFilePath(exportJobId, format);
+    const heading = deps.resolveHeading
+      ? await deps.resolveHeading(mapId, data.parameters ?? {})
+      : undefined;
 
     const result = await deps.writeExportFile(
       source,
@@ -438,6 +452,7 @@ export async function processExportJob(
         void safeUpdate(deps, exportJobId, { progress: streamingProgress(rows) });
       },
       data.locale,
+      heading,
     );
 
     await deps.updateJob(exportJobId, {

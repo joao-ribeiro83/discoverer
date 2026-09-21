@@ -201,6 +201,16 @@
         "conditions": "Condições",
         "parameters": "Parâmetros",
         "calculatedFields": "Campos calculados"
+      },
+      "insertVariable": "Inserir variável",
+      "variableHint": "Variáveis como &Date são substituídas por valores reais sempre que o mapa é executado ou exportado.",
+      "variables": {
+        "date": "Data da execução",
+        "time": "Hora da execução",
+        "workbook": "Nome do livro",
+        "worksheet": "Nome da folha",
+        "parameters": "Parâmetros introduzidos na execução",
+        "noParameters": "Ainda não há parâmetros definidos"
       }
     },
     "conditions": {
