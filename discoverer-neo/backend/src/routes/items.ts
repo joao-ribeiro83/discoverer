@@ -71,6 +71,8 @@ const ImportBodySchema = z.object({
         dataType: z.string().min(1),
         dataLength: z.number().int().nullable().optional(),
         nullable: z.boolean().optional(),
+        name: z.string().max(255).optional(),
+        description: z.string().max(4000).nullable().optional(),
       }),
     )
     .min(1),

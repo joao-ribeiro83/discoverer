@@ -73,7 +73,13 @@
       "dataSourceLabel": "Origen de datos",
       "selectDataSourcePlaceholder": "Seleccione un origen de datos",
       "tableNameLabel": "Nombre de la tabla",
-      "tableOwnerLabel": "Propietario de la tabla"
+      "tableOwnerLabel": "Propietario de la tabla",
+      "noObjectsForType": "No hay objetos de tipo {{type}} en este esquema. Cambie el tipo de carpeta para ver los demás.",
+      "itemsHeading": "Elementos a crear ({{count}})",
+      "itemsHint": "Cada columna marcada se convierte en un elemento. Las descripciones proceden de los comentarios de columna en Oracle; edítelas antes de guardar.",
+      "descriptionPlaceholder": "Descripción",
+      "selectAll": "Seleccionar todas",
+      "selectNone": "Limpiar"
     },
     "toast": {
       "discoveryFailed": "Error al descubrir",

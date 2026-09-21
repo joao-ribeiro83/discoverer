@@ -15,11 +15,17 @@ export interface IntrospectedColumn {
   dataType: string;
   dataLength: number | null;
   nullable: boolean;
+  /** `ALL_COL_COMMENTS.COMMENTS`, the item description a folder import prefills. */
+  comments: string | null;
 }
 
 export interface IntrospectedTable {
   tableName: string;
   tableOwner: string;
+  /** TABLE or VIEW — a folder built on it takes the same type. */
+  objectType: 'TABLE' | 'VIEW';
+  /** `ALL_TAB_COMMENTS.COMMENTS`. */
+  comments: string | null;
   columns: IntrospectedColumn[];
 }
 
@@ -27,7 +33,9 @@ export interface IntrospectedTable {
 // Redis cache helpers
 // ---------------------------------------------------------------------------
 
-const CACHE_PREFIX = 'oracle:introspection:';
+// Suffix bumped when the cached shape changes, so a stale entry from an
+// older build is simply missed rather than read back with fields absent.
+const CACHE_PREFIX = 'oracle:introspection:v2:';
 const CACHE_TTL_SECONDS = 300; // 5 minutes
 
 /**
@@ -102,8 +110,9 @@ async function getOracleConnection(ds: DataSource) {
 // ---------------------------------------------------------------------------
 
 /**
- * Connect to Oracle and introspect ALL_TABLES + ALL_TAB_COLUMNS.
- * Returns a list of accessible tables with their columns.
+ * Connect to Oracle and introspect the schema's tables AND views
+ * (ALL_OBJECTS + ALL_TAB_COLUMNS, with ALL_TAB_COMMENTS/ALL_COL_COMMENTS).
+ * Returns a list of accessible objects with their columns.
  * Results are cached in Redis for 5 minutes.
  */
 export async function introspectSchema(
@@ -149,25 +158,36 @@ export async function introspectSchema(
 }
 
 async function fetchAllTables(conn: Connection): Promise<IntrospectedTable[]> {
-  // First, get all table names owned by the specified user (or accessible)
+  // Every table and view the connecting user owns. A Discoverer folder sits
+  // on either, so listing ALL_TABLES alone made views impossible to pick.
   const tableResult = await conn.execute(
-    `SELECT TABLE_NAME, OWNER FROM ALL_TABLES WHERE OWNER = :owner ORDER BY TABLE_NAME`,
+    `SELECT o.OBJECT_NAME AS TABLE_NAME, o.OWNER, o.OBJECT_TYPE, c.COMMENTS
+       FROM ALL_OBJECTS o
+       LEFT JOIN ALL_TAB_COMMENTS c ON c.OWNER = o.OWNER AND c.TABLE_NAME = o.OBJECT_NAME
+      WHERE o.OWNER = :owner AND o.OBJECT_TYPE IN ('TABLE', 'VIEW')
+      ORDER BY o.OBJECT_NAME`,
     { owner: conn.user?.toUpperCase() ?? '' },
     { outFormat: OUT_FORMAT_OBJECT },
   );
 
   const tables: IntrospectedTable[] = [];
 
-  for (const row of tableResult.rows as Array<{ TABLE_NAME: string; OWNER: string }>) {
+  for (const row of tableResult.rows as Array<{
+    TABLE_NAME: string;
+    OWNER: string;
+    OBJECT_TYPE: string;
+    COMMENTS: string | null;
+  }>) {
     const tableName = row.TABLE_NAME;
     const tableOwner = row.OWNER;
 
-    // Get columns for this table
     const colResult = await conn.execute(
-      `SELECT COLUMN_NAME, DATA_TYPE, DATA_LENGTH, NULLABLE
-       FROM ALL_TAB_COLUMNS
-       WHERE TABLE_NAME = :tableName AND OWNER = :owner
-       ORDER BY COLUMN_ID`,
+      `SELECT c.COLUMN_NAME, c.DATA_TYPE, c.DATA_LENGTH, c.NULLABLE, cc.COMMENTS
+         FROM ALL_TAB_COLUMNS c
+         LEFT JOIN ALL_COL_COMMENTS cc
+           ON cc.OWNER = c.OWNER AND cc.TABLE_NAME = c.TABLE_NAME AND cc.COLUMN_NAME = c.COLUMN_NAME
+        WHERE c.TABLE_NAME = :tableName AND c.OWNER = :owner
+        ORDER BY c.COLUMN_ID`,
       { tableName, owner: tableOwner },
       { outFormat: OUT_FORMAT_OBJECT },
     );
@@ -177,14 +197,22 @@ async function fetchAllTables(conn: Connection): Promise<IntrospectedTable[]> {
       DATA_TYPE: string;
       DATA_LENGTH: number | null;
       NULLABLE: string;
+      COMMENTS: string | null;
     }>).map((col) => ({
       columnName: col.COLUMN_NAME,
       dataType: col.DATA_TYPE,
       dataLength: col.DATA_LENGTH ?? null,
       nullable: col.NULLABLE === 'Y',
+      comments: col.COMMENTS?.trim() || null,
     }));
 
-    tables.push({ tableName, tableOwner, columns });
+    tables.push({
+      tableName,
+      tableOwner,
+      objectType: row.OBJECT_TYPE === 'VIEW' ? 'VIEW' : 'TABLE',
+      comments: row.COMMENTS?.trim() || null,
+      columns,
+    });
   }
 
   return tables;

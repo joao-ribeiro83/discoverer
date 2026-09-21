@@ -22,9 +22,7 @@
     "exportCsv": "CSV (.csv)",
     "exportXml": "Définition de la carte (.xml)",
     "shareDisabledTitle": "Enregistrez la carte avant de la partager",
-    "comingSoonTitle": "{{feature}} bientôt disponible",
-    "comingSoonDescription": "{{feature}} sera disponible dans une prochaine session.",
-    "featureScheduling": "Planification"
+    "scheduleDisabledTitle": "Enregistrez la carte avant de la planifier"
   },
   "page": {
     "loading": "Chargement de la carte…",
@@ -47,7 +45,10 @@
     "collapsePanel": "Réduire le panneau",
     "expandPanel": "Développer le panneau",
     "runRefusedTitle": "Feuille non exécutée",
-    "runRefusedDescription": "Le planificateur de requêtes a refusé cette demande. Le panneau de résultats explique pourquoi."
+    "runRefusedDescription": "Le planificateur de requêtes a refusé cette demande. Le panneau de résultats explique pourquoi.",
+    "resizeTree": "Redimensionner le panneau des domaines d'activité",
+    "resizeResults": "Redimensionner le panneau des résultats",
+    "resizePanel": "Redimensionner le panneau des paramètres"
   },
   "tree": {
     "title": "Domaines d'activité",

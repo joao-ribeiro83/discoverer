@@ -77,7 +77,10 @@ export function ConditionalFormatDialog({ open, onOpenChange, mapId }: Condition
     enabled: open,
   })
 
-  const columns = mapQuery.data?.items ?? []
+  // A migrated worksheet keeps query items that are not placed on the sheet
+  // (`isHidden`: used only by a condition, a sort or a calculation). Only the
+  // columns the map shows can carry a format.
+  const columns = (mapQuery.data?.items ?? []).filter((c) => !c.isHidden)
   const rules = rulesQuery.data ?? []
   const labelForItem = (mapItemId: string | null): string => {
     const column = columns.find((c) => c.id === mapItemId)

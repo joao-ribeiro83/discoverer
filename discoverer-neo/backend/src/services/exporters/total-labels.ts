@@ -1,5 +1,5 @@
 /**
- * The handful of labels an export needs, in the app's four locales.
+ * The two total-row labels an export needs, in the app's four locales.
  *
  * Mirrors `mapViewer:resultsTable.grandTotal` / `subtotalFor` in
  * `frontend/src/locales/*\/mapViewer.json`. Copied rather than loaded at
@@ -15,23 +15,16 @@ export type ExportLocale = 'en' | 'es-ES' | 'fr-FR' | 'pt-PT';
 
 const SUPPORTED: readonly ExportLocale[] = ['en', 'es-ES', 'fr-FR', 'pt-PT'];
 
-const LABELS: Record<
-  ExportLocale,
-  { grandTotal: string; subtotalFor: string; parameters: string; runAt: string }
-> = {
-  en: { grandTotal: 'Grand total', subtotalFor: 'Total for {{value}}', parameters: 'Parameters', runAt: 'Run at' },
-  'es-ES': { grandTotal: 'Total general', subtotalFor: 'Total de {{value}}', parameters: 'Parámetros', runAt: 'Ejecutado el' },
-  'fr-FR': { grandTotal: 'Total général', subtotalFor: 'Total pour {{value}}', parameters: 'Paramètres', runAt: 'Exécuté le' },
-  'pt-PT': { grandTotal: 'Total geral', subtotalFor: 'Total de {{value}}', parameters: 'Parâmetros', runAt: 'Executado em' },
+const LABELS: Record<ExportLocale, { grandTotal: string; subtotalFor: string }> = {
+  en: { grandTotal: 'Grand total', subtotalFor: 'Total for {{value}}' },
+  'es-ES': { grandTotal: 'Total general', subtotalFor: 'Total de {{value}}' },
+  'fr-FR': { grandTotal: 'Total général', subtotalFor: 'Total pour {{value}}' },
+  'pt-PT': { grandTotal: 'Total geral', subtotalFor: 'Total de {{value}}' },
 };
 
 export interface TotalLabels {
   grandTotal: string;
   subtotalFor(value: string): string;
-  /** Heading of the parameter list in an export's document header. */
-  parameters: string;
-  /** Label before the run timestamp in an export's document header. */
-  runAt: string;
 }
 
 export function totalLabelsFor(locale?: string | null): TotalLabels {
@@ -40,7 +33,5 @@ export function totalLabelsFor(locale?: string | null): TotalLabels {
   return {
     grandTotal: entry.grandTotal,
     subtotalFor: (value: string) => entry.subtotalFor.replace('{{value}}', value),
-    parameters: entry.parameters,
-    runAt: entry.runAt,
   };
 }

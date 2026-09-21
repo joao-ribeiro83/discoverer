@@ -5,7 +5,12 @@ import { apiClient, getErrorMessage } from '@/lib/api'
 import { downloadBlob, safeFilename } from '@/components/map-builder/export-utils'
 import { useToast } from '@/hooks/use-toast'
 import { useLocale } from '@/hooks/useLocale'
-import type { ExportFileFormat, ExportJobStatus, MapCalculatedFieldInput } from '@/lib/types'
+import type {
+  ExportFileFormat,
+  ExportJobStatus,
+  MapCalculatedFieldInput,
+  PdfExportRequest,
+} from '@/lib/types'
 
 const TERMINAL: ExportJobStatus[] = ['COMPLETED', 'FAILED']
 /** How long to poll quietly before surfacing a "queued" toast for a slow export. */
@@ -13,7 +18,10 @@ const QUIET_POLL_MS = 1500
 
 export interface UseMapExportResult {
   /** Kick off a background export job for the given format. */
-  exportFormat: (format: ExportFileFormat, options?: { calculatedFields?: MapCalculatedFieldInput[] }) => void
+  exportFormat: (
+    format: ExportFileFormat,
+    options?: { calculatedFields?: MapCalculatedFieldInput[]; pdf?: PdfExportRequest },
+  ) => void
   isExporting: boolean
   status: ExportJobStatus | null
   progress: number
@@ -44,9 +52,11 @@ export function useMapExport(
     mutationFn: async ({
       format,
       calculatedFields,
+      pdf,
     }: {
       format: ExportFileFormat
       calculatedFields?: MapCalculatedFieldInput[]
+      pdf?: PdfExportRequest
     }) => {
       if (!mapId) throw new Error(t('mapViewer:export.saveBeforeExport'))
       const res = await apiClient.maps.createExport(mapId, {
@@ -54,6 +64,7 @@ export function useMapExport(
         parameters,
         calculatedFields,
         locale,
+        pdf,
       })
       return res.data.data
     },
@@ -128,10 +139,13 @@ export function useMapExport(
   }, [job, jobId, downloadedJobId, download, toast, t])
 
   const exportFormat = useCallback(
-    (format: ExportFileFormat, options?: { calculatedFields?: MapCalculatedFieldInput[] }) => {
+    (
+      format: ExportFileFormat,
+      options?: { calculatedFields?: MapCalculatedFieldInput[]; pdf?: PdfExportRequest },
+    ) => {
       setJobId(null)
       setDownloadedJobId(null)
-      createMutation.mutate({ format, calculatedFields: options?.calculatedFields })
+      createMutation.mutate({ format, calculatedFields: options?.calculatedFields, pdf: options?.pdf })
     },
     [createMutation],
   )

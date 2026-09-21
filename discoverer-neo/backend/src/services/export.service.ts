@@ -21,7 +21,7 @@ import {
 } from './map-execution.service.js';
 import { writeXlsx } from './exporters/excel-exporter.js';
 import { writeCsv } from './exporters/csv-exporter.js';
-import { writePdf } from './exporters/pdf-exporter.js';
+import { writePdf, type PdfExportRequest } from './exporters/pdf-exporter.js';
 import type { ExportHeading, ExportSource, ExportWriteResult } from './exporters/types.js';
 import { resolveHeading } from './map.service.js';
 import {
@@ -64,6 +64,8 @@ export interface ExportOptions {
   calculatedFields?: CalcFieldInput[];
   /** Locale for a grand/subtotal row's label text. Defaults to `en`. */
   locale?: ExportLocale;
+  /** PDF only: page size, orientation and the columns to print. */
+  pdf?: PdfExportRequest;
 }
 
 export interface ExportJobRecord {
@@ -116,6 +118,7 @@ export interface ExportJobDeps {
     onRows?: (rows: number) => void,
     locale?: ExportLocale,
     heading?: ExportHeading,
+    pdf?: PdfExportRequest,
   ): Promise<ExportWriteResult>;
   /**
    * The map's heading text with the run's parameter values substituted, for
@@ -188,13 +191,14 @@ async function defaultWriteExportFile(
   onRows?: (rows: number) => void,
   locale?: ExportLocale,
   heading?: ExportHeading,
+  pdf?: PdfExportRequest,
 ): Promise<ExportWriteResult> {
   await fsp.mkdir(path.dirname(filePath), { recursive: true });
   switch (format) {
     case 'XLSX':
-      return writeXlsx(filePath, source, { onRows, heading, locale });
+      return writeXlsx(filePath, source, { onRows, heading });
     case 'CSV':
-      return writeCsv(filePath, source, { onRows, heading, locale });
+      return writeCsv(filePath, source, { onRows, heading });
     case 'PDF': {
       const [map] = await db.select({ name: maps.name }).from(maps).where(eq(maps.id, mapId)).limit(1);
       const [setup] = await db
@@ -208,6 +212,7 @@ async function defaultWriteExportFile(
         title: map?.name ?? 'Export',
         locale,
         heading,
+        request: pdf ?? null,
       });
     }
   }
@@ -319,6 +324,7 @@ export async function createExportJob(
       parameters: options.parameters,
       calculatedFields: options.calculatedFields,
       locale: options.locale,
+      pdf: options.pdf,
     });
   } catch (err) {
     // The row exists but nothing will ever pick it up (Redis down, say) —
@@ -453,6 +459,7 @@ export async function processExportJob(
       },
       data.locale,
       heading,
+      data.pdf,
     );
 
     await deps.updateJob(exportJobId, {

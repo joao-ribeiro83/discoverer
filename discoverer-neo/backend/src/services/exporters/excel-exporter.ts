@@ -1,8 +1,7 @@
 import ExcelJS from 'exceljs';
 import type { ResultColumn } from '../map-execution.service.js';
-import { totalLabelsFor } from './total-labels.js';
 import {
-  headingLines,
+  headingText,
   cellValue,
   cellText,
   isDateType,
@@ -245,7 +244,7 @@ export async function writeXlsx(
 
   const { columns } = source;
   const formats = columns.map(excelNumberFormat);
-  const header = headingLines(options.heading, totalLabelsFor(options.locale), options.locale);
+  const header = headingText(options.heading);
   const iterator = source.batches[Symbol.asyncIterator]();
 
   // Pull batches until the sizing sample is full (or the data runs out). These
@@ -284,14 +283,19 @@ export async function writeXlsx(
       width: widths[i],
       style: formats[i] ? { numFmt: formats[i] } : undefined,
     }));
-    header.forEach((line, i) => {
-      const row = sheet.addRow([line]);
+    // Discoverer's Excel layout: the heading in A1 (line breaks kept inside
+    // the cell), row 2 blank, the column labels on row 3.
+    if (header !== null) {
+      const row = sheet.addRow([header]);
+      const cell = row.getCell(1);
       // A text cell in a numeric column must not inherit that column's numFmt.
-      row.getCell(1).numFmt = '@';
-      if (i === 0 && line !== '') row.font = { bold: true, size: 12 };
+      cell.numFmt = '@';
+      cell.alignment = { wrapText: true, vertical: 'top' };
+      cell.font = { bold: true, size: 12 };
+      row.height = Math.min(15 * (header.split('\n').length + 1), 120);
       row.commit();
-    });
-    if (header.length > 0) sheet.addRow([]).commit();
+      sheet.addRow([]).commit();
+    }
     const labelRow = sheet.addRow(columns.map((c) => c.label));
     labelRow.font = { bold: true };
     labelRow.eachCell((cell) => {

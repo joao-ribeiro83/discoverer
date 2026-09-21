@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Play, Save, Download, CalendarClock, Share2, Loader2, Paintbrush } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -18,7 +19,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu'
-import { useToast } from '@/hooks/use-toast'
 import { useMapBuilderStore } from '@/store/mapBuilder'
 import { ShareDialog } from '@/components/map-builder/ShareDialog'
 import { ConditionalFormatDialog } from '@/components/map-builder/ConditionalFormatDialog'
@@ -51,7 +51,7 @@ export function MapToolbar({
   isExporting,
 }: MapToolbarProps) {
   const { t } = useTranslation(['mapBuilder', 'common'])
-  const { toast } = useToast()
+  const navigate = useNavigate()
   const name = useMapBuilderStore((s) => s.name)
   const mapType = useMapBuilderStore((s) => s.mapType)
   const mapId = useMapBuilderStore((s) => s.mapId)
@@ -61,13 +61,6 @@ export function MapToolbar({
   const setMapType = useMapBuilderStore((s) => s.setMapType)
   const [shareOpen, setShareOpen] = useState(false)
   const [formatOpen, setFormatOpen] = useState(false)
-
-  function comingSoon(feature: string) {
-    toast({
-      title: t('mapBuilder:toolbar.comingSoonTitle', { feature }),
-      description: t('mapBuilder:toolbar.comingSoonDescription', { feature }),
-    })
-  }
 
   return (
     <div className="flex flex-wrap items-center gap-2 border-b bg-card px-4 py-2">
@@ -136,7 +129,9 @@ export function MapToolbar({
 
         <Button
           variant="outline"
-          onClick={() => comingSoon(t('mapBuilder:toolbar.featureScheduling'))}
+          disabled={!mapId}
+          title={mapId ? undefined : t('mapBuilder:toolbar.scheduleDisabledTitle')}
+          onClick={() => void navigate(`/schedules?mapId=${mapId}`)}
         >
           <CalendarClock className="h-4 w-4" /> {t('mapBuilder:toolbar.schedule')}
         </Button>
