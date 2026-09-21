@@ -201,7 +201,7 @@ describe('runDelta', () => {
     expect(result.changes.filter(other('changed')).map((c) => [c.kind, c.key]).sort()).toEqual([
       ['deactivated', 'user:MJONES'],
       ['revoked', 'grant:SALES_ROLE|100|VIEW'],
-      ['revoked', 'map_share:700|MJONES'],
+      ['revoked', 'map_share:map:700:{11111111-1111-1111-1111-111111111111}|MJONES'],
     ]);
     expect(state.tables.user_business_area_grants).toHaveLength(grantsBefore - 1);
     expect(state.tables.users.find((u) => String(u.name).toUpperCase().includes('MJONES'))?.isActive).toBe(false);
