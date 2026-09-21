@@ -227,6 +227,28 @@ export function MigrationPage() {
       toast({ title: t('migration:toasts.couldNotStart'), description: getErrorMessage(err), variant: 'destructive' }),
   })
 
+  // Re-imports EVERY object in place (the delta): a migrator fix reaches
+  // folders, items, joins and maps alike, nothing is deleted, ids survive.
+  const reimportAllMutation = useMutation({
+    mutationFn: async () =>
+      (
+        await apiClient.migration.reimportAll({
+          dataSourceId,
+          schemaOwner: schemaOwner || undefined,
+          dryRun,
+        })
+      ).data.data,
+    onSuccess: (started) => {
+      setActiveJobId(started.id)
+      toast({
+        title: dryRun ? t('migration:toasts.dryRunStarted') : t('migration:toasts.deltaStarted'),
+        description: t('migration:toasts.progressUpdatesBelow'),
+      })
+    },
+    onError: (err) =>
+      toast({ title: t('migration:toasts.couldNotStart'), description: getErrorMessage(err), variant: 'destructive' }),
+  })
+
   // Announce the outcome once, when the job leaves RUNNING.
   const lastStatusRef = useRef<string | null>(null)
   useEffect(() => {
@@ -280,6 +302,7 @@ export function MigrationPage() {
   const counts = result ? (result.dryRun ? result.planned : result.inserted) : null
   // A maps re-import reports its own counts; a dry run reports what it planned.
   const mapsResult = job?.mapsResult ?? null
+  const deltaResult = job?.deltaResult ?? null
   const mapsCounts = mapsResult ? (mapsResult.dryRun ? mapsResult.planned : mapsResult.written) : null
 
   return (
@@ -393,10 +416,26 @@ export function MigrationPage() {
               )}
               {t('migration:actions.reimportMaps')}
             </Button>
+
+            <Button
+              variant="outline"
+              onClick={() => reimportAllMutation.mutate()}
+              disabled={!canAct}
+            >
+              {reimportAllMutation.isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="mr-2 h-4 w-4" />
+              )}
+              {t('migration:actions.reimportAll')}
+            </Button>
           </div>
 
           <p className="text-sm text-muted-foreground">
             {t('migration:source.reimportMapsHelp')}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            {t('migration:source.reimportAllHelp')}
           </p>
 
           {!dryRun && (
@@ -652,6 +691,43 @@ export function MigrationPage() {
                     </tbody>
                   </table>
                 </div>
+              </div>
+            )}
+
+            {/* Re-import everything (delta) summary */}
+            {deltaResult && (
+              <div className="space-y-2 rounded border p-3 text-sm">
+                <h4 className="font-medium">{t('migration:job.summary')}</h4>
+                <p className="text-muted-foreground">
+                  {deltaResult.noop
+                    ? t('migration:job.deltaNoop', { objects: deltaResult.objects })
+                    : t('migration:job.deltaSummary', {
+                        objects: deltaResult.objects,
+                        duration: (deltaResult.durationMs / 1000).toFixed(1),
+                        verb: deltaResult.dryRun
+                          ? t('migration:job.deltaWouldWrite')
+                          : t('migration:job.deltaWrote'),
+                      })}
+                </p>
+                <ul className="space-y-0.5 text-muted-foreground">
+                  {Object.entries(deltaResult.counts).flatMap(([kind, tables]) =>
+                    Object.entries(tables).map(([table, n]) => (
+                      <li key={`${kind}-${table}`} className="tabular-nums">
+                        {n} {t(`migration:tables.${table}`, { defaultValue: table })} — {kind}
+                      </li>
+                    )),
+                  )}
+                </ul>
+                {deltaResult.refused.length > 0 && (
+                  <p className="text-warning">
+                    {t('migration:job.deltaRefused', { count: deltaResult.refused.length })}
+                  </p>
+                )}
+                {deltaResult.verifyStatus && (
+                  <p className="text-muted-foreground">
+                    {t('migration:job.deltaVerify', { status: deltaResult.verifyStatus })}
+                  </p>
+                )}
               </div>
             )}
 

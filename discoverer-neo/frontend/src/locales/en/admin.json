@@ -79,7 +79,9 @@
       "itemsHint": "Each ticked column becomes an item. Descriptions come from the column comments in Oracle; edit them before saving.",
       "descriptionPlaceholder": "Description",
       "selectAll": "Select all",
-      "selectNone": "Clear"
+      "selectNone": "Clear",
+      "searchObjectsPlaceholder": "Filter by name or comment…",
+      "objectsShown": "{{shown}} of {{total}}"
     },
     "toast": {
       "discoveryFailed": "Discovery failed",

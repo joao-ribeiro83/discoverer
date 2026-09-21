@@ -57,6 +57,7 @@ export function FoldersPage() {
   // The object picked from the discovery list, and which of its columns
   // become items (with the description each will get).
   const [pickedTable, setPickedTable] = useState<IntrospectedTable | null>(null)
+  const [objectFilter, setObjectFilter] = useState('')
   const [pickedColumns, setPickedColumns] = useState<Record<string, { checked: boolean; description: string }>>({})
 
   const { data: businessAreas } = useQuery({
@@ -106,7 +107,7 @@ export function FoldersPage() {
   }
 
   const discoverMutation = useMutation({
-    mutationFn: async (dataSourceId: string) => (await apiClient.dataSources.tables(dataSourceId)).data.data.tables,
+    mutationFn: async (dataSourceId: string) => apiClient.dataSources.tablesAll(dataSourceId),
     onSuccess: (tables) => setDiscovered(tables),
     onError: (err) => {
       toast({
@@ -130,7 +131,13 @@ export function FoldersPage() {
   }
 
   const folderType = form.watch('folderType')
-  const visibleObjects = discovered.filter((dt) => dt.objectType === folderType)
+  const objectsOfType = discovered.filter((dt) => dt.objectType === folderType)
+  const needle = objectFilter.trim().toUpperCase()
+  const visibleObjects = needle
+    ? objectsOfType.filter(
+        (dt) => dt.tableName.toUpperCase().includes(needle) || (dt.comments ?? '').toUpperCase().includes(needle),
+      )
+    : objectsOfType
   const chosenColumns = pickedTable
     ? pickedTable.columns.filter((c) => pickedColumns[c.columnName]?.checked)
     : []
@@ -331,6 +338,19 @@ export function FoldersPage() {
                 </div>
               </div>
 
+              {discovered.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={objectFilter}
+                    onChange={(e) => setObjectFilter(e.target.value)}
+                    placeholder={t('admin:folders.form.searchObjectsPlaceholder')}
+                    aria-label={t('admin:folders.form.searchObjectsPlaceholder')}
+                  />
+                  <span className="shrink-0 text-xs text-muted-foreground">
+                    {t('admin:folders.form.objectsShown', { shown: visibleObjects.length, total: objectsOfType.length })}
+                  </span>
+                </div>
+              )}
               {discovered.length > 0 && (
                 <div className="max-h-[40vh] space-y-1 overflow-y-auto rounded-md border p-2">
                   {visibleObjects.length === 0 && (

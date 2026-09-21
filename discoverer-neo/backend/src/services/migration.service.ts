@@ -35,6 +35,10 @@ import {
   runMigration,
   TARGET_TABLE_ORDER,
   usernameToEmailLocal,
+  runDelta,
+  createDeltaDb,
+  commitShaFromEnv,
+  verifyMigration,
 } from '@discoverer-neo/core/migration';
 import type {
   AssessmentReport,
@@ -45,6 +49,8 @@ import type {
   MigrationEvent,
   MigrationResult,
   MigrationWriter,
+  DeltaDb,
+  DeltaResult,
 } from '@discoverer-neo/core/migration';
 import { eq } from 'drizzle-orm';
 
@@ -88,6 +94,10 @@ export class MigrationError extends Error {
 export interface MigrationTargetHandle {
   writer: MigrationWriter;
   close: () => Promise<void>;
+  /** The delta's view of the same target; absent in a test double that never runs one. */
+  deltaDb?: DeltaDb;
+  /** Raw target handle for the post-delta verify. */
+  verifyDb?: Parameters<typeof verifyMigration>[0];
 }
 
 export interface MigrationDeps {
@@ -154,7 +164,12 @@ export function defaultDeps(): MigrationDeps {
     },
     makeTarget: () => {
       const target = createTargetDb({ connectionString: config.DATABASE_URL });
-      return { writer: createMigrationWriter(target.db), close: target.close };
+      return {
+        writer: createMigrationWriter(target.db),
+        deltaDb: createDeltaDb(target.db),
+        verifyDb: target.db,
+        close: target.close,
+      };
     },
   };
 }
@@ -221,7 +236,27 @@ export interface MigrationLogLine {
  * and rebuilds the migrated maps in place — see `reimportMaps` for why that is
  * a separate operation rather than a second full run.
  */
-export type MigrationJobKind = 'FULL' | 'MAPS';
+export type MigrationJobKind = 'FULL' | 'MAPS' | 'DELTA';
+
+/**
+ * What a "re-import everything" (delta) job reports: the replay re-transforms
+ * every EUL object with the CURRENT migrator and writes whatever now differs
+ * from what the last run recorded — so a migrator fix reaches every object,
+ * not only the maps. `refused` lists source objects that vanished from the
+ * EUL (D-080: never deleted here) or that Neo no longer holds.
+ */
+export interface DeltaSummary {
+  dryRun: boolean;
+  adopted: boolean;
+  noop: boolean;
+  objects: number;
+  durationMs: number;
+  /** change kind → target table → count */
+  counts: Record<string, Record<string, number>>;
+  refused: string[];
+  /** The verifier's status after a live delta; null on a dry run. */
+  verifyStatus: string | null;
+}
 
 export interface MigrationJob {
   id: string;
@@ -243,6 +278,8 @@ export interface MigrationJob {
   result: MigrationResult | null;
   /** Set instead of `result` when `kind` is 'MAPS'. */
   mapsResult: MapReimportResult | null;
+  /** Set instead of `result` when `kind` is 'DELTA'. */
+  deltaResult: DeltaSummary | null;
   /**
    * Set when the run provisioned temporary passwords.
    *
@@ -330,6 +367,7 @@ function createJob(
     droppedLogs: 0,
     result: null,
     mapsResult: null,
+    deltaResult: null,
     credentialsFile: null,
     error: null,
   };
@@ -575,6 +613,122 @@ export function startMapReimport(
         message: job.error,
         at: new Date().toISOString(),
       });
+    } finally {
+      job.finishedAt = new Date().toISOString();
+      if (target) {
+        try {
+          await target.close();
+        } catch {
+          // The pool is being discarded anyway.
+        }
+      }
+      try {
+        await options.onSettled?.();
+      } catch {
+        // Best-effort — see StartMigrationOptions.onSettled.
+      }
+    }
+  })();
+
+  return job;
+}
+
+function summarizeDelta(result: DeltaResult, verifyStatus: string | null): DeltaSummary {
+  const counts: Record<string, Record<string, number>> = {};
+  for (const change of result.changes) {
+    counts[change.kind] ??= {};
+    counts[change.kind]![change.table] = (counts[change.kind]![change.table] ?? 0) + 1;
+  }
+  return {
+    dryRun: result.dryRun,
+    adopted: result.adopted,
+    noop: result.noop,
+    objects: result.objects,
+    durationMs: result.durationMs,
+    counts,
+    refused: result.changes
+      .filter((c) => c.kind === 'deleted' || c.kind === 'missing')
+      .map((c) => `${c.kind.toUpperCase()} ${c.key}`),
+    verifyStatus,
+  };
+}
+
+/**
+ * Re-import EVERY object of an already-migrated database: business areas,
+ * folders, items, joins, hierarchies, functions, users, grants, maps — the
+ * lot. Same operation as `dn-migrate delta`: replay the migration with the
+ * current transformer, diff each object against what the last run recorded,
+ * and rewrite in place what differs. Objects Neo users created stay; objects
+ * deleted from the EUL are reported, never deleted (D-080). Map ids survive,
+ * so schedules and shares do too.
+ *
+ * A live run ends with the verifier publishing the formula partition
+ * (`verify --compile`) — the step every re-import used to forget, leaving
+ * `compile_status` NULL and every calculated field refused.
+ */
+export function startDelta(
+  options: StartMapReimportOptions,
+  deps: MigrationDeps = defaultDeps(),
+): MigrationJob {
+  if (hasRunningJob()) {
+    throw new MigrationError('A migration is already running; wait for it to finish', 409);
+  }
+
+  const job = createJob('DELTA', options);
+  const log = (level: MigrationLogLine['level'], phase: string, message: string): void => {
+    job.currentPhase = phase;
+    job.logs.push({ level, phase, message, at: new Date().toISOString() });
+    if (job.logs.length > MAX_LOG_LINES) {
+      job.logs.shift();
+      job.droppedLogs += 1;
+    }
+  };
+
+  void (async () => {
+    let target: MigrationTargetHandle | null = null;
+    try {
+      const connection = await deps.loadConnection(options.dataSourceId);
+      const source = deps.makeSource(connection);
+      target = deps.makeTarget();
+      if (!target.deltaDb) throw new Error('This target cannot run a delta');
+
+      log('INFO', 'read', 'Reading the EUL and replaying the migration with the current transformer…');
+      job.progress = 10;
+      const result = await runDelta({
+        source,
+        db: target.deltaDb,
+        readOptions: { schemaOwner: options.schemaOwner },
+        dryRun: options.dryRun === true,
+        dataSourceId: options.dataSourceId,
+        commitSha: commitShaFromEnv(),
+      });
+      job.progress = 80;
+
+      let verifyStatus: string | null = null;
+      if (!result.dryRun && target.verifyDb) {
+        log('INFO', 'verify', 'Verifying and publishing the calculated-field partition (compile)…');
+        const report = await verifyMigration(target.verifyDb, { writeCompileStatus: true });
+        verifyStatus = report.status;
+        log(report.status === 'VERIFIED' ? 'INFO' : 'WARN', 'verify', `Verifier: ${report.status}`);
+      }
+
+      job.deltaResult = summarizeDelta(result, verifyStatus);
+      const changed = result.changes.length - job.deltaResult.refused.length;
+      log(
+        'INFO',
+        'done',
+        result.noop
+          ? 'No object differs from the last recorded run.'
+          : `${result.dryRun ? 'Would write' : 'Wrote'} ${changed} change(s) over ${result.objects} source object(s).`,
+      );
+      for (const line of job.deltaResult.refused) log('WARN', 'done', line);
+      job.status = job.deltaResult.refused.length > 0 ? 'COMPLETED_WITH_BLOCKERS' : 'COMPLETED';
+      job.progress = 100;
+      job.currentPhase = 'done';
+    } catch (err) {
+      job.status = 'FAILED';
+      job.error = err instanceof Error ? err.message : String(err);
+      log('ERROR', 'failed', job.error);
     } finally {
       job.finishedAt = new Date().toISOString();
       if (target) {

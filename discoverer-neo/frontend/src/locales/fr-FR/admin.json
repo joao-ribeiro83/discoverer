@@ -79,7 +79,9 @@
       "itemsHint": "Chaque colonne cochée devient un élément. Les descriptions viennent des commentaires de colonne dans Oracle ; modifiez-les avant d’enregistrer.",
       "descriptionPlaceholder": "Description",
       "selectAll": "Tout sélectionner",
-      "selectNone": "Effacer"
+      "selectNone": "Effacer",
+      "searchObjectsPlaceholder": "Filtrer par nom ou commentaire…",
+      "objectsShown": "{{shown}} sur {{total}}"
     },
     "toast": {
       "discoveryFailed": "Échec de la découverte",

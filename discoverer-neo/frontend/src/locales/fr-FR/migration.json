@@ -8,7 +8,8 @@
     "analyze": "Analyser",
     "runDryRun": "Lancer une simulation",
     "runMigration": "Lancer la migration",
-    "reimportMaps": "Réimporter les cartes"
+    "reimportMaps": "Réimporter les cartes",
+    "reimportAll": "Tout réimporter"
   },
   "source": {
     "title": "Source",
@@ -24,7 +25,8 @@
     "forceEul5": "Forcer EUL5",
     "dryRunLabel": "Simulation (valider sans écrire)",
     "liveMigrationWarning": "Une migration réelle écrit dans cette base de données Discoverer Neo. Lancez d'abord une simulation et examinez le rapport ci-dessous.",
-    "reimportMapsHelp": "La réimportation des cartes reconstruit uniquement les cartes d'une base déjà migrée, à partir des classeurs de l'EUL. Elle remplace toutes les cartes du domaine d'activité « Migrated Workbooks » — les modifications apportées depuis la migration initiale sont perdues — et ne touche ni aux utilisateurs, ni aux dossiers, ni aux éléments, ni aux octrois d'accès. Lancez d'abord une simulation."
+    "reimportMapsHelp": "La réimportation des cartes reconstruit uniquement les cartes d'une base déjà migrée, à partir des classeurs de l'EUL. Elle remplace toutes les cartes du domaine d'activité « Migrated Workbooks » — les modifications apportées depuis la migration initiale sont perdues — et ne touche ni aux utilisateurs, ni aux dossiers, ni aux éléments, ni aux octrois d'accès. Lancez d'abord une simulation.",
+    "reimportAllHelp": "Tout réimporter rejoue toute la migration avec la version actuelle du migrateur et réécrit, objet par objet, ce qui diffère désormais : domaines d'activité, dossiers, éléments, jointures, hiérarchies, fonctions, utilisateurs, droits et cartes. Rien n'est supprimé et les identifiants des cartes sont conservés, donc les planifications et les partages restent ; les objets retirés de l'EUL sont seulement signalés. Une exécution réelle se termine par la compilation des champs calculés. Faites d'abord une simulation."
   },
   "detected": {
     "title": "Source détectée",
@@ -90,7 +92,13 @@
     "droppedLogsNotice": "({{count}} ligne(s) antérieure(s) tronquée(s))",
     "noLogEntries": "Aucune entrée de journal pour le moment.",
     "mapsReimportSummary": "Remplacé {{replaced}} carte(s) à partir de {{workbooks}} classeur(s) contenant {{worksheets}} feuille(s), en {{duration}}s.",
-    "mapsReimportUnresolved": "Impossible de migrer {{columns}} colonne(s) et {{conditions}} condition(s). Voir le journal ci-dessus."
+    "mapsReimportUnresolved": "Impossible de migrer {{columns}} colonne(s) et {{conditions}} condition(s). Voir le journal ci-dessus.",
+    "deltaSummary": "{{verb}} les différences trouvées sur {{objects}} objet(s) source, en {{duration}} s.",
+    "deltaNoop": "Rien ne diffère de la dernière exécution enregistrée ({{objects}} objets source).",
+    "deltaWouldWrite": "Écrirait",
+    "deltaWrote": "A écrit",
+    "deltaRefused": "{{count}} objet(s) refusé(s) (retirés de l'EUL ou absents de Neo). Voir le journal ci-dessus.",
+    "deltaVerify": "Vérificateur après l'exécution : {{status}}."
   },
   "tables": {
     "users": "Utilisateurs",
@@ -135,6 +143,7 @@
     "seeLogBelow": "Consultez le journal ci-dessous.",
     "mapReimportStarted": "Réimportation des cartes démarrée",
     "migrationBlockers": "Migration terminee avec des blocages",
-    "migrationBlockersBody": "Les lignes ont ete ecrites, mais la reconciliation de l'execution ne concorde pas. Executez dn-migrate verify sur la cible avant d'utiliser cet environnement."
+    "migrationBlockersBody": "Les lignes ont ete ecrites, mais la reconciliation de l'execution ne concorde pas. Executez dn-migrate verify sur la cible avant d'utiliser cet environnement.",
+    "deltaStarted": "Réimportation de tout lancée"
   }
 }
