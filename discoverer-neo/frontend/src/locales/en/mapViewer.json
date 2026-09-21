@@ -140,7 +140,24 @@
     "exportQueuedTitle": "Export queued",
     "exportQueuedDescription": "This may take a moment for large result sets.",
     "downloadFailedTitle": "Download failed",
-    "exportJobFailedFallback": "The export job failed."
+    "exportJobFailedFallback": "The export job failed.",
+    "pdfDialog": {
+      "title": "Export to PDF",
+      "description": "Choose the paper and the columns. The map description is printed at the top of the first page.",
+      "pageSize": "Paper size",
+      "orientation": "Orientation",
+      "portrait": "Portrait",
+      "landscape": "Landscape",
+      "columns": "Columns ({{count}} selected)",
+      "selectAll": "Select all",
+      "selectNone": "Clear",
+      "confirm": "Export",
+      "sizes": {
+        "A4": "A4",
+        "A3": "A3",
+        "LETTER": "Letter"
+      }
+    }
   },
   "exportHistory": {
     "title": "Exports",

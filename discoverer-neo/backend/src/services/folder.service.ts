@@ -413,8 +413,9 @@ export interface ImportResult {
 }
 
 /**
- * Auto-create folders from Oracle table introspection.
- * For each table, creates a TABLE folder with items auto-discovered from columns.
+ * Auto-create folders from Oracle introspection.
+ * For each object, creates a TABLE or VIEW folder (whichever it is) with items
+ * auto-discovered from its columns; a column comment becomes the item's description.
  */
 export async function importFromOracle(
   dataSourceId: string,
@@ -472,8 +473,10 @@ export async function importFromOracle(
         .values({
           businessAreaId,
           name: generateFolderName(tableData),
-          description: `Imported from Oracle table ${tableData.tableOwner}.${tableData.tableName}`,
-          folderType: 'TABLE',
+          description:
+            tableData.comments ??
+            `Imported from Oracle ${tableData.objectType.toLowerCase()} ${tableData.tableOwner}.${tableData.tableName}`,
+          folderType: tableData.objectType,
           tableName: tableData.tableName,
           tableOwner: tableData.tableOwner,
           dataSourceId,
@@ -486,7 +489,7 @@ export async function importFromOracle(
         (col, idx) => ({
           folderId: newFolder!.id,
           name: col.columnName,
-          description: `${col.dataType}${col.dataLength ? `(${col.dataLength})` : ''}`,
+          description: col.comments ?? `${col.dataType}${col.dataLength ? `(${col.dataLength})` : ''}`,
           itemType: 'CI',
           columnName: col.columnName,
           dataType: col.dataType,

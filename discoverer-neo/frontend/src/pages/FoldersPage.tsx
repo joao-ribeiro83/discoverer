@@ -16,6 +16,7 @@ import { DeleteConfirmDialog } from '@/components/admin/DeleteConfirmDialog'
 import { FolderSharingDialog } from '@/components/admin/FolderSharingDialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
@@ -53,6 +54,10 @@ export function FoldersPage() {
   const [deleting, setDeleting] = useState<Folder | null>(null)
   const [sharing, setSharing] = useState<Folder | null>(null)
   const [discovered, setDiscovered] = useState<IntrospectedTable[]>([])
+  // The object picked from the discovery list, and which of its columns
+  // become items (with the description each will get).
+  const [pickedTable, setPickedTable] = useState<IntrospectedTable | null>(null)
+  const [pickedColumns, setPickedColumns] = useState<Record<string, { checked: boolean; description: string }>>({})
 
   const { data: businessAreas } = useQuery({
     queryKey: ['business-areas'],
@@ -80,6 +85,8 @@ export function FoldersPage() {
     setEditing(null)
     setDiscovered([])
     form.reset({ name: '', description: '', folderType: 'TABLE', dataSourceId: '', tableName: '', tableOwner: '', customSql: '' })
+    setPickedTable(null)
+    setPickedColumns({})
     setDialogOpen(true)
   }
 
@@ -110,11 +117,23 @@ export function FoldersPage() {
     },
   })
 
-  function applyDiscoveredTable(table: { tableName: string; tableOwner?: string }) {
+  function applyDiscoveredTable(table: IntrospectedTable) {
     form.setValue('tableName', table.tableName)
     if (table.tableOwner) form.setValue('tableOwner', table.tableOwner)
     if (!form.getValues('name')) form.setValue('name', table.tableName)
+    if (!form.getValues('description') && table.comments) form.setValue('description', table.comments)
+    setPickedTable(table)
+    // Every column proposed, ticked, with its Oracle comment as description.
+    setPickedColumns(
+      Object.fromEntries(table.columns.map((c) => [c.columnName, { checked: true, description: c.comments ?? '' }])),
+    )
   }
+
+  const folderType = form.watch('folderType')
+  const visibleObjects = discovered.filter((dt) => dt.objectType === folderType)
+  const chosenColumns = pickedTable
+    ? pickedTable.columns.filter((c) => pickedColumns[c.columnName]?.checked)
+    : []
 
   const saveMutation = useMutation({
     mutationFn: async (values: FormValues) => {
@@ -131,7 +150,22 @@ export function FoldersPage() {
       if (editing) {
         return (await apiClient.folders.update(editing.id, payload)).data.data
       }
-      return (await apiClient.folders.create(businessAreaId, payload)).data.data
+      const folder = (await apiClient.folders.create(businessAreaId, payload)).data.data
+      // The ticked columns become the folder's items in one call — the
+      // "approve, then create" step Discoverer Administrator's wizard had.
+      if (chosenColumns.length > 0) {
+        await apiClient.items.import(
+          folder.id,
+          chosenColumns.map((c) => ({
+            columnName: c.columnName,
+            dataType: c.dataType,
+            dataLength: c.dataLength,
+            nullable: c.nullable,
+            description: pickedColumns[c.columnName]?.description || null,
+          })),
+        )
+      }
+      return folder
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['folders', businessAreaId] })
@@ -299,14 +333,24 @@ export function FoldersPage() {
 
               {discovered.length > 0 && (
                 <div className="max-h-[40vh] space-y-1 overflow-y-auto rounded-md border p-2">
-                  {discovered.map((dt) => (
+                  {visibleObjects.length === 0 && (
+                    <p className="px-2 py-1 text-sm text-muted-foreground">
+                      {t('admin:folders.form.noObjectsForType', { type: folderType })}
+                    </p>
+                  )}
+                  {visibleObjects.map((dt) => (
                     <button
                       type="button"
                       key={dt.tableName}
                       onClick={() => applyDiscoveredTable(dt)}
-                      className="block w-full rounded px-2 py-1 text-left text-sm hover:bg-muted"
+                      className={`block w-full rounded px-2 py-1 text-left text-sm hover:bg-muted ${
+                        pickedTable?.tableName === dt.tableName ? 'bg-muted font-medium' : ''
+                      }`}
                     >
                       {dt.tableName}
+                      {dt.comments && (
+                        <span className="ml-2 text-xs font-normal text-muted-foreground">{dt.comments}</span>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -322,6 +366,67 @@ export function FoldersPage() {
                   <Input id="tableOwner" {...form.register('tableOwner')} />
                 </div>
               </div>
+
+              {!editing && pickedTable && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label>{t('admin:folders.form.itemsHeading', { count: chosenColumns.length })}</Label>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={() => {
+                        const all = chosenColumns.length === pickedTable.columns.length
+                        setPickedColumns((prev) =>
+                          Object.fromEntries(
+                            Object.entries(prev).map(([k, v]) => [k, { ...v, checked: !all }]),
+                          ),
+                        )
+                      }}
+                    >
+                      {chosenColumns.length === pickedTable.columns.length
+                        ? t('admin:folders.form.selectNone')
+                        : t('admin:folders.form.selectAll')}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{t('admin:folders.form.itemsHint')}</p>
+                  <ul className="max-h-[40vh] divide-y overflow-y-auto rounded-md border">
+                    {pickedTable.columns.map((c) => (
+                      <li key={c.columnName} className="grid grid-cols-[auto_1fr_1fr] items-center gap-2 px-2 py-1.5 text-sm">
+                        <Checkbox
+                          id={`col-${c.columnName}`}
+                          checked={pickedColumns[c.columnName]?.checked ?? false}
+                          onCheckedChange={(v) =>
+                            setPickedColumns((prev) => ({
+                              ...prev,
+                              [c.columnName]: { ...(prev[c.columnName] ?? { description: '' }), checked: v === true },
+                            }))
+                          }
+                        />
+                        <Label htmlFor={`col-${c.columnName}`} className="cursor-pointer truncate font-normal">
+                          {c.columnName}
+                          <span className="ml-1 text-xs text-muted-foreground">
+                            {c.dataType}
+                            {c.dataLength ? `(${c.dataLength})` : ''}
+                          </span>
+                        </Label>
+                        <Input
+                          className="h-7 text-xs"
+                          value={pickedColumns[c.columnName]?.description ?? ''}
+                          placeholder={t('admin:folders.form.descriptionPlaceholder')}
+                          onChange={(e) =>
+                            setPickedColumns((prev) => ({
+                              ...prev,
+                              [c.columnName]: { ...(prev[c.columnName] ?? { checked: true }), description: e.target.value },
+                            }))
+                          }
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </>
           )}
 

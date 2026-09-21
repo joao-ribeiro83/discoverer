@@ -42,11 +42,15 @@ export interface IntrospectedColumn {
   dataType: string
   dataLength: number | null
   nullable: boolean
+  /** The column's comment in Oracle, if any — prefills the item description. */
+  comments: string | null
 }
 
 export interface IntrospectedTable {
   tableName: string
   tableOwner: string
+  objectType: 'TABLE' | 'VIEW'
+  comments: string | null
   columns: IntrospectedColumn[]
 }
 
@@ -730,12 +734,22 @@ export interface ExportJob {
   completedAt: string | null
 }
 
+/** PDF export choices: paper, orientation and which result columns to print. */
+export interface PdfExportRequest {
+  pageSize?: 'A4' | 'A3' | 'LETTER'
+  orientation?: 'PORTRAIT' | 'LANDSCAPE'
+  /** `ResultColumn.name`s to print; omitted = all. */
+  columns?: string[]
+}
+
 export interface ExportMapBody {
   format: ExportFileFormat
   parameters?: Record<string, unknown>
   calculatedFields?: MapCalculatedFieldInput[]
   /** Locale for a grand/subtotal row's label text. Defaults to `en`. */
   locale?: string
+  /** PDF only. */
+  pdf?: PdfExportRequest
 }
 
 // --- schedules ---------------------------------------------------------

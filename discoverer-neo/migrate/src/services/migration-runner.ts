@@ -24,7 +24,8 @@ import { validateEulData } from './assessment.js';
 import type { ValidationResult } from './assessment.js';
 import type { EulReadResult, ReadEulOptions } from './eul-reader.js';
 import { readEulSchema } from './eul-reader.js';
-import type { EulSource } from './oracle-client.js';
+import { resolveExecutor, type EulSource } from './oracle-client.js';
+import { readCatalog, objectKey, columnKey } from './oracle-catalog.js';
 import type { MigrationWriter } from './migration-writer.js';
 import {
   buildMapConditionRows,
@@ -706,9 +707,25 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
   planned.business_areas = baRows.length;
 
   // --- 3. folders -----------------------------------------------------------
+  // The EUL says only SOBJ/COBJ; whether a simple folder's object is a TABLE
+  // or a VIEW, and what its columns' comments say, lives in the data
+  // dictionary. Read once for every owner the folders name; best-effort.
+  const transformedFolders = eul.data.folders.map((f) => transformFolder(f, version.version));
+  const catalog = await readCatalog(
+    resolveExecutor(options.source),
+    transformedFolders.map((t) => ({ owner: t.tableOwner, name: t.tableName })),
+  );
+  for (const failure of catalog.failures) {
+    warnings.push({
+      code: 'CATALOG_UNAVAILABLE',
+      message:
+        `Could not read ALL_OBJECTS/ALL_COL_COMMENTS for owner ${failure.owner} (${failure.reason}); ` +
+        `its folders keep type TABLE and its items keep their EUL descriptions.`,
+    });
+  }
+  const folderObjectBySource = new Map<number, { owner: string; table: string }>();
   const folderRows: Record<string, unknown>[] = [];
-  for (const eulFolder of eul.data.folders) {
-    const t = transformFolder(eulFolder, version.version);
+  for (const t of transformedFolders) {
     collect(t.warnings);
     const baId = t.businessAreaSourceId !== null ? baIdBySource.get(t.businessAreaSourceId) : undefined;
     if (!baId) {
@@ -720,13 +737,20 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     folderIdBySource.set(t.sourceId, id);
     keyById.set(id, `folder:${t.sourceId}`);
     if (t.businessAreaSourceId !== null) folderBaSource.set(t.sourceId, t.businessAreaSourceId);
+    let folderType: string = t.folderType;
+    if (t.tableOwner && t.tableName) {
+      folderObjectBySource.set(t.sourceId, { owner: t.tableOwner, table: t.tableName });
+      if (folderType === 'TABLE' && catalog.objectTypes.get(objectKey(t.tableOwner, t.tableName)) === 'VIEW') {
+        folderType = 'VIEW';
+      }
+    }
     folderRows.push({
       id,
       businessAreaId: baId,
       dataSourceId: options.dataSourceId ?? null,
       name: t.name,
       description: t.description,
-      folderType: t.folderType,
+      folderType,
       tableName: t.tableName,
       tableOwner: t.tableOwner,
       customSql: t.customSql,
@@ -815,11 +839,17 @@ export async function runMigration(options: RunMigrationOptions): Promise<Migrat
     itemIdBySource.set(t.sourceId, id);
     keyById.set(id, `item:${t.sourceId}`);
     itemFolderUuid.set(t.sourceId, folderId);
+    // An item without a description of its own takes the column's comment.
+    const object = t.folderSourceId !== null ? folderObjectBySource.get(t.folderSourceId) : undefined;
+    const comment =
+      object && t.columnName
+        ? catalog.columnComments.get(columnKey(object.owner, object.table, t.columnName))
+        : undefined;
     const row: Record<string, unknown> = {
       id,
       folderId,
       name: t.name,
-      description: t.description,
+      description: t.description?.trim() ? t.description : (comment ?? t.description),
       itemType: t.itemType,
       columnName: t.columnName,
       formula: t.formula,

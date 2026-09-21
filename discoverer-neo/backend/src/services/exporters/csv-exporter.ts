@@ -1,11 +1,10 @@
 import fs from 'node:fs';
 import { pipeline } from 'node:stream/promises';
 import { format as formatCsv } from 'fast-csv';
-import { totalLabelsFor } from './total-labels.js';
 import {
   cellValue,
   cellText,
-  headingLines,
+  headingText,
   isDateType,
   PROGRESS_ROW_INTERVAL,
   type ExportSource,
@@ -63,10 +62,11 @@ export async function writeCsv(
     (c) => isDateType(c.dataType) && !/TIMESTAMP/i.test(c.dataType ?? ''),
   );
 
-  // Column labels are written as an ordinary row so the document header
-  // (`headingLines`) can precede them — fast-csv's `headers` option can't.
+  // Column labels are written as an ordinary row so the document header can
+  // precede them — fast-csv's `headers` option can't. Discoverer's layout:
+  // header on row 1, row 2 blank, labels on row 3.
   const csv = formatCsv({ headers: false });
-  const header = headingLines(options.heading, totalLabelsFor(options.locale), options.locale);
+  const header = headingText(options.heading);
   const out = fs.createWriteStream(filePath);
   out.write(UTF8_BOM);
 
@@ -76,8 +76,10 @@ export async function writeCsv(
   // A generator feeding `pipeline` gives us backpressure for free: it is only
   // pulled from as fast as the file stream drains.
   async function* rows(): AsyncGenerator<string[]> {
-    for (const line of header) yield [line];
-    if (header.length > 0) yield [];
+    if (header !== null) {
+      yield [header];
+      yield [];
+    }
     yield columns.map((c) => c.label);
     for await (const batch of source.batches) {
       for (const row of batch) {

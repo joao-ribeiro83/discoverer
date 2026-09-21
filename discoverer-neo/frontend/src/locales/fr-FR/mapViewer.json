@@ -140,7 +140,24 @@
     "exportQueuedTitle": "Exportation mise en file d'attente",
     "exportQueuedDescription": "Cela peut prendre un moment pour les grands ensembles de résultats.",
     "downloadFailedTitle": "Échec du téléchargement",
-    "exportJobFailedFallback": "La tâche d'exportation a échoué."
+    "exportJobFailedFallback": "La tâche d'exportation a échoué.",
+    "pdfDialog": {
+      "title": "Exporter en PDF",
+      "description": "Choisissez le papier et les colonnes. La description de la carte est imprimée en haut de la première page.",
+      "pageSize": "Format du papier",
+      "orientation": "Orientation",
+      "portrait": "Portrait",
+      "landscape": "Paysage",
+      "columns": "Colonnes ({{count}} sélectionnées)",
+      "selectAll": "Tout sélectionner",
+      "selectNone": "Effacer",
+      "confirm": "Exporter",
+      "sizes": {
+        "A4": "A4",
+        "A3": "A3",
+        "LETTER": "Lettre"
+      }
+    }
   },
   "exportHistory": {
     "title": "Exportations",

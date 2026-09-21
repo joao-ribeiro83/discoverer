@@ -809,7 +809,7 @@ export async function resolveHeading(
 ): Promise<{
   title: string | null;
   description: string | null;
-  /** Every declared parameter that had a value this run, in declared order. */
+  /** Parameters with a value this run that the heading text does not already print. */
   parameters: Array<{ name: string; value: string }>;
   runAt: Date;
 }> {
@@ -839,8 +839,12 @@ export async function resolveHeading(
     }
   }
 
+  // The heading text already prints the parameters it names as `&<Name>`
+  // tokens; only the ones it does not mention are listed after it, so each
+  // value appears on the page exactly once.
+  const rawText = `${layout?.title ?? ''}\n${map?.description ?? ''}`.toLowerCase();
   const parameters = parameterRows
-    .filter((p) => values.has(p.name))
+    .filter((p) => values.has(p.name) && !rawText.includes(`&${p.name.toLowerCase()}`))
     .map((p) => ({ name: p.name, value: values.get(p.name)! }));
   if (map) withNameTokens(values, map.name);
 

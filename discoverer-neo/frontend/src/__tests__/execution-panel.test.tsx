@@ -218,13 +218,16 @@ describe('ExecutionPanel', () => {
       />,
     )
 
+    // PDF first asks for paper, orientation and columns; confirm the defaults.
     fireEvent.click(screen.getByRole('button', { name: /^PDF$/ }))
+    fireEvent.click(await screen.findByRole('button', { name: /^Export$/ }))
 
     await waitFor(() => expect(mockedApi.maps.createExport).toHaveBeenCalledWith('map-1', {
       format: 'PDF',
       parameters: {},
       calculatedFields: undefined,
       locale: 'en',
+      pdf: { pageSize: 'A4', orientation: 'PORTRAIT', columns: undefined },
     }))
     await waitFor(() => expect(mockedApi.exports.download).toHaveBeenCalledWith('job-2'))
   })
