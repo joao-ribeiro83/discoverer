@@ -27,6 +27,7 @@ import {
   jsonb,
   pgEnum,
   index,
+  primaryKey,
 } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
 
@@ -84,6 +85,9 @@ export const targetTypeEnum = pgEnum('target_type', [
   'BUSINESS_AREA',
   'FOLDER',
 ]);
+
+export const runKindEnum = pgEnum('run_kind', ['LIVE', 'SCHEDULED']);
+export const runStatusEnum = pgEnum('run_status', ['QUEUED', 'RUNNING', 'COMPLETED', 'FAILED', 'CANCELLED']);
 
 // 16. map_shares moved to `@discoverer-neo/core/db/schema` (re-exported above):
 // the migrator writes it now, from Discoverer's workbook grants.
@@ -198,6 +202,7 @@ export const schedules = pgTable(
      * `REFUSE(...)`. Null otherwise.
      */
     plannerRefusalDetail: text('planner_refusal_detail'),
+    resultRetentionDays: integer('result_retention_days').notNull().default(30),
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -247,9 +252,48 @@ export const scheduledResults = pgTable(
     executionTimeMs: integer('execution_time_ms'),
     status: executionStatusEnum('status').notNull(),
     errorMessage: text('error_message'),
+    runId: uuid('run_id').references(() => mapRuns.id, { onDelete: 'set null' }),
   },
   (t) => [index('scheduled_results_schedule_idx').on(t.scheduleId)],
 );
+
+// ---------------------------------------------------------------------------
+// 21b. map_runs / map_run_batches
+// ---------------------------------------------------------------------------
+
+export const mapRuns = pgTable('map_runs', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  mapId: uuid('map_id').notNull().references(() => maps.id, { onDelete: 'cascade' }),
+  requestedBy: uuid('requested_by').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  kind: runKindEnum('kind').notNull(),
+  scheduleId: uuid('schedule_id').references(() => schedules.id, { onDelete: 'set null' }),
+  runKey: varchar('run_key', { length: 64 }).notNull(),
+  parameters: jsonb('parameters').notNull().default(sql`'{}'::jsonb`),
+  calculatedFields: jsonb('calculated_fields').notNull().default(sql`'[]'::jsonb`),
+  status: runStatusEnum('status').notNull().default('QUEUED'),
+  columns: jsonb('columns'),            // ResultColumn[]
+  decoration: jsonb('decoration'),      // { groupBreakAliases?, totals?, conditionalFormats?, warnings? }
+  rowCount: integer('row_count'),
+  truncated: boolean('truncated').notNull().default(false),
+  executionTimeMs: integer('execution_time_ms'),
+  sqlText: text('sql_text'),
+  errorMessage: text('error_message'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  startedAt: timestamp('started_at', { withTimezone: true }),
+  completedAt: timestamp('completed_at', { withTimezone: true }),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+}, (t) => [
+  index('map_runs_user_status_created_idx').on(t.requestedBy, t.status, t.createdAt),
+  index('map_runs_key_idx').on(t.runKey, t.status),
+  index('map_runs_expires_idx').on(t.expiresAt),
+  index('map_runs_map_idx').on(t.mapId),
+]);
+
+export const mapRunBatches = pgTable('map_run_batches', {
+  runId: uuid('run_id').notNull().references(() => mapRuns.id, { onDelete: 'cascade' }),
+  seq: integer('seq').notNull(),
+  rows: jsonb('rows').notNull(),        // Record<string, unknown>[]
+}, (t) => [primaryKey({ columns: [t.runId, t.seq] })]);
 
 // ---------------------------------------------------------------------------
 // 22. security_policies
@@ -638,6 +682,30 @@ export const scheduledResultsRelations = relations(scheduledResults, ({ one }) =
   schedule: one(schedules, {
     fields: [scheduledResults.scheduleId],
     references: [schedules.id],
+  }),
+  run: one(mapRuns, {
+    fields: [scheduledResults.runId],
+    references: [mapRuns.id],
+  }),
+}));
+
+export const mapRunsRelations = relations(mapRuns, ({ one, many }) => ({
+  map: one(maps, { fields: [mapRuns.mapId], references: [maps.id] }),
+  requestedBy: one(users, {
+    fields: [mapRuns.requestedBy],
+    references: [users.id],
+  }),
+  schedule: one(schedules, {
+    fields: [mapRuns.scheduleId],
+    references: [schedules.id],
+  }),
+  batches: many(mapRunBatches),
+}));
+
+export const mapRunBatchesRelations = relations(mapRunBatches, ({ one }) => ({
+  run: one(mapRuns, {
+    fields: [mapRunBatches.runId],
+    references: [mapRuns.id],
   }),
 }));
 
