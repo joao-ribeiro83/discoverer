@@ -161,6 +161,7 @@ class FakeJobStore {
       status: 'PENDING',
       progress: 0,
       rowCount: null,
+      truncated: false,
       filePath: null,
       errorMessage: null,
       createdAt: new Date(),
@@ -426,6 +427,23 @@ describe('processExportJob', () => {
     ).rejects.toThrow('Run not found or no longer available');
 
     // Deliberately NOT marked FAILED here: an attempt failing is not terminal.
+    const job = await getExportJob('job-1', deps);
+    expect(job!.status).toBe('PROCESSING');
+  });
+
+  it('throws (never completes the job) when the run has expired by the time the worker runs it', async () => {
+    // The route only checks COMPLETED-and-unexpired at enqueue time; a job
+    // sitting in the queue, or a BullMQ retry, can run well after that check
+    // passed. The run still exists and is still COMPLETED — it is simply too
+    // old now — so this is a distinct case from "run not found".
+    const runId = await seedRun([{ C1: 1 }], { expiresAt: new Date(Date.now() - 1000) });
+    const { deps, store } = makeDeps();
+    await store.createJob({ mapId: MAP_ID, requestedBy: USER_ID, format: 'CSV' });
+
+    await expect(processExportJob(jobData(runId), deps)).rejects.toThrow(
+      'Run not found or no longer available',
+    );
+
     const job = await getExportJob('job-1', deps);
     expect(job!.status).toBe('PROCESSING');
   });
@@ -938,6 +956,7 @@ describe('downloadExport', () => {
       status: 'COMPLETED',
       progress: 100,
       rowCount: 1,
+      truncated: false,
       filePath,
       errorMessage: null,
       createdAt: new Date(),

@@ -22,8 +22,9 @@ export interface ExportJobData {
 
 export const EXPORT_JOB_OPTIONS: JobsOptions = {
   attempts: 3,
-  // A failed export is usually a transient Oracle/network fault, so back off
-  // rather than hammering a struggling database with immediate retries.
+  // A failed export is usually a transient fault reading the run's stored
+  // rows or writing the file (Postgres/disk hiccup), so back off rather than
+  // retrying immediately.
   backoff: { type: 'exponential', delay: 5_000 },
   // Keep a bounded history: the durable record of an export lives in the
   // `export_jobs` table, so Redis only needs enough to debug recent activity.
