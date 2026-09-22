@@ -1,10 +1,10 @@
-import { useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useEffect, useState } from 'react'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { CalendarClock, Loader2, Play } from 'lucide-react'
-import { apiClient, getErrorKind, getErrorMessage } from '@/lib/api'
-import type { ExecuteResult } from '@/lib/types'
+import { apiClient, getErrorMessage } from '@/lib/api'
+import { useMapRun } from '@/hooks/useMapRun'
 import { useToast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -17,12 +17,15 @@ import {
 
 export function MapViewerPage() {
   const { id } = useParams()
+  const [searchParams] = useSearchParams()
   const { toast } = useToast()
   const { t } = useTranslation(['mapViewer', 'common'])
 
-  const [result, setResult] = useState<ExecuteResult | null>(null)
-  const [lastParameters, setLastParameters] = useState<Record<string, unknown>>({})
   const [promptOpen, setPromptOpen] = useState(false)
+  // `request()`/`open()` queue or fetch a run and resolve as soon as that
+  // call lands — not when the run itself finishes — so this tracks only the
+  // brief round trip to the server, distinct from `isQueued`/`isRunning`.
+  const [isRequesting, setIsRequesting] = useState(false)
 
   const mapQuery = useQuery({
     queryKey: ['maps', id],
@@ -30,30 +33,34 @@ export function MapViewerPage() {
     enabled: !!id,
   })
 
-  const runMutation = useMutation({
-    mutationFn: async (parameters: Record<string, unknown>): Promise<ExecuteResult> =>
-      (await apiClient.maps.execute(id!, { parameters })).data.data,
-    onSuccess: (res, parameters) => {
-      setResult(res)
-      setLastParameters(parameters)
+  const { run, result, isQueued, isRunning, isReused, error, request, open } = useMapRun(id)
+
+  // `?run=<id>` (from the Runs page, or a shared link) opens that run instead
+  // of starting a new one. `open` is a stable callback, so this only re-fires
+  // if the query string itself changes.
+  useEffect(() => {
+    const runParam = searchParams.get('run')
+    if (runParam) void open(runParam)
+  }, [searchParams, open])
+
+  useEffect(() => {
+    if (error) {
       toast({
-        title: t('mapViewer:viewer.executedTitle'),
-        description: t('mapViewer:viewer.rowsReturned', { count: res.rowCount }),
+        title: t('mapViewer:viewer.runFailedTitle'),
+        description: error,
+        variant: 'destructive',
       })
-    },
-    onError: (err) => {
-      // A refusal is not a failure — the panel explains it in full, so the
-      // toast says "not run", never "failed", and is not destructive-styled.
-      const refused = getErrorKind(err) === 'REFUSED'
-      toast({
-        title: refused
-          ? t('mapViewer:viewer.runRefusedTitle')
-          : t('mapViewer:viewer.runFailedTitle'),
-        description: refused ? t('mapViewer:viewer.runRefusedDescription') : getErrorMessage(err),
-        variant: refused ? 'default' : 'destructive',
-      })
-    },
-  })
+    }
+  }, [error, toast, t])
+
+  async function runWith(parameters: Record<string, unknown>, force = false) {
+    setIsRequesting(true)
+    try {
+      await request({ parameters, force })
+    } finally {
+      setIsRequesting(false)
+    }
+  }
 
   function handleRun() {
     const parameters = mapQuery.data?.parameters ?? []
@@ -65,12 +72,32 @@ export function MapViewerPage() {
     for (const p of parameters) {
       if (p.defaultValue != null && p.defaultValue !== '') defaults[p.name] = p.defaultValue
     }
-    runMutation.mutate(defaults)
+    void runWith(defaults)
   }
 
   function handlePromptSubmit(values: Record<string, unknown>) {
     setPromptOpen(false)
-    runMutation.mutate(values)
+    void runWith(values)
+  }
+
+  function handleRunAgain() {
+    void runWith(run?.parameters ?? {}, true)
+  }
+
+  // "Queued (position unknown)" / "Running…" while the run is in flight, then
+  // "Result from <time>, valid until <time>" once it lands — the line the
+  // "Run again" button sits under.
+  function statusLine(): string | null {
+    if (isQueued) return t('mapViewer:viewer.statusQueued')
+    if (isRunning) return t('mapViewer:viewer.statusRunning')
+    if (run?.status === 'COMPLETED') {
+      const time = run.completedAt ? new Date(run.completedAt).toLocaleTimeString() : ''
+      const until = new Date(run.expiresAt).toLocaleString()
+      return isReused
+        ? t('mapViewer:viewer.statusResultReused', { time, until })
+        : t('mapViewer:viewer.statusResult', { time, until })
+    }
+    return null
   }
 
   if (mapQuery.isLoading) {
@@ -112,18 +139,16 @@ export function MapViewerPage() {
 
   const noOutputColumns = map.items.length === 0
   const disabledReason = noOutputColumns ? t('mapViewer:viewer.cannotRunNoColumns') : null
+  const running = isRequesting || isQueued || isRunning
+  const status = statusLine()
 
   return (
     <div className="flex h-full flex-col space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">{map.name}</h2>
-          {/* After a run the heading shows the parameters that were entered;
-              before one it shows their defaults. */}
-          {(result?.heading?.description ?? map.description) && (
-            <p className="whitespace-pre-line text-muted-foreground">
-              {result?.heading?.description ?? map.description}
-            </p>
+          {map.description && (
+            <p className="whitespace-pre-line text-muted-foreground">{map.description}</p>
           )}
           {/* A filter that did not migrate has no other symptom: the map runs
               and returns more rows than Discoverer did. Say so. */}
@@ -147,21 +172,23 @@ export function MapViewerPage() {
           <div className="flex flex-col items-end gap-1">
             <Button
               onClick={handleRun}
-              disabled={runMutation.isPending || !!disabledReason}
+              disabled={running || !!disabledReason}
               title={disabledReason ?? undefined}
               aria-describedby={disabledReason ? 'run-disabled-reason' : undefined}
             >
-              {runMutation.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Play className="h-4 w-4" />
-              )}
-              {runMutation.isPending ? t('common:actions.running') : t('common:actions.run')}
+              {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
+              {running ? t('common:actions.running') : t('common:actions.run')}
             </Button>
             {disabledReason && (
               <p id="run-disabled-reason" className="text-xs text-muted-foreground">
                 {disabledReason}
               </p>
+            )}
+            {status && <p className="text-xs text-muted-foreground">{status}</p>}
+            {run?.status === 'COMPLETED' && (
+              <Button variant="ghost" size="sm" onClick={handleRunAgain} disabled={running}>
+                {t('mapViewer:viewer.runAgain')}
+              </Button>
             )}
           </div>
           <Button variant="outline" asChild>
@@ -179,10 +206,11 @@ export function MapViewerPage() {
             mapName={map.name}
             mapType={map.mapType}
             result={result}
-            parameters={lastParameters}
-            isRunning={runMutation.isPending}
-            runError={runMutation.error}
-            onResultChange={setResult}
+            run={run}
+            parameters={run?.parameters ?? {}}
+            isRunning={running}
+            runError={error}
+            onResultChange={() => {}}
           />
         </CardContent>
       </Card>

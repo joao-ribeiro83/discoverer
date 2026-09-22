@@ -761,11 +761,11 @@ export interface PdfExportRequest {
 export interface ExportMapBody {
   format: ExportFileFormat
   /**
-   * The completed run this export reads its rows from (backend requires it —
-   * exports are built from stored run rows, never from Oracle). Optional here
-   * only until Task 5.3 wires `useMapExport` to always send one.
+   * The completed run this export reads its rows from — the backend requires
+   * it (exports are built from stored run rows, never from Oracle) and 400s
+   * without one.
    */
-  runId?: string
+  runId: string
   parameters?: Record<string, unknown>
   calculatedFields?: MapCalculatedFieldInput[]
   /** Locale for a grand/subtotal row's label text. Defaults to `en`. */

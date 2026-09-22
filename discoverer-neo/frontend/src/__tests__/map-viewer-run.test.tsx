@@ -6,7 +6,7 @@ import type { ReactNode } from 'react'
 import { MapViewerPage } from '@/pages/MapViewerPage'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { apiClient } from '@/lib/api'
-import type { MapWithDetails } from '@/lib/types'
+import type { MapRun, MapWithDetails } from '@/lib/types'
 
 // These cover the defect this stage exists for: a primary action that gives no
 // feedback. Every path through Run must end in a request, a prompt, or a
@@ -24,8 +24,13 @@ vi.mock('@/lib/api', () => ({
   apiClient: {
     maps: {
       get: vi.fn(),
-      execute: vi.fn(),
+      requestRun: vi.fn(),
       createExport: vi.fn(),
+    },
+    runs: {
+      get: vi.fn(),
+      rows: vi.fn(),
+      cancel: vi.fn(),
     },
     exports: { list: vi.fn(), getStatus: vi.fn(), download: vi.fn() },
   },
@@ -38,6 +43,30 @@ vi.mock('@/lib/api', () => ({
 }))
 
 const mockedApi = vi.mocked(apiClient, true)
+
+function makeRun(over: Partial<MapRun> = {}): MapRun {
+  return {
+    id: 'run-1',
+    mapId: 'map-1',
+    mapName: 'Sales by Region',
+    kind: 'LIVE',
+    scheduleId: null,
+    status: 'COMPLETED',
+    parameters: {},
+    calculatedFields: [],
+    columns: [{ name: 'C1', label: 'Amount', isAggregate: false }],
+    decoration: null,
+    rowCount: 1,
+    truncated: false,
+    executionTimeMs: 5,
+    errorMessage: null,
+    createdAt: '2026-01-01T00:00:00Z',
+    startedAt: '2026-01-01T00:00:00Z',
+    completedAt: '2026-01-01T00:00:00Z',
+    expiresAt: '2099-01-01T00:00:00Z',
+    ...over,
+  }
+}
 
 function makeMap(over: Partial<MapWithDetails> = {}): MapWithDetails {
   return {
@@ -86,25 +115,21 @@ function envelope<T>(data: T) {
 describe('MapViewerPage — Run', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockedApi.runs.rows.mockResolvedValue(envelope([{ C1: 1 }]) as never)
   })
 
-  it('issues the execute request when Run is clicked', async () => {
+  it('issues the run request when Run is clicked', async () => {
     mockedApi.maps.get.mockResolvedValue(envelope(makeMap()) as never)
-    mockedApi.maps.execute.mockResolvedValue(
-      envelope({
-        columns: [{ name: 'C1', label: 'Amount', isAggregate: false }],
-        rows: [{ C1: 1 }],
-        rowCount: 1,
-        executionTimeMs: 5,
-        truncated: false,
-      }) as never,
-    )
+    mockedApi.maps.requestRun.mockResolvedValue({ data: makeRun(), reused: false })
 
     renderViewer(<MapViewerPage />)
     fireEvent.click(await screen.findByRole('button', { name: /run/i }))
 
     await waitFor(() =>
-      expect(mockedApi.maps.execute).toHaveBeenCalledWith('map-1', { parameters: {} }),
+      expect(mockedApi.maps.requestRun).toHaveBeenCalledWith('map-1', {
+        parameters: {},
+        force: false,
+      }),
     )
   })
 
@@ -128,24 +153,30 @@ describe('MapViewerPage — Run', () => {
       ) as never,
     )
 
+    mockedApi.maps.requestRun.mockResolvedValue({
+      data: makeRun({ parameters: { 'Dt Inicio': '2026-01-01' } }),
+      reused: false,
+    })
+
     renderViewer(<MapViewerPage />)
     fireEvent.click(await screen.findByRole('button', { name: /run/i }))
 
     // The prompt is the feedback. Nothing was sent.
     expect(await screen.findByRole('dialog')).toBeTruthy()
-    expect(mockedApi.maps.execute).not.toHaveBeenCalled()
+    expect(mockedApi.maps.requestRun).not.toHaveBeenCalled()
 
     // An empty required value keeps the gate closed.
     const dialogRun = screen.getAllByRole('button', { name: /run/i }).at(-1)!
     fireEvent.click(dialogRun)
-    expect(mockedApi.maps.execute).not.toHaveBeenCalled()
+    expect(mockedApi.maps.requestRun).not.toHaveBeenCalled()
 
     fireEvent.change(screen.getByLabelText(/Dt Inicio/), { target: { value: '2026-01-01' } })
     fireEvent.click(screen.getAllByRole('button', { name: /run/i }).at(-1)!)
 
     await waitFor(() =>
-      expect(mockedApi.maps.execute).toHaveBeenCalledWith('map-1', {
+      expect(mockedApi.maps.requestRun).toHaveBeenCalledWith('map-1', {
         parameters: { 'Dt Inicio': '2026-01-01' },
+        force: false,
       }),
     )
   })
