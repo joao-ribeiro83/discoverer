@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { ExecutionPanel } from '@/components/map-builder/ExecutionPanel'
 import { apiClient } from '@/lib/api'
-import type { ExecuteResult } from '@/lib/types'
+import type { ExecuteResult, MapRun } from '@/lib/types'
 
 // jsdom has no real layout; fake the virtualizer to render every row (see
 // results-table.test.tsx for the full rationale).
@@ -50,6 +50,31 @@ function baseResult(over: Partial<ExecuteResult> = {}): ExecuteResult {
     rowCount: 2,
     executionTimeMs: 42,
     truncated: false,
+    ...over,
+  }
+}
+
+/** A stored run backing a result — COMPLETED and valid unless overridden. */
+function baseRun(over: Partial<MapRun> = {}): MapRun {
+  return {
+    id: 'run-1',
+    mapId: 'map-1',
+    mapName: 'My Map',
+    kind: 'LIVE',
+    scheduleId: null,
+    status: 'COMPLETED',
+    parameters: {},
+    calculatedFields: [],
+    columns: null,
+    decoration: null,
+    rowCount: 2,
+    truncated: false,
+    executionTimeMs: 42,
+    errorMessage: null,
+    createdAt: '',
+    startedAt: null,
+    completedAt: '',
+    expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
     ...over,
   }
 }
@@ -171,6 +196,7 @@ describe('ExecutionPanel', () => {
         mapId="map-1"
         mapName="My Map"
         result={baseResult()}
+        run={baseRun()}
         parameters={{}}
         onResultChange={() => {}}
       />,
@@ -180,6 +206,7 @@ describe('ExecutionPanel', () => {
 
     await waitFor(() => expect(mockedApi.maps.createExport).toHaveBeenCalledWith('map-1', {
       format: 'XLSX',
+      runId: 'run-1',
       parameters: {},
       calculatedFields: undefined,
       locale: 'en',
@@ -211,6 +238,7 @@ describe('ExecutionPanel', () => {
         mapId="map-1"
         mapName="My Map"
         result={baseResult()}
+        run={baseRun()}
         parameters={{}}
         onResultChange={() => {}}
       />,
@@ -222,12 +250,79 @@ describe('ExecutionPanel', () => {
 
     await waitFor(() => expect(mockedApi.maps.createExport).toHaveBeenCalledWith('map-1', {
       format: 'PDF',
+      runId: 'run-1',
       parameters: {},
       calculatedFields: undefined,
       locale: 'en',
       pdf: { pageSize: 'A4', orientation: 'PORTRAIT', columns: undefined },
     }))
     await waitFor(() => expect(mockedApi.exports.download).toHaveBeenCalledWith('job-2'))
+  })
+
+  // --- Export gating (Task 5.3) ------------------------------------------
+  //
+  // Exports read from the run's stored rows, never from a live re-execute —
+  // so the buttons must not exist unless there is a valid, COMPLETED run to
+  // read them from.
+
+  describe('export button gating', () => {
+    function queryExportButtons() {
+      return {
+        excel: screen.queryByRole('button', { name: /^Excel$/ }),
+        csv: screen.queryByRole('button', { name: /^CSV$/ }),
+        pdf: screen.queryByRole('button', { name: /^PDF$/ }),
+      }
+    }
+
+    it('hides the export buttons when there is no run', () => {
+      renderWithProviders(
+        <ExecutionPanel
+          mapId="map-1"
+          mapName="My Map"
+          result={baseResult()}
+          parameters={{}}
+          onResultChange={() => {}}
+        />,
+      )
+      const buttons = queryExportButtons()
+      expect(buttons.excel).toBeNull()
+      expect(buttons.csv).toBeNull()
+      expect(buttons.pdf).toBeNull()
+    })
+
+    it('hides the export buttons when the run has expired', () => {
+      renderWithProviders(
+        <ExecutionPanel
+          mapId="map-1"
+          mapName="My Map"
+          result={baseResult()}
+          run={baseRun({ expiresAt: new Date(Date.now() - 1000).toISOString() })}
+          parameters={{}}
+          onResultChange={() => {}}
+        />,
+      )
+      const buttons = queryExportButtons()
+      expect(buttons.excel).toBeNull()
+      expect(buttons.csv).toBeNull()
+      expect(buttons.pdf).toBeNull()
+    })
+
+    it('shows XLSX, CSV, and PDF buttons for a completed, still-valid run', () => {
+      renderWithProviders(
+        <ExecutionPanel
+          mapId="map-1"
+          mapName="My Map"
+          result={baseResult()}
+          run={baseRun()}
+          parameters={{}}
+          onResultChange={() => {}}
+        />,
+      )
+      const buttons = queryExportButtons()
+      expect(buttons.excel).not.toBeNull()
+      expect(buttons.csv).not.toBeNull()
+      expect(buttons.pdf).not.toBeNull()
+    })
   })
 
   // --- Error surface (Phase 2.2) ----------------------------------------

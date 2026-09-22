@@ -31,6 +31,7 @@ import { PdfExportDialog } from '@/components/map-builder/PdfExportDialog'
 import type {
   ExecuteResult,
   ExecutionErrorKind,
+  MapRun,
   MapType,
 } from '@/lib/types'
 
@@ -56,6 +57,13 @@ export interface ExecutionPanelProps {
   result: ExecuteResult | null
   /** Parameter values the result (and any "load more"/export) should be run with. */
   parameters: Record<string, unknown>
+  /**
+   * The stored run backing `result`, when there is one. Exports read from a
+   * run's stored rows, never from a live re-execute — so the export buttons
+   * only render for a `COMPLETED` run that has not expired (the builder
+   * preview passes no run at all, and shows none).
+   */
+  run?: MapRun | null
   /** True while the caller's own primary "Run" mutation is in flight. */
   isRunning?: boolean
   /** The primary "Run" mutation's error, if any (mapped to CONFIG/QUERY/etc.). */
@@ -81,6 +89,7 @@ export function ExecutionPanel({
   mapName,
   result,
   parameters,
+  run,
   isRunning,
   runError,
   onResultChange,
@@ -112,7 +121,7 @@ export function ExecutionPanel({
     },
   })
 
-  const exportCtl = useMapExport(mapId, mapName, parameters)
+  const exportCtl = useMapExport(mapId, mapName, parameters, run?.id)
   const [pdfOpen, setPdfOpen] = useState(false)
 
   // --- "Load more": re-executes with a growing offset, appending pages ------
@@ -153,7 +162,19 @@ export function ExecutionPanel({
   // A refusal is a separate surface, not a red banner (D-036). Only fall back
   // to the error banner when the backend sent no recognised refusal code.
   const refusalCode = errorKind === 'REFUSED' ? getRefusalCode(runError) : undefined
-  const errorText = runError && !refusalCode ? getErrorMessage(runError) : null
+  // `runError` is either the raw axios error from a direct `/execute` (the
+  // builder preview) or the plain message string `useMapRun` surfaces for a
+  // queued run (the viewer) — `getErrorMessage` only understands the former.
+  const errorText = runError && !refusalCode
+    ? typeof runError === 'string'
+      ? runError
+      : getErrorMessage(runError)
+    : null
+
+  // Exports read from a run's stored rows, never from a live re-execute — so
+  // the buttons only exist for a completed, still-valid run. The builder
+  // preview (`/execute`, no run) passes no `run` at all and shows none.
+  const canExport = !!run && run.status === 'COMPLETED' && new Date(run.expiresAt) > new Date()
 
   // A crosstab needs a column edge, and Discoverer records none — so a
   // migrated crosstab arrives with every axis column on the row edge and
@@ -211,7 +232,7 @@ export function ExecutionPanel({
         )}
 
         <div className="ml-auto flex items-center gap-1.5">
-          {result && (
+          {canExport && result && (
             <>
               <Button
                 variant="outline"
