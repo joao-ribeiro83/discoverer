@@ -5,15 +5,16 @@ import { resolveHeading } from '../services/map.service.js';
 import { SqlGenerationError, planDraft } from '../services/sql-generator.js';
 import {
   executeMap,
-  executeMapAsync,
   explainMap,
-  getExecutionStatus,
-  cancelExecution,
   getExecutionHistory,
   MapExecutionError,
   type ExecutionErrorKind,
 } from '../services/map-execution.service.js';
 import { drillToDetail, DrillNotAvailableError } from '../services/drill.service.js';
+
+// The in-memory async registry is gone (map runs replace it); Stage 3 removes
+// these three routes.
+const ASYNC_GONE = 'Async execution was replaced by map runs.';
 
 // ---------------------------------------------------------------------------
 // Validation
@@ -293,29 +294,7 @@ export default function mapExecutionRoutes(fastify: FastifyInstance) {
         params: idParamsSchema,
       },
     },
-    async (request, reply) => {
-      const map = await loadMapWithAccess(request, reply, 'VIEW');
-      if (!map) return;
-
-      const parsed = ExecuteBodySchema.safeParse(request.body ?? {});
-      if (!parsed.success) {
-        return reply
-          .code(400)
-          .send({ error: 'Invalid request body', details: parsed.error.issues });
-      }
-
-      const user = request.user as { sub: string };
-      const { jobId } = await executeMapAsync(
-        map.id,
-        parsed.data.parameters ?? {},
-        user.sub,
-        {
-          timeoutMs: parsed.data.timeoutMs,
-          calculatedFields: parsed.data.calculatedFields,
-        },
-      );
-      return reply.code(202).send({ data: { jobId } });
-    },
+    (_request, reply) => reply.code(410).send({ error: ASYNC_GONE }),
   );
 
   // GET /api/maps/:id/executions/:jobId — async execution status/result.
@@ -329,27 +308,7 @@ export default function mapExecutionRoutes(fastify: FastifyInstance) {
         params: jobParamsSchema,
       },
     },
-    async (request, reply) => {
-      const map = await loadMapWithAccess(request, reply, 'VIEW');
-      if (!map) return;
-
-      const { jobId } = request.params as { jobId: string };
-      const user = request.user as { sub: string };
-      const job = getExecutionStatus(jobId);
-      // 404 for a job on another map or started by someone else. The result
-      // carries its owner's row-level security, so a second viewer of the same
-      // map must not collect it (D-021) — nor learn that the id exists.
-      if (!job || job.mapId !== map.id || job.userId !== user.sub) {
-        return reply.code(404).send({ error: 'Execution job not found' });
-      }
-      // Same withholding as the synchronous path: the generated SQL is an
-      // administrator's view of the map, not a result column.
-      if (job.result && !isAdmin(request)) {
-        const { sql: _generatedSql, ...result } = job.result;
-        return { data: { ...job, result } };
-      }
-      return { data: job };
-    },
+    (_request, reply) => reply.code(410).send({ error: ASYNC_GONE }),
   );
 
   // POST /api/maps/:id/explain — Oracle's execution plan for this map.
@@ -403,20 +362,7 @@ export default function mapExecutionRoutes(fastify: FastifyInstance) {
         params: jobParamsSchema,
       },
     },
-    async (request, reply) => {
-      const map = await loadMapWithAccess(request, reply, 'VIEW');
-      if (!map) return;
-
-      const { jobId } = request.params as { jobId: string };
-      const user = request.user as { sub: string };
-      const job = getExecutionStatus(jobId);
-      if (!job || job.mapId !== map.id || job.userId !== user.sub) {
-        return reply.code(404).send({ error: 'Execution job not found' });
-      }
-
-      const outcome = await cancelExecution(jobId);
-      return { data: outcome };
-    },
+    (_request, reply) => reply.code(410).send({ error: ASYNC_GONE }),
   );
 
   // GET /api/maps/:id/history — recent execution log entries.

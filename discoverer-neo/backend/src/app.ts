@@ -37,7 +37,9 @@ import { config } from './config.js';
 import { closeExportQueue } from './queues/export.queue.js';
 import { startExportWorker, type ExportWorkerHandle } from './workers/export.worker.js';
 import { closeSchedulerQueue } from './queues/scheduler.queue.js';
+import { closeMapRunQueue } from './queues/map-run.queue.js';
 import { startSchedulerWorker, type SchedulerWorkerHandle } from './workers/scheduler.worker.js';
+import { startMapRunWorker, type MapRunWorkerHandle } from './workers/map-run.worker.js';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const { TRUST_PROXY } = config;
@@ -146,6 +148,11 @@ export async function buildApp(): Promise<FastifyInstance> {
     schedulerWorker = startSchedulerWorker(app.log);
   }
 
+  let mapRunWorker: MapRunWorkerHandle | undefined;
+  if (config.MAP_RUN_WORKER_ENABLED) {
+    mapRunWorker = startMapRunWorker(app.log);
+  }
+
   // Temporary-password files are the most sensitive artefact this application
   // produces, and they were being left on disk indefinitely. Sweep at boot as
   // well as hourly: an instance that is restarted more often than once an hour
@@ -181,11 +188,13 @@ export async function buildApp(): Promise<FastifyInstance> {
     // process only, in server.ts's shutdown handler.
     clearInterval(credentialSweepTimer);
 
-    app.log.info('Stopping export/scheduler workers...');
+    app.log.info('Stopping export/scheduler/map-run workers...');
     await exportWorker?.close();
     await schedulerWorker?.close();
+    await mapRunWorker?.close();
     await closeExportQueue();
     await closeSchedulerQueue();
+    await closeMapRunQueue();
 
     app.log.info('Closing Oracle connection pools...');
     await closeOraclePools();
