@@ -61,6 +61,13 @@ services:
       EXPORT_DIR: /app/exports
       SCHEDULE_RESULT_DIR: /app/scheduled-results
       CREDENTIALS_DIR: /app/credentials
+      MAP_RUN_WORKER_ENABLED: ${MAP_RUN_WORKER_ENABLED:-true}
+      MAP_RUN_WORKER_CONCURRENCY: ${MAP_RUN_WORKER_CONCURRENCY:-3}
+      MAP_RUN_LIVE_TTL_HOURS: ${MAP_RUN_LIVE_TTL_HOURS:-24}
+      MAP_RUN_MAX_ROWS: ${MAP_RUN_MAX_ROWS:-100000}
+      MAP_RUN_BATCH_SIZE: ${MAP_RUN_BATCH_SIZE:-1000}
+      MAP_RUN_CLEANUP_INTERVAL_MINUTES: ${MAP_RUN_CLEANUP_INTERVAL_MINUTES:-15}
+      MAP_RUN_STALE_HOURS: ${MAP_RUN_STALE_HOURS:-24}
       # Thick-mode Oracle holds a libuv thread pool slot for the WHOLE of every
       # call, and Node's default pool is 4 threads — shared with getaddrinfo.
       # Four slow list-of-values queries took all four, and the next Postgres

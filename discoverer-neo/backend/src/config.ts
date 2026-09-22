@@ -246,6 +246,24 @@ const EnvSchema = z.object({
   EXPORT_DIR: z.string().optional(),
 
   /**
+   * Run the map-run worker in this process. Disable when running it
+   * standalone. Unset means "on, unless this is a test run" — see below.
+   */
+  MAP_RUN_WORKER_ENABLED: z.enum(['true', 'false']).optional(),
+  /** Map-run jobs processed concurrently by one worker process, across all users. */
+  MAP_RUN_WORKER_CONCURRENCY: z.coerce.number().int().positive().max(8).default(3),
+  /** Hours a live (unsaved) map run's result is kept before expiry; clamped to 24 by liveExpiry. */
+  MAP_RUN_LIVE_TTL_HOURS: z.coerce.number().int().positive().default(24),
+  /** Row cap a map run's result is truncated to. */
+  MAP_RUN_MAX_ROWS: z.coerce.number().int().positive().default(100000),
+  /** Rows written per JSONB batch when persisting a map run's result. */
+  MAP_RUN_BATCH_SIZE: z.coerce.number().int().positive().default(1000),
+  /** How often the map-run cleanup sweep runs, in minutes. */
+  MAP_RUN_CLEANUP_INTERVAL_MINUTES: z.coerce.number().int().positive().default(15),
+  /** Hours after which a QUEUED/RUNNING map run is considered stale and marked FAILED. */
+  MAP_RUN_STALE_HOURS: z.coerce.number().int().positive().default(24),
+
+  /**
    * Run the scheduler worker (cron-driven map runs) in this process. Unset
    * means "on, unless this is a test run" — mirrors EXPORT_WORKER_ENABLED,
    * since `buildApp()` is also called by the integration suite.
@@ -360,6 +378,10 @@ export const config = {
     parsed.data.EXPORT_WORKER_ENABLED === undefined
       ? parsed.data.NODE_ENV !== 'test'
       : parsed.data.EXPORT_WORKER_ENABLED === 'true',
+  MAP_RUN_WORKER_ENABLED:
+    parsed.data.MAP_RUN_WORKER_ENABLED === undefined
+      ? parsed.data.NODE_ENV !== 'test'
+      : parsed.data.MAP_RUN_WORKER_ENABLED === 'true',
   SCHEDULER_WORKER_ENABLED:
     parsed.data.SCHEDULER_WORKER_ENABLED === undefined
       ? parsed.data.NODE_ENV !== 'test'
