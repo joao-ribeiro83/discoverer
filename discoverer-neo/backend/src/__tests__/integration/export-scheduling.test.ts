@@ -10,10 +10,8 @@ import {
   afterAll,
   beforeEach,
   afterEach,
-  jest,
 } from '@jest/globals';
 import type { FastifyInstance } from 'fastify';
-import type { Connection } from 'oracledb';
 import { eq } from 'drizzle-orm';
 import ExcelJS from 'exceljs';
 import { parseString } from 'fast-csv';
@@ -48,6 +46,8 @@ import {
 } from '../../services/scheduler.service.js';
 import { defaultExportDeps } from '../../services/export.service.js';
 import { defaultSchedulerDeps } from '../../services/scheduler.service.js';
+import { createRun, completeRun, appendBatch, deleteRun } from '../../services/map-run.store.js';
+import type { ResultColumn } from '../../services/map-execution.service.js';
 import { writeXlsx } from '../../services/exporters/excel-exporter.js';
 import { writeCsv } from '../../services/exporters/csv-exporter.js';
 import { exportQueue, closeExportQueue, type ExportJobData } from '../../queues/export.queue.js';
@@ -74,63 +74,61 @@ import { config } from '../../config.js';
 //
 // The layer export.test.ts / scheduler.test.ts deliberately skip: real Postgres
 // rows, real Fastify routes end-to-end (auth / ownership / permission), and real
-// BullMQ/Redis queuing. Only the Oracle driver is faked, injected through the
-// service DI seam exactly as query-engine.test.ts does it — everything up to and
-// after that connection is production code (real prepareQuery / loadMapDefinition
-// / generateSql, real DB writes, real file writers, real queue).
+// BullMQ/Redis queuing.
+//
+// Task 4.3: `processExportJob` no longer talks to Oracle at all — it reads a
+// run's already-materialised rows. So instead of an Oracle connection fake,
+// these seed a real, COMPLETED `map_runs` row (`createRun`/`appendBatch`/
+// `completeRun`, the real Postgres store) the way `map-run.runner.ts` would
+// leave one; everything from there on (real job-row store, real file writer,
+// real queue) is production code, same as before.
 // ===========================================================================
 
-// ---------------------------------------------------------------------------
-// Oracle driver fakes (same shape as query-engine.test.ts / export.test.ts)
-// ---------------------------------------------------------------------------
+const REGION_AMOUNT_COLUMNS: ResultColumn[] = [
+  { name: 'REGION', label: 'Region', isAggregate: false },
+  { name: 'AMOUNT', label: 'Amount', isAggregate: false },
+];
 
-/** A fake Connection that streams rows through a result set (the export path). */
-function makeResultSetConn(rows: Record<string, unknown>[], metaData?: Array<{ name: string }>) {
-  const md =
-    metaData ?? (rows[0] ? Object.keys(rows[0]).map((name) => ({ name })) : []);
-  let cursor = 0;
-  const resultSet = {
-    getRows: jest.fn(async (n: number) => {
-      const slice = rows.slice(cursor, cursor + n);
-      cursor += slice.length;
-      return slice;
-    }),
-    close: jest.fn(async () => {}),
-  };
-  const raw: Record<string, unknown> = {
-    callTimeout: undefined,
-    execute: jest.fn(async () => ({ resultSet, metaData: md })),
-    break: jest.fn(async () => {}),
-    close: jest.fn(async () => {}),
-  };
-  return { conn: raw as unknown as Connection, resultSet };
-}
-
-/** A fake Connection whose `execute` rejects — models an Oracle-side fault. */
-function makeFailingConn(err: unknown): { conn: Connection } {
-  const raw: Record<string, unknown> = {
-    callTimeout: undefined,
-    execute: jest.fn(async () => {
-      throw err;
-    }),
-    break: jest.fn(async () => {}),
-    close: jest.fn(async () => {}),
-  };
-  return { conn: raw as unknown as Connection };
+/** Seeds a COMPLETED run carrying `rows` and returns its id. */
+async function seedCompletedRun(
+  targetMapId: string,
+  rows: Record<string, unknown>[],
+  columns: ResultColumn[] = REGION_AMOUNT_COLUMNS,
+  batchSize = 1000,
+): Promise<string> {
+  const run = await createRun({
+    mapId: targetMapId,
+    requestedBy: adminId,
+    kind: 'LIVE',
+    runKey: `export-sched-${randomUUID()}`,
+    parameters: {},
+    calculatedFields: [],
+    expiresAt: new Date(Date.now() + 3_600_000),
+  });
+  let seq = 0;
+  for (let i = 0; i < rows.length; i += batchSize) {
+    await appendBatch(run.id, seq++, rows.slice(i, i + batchSize));
+  }
+  await completeRun(run.id, {
+    columns,
+    decoration: {},
+    rowCount: rows.length,
+    truncated: false,
+    executionTimeMs: 5,
+    sqlText: null,
+    expiresAt: new Date(Date.now() + 3_600_000),
+  });
+  return run.id;
 }
 
 /**
- * Production export deps with only the Oracle connection faked: real
- * prepareQuery (loadMapDefinition + generateSql), real job-row store (Postgres),
- * real file writer. `enqueue` defaults to a no-op so helper-created rows do not
+ * Production export deps with a no-op `enqueue` so helper-created rows do not
  * pollute the real queue; tests that assert on queuing use the route (real
  * enqueue) explicitly.
  */
-function exportDeps(conn: Connection, overrides: Partial<ExportJobDeps> = {}): ExportJobDeps {
+function exportDeps(overrides: Partial<ExportJobDeps> = {}): ExportJobDeps {
   return {
     ...defaultExportDeps(),
-    getConnection: (async () => conn),
-    releaseConnection: (async () => {}),
     enqueue: (async () => {}),
     ...overrides,
   };
@@ -231,20 +229,22 @@ async function regionAmountMap(name?: string): Promise<string> {
   return createTestMap([region, amount], name);
 }
 
-/** Rows + matching metaData for the [Region, Amount] map. */
-function regionAmountRows(n: number): {
-  rows: Record<string, unknown>[];
-  metaData: Array<{ name: string }>;
-} {
+/** Rows for the [Region, Amount] map. */
+function regionAmountRows(n: number): { rows: Record<string, unknown>[] } {
   const rows = Array.from({ length: n }, (_, i) => ({
     REGION: `R${i % 5}`,
     AMOUNT: i,
   }));
-  return { rows, metaData: [{ name: 'REGION' }, { name: 'AMOUNT' }] };
+  return { rows };
 }
 
-function jobDataFor(jobId: string, mapId: string, format: 'XLSX' | 'CSV'): ExportJobData {
-  return { exportJobId: jobId, mapId, format, requestedBy: adminId };
+function jobDataFor(
+  jobId: string,
+  mapId: string,
+  format: 'XLSX' | 'CSV',
+  runId: string,
+): ExportJobData {
+  return { exportJobId: jobId, mapId, format, requestedBy: adminId, runId };
 }
 
 async function insertScheduleRow(cfg: {
@@ -356,9 +356,11 @@ afterEach(async () => {
 describe('POST /api/maps/:id/export', () => {
   it('creates a PENDING row, enqueues a real BullMQ job, and GET reflects it', async () => {
     const mapId = await regionAmountMap();
+    const runId = await seedCompletedRun(mapId, regionAmountRows(3).rows);
 
     const res = await authenticatedRequest(app, 'POST', `/api/maps/${mapId}/export`, adminToken, {
       format: 'CSV',
+      runId,
     });
     expect(res.statusCode).toBe(202);
     const { jobId, status } = res.json().data;
@@ -404,20 +406,19 @@ describe('POST /api/maps/:id/export', () => {
 // EXPORT — processExportJob lifecycle against real Postgres
 // ===========================================================================
 
-describe('processExportJob (Oracle mocked, real Postgres rows)', () => {
+describe('processExportJob (rows read from a stored run, real Postgres)', () => {
   it('drives PENDING -> PROCESSING -> COMPLETED with progress reaching 100', async () => {
     const mapId = await regionAmountMap();
-    const { rows, metaData } = regionAmountRows(3);
-    const { conn } = makeResultSetConn(rows, metaData);
-    const deps = exportDeps(conn);
+    const runId = await seedCompletedRun(mapId, regionAmountRows(3).rows);
+    const deps = exportDeps();
 
-    const { jobId } = await createExportJob(mapId, 'CSV', adminId, {}, deps);
+    const { jobId } = await createExportJob(mapId, 'CSV', adminId, runId, {}, deps);
     trackFile(buildExportFilePath(jobId, 'CSV'));
 
     const before = await getExportJob(jobId, deps);
     expect(before!.status).toBe('PENDING');
 
-    const result = await processExportJob(jobDataFor(jobId, mapId, 'CSV'), deps);
+    const result = await processExportJob(jobDataFor(jobId, mapId, 'CSV', runId), deps);
     expect(result.rowCount).toBe(3);
 
     const after = await getExportJob(jobId, deps);
@@ -430,19 +431,14 @@ describe('processExportJob (Oracle mocked, real Postgres rows)', () => {
 
   it('exercises the streaming/batching path for a few thousand rows', async () => {
     const mapId = await regionAmountMap();
-    const { rows, metaData } = regionAmountRows(3000);
-    const { conn, resultSet } = makeResultSetConn(rows, metaData);
-    const deps = exportDeps(conn);
+    const runId = await seedCompletedRun(mapId, regionAmountRows(3000).rows);
+    const deps = exportDeps();
 
-    const { jobId } = await createExportJob(mapId, 'CSV', adminId, {}, deps);
+    const { jobId } = await createExportJob(mapId, 'CSV', adminId, runId, {}, deps);
     const filePath = trackFile(buildExportFilePath(jobId, 'CSV'));
 
-    const result = await processExportJob(jobDataFor(jobId, mapId, 'CSV'), deps);
+    const result = await processExportJob(jobDataFor(jobId, mapId, 'CSV', runId), deps);
     expect(result.rowCount).toBe(3000);
-
-    // openRowStream pulls 1,000-row batches, so this is >1 getRows call plus the
-    // terminating empty read — i.e. the batching loop, not a single fetch.
-    expect(resultSet.getRows.mock.calls.length).toBeGreaterThan(3);
 
     const parsed = await readCsv(fs.readFileSync(filePath, 'utf8'));
     expect(parsed).toHaveLength(3000);
@@ -451,26 +447,19 @@ describe('processExportJob (Oracle mocked, real Postgres rows)', () => {
 
   it('two concurrent exports both complete with no cross-job state leakage', async () => {
     const mapId = await regionAmountMap();
+    const runA = await seedCompletedRun(mapId, regionAmountRows(4).rows);
+    const runB = await seedCompletedRun(mapId, regionAmountRows(9).rows);
+    const depsA = exportDeps();
+    const depsB = exportDeps();
 
-    const a = makeResultSetConn(regionAmountRows(4).rows, [
-      { name: 'REGION' },
-      { name: 'AMOUNT' },
-    ]);
-    const b = makeResultSetConn(regionAmountRows(9).rows, [
-      { name: 'REGION' },
-      { name: 'AMOUNT' },
-    ]);
-    const depsA = exportDeps(a.conn);
-    const depsB = exportDeps(b.conn);
-
-    const jobA = await createExportJob(mapId, 'CSV', adminId, {}, depsA);
-    const jobB = await createExportJob(mapId, 'XLSX', adminId, {}, depsB);
+    const jobA = await createExportJob(mapId, 'CSV', adminId, runA, {}, depsA);
+    const jobB = await createExportJob(mapId, 'XLSX', adminId, runB, {}, depsB);
     trackFile(buildExportFilePath(jobA.jobId, 'CSV'));
     trackFile(buildExportFilePath(jobB.jobId, 'XLSX'));
 
     const [resA, resB] = await Promise.all([
-      processExportJob(jobDataFor(jobA.jobId, mapId, 'CSV'), depsA),
-      processExportJob(jobDataFor(jobB.jobId, mapId, 'XLSX'), depsB),
+      processExportJob(jobDataFor(jobA.jobId, mapId, 'CSV', runA), depsA),
+      processExportJob(jobDataFor(jobB.jobId, mapId, 'XLSX', runB), depsB),
     ]);
 
     expect(resA.rowCount).toBe(4);
@@ -492,12 +481,11 @@ describe('processExportJob (Oracle mocked, real Postgres rows)', () => {
 describe('GET /api/exports/:jobId/download', () => {
   async function completeExport(format: 'XLSX' | 'CSV', rowN = 3): Promise<string> {
     const mapId = await regionAmountMap();
-    const { rows, metaData } = regionAmountRows(rowN);
-    const { conn } = makeResultSetConn(rows, metaData);
-    const deps = exportDeps(conn);
-    const { jobId } = await createExportJob(mapId, format, adminId, {}, deps);
+    const runId = await seedCompletedRun(mapId, regionAmountRows(rowN).rows);
+    const deps = exportDeps();
+    const { jobId } = await createExportJob(mapId, format, adminId, runId, {}, deps);
     trackFile(buildExportFilePath(jobId, format));
-    await processExportJob(jobDataFor(jobId, mapId, format), deps);
+    await processExportJob(jobDataFor(jobId, mapId, format, runId), deps);
     return jobId;
   }
 
@@ -537,9 +525,9 @@ describe('GET /api/exports/:jobId/download', () => {
 
   it('returns 409 for a PENDING (not-yet-ready) job', async () => {
     const mapId = await regionAmountMap();
-    const { conn } = makeResultSetConn([]);
-    const deps = exportDeps(conn);
-    const { jobId } = await createExportJob(mapId, 'CSV', adminId, {}, deps);
+    const runId = await seedCompletedRun(mapId, []);
+    const deps = exportDeps();
+    const { jobId } = await createExportJob(mapId, 'CSV', adminId, runId, {}, deps);
 
     const res = await authenticatedRequest(
       app,
@@ -550,22 +538,25 @@ describe('GET /api/exports/:jobId/download', () => {
     expect(res.statusCode).toBe(409);
   });
 
-  it('ends FAILED with an errorMessage on an Oracle fault, and download is 409', async () => {
+  it('ends FAILED with an errorMessage when the run is gone by the time the worker runs it, and download is 409', async () => {
     const mapId = await regionAmountMap();
-    const { conn } = makeFailingConn(new Error('ORA-00942: table or view does not exist'));
-    const deps = exportDeps(conn);
-    const { jobId } = await createExportJob(mapId, 'CSV', adminId, {}, deps);
+    const runId = await seedCompletedRun(mapId, []);
+    const deps = exportDeps();
+    const { jobId } = await createExportJob(mapId, 'CSV', adminId, runId, {}, deps);
+    // Models the run getting swept (expired, deleted) between enqueue and the
+    // worker actually picking the job up.
+    await deleteRun(runId);
 
     // The worker's split: processExportJob throws (BullMQ would retry); the
     // terminal FAILED write is failExportJob's job once attempts are exhausted.
-    await expect(processExportJob(jobDataFor(jobId, mapId, 'CSV'), deps)).rejects.toThrow(
-      'ORA-00942',
+    await expect(processExportJob(jobDataFor(jobId, mapId, 'CSV', runId), deps)).rejects.toThrow(
+      'Run not found or no longer available',
     );
-    await failExportJob(jobId, 'ORA-00942: table or view does not exist', deps);
+    await failExportJob(jobId, 'Run not found or no longer available', deps);
 
     const row = await getExportJob(jobId, deps);
     expect(row!.status).toBe('FAILED');
-    expect(row!.errorMessage).toContain('ORA-00942');
+    expect(row!.errorMessage).toContain('Run not found');
 
     const res = await authenticatedRequest(
       app,

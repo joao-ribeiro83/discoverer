@@ -1,6 +1,5 @@
 import { Queue, type ConnectionOptions, type JobsOptions } from 'bullmq';
 import { config } from '../config.js';
-import type { CalcFieldInput } from '../services/calculated-field-evaluator.js';
 import type { ExportLocale } from '../services/exporters/total-labels.js';
 import type { PdfExportRequest } from '../services/exporters/pdf-exporter.js';
 
@@ -13,8 +12,8 @@ export interface ExportJobData {
   mapId: string;
   format: 'XLSX' | 'CSV' | 'PDF';
   requestedBy: string;
-  parameters?: Record<string, unknown>;
-  calculatedFields?: CalcFieldInput[];
+  /** The completed `map_runs` row this export reads its rows from. */
+  runId: string;
   /** Locale for a grand/subtotal row's label text. Defaults to `en`. */
   locale?: ExportLocale;
   /** PDF only: page size, orientation and the columns to print. */
