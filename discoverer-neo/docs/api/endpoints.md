@@ -577,7 +577,7 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 
 | Status | Body |
 | --- | --- |
-| 200 | { data?: { tables?: { tableName?: string tableOwner?: string columns?: { columnName?: string dataType?: string dataLength?: null,integer nullable?: boolean }[] }[] count?: integer cached?: boolean } } |
+| 200 | { data?: { tables?: { tableName?: string tableOwner?: string objectType?: "TABLE" \| "VIEW" comments?: null,string columns?: { columnName?: string dataType?: string dataLength?: null,integer nullable?: boolean comments?: null,string }[] }[] count?: integer cached?: boolean } } |
 | 400 | { error?: string } |
 | 401 | { error?: string } |
 | 403 | { error?: string } |
@@ -598,7 +598,7 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 
 | Status | Body |
 | --- | --- |
-| 200 | { data?: { tables?: { tableName?: string tableOwner?: string columns?: { columnName?: string dataType?: string dataLength?: null,integer nullable?: boolean }[] }[] count?: integer total?: integer limit?: integer offset?: integer } } |
+| 200 | { data?: { tables?: { tableName?: string tableOwner?: string objectType?: "TABLE" \| "VIEW" comments?: null,string columns?: { columnName?: string dataType?: string dataLength?: null,integer nullable?: boolean comments?: null,string }[] }[] count?: integer total?: integer limit?: integer offset?: integer } } |
 | 400 | { error?: string } |
 | 401 | { error?: string } |
 | 403 | { error?: string } |
@@ -1278,6 +1278,23 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 | 403 | { error?: string details?: any } |
 | 409 | { error?: string details?: any } |
 
+#### POST /api/users/credentials
+
+**Request body:**
+```
+{
+  userIds?: string (uuid)[]
+}
+```
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 400 | — |
+| 401 | — |
+| 403 | — |
+
 #### GET /api/users/{id}
 
 **Parameters:**
@@ -1622,6 +1639,57 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 | --- | --- |
 | 200 | — |
 
+#### GET /api/workbooks/{id}/shares
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### POST /api/workbooks/{id}/shares
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Request body:**
+```
+{
+  userId: string (uuid)
+  permissionLevel: "VIEW" | "EDIT" | "EXPORT"
+}
+```
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### DELETE /api/workbooks/{id}/shares/{userId}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+| `userId` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
 ### Dashboard
 
 #### GET /api/dashboard/stats
@@ -1767,6 +1835,20 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 | --- | --- | --- | --- |
 | `id` | path | yes | string (uuid) |
 | `jobId` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### POST /api/maps/{id}/explain
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
 
 **Responses:**
 
@@ -2117,6 +2199,19 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 | 409 | { error?: string } |
 
 #### POST /api/migration/reimport-maps
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 202 | { data?: object } |
+| 400 | { error?: string } |
+| 401 | { error?: string } |
+| 403 | { error?: string } |
+| 404 | { error?: string } |
+| 409 | { error?: string } |
+
+#### POST /api/migration/delta
 
 **Responses:**
 
