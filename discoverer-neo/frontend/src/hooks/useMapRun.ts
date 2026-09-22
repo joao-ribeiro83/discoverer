@@ -43,6 +43,12 @@ export function useMapRun(mapId: string | undefined): UseMapRunResult {
   const [error, setError] = useState<string | null>(null)
   const rowsLoadedForRunId = useRef<string | null>(null)
 
+  // The run the hook is currently pointed at, updated synchronously with
+  // `open`/`request` (state updates land a render later) — lets async row
+  // replies tell a stale run apart from the current one before touching state.
+  const currentRunIdRef = useRef<string | null>(null)
+  const loadingMoreRef = useRef(false)
+
   const runQuery = useQuery({
     queryKey: ['map-run', runId],
     queryFn: async () => (await apiClient.runs.get(runId!)).data.data,
@@ -52,6 +58,10 @@ export function useMapRun(mapId: string | undefined): UseMapRunResult {
     // second time on mount. `refetchInterval` below still drives polling.
     staleTime: Infinity,
     refetchInterval: (query) => {
+      // A run that errored (e.g. a 404 on an expired/deleted id) never gets a
+      // `status` field to check against TERMINAL — without this, polling
+      // continues against a request that will only ever fail again.
+      if (query.state.status === 'error') return false
       const status = query.state.data?.status
       return status && TERMINAL.includes(status) ? false : 1000
     },
@@ -59,12 +69,28 @@ export function useMapRun(mapId: string | undefined): UseMapRunResult {
 
   const run = runQuery.data ?? null
 
+  // Surface a fetch failure (bad/expired run id) or a run that finished FAILED
+  // as the hook's `error`, so callers aren't left with `run: null, error: null`
+  // forever.
+  useEffect(() => {
+    if (runQuery.isError) {
+      setError(getErrorMessage(runQuery.error))
+    } else if (run?.status === 'FAILED') {
+      setError(run.errorMessage ?? getErrorMessage(undefined))
+    }
+  }, [runQuery.isError, runQuery.error, run])
+
   const loadRows = useCallback(async (id: string, off: number) => {
     try {
       const res = await apiClient.runs.rows(id, off, ROWS_PAGE_SIZE)
+      // The hook has since moved on to a different run (open/request called
+      // again before this reply landed) — drop it rather than mixing rows
+      // from two different runs.
+      if (currentRunIdRef.current !== id) return
       setRows((prev) => (off === 0 ? res.data.data : [...prev, ...res.data.data]))
       setOffset(off + res.data.data.length)
     } catch (err) {
+      if (currentRunIdRef.current !== id) return
       setError(getErrorMessage(err))
     }
   }, [])
@@ -80,6 +106,7 @@ export function useMapRun(mapId: string | undefined): UseMapRunResult {
 
   const resetForNewRun = useCallback((newRun: MapRun, wasReused: boolean) => {
     rowsLoadedForRunId.current = null
+    currentRunIdRef.current = newRun.id
     setRows([])
     setOffset(0)
     setReused(wasReused)
@@ -104,6 +131,7 @@ export function useMapRun(mapId: string | undefined): UseMapRunResult {
   const open = useCallback((id: string) => {
     setError(null)
     rowsLoadedForRunId.current = null
+    currentRunIdRef.current = id
     setRows([])
     setOffset(0)
     setReused(false)
@@ -115,6 +143,9 @@ export function useMapRun(mapId: string | undefined): UseMapRunResult {
     if (!runId) return
     try {
       await apiClient.runs.cancel(runId)
+      // A poll already in flight can resolve after this and overwrite the
+      // CANCELLED status we're about to set — cancel it first.
+      await queryClient.cancelQueries({ queryKey: ['map-run', runId] })
       queryClient.setQueryData<MapRun | undefined>(['map-run', runId], (old) =>
         old ? { ...old, status: 'CANCELLED' } : old,
       )
@@ -124,9 +155,17 @@ export function useMapRun(mapId: string | undefined): UseMapRunResult {
   }, [runId, queryClient])
 
   const loadMore = useCallback(async () => {
-    if (!runId) return
-    await loadRows(runId, offset)
-  }, [runId, offset, loadRows])
+    if (!runId || !run) return
+    if (run.status !== 'COMPLETED') return
+    if (run.rowCount != null && rows.length >= run.rowCount) return
+    if (loadingMoreRef.current) return
+    loadingMoreRef.current = true
+    try {
+      await loadRows(runId, offset)
+    } finally {
+      loadingMoreRef.current = false
+    }
+  }, [runId, run, rows.length, offset, loadRows])
 
   const result: ExecuteResult | null =
     run?.columns

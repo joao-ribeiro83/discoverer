@@ -148,4 +148,61 @@ describe('useMapRun', () => {
     await waitFor(() => expect(result.current.rows).toEqual(ROWS))
     expect(mockedApi.runs.rows).toHaveBeenCalledWith('run-99', 0, 500)
   })
+
+  it('stops polling and surfaces an error when the run fetch fails', async () => {
+    mockedApi.runs.get.mockRejectedValueOnce({ message: 'not found' })
+
+    const { result } = renderHook(() => useMapRun('map-1'), { wrapper })
+
+    await act(async () => {
+      await result.current.open('expired-run')
+    })
+
+    await waitFor(() => expect(result.current.error).toBe('not found'))
+    expect(result.current.run).toBeNull()
+
+    // refetchInterval must return false once the query is in an error state —
+    // otherwise this failing id gets polled forever. Give it a full interval
+    // and confirm no further `get` call landed.
+    const callsAfterError = mockedApi.runs.get.mock.calls.length
+    await new Promise((resolve) => setTimeout(resolve, 1200))
+    expect(mockedApi.runs.get.mock.calls.length).toBe(callsAfterError)
+  })
+
+  it('sets error from errorMessage when a run finishes FAILED', async () => {
+    const failed = makeRun({ id: 'run-77', status: 'FAILED', errorMessage: 'oracle blew up' })
+    mockedApi.runs.get.mockResolvedValueOnce(envelope(failed) as never)
+
+    const { result } = renderHook(() => useMapRun('map-1'), { wrapper })
+
+    await act(async () => {
+      await result.current.open('run-77')
+    })
+
+    await waitFor(() => expect(result.current.error).toBe('oracle blew up'))
+    expect(result.current.rows).toEqual([])
+  })
+
+  it('appends the next page exactly once when loadMore is called twice concurrently', async () => {
+    const completed = makeRun({ id: 'run-5', status: 'COMPLETED', columns: COLUMNS, rowCount: 1000 })
+    const page0 = Array.from({ length: 500 }, (_, i) => ({ REGION: `R${i}` }))
+    const page1 = Array.from({ length: 500 }, (_, i) => ({ REGION: `R${500 + i}` }))
+    mockedApi.runs.get.mockResolvedValueOnce(envelope(completed) as never)
+    mockedApi.runs.rows.mockResolvedValueOnce(envelope(page0) as never)
+    mockedApi.runs.rows.mockResolvedValueOnce(envelope(page1) as never)
+
+    const { result } = renderHook(() => useMapRun('map-1'), { wrapper })
+
+    await act(async () => {
+      await result.current.open('run-5')
+    })
+    await waitFor(() => expect(result.current.rows).toHaveLength(500))
+
+    await act(async () => {
+      await Promise.all([result.current.loadMore(), result.current.loadMore()])
+    })
+
+    expect(result.current.rows).toHaveLength(1000)
+    expect(mockedApi.runs.rows).toHaveBeenCalledTimes(2)
+  })
 })
