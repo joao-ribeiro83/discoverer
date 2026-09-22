@@ -11,7 +11,7 @@ import { eq } from 'drizzle-orm';
 import type { Connection } from 'oracledb';
 import { config } from '../config.js';
 import { db } from '../db/index.js';
-import { schedules } from '../db/schema.js';
+import { schedules, scheduledResults } from '../db/schema.js';
 import { liveExpiry, scheduledExpiry } from '../lib/map-run-key.js';
 import type { CalcFieldInput } from './calculated-field-evaluator.js';
 import {
@@ -33,6 +33,18 @@ import type { MapRunRow } from './map-run.store.js';
 
 export type ClaimOutcome = 'ran' | 'busy' | 'gone';
 
+export interface InsertScheduledResultInput {
+  scheduleId: string;
+  runId: string;
+  executedAt: Date;
+  rowCount: number | null;
+  executionTimeMs: number | null;
+  status: 'SUCCESS' | 'FAILED' | 'TIMEOUT';
+  errorMessage: string | null;
+  /** Always null — a scheduled run's rows live in `map_run_batches`, not a file. */
+  filePath: null;
+}
+
 export interface RunnerDeps extends MapExecutionDeps {
   claimRun: typeof store.claimRun;
   getRun: typeof store.getRun;
@@ -41,6 +53,8 @@ export interface RunnerDeps extends MapExecutionDeps {
   failRun: typeof store.failRun;
   openRowStream: typeof openRowStream;
   loadRetentionDays: (scheduleId: string) => Promise<number | null>;
+  /** Task 4.2: the schedule-history row a SCHEDULED run leaves behind, once it completes or fails. */
+  insertScheduledResult: (input: InsertScheduledResultInput) => Promise<void>;
   limits: { maxRows: number; batchSize: number; liveTtlHours: number; failRetryMs: number };
   now: () => Date;
 }
@@ -60,6 +74,9 @@ function defaultRunnerDeps(): RunnerDeps {
         .from(schedules)
         .where(eq(schedules.id, scheduleId));
       return row?.days ?? null;
+    },
+    insertScheduledResult: async (input) => {
+      await db.insert(scheduledResults).values(input);
     },
     limits: {
       maxRows: config.MAP_RUN_MAX_ROWS,
@@ -91,6 +108,20 @@ async function recordFailure(deps: RunnerDeps, runId: string, errorMessage: stri
       if (attempt >= 3) throw err;
       await new Promise((res) => setTimeout(res, deps.limits.failRetryMs * attempt));
     }
+  }
+}
+
+/** Best effort: a lost schedule-history write must never re-mark an
+ * already-recorded run outcome (completeRun/failRun already ran). */
+async function safeInsertScheduledResult(
+  deps: RunnerDeps,
+  input: InsertScheduledResultInput,
+): Promise<void> {
+  try {
+    await deps.insertScheduledResult(input);
+  } catch (err) {
+    // eslint-disable-next-line no-console -- no injected logger, same as map-execution.service.ts.
+    console.error(`[map-run:${input.runId}] could not record schedule history`, err);
   }
 }
 
@@ -197,6 +228,18 @@ export async function processMapRun(
       errorMessage: null,
       status: 'SUCCESS',
     });
+    if (run.scheduleId) {
+      await safeInsertScheduledResult(deps, {
+        scheduleId: run.scheduleId,
+        runId,
+        executedAt: now,
+        rowCount,
+        executionTimeMs,
+        status: 'SUCCESS',
+        errorMessage: null,
+        filePath: null,
+      });
+    }
   } catch (err) {
     // SEC-07: wrapExecutionError logs the raw driver error (ORA- text) server
     // side and hands back only the kind's generic message for the row.
@@ -207,17 +250,30 @@ export async function processMapRun(
         : 'QUERY';
     const wrapped = wrapExecutionError(err, kind, runId);
     const now = deps.now();
+    const executionTimeMs = now.getTime() - start;
     await recordFailure(deps, runId, wrapped.message);
     await safeRecord(deps, {
       mapId: run.mapId,
       executedBy: run.requestedBy,
-      executionTimeMs: now.getTime() - start,
+      executionTimeMs,
       rowCount: null,
       sqlText: prepared?.sql ?? null,
       planDecision: prepared?.planDecision,
       errorMessage: wrapped.message,
       status: wrapped.kind === 'TIMEOUT' ? 'TIMEOUT' : 'FAILED',
     });
+    if (run.scheduleId) {
+      await safeInsertScheduledResult(deps, {
+        scheduleId: run.scheduleId,
+        runId,
+        executedAt: now,
+        rowCount: null,
+        executionTimeMs,
+        status: wrapped.kind === 'TIMEOUT' ? 'TIMEOUT' : 'FAILED',
+        errorMessage: wrapped.message,
+        filePath: null,
+      });
+    }
   } finally {
     if (prepared && conn) await deps.releaseConnection(prepared.dataSourceId, conn);
   }

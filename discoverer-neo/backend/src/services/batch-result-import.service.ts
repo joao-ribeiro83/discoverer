@@ -47,7 +47,8 @@ import { writeXlsx } from './exporters/excel-exporter.js';
 import { writeCsv } from './exporters/csv-exporter.js';
 import type { ExportSource } from './exporters/types.js';
 import type { ResultColumn } from './map-execution.service.js';
-import { buildScheduleResultFilePath, type ScheduleOutputFormat } from './scheduler.service.js';
+import type { ScheduleOutputFormat } from './scheduler.service.js';
+import { config } from '../config.js';
 
 export interface DiscoveredBatchResultTable {
   tableName: string;
@@ -227,6 +228,17 @@ async function readExpressionInfo(
 // eslint-disable-next-line @typescript-eslint/require-await -- the consumer reads this with `for await`, so it must be an async generator.
 async function* singleBatch(rows: Record<string, unknown>[]): AsyncIterable<Record<string, unknown>[]> {
   if (rows.length > 0) yield rows;
+}
+
+// This backfill still writes files for the legacy batch-result tables it
+// migrates (Task 4.2 moved the *live* scheduler off files and onto the
+// map-run queue, but this one-time import has no map run to attach to).
+const SCHEDULE_RESULT_DIR =
+  config.SCHEDULE_RESULT_DIR ?? path.resolve(process.cwd(), 'storage', 'scheduled-results');
+
+function buildScheduleResultFilePath(resultId: string, format: ScheduleOutputFormat): string {
+  const ext = format === 'XLSX' ? 'xlsx' : 'csv';
+  return path.join(SCHEDULE_RESULT_DIR, `${resultId}.${ext}`);
 }
 
 async function writeResultFile(
