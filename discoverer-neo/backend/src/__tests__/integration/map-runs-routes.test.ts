@@ -1,0 +1,304 @@
+/**
+ * Map-runs HTTP route tests (`src/routes/map-runs.ts`).
+ *
+ * No map-run worker runs during these tests (`MAP_RUN_WORKER_ENABLED` is off
+ * under `NODE_ENV=test`, the same default `export-routes.test.ts` relies on),
+ * so a requested run simply stays QUEUED — enough to cover creation, re-use,
+ * listing, ownership/admin gates and cancellation. Rows pagination, the
+ * "not completed yet" and "expired" branches are seeded directly through
+ * `services/map-run.store.ts`, the way `map-run-store.test.ts` does, since
+ * getting a run to COMPLETED for real needs the worker (covered at the
+ * service level elsewhere).
+ */
+import {
+  describe,
+  it,
+  expect,
+  beforeAll,
+  afterAll,
+} from '@jest/globals';
+import type { FastifyInstance } from 'fastify';
+import { eq } from 'drizzle-orm';
+import { randomUUID } from 'node:crypto';
+import { buildApp } from '../../app.js';
+import { db } from '../../db/index.js';
+import { users, maps } from '../../db/schema.js';
+import { hashPassword } from '../../lib/password.js';
+import { closeMapRunQueue } from '../../queues/map-run.queue.js';
+import { createRun, completeRun, appendBatch } from '../../services/map-run.store.js';
+
+let app: FastifyInstance;
+
+const OWNER_EMAIL = 'mr-owner@example.com';
+const OTHER_EMAIL = 'mr-other@example.com';
+const ADMIN_EMAIL = 'mr-admin@example.com';
+const TEST_PASSWORD = 'SecurePass123!';
+
+let ownerToken: string;
+let otherToken: string;
+let adminToken: string;
+let ownerId: string;
+let mapId: string;
+
+async function createTestUser(email: string, role: 'ADMIN' | 'USER' = 'USER') {
+  const passwordHash = await hashPassword(TEST_PASSWORD);
+  const [user] = await db
+    .insert(users)
+    .values({ email, passwordHash, name: 'MR Test', role })
+    .returning();
+  return user!;
+}
+
+async function login(email: string): Promise<string> {
+  const res = await app.inject({
+    method: 'POST',
+    url: '/api/auth/login',
+    payload: { email, password: TEST_PASSWORD },
+  });
+  return res.json().data.token as string;
+}
+
+async function cleanup() {
+  // Cascades: users -> maps (created_by) -> map_runs (map_id) -> map_run_batches,
+  // and users -> map_runs (requested_by) -> map_run_batches directly.
+  for (const email of [OWNER_EMAIL, OTHER_EMAIL, ADMIN_EMAIL]) {
+    await db.delete(users).where(eq(users.email, email));
+  }
+}
+
+beforeAll(async () => {
+  app = await buildApp();
+  await app.ready();
+  await cleanup();
+
+  const owner = await createTestUser(OWNER_EMAIL);
+  await createTestUser(OTHER_EMAIL);
+  await createTestUser(ADMIN_EMAIL, 'ADMIN');
+  ownerId = owner.id;
+
+  const [map] = await db
+    .insert(maps)
+    .values({ name: 'MR Test Map', mapType: 'TABLE', createdBy: ownerId })
+    .returning();
+  mapId = map!.id;
+
+  ownerToken = await login(OWNER_EMAIL);
+  otherToken = await login(OTHER_EMAIL);
+  adminToken = await login(ADMIN_EMAIL);
+});
+
+afterAll(async () => {
+  await cleanup();
+  await closeMapRunQueue();
+  await app.close();
+});
+
+function auth(token: string) {
+  return { authorization: `Bearer ${token}` };
+}
+
+describe('POST /api/maps/:id/runs', () => {
+  it('202s a new run and re-uses it (200) on an identical request', async () => {
+    const first = await app.inject({
+      method: 'POST',
+      url: `/api/maps/${mapId}/runs`,
+      headers: auth(ownerToken),
+      payload: {},
+    });
+    expect(first.statusCode).toBe(202);
+    const firstBody = first.json();
+    expect(firstBody.data.status).toBe('QUEUED');
+    expect(firstBody.data.mapId).toBe(mapId);
+    expect(firstBody.data.mapName).toBe('MR Test Map');
+
+    const second = await app.inject({
+      method: 'POST',
+      url: `/api/maps/${mapId}/runs`,
+      headers: auth(ownerToken),
+      payload: {},
+    });
+    expect(second.statusCode).toBe(200);
+    expect(second.json().data.id).toBe(firstBody.data.id);
+  });
+});
+
+describe('GET/DELETE /api/runs/:id — ownership and admin', () => {
+  it('hides another user\'s run (404) but lets an admin see it (200)', async () => {
+    const created = await app.inject({
+      method: 'POST',
+      url: `/api/maps/${mapId}/runs`,
+      headers: auth(ownerToken),
+      payload: { force: true },
+    });
+    expect(created.statusCode).toBe(202);
+    const runId = created.json().data.id as string;
+
+    const asOwner = await app.inject({
+      method: 'GET',
+      url: `/api/runs/${runId}`,
+      headers: auth(ownerToken),
+    });
+    expect(asOwner.statusCode).toBe(200);
+
+    const asOther = await app.inject({
+      method: 'GET',
+      url: `/api/runs/${runId}`,
+      headers: auth(otherToken),
+    });
+    expect(asOther.statusCode).toBe(404);
+
+    const asAdmin = await app.inject({
+      method: 'GET',
+      url: `/api/runs/${runId}`,
+      headers: auth(adminToken),
+    });
+    expect(asAdmin.statusCode).toBe(200);
+    expect(asAdmin.json().data.id).toBe(runId);
+  });
+
+  it('cancels a QUEUED run', async () => {
+    const created = await app.inject({
+      method: 'POST',
+      url: `/api/maps/${mapId}/runs`,
+      headers: auth(ownerToken),
+      payload: { force: true },
+    });
+    const runId = created.json().data.id as string;
+
+    const cancelled = await app.inject({
+      method: 'DELETE',
+      url: `/api/runs/${runId}`,
+      headers: auth(ownerToken),
+    });
+    expect(cancelled.statusCode).toBe(200);
+    expect(cancelled.json().data).toEqual({ cancelled: true });
+
+    const after = await app.inject({
+      method: 'GET',
+      url: `/api/runs/${runId}`,
+      headers: auth(ownerToken),
+    });
+    expect(after.json().data.status).toBe('CANCELLED');
+  });
+});
+
+describe('GET /api/runs — list', () => {
+  it('403s all=true for a non-admin', async () => {
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/runs?all=true',
+      headers: auth(ownerToken),
+    });
+    expect(res.statusCode).toBe(403);
+  });
+});
+
+describe('GET /api/runs/:id/rows', () => {
+  it('409s before completion, 410s once expired, and pages across batches once seeded', async () => {
+    // Not yet completed.
+    const queued = await createRun({
+      mapId,
+      requestedBy: ownerId,
+      kind: 'LIVE',
+      runKey: `rows-not-done-${randomUUID()}`,
+      parameters: {},
+      calculatedFields: [],
+      expiresAt: new Date(Date.now() + 3_600_000),
+    });
+    const notDone = await app.inject({
+      method: 'GET',
+      url: `/api/runs/${queued.id}/rows`,
+      headers: auth(ownerToken),
+    });
+    expect(notDone.statusCode).toBe(409);
+    expect(notDone.json().error).toBe('RUN_NOT_COMPLETED');
+
+    // Completed but expired.
+    const expired = await createRun({
+      mapId,
+      requestedBy: ownerId,
+      kind: 'LIVE',
+      runKey: `rows-expired-${randomUUID()}`,
+      parameters: {},
+      calculatedFields: [],
+      expiresAt: new Date(Date.now() + 3_600_000),
+    });
+    await completeRun(expired.id, {
+      columns: [{ name: 'IDX', label: 'Idx', isAggregate: false }],
+      decoration: {},
+      rowCount: 1,
+      truncated: false,
+      executionTimeMs: 5,
+      sqlText: 'SELECT 1',
+      expiresAt: new Date(Date.now() - 1_000),
+    });
+    const expiredRes = await app.inject({
+      method: 'GET',
+      url: `/api/runs/${expired.id}/rows`,
+      headers: auth(ownerToken),
+    });
+    expect(expiredRes.statusCode).toBe(410);
+
+    // Completed, not expired, 3 000 rows across 3 batches of 1 000: offset
+    // 1500/limit 700 must span batch 1 (rows 1500-1999) and batch 2 (2000-2199).
+    const paged = await createRun({
+      mapId,
+      requestedBy: ownerId,
+      kind: 'LIVE',
+      runKey: `rows-paged-${randomUUID()}`,
+      parameters: {},
+      calculatedFields: [],
+      expiresAt: new Date(Date.now() + 3_600_000),
+    });
+    await completeRun(paged.id, {
+      columns: [{ name: 'IDX', label: 'Idx', isAggregate: false }],
+      decoration: {},
+      rowCount: 3000,
+      truncated: false,
+      executionTimeMs: 5,
+      sqlText: null,
+      expiresAt: new Date(Date.now() + 3_600_000),
+    });
+    for (let batch = 0; batch < 3; batch++) {
+      const rows = Array.from({ length: 1000 }, (_, i) => ({ IDX: batch * 1000 + i }));
+      await appendBatch(paged.id, batch, rows);
+    }
+
+    const page = await app.inject({
+      method: 'GET',
+      url: `/api/runs/${paged.id}/rows?offset=1500&limit=700`,
+      headers: auth(ownerToken),
+    });
+    expect(page.statusCode).toBe(200);
+    const rows = page.json().data as { IDX: number }[];
+    expect(rows).toHaveLength(700);
+    expect(rows[0]!.IDX).toBe(1500);
+    expect(rows[rows.length - 1]!.IDX).toBe(2199);
+  });
+});
+
+describe('removed async execution routes', () => {
+  it('404s — they were replaced by map runs', async () => {
+    const jobId = randomUUID();
+    const postAsync = await app.inject({
+      method: 'POST',
+      url: `/api/maps/${mapId}/execute-async`,
+      headers: auth(ownerToken),
+    });
+    expect(postAsync.statusCode).toBe(404);
+
+    const getStatus = await app.inject({
+      method: 'GET',
+      url: `/api/maps/${mapId}/executions/${jobId}`,
+      headers: auth(ownerToken),
+    });
+    expect(getStatus.statusCode).toBe(404);
+
+    const del = await app.inject({
+      method: 'DELETE',
+      url: `/api/maps/${mapId}/executions/${jobId}`,
+      headers: auth(ownerToken),
+    });
+    expect(del.statusCode).toBe(404);
+  });
+});

@@ -6269,65 +6269,6 @@ paths:
       responses:
         '200':
           description: Default Response
-  /api/maps/{id}/execute-async:
-    post:
-      tags:
-        - Map Execution
-      parameters:
-        - schema:
-            type: string
-            format: uuid
-          in: path
-          name: id
-          required: true
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Default Response
-  /api/maps/{id}/executions/{jobId}:
-    get:
-      tags:
-        - Map Execution
-      parameters:
-        - schema:
-            type: string
-            format: uuid
-          in: path
-          name: id
-          required: true
-        - schema:
-            type: string
-            format: uuid
-          in: path
-          name: jobId
-          required: true
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Default Response
-    delete:
-      tags:
-        - Map Execution
-      parameters:
-        - schema:
-            type: string
-            format: uuid
-          in: path
-          name: id
-          required: true
-        - schema:
-            type: string
-            format: uuid
-          in: path
-          name: jobId
-          required: true
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Default Response
   /api/maps/{id}/explain:
     post:
       tags:
@@ -6353,6 +6294,129 @@ paths:
             type: integer
             minimum: 1
             maximum: 200
+          in: query
+          name: limit
+          required: false
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: id
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Default Response
+  /api/maps/{id}/runs:
+    post:
+      tags:
+        - Map Runs
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: id
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Default Response
+  /api/runs:
+    get:
+      tags:
+        - Map Runs
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: query
+          name: mapId
+          required: false
+        - schema:
+            type: string
+            enum:
+              - QUEUED
+              - RUNNING
+              - COMPLETED
+              - FAILED
+              - CANCELLED
+          in: query
+          name: status
+          required: false
+        - schema:
+            type: string
+            enum:
+              - LIVE
+              - SCHEDULED
+          in: query
+          name: kind
+          required: false
+        - schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+          in: query
+          name: limit
+          required: false
+        - schema:
+            type: boolean
+          in: query
+          name: all
+          required: false
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Default Response
+  /api/runs/{id}:
+    get:
+      tags:
+        - Map Runs
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: id
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Default Response
+    delete:
+      tags:
+        - Map Runs
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: id
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Default Response
+  /api/runs/{id}/rows:
+    get:
+      tags:
+        - Map Runs
+      parameters:
+        - schema:
+            type: integer
+            minimum: 0
+          in: query
+          name: offset
+          required: false
+        - schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
           in: query
           name: limit
           required: false

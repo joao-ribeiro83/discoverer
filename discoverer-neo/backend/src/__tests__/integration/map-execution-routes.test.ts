@@ -460,19 +460,22 @@ describe('POST /api/maps/:id/drill-to-detail', () => {
   }, 30_000);
 });
 
-describe('retired async execution routes', () => {
+describe('removed async execution routes', () => {
+  // Stage 3 deleted these three route registrations outright (map runs
+  // replace them, see map-runs-routes.test.ts) — an unregistered route is a
+  // plain Fastify 404, not a 410 stub.
   it.each<['POST' | 'GET' | 'DELETE', string]>([
     ['POST', 'execute-async'],
     ['GET', 'executions/00000000-0000-4000-8000-000000000000'],
     ['DELETE', 'executions/00000000-0000-4000-8000-000000000000'],
-  ])('%s %s answers 410 Gone', async (method, path) => {
+  ])('%s %s answers 404', async (method, path) => {
     const res = await app.inject({
       method,
       url: `/api/maps/${mapId}/${path}`,
       headers: { authorization: `Bearer ${ownerToken}` },
       payload: method === 'POST' ? {} : undefined,
     });
-    expect(res.statusCode).toBe(410);
+    expect(res.statusCode).toBe(404);
   });
 });
 
