@@ -72,7 +72,9 @@ export async function requestRun(
     mapUpdatedAt: await deps.loadMapUpdatedAt(input.mapId),
   });
 
-  if (!input.force) {
+  // A scheduled run always hits Oracle and gets its own row: re-using a LIVE
+  // run would drop the scheduleId and the schedule's retention.
+  if (!input.force && input.kind === 'LIVE') {
     const hit = await deps.findReusableRun(runKey, now);
     if (hit) return { run: hit, reused: true };
   }

@@ -29,6 +29,7 @@ import {
   type PreparedQuery,
 } from './map-execution.service.js';
 import * as store from './map-run.store.js';
+import type { MapRunRow } from './map-run.store.js';
 
 export type ClaimOutcome = 'ran' | 'busy' | 'gone';
 
@@ -40,7 +41,7 @@ export interface RunnerDeps extends MapExecutionDeps {
   failRun: typeof store.failRun;
   openRowStream: typeof openRowStream;
   loadRetentionDays: (scheduleId: string) => Promise<number | null>;
-  limits: { maxRows: number; batchSize: number; liveTtlHours: number };
+  limits: { maxRows: number; batchSize: number; liveTtlHours: number; failRetryMs: number };
   now: () => Date;
 }
 
@@ -64,6 +65,7 @@ function defaultRunnerDeps(): RunnerDeps {
       maxRows: config.MAP_RUN_MAX_ROWS,
       batchSize: config.MAP_RUN_BATCH_SIZE,
       liveTtlHours: config.MAP_RUN_LIVE_TTL_HOURS,
+      failRetryMs: 2_000,
     },
     now: () => new Date(),
   };
@@ -74,17 +76,45 @@ const FAILED_TTL_MS = 24 * 60 * 60 * 1000;
 // Lifecycles: SCHEDULED default when the schedule is gone.
 const DEFAULT_RETENTION_DAYS = 30;
 
+/**
+ * The job has one attempt, so a lost failRun write would leave the row RUNNING
+ * and block this user's FIFO until the stale sweep. Try a few times first.
+ * ponytail: 3 tries over ~6 s; an outage longer than that still falls to the sweep.
+ */
+async function recordFailure(deps: RunnerDeps, runId: string, errorMessage: string): Promise<void> {
+  const r = { status: 'FAILED' as const, errorMessage, expiresAt: new Date(deps.now().getTime() + FAILED_TTL_MS) };
+  for (let attempt = 1; ; attempt++) {
+    try {
+      await deps.failRun(runId, r);
+      return;
+    } catch (err) {
+      if (attempt >= 3) throw err;
+      await new Promise((res) => setTimeout(res, deps.limits.failRetryMs * attempt));
+    }
+  }
+}
+
 export async function processMapRun(
   runId: string,
   deps: RunnerDeps = defaultRunnerDeps(),
 ): Promise<ClaimOutcome> {
-  if (!(await deps.claimRun(runId))) {
-    // Refused either because this user has an earlier run (wait and retry) or
-    // because the run is no longer QUEUED — cancelled or deleted (drop the job).
-    const run = await deps.getRun(runId);
-    return run?.status === 'QUEUED' ? 'busy' : 'gone';
+  let claimed = false;
+  let run: MapRunRow | null;
+  try {
+    claimed = await deps.claimRun(runId);
+    run = await deps.getRun(runId);
+  } catch (err) {
+    // eslint-disable-next-line no-console -- no injected logger, same as map-execution.service.ts.
+    console.error(`[map-run:${runId}] store error before start`, err);
+    // Not claimed: the row is still QUEUED, so retry the job shortly rather
+    // than let it die and leave a jobless QUEUED row blocking this user.
+    if (!claimed) return 'busy';
+    await recordFailure(deps, runId, 'The run could not be started.');
+    return 'ran';
   }
-  const run = await deps.getRun(runId);
+  // Refused either because this user has an earlier run (wait and retry) or
+  // because the run is no longer QUEUED — cancelled or deleted (drop the job).
+  if (!claimed) return run?.status === 'QUEUED' ? 'busy' : 'gone';
   if (!run || run.status !== 'RUNNING') return 'gone';
 
   const { maxRows, batchSize, liveTtlHours } = deps.limits;
@@ -177,11 +207,7 @@ export async function processMapRun(
         : 'QUERY';
     const wrapped = wrapExecutionError(err, kind, runId);
     const now = deps.now();
-    await deps.failRun(runId, {
-      status: 'FAILED',
-      errorMessage: wrapped.message,
-      expiresAt: new Date(now.getTime() + FAILED_TTL_MS),
-    });
+    await recordFailure(deps, runId, wrapped.message);
     await safeRecord(deps, {
       mapId: run.mapId,
       executedBy: run.requestedBy,

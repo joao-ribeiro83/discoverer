@@ -70,7 +70,7 @@ function makeDeps(opts: { claimed?: boolean; run?: MapRunRow | null; rows?: numb
     completeRun: jest.fn(async () => undefined),
     failRun: jest.fn(async () => undefined),
     loadRetentionDays: jest.fn(async () => 10),
-    limits: { maxRows: 100_000, batchSize: 1000, liveTtlHours: 24 },
+    limits: { maxRows: 100_000, batchSize: 1000, liveTtlHours: 24, failRetryMs: 0 },
     now: () => NOW,
   } satisfies RunnerDeps;
   return { deps, batches, conn };
@@ -142,6 +142,34 @@ describe('processMapRun', () => {
     );
     expect(deps.completeRun).not.toHaveBeenCalled();
     expect(deps.releaseConnection).toHaveBeenCalledWith('ds-1', conn);
+    consoleError.mockRestore();
+  });
+
+  it('retries the job (busy) when the claim itself throws, so a DB blip does not strand a QUEUED run', async () => {
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    const { deps } = makeDeps();
+    deps.claimRun.mockRejectedValue(new Error('connection terminated'));
+    await expect(processMapRun('run-1', deps)).resolves.toBe('busy');
+    expect(deps.failRun).not.toHaveBeenCalled();
+    consoleError.mockRestore();
+  });
+
+  it('fails a claimed run whose row cannot be read, instead of leaving it RUNNING', async () => {
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    const { deps } = makeDeps();
+    deps.getRun.mockRejectedValue(new Error('connection terminated'));
+    await expect(processMapRun('run-1', deps)).resolves.toBe('ran');
+    expect(deps.failRun).toHaveBeenCalledWith('run-1', expect.objectContaining({ status: 'FAILED' }));
+    expect(deps.prepareQuery).not.toHaveBeenCalled();
+    consoleError.mockRestore();
+  });
+
+  it('retries failRun when recording the failure hits a DB blip', async () => {
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    const { deps } = makeDeps({ fail: new Error('ORA-03113: end-of-file on communication channel') });
+    deps.failRun.mockRejectedValueOnce(new Error('connection terminated'));
+    await expect(processMapRun('run-1', deps)).resolves.toBe('ran');
+    expect(deps.failRun).toHaveBeenCalledTimes(2);
     consoleError.mockRestore();
   });
 

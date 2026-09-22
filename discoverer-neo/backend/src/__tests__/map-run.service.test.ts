@@ -106,13 +106,15 @@ describe('requestRun', () => {
     expect(deps.enqueueRun).not.toHaveBeenCalled();
   });
 
-  it('passes kind and scheduleId through for a SCHEDULED run', async () => {
-    const { deps, created } = makeDeps(null);
+  it('passes kind and scheduleId through for a SCHEDULED run, never re-using a LIVE one', async () => {
+    const { deps, created } = makeDeps(makeRun());
     await requestRun(
       { mapId: 'map-1', userId: 'user-1', kind: 'SCHEDULED', scheduleId: 'sched-1' },
       deps,
     );
+    expect(deps.findReusableRun).not.toHaveBeenCalled();
     expect(created[0]).toMatchObject({ kind: 'SCHEDULED', scheduleId: 'sched-1' });
+    expect(deps.enqueueRun).toHaveBeenCalledWith('run-new');
   });
 
   it('fails the new run when it cannot be enqueued, so it does not block the user', async () => {
