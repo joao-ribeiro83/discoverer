@@ -368,10 +368,19 @@ export function classifyRunOutcome(errCode: number | null, errText: string | nul
 /**
  * BR_EXPIRY (ground truth §BATCH_REPORTS) is read as a result-retention
  * window in days. Falls back to the schedules table's own default (30) when
- * the source row has no value, rather than inventing a number.
+ * the source row has no value, rather than inventing a number — and the
+ * same fallback covers a value the API route's own validation
+ * (`z.number().int().min(1).max(3650)`, backend/src/routes/schedules.ts)
+ * would reject: non-integer, zero/negative, or absurdly large. An
+ * unvalidated raw value would let a 0/negative BR_EXPIRY expire a result at
+ * the moment it completes, a fractional one throw on the Postgres integer
+ * insert, and an over-large one make the schedule unsaveable from the UI.
  */
 export function resolveRetentionDays(expiry: number | null): number {
-  return expiry ?? 30;
+  if (expiry == null) return 30;
+  if (!Number.isInteger(expiry)) return 30;
+  if (expiry < 1 || expiry > 3650) return 30;
+  return expiry;
 }
 
 export interface ScheduleImportWarning {

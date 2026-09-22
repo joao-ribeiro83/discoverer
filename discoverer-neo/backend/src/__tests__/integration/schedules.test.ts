@@ -366,6 +366,30 @@ describe('schedule mutation routes', () => {
     expect(res.json().data.cronExpression).toBe('30 2 * * *');
   });
 
+  it('keeps resultRetentionDays on an update that omits it', async () => {
+    const id = await createScheduleViaApi(ownerToken, { resultRetentionDays: 45 });
+    const res = await app.inject({
+      method: 'PUT',
+      url: `/api/schedules/${id}`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload: { name: 'Still 45' },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().data.resultRetentionDays).toBe(45);
+  });
+
+  it('changes resultRetentionDays on an update that includes it', async () => {
+    const id = await createScheduleViaApi(ownerToken, { resultRetentionDays: 45 });
+    const res = await app.inject({
+      method: 'PUT',
+      url: `/api/schedules/${id}`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload: { resultRetentionDays: 7 },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().data.resultRetentionDays).toBe(7);
+  });
+
   it('400s updating with an invalid body', async () => {
     const id = await createScheduleViaApi(ownerToken);
     const res = await app.inject({

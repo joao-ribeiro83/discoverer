@@ -499,7 +499,7 @@ the live estate, small enough to dump whole) rather than guessed.
 | `BR_DESCRIPTION` | VARCHAR2 | free text, e.g. `"M04A_V02" agendado como "M04A_V024" em 25.04.09` |
 | `BR_NEXT_RUN_DATE` | DATE | when it would next fire |
 | `BR_JOB_ID` | NUMBER | Oracle `DBMS_JOB` id — not migrated, Neo's scheduler is BullMQ |
-| `BR_EXPIRY` | NUMBER | **not confirmed.** Values observed (1, 4, 10, 30) don't correlate with `BR_RFU_ID`/`BR_NUM_FREQ_UNITS` on any live row, so it is not the repeat count. Read as a result-retention window (days) by name and by Discoverer's documented "purge after N days" batch option, but no live row exercises a value that would let this be verified independently. → `schedules.result_retention_days` |
+| `BR_EXPIRY` | NUMBER | **not confirmed.** Values observed (1, 4, 10, 30) don't correlate with `BR_RFU_ID`/`BR_NUM_FREQ_UNITS` on any live row, so it is not the repeat count. Read as a result-retention window (days) by name and by Discoverer's documented "purge after N days" batch option, but no live row exercises a value that would let this be verified independently — the retention-days meaning is an assumption until a live row confirms it. → `schedules.result_retention_days` |
 | `BR_COMPLETION_DATE` | DATE | when the (single, on every live row) run finished |
 | `BR_NUM_FREQ_UNITS` | NUMBER | repeat count, paired with `BR_RFU_ID` |
 | `BR_EU_ID` | NUMBER | owner → `EUL_USERS.EU_ID`. **This, not `BR_CREATED_BY`, is the entitlement owner** — on this estate the two happen to agree (both resolve to `MAPTESTES` or `SIID_TESTES`), but `BR_EU_ID` is the documented FK and is what Phase 7.2 resolves against. |

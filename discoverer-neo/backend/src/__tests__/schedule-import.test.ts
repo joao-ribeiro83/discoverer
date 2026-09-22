@@ -54,6 +54,10 @@ describe('resolveRetentionDays', () => {
   it('falls back to 30 when BR_EXPIRY is null (unset on the source row)', () => {
     expect(resolveRetentionDays(null)).toBe(30);
   });
+
+  it.each([0, -1, 4.5, 5000])('falls back to 30 for an invalid BR_EXPIRY of %p', (expiry) => {
+    expect(resolveRetentionDays(expiry)).toBe(30);
+  });
 });
 
 describe('buildCronPlan', () => {
