@@ -34,6 +34,7 @@ import {
 } from '../../db/schema.js';
 import { hashPassword } from '../../lib/password.js';
 import { removeScheduleJob, closeSchedulerQueue } from '../../queues/scheduler.queue.js';
+import { createRun } from '../../services/map-run.store.js';
 
 let app: FastifyInstance;
 
@@ -557,6 +558,59 @@ describe('schedule history + result download', () => {
     const res = await app.inject({
       method: 'GET',
       url: `/api/schedules/${id}/results/00000000-0000-4000-8000-000000000000/download`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+    });
+    expect(res.statusCode).toBe(404);
+  });
+
+  it('409s a result stored in the run queue with USE_EXPORT and the run id', async () => {
+    const id = await createScheduleViaApi(ownerToken);
+    const run = await createRun({
+      mapId,
+      requestedBy: ownerId,
+      kind: 'SCHEDULED',
+      runKey: `sched-download-${id}`,
+      parameters: {},
+      calculatedFields: [],
+      expiresAt: new Date(Date.now() + 3600_000),
+    });
+    const [result] = await db
+      .insert(scheduledResults)
+      .values({
+        scheduleId: id,
+        rowCount: 1,
+        filePath: null,
+        executionTimeMs: 12,
+        status: 'SUCCESS',
+        runId: run.id,
+      })
+      .returning();
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/schedules/${id}/results/${result!.id}/download`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+    });
+    expect(res.statusCode).toBe(409);
+    expect(res.json()).toEqual({ error: 'USE_EXPORT', runId: run.id });
+  });
+
+  it('404s a result with neither a file nor a run', async () => {
+    const id = await createScheduleViaApi(ownerToken);
+    const [result] = await db
+      .insert(scheduledResults)
+      .values({
+        scheduleId: id,
+        rowCount: 1,
+        filePath: null,
+        executionTimeMs: 12,
+        status: 'SUCCESS',
+      })
+      .returning();
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/schedules/${id}/results/${result!.id}/download`,
       headers: { authorization: `Bearer ${ownerToken}` },
     });
     expect(res.statusCode).toBe(404);

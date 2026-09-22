@@ -369,8 +369,13 @@ export default function scheduleRoutes(fastify: FastifyInstance) {
 
       const { resultId } = request.params as { resultId: string };
       const result = await getScheduledResult(schedule.id, resultId);
-      if (!result || result.status !== 'SUCCESS' || !result.filePath) {
+      if (!result || result.status !== 'SUCCESS' || (!result.filePath && !result.runId)) {
         return reply.code(404).send({ error: 'Result not found or not available' });
+      }
+      if (!result.filePath) {
+        // New (post-queue) results keep their rows in the map-run store, not
+        // a file on disk — the frontend turns this into a normal export job.
+        return reply.code(409).send({ error: 'USE_EXPORT', runId: result.runId });
       }
       if (!fs.existsSync(result.filePath)) {
         return reply.code(404).send({ error: 'Result file no longer exists' });
