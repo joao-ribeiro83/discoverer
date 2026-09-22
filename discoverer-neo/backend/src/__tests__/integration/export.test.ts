@@ -84,7 +84,11 @@ afterAll(async () => {
 /** Seeds a COMPLETED run with one batch of `rows` and returns its id. */
 async function seedRun(
   rows: Record<string, unknown>[],
-  overrides: Partial<{ columns: ResultColumn[]; expiresAt: Date }> = {},
+  overrides: Partial<{
+    columns: ResultColumn[];
+    expiresAt: Date;
+    decoration: Record<string, unknown>;
+  }> = {},
 ): Promise<string> {
   const run = await createRun({
     mapId: MAP_ID,
@@ -98,7 +102,7 @@ async function seedRun(
   if (rows.length > 0) await appendBatch(run.id, 0, rows);
   await completeRun(run.id, {
     columns: overrides.columns ?? RUN_COLUMNS,
-    decoration: {},
+    decoration: overrides.decoration ?? {},
     rowCount: rows.length,
     truncated: false,
     executionTimeMs: 1,
@@ -320,6 +324,77 @@ describe('processExportJob', () => {
     expect(source.columns).toEqual(RUN_COLUMNS);
     expect(format).toBe('XLSX');
     expect(filePath).toBe(buildExportFilePath('job-1', 'XLSX'));
+  });
+
+  it('rebuilds group-break subtotal and grand-total rows from the run’s stored decoration', async () => {
+    // REGION (break) + AMOUNT (totalled), matching ResultsTable's placement
+    // rules — the same scenario the old Oracle-driven totals test covered,
+    // but the totals here are exactly what map-run.runner.ts would have
+    // written to `decoration` at run time, not a live query.
+    const columns: ResultColumn[] = [
+      { name: 'C1', label: 'Region', isAggregate: false },
+      { name: 'C2', label: 'Amount', isAggregate: true },
+    ];
+    const decoration = {
+      groupBreakAliases: ['C1'],
+      totals: [
+        {
+          breakAlias: null,
+          totals: [
+            {
+              id: 't1',
+              kind: 'TOTAL',
+              alias: 'T1',
+              targetAlias: 'C2',
+              targetLabel: 'Amount',
+              aggFunction: 'SUM',
+              displayOrder: 0,
+            },
+          ],
+          rows: [{ T1: 30 }],
+        },
+        {
+          breakAlias: 'BREAK_C1',
+          breakLabel: 'Region',
+          breakTargetAlias: 'C1',
+          totals: [
+            {
+              id: 't2',
+              kind: 'TOTAL',
+              alias: 'T2',
+              targetAlias: 'C2',
+              targetLabel: 'Amount',
+              aggFunction: 'SUM',
+              displayOrder: 0,
+              label: 'Total for &value',
+            },
+          ],
+          rows: [
+            { BREAK_C1: 'East', T2: 10 },
+            { BREAK_C1: 'West', T2: 20 },
+          ],
+        },
+      ],
+    };
+    const rows = [
+      { C1: 'East', C2: 5 },
+      { C1: 'East', C2: 5 },
+      { C1: 'West', C2: 20 },
+    ];
+    const runId = await seedRun(rows, { columns, decoration });
+    const { deps, store, drained } = makeDeps();
+    await store.createJob({ mapId: MAP_ID, requestedBy: USER_ID, format: 'CSV' });
+
+    await processExportJob(jobData(runId), deps);
+
+    expect(drained).toEqual([
+      { C1: 'East', C2: 5 },
+      { C1: null, C2: 5 },
+      { C1: 'Total for East', C2: 10 },
+      { C1: 'West', C2: 20 },
+      { C1: 'Total for West', C2: 20 },
+      { C1: 'Grand total', C2: 30 },
+    ]);
   });
 
   it('marks the job PROCESSING before doing any work', async () => {
