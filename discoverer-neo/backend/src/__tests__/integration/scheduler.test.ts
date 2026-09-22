@@ -107,6 +107,7 @@ class FakeScheduleStore {
       createdAt: now,
       updatedAt: now,
       parameters: input.parameters ?? [],
+      resultRetentionDays: input.resultRetentionDays ?? 30,
       plannerDecision: null,
       plannerRefusalDetail: null,
     };

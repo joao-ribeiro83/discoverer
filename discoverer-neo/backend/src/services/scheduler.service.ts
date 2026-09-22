@@ -65,6 +65,10 @@ export interface ScheduleRecord {
   createdAt: Date;
   updatedAt: Date;
   parameters: ScheduleParameterValue[];
+  /** Days a completed run tied to this schedule keeps its stored rows before
+   *  the retention sweeper deletes them. Defaults to 30 (schedules table
+   *  default), imported from BR_EXPIRY for migrated schedules. */
+  resultRetentionDays: number;
   /** The fan-trap planner's last decision for this schedule's map — set by
    *  the migration pre-flight, or by re-planning on enable. Null for a
    *  schedule that has never been planned (e.g. authored fresh in Neo). */
@@ -84,6 +88,7 @@ export interface CreateScheduleInput {
   outputFormat: ScheduleOutputFormat;
   isActive?: boolean;
   parameters?: ScheduleParameterValue[];
+  resultRetentionDays?: number;
 }
 
 export type UpdateScheduleInput = Partial<Omit<CreateScheduleInput, 'mapId'>>;
@@ -280,6 +285,7 @@ function rowToRecord(
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     parameters,
+    resultRetentionDays: row.resultRetentionDays,
     plannerDecision: row.plannerDecision,
     plannerRefusalDetail: row.plannerRefusalDetail,
   };
@@ -324,6 +330,9 @@ async function defaultInsertSchedule(
         outputFormat: input.outputFormat,
         isActive: input.isActive ?? true,
         createdBy: input.createdBy,
+        ...(input.resultRetentionDays !== undefined
+          ? { resultRetentionDays: input.resultRetentionDays }
+          : {}),
       })
       .returning();
 
@@ -355,6 +364,8 @@ async function defaultUpdateScheduleRow(
     if (patch.validUntil !== undefined) values.validUntil = patch.validUntil;
     if (patch.outputFormat !== undefined) values.outputFormat = patch.outputFormat;
     if (patch.isActive !== undefined) values.isActive = patch.isActive;
+    if (patch.resultRetentionDays !== undefined)
+      values.resultRetentionDays = patch.resultRetentionDays;
 
     const [row] = await tx
       .update(schedules)
