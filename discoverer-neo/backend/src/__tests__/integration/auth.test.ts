@@ -78,7 +78,7 @@ describe('POST /api/auth/login', () => {
       email: TEST_EMAIL,
       name: TEST_NAME,
       role: 'USER',
-      locale: 'en',
+      locale: 'pt-PT',
       theme: 'light',
       colorPalette: 'navy',
       // Clients branch on this to force the change screen; an ordinary
@@ -150,7 +150,7 @@ describe('GET /api/auth/me', () => {
       email: TEST_EMAIL,
       name: TEST_NAME,
       role: 'USER',
-      locale: 'en',
+      locale: 'pt-PT',
       theme: 'light',
       colorPalette: 'navy',
     });
