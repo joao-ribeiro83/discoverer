@@ -3,7 +3,7 @@ import { and, desc, eq } from 'drizzle-orm';
 import cronParserPkg from 'cron-parser';
 import { db } from '../db/index.js';
 import { schedules, scheduleParameters, scheduledResults } from '../db/schema.js';
-import { defaultDeps, errorMessage, type MapExecutionDeps } from './map-execution.service.js';
+import { errorMessage } from './map-execution.service.js';
 import { requestRun, type RequestRunInput, type RequestRunResult } from './map-run.service.js';
 import {
   upsertScheduleJob,
@@ -226,25 +226,9 @@ export interface SchedulerDeps {
   removeJob(scheduleId: string): Promise<void>;
   enqueueManual(scheduleId: string, triggeredBy: string): Promise<void>;
 
-  prepareQuery: MapExecutionDeps['prepareQuery'];
-  getConnection: MapExecutionDeps['getConnection'];
-  releaseConnection: MapExecutionDeps['releaseConnection'];
   /** Enqueues the actual Oracle work onto the map-run queue (Task 2.3/2.4) — the
    * scheduler no longer talks to Oracle or writes result files itself. */
   requestRun(input: RequestRunInput): Promise<RequestRunResult>;
-  /**
-   * Best-effort notification hook. No SMTP/mail provider exists in this repo
-   * yet, so the default just no-ops — this is the seam a later session wires
-   * up to a real transport, without any caller needing to change.
-   */
-  notify(schedule: ScheduleRecord, outcome: ScheduleRunNotification): Promise<void>;
-}
-
-export interface ScheduleRunNotification {
-  status: ScheduleRunStatus;
-  rowCount: number | null;
-  filePath: string | null;
-  errorMessage: string | null;
 }
 
 function rowToRecord(
@@ -456,7 +440,6 @@ async function defaultGetResult(
 }
 
 export function defaultSchedulerDeps(): SchedulerDeps {
-  const mapDeps = defaultDeps();
   return {
     insertSchedule: defaultInsertSchedule,
     updateScheduleRow: defaultUpdateScheduleRow,
@@ -470,11 +453,7 @@ export function defaultSchedulerDeps(): SchedulerDeps {
     upsertJob: upsertScheduleJob,
     removeJob: removeScheduleJob,
     enqueueManual: enqueueManualTrigger,
-    prepareQuery: (...args) => mapDeps.prepareQuery(...args),
-    getConnection: (dataSourceId) => mapDeps.getConnection(dataSourceId),
-    releaseConnection: (dataSourceId, conn) => mapDeps.releaseConnection(dataSourceId, conn),
     requestRun,
-    notify: () => Promise.resolve(),
   };
 }
 
@@ -713,7 +692,6 @@ export async function recordScheduleFailure(
   kind: 'TIMEOUT' | 'FAILED' = 'FAILED',
   deps: SchedulerDeps = defaultSchedulerDeps(),
 ): Promise<void> {
-  const schedule = await deps.getScheduleRow(scheduleId);
   const resultId = randomUUID();
   await deps.insertResult({
     id: resultId,
@@ -725,10 +703,4 @@ export async function recordScheduleFailure(
     status: kind,
     errorMessage: message,
   });
-
-  if (schedule) {
-    await deps
-      .notify(schedule, { status: kind, rowCount: null, filePath: null, errorMessage: message })
-      .catch(() => {});
-  }
 }
