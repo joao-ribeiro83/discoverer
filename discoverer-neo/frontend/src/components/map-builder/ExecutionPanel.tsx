@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
+import { useMutation } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import {
   X,
@@ -11,7 +11,6 @@ import {
   Loader2,
   Network,
   Download,
-  PlayCircle,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -30,19 +29,10 @@ import { ExecutionRefusal } from '@/components/map-builder/ExecutionRefusal'
 import { DrillDialog } from '@/components/map-builder/DrillDialog'
 import { PdfExportDialog } from '@/components/map-builder/PdfExportDialog'
 import type {
-  AsyncExecutionJob,
-  AsyncJobStatus,
   ExecuteResult,
   ExecutionErrorKind,
   MapType,
 } from '@/lib/types'
-
-const TERMINAL_JOB_STATUSES: AsyncJobStatus[] = [
-  'COMPLETED',
-  'FAILED',
-  'TIMEOUT',
-  'CANCELLED',
-]
 
 // Short headline labels for the error banner, keyed by the backend's `kind`
 // discriminant. Deliberately distinct from the longer `errors:execution.*`
@@ -100,7 +90,6 @@ export function ExecutionPanel({
   const { t } = useTranslation(['mapViewer', 'common'])
   const { toast } = useToast()
   const [sqlOpen, setSqlOpen] = useState(false)
-  const [bgJobId, setBgJobId] = useState<string | null>(null)
   const [drillRow, setDrillRow] = useState<Record<string, unknown> | null>(null)
   const [explainPlan, setExplainPlan] = useState<string | null>(null)
 
@@ -159,60 +148,6 @@ export function ExecutionPanel({
         variant: 'destructive',
       }),
   })
-
-  // --- Background (async) run: full result up to the async row cap ---------
-  const bgRunMutation = useMutation({
-    mutationFn: async () => {
-      if (!mapId) throw new Error(t('mapViewer:execution.saveBeforeBackgroundRun'))
-      const res = await apiClient.maps.executeAsync(mapId, { parameters })
-      return res.data.data
-    },
-    onSuccess: ({ jobId }) => setBgJobId(jobId),
-    onError: (err) =>
-      toast({
-        title: t('mapViewer:execution.runFailedTitle'),
-        description: getErrorMessage(err),
-        variant: 'destructive',
-      }),
-  })
-
-  const bgStatusQuery = useQuery({
-    queryKey: ['map-execution-job', mapId, bgJobId],
-    queryFn: async () => (await apiClient.maps.getExecutionStatus(mapId!, bgJobId!)).data.data,
-    enabled: !!mapId && !!bgJobId,
-    refetchInterval: (query) => {
-      const status = query.state.data?.status
-      return status && TERMINAL_JOB_STATUSES.includes(status) ? false : 700
-    },
-  })
-
-  const bgJob: AsyncExecutionJob | null = bgStatusQuery.data ?? null
-
-  useEffect(() => {
-    if (!bgJob || !bgJobId) return
-    if (bgJob.status === 'COMPLETED' && bgJob.result) {
-      onResultChange(bgJob.result)
-      toast({
-        title: t('mapViewer:execution.backgroundRunCompleteTitle'),
-        description: t('mapViewer:execution.rowsReturned', { count: bgJob.result.rowCount }),
-      })
-      setBgJobId(null)
-    } else if (bgJob.status === 'FAILED' || bgJob.status === 'TIMEOUT') {
-      toast({
-        title: t('mapViewer:execution.backgroundRunFailedTitle'),
-        description: bgJob.error ?? t('mapViewer:execution.executionFailedFallback'),
-        variant: 'destructive',
-      })
-      setBgJobId(null)
-    } else if (bgJob.status === 'CANCELLED') {
-      setBgJobId(null)
-    }
-    // Deliberately keyed on status alone (not `bgJob`/`onResultChange`/`toast`,
-    // which are referentially unstable across renders) — this should fire
-    // exactly once per terminal status transition, not on every render.
-  }, [bgJob?.status])
-
-  const bgRunning = bgRunMutation.isPending || (!!bgJob && !TERMINAL_JOB_STATUSES.includes(bgJob.status))
 
   const errorKind = runError ? getErrorKind(runError) : undefined
   // A refusal is a separate surface, not a red banner (D-036). Only fall back
@@ -448,23 +383,6 @@ export function ExecutionPanel({
           >
             {loadMoreMutation.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
             {t('common:actions.loadMore')}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 gap-1 text-xs"
-            disabled={bgRunning || !mapId}
-            onClick={() => bgRunMutation.mutate()}
-            title={t('mapViewer:execution.runFullResultTooltip')}
-          >
-            {bgRunning ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <PlayCircle className="h-3.5 w-3.5" />
-            )}
-            {bgRunning
-              ? t('mapViewer:execution.runningStatus', { status: bgJob?.status ?? 'QUEUED' })
-              : t('mapViewer:execution.runFullResult')}
           </Button>
         </div>
       )}

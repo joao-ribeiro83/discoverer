@@ -20,8 +20,6 @@ vi.mock('@/lib/api', () => ({
   apiClient: {
     maps: {
       execute: vi.fn(),
-      executeAsync: vi.fn(),
-      getExecutionStatus: vi.fn(),
       createExport: vi.fn(),
       drillToDetail: vi.fn(),
     },

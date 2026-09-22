@@ -25,8 +25,6 @@ vi.mock('@/lib/api', () => ({
     maps: {
       get: vi.fn(),
       execute: vi.fn(),
-      executeAsync: vi.fn(),
-      getExecutionStatus: vi.fn(),
       createExport: vi.fn(),
     },
     exports: { list: vi.fn(), getStatus: vi.fn(), download: vi.fn() },

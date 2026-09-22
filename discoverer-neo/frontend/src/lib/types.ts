@@ -683,20 +683,36 @@ export interface QueryPlanSummary {
   message?: string
 }
 
-export type AsyncJobStatus = 'QUEUED' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'TIMEOUT' | 'CANCELLED'
+// --- map runs (async run queue) ---------------------------------------------
 
-export interface AsyncExecutionJob {
-  jobId: string
+/** Presentation extras resolved once for a run and reused for every page of its rows. */
+export interface ResultDecoration {
+  groupBreakAliases?: string[]
+  totals?: ResultTotalsGroup[]
+  conditionalFormats?: ResultConditionalFormat[]
+  warnings?: string[]
+}
+
+/** A queued/running/finished map execution, backed by `map_runs` (see `POST /maps/:id/runs`). */
+export interface MapRun {
+  id: string
   mapId: string
-  status: AsyncJobStatus
+  mapName: string
+  kind: 'LIVE' | 'SCHEDULED'
+  scheduleId: string | null
+  status: 'QUEUED' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CANCELLED'
+  parameters: Record<string, unknown>
+  calculatedFields: MapCalculatedFieldInput[]
+  columns: ResultColumn[] | null
+  decoration: ResultDecoration | null
+  rowCount: number | null
+  truncated: boolean
+  executionTimeMs: number | null
+  errorMessage: string | null
   createdAt: string
-  startedAt?: string
-  finishedAt?: string
-  rowCount?: number
-  executionTimeMs?: number
-  truncated?: boolean
-  error?: string
-  result?: ExecuteResult
+  startedAt: string | null
+  completedAt: string | null
+  expiresAt: string
 }
 
 export interface ExecutionHistoryEntry {
@@ -744,6 +760,12 @@ export interface PdfExportRequest {
 
 export interface ExportMapBody {
   format: ExportFileFormat
+  /**
+   * The completed run this export reads its rows from (backend requires it —
+   * exports are built from stored run rows, never from Oracle). Optional here
+   * only until Task 5.3 wires `useMapExport` to always send one.
+   */
+  runId?: string
   parameters?: Record<string, unknown>
   calculatedFields?: MapCalculatedFieldInput[]
   /** Locale for a grand/subtotal row's label text. Defaults to `en`. */
