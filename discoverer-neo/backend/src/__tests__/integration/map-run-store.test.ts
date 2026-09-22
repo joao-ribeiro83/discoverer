@@ -14,7 +14,7 @@ import {
   afterAll,
   afterEach,
 } from '@jest/globals';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { db } from '../../db/index.js';
 import { users, maps, mapRuns, mapRunBatches } from '../../db/schema.js';
 import { hashPassword } from '../../lib/password.js';
@@ -257,6 +257,25 @@ describe('readBatches', () => {
       collected.push(batch);
     }
     expect(collected).toEqual([[{ n: 'a' }], [{ n: 'b' }], [{ n: 'c' }]]);
+  });
+
+  it('throws instead of silently skipping a batch that disappears mid-read', async () => {
+    // Models a run getting swept (cleanupExpiredRuns) between listing the
+    // seqs a read will cover and fetching each one's rows — a torn read
+    // must fail loudly, not hand back a shorter, silently truncated result.
+    const run = await createRun(baseInput({ runKey: 'batches-torn-read' }));
+    await appendBatch(run.id, 0, [{ n: 'a' }]);
+    await appendBatch(run.id, 1, [{ n: 'b' }]);
+
+    const iterator = readBatches(run.id);
+    // Consume the first (real) batch normally...
+    expect((await iterator.next()).value).toEqual([{ n: 'a' }]);
+    // ...then the second batch vanishes before it is read.
+    await db
+      .delete(mapRunBatches)
+      .where(and(eq(mapRunBatches.runId, run.id), eq(mapRunBatches.seq, 1)));
+
+    await expect(iterator.next()).rejects.toThrow(/seq 1/);
   });
 });
 

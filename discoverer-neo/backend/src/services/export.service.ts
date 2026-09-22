@@ -62,6 +62,14 @@ export interface ExportJobRecord {
   status: ExportJobStatus;
   progress: number;
   rowCount: number | null;
+  /**
+   * True when the source run was itself capped (`map_runs.truncated`) —
+   * the file is a complete write of every row the run stored, but the run
+   * may not hold every row the map would otherwise return. Surfaced rather
+   * than silently dropped now that export has no independent, uncapped
+   * query of its own (Task 4.3 moved rows off Oracle and onto the run).
+   */
+  truncated: boolean;
   filePath: string | null;
   errorMessage: string | null;
   createdAt: Date;
@@ -71,7 +79,7 @@ export interface ExportJobRecord {
 export type ExportJobPatch = Partial<
   Pick<
     ExportJobRecord,
-    'status' | 'progress' | 'rowCount' | 'filePath' | 'errorMessage' | 'completedAt'
+    'status' | 'progress' | 'rowCount' | 'truncated' | 'filePath' | 'errorMessage' | 'completedAt'
   >
 >;
 
@@ -122,6 +130,7 @@ function rowToRecord(row: typeof exportJobs.$inferSelect): ExportJobRecord {
     status: row.status,
     progress: row.progress,
     rowCount: row.rowCount,
+    truncated: row.truncated,
     filePath: row.filePath,
     errorMessage: row.errorMessage,
     createdAt: row.createdAt,
@@ -339,9 +348,14 @@ export async function processExportJob(
   // The run already did the Oracle work (and the RLS-bearing query that goes
   // with it) when it was created — an export just reads what it stored. A run
   // gone by the time the worker gets here (deleted, expired and swept) is a
-  // terminal fault: nothing to read, no way to make one.
+  // terminal fault: nothing to read, no way to make one. The route checks
+  // COMPLETED-and-unexpired at enqueue time, but that is a point-in-time
+  // check — a retry, or a job that sits in the queue a while, can run well
+  // after it, so the worker re-checks rather than trusting it: an expired or
+  // still-running run must never produce a "successful", silently truncated
+  // file.
   const run = await getRun(data.runId);
-  if (!run) {
+  if (!run || run.status !== 'COMPLETED' || run.expiresAt.getTime() <= Date.now()) {
     throw new Error('Run not found or no longer available');
   }
 
@@ -423,6 +437,7 @@ export async function processExportJob(
     status: 'COMPLETED',
     progress: 100,
     rowCount: result.rowCount,
+    truncated: run.truncated,
     filePath,
     errorMessage: null,
     completedAt: new Date(),

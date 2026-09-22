@@ -62,6 +62,7 @@ function toResponse(job: ExportJobRecord) {
     status: job.status,
     progress: job.progress,
     rowCount: job.rowCount,
+    truncated: job.truncated,
     errorMessage: job.errorMessage,
     createdAt: job.createdAt,
     completedAt: job.completedAt,

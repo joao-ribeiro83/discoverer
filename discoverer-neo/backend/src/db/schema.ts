@@ -151,6 +151,10 @@ export const exportJobs = pgTable(
     progress: integer('progress').notNull().default(0),
     /** Rows actually written. Null until the export completes. */
     rowCount: integer('row_count'),
+    /** True when the source run itself was capped (`map_runs.truncated`) — the
+     * file is a complete write of what the run stored, but the run may not be
+     * every row the map would return. */
+    truncated: boolean('truncated').notNull().default(false),
     filePath: varchar('file_path', { length: 1024 }),
     errorMessage: text('error_message'),
     createdAt: timestamp('created_at', { withTimezone: true })

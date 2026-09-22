@@ -223,7 +223,14 @@ export async function* readBatches(runId: string): AsyncGenerator<Record<string,
       .select({ rows: mapRunBatches.rows })
       .from(mapRunBatches)
       .where(and(eq(mapRunBatches.runId, runId), eq(mapRunBatches.seq, seq)));
-    yield (batch?.rows as Record<string, unknown>[] | undefined) ?? [];
+    // A seq listed a moment ago but gone now means the run was deleted out
+    // from under this read (the sweeper, most likely) — that is a torn read,
+    // not an empty batch, so it must fail loudly rather than silently hand
+    // back fewer rows than the run actually has.
+    if (!batch) {
+      throw new Error(`map_run_batches row missing for run ${runId} seq ${seq}`);
+    }
+    yield batch.rows as Record<string, unknown>[];
   }
 }
 
