@@ -72,7 +72,7 @@ describe('GET /api/users/me/preferences', () => {
     });
 
     expect(res.statusCode).toBe(200);
-    expect(res.json().data).toEqual({ locale: 'en', theme: 'light', colorPalette: 'navy' });
+    expect(res.json().data).toEqual({ locale: 'pt-PT', theme: 'light', colorPalette: 'navy' });
   });
 
   it('rejects an unauthenticated request', async () => {
@@ -113,7 +113,7 @@ describe('PATCH /api/users/me/preferences', () => {
     });
 
     expect(res.statusCode).toBe(200);
-    expect(res.json().data).toEqual({ locale: 'en', theme: 'dark', colorPalette: 'navy' });
+    expect(res.json().data).toEqual({ locale: 'pt-PT', theme: 'dark', colorPalette: 'navy' });
   });
 
   it('updates colorPalette only', async () => {
@@ -128,7 +128,7 @@ describe('PATCH /api/users/me/preferences', () => {
     });
 
     expect(res.statusCode).toBe(200);
-    expect(res.json().data).toEqual({ locale: 'en', theme: 'light', colorPalette: 'default' });
+    expect(res.json().data).toEqual({ locale: 'pt-PT', theme: 'light', colorPalette: 'default' });
   });
 
   it('updates locale, theme, and colorPalette together', async () => {
@@ -245,7 +245,7 @@ describe('login/me payload', () => {
     });
 
     expect(res.statusCode).toBe(200);
-    expect(res.json().data.user).toMatchObject({ locale: 'en', theme: 'light', colorPalette: 'navy' });
+    expect(res.json().data.user).toMatchObject({ locale: 'pt-PT', theme: 'light', colorPalette: 'navy' });
   });
 
   it('includes locale, theme, and colorPalette in the /api/auth/me response', async () => {
@@ -266,6 +266,6 @@ describe('login/me payload', () => {
     });
 
     expect(res.statusCode).toBe(200);
-    expect(res.json().data).toMatchObject({ locale: 'en', theme: 'dark', colorPalette: 'navy' });
+    expect(res.json().data).toMatchObject({ locale: 'pt-PT', theme: 'dark', colorPalette: 'navy' });
   });
 });

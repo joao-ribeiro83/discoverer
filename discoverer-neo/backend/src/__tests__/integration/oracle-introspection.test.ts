@@ -43,7 +43,7 @@ class FakeRedis {
   }
 }
 
-const CACHE_PREFIX = 'oracle:introspection:';
+const CACHE_PREFIX = 'oracle:introspection:v2:';
 const ORACLE_DS_NAME = 'introspect-oracle';
 const PG_DS_NAME = 'introspect-postgres';
 
@@ -55,8 +55,10 @@ const sampleTables: IntrospectedTable[] = [
   {
     tableName: 'SALES',
     tableOwner: 'SCOTT',
+    objectType: 'TABLE',
+    comments: null,
     columns: [
-      { columnName: 'AMOUNT', dataType: 'NUMBER', dataLength: 22, nullable: true },
+      { columnName: 'AMOUNT', dataType: 'NUMBER', dataLength: 22, nullable: true, comments: null },
     ],
   },
 ];
