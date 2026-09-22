@@ -449,18 +449,24 @@ export async function processExportJob(
       ? await deps.resolveHeading(mapId, data.parameters ?? {})
       : undefined;
 
+    // Progress writes are chained and awaited before COMPLETED, so a late one
+    // can never overwrite progress 100.
+    let progressWrite: Promise<unknown> = Promise.resolve();
     const result = await deps.writeExportFile(
       source,
       format,
       filePath,
       mapId,
       (rows) => {
-        void safeUpdate(deps, exportJobId, { progress: streamingProgress(rows) });
+        progressWrite = progressWrite.then(() =>
+          safeUpdate(deps, exportJobId, { progress: streamingProgress(rows) }),
+        );
       },
       data.locale,
       heading,
       data.pdf,
     );
+    await progressWrite;
 
     await deps.updateJob(exportJobId, {
       status: 'COMPLETED',
