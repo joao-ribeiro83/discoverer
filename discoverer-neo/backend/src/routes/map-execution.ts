@@ -54,9 +54,11 @@ const PlanBodySchema = z.object({
 
 /**
  * The generated SQL and the execution plan are administrator views of a map,
- * not parts of its result. Both name the schema behind it.
+ * not parts of its result. Both name the schema behind it. Exported so
+ * routes/map-runs.ts's admin-only `sql` field and `all=true` gate use the
+ * same check rather than a second copy.
  */
-function isAdmin(request: { user?: unknown }): boolean {
+export function isAdmin(request: { user?: unknown }): boolean {
   return (request.user as { role?: string } | undefined)?.role === 'ADMIN';
 }
 
