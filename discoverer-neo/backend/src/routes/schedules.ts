@@ -43,6 +43,7 @@ const CreateBodySchema = z.object({
   outputFormat: z.enum(['XLSX', 'CSV']),
   isActive: z.boolean().optional(),
   parameters: z.array(ParameterValueSchema).max(100).optional(),
+  resultRetentionDays: z.number().int().min(1).max(3650).optional(),
 });
 
 const UpdateBodySchema = CreateBodySchema.partial();
@@ -91,6 +92,7 @@ function toResponse(schedule: ScheduleRecord, nextRunAt: Date | null) {
     createdAt: schedule.createdAt,
     updatedAt: schedule.updatedAt,
     parameters: schedule.parameters,
+    resultRetentionDays: schedule.resultRetentionDays,
     plannerDecision: schedule.plannerDecision,
     plannerRefusalDetail: schedule.plannerRefusalDetail,
     nextRunAt,

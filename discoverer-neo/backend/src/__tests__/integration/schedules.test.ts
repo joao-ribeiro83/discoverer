@@ -202,6 +202,33 @@ describe('map-scoped schedule routes', () => {
     expect(entry!.nextRunAt).not.toBeNull();
   });
 
+  it('creates a schedule with a custom result retention and reads it back', async () => {
+    const id = await createScheduleViaApi(ownerToken, { resultRetentionDays: 45 });
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/schedules/${id}`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().data.resultRetentionDays).toBe(45);
+  });
+
+  it('400s creating a schedule with resultRetentionDays out of range', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/maps/${mapId}/schedules`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload: {
+        name: 'Bad Retention',
+        cronExpression: '0 0 * * *',
+        outputFormat: 'CSV',
+        resultRetentionDays: 0,
+      },
+    });
+    expect(res.statusCode).toBe(400);
+  });
+
   it('404s creating a schedule on an unknown map', async () => {
     const res = await app.inject({
       method: 'POST',

@@ -3,6 +3,7 @@ import {
   classifyFrequencyUnit,
   classifyRunOutcome,
   buildCronPlan,
+  resolveRetentionDays,
 } from '../services/schedule-import.service.js';
 
 describe('classifyFrequencyUnit', () => {
@@ -42,6 +43,16 @@ describe('classifyRunOutcome', () => {
     const result = classifyRunOutcome(null, null);
     expect(result.status).toBe('SUCCESS');
     expect(result.errorMessage).toBeNull();
+  });
+});
+
+describe('resolveRetentionDays', () => {
+  it('reads BR_EXPIRY as the retention window in days', () => {
+    expect(resolveRetentionDays(10)).toBe(10);
+  });
+
+  it('falls back to 30 when BR_EXPIRY is null (unset on the source row)', () => {
+    expect(resolveRetentionDays(null)).toBe(30);
   });
 });
 
