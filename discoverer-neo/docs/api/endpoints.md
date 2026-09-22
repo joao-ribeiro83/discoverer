@@ -1798,50 +1798,6 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 | --- | --- |
 | 200 | — |
 
-#### POST /api/maps/{id}/execute-async
-
-**Parameters:**
-
-| Name | In | Required | Type |
-| --- | --- | --- | --- |
-| `id` | path | yes | string (uuid) |
-
-**Responses:**
-
-| Status | Body |
-| --- | --- |
-| 200 | — |
-
-#### GET /api/maps/{id}/executions/{jobId}
-
-**Parameters:**
-
-| Name | In | Required | Type |
-| --- | --- | --- | --- |
-| `id` | path | yes | string (uuid) |
-| `jobId` | path | yes | string (uuid) |
-
-**Responses:**
-
-| Status | Body |
-| --- | --- |
-| 200 | — |
-
-#### DELETE /api/maps/{id}/executions/{jobId}
-
-**Parameters:**
-
-| Name | In | Required | Type |
-| --- | --- | --- | --- |
-| `id` | path | yes | string (uuid) |
-| `jobId` | path | yes | string (uuid) |
-
-**Responses:**
-
-| Status | Body |
-| --- | --- |
-| 200 | — |
-
 #### POST /api/maps/{id}/explain
 
 **Parameters:**
@@ -1862,6 +1818,84 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 
 | Name | In | Required | Type |
 | --- | --- | --- | --- |
+| `limit` | query | no | integer |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+### Map Runs
+
+#### POST /api/maps/{id}/runs
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### GET /api/runs
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `mapId` | query | no | string (uuid) |
+| `status` | query | no | "QUEUED" \| "RUNNING" \| "COMPLETED" \| "FAILED" \| "CANCELLED" |
+| `kind` | query | no | "LIVE" \| "SCHEDULED" |
+| `limit` | query | no | integer |
+| `all` | query | no | boolean |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### GET /api/runs/{id}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### DELETE /api/runs/{id}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### GET /api/runs/{id}/rows
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `offset` | query | no | integer |
 | `limit` | query | no | integer |
 | `id` | path | yes | string (uuid) |
 

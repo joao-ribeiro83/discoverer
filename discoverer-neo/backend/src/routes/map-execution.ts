@@ -12,10 +12,6 @@ import {
 } from '../services/map-execution.service.js';
 import { drillToDetail, DrillNotAvailableError } from '../services/drill.service.js';
 
-// The in-memory async registry is gone (map runs replace it); Stage 3 removes
-// these three routes.
-const ASYNC_GONE = 'Async execution was replaced by map runs.';
-
 // ---------------------------------------------------------------------------
 // Validation
 // ---------------------------------------------------------------------------
@@ -26,7 +22,9 @@ const CalculatedFieldSchema = z.object({
   displayOrder: z.number().int().optional(),
 });
 
-const ExecuteBodySchema = z.object({
+// Exported so routes/map-runs.ts's request-run body can reuse the same
+// calculated-fields rule (max 50) rather than duplicating it and risking drift.
+export const ExecuteBodySchema = z.object({
   parameters: z.record(z.string(), z.unknown()).optional(),
   /** Optional per-request statement timeout (ms); the service clamps it. */
   timeoutMs: z.number().int().positive().optional(),
@@ -77,15 +75,6 @@ const idParamsSchema = {
   type: 'object',
   required: ['id'],
   properties: { id: { type: 'string', format: 'uuid' } },
-} as const;
-
-const jobParamsSchema = {
-  type: 'object',
-  required: ['id', 'jobId'],
-  properties: {
-    id: { type: 'string', format: 'uuid' },
-    jobId: { type: 'string', format: 'uuid' },
-  },
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -283,34 +272,6 @@ export default function mapExecutionRoutes(fastify: FastifyInstance) {
     },
   );
 
-  // POST /api/maps/:id/execute-async — queue a background execution.
-  fastify.post(
-    '/api/maps/:id/execute-async',
-    {
-      preHandler: [fastify.authenticate],
-      schema: {
-        tags: ['Map Execution'],
-        security: [{ bearerAuth: [] }],
-        params: idParamsSchema,
-      },
-    },
-    (_request, reply) => reply.code(410).send({ error: ASYNC_GONE }),
-  );
-
-  // GET /api/maps/:id/executions/:jobId — async execution status/result.
-  fastify.get(
-    '/api/maps/:id/executions/:jobId',
-    {
-      preHandler: [fastify.authenticate],
-      schema: {
-        tags: ['Map Execution'],
-        security: [{ bearerAuth: [] }],
-        params: jobParamsSchema,
-      },
-    },
-    (_request, reply) => reply.code(410).send({ error: ASYNC_GONE }),
-  );
-
   // POST /api/maps/:id/explain — Oracle's execution plan for this map.
   //
   // Administrator-only, like the generated SQL it is a plan of: it names the
@@ -349,20 +310,6 @@ export default function mapExecutionRoutes(fastify: FastifyInstance) {
         throw err;
       }
     },
-  );
-
-  // DELETE /api/maps/:id/executions/:jobId — cancel a running execution.
-  fastify.delete(
-    '/api/maps/:id/executions/:jobId',
-    {
-      preHandler: [fastify.authenticate],
-      schema: {
-        tags: ['Map Execution'],
-        security: [{ bearerAuth: [] }],
-        params: jobParamsSchema,
-      },
-    },
-    (_request, reply) => reply.code(410).send({ error: ASYNC_GONE }),
   );
 
   // GET /api/maps/:id/history — recent execution log entries.
