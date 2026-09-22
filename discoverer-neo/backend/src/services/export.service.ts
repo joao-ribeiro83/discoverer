@@ -6,14 +6,22 @@ import { config } from '../config.js';
 import { db } from '../db/index.js';
 import { exportJobs, maps, mapPageSetup } from '../db/schema.js';
 import { exportQueue, type ExportJobData } from '../queues/export.queue.js';
-import { errorMessage, type ResultColumn } from './map-execution.service.js';
+import { errorMessage, type ResultColumn, type ResultTotalsGroup } from './map-execution.service.js';
 import { getRun, readBatches } from './map-run.store.js';
 import { writeXlsx } from './exporters/excel-exporter.js';
 import { writeCsv } from './exporters/csv-exporter.js';
 import { writePdf, type PdfExportRequest } from './exporters/pdf-exporter.js';
 import type { ExportHeading, ExportSource, ExportWriteResult } from './exporters/types.js';
 import { resolveHeading } from './map.service.js';
-import type { ExportLocale } from './exporters/total-labels.js';
+import {
+  createWorksheetRowBuilder,
+  formatTotalsRowRecord,
+  interpolateTotalLabel,
+  applySuppression,
+  type DisplayRow,
+} from './exporters/worksheet-rows.js';
+import { totalLabelsFor, type ExportLocale } from './exporters/total-labels.js';
+import { cellText } from './exporters/types.js';
 
 // ---------------------------------------------------------------------------
 // Exports are durable, queued work.
@@ -339,10 +347,54 @@ export async function processExportJob(
 
   await safeUpdate(deps, exportJobId, { progress: PROGRESS_STREAMING_START });
 
-  const source: ExportSource = {
-    columns: (run.columns ?? []) as ResultColumn[],
-    batches: readBatches(data.runId),
+  const columns = (run.columns ?? []) as ResultColumn[];
+  const decoration = (run.decoration ?? {}) as {
+    groupBreakAliases?: string[];
+    totals?: ResultTotalsGroup[];
   };
+  const groupBreakAliases = decoration.groupBreakAliases ?? [];
+  const totalsGroups = decoration.totals ?? [];
+  const rawBatches = readBatches(data.runId);
+
+  // A run with group breaks or totals gets its rows interleaved with
+  // subtotal/grand-total rows the same way ResultsTable draws them on screen
+  // (same placement rules — see exporters/worksheet-rows.ts), pushed one row
+  // at a time so the export never holds the result set in memory. The totals
+  // themselves were computed once, against Oracle, when the run was created
+  // (map-run.runner.ts) and stored on `run.decoration` — export only
+  // rebuilds their placement, it never re-queries.
+  const labels = totalLabelsFor(data.locale);
+  const toRecord = (display: DisplayRow): Record<string, unknown> => {
+    if (display.kind === 'data') return applySuppression(display.row, display.suppressed);
+    if (display.kind === 'grand') {
+      return formatTotalsRowRecord(columns, display.entries, labels.grandTotal);
+    }
+    const value = cellText(display.breakValue);
+    const label = interpolateTotalLabel(
+      display.entries[0]?.total.label,
+      { value, item: display.breakLabel },
+      labels.subtotalFor(value),
+    );
+    return formatTotalsRowRecord(columns, display.entries, label);
+  };
+
+  const batches =
+    groupBreakAliases.length > 0 || totalsGroups.length > 0
+      ? (async function* () {
+          const builder = createWorksheetRowBuilder(groupBreakAliases, totalsGroups);
+          for await (const batch of rawBatches) {
+            const out: Record<string, unknown>[] = [];
+            for (const row of batch) {
+              for (const display of builder.pushRow(row)) out.push(toRecord(display));
+            }
+            if (out.length > 0) yield out;
+          }
+          const trailing = builder.finish().map(toRecord);
+          if (trailing.length > 0) yield trailing;
+        })()
+      : rawBatches;
+
+  const source: ExportSource = { columns, batches };
   const filePath = buildExportFilePath(exportJobId, format);
   const heading = deps.resolveHeading
     ? await deps.resolveHeading(mapId, (run.parameters ?? {}) as Record<string, unknown>)
