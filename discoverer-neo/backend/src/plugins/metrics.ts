@@ -77,6 +77,19 @@ export function setSchedulerQueueDepth(counts: Record<string, number>): void {
   }
 }
 
+const mapRunQueueDepth = new Gauge({
+  name: 'map_run_queue_jobs',
+  help: 'Map-run jobs in the queue by state',
+  labelNames: ['state'],
+  registers: [registry],
+});
+
+export function setMapRunQueueDepth(counts: Record<string, number>): void {
+  for (const [state, value] of Object.entries(counts)) {
+    mapRunQueueDepth.set({ state }, value);
+  }
+}
+
 export function recordExportOutcome(
   outcome: 'completed' | 'failed',
   durationSeconds?: number,
