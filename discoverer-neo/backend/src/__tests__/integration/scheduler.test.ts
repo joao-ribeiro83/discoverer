@@ -1,5 +1,4 @@
 import { describe, it, expect, jest } from '@jest/globals';
-import type { Connection } from 'oracledb';
 import {
   createSchedule,
   updateSchedule,
@@ -25,50 +24,19 @@ import {
 } from '../../services/scheduler.service.js';
 import type { RequestRunResult } from '../../services/map-run.service.js';
 import type { MapRunRow } from '../../services/map-run.store.js';
-import type { PreparedQuery } from '../../services/map-execution.service.js';
 
 // ---------------------------------------------------------------------------
 // Fixtures & fakes.
 //
 // Hermetic: no Postgres, Oracle, or Redis. The schedule/result stores and the
-// BullMQ job-scheduler operations are faked; the Oracle connection is faked
-// the same way map-execution.test.ts/export.test.ts do it.
+// BullMQ job-scheduler operations are faked. Task 4.2 moved schedule
+// execution onto the map-run queue (via `requestRun`), so this file no
+// longer needs an Oracle connection fake — that seam lives in
+// map-run.runner.test.ts now.
 // ---------------------------------------------------------------------------
 
 const USER_ID = 'user-1';
 const MAP_ID = 'map-1';
-
-function makePrepared(overrides: Partial<PreparedQuery> = {}): PreparedQuery {
-  return {
-    sql: 'SELECT "F"."AMOUNT" AS "C1"\nFROM "S"."SALES" "F"',
-    bindParams: {},
-    columns: [{ alias: 'C1', label: 'Amount', isAggregate: false }],
-    dataSourceId: 'ds-1',
-    ...overrides,
-  };
-}
-
-function makeResultSetConn(
-  rows: Record<string, unknown>[],
-  metaData: Array<{ name: string }> = [{ name: 'C1' }],
-) {
-  let cursor = 0;
-  const resultSet = {
-    getRows: jest.fn(async (n: number) => {
-      const slice = rows.slice(cursor, cursor + n);
-      cursor += slice.length;
-      return slice;
-    }),
-    close: jest.fn(async () => {}),
-  };
-  const raw: Record<string, unknown> = {
-    callTimeout: undefined,
-    execute: jest.fn(async () => ({ resultSet, metaData })),
-    break: jest.fn(async () => {}),
-    close: jest.fn(async () => {}),
-  };
-  return { raw, conn: raw as unknown as Connection, resultSet };
-}
 
 /** In-memory fake of the `schedules` + `schedule_parameters` tables. */
 class FakeScheduleStore {
@@ -166,32 +134,22 @@ function makeRunRow(overrides: Partial<MapRunRow> = {}): MapRunRow {
 }
 
 function makeDeps(
-  conn: Connection,
   overrides: Partial<SchedulerDeps> = {},
 ): {
   deps: SchedulerDeps;
   scheduleStore: FakeScheduleStore;
   resultStore: FakeResultStore;
-  prepareQuery: jest.Mock;
-  getConnection: jest.Mock;
-  releaseConnection: jest.Mock;
   requestRun: jest.Mock<() => Promise<RequestRunResult>>;
   upsertJob: jest.Mock;
   removeJob: jest.Mock;
   enqueueManual: jest.Mock;
-  notify: jest.Mock;
 } {
-  const prepared = makePrepared();
   const scheduleStore = new FakeScheduleStore();
   const resultStore = new FakeResultStore();
-  const prepareQuery = jest.fn(async () => prepared) as jest.Mock;
-  const getConnection = jest.fn(async () => conn) as jest.Mock;
-  const releaseConnection = jest.fn(async () => {}) as jest.Mock;
   const requestRun = jest.fn(async () => ({ run: makeRunRow(), reused: false }));
   const upsertJob = jest.fn(async () => {}) as jest.Mock;
   const removeJob = jest.fn(async () => {}) as jest.Mock;
   const enqueueManual = jest.fn(async () => {}) as jest.Mock;
-  const notify = jest.fn(async () => {}) as jest.Mock;
 
   const deps = {
     insertSchedule: scheduleStore.insertSchedule,
@@ -206,11 +164,7 @@ function makeDeps(
     upsertJob,
     removeJob,
     enqueueManual,
-    prepareQuery,
-    getConnection,
-    releaseConnection,
     requestRun,
-    notify,
     ...overrides,
   } as unknown as SchedulerDeps;
 
@@ -218,14 +172,10 @@ function makeDeps(
     deps,
     scheduleStore,
     resultStore,
-    prepareQuery,
-    getConnection,
-    releaseConnection,
     requestRun,
     upsertJob,
     removeJob,
     enqueueManual,
-    notify,
   };
 }
 
@@ -294,8 +244,7 @@ describe('computeNextRunTime', () => {
 
 describe('createSchedule', () => {
   it('persists the schedule and registers its recurring job', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps, upsertJob } = makeDeps(conn);
+    const { deps, upsertJob } = makeDeps();
 
     const schedule = await createSchedule(createInput(), USER_ID, deps);
 
@@ -311,8 +260,7 @@ describe('createSchedule', () => {
   });
 
   it('persists parameter presets', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps } = makeDeps(conn);
+    const { deps } = makeDeps();
 
     const schedule = await createSchedule(
       createInput({ parameters: [{ paramName: 'REGION', paramValue: 'EAST' }] }),
@@ -324,8 +272,7 @@ describe('createSchedule', () => {
   });
 
   it('does not register a job for a schedule created disabled', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps, upsertJob, removeJob } = makeDeps(conn);
+    const { deps, upsertJob, removeJob } = makeDeps();
 
     await createSchedule(createInput({ isActive: false }), USER_ID, deps);
 
@@ -334,8 +281,7 @@ describe('createSchedule', () => {
   });
 
   it('rejects an invalid cron expression before touching the store', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps, scheduleStore } = makeDeps(conn);
+    const { deps, scheduleStore } = makeDeps();
 
     await expect(
       createSchedule(createInput({ cronExpression: 'nonsense' }), USER_ID, deps),
@@ -344,8 +290,7 @@ describe('createSchedule', () => {
   });
 
   it('rejects an unknown timezone', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps } = makeDeps(conn);
+    const { deps } = makeDeps();
 
     await expect(
       createSchedule(createInput({ timezone: 'Nowhere/Fake' }), USER_ID, deps),
@@ -353,8 +298,7 @@ describe('createSchedule', () => {
   });
 
   it('rejects validFrom on or after validUntil', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps } = makeDeps(conn);
+    const { deps } = makeDeps();
 
     await expect(
       createSchedule(
@@ -369,8 +313,7 @@ describe('createSchedule', () => {
   });
 
   it('rolls back the row if registering the job scheduler fails', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps, scheduleStore } = makeDeps(conn, {
+    const { deps, scheduleStore } = makeDeps({
       upsertJob: jest.fn(async () => {
         throw new Error('Redis unavailable');
       }) as unknown as SchedulerDeps['upsertJob'],
@@ -385,8 +328,7 @@ describe('createSchedule', () => {
 
 describe('updateSchedule / getSchedule / list', () => {
   it('updates fields and re-syncs the recurring job from the resulting row', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps, upsertJob } = makeDeps(conn);
+    const { deps, upsertJob } = makeDeps();
     const schedule = await createSchedule(createInput(), USER_ID, deps);
     upsertJob.mockClear();
 
@@ -401,15 +343,13 @@ describe('updateSchedule / getSchedule / list', () => {
   });
 
   it('returns null for a missing schedule', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps } = makeDeps(conn);
+    const { deps } = makeDeps();
     expect(await updateSchedule('nope', { name: 'x' }, deps)).toBeNull();
     expect(await getSchedule('nope', deps)).toBeNull();
   });
 
   it('lists schedules by map and by user', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps } = makeDeps(conn);
+    const { deps } = makeDeps();
     await createSchedule(createInput({ name: 'A' }), USER_ID, deps);
     await createSchedule(createInput({ name: 'B' }), 'user-2', deps);
 
@@ -420,8 +360,7 @@ describe('updateSchedule / getSchedule / list', () => {
 
 describe('toggleSchedule', () => {
   it('disabling removes the recurring job; re-enabling re-registers it', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps, upsertJob, removeJob } = makeDeps(conn);
+    const { deps, upsertJob, removeJob } = makeDeps();
     const schedule = await createSchedule(createInput(), USER_ID, deps);
     upsertJob.mockClear();
 
@@ -443,8 +382,7 @@ describe('toggleSchedule', () => {
 
 describe('deleteSchedule', () => {
   it('unregisters the job and removes the row', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps, removeJob, scheduleStore } = makeDeps(conn);
+    const { deps, removeJob, scheduleStore } = makeDeps();
     const schedule = await createSchedule(createInput(), USER_ID, deps);
 
     const deleted = await deleteSchedule(schedule.id, deps);
@@ -455,16 +393,14 @@ describe('deleteSchedule', () => {
   });
 
   it('returns false for an unknown schedule', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps } = makeDeps(conn);
+    const { deps } = makeDeps();
     expect(await deleteSchedule('nope', deps)).toBe(false);
   });
 });
 
 describe('triggerNow', () => {
   it('enqueues a manual run for an active schedule', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps, enqueueManual } = makeDeps(conn);
+    const { deps, enqueueManual } = makeDeps();
     const schedule = await createSchedule(createInput(), USER_ID, deps);
 
     const result = await triggerNow(schedule.id, USER_ID, deps);
@@ -474,8 +410,7 @@ describe('triggerNow', () => {
   });
 
   it('refuses to trigger a disabled schedule', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps, enqueueManual } = makeDeps(conn);
+    const { deps, enqueueManual } = makeDeps();
     const schedule = await createSchedule(createInput({ isActive: false }), USER_ID, deps);
 
     await expect(triggerNow(schedule.id, USER_ID, deps)).rejects.toThrow(ScheduleValidationError);
@@ -483,23 +418,20 @@ describe('triggerNow', () => {
   });
 
   it('throws for an unknown schedule', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps } = makeDeps(conn);
+    const { deps } = makeDeps();
     await expect(triggerNow('nope', USER_ID, deps)).rejects.toThrow(ScheduleValidationError);
   });
 });
 
 describe('getNextRunTime', () => {
   it('returns null for a disabled schedule', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps } = makeDeps(conn);
+    const { deps } = makeDeps();
     const schedule = await createSchedule(createInput({ isActive: false }), USER_ID, deps);
     expect(await getNextRunTime(schedule.id, deps)).toBeNull();
   });
 
   it('returns a future date for an active schedule', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps } = makeDeps(conn);
+    const { deps } = makeDeps();
     const schedule = await createSchedule(createInput(), USER_ID, deps);
     const next = await getNextRunTime(schedule.id, deps);
     expect(next).toBeInstanceOf(Date);
@@ -513,8 +445,7 @@ describe('getNextRunTime', () => {
 
 describe('processScheduleRun', () => {
   it('enqueues a SCHEDULED run through requestRun, forcing a fresh execution', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps, requestRun } = makeDeps(conn);
+    const { deps, requestRun } = makeDeps();
     const schedule = await createSchedule(createInput({ outputFormat: 'XLSX' }), USER_ID, deps);
 
     const outcome = await processScheduleRun(schedule.id, { manual: false }, deps);
@@ -531,8 +462,7 @@ describe('processScheduleRun', () => {
   });
 
   it('passes schedule parameter presets through to requestRun', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps, requestRun } = makeDeps(conn);
+    const { deps, requestRun } = makeDeps();
     const schedule = await createSchedule(
       createInput({ parameters: [{ paramName: 'REGION', paramValue: 'EAST' }] }),
       USER_ID,
@@ -547,8 +477,7 @@ describe('processScheduleRun', () => {
   });
 
   it('is a no-op for a disabled schedule — nothing is queued', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps, requestRun } = makeDeps(conn);
+    const { deps, requestRun } = makeDeps();
     const schedule = await createSchedule(createInput({ isActive: false }), USER_ID, deps);
 
     const outcome = await processScheduleRun(schedule.id, { manual: false }, deps);
@@ -558,8 +487,7 @@ describe('processScheduleRun', () => {
   });
 
   it('skips a cron-driven run outside the validity window', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps, requestRun } = makeDeps(conn);
+    const { deps, requestRun } = makeDeps();
     const schedule = await createSchedule(
       createInput({ validUntil: new Date(Date.now() - 60_000) }),
       USER_ID,
@@ -573,8 +501,7 @@ describe('processScheduleRun', () => {
   });
 
   it('a manual trigger bypasses the validity window', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps, requestRun } = makeDeps(conn);
+    const { deps, requestRun } = makeDeps();
     const schedule = await createSchedule(
       createInput({ validUntil: new Date(Date.now() - 60_000) }),
       USER_ID,
@@ -588,8 +515,7 @@ describe('processScheduleRun', () => {
   });
 
   it('propagates when requestRun cannot enqueue the run (so the worker can retry)', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps, requestRun } = makeDeps(conn);
+    const { deps, requestRun } = makeDeps();
     requestRun.mockRejectedValueOnce(new Error('queue unavailable'));
     const schedule = await createSchedule(createInput(), USER_ID, deps);
 
@@ -599,8 +525,7 @@ describe('processScheduleRun', () => {
   });
 
   it('resolves with a "no longer exists" skip for a deleted schedule', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps } = makeDeps(conn);
+    const { deps } = makeDeps();
     const outcome = await processScheduleRun('ghost', { manual: false }, deps);
     expect(outcome).toEqual({ skipped: true, reason: 'Schedule no longer exists' });
   });
@@ -608,8 +533,7 @@ describe('processScheduleRun', () => {
 
 describe('recordScheduleFailure', () => {
   it('inserts a FAILED result row with the elapsed time and message', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps, resultStore } = makeDeps(conn);
+    const { deps, resultStore } = makeDeps();
     const schedule = await createSchedule(createInput(), USER_ID, deps);
 
     await recordScheduleFailure(schedule.id, 'ORA-12154: TNS could not resolve', 4200, 'FAILED', deps);
@@ -625,8 +549,7 @@ describe('recordScheduleFailure', () => {
 
 describe('getExecutionHistory / getScheduledResult', () => {
   it('returns recent runs newest first, capped at the requested limit', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps, resultStore } = makeDeps(conn);
+    const { deps, resultStore } = makeDeps();
     const schedule = await createSchedule(createInput(), USER_ID, deps);
 
     await resultStore.insertResult({
