@@ -1,4 +1,7 @@
 import fs from 'node:fs';
+import fsp from 'node:fs/promises';
+import path from 'node:path';
+import { randomUUID } from 'node:crypto';
 import {
   describe,
   it,
@@ -23,6 +26,7 @@ import {
   exportJobs,
   schedules,
   scheduledResults,
+  mapRuns,
   type Item,
   type Folder,
 } from '../../db/schema.js';
@@ -40,13 +44,14 @@ import {
   processScheduleRun,
   getExecutionHistory,
   computeNextRunTime,
-  buildScheduleResultFilePath,
-  type SchedulerDeps,
   type ScheduleOutputFormat,
 } from '../../services/scheduler.service.js';
 import { defaultExportDeps } from '../../services/export.service.js';
 import { defaultSchedulerDeps } from '../../services/scheduler.service.js';
+import { writeXlsx } from '../../services/exporters/excel-exporter.js';
+import { writeCsv } from '../../services/exporters/csv-exporter.js';
 import { exportQueue, closeExportQueue, type ExportJobData } from '../../queues/export.queue.js';
+import { mapRunQueue, closeMapRunQueue } from '../../queues/map-run.queue.js';
 import {
   schedulerQueue,
   closeSchedulerQueue,
@@ -127,16 +132,6 @@ function exportDeps(conn: Connection, overrides: Partial<ExportJobDeps> = {}): E
     getConnection: (async () => conn),
     releaseConnection: (async () => {}),
     enqueue: (async () => {}),
-    ...overrides,
-  };
-}
-
-/** Production scheduler deps with only the Oracle connection faked. */
-function schedulerDeps(conn: Connection, overrides: Partial<SchedulerDeps> = {}): SchedulerDeps {
-  return {
-    ...defaultSchedulerDeps(),
-    getConnection: (async () => conn),
-    releaseConnection: (async () => {}),
     ...overrides,
   };
 }
@@ -290,6 +285,12 @@ async function drainQueues(): Promise<void> {
   } catch {
     /* queue may not have been opened */
   }
+  try {
+    // Task 4.2: a schedule fire now lands a real job here too.
+    await mapRunQueue().obliterate({ force: true });
+  } catch {
+    /* queue may not have been opened */
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -309,6 +310,7 @@ afterAll(async () => {
   await drainQueues();
   await closeExportQueue();
   await closeSchedulerQueue();
+  await closeMapRunQueue();
   await closeApp();
 });
 
@@ -791,90 +793,107 @@ describe('POST /api/schedules/:id/trigger', () => {
 });
 
 // ===========================================================================
-// SCHEDULING — processScheduleRun against real Postgres
+// SCHEDULING — processScheduleRun against real Postgres + Redis
+//
+// Task 4.2: a schedule fire no longer talks to Oracle or writes a file
+// itself — it hands off to the map-run queue (requestRun), the same queue
+// live runs use. The actual Oracle work happens later, in map-run.runner.ts
+// (map-run.runner.test.ts owns that), so nothing here needs Oracle mocked;
+// the map-run worker is off in tests (MAP_RUN_WORKER_ENABLED defaults false
+// under NODE_ENV=test), so the job stays QUEUED for this test to inspect.
 // ===========================================================================
 
-describe('processScheduleRun (Oracle mocked, real Postgres)', () => {
-  it('skips a cron-driven run past validUntil and writes no result; a manual run bypasses it', async () => {
+describe('processScheduleRun (real Postgres + Redis)', () => {
+  it('skips a cron-driven run past validUntil and queues nothing; a manual run bypasses it', async () => {
     const mapId = await regionAmountMap();
     const scheduleId = await insertScheduleRow({
       mapId,
       validUntil: new Date(Date.now() - 60_000),
     });
-
-    const { conn } = makeResultSetConn(regionAmountRows(2).rows, [
-      { name: 'REGION' },
-      { name: 'AMOUNT' },
-    ]);
-    const deps = schedulerDeps(conn);
+    const deps = defaultSchedulerDeps();
 
     const skipped = await processScheduleRun(scheduleId, { manual: false }, deps);
     expect(skipped.skipped).toBe(true);
 
-    const none = await db
-      .select()
-      .from(scheduledResults)
-      .where(eq(scheduledResults.scheduleId, scheduleId));
+    const none = await db.select().from(mapRuns).where(eq(mapRuns.scheduleId, scheduleId));
     expect(none).toHaveLength(0);
 
     // A manual "run now" is a deliberate action and bypasses the window.
     const ran = await processScheduleRun(scheduleId, { manual: true }, deps);
     expect(ran.skipped).toBe(false);
-    if (!ran.skipped) trackFile(buildScheduleResultFilePath(ran.resultId, 'CSV'));
 
-    const after = await db
-      .select()
-      .from(scheduledResults)
-      .where(eq(scheduledResults.scheduleId, scheduleId));
+    const after = await db.select().from(mapRuns).where(eq(mapRuns.scheduleId, scheduleId));
     expect(after).toHaveLength(1);
   });
 
-  it('inserts a SUCCESS result row with a file on disk; getExecutionHistory returns it', async () => {
+  it('queues a SCHEDULED run carrying the map, the schedule, and its createdBy', async () => {
     const mapId = await regionAmountMap();
     const scheduleId = await insertScheduleRow({ mapId, outputFormat: 'XLSX' });
-
-    const { rows, metaData } = regionAmountRows(6);
-    const { conn } = makeResultSetConn(rows, metaData);
-    const deps = schedulerDeps(conn);
+    const deps = defaultSchedulerDeps();
 
     const outcome = await processScheduleRun(scheduleId, { manual: false }, deps);
     expect(outcome.skipped).toBe(false);
     if (outcome.skipped) throw new Error('expected a run');
 
-    trackFile(outcome.filePath);
-    expect(outcome.rowCount).toBe(6);
-    expect(outcome.executionTimeMs).toBeGreaterThanOrEqual(0);
-    expect(fs.existsSync(outcome.filePath)).toBe(true);
-    expect(outcome.filePath).toBe(buildScheduleResultFilePath(outcome.resultId, 'XLSX'));
+    const [row] = await db.select().from(mapRuns).where(eq(mapRuns.id, outcome.runId));
+    expect(row).toMatchObject({
+      mapId,
+      scheduleId,
+      requestedBy: adminId,
+      kind: 'SCHEDULED',
+      status: 'QUEUED',
+    });
 
-    const [dbRow] = await db
-      .select()
-      .from(scheduledResults)
-      .where(eq(scheduledResults.id, outcome.resultId));
-    expect(dbRow!.status).toBe('SUCCESS');
-    expect(dbRow!.rowCount).toBe(6);
-
+    // The row the worker (map-run.runner.ts) will later attach the schedule
+    // history to — see map-run.runner.test.ts for that end of the contract.
     const history = await getExecutionHistory(scheduleId);
-    expect(history).toHaveLength(1);
-    expect(history[0]!.id).toBe(outcome.resultId);
-    expect(history[0]!.status).toBe('SUCCESS');
+    expect(history).toHaveLength(0);
   });
 });
 
 // ===========================================================================
-// SCHEDULING — result download route (combined: manual run -> download)
+// SCHEDULING — result download route (file branch: migrated / pre-Task-4.2
+// results, which still carry a filePath — Task 4.4 owns the runId/USE_EXPORT
+// branch a Task-4.2-onward result takes instead).
 // ===========================================================================
 
 describe('GET /api/schedules/:id/results/:resultId/download', () => {
+  const RESULT_DIR = path.join(EXPORT_DIR, 'schedule-download-test');
+
+  /** Seeds a `scheduled_results` row with a real file on disk, the shape a
+   * migrated (or pre-Task-4.2) result has — no `processScheduleRun` call, since
+   * that path no longer writes files (Task 4.2). */
   async function runAndGet(format: ScheduleOutputFormat, rowN: number) {
     const mapId = await regionAmountMap();
     const scheduleId = await insertScheduleRow({ mapId, outputFormat: format });
-    const { rows, metaData } = regionAmountRows(rowN);
-    const { conn } = makeResultSetConn(rows, metaData);
-    const outcome = await processScheduleRun(scheduleId, { manual: true }, schedulerDeps(conn));
-    if (outcome.skipped) throw new Error('expected a run');
-    trackFile(outcome.filePath);
-    return { scheduleId, resultId: outcome.resultId };
+    const { rows } = regionAmountRows(rowN);
+
+    await fsp.mkdir(RESULT_DIR, { recursive: true });
+    const resultId = randomUUID();
+    const filePath = trackFile(
+      path.join(RESULT_DIR, `${resultId}.${format === 'XLSX' ? 'xlsx' : 'csv'}`),
+    );
+    const columns = [
+      { name: 'REGION', label: 'Region', isAggregate: false },
+      { name: 'AMOUNT', label: 'Amount', isAggregate: false },
+    ];
+    async function* singleBatch() {
+      if (rows.length > 0) yield rows;
+    }
+    const source = { columns, batches: singleBatch() };
+    const written = format === 'XLSX' ? await writeXlsx(filePath, source) : await writeCsv(filePath, source);
+
+    await db.insert(scheduledResults).values({
+      id: resultId,
+      scheduleId,
+      rowCount: written.rowCount,
+      filePath,
+      executionTimeMs: 10,
+      status: 'SUCCESS',
+      errorMessage: null,
+    });
+
+    return { scheduleId, resultId };
   }
 
   it('streams a scheduled XLSX result end-to-end with the spreadsheet content-type', async () => {

@@ -17,16 +17,15 @@ import {
   getScheduledResult,
   processScheduleRun,
   recordScheduleFailure,
-  buildScheduleResultFilePath,
   ScheduleValidationError,
-  ScheduleRunError,
   type SchedulerDeps,
   type ScheduleRecord,
   type ScheduledResultRecord,
   type CreateScheduleInput,
 } from '../../services/scheduler.service.js';
-import type { PreparedQuery, ResultColumn } from '../../services/map-execution.service.js';
-import type { ExportSource } from '../../services/exporters/types.js';
+import type { RequestRunResult } from '../../services/map-run.service.js';
+import type { MapRunRow } from '../../services/map-run.store.js';
+import type { PreparedQuery } from '../../services/map-execution.service.js';
 
 // ---------------------------------------------------------------------------
 // Fixtures & fakes.
@@ -69,18 +68,6 @@ function makeResultSetConn(
     close: jest.fn(async () => {}),
   };
   return { raw, conn: raw as unknown as Connection, resultSet };
-}
-
-function makeFailingConn(err: unknown) {
-  const raw: Record<string, unknown> = {
-    callTimeout: undefined,
-    execute: jest.fn(async () => {
-      throw err;
-    }),
-    break: jest.fn(async () => {}),
-    close: jest.fn(async () => {}),
-  };
-  return { raw, conn: raw as unknown as Connection };
 }
 
 /** In-memory fake of the `schedules` + `schedule_parameters` tables. */
@@ -173,6 +160,11 @@ class FakeResultStore {
     this.rows.find((r) => r.scheduleId === scheduleId && r.id === resultId) ?? null;
 }
 
+/** A fake `map_runs` row — only `id` matters to the callers under test. */
+function makeRunRow(overrides: Partial<MapRunRow> = {}): MapRunRow {
+  return { id: 'run-1', ...overrides } as MapRunRow;
+}
+
 function makeDeps(
   conn: Connection,
   overrides: Partial<SchedulerDeps> = {},
@@ -183,12 +175,11 @@ function makeDeps(
   prepareQuery: jest.Mock;
   getConnection: jest.Mock;
   releaseConnection: jest.Mock;
-  writeResultFile: jest.Mock;
+  requestRun: jest.Mock<() => Promise<RequestRunResult>>;
   upsertJob: jest.Mock;
   removeJob: jest.Mock;
   enqueueManual: jest.Mock;
   notify: jest.Mock;
-  drained: Record<string, unknown>[];
 } {
   const prepared = makePrepared();
   const scheduleStore = new FakeScheduleStore();
@@ -196,11 +187,7 @@ function makeDeps(
   const prepareQuery = jest.fn(async () => prepared) as jest.Mock;
   const getConnection = jest.fn(async () => conn) as jest.Mock;
   const releaseConnection = jest.fn(async () => {}) as jest.Mock;
-  const drained: Record<string, unknown>[] = [];
-  const writeResultFile = jest.fn(async (source: unknown) => {
-    for await (const batch of (source as ExportSource).batches) drained.push(...batch);
-    return { rowCount: drained.length };
-  }) as jest.Mock;
+  const requestRun = jest.fn(async () => ({ run: makeRunRow(), reused: false }));
   const upsertJob = jest.fn(async () => {}) as jest.Mock;
   const removeJob = jest.fn(async () => {}) as jest.Mock;
   const enqueueManual = jest.fn(async () => {}) as jest.Mock;
@@ -222,7 +209,7 @@ function makeDeps(
     prepareQuery,
     getConnection,
     releaseConnection,
-    writeResultFile,
+    requestRun,
     notify,
     ...overrides,
   } as unknown as SchedulerDeps;
@@ -234,12 +221,11 @@ function makeDeps(
     prepareQuery,
     getConnection,
     releaseConnection,
-    writeResultFile,
+    requestRun,
     upsertJob,
     removeJob,
     enqueueManual,
     notify,
-    drained,
   };
 }
 
@@ -526,33 +512,27 @@ describe('getNextRunTime', () => {
 // ---------------------------------------------------------------------------
 
 describe('processScheduleRun', () => {
-  it('executes the map, writes a result file, and records SUCCESS history', async () => {
-    const { conn } = makeResultSetConn([{ C1: 10 }, { C1: 20 }]);
-    const { deps, resultStore, writeResultFile } = makeDeps(conn);
+  it('enqueues a SCHEDULED run through requestRun, forcing a fresh execution', async () => {
+    const { conn } = makeResultSetConn([]);
+    const { deps, requestRun } = makeDeps(conn);
     const schedule = await createSchedule(createInput({ outputFormat: 'XLSX' }), USER_ID, deps);
 
     const outcome = await processScheduleRun(schedule.id, { manual: false }, deps);
 
-    expect(outcome.skipped).toBe(false);
-    if (!outcome.skipped) {
-      expect(outcome.rowCount).toBe(2);
-      expect(outcome.filePath).toBe(buildScheduleResultFilePath(outcome.resultId, 'XLSX'));
-    }
-
-    expect(writeResultFile).toHaveBeenCalledTimes(1);
-    const [source, format] = writeResultFile.mock.calls[0] as [ExportSource, string];
-    expect(source.columns.map((c: ResultColumn) => c.name)).toEqual(['C1']);
-    expect(format).toBe('XLSX');
-
-    const history = await resultStore.listResults(schedule.id, 10);
-    expect(history).toHaveLength(1);
-    expect(history[0]!.status).toBe('SUCCESS');
-    expect(history[0]!.rowCount).toBe(2);
+    expect(outcome).toEqual({ skipped: false, runId: 'run-1', reused: false });
+    expect(requestRun).toHaveBeenCalledWith({
+      mapId: MAP_ID,
+      userId: USER_ID,
+      kind: 'SCHEDULED',
+      scheduleId: schedule.id,
+      parameters: {},
+      force: true,
+    });
   });
 
-  it('passes schedule parameter presets through to prepareQuery', async () => {
+  it('passes schedule parameter presets through to requestRun', async () => {
     const { conn } = makeResultSetConn([]);
-    const { deps, prepareQuery } = makeDeps(conn);
+    const { deps, requestRun } = makeDeps(conn);
     const schedule = await createSchedule(
       createInput({ parameters: [{ paramName: 'REGION', paramValue: 'EAST' }] }),
       USER_ID,
@@ -561,24 +541,25 @@ describe('processScheduleRun', () => {
 
     await processScheduleRun(schedule.id, { manual: false }, deps);
 
-    expect(prepareQuery).toHaveBeenCalledWith(MAP_ID, { REGION: 'EAST' }, USER_ID);
+    expect(requestRun).toHaveBeenCalledWith(
+      expect.objectContaining({ parameters: { REGION: 'EAST' } }),
+    );
   });
 
-  it('is a no-op for a disabled schedule — nothing executes, nothing is logged', async () => {
-    const { conn } = makeResultSetConn([{ C1: 1 }]);
-    const { deps, prepareQuery, resultStore } = makeDeps(conn);
+  it('is a no-op for a disabled schedule — nothing is queued', async () => {
+    const { conn } = makeResultSetConn([]);
+    const { deps, requestRun } = makeDeps(conn);
     const schedule = await createSchedule(createInput({ isActive: false }), USER_ID, deps);
 
     const outcome = await processScheduleRun(schedule.id, { manual: false }, deps);
 
     expect(outcome).toEqual({ skipped: true, reason: 'Schedule is disabled' });
-    expect(prepareQuery).not.toHaveBeenCalled();
-    expect(await resultStore.listResults(schedule.id, 10)).toHaveLength(0);
+    expect(requestRun).not.toHaveBeenCalled();
   });
 
   it('skips a cron-driven run outside the validity window', async () => {
-    const { conn } = makeResultSetConn([{ C1: 1 }]);
-    const { deps, prepareQuery } = makeDeps(conn);
+    const { conn } = makeResultSetConn([]);
+    const { deps, requestRun } = makeDeps(conn);
     const schedule = await createSchedule(
       createInput({ validUntil: new Date(Date.now() - 60_000) }),
       USER_ID,
@@ -588,12 +569,12 @@ describe('processScheduleRun', () => {
     const outcome = await processScheduleRun(schedule.id, { manual: false }, deps);
 
     expect(outcome.skipped).toBe(true);
-    expect(prepareQuery).not.toHaveBeenCalled();
+    expect(requestRun).not.toHaveBeenCalled();
   });
 
   it('a manual trigger bypasses the validity window', async () => {
-    const { conn } = makeResultSetConn([{ C1: 1 }]);
-    const { deps, prepareQuery } = makeDeps(conn);
+    const { conn } = makeResultSetConn([]);
+    const { deps, requestRun } = makeDeps(conn);
     const schedule = await createSchedule(
       createInput({ validUntil: new Date(Date.now() - 60_000) }),
       USER_ID,
@@ -603,21 +584,18 @@ describe('processScheduleRun', () => {
     const outcome = await processScheduleRun(schedule.id, { manual: true }, deps);
 
     expect(outcome.skipped).toBe(false);
-    expect(prepareQuery).toHaveBeenCalled();
+    expect(requestRun).toHaveBeenCalled();
   });
 
-  it('throws a ScheduleRunError (so BullMQ can retry) when the query fails', async () => {
-    const { conn } = makeFailingConn(new Error('ORA-00942: table or view does not exist'));
-    const { deps, releaseConnection, resultStore } = makeDeps(conn);
+  it('propagates when requestRun cannot enqueue the run (so the worker can retry)', async () => {
+    const { conn } = makeResultSetConn([]);
+    const { deps, requestRun } = makeDeps(conn);
+    requestRun.mockRejectedValueOnce(new Error('queue unavailable'));
     const schedule = await createSchedule(createInput(), USER_ID, deps);
 
     await expect(processScheduleRun(schedule.id, { manual: false }, deps)).rejects.toThrow(
-      ScheduleRunError,
+      'queue unavailable',
     );
-    // Not logged here — that is recordScheduleFailure's job, called by the
-    // worker once BullMQ's retries are exhausted.
-    expect(await resultStore.listResults(schedule.id, 10)).toHaveLength(0);
-    expect(releaseConnection).toHaveBeenCalledTimes(1);
   });
 
   it('resolves with a "no longer exists" skip for a deleted schedule', async () => {

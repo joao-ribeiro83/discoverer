@@ -1,24 +1,10 @@
-import path from 'node:path';
-import fsp from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import { and, desc, eq } from 'drizzle-orm';
-import type { Connection } from 'oracledb';
 import cronParserPkg from 'cron-parser';
-import { config } from '../config.js';
 import { db } from '../db/index.js';
 import { schedules, scheduleParameters, scheduledResults } from '../db/schema.js';
-import {
-  defaultDeps,
-  openRowStream,
-  buildColumns,
-  errorMessage,
-  DEFAULT_TIMEOUT_MS,
-  type MapExecutionDeps,
-  type ResultColumn,
-} from './map-execution.service.js';
-import { writeXlsx } from './exporters/excel-exporter.js';
-import { writeCsv } from './exporters/csv-exporter.js';
-import type { ExportSource, ExportWriteResult } from './exporters/types.js';
+import { defaultDeps, errorMessage, type MapExecutionDeps } from './map-execution.service.js';
+import { requestRun, type RequestRunInput, type RequestRunResult } from './map-run.service.js';
 import {
   upsertScheduleJob,
   removeScheduleJob,
@@ -243,11 +229,9 @@ export interface SchedulerDeps {
   prepareQuery: MapExecutionDeps['prepareQuery'];
   getConnection: MapExecutionDeps['getConnection'];
   releaseConnection: MapExecutionDeps['releaseConnection'];
-  writeResultFile(
-    source: ExportSource,
-    format: ScheduleOutputFormat,
-    filePath: string,
-  ): Promise<ExportWriteResult>;
+  /** Enqueues the actual Oracle work onto the map-run queue (Task 2.3/2.4) — the
+   * scheduler no longer talks to Oracle or writes result files itself. */
+  requestRun(input: RequestRunInput): Promise<RequestRunResult>;
   /**
    * Best-effort notification hook. No SMTP/mail provider exists in this repo
    * yet, so the default just no-ops — this is the seam a later session wires
@@ -471,15 +455,6 @@ async function defaultGetResult(
   return row ? resultRowToRecord(row) : null;
 }
 
-async function defaultWriteResultFile(
-  source: ExportSource,
-  format: ScheduleOutputFormat,
-  filePath: string,
-): Promise<ExportWriteResult> {
-  await fsp.mkdir(path.dirname(filePath), { recursive: true });
-  return format === 'XLSX' ? writeXlsx(filePath, source) : writeCsv(filePath, source);
-}
-
 export function defaultSchedulerDeps(): SchedulerDeps {
   const mapDeps = defaultDeps();
   return {
@@ -498,7 +473,7 @@ export function defaultSchedulerDeps(): SchedulerDeps {
     prepareQuery: (...args) => mapDeps.prepareQuery(...args),
     getConnection: (dataSourceId) => mapDeps.getConnection(dataSourceId),
     releaseConnection: (dataSourceId, conn) => mapDeps.releaseConnection(dataSourceId, conn),
-    writeResultFile: defaultWriteResultFile,
+    requestRun,
     notify: () => Promise.resolve(),
   };
 }
@@ -506,21 +481,6 @@ export function defaultSchedulerDeps(): SchedulerDeps {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function extensionFor(format: ScheduleOutputFormat): string {
-  return format === 'XLSX' ? 'xlsx' : 'csv';
-}
-
-export const SCHEDULE_RESULT_DIR =
-  config.SCHEDULE_RESULT_DIR ??
-  path.resolve(process.cwd(), 'storage', 'scheduled-results');
-
-export function buildScheduleResultFilePath(
-  resultId: string,
-  format: ScheduleOutputFormat,
-): string {
-  return path.join(SCHEDULE_RESULT_DIR, `${resultId}.${extensionFor(format)}`);
-}
 
 /** Reconcile the BullMQ recurring job with a schedule's current row state. */
 async function syncScheduleJob(deps: SchedulerDeps, schedule: ScheduleRecord): Promise<void> {
@@ -689,13 +649,7 @@ export async function getScheduledResult(
 
 export type ScheduleRunOutcome =
   | { skipped: true; reason: string }
-  | {
-      skipped: false;
-      resultId: string;
-      rowCount: number;
-      filePath: string;
-      executionTimeMs: number;
-    };
+  | { skipped: false; runId: string; reused: boolean };
 
 function isWithinWindow(schedule: ScheduleRecord, now: Date): boolean {
   if (schedule.validFrom && now < schedule.validFrom) return false;
@@ -704,15 +658,16 @@ function isWithinWindow(schedule: ScheduleRecord, now: Date): boolean {
 }
 
 /**
- * Run one firing of a schedule end-to-end: resolve the map + preset
- * parameters, execute, write the result file, and log the outcome.
+ * Fire one schedule: resolve its preset parameters and hand the run to the
+ * map-run queue (Task 2.3) — the same queue live runs go through, one-at-a-
+ * time per user. The actual Oracle work and result persistence happen later,
+ * in `map-run.runner.ts`; this only enqueues.
  *
- * Throws `ScheduleRunError` on a genuine execution fault so BullMQ's retry
- * machinery sees it — the worker decides when attempts are exhausted and
- * calls `recordScheduleFailure` at that point (mirrors export.service.ts's
- * processExportJob/failExportJob split). A disabled schedule or one outside
- * its validity window is not a fault: it resolves with `{ skipped: true }`
- * and nothing is written to `scheduled_results`.
+ * A disabled schedule or one outside its validity window is not a fault: it
+ * resolves with `{ skipped: true }` and nothing is queued. `requestRun`
+ * itself fails the run row and rethrows if it cannot enqueue — the worker's
+ * 'failed' handler calls `recordScheduleFailure` once BullMQ's retries are
+ * exhausted (mirrors export.service.ts's processExportJob/failExportJob split).
  */
 export async function processScheduleRun(
   scheduleId: string,
@@ -738,77 +693,16 @@ export async function processScheduleRun(
     if (p.paramValue != null) parameterValues[p.paramName] = p.paramValue;
   }
 
-  const start = Date.now();
-  const resultId = randomUUID();
+  const { run, reused } = await deps.requestRun({
+    mapId: schedule.mapId,
+    userId: schedule.createdBy,
+    kind: 'SCHEDULED',
+    scheduleId: schedule.id,
+    parameters: parameterValues,
+    force: true,
+  });
 
-  let prepared;
-  try {
-    prepared = await deps.prepareQuery(schedule.mapId, parameterValues, schedule.createdBy);
-  } catch (err) {
-    throw new ScheduleRunError(errorMessage(err), Date.now() - start, 'FAILED', err);
-  }
-
-  let conn: Connection;
-  try {
-    conn = await deps.getConnection(prepared.dataSourceId);
-  } catch (err) {
-    throw new ScheduleRunError(errorMessage(err), Date.now() - start, 'FAILED', err);
-  }
-
-  try {
-    conn.callTimeout = DEFAULT_TIMEOUT_MS;
-    const stream = await openRowStream(conn, prepared);
-    const columns: ResultColumn[] = buildColumns(prepared.columns, stream.metaData);
-    conn.callTimeout = 0;
-
-    const filePath = buildScheduleResultFilePath(resultId, schedule.outputFormat);
-    const result = await deps.writeResultFile(
-      { columns, batches: stream.batches },
-      schedule.outputFormat,
-      filePath,
-    );
-
-    const executionTimeMs = Date.now() - start;
-    await deps.insertResult({
-      id: resultId,
-      scheduleId,
-      executedAt: new Date(),
-      rowCount: result.rowCount,
-      filePath,
-      executionTimeMs,
-      status: 'SUCCESS',
-      errorMessage: null,
-    });
-
-    await deps
-      .notify(schedule, {
-        status: 'SUCCESS',
-        rowCount: result.rowCount,
-        filePath,
-        errorMessage: null,
-      })
-      .catch(() => {
-        // Notification failure must never mask a successful run.
-      });
-
-    return {
-      skipped: false,
-      resultId,
-      rowCount: result.rowCount,
-      filePath,
-      executionTimeMs,
-    };
-  } catch (err) {
-    const elapsed = Date.now() - start;
-    const timedOut = /call\s*timeout|timed?\s*out|DPI-1067/i.test(errorMessage(err));
-    throw new ScheduleRunError(errorMessage(err), elapsed, timedOut ? 'TIMEOUT' : 'FAILED', err);
-  } finally {
-    try {
-      await deps.releaseConnection(prepared.dataSourceId, conn);
-    } catch {
-      // A connection we cannot return is the pool's problem to reap.
-    }
-  }
+  return { skipped: false, runId: run.id, reused };
 }
 
 /** Record a run as failed once BullMQ has exhausted its retry attempts. */

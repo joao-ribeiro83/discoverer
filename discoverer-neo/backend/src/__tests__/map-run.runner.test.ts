@@ -70,6 +70,7 @@ function makeDeps(opts: { claimed?: boolean; run?: MapRunRow | null; rows?: numb
     completeRun: jest.fn(async () => undefined),
     failRun: jest.fn(async () => undefined),
     loadRetentionDays: jest.fn(async () => 10),
+    insertScheduledResult: jest.fn(async () => undefined),
     limits: { maxRows: 100_000, batchSize: 1000, liveTtlHours: 24, failRetryMs: 0 },
     now: () => NOW,
   } satisfies RunnerDeps;
@@ -181,5 +182,46 @@ describe('processMapRun', () => {
       'run-1',
       expect.objectContaining({ expiresAt: new Date(NOW.getTime() + 10 * 24 * HOUR) }),
     );
+  });
+
+  it('a SCHEDULED run inserts a scheduled_results row on completion, with no file', async () => {
+    const { deps } = makeDeps({ rows: 3, run: makeRun({ kind: 'SCHEDULED', scheduleId: 'sched-1' }) });
+    await processMapRun('run-1', deps);
+    expect(deps.insertScheduledResult).toHaveBeenCalledWith({
+      scheduleId: 'sched-1',
+      runId: 'run-1',
+      executedAt: NOW,
+      rowCount: 3,
+      executionTimeMs: 0,
+      status: 'SUCCESS',
+      errorMessage: null,
+      filePath: null,
+    });
+  });
+
+  it('a SCHEDULED run inserts a FAILED scheduled_results row when Oracle throws', async () => {
+    const { deps } = makeDeps({
+      fail: new Error('ORA-00942: table or view does not exist'),
+      run: makeRun({ kind: 'SCHEDULED', scheduleId: 'sched-1' }),
+    });
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    await processMapRun('run-1', deps);
+    expect(deps.insertScheduledResult).toHaveBeenCalledWith(
+      expect.objectContaining({
+        scheduleId: 'sched-1',
+        runId: 'run-1',
+        rowCount: null,
+        status: 'FAILED',
+        errorMessage: expect.not.stringContaining('ORA-'),
+        filePath: null,
+      }),
+    );
+    consoleError.mockRestore();
+  });
+
+  it('does not touch scheduled_results for a LIVE run', async () => {
+    const { deps } = makeDeps({ rows: 3 });
+    await processMapRun('run-1', deps);
+    expect(deps.insertScheduledResult).not.toHaveBeenCalled();
   });
 });
