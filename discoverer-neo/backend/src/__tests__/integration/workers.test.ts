@@ -30,6 +30,8 @@ import {
 } from '../../workers/scheduler.worker.js';
 import { exportQueue, closeExportQueue } from '../../queues/export.queue.js';
 import { schedulerQueue, closeSchedulerQueue } from '../../queues/scheduler.queue.js';
+import { mapRunQueue, closeMapRunQueue } from '../../queues/map-run.queue.js';
+import { startMapRunWorker } from '../../workers/map-run.worker.js';
 import { ScheduleRunError } from '../../services/scheduler.service.js';
 
 function makeLogger() {
@@ -58,6 +60,7 @@ beforeAll(async () => {
   // worker cannot execute them (they reference now-deleted maps/schedules).
   await exportQueue().obliterate({ force: true });
   await schedulerQueue().obliterate({ force: true });
+  await mapRunQueue().obliterate({ force: true });
 
   exportHandle = startExportWorker(exportLogger);
   schedulerHandle = startSchedulerWorker(schedulerLogger);
@@ -68,6 +71,18 @@ afterAll(async () => {
   await schedulerHandle.close();
   await closeExportQueue();
   await closeSchedulerQueue();
+  await closeMapRunQueue();
+});
+
+describe('map-run worker', () => {
+  it('starts, logs its concurrency, and close() resolves within 1 s (timers unref-ed and cleared)', async () => {
+    const logger = makeLogger();
+    const handle = startMapRunWorker(logger);
+    expect(logger.info).toHaveBeenCalledWith({ concurrency: 3 }, 'Map-run worker started');
+    const started = Date.now();
+    await handle.close();
+    expect(Date.now() - started).toBeLessThan(1_000);
+  });
 });
 
 describe('attemptsExhausted', () => {

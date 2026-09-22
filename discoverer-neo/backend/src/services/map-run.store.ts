@@ -237,7 +237,10 @@ export async function deleteRun(runId: string): Promise<boolean> {
 // key lands in a later task) are marked FAILED so a crashed worker doesn't
 // leave a run stuck forever. `now` is a bind, never SQL `now()`, so a test can
 // drive it deterministically.
-export async function cleanupExpiredRuns(now: Date = new Date()): Promise<{ deleted: number; staleFailed: number }> {
+export async function cleanupExpiredRuns(
+  now: Date = new Date(),
+  staleHours = 24,
+): Promise<{ deleted: number; staleFailed: number }> {
   const deletedResult = await db.execute(sql`
     DELETE FROM map_runs
     WHERE expires_at < ${now} AND status IN ('COMPLETED', 'FAILED', 'CANCELLED')
@@ -245,7 +248,7 @@ export async function cleanupExpiredRuns(now: Date = new Date()): Promise<{ dele
   `);
   const deleted = (deletedResult as unknown as { rows: unknown[] }).rows.length;
 
-  const staleCutoff = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  const staleCutoff = new Date(now.getTime() - staleHours * 60 * 60 * 1000);
   const staleExpiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
   const staleResult = await db.execute(sql`
     UPDATE map_runs

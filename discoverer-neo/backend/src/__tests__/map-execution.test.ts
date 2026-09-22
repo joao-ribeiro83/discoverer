@@ -1,15 +1,11 @@
-import { describe, it, expect, beforeEach, jest } from '@jest/globals';
+import { describe, it, expect, jest } from '@jest/globals';
 import type { Connection } from 'oracledb';
 import {
   executeMap,
-  executeMapAsync,
-  getExecutionStatus,
-  cancelExecution,
   resolveDataSourceId,
   DEFAULT_TIMEOUT_MS,
   MAX_TIMEOUT_MS,
   MapExecutionError,
-  _resetAsyncState,
   type MapExecutionDeps,
   type PreparedQuery,
 } from '../services/map-execution.service.js';
@@ -59,54 +55,6 @@ function makeFailingConn(err: unknown) {
   return { raw, conn: raw as unknown as Connection };
 }
 
-/** A fake Connection that streams rows via a result set (async path). */
-function makeResultSetConn(
-  rows: Record<string, unknown>[],
-  metaData: Array<{ name: string }> = [{ name: 'C1' }],
-) {
-  let cursor = 0;
-  const resultSet = {
-    getRows: jest.fn(async (n: number) => {
-      const slice = rows.slice(cursor, cursor + n);
-      cursor += slice.length;
-      return slice;
-    }),
-    close: jest.fn(async () => {}),
-  };
-  const raw: Record<string, unknown> = {
-    callTimeout: undefined,
-    execute: jest.fn(async () => ({ resultSet, metaData })),
-    break: jest.fn(async () => {}),
-    close: jest.fn(async () => {}),
-  };
-  return { raw, conn: raw as unknown as Connection, resultSet };
-}
-
-/**
- * A fake Connection whose `execute` never settles until `break()` is called,
- * at which point it rejects with an ORA-01013 (cancel) error.
- */
-function makeHangingConn() {
-  let rejectExec: (reason: unknown) => void = () => {};
-  const execPromise = new Promise((_resolve, reject) => {
-    rejectExec = reject;
-  });
-  const brk = jest.fn(async () => {
-    const err = Object.assign(
-      new Error('ORA-01013: user requested cancel of current operation'),
-      { code: 'ORA-01013' },
-    );
-    rejectExec(err);
-  });
-  const raw: Record<string, unknown> = {
-    callTimeout: undefined,
-    execute: jest.fn(() => execPromise),
-    break: brk,
-    close: jest.fn(async () => {}),
-  };
-  return { raw, conn: raw as unknown as Connection };
-}
-
 function makeDeps(
   conn: Connection,
   overrides: Partial<MapExecutionDeps> = {},
@@ -131,23 +79,6 @@ function makeDeps(
   } as unknown as MapExecutionDeps;
   return { deps, prepareQuery, getConnection, releaseConnection, recordExecution };
 }
-
-async function waitFor(
-  predicate: () => boolean,
-  { timeoutMs = 2000, stepMs = 5 } = {},
-): Promise<void> {
-  const start = Date.now();
-  while (!predicate()) {
-    if (Date.now() - start > timeoutMs) {
-      throw new Error('waitFor timed out');
-    }
-    await new Promise((r) => setTimeout(r, stepMs));
-  }
-}
-
-beforeEach(() => {
-  _resetAsyncState();
-});
 
 // ---------------------------------------------------------------------------
 // Synchronous execution
@@ -275,176 +206,6 @@ describe('executeMap (synchronous)', () => {
     await executeMap(MAP_ID, {}, USER_ID, { timeoutMs: MAX_TIMEOUT_MS + 1 }, deps);
 
     expect(raw.callTimeout).toBe(MAX_TIMEOUT_MS);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Asynchronous execution
-// ---------------------------------------------------------------------------
-
-describe('executeMapAsync (background job)', () => {
-  it('creates a job and completes with the streamed result', async () => {
-    const { conn } = makeResultSetConn([{ C1: 1 }, { C1: 2 }, { C1: 3 }]);
-    const { deps, releaseConnection, recordExecution } = makeDeps(conn);
-
-    const { jobId } = await executeMapAsync(MAP_ID, {}, USER_ID, {}, deps);
-    expect(jobId).toBeTruthy();
-
-    await waitFor(() => getExecutionStatus(jobId)?.status === 'COMPLETED');
-
-    const job = getExecutionStatus(jobId)!;
-    expect(job.rowCount).toBe(3);
-    expect(job.result?.rows).toHaveLength(3);
-    expect(job.result?.columns).toEqual([
-      { name: 'C1', label: 'Amount', isAggregate: false },
-    ]);
-    expect(typeof job.executionTimeMs).toBe('number');
-    expect(recordExecution.mock.calls[0]![0]).toMatchObject({ status: 'SUCCESS' });
-    expect(releaseConnection).toHaveBeenCalledTimes(1);
-  });
-
-  it('returns null status for an unknown job id', () => {
-    expect(getExecutionStatus('does-not-exist')).toBeNull();
-  });
-
-  it('cancels a running execution and logs it', async () => {
-    const { conn, raw } = makeHangingConn();
-    const { deps, releaseConnection, recordExecution } = makeDeps(conn);
-
-    const { jobId } = await executeMapAsync(MAP_ID, {}, USER_ID, {}, deps);
-
-    // Wait until the query is actually in flight.
-    await waitFor(() => (raw.execute as jest.Mock).mock.calls.length > 0);
-
-    const outcome = await cancelExecution(jobId);
-    expect(outcome).toEqual({ cancelled: true, status: 'CANCELLED' });
-    expect(raw.break).toHaveBeenCalledTimes(1);
-
-    await waitFor(() => getExecutionStatus(jobId)?.finishedAt !== undefined);
-
-    const job = getExecutionStatus(jobId)!;
-    expect(job.status).toBe('CANCELLED');
-    expect(releaseConnection).toHaveBeenCalledTimes(1);
-    // Cancellation is persisted as FAILED (no CANCELLED value in the log enum).
-    expect(recordExecution.mock.calls[0]![0]).toMatchObject({
-      status: 'FAILED',
-      errorMessage: 'Execution cancelled by user',
-    });
-  });
-
-  it('returns null when cancelling an unknown job', async () => {
-    expect(await cancelExecution('nope')).toBeNull();
-  });
-
-  it('reports cancelled=false when the job already finished', async () => {
-    const { conn } = makeResultSetConn([{ C1: 1 }]);
-    const { deps } = makeDeps(conn);
-
-    const { jobId } = await executeMapAsync(MAP_ID, {}, USER_ID, {}, deps);
-    await waitFor(() => getExecutionStatus(jobId)?.status === 'COMPLETED');
-
-    const outcome = await cancelExecution(jobId);
-    expect(outcome).toEqual({ cancelled: false, status: 'COMPLETED' });
-  });
-
-  it('settles as TIMEOUT when the async query times out', async () => {
-    const timeoutErr = Object.assign(
-      new Error('DPI-1067: call timeout of 30000 ms exceeded'),
-      { code: 'DPI-1067' },
-    );
-    const { conn } = makeFailingConn(timeoutErr);
-    const { deps, recordExecution, releaseConnection } = makeDeps(conn);
-
-    const { jobId } = await executeMapAsync(MAP_ID, {}, USER_ID, {}, deps);
-    await waitFor(() => getExecutionStatus(jobId)?.status === 'TIMEOUT');
-
-    expect(recordExecution.mock.calls[0]![0]).toMatchObject({ status: 'TIMEOUT' });
-    expect(releaseConnection).toHaveBeenCalledTimes(1);
-  });
-
-  it('settles as FAILED on a generic async query error, without the raw driver text (SEC-07)', async () => {
-    const { conn } = makeFailingConn(
-      new Error('ORA-00942: table or view does not exist'),
-    );
-    const { deps, recordExecution } = makeDeps(conn);
-
-    const { jobId } = await executeMapAsync(MAP_ID, {}, USER_ID, {}, deps);
-    await waitFor(() => getExecutionStatus(jobId)?.status === 'FAILED');
-
-    const job = getExecutionStatus(jobId)!;
-    expect(job.error).not.toMatch(/ORA-/);
-    expect(job.errorKind).toBe('QUERY');
-    const recorded = recordExecution.mock.calls[0]![0] as { errorMessage: string | null };
-    expect(recorded).toMatchObject({ status: 'FAILED' });
-    expect(recorded.errorMessage).not.toMatch(/ORA-/);
-  });
-
-  it('settles as FAILED when the connection cannot be acquired, without the raw driver text (SEC-07)', async () => {
-    const { conn } = makeResultSetConn([{ C1: 1 }]);
-    const getConnection = jest.fn(async () => {
-      throw new Error('ORA-12541: no listener');
-    }) as unknown as MapExecutionDeps['getConnection'];
-    const { deps } = makeDeps(conn, { getConnection });
-
-    const { jobId } = await executeMapAsync(MAP_ID, {}, USER_ID, {}, deps);
-    await waitFor(() => getExecutionStatus(jobId)?.status === 'FAILED');
-
-    expect(getExecutionStatus(jobId)!.error).not.toMatch(/ORA-/);
-  });
-
-  it('settles as FAILED when prepareQuery fails, without leaking the raw message (SEC-07)', async () => {
-    const { conn } = makeResultSetConn([{ C1: 1 }]);
-    const prepareQuery = jest.fn(async () => {
-      throw new Error('bad map definition');
-    }) as unknown as MapExecutionDeps['prepareQuery'];
-    const { deps } = makeDeps(conn, { prepareQuery });
-
-    const { jobId } = await executeMapAsync(MAP_ID, {}, USER_ID, {}, deps);
-    await waitFor(() => getExecutionStatus(jobId)?.status === 'FAILED');
-
-    expect(getExecutionStatus(jobId)!.error).not.toMatch(/bad map definition/);
-  });
-
-  it('completes via the no-result-set fallback (execute returns plain rows)', async () => {
-    // A driver that returns rows directly with no result set exercises
-    // openRowStream's fallback branch.
-    const raw: Record<string, unknown> = {
-      callTimeout: undefined,
-      execute: jest.fn(async () => ({
-        rows: [{ C1: 5 }, { C1: 6 }],
-        metaData: [{ name: 'C1' }],
-      })),
-      break: jest.fn(async () => {}),
-      close: jest.fn(async () => {}),
-    };
-    const { deps } = makeDeps(raw as unknown as Connection);
-
-    const { jobId } = await executeMapAsync(MAP_ID, {}, USER_ID, {}, deps);
-    await waitFor(() => getExecutionStatus(jobId)?.status === 'COMPLETED');
-
-    const job = getExecutionStatus(jobId)!;
-    expect(job.rowCount).toBe(2);
-    expect(job.result?.rows).toEqual([{ C1: 5 }, { C1: 6 }]);
-  });
-
-  it('evicts old finished jobs once the registry passes its count cap (BE-03)', async () => {
-    // ASYNC_JOB_MAX_COUNT is 200 — run comfortably past it so the cap, not
-    // TTL, is what's under test (everything here finishes well inside the
-    // 30-minute TTL).
-    const { conn } = makeRowsConn([{ C1: 1 }]);
-    const { deps } = makeDeps(conn);
-
-    let firstJobId = '';
-    for (let i = 0; i < 210; i++) {
-      const { jobId } = await executeMapAsync(MAP_ID, {}, USER_ID, {}, deps);
-      if (i === 0) firstJobId = jobId;
-      await waitFor(() => getExecutionStatus(jobId)?.status === 'COMPLETED');
-    }
-
-    // The registry never held more than 210 at once and prunes on every
-    // insert, so the very first job — long finished — is gone, while the
-    // most recent one survives.
-    expect(getExecutionStatus(firstJobId)).toBeNull();
   });
 });
 

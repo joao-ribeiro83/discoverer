@@ -38,6 +38,7 @@ const UNSCOPED: Record<string, string> = {
   // Global catalogue: `custom_functions` has no business-area column, and the
   // list route returns every row to any signed-in user.
   'GET /api/custom-functions/:id': 'global catalogue, not business-area data',
+  'GET /api/maps/:id/executions/:jobId': 'retired; answers 410 with no data (removed in map-run Stage 3)',
 };
 
 function getRoutesWithParams(): Array<{ route: string; block: string }> {

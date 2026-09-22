@@ -9,7 +9,7 @@ export interface MapRunJobData {
   runId: string;
 }
 
-export const MAP_RUN_JOB_OPTIONS: JobsOptions = {
+const MAP_RUN_JOB_OPTIONS: JobsOptions = {
   // No retry: a retry would re-run Oracle for a user who may already have hit
   // Cancel. A failure is recorded on the run row instead.
   attempts: 1,
