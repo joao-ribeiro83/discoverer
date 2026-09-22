@@ -1,12 +1,16 @@
 /**
  * Export HTTP route tests (`src/routes/export.ts`).
  *
- * Exercises the Fastify handlers against real Postgres (`export_jobs`) and the
- * real BullMQ export queue (Redis is up). No export worker runs during the
- * test, so a queued job simply stays PENDING — enough to cover creation, the
- * status poll, listing, the not-ready download branch, and the ownership /
- * permission gates. The actual file-producing pipeline is covered by
- * export.test.ts at the service level.
+ * Exercises the Fastify handlers against real Postgres (`export_jobs`,
+ * `map_runs`) and the real BullMQ export queue (Redis is up). No export
+ * worker runs during the test, so a queued job simply stays PENDING — enough
+ * to cover creation, the status poll, listing, the not-ready download
+ * branch, and the ownership / permission gates. The actual file-producing
+ * pipeline is covered by export.test.ts at the service level.
+ *
+ * Task 4.3: an export is now requested against a completed `map_runs` row,
+ * not free-form parameters/calculatedFields — so every POST here first seeds
+ * a run via `services/map-run.store.ts` the way the runner would leave one.
  */
 import {
   describe,
@@ -30,6 +34,7 @@ import {
 } from '../../db/schema.js';
 import { hashPassword } from '../../lib/password.js';
 import { closeExportQueue } from '../../queues/export.queue.js';
+import { createRun, completeRun } from '../../services/map-run.store.js';
 
 let app: FastifyInstance;
 
@@ -38,11 +43,14 @@ const OWNER_EMAIL = 'exp-owner@example.com';
 const OTHER_EMAIL = 'exp-other@example.com';
 const TEST_PASSWORD = 'SecurePass123!';
 
+let adminToken: string;
 let ownerToken: string;
 let otherToken: string;
 let ownerId: string;
+let otherId: string;
 let baId: string;
 let mapId: string;
+let otherMapId: string;
 
 async function createTestUser(
   email: string,
@@ -65,6 +73,44 @@ async function login(email: string): Promise<string> {
   return res.json().data.token as string;
 }
 
+/** Seeds a `map_runs` row the way the runner would leave one. Defaults to a
+ * COMPLETED, unexpired run owned by `ownerId` for `mapId`. */
+async function seedRun(
+  cfg: {
+    mapId: string;
+    requestedBy: string;
+    status?: 'QUEUED' | 'COMPLETED';
+    expiresAt?: Date;
+  },
+): Promise<string> {
+  const run = await createRun({
+    mapId: cfg.mapId,
+    requestedBy: cfg.requestedBy,
+    kind: 'LIVE',
+    runKey: `export-route-${Math.random().toString(36).slice(2)}`,
+    parameters: {},
+    calculatedFields: [],
+    expiresAt: cfg.expiresAt ?? new Date(Date.now() + 3_600_000),
+  });
+  if ((cfg.status ?? 'COMPLETED') === 'COMPLETED') {
+    await completeRun(run.id, {
+      columns: [{ name: 'C1', label: 'Amount', isAggregate: false }],
+      decoration: {},
+      rowCount: 0,
+      truncated: false,
+      executionTimeMs: 1,
+      sqlText: null,
+      expiresAt: cfg.expiresAt ?? new Date(Date.now() + 3_600_000),
+    });
+  }
+  return run.id;
+}
+
+/** Shorthand for the common case: the owner's own COMPLETED run on `mapId`. */
+async function seedOwnerRun(): Promise<string> {
+  return seedRun({ mapId, requestedBy: ownerId });
+}
+
 async function cleanup() {
   await db.delete(exportJobs);
   await db.delete(maps);
@@ -81,8 +127,9 @@ beforeAll(async () => {
 
   await createTestUser(ADMIN_EMAIL, 'ADMIN');
   const owner = await createTestUser(OWNER_EMAIL, 'USER');
-  await createTestUser(OTHER_EMAIL, 'USER');
+  const other = await createTestUser(OTHER_EMAIL, 'USER');
   ownerId = owner.id;
+  otherId = other.id;
 
   const [ba] = await db
     .insert(businessAreas)
@@ -101,6 +148,18 @@ beforeAll(async () => {
     .returning();
   mapId = map!.id;
 
+  const [otherMap] = await db
+    .insert(maps)
+    .values({
+      name: 'Export Map (other)',
+      mapType: 'TABLE',
+      businessAreaId: baId,
+      createdBy: ownerId,
+    })
+    .returning();
+  otherMapId = otherMap!.id;
+
+  adminToken = await login(ADMIN_EMAIL);
   ownerToken = await login(OWNER_EMAIL);
   otherToken = await login(OTHER_EMAIL);
 });
@@ -152,30 +211,102 @@ describe('POST /api/maps/:id/export', () => {
     expect(res.json().error).toBe('Invalid request body');
   });
 
-  it('queues an export job (202, PENDING)', async () => {
+  it('400s on a body missing runId', async () => {
     const res = await app.inject({
       method: 'POST',
       url: `/api/maps/${mapId}/export`,
       headers: { authorization: `Bearer ${ownerToken}` },
-      payload: {
-        format: 'CSV',
-        parameters: { p_region: 'EMEA' },
-        calculatedFields: [{ name: 'Double', formula: 'AMOUNT * 2' }],
-      },
+      payload: { format: 'CSV' },
+    });
+    expect(res.statusCode).toBe(400);
+    expect(res.json().error).toBe('Invalid request body');
+  });
+
+  it('409s with RUN_NOT_EXPORTABLE for a run requested by another user', async () => {
+    const runId = await seedRun({ mapId, requestedBy: otherId });
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/maps/${mapId}/export`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload: { format: 'CSV', runId },
+    });
+    expect(res.statusCode).toBe(409);
+    expect(res.json().error).toBe('RUN_NOT_EXPORTABLE');
+  });
+
+  it('409s with RUN_NOT_EXPORTABLE for a run that belongs to a different map', async () => {
+    const runId = await seedRun({ mapId: otherMapId, requestedBy: ownerId });
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/maps/${mapId}/export`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload: { format: 'CSV', runId },
+    });
+    expect(res.statusCode).toBe(409);
+    expect(res.json().error).toBe('RUN_NOT_EXPORTABLE');
+  });
+
+  it('409s with RUN_NOT_EXPORTABLE for a QUEUED run', async () => {
+    const runId = await seedRun({ mapId, requestedBy: ownerId, status: 'QUEUED' });
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/maps/${mapId}/export`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload: { format: 'CSV', runId },
+    });
+    expect(res.statusCode).toBe(409);
+    expect(res.json().error).toBe('RUN_NOT_EXPORTABLE');
+  });
+
+  it('409s with RUN_NOT_EXPORTABLE for an expired run', async () => {
+    const runId = await seedRun({
+      mapId,
+      requestedBy: ownerId,
+      expiresAt: new Date(Date.now() - 1000),
+    });
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/maps/${mapId}/export`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload: { format: 'CSV', runId },
+    });
+    expect(res.statusCode).toBe(409);
+    expect(res.json().error).toBe('RUN_NOT_EXPORTABLE');
+  });
+
+  it('queues an export job (202, PENDING) for a COMPLETED run the caller owns', async () => {
+    const runId = await seedOwnerRun();
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/maps/${mapId}/export`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload: { format: 'CSV', runId },
     });
     expect(res.statusCode).toBe(202);
     expect(res.json().data.status).toBe('PENDING');
     expect(res.json().data.jobId).toBeTruthy();
   });
+
+  it('lets an admin export another user’s run (202)', async () => {
+    const runId = await seedRun({ mapId, requestedBy: ownerId });
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/maps/${mapId}/export`,
+      headers: { authorization: `Bearer ${adminToken}` },
+      payload: { format: 'CSV', runId },
+    });
+    expect(res.statusCode).toBe(202);
+  });
 });
 
 describe('GET /api/exports and /api/exports/:jobId', () => {
   it('lists the caller’s export jobs', async () => {
+    const runId = await seedOwnerRun();
     await app.inject({
       method: 'POST',
       url: `/api/maps/${mapId}/export`,
       headers: { authorization: `Bearer ${ownerToken}` },
-      payload: { format: 'XLSX' },
+      payload: { format: 'XLSX', runId },
     });
     const res = await app.inject({
       method: 'GET',
@@ -191,11 +322,12 @@ describe('GET /api/exports and /api/exports/:jobId', () => {
   });
 
   it('polls a job status', async () => {
+    const runId = await seedOwnerRun();
     const create = await app.inject({
       method: 'POST',
       url: `/api/maps/${mapId}/export`,
       headers: { authorization: `Bearer ${ownerToken}` },
-      payload: { format: 'CSV' },
+      payload: { format: 'CSV', runId },
     });
     const jobId = create.json().data.jobId as string;
     const res = await app.inject({
@@ -208,11 +340,12 @@ describe('GET /api/exports and /api/exports/:jobId', () => {
   });
 
   it('404s polling someone else’s job (id is not confirmed)', async () => {
+    const runId = await seedOwnerRun();
     const create = await app.inject({
       method: 'POST',
       url: `/api/maps/${mapId}/export`,
       headers: { authorization: `Bearer ${ownerToken}` },
-      payload: { format: 'CSV' },
+      payload: { format: 'CSV', runId },
     });
     const jobId = create.json().data.jobId as string;
     const res = await app.inject({
@@ -244,11 +377,12 @@ describe('GET /api/exports and /api/exports/:jobId', () => {
 
 describe('GET /api/exports/:jobId/download', () => {
   it('409s downloading a job that is not yet complete', async () => {
+    const runId = await seedOwnerRun();
     const create = await app.inject({
       method: 'POST',
       url: `/api/maps/${mapId}/export`,
       headers: { authorization: `Bearer ${ownerToken}` },
-      payload: { format: 'CSV' },
+      payload: { format: 'CSV', runId },
     });
     const jobId = create.json().data.jobId as string;
     const res = await app.inject({
