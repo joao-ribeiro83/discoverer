@@ -264,6 +264,34 @@ describe('GET /api/runs — list', () => {
     });
     expect(res.statusCode).toBe(403);
   });
+
+  it('lists only the caller\'s own runs, even on a map they can view; admin all=true sees them', async () => {
+    // OTHER can VIEW the map, so only the requestedBy filter can hide the run.
+    const [share] = await db
+      .insert(mapShares)
+      .values({ mapId, sharedWithUserId: otherId, permissionLevel: 'VIEW', sharedBy: ownerId })
+      .returning();
+    try {
+      const created = await app.inject({
+        method: 'POST',
+        url: `/api/maps/${mapId}/runs`,
+        headers: auth(ownerToken),
+        payload: { force: true },
+      });
+      const runId = created.json().data.id as string;
+
+      const ids = async (token: string, url: string) =>
+        ((await app.inject({ method: 'GET', url, headers: auth(token) })).json().data as {
+          id: string;
+        }[]).map((r) => r.id);
+
+      expect(await ids(otherToken, '/api/runs')).not.toContain(runId);
+      expect(await ids(ownerToken, '/api/runs')).toContain(runId);
+      expect(await ids(adminToken, '/api/runs?all=true')).toContain(runId);
+    } finally {
+      await db.delete(mapShares).where(eq(mapShares.id, share!.id));
+    }
+  });
 });
 
 describe('GET /api/runs/:id/rows', () => {
@@ -365,9 +393,19 @@ describe('SEC-002: a run is invisible to anyone but its owner/admin', () => {
       { method: 'GET', url: `/api/runs/${runId}/rows` },
       { method: 'DELETE', url: `/api/runs/${runId}` },
     ];
-    for (const { method, url } of attempts) {
-      const res = await app.inject({ method, url, headers: auth(otherToken) });
-      expect(res.statusCode).toBe(404);
+    // OTHER can VIEW the map, so each 404 must come from the ownership check,
+    // not from canAccessMap.
+    const [share] = await db
+      .insert(mapShares)
+      .values({ mapId, sharedWithUserId: otherId, permissionLevel: 'VIEW', sharedBy: ownerId })
+      .returning();
+    try {
+      for (const { method, url } of attempts) {
+        const res = await app.inject({ method, url, headers: auth(otherToken) });
+        expect(res.statusCode).toBe(404);
+      }
+    } finally {
+      await db.delete(mapShares).where(eq(mapShares.id, share!.id));
     }
 
     // The scan's DELETE attempt must not have actually removed anything —
