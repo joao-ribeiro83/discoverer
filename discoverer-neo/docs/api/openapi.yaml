@@ -2229,6 +2229,15 @@ paths:
                               type: string
                             tableOwner:
                               type: string
+                            objectType:
+                              type: string
+                              enum:
+                                - TABLE
+                                - VIEW
+                            comments:
+                              type:
+                                - 'null'
+                                - string
                             columns:
                               type: array
                               items:
@@ -2244,6 +2253,10 @@ paths:
                                       - integer
                                   nullable:
                                     type: boolean
+                                  comments:
+                                    type:
+                                      - 'null'
+                                      - string
                       count:
                         type: integer
                       cached:
@@ -2337,6 +2350,15 @@ paths:
                               type: string
                             tableOwner:
                               type: string
+                            objectType:
+                              type: string
+                              enum:
+                                - TABLE
+                                - VIEW
+                            comments:
+                              type:
+                                - 'null'
+                                - string
                             columns:
                               type: array
                               items:
@@ -2352,6 +2374,10 @@ paths:
                                       - integer
                                   nullable:
                                     type: boolean
+                                  comments:
+                                    type:
+                                      - 'null'
+                                      - string
                       count:
                         type: integer
                       total:
@@ -5436,6 +5462,55 @@ paths:
                   error:
                     type: string
                   details: {}
+  /api/users/credentials:
+    post:
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userIds:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+      security:
+        - bearerAuth: []
+      responses:
+        '400':
+          description: Default Response
+          content:
+            text/csv:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details: {}
+        '401':
+          description: Default Response
+          content:
+            text/csv:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details: {}
+        '403':
+          description: Default Response
+          content:
+            text/csv:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details: {}
   /api/users/{id}:
     get:
       tags:
@@ -5998,6 +6073,78 @@ paths:
       responses:
         '200':
           description: Default Response
+  /api/workbooks/{id}/shares:
+    get:
+      tags:
+        - Workbooks
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: id
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Default Response
+    post:
+      tags:
+        - Workbooks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+                - permissionLevel
+              properties:
+                userId:
+                  type: string
+                  format: uuid
+                permissionLevel:
+                  type: string
+                  enum:
+                    - VIEW
+                    - EDIT
+                    - EXPORT
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: id
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Default Response
+  /api/workbooks/{id}/shares/{userId}:
+    delete:
+      tags:
+        - Workbooks
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: id
+          required: true
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: userId
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Default Response
   /api/dashboard/stats:
     get:
       tags:
@@ -6175,6 +6322,22 @@ paths:
             format: uuid
           in: path
           name: jobId
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Default Response
+  /api/maps/{id}/explain:
+    post:
+      tags:
+        - Map Execution
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: id
           required: true
       security:
         - bearerAuth: []
@@ -7415,6 +7578,67 @@ paths:
                   error:
                     type: string
   /api/migration/reimport-maps:
+    post:
+      tags: *ref_2
+      security: *ref_3
+      responses:
+        '202':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    additionalProperties: true
+                additionalProperties: true
+        '400':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '401':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '404':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '409':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /api/migration/delta:
     post:
       tags: *ref_2
       security: *ref_3
