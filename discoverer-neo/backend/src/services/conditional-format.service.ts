@@ -3,6 +3,7 @@ import { db } from '../db/index.js';
 import {
   mapConditionalFormats,
   mapItems,
+  maps,
   type MapConditionalFormat,
 } from '../db/schema.js';
 import type { ConditionOperator } from './map.service.js';
@@ -46,6 +47,15 @@ async function assertItemBelongsToMap(mapId: string, mapItemId: string): Promise
   }
 }
 
+/**
+ * A format change alters what a run renders, so it must change the map's
+ * `updatedAt`: that timestamp is in the run key (map-run.service.ts), and an
+ * unchanged key would re-use a stored run with the old formats.
+ */
+async function touchMap(mapId: string): Promise<void> {
+  await db.update(maps).set({ updatedAt: new Date() }).where(eq(maps.id, mapId));
+}
+
 export async function listForMap(mapId: string): Promise<MapConditionalFormat[]> {
   return db
     .select()
@@ -76,6 +86,7 @@ export async function create(
       displayOrder: input.displayOrder ?? 0,
     })
     .returning();
+  await touchMap(mapId);
   return row!;
 }
 
@@ -102,6 +113,7 @@ export async function update(
     })
     .where(and(eq(mapConditionalFormats.id, formatId), eq(mapConditionalFormats.mapId, mapId)))
     .returning();
+  if (row) await touchMap(mapId);
   return row ?? null;
 }
 
@@ -110,5 +122,6 @@ export async function remove(mapId: string, formatId: string): Promise<boolean> 
     .delete(mapConditionalFormats)
     .where(and(eq(mapConditionalFormats.id, formatId), eq(mapConditionalFormats.mapId, mapId)))
     .returning({ id: mapConditionalFormats.id });
+  if (deleted.length > 0) await touchMap(mapId);
   return deleted.length > 0;
 }
