@@ -88,6 +88,7 @@ export interface ScheduledResultRecord {
   executionTimeMs: number | null;
   status: ScheduleRunStatus;
   errorMessage: string | null;
+  runId: string | null;
 }
 
 export class ScheduleValidationError extends Error {
@@ -271,6 +272,7 @@ function resultRowToRecord(
     executionTimeMs: row.executionTimeMs,
     status: row.status,
     errorMessage: row.errorMessage,
+    runId: row.runId,
   };
 }
 
@@ -409,6 +411,7 @@ async function defaultInsertResult(
       executionTimeMs: input.executionTimeMs,
       status: input.status,
       errorMessage: input.errorMessage,
+      runId: input.runId,
     })
     .returning();
   return resultRowToRecord(row!);
@@ -702,5 +705,6 @@ export async function recordScheduleFailure(
     executionTimeMs: elapsedMs,
     status: kind,
     errorMessage: message,
+    runId: null,
   });
 }

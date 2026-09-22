@@ -561,6 +561,7 @@ describe('getExecutionHistory / getScheduledResult', () => {
       executionTimeMs: 100,
       status: 'SUCCESS',
       errorMessage: null,
+      runId: null,
     });
     await resultStore.insertResult({
       id: 'r2',
@@ -571,6 +572,7 @@ describe('getExecutionHistory / getScheduledResult', () => {
       executionTimeMs: 50,
       status: 'FAILED',
       errorMessage: 'boom',
+      runId: null,
     });
 
     const history = await getExecutionHistory(schedule.id, 20, deps);
