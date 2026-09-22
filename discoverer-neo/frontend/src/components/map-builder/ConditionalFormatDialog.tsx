@@ -253,8 +253,9 @@ export function ConditionalFormatDialog({ open, onOpenChange, mapId }: Condition
               </div>
               {!NO_VALUE_OPERATORS.includes(draft.operator) && (
                 <div className="space-y-1">
-                  <Label>{t('mapBuilder:conditionalFormat.value')}</Label>
+                  <Label htmlFor="conditional-format-value">{t('mapBuilder:conditionalFormat.value')}</Label>
                   <Input
+                    id="conditional-format-value"
                     value={draft.value}
                     onChange={(e) => setDraft({ ...draft, value: e.target.value })}
                     placeholder={
