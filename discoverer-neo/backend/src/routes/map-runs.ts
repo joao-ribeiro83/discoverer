@@ -4,13 +4,10 @@
  * row and enqueues it, `workers/map-run.worker.ts` does the Oracle work.
  */
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { inArray } from 'drizzle-orm';
 import { z } from 'zod';
-import { db } from '../db/index.js';
-import { maps } from '../db/schema.js';
 import { loadMapWithAccess } from './maps.js';
 import { canAccessMap, getById, type MapWithDetails } from '../services/map.service.js';
-import { ExecuteBodySchema } from './map-execution.js';
+import { ExecuteBodySchema, isAdmin } from './map-execution.js';
 import { requestRun, cancelRun } from '../services/map-run.service.js';
 import { getRun, listRuns, readRows, deleteRun, type MapRunRow } from '../services/map-run.store.js';
 
@@ -66,14 +63,6 @@ const rowsQuerySchema = {
   },
 } as const;
 
-/**
- * The generated SQL is an administrator view of a run, same rule /execute
- * applies to the map's own generated SQL (SEC-07).
- */
-function isAdmin(request: { user?: unknown }): boolean {
-  return (request.user as { role?: string } | undefined)?.role === 'ADMIN';
-}
-
 function toRunDto(run: MapRunRow, mapName: string, admin: boolean) {
   return {
     id: run.id,
@@ -96,15 +85,6 @@ function toRunDto(run: MapRunRow, mapName: string, admin: boolean) {
     expiresAt: run.expiresAt,
     ...(admin ? { sql: run.sqlText } : {}),
   };
-}
-
-async function mapNamesFor(mapIds: string[]): Promise<Map<string, string>> {
-  if (mapIds.length === 0) return new Map();
-  const rows = await db
-    .select({ id: maps.id, name: maps.name })
-    .from(maps)
-    .where(inArray(maps.id, mapIds));
-  return new Map(rows.map((r) => [r.id, r.name]));
 }
 
 /**
@@ -204,7 +184,7 @@ export default function mapRunRoutes(fastify: FastifyInstance) {
         });
       }
 
-      const user = request.user as { sub: string };
+      const user = request.user as { sub: string; role: string };
       const runs = await listRuns({
         requestedBy: parsed.data.all ? undefined : user.sub,
         mapId: parsed.data.mapId,
@@ -212,9 +192,29 @@ export default function mapRunRoutes(fastify: FastifyInstance) {
         kind: parsed.data.kind,
         limit: parsed.data.limit,
       });
-      const names = await mapNamesFor([...new Set(runs.map((r) => r.mapId))]);
+
+      // decoration.totals are real Oracle rows, same as the rows endpoint —
+      // a grant revoked after the run finished must hide it here too, not
+      // just on GET /api/runs/:id. One getById per distinct map, cached: the
+      // list is capped at 200 rows and usually touches far fewer maps.
+      // ponytail: filtering after the LIMIT means a caller can see fewer than
+      // `limit` rows even when more exist; fine at today's scale, revisit if
+      // the list ever needs to paginate reliably past a wall of hidden maps.
+      const mapCache = new Map<string, MapWithDetails | null>();
+      const visible: { run: MapRunRow; map: MapWithDetails }[] = [];
+      for (const run of runs) {
+        let map = mapCache.get(run.mapId);
+        if (map === undefined) {
+          map = await getById(run.mapId);
+          mapCache.set(run.mapId, map);
+        }
+        if (map && (await canAccessMap(user, map, 'VIEW'))) {
+          visible.push({ run, map });
+        }
+      }
+
       const admin = isAdmin(request);
-      return { data: runs.map((r) => toRunDto(r, names.get(r.mapId) ?? '', admin)) };
+      return { data: visible.map(({ run, map }) => toRunDto(run, map.name, admin)) };
     },
   );
 
@@ -291,6 +291,19 @@ export default function mapRunRoutes(fastify: FastifyInstance) {
       }
       if (result === 'not_found') {
         return reply.code(404).send({ error: 'Run not found' });
+      }
+      // 'not_queued': the run moved on since `loadOwnRun` read it above —
+      // re-read its current status rather than trust the stale copy. A
+      // RUNNING run still owns an in-flight Oracle query; deleting its row
+      // here would let the same user's next QUEUED run get claimed while
+      // that orphaned query keeps running, breaking per-user FIFO. Only a
+      // terminal run (COMPLETED/FAILED/CANCELLED) is safe to delete.
+      const current = await getRun(loaded.run.id);
+      if (!current) {
+        return reply.code(404).send({ error: 'Run not found' });
+      }
+      if (current.status === 'RUNNING') {
+        return reply.code(409).send({ error: 'RUN_IN_PROGRESS' });
       }
       await deleteRun(loaded.run.id);
       return { data: { cancelled: false, deleted: true } };

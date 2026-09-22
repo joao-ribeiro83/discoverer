@@ -22,7 +22,7 @@ import { eq } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import { buildApp } from '../../app.js';
 import { db } from '../../db/index.js';
-import { users, maps } from '../../db/schema.js';
+import { users, maps, mapRuns, mapShares } from '../../db/schema.js';
 import { hashPassword } from '../../lib/password.js';
 import { closeMapRunQueue } from '../../queues/map-run.queue.js';
 import { createRun, completeRun, appendBatch } from '../../services/map-run.store.js';
@@ -38,6 +38,7 @@ let ownerToken: string;
 let otherToken: string;
 let adminToken: string;
 let ownerId: string;
+let otherId: string;
 let mapId: string;
 
 async function createTestUser(email: string, role: 'ADMIN' | 'USER' = 'USER') {
@@ -72,9 +73,10 @@ beforeAll(async () => {
   await cleanup();
 
   const owner = await createTestUser(OWNER_EMAIL);
-  await createTestUser(OTHER_EMAIL);
+  const other = await createTestUser(OTHER_EMAIL);
   await createTestUser(ADMIN_EMAIL, 'ADMIN');
   ownerId = owner.id;
+  otherId = other.id;
 
   const [map] = await db
     .insert(maps)
@@ -180,6 +182,77 @@ describe('GET/DELETE /api/runs/:id — ownership and admin', () => {
     });
     expect(after.json().data.status).toBe('CANCELLED');
   });
+
+  it('deletes a terminal (COMPLETED) run and its batches', async () => {
+    const run = await createRun({
+      mapId,
+      requestedBy: ownerId,
+      kind: 'LIVE',
+      runKey: `delete-completed-${randomUUID()}`,
+      parameters: {},
+      calculatedFields: [],
+      expiresAt: new Date(Date.now() + 3_600_000),
+    });
+    await completeRun(run.id, {
+      columns: [{ name: 'IDX', label: 'Idx', isAggregate: false }],
+      decoration: {},
+      rowCount: 1,
+      truncated: false,
+      executionTimeMs: 5,
+      sqlText: null,
+      expiresAt: new Date(Date.now() + 3_600_000),
+    });
+    await appendBatch(run.id, 0, [{ IDX: 1 }]);
+
+    const deleted = await app.inject({
+      method: 'DELETE',
+      url: `/api/runs/${run.id}`,
+      headers: auth(ownerToken),
+    });
+    expect(deleted.statusCode).toBe(200);
+    expect(deleted.json().data).toEqual({ cancelled: false, deleted: true });
+
+    const after = await app.inject({
+      method: 'GET',
+      url: `/api/runs/${run.id}`,
+      headers: auth(ownerToken),
+    });
+    expect(after.statusCode).toBe(404);
+  });
+
+  it('409s RUN_IN_PROGRESS for a RUNNING run instead of deleting it', async () => {
+    const run = await createRun({
+      mapId,
+      requestedBy: ownerId,
+      kind: 'LIVE',
+      runKey: `delete-running-${randomUUID()}`,
+      parameters: {},
+      calculatedFields: [],
+      expiresAt: new Date(Date.now() + 3_600_000),
+    });
+    // No worker runs in this suite, so claim the row directly the way the
+    // worker's `claimRun` would — status RUNNING, still holding an in-flight
+    // (fake, here) Oracle query.
+    await db.update(mapRuns).set({ status: 'RUNNING', startedAt: new Date() }).where(eq(mapRuns.id, run.id));
+
+    const res = await app.inject({
+      method: 'DELETE',
+      url: `/api/runs/${run.id}`,
+      headers: auth(ownerToken),
+    });
+    expect(res.statusCode).toBe(409);
+    expect(res.json().error).toBe('RUN_IN_PROGRESS');
+
+    // The row must still exist — the whole point is FIFO isn't broken by a
+    // deleted-out-from-under-it RUNNING run.
+    const stillThere = await app.inject({
+      method: 'GET',
+      url: `/api/runs/${run.id}`,
+      headers: auth(ownerToken),
+    });
+    expect(stillThere.statusCode).toBe(200);
+    expect(stillThere.json().data.status).toBe('RUNNING');
+  });
 });
 
 describe('GET /api/runs — list', () => {
@@ -274,6 +347,90 @@ describe('GET /api/runs/:id/rows', () => {
     expect(rows).toHaveLength(700);
     expect(rows[0]!.IDX).toBe(1500);
     expect(rows[rows.length - 1]!.IDX).toBe(2199);
+  });
+});
+
+describe('SEC-002: a run is invisible to anyone but its owner/admin', () => {
+  it('404s every /runs/:id route for another user, GET-by-id-scan style', async () => {
+    const created = await app.inject({
+      method: 'POST',
+      url: `/api/maps/${mapId}/runs`,
+      headers: auth(ownerToken),
+      payload: { force: true },
+    });
+    const runId = created.json().data.id as string;
+
+    const attempts: { method: 'GET' | 'DELETE'; url: string }[] = [
+      { method: 'GET', url: `/api/runs/${runId}` },
+      { method: 'GET', url: `/api/runs/${runId}/rows` },
+      { method: 'DELETE', url: `/api/runs/${runId}` },
+    ];
+    for (const { method, url } of attempts) {
+      const res = await app.inject({ method, url, headers: auth(otherToken) });
+      expect(res.statusCode).toBe(404);
+    }
+
+    // The scan's DELETE attempt must not have actually removed anything —
+    // confirms the 404 above was a real refusal, not a delete-then-404 miss.
+    const stillThere = await app.inject({
+      method: 'GET',
+      url: `/api/runs/${runId}`,
+      headers: auth(ownerToken),
+    });
+    expect(stillThere.statusCode).toBe(200);
+  });
+
+  it('hides a run\'s rows and its entry in the list once the owner\'s map share is revoked', async () => {
+    const [share] = await db
+      .insert(mapShares)
+      .values({ mapId, sharedWithUserId: otherId, permissionLevel: 'VIEW', sharedBy: ownerId })
+      .returning();
+
+    const run = await createRun({
+      mapId,
+      requestedBy: otherId,
+      kind: 'LIVE',
+      runKey: `share-revoked-${randomUUID()}`,
+      parameters: {},
+      calculatedFields: [],
+      expiresAt: new Date(Date.now() + 3_600_000),
+    });
+    await completeRun(run.id, {
+      columns: [{ name: 'IDX', label: 'Idx', isAggregate: false }],
+      decoration: {},
+      rowCount: 1,
+      truncated: false,
+      executionTimeMs: 5,
+      sqlText: null,
+      expiresAt: new Date(Date.now() + 3_600_000),
+    });
+    await appendBatch(run.id, 0, [{ IDX: 1 }]);
+
+    // Still shared: OTHER (the run's own owner) can read it.
+    const beforeRevoke = await app.inject({
+      method: 'GET',
+      url: `/api/runs/${run.id}/rows`,
+      headers: auth(otherToken),
+    });
+    expect(beforeRevoke.statusCode).toBe(200);
+
+    await db.delete(mapShares).where(eq(mapShares.id, share!.id));
+
+    const afterRevoke = await app.inject({
+      method: 'GET',
+      url: `/api/runs/${run.id}/rows`,
+      headers: auth(otherToken),
+    });
+    expect(afterRevoke.statusCode).toBe(404);
+
+    const list = await app.inject({
+      method: 'GET',
+      url: '/api/runs',
+      headers: auth(otherToken),
+    });
+    expect(list.statusCode).toBe(200);
+    const ids = (list.json().data as { id: string }[]).map((r) => r.id);
+    expect(ids).not.toContain(run.id);
   });
 });
 
