@@ -107,7 +107,7 @@ describe('ScheduleHistoryDialog', () => {
     expect(screen.getByTitle('Download')).toBeInTheDocument()
   })
 
-  it('shows no export buttons for an expired run', async () => {
+  it('shows no export buttons for an expired run (Open link still works)', async () => {
     mockedApi.schedules.history.mockResolvedValue(
       envelope([
         makeResult({ id: 'r3', runId: 'run-3', expiresAt: '2026-01-01T00:00:00Z', filePath: null }),
@@ -119,6 +119,44 @@ describe('ScheduleHistoryDialog', () => {
     expect(screen.queryByText('XLSX')).not.toBeInTheDocument()
     expect(screen.queryByText('CSV')).not.toBeInTheDocument()
     expect(screen.queryByText('PDF')).not.toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: /open/i })).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /open/i })).toBeInTheDocument()
+  })
+
+  it('shows no export buttons for a FAILED run, but keeps the Open link', async () => {
+    // The worker records a result — and a live 24h `expiresAt` — on failure
+    // too, so a FAILED row has everything the (old, buggy) export gate
+    // checked for. The backend has nothing to export for a run that never
+    // completed, so the gate must also check `status`.
+    mockedApi.schedules.history.mockResolvedValue(
+      envelope([
+        makeResult({
+          id: 'r4',
+          status: 'FAILED',
+          runId: 'run-4',
+          expiresAt: '2026-01-03T00:00:00Z',
+          errorMessage: 'ORA-12154',
+        }),
+      ]) as never,
+    )
+    renderDialog(makeSchedule())
+
+    expect(await screen.findByText('FAILED')).toBeInTheDocument()
+    expect(screen.queryByText('XLSX')).not.toBeInTheDocument()
+    expect(screen.queryByText('CSV')).not.toBeInTheDocument()
+    expect(screen.queryByText('PDF')).not.toBeInTheDocument()
+    const openLink = screen.getByRole('link', { name: /open/i })
+    expect(openLink).toHaveAttribute('href', '/maps/map-1/view?run=run-4')
+  })
+
+  it('shows the relative expiry text next to the buttons', async () => {
+    mockedApi.schedules.history.mockResolvedValue(
+      envelope([
+        // 2 hours ahead of the frozen clock (2026-01-02T00:00:00Z).
+        makeResult({ id: 'r5', runId: 'run-5', expiresAt: '2026-01-02T02:00:00Z' }),
+      ]) as never,
+    )
+    renderDialog(makeSchedule())
+
+    expect(await screen.findByText(/Expires 2h/)).toBeInTheDocument()
   })
 })

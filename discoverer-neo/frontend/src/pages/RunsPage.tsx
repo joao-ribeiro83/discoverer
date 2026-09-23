@@ -19,7 +19,7 @@ import { useMapExport } from '@/hooks/useMapExport'
 import { useToast } from '@/hooks/use-toast'
 import { useLocale } from '@/hooks/useLocale'
 import { useAuthStore } from '@/store/auth'
-import { formatDateTime, formatInteger } from '@/lib/format'
+import { formatDateTime, formatInteger, formatExpiresIn } from '@/lib/format'
 import { AdminPageWrapper } from '@/components/admin/AdminPageWrapper'
 import { DeleteConfirmDialog } from '@/components/admin/DeleteConfirmDialog'
 import { Badge } from '@/components/ui/badge'
@@ -33,17 +33,6 @@ const ACTIVE: MapRun['status'][] = ['QUEUED', 'RUNNING']
 const TERMINAL: MapRun['status'][] = ['COMPLETED', 'FAILED', 'CANCELLED']
 const POLL_MS = 2000
 const LIST_LIMIT = 200
-
-/** "2h" / "3d" / "Expired" — relative to now, no seconds precision needed here. */
-function expiresInLabel(expiresAt: string, t: (key: string, opts?: Record<string, unknown>) => string): string {
-  const diffMs = new Date(expiresAt).getTime() - Date.now()
-  if (diffMs <= 0) return t('runs:expired')
-  const minutes = Math.round(diffMs / 60_000)
-  if (minutes < 60) return t('runs:expiresInMinutes', { count: minutes })
-  const hours = Math.round(minutes / 60)
-  if (hours < 24) return t('runs:expiresInHours', { count: hours })
-  return t('runs:expiresInDays', { count: Math.round(hours / 24) })
-}
 
 function isExpired(run: MapRun): boolean {
   return new Date(run.expiresAt).getTime() <= Date.now()
@@ -297,7 +286,7 @@ export function RunsPage() {
                     <TableCell>{run.rowCount != null ? formatInteger(run.rowCount, locale) : '—'}</TableCell>
                     <TableCell>{run.executionTimeMs != null ? `${formatInteger(run.executionTimeMs, locale)} ms` : '—'}</TableCell>
                     <TableCell>{formatDateTime(run.createdAt, locale)}</TableCell>
-                    <TableCell>{expiresInLabel(run.expiresAt, t)}</TableCell>
+                    <TableCell>{formatExpiresIn(run.expiresAt, t)}</TableCell>
                     <TableCell>
                       <div className="flex flex-wrap items-center gap-1.5">
                         <Button variant="ghost" size="icon" title={t('runs:actions.open')} asChild>

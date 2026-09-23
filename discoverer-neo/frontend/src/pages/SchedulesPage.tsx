@@ -12,7 +12,7 @@ import type { Schedule, ScheduleParameterValue, MapParameter, ScheduledResult } 
 import { useMapExport } from '@/hooks/useMapExport'
 import { useToast } from '@/hooks/use-toast'
 import { useLocale } from '@/hooks/useLocale'
-import { formatDateTime, formatNumber } from '@/lib/format'
+import { formatDateTime, formatNumber, formatExpiresIn } from '@/lib/format'
 import { AdminPageWrapper } from '@/components/admin/AdminPageWrapper'
 import { DataTable } from '@/components/admin/DataTable'
 import { CreateEditDialog } from '@/components/admin/CreateEditDialog'
@@ -660,36 +660,57 @@ export function SchedulesPage() {
   )
 }
 
-/** `runId` present and its result hasn't expired — same rule `RunsPage`/`ExecutionPanel` use. */
+/**
+ * A FAILED (or TIMEOUT) run still carries a `runId` and a live `expiresAt` —
+ * the worker records the result either way — but the backend has nothing to
+ * export for a run that never completed, so exporting needs SUCCESS too. The
+ * Open link has no such requirement: it just shows what happened.
+ */
 function canExportResult(result: ScheduledResult): boolean {
-  return !!result.runId && !!result.expiresAt && new Date(result.expiresAt) > new Date()
+  return (
+    result.status === 'SUCCESS' &&
+    !!result.runId &&
+    !!result.expiresAt &&
+    new Date(result.expiresAt) > new Date()
+  )
 }
 
 /** Per-row export buttons — `useMapExport` is a hook, so each row gets its own instance. */
-function ScheduleResultExportButtons({ mapId, mapName, result }: { mapId: string; mapName: string; result: ScheduledResult }) {
+function ScheduleResultExportButtons({
+  mapId,
+  mapName,
+  runId,
+  canExport,
+}: {
+  mapId: string
+  mapName: string
+  runId: string
+  canExport: boolean
+}) {
   const { t } = useTranslation(['schedules'])
-  const exportCtl = useMapExport(mapId, mapName, {}, result.runId)
+  const exportCtl = useMapExport(mapId, mapName, {}, runId)
   return (
     <>
-      {(['XLSX', 'CSV', 'PDF'] as const).map((format) => (
-        <Button
-          key={format}
-          variant="outline"
-          size="sm"
-          className="h-7 gap-1 text-xs"
-          disabled={exportCtl.isExporting}
-          onClick={() => exportCtl.exportFormat(format)}
-        >
-          {exportCtl.isExporting && exportCtl.format === format ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          ) : (
-            <Download className="h-3.5 w-3.5" />
-          )}
-          {t(`schedules:history.${format.toLowerCase()}`)}
-        </Button>
-      ))}
+      {canExport &&
+        (['XLSX', 'CSV', 'PDF'] as const).map((format) => (
+          <Button
+            key={format}
+            variant="outline"
+            size="sm"
+            className="h-7 gap-1 text-xs"
+            disabled={exportCtl.isExporting}
+            onClick={() => exportCtl.exportFormat(format)}
+          >
+            {exportCtl.isExporting && exportCtl.format === format ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Download className="h-3.5 w-3.5" />
+            )}
+            {t(`schedules:history.${format.toLowerCase()}`)}
+          </Button>
+        ))}
       <Button variant="ghost" size="icon" title={t('schedules:history.open')} asChild>
-        <Link to={`/maps/${mapId}/view?run=${result.runId}`}>
+        <Link to={`/maps/${mapId}/view?run=${runId}`}>
           <ExternalLink className="h-4 w-4" />
         </Link>
       </Button>
@@ -698,7 +719,10 @@ function ScheduleResultExportButtons({ mapId, mapName, result }: { mapId: string
 }
 
 export function ScheduleHistoryDialog({ schedule, onClose }: { schedule: Schedule; onClose: () => void }) {
-  const { t } = useTranslation(['schedules'])
+  // `runs` isn't otherwise used on this page — it's pulled in only for the
+  // expiry keys `formatExpiresIn` reads, shared with RunsPage rather than
+  // duplicated here.
+  const { t } = useTranslation(['schedules', 'runs'])
   const { locale } = useLocale()
   const { toast } = useToast()
 
@@ -783,8 +807,13 @@ export function ScheduleHistoryDialog({ schedule, onClose }: { schedule: Schedul
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap items-center gap-1.5">
-                      {canExportResult(r) ? (
-                        <ScheduleResultExportButtons mapId={schedule.mapId} mapName={schedule.name} result={r} />
+                      {r.runId ? (
+                        <ScheduleResultExportButtons
+                          mapId={schedule.mapId}
+                          mapName={schedule.name}
+                          runId={r.runId}
+                          canExport={canExportResult(r)}
+                        />
                       ) : (
                         r.status === 'SUCCESS' &&
                         r.filePath && (
@@ -797,6 +826,11 @@ export function ScheduleHistoryDialog({ schedule, onClose }: { schedule: Schedul
                             <Download className="h-4 w-4" />
                           </Button>
                         )
+                      )}
+                      {r.expiresAt && (
+                        <span className="text-xs text-muted-foreground">
+                          {t('schedules:history.expiresIn', { value: formatExpiresIn(r.expiresAt, t) })}
+                        </span>
                       )}
                     </div>
                   </TableCell>
