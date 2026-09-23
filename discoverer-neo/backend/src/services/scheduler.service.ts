@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { and, desc, eq } from 'drizzle-orm';
 import cronParserPkg from 'cron-parser';
 import { db } from '../db/index.js';
-import { schedules, scheduleParameters, scheduledResults } from '../db/schema.js';
+import { schedules, scheduleParameters, scheduledResults, mapRuns } from '../db/schema.js';
 import { errorMessage } from './map-execution.service.js';
 import { requestRun, type RequestRunInput, type RequestRunResult } from './map-run.service.js';
 import {
@@ -89,6 +89,16 @@ export interface ScheduledResultRecord {
   status: ScheduleRunStatus;
   errorMessage: string | null;
   runId: string | null;
+}
+
+/**
+ * A result row plus its run's expiry, joined in from `map_runs` for the
+ * history/export-gating UI. Not part of `insertResult`'s shape — the worker
+ * that records a result has no `map_runs` row to join against at that point,
+ * so this only exists on the read paths (`listResults`/`getResult`).
+ */
+export interface ScheduledResultWithRunInfo extends ScheduledResultRecord {
+  expiresAt: Date | null;
 }
 
 export class ScheduleValidationError extends Error {
@@ -214,8 +224,8 @@ export interface SchedulerDeps {
       executedAt: Date;
     },
   ): Promise<ScheduledResultRecord>;
-  listResults(scheduleId: string, limit: number): Promise<ScheduledResultRecord[]>;
-  getResult(scheduleId: string, resultId: string): Promise<ScheduledResultRecord | null>;
+  listResults(scheduleId: string, limit: number): Promise<ScheduledResultWithRunInfo[]>;
+  getResult(scheduleId: string, resultId: string): Promise<ScheduledResultWithRunInfo | null>;
 
   upsertJob(
     scheduleId: string,
@@ -420,26 +430,28 @@ async function defaultInsertResult(
 async function defaultListResults(
   scheduleId: string,
   limit: number,
-): Promise<ScheduledResultRecord[]> {
+): Promise<ScheduledResultWithRunInfo[]> {
   const rows = await db
-    .select()
+    .select({ result: scheduledResults, runExpiresAt: mapRuns.expiresAt })
     .from(scheduledResults)
+    .leftJoin(mapRuns, eq(scheduledResults.runId, mapRuns.id))
     .where(eq(scheduledResults.scheduleId, scheduleId))
     .orderBy(desc(scheduledResults.executedAt))
     .limit(limit);
-  return rows.map(resultRowToRecord);
+  return rows.map((r) => ({ ...resultRowToRecord(r.result), expiresAt: r.runExpiresAt ?? null }));
 }
 
 async function defaultGetResult(
   scheduleId: string,
   resultId: string,
-): Promise<ScheduledResultRecord | null> {
+): Promise<ScheduledResultWithRunInfo | null> {
   const [row] = await db
-    .select()
+    .select({ result: scheduledResults, runExpiresAt: mapRuns.expiresAt })
     .from(scheduledResults)
+    .leftJoin(mapRuns, eq(scheduledResults.runId, mapRuns.id))
     .where(and(eq(scheduledResults.id, resultId), eq(scheduledResults.scheduleId, scheduleId)))
     .limit(1);
-  return row ? resultRowToRecord(row) : null;
+  return row ? { ...resultRowToRecord(row.result), expiresAt: row.runExpiresAt ?? null } : null;
 }
 
 export function defaultSchedulerDeps(): SchedulerDeps {
@@ -612,7 +624,7 @@ export async function getExecutionHistory(
   scheduleId: string,
   limit = 20,
   deps: SchedulerDeps = defaultSchedulerDeps(),
-): Promise<ScheduledResultRecord[]> {
+): Promise<ScheduledResultWithRunInfo[]> {
   const capped = Math.min(Math.max(Math.floor(limit) || 20, 1), 200);
   return deps.listResults(scheduleId, capped);
 }
@@ -621,7 +633,7 @@ export async function getScheduledResult(
   scheduleId: string,
   resultId: string,
   deps: SchedulerDeps = defaultSchedulerDeps(),
-): Promise<ScheduledResultRecord | null> {
+): Promise<ScheduledResultWithRunInfo | null> {
   return deps.getResult(scheduleId, resultId);
 }
 

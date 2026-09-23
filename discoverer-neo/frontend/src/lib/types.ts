@@ -848,6 +848,10 @@ export interface ScheduledResult {
   executionTimeMs: number | null
   status: ScheduleRunStatus
   errorMessage: string | null
+  /** The map run this result reads its rows from, when it used the run queue rather than a written file. */
+  runId: string | null
+  /** How long that run's stored rows stay valid, joined from `map_runs`. Null when there is no run. */
+  expiresAt: string | null
 }
 
 // ---------------------------------------------------------------------------

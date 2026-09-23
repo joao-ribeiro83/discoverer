@@ -595,6 +595,56 @@ describe('schedule history + result download', () => {
     expect(res.json()).toEqual({ error: 'USE_EXPORT', runId: run.id });
   });
 
+  it('history joins runId and expiresAt from the run, null when there is no run', async () => {
+    const id = await createScheduleViaApi(ownerToken);
+    const expiresAt = new Date(Date.now() + 3600_000);
+    const run = await createRun({
+      mapId,
+      requestedBy: ownerId,
+      kind: 'SCHEDULED',
+      runKey: `sched-history-${id}`,
+      parameters: {},
+      calculatedFields: [],
+      expiresAt,
+    });
+    const [withRun] = await db
+      .insert(scheduledResults)
+      .values({
+        scheduleId: id,
+        rowCount: 3,
+        filePath: null,
+        executionTimeMs: 20,
+        status: 'SUCCESS',
+        runId: run.id,
+      })
+      .returning();
+    const [withoutRun] = await db
+      .insert(scheduledResults)
+      .values({
+        scheduleId: id,
+        rowCount: 1,
+        filePath: null,
+        executionTimeMs: 5,
+        status: 'FAILED',
+        runId: null,
+      })
+      .returning();
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/schedules/${id}/history?limit=5`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+    });
+    expect(res.statusCode).toBe(200);
+    const rows = res.json().data as Array<{ id: string; runId: string | null; expiresAt: string | null }>;
+    const rowWithRun = rows.find((r) => r.id === withRun!.id);
+    const rowWithoutRun = rows.find((r) => r.id === withoutRun!.id);
+    expect(rowWithRun?.runId).toBe(run.id);
+    expect(rowWithRun?.expiresAt).toBe(expiresAt.toISOString());
+    expect(rowWithoutRun?.runId).toBeNull();
+    expect(rowWithoutRun?.expiresAt).toBeNull();
+  });
+
   it('404s a result with neither a file nor a run', async () => {
     const id = await createScheduleViaApi(ownerToken);
     const [result] = await db
