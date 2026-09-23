@@ -120,6 +120,8 @@ describe('ScheduleHistoryDialog', () => {
     expect(screen.queryByText('CSV')).not.toBeInTheDocument()
     expect(screen.queryByText('PDF')).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: /open/i })).toBeInTheDocument()
+    // Expired means nothing is exportable — showing "Expires Expired" would be worse than nothing.
+    expect(screen.queryByText(/Expires/)).not.toBeInTheDocument()
   })
 
   it('shows no export buttons for a FAILED run, but keeps the Open link', async () => {
@@ -146,6 +148,9 @@ describe('ScheduleHistoryDialog', () => {
     expect(screen.queryByText('PDF')).not.toBeInTheDocument()
     const openLink = screen.getByRole('link', { name: /open/i })
     expect(openLink).toHaveAttribute('href', '/maps/map-1/view?run=run-4')
+    // The 24h expiry recorded on a FAILED result is bookkeeping, not a valid,
+    // exportable result — nothing was ever available to expire.
+    expect(screen.queryByText(/Expires/)).not.toBeInTheDocument()
   })
 
   it('shows the relative expiry text next to the buttons', async () => {
