@@ -2,11 +2,11 @@ import { test, expect, type Page } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import {
   AUTH_USER,
-  EXECUTE_RESULT,
   MAP_WITH_DETAILS,
   jsonRoute,
   makeFakeJwt,
   mockCommonApi,
+  mockMapRunFlow,
   seedAuthedSession,
 } from './fixtures'
 
@@ -270,7 +270,7 @@ test.describe('Visual regression — theme x locale', () => {
     await seedAuthedSession(page)
     await mockCommonApi(page)
     await page.route(`**/api/maps/${MAP_WITH_DETAILS.id}`, (route) => jsonRoute(route, { data: MAP_WITH_DETAILS }))
-    await page.route(`**/api/maps/${MAP_WITH_DETAILS.id}/execute`, (route) => jsonRoute(route, { data: EXECUTE_RESULT }))
+    await mockMapRunFlow(page)
   })
 
   for (const theme of THEMES) {

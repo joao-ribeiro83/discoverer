@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
-import { EXECUTE_RESULT, MAP_WITH_DETAILS, jsonRoute, seedAuthedSession } from './fixtures'
+import { MAP_WITH_DETAILS, QUEUED_RUN, jsonRoute, mockMapRunFlow, seedAuthedSession } from './fixtures'
 
 const PARAM_MAP = {
   ...MAP_WITH_DETAILS,
@@ -22,28 +22,28 @@ test.describe('Map Viewer', () => {
     await seedAuthedSession(page)
   })
 
-  test('views a saved map and executes it with default parameters', async ({ page }) => {
+  test('views a saved map and runs it with default parameters', async ({ page }) => {
     await page.route(`**/api/maps/${MAP_WITH_DETAILS.id}`, (route) => jsonRoute(route, { data: MAP_WITH_DETAILS }))
-    await page.route(`**/api/maps/${MAP_WITH_DETAILS.id}/execute`, (route) =>
-      jsonRoute(route, { data: EXECUTE_RESULT }),
-    )
+    await mockMapRunFlow(page)
 
     await page.goto(`/maps/${MAP_WITH_DETAILS.id}/view`)
 
     await expect(page.getByRole('heading', { name: MAP_WITH_DETAILS.name })).toBeVisible()
     await page.getByRole('button', { name: 'Run', exact: true }).click()
 
-    await expect(page.getByText('Map executed').first()).toBeVisible()
     await expect(page.getByText('Acme Corp')).toBeVisible()
     await expect(page.getByText('Globex Inc')).toBeVisible()
   })
 
-  test('prompts for a required parameter before executing', async ({ page }) => {
+  test('prompts for a required parameter before running', async ({ page }) => {
     await page.route(`**/api/maps/${PARAM_MAP.id}`, (route) => jsonRoute(route, { data: PARAM_MAP }))
-    await page.route(`**/api/maps/${PARAM_MAP.id}/execute`, (route) => {
+    await mockMapRunFlow(page, PARAM_MAP.id)
+    // Overrides the queue route `mockMapRunFlow` just registered, to also
+    // assert the parameter made it into the request body.
+    await page.route(`**/api/maps/${PARAM_MAP.id}/runs`, (route) => {
       const body = route.request().postDataJSON()
       expect(body.parameters).toEqual({ MIN_TOTAL: '1000' })
-      return jsonRoute(route, { data: EXECUTE_RESULT })
+      return jsonRoute(route, { data: QUEUED_RUN }, 202)
     })
 
     await page.goto(`/maps/${PARAM_MAP.id}/view`)
@@ -54,7 +54,7 @@ test.describe('Map Viewer', () => {
     await dialog.getByLabel('MIN_TOTAL').fill('1000')
     await dialog.getByRole('button', { name: 'Run', exact: true }).click()
 
-    await expect(page.getByText('Map executed').first()).toBeVisible()
+    await expect(page.getByText('Acme Corp')).toBeVisible()
   })
 
   test('shows a not-found state for a missing map', async ({ page }) => {

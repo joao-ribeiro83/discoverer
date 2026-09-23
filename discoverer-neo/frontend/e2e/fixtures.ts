@@ -183,6 +183,61 @@ export const EXECUTE_RESULT = {
   sql: 'SELECT CUSTOMER_NAME, SUM(ORDER_TOTAL) AS ORDER_TOTAL FROM ORDERS GROUP BY CUSTOMER_NAME',
 }
 
+export const RUN_ID = 'run-1'
+
+function makeMapRun(overrides: Record<string, unknown> = {}) {
+  return {
+    id: RUN_ID,
+    mapId: MAP_WITH_DETAILS.id,
+    mapName: MAP_WITH_DETAILS.name,
+    kind: 'LIVE',
+    scheduleId: null,
+    status: 'QUEUED',
+    parameters: {},
+    calculatedFields: [],
+    columns: null,
+    decoration: null,
+    rowCount: null,
+    truncated: false,
+    executionTimeMs: null,
+    errorMessage: null,
+    createdAt: '2026-01-06T00:00:00.000Z',
+    startedAt: null,
+    completedAt: null,
+    // Fixed far in the future so `expiresAt > now` holds regardless of when
+    // the suite actually runs — export/reuse gating checks the real clock.
+    expiresAt: '2099-01-01T00:00:00.000Z',
+    ...overrides,
+  }
+}
+
+export const QUEUED_RUN = makeMapRun()
+export const COMPLETED_RUN = makeMapRun({
+  status: 'COMPLETED',
+  columns: EXECUTE_RESULT.columns,
+  decoration: { groupBreakAliases: [], totals: [], conditionalFormats: [], warnings: [] },
+  rowCount: EXECUTE_RESULT.rowCount,
+  executionTimeMs: EXECUTE_RESULT.executionTimeMs,
+  startedAt: '2026-01-06T00:00:00.000Z',
+  completedAt: '2026-01-06T00:00:01.000Z',
+})
+
+/**
+ * Mocks the map-run queue (Task 5.x — `POST .../runs` replaced the old
+ * synchronous `.../execute`) for a single "run to completion" pass: the
+ * queue request queues (202), and the poll/rows endpoints report it already
+ * `COMPLETED` with `EXECUTE_RESULT`'s rows — a test never actually needs to
+ * observe QUEUED/RUNNING within its assertion window. Register a route for
+ * the same POST path again afterwards to override just the request, e.g. to
+ * assert its body — the later registration takes precedence.
+ */
+export async function mockMapRunFlow(page: Page, mapId: string = MAP_WITH_DETAILS.id): Promise<void> {
+  await page.route(`**/api/maps/${mapId}/runs`, (route) => jsonRoute(route, { data: QUEUED_RUN }, 202))
+  await page.route(`**/api/runs/${RUN_ID}`, (route) => jsonRoute(route, { data: COMPLETED_RUN }))
+  // `runs.rows()` appends `?offset=&limit=` — the trailing `*` absorbs it.
+  await page.route(`**/api/runs/${RUN_ID}/rows*`, (route) => jsonRoute(route, { data: EXECUTE_RESULT.rows }))
+}
+
 /** Wires up the common read-only endpoints most pages need (auth/me, empty lists) so unrelated requests don't hang the page. Individual specs add/override routes for what they actually exercise. */
 export async function mockCommonApi(page: Page): Promise<void> {
   await page.route('**/api/business-areas', (route) => {
