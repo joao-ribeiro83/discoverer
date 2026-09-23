@@ -3,6 +3,7 @@ import type { Connection } from 'oracledb';
 import { processMapRun, type RunnerDeps } from '../services/map-run.runner.js';
 import type { MapRunRow } from '../services/map-run.store.js';
 import type { PreparedQuery, RowStream } from '../services/map-execution.service.js';
+import { SqlGenerationError } from '../types/sql.js';
 
 // Hermetic: no Postgres, Oracle or Redis. Every store and driver call is faked.
 
@@ -46,7 +47,9 @@ function rows(n: number): Record<string, unknown>[] {
   return Array.from({ length: n }, (_, i) => ({ C1: i }));
 }
 
-function makeDeps(opts: { claimed?: boolean; run?: MapRunRow | null; rows?: number; fail?: Error } = {}) {
+function makeDeps(
+  opts: { claimed?: boolean; run?: MapRunRow | null; rows?: number; fail?: Error } = {},
+) {
   const conn = {} as Connection;
   const batches: Array<{ seq: number; size: number }> = [];
   const deps = {
@@ -69,6 +72,12 @@ function makeDeps(opts: { claimed?: boolean; run?: MapRunRow | null; rows?: numb
     }),
     completeRun: jest.fn(async () => undefined),
     failRun: jest.fn(async () => undefined),
+    resolveHeading: jest.fn(async () => ({
+      title: 'Sales',
+      description: 'Sales by Region',
+      parameters: [],
+      runAt: NOW,
+    })),
     loadRetentionDays: jest.fn(async () => 10),
     insertScheduledResult: jest.fn(async () => undefined),
     limits: { maxRows: 100_000, batchSize: 1000, liveTtlHours: 24, failRetryMs: 0 },
@@ -115,6 +124,24 @@ describe('processMapRun', () => {
     expect(deps.releaseConnection).toHaveBeenCalledWith('ds-1', conn);
   });
 
+  // Fix round 1, IMPORTANT 4: the viewer lost the post-run heading
+  // (`&Date`/`&<ParamName>` tokens) when it moved from reading `/execute`'s
+  // response to reading a stored run — the runner has to put it somewhere
+  // the run row carries, which is `decoration` (no new column).
+  it('resolves the heading with this run\'s own parameters and stores it in decoration', async () => {
+    const { deps } = makeDeps({ rows: 1 });
+    await processMapRun('run-1', deps);
+    expect(deps.resolveHeading).toHaveBeenCalledWith('map-1', { p: 1 }, NOW);
+    expect(deps.completeRun).toHaveBeenCalledWith(
+      'run-1',
+      expect.objectContaining({
+        decoration: expect.objectContaining({
+          heading: { title: 'Sales', description: 'Sales by Region' },
+        }),
+      }),
+    );
+  });
+
   it('stops at the row cap and marks the run truncated', async () => {
     const { deps, batches } = makeDeps({ rows: 2500 });
     deps.limits = { ...deps.limits, maxRows: 1500 };
@@ -137,6 +164,7 @@ describe('processMapRun', () => {
       status: 'FAILED',
       errorMessage: expect.not.stringContaining('ORA-') as unknown as string,
       expiresAt: new Date(NOW.getTime() + 24 * HOUR),
+      decoration: { error: { kind: 'QUERY' } },
     });
     expect(deps.recordExecution).toHaveBeenCalledWith(
       expect.objectContaining({ status: 'FAILED', errorMessage: expect.not.stringContaining('ORA-') }),
@@ -144,6 +172,50 @@ describe('processMapRun', () => {
     expect(deps.completeRun).not.toHaveBeenCalled();
     expect(deps.releaseConnection).toHaveBeenCalledWith('ds-1', conn);
     consoleError.mockRestore();
+  });
+
+  // Fix round 1, IMPORTANT 3: a coded SqlGenerationError is a deliberate
+  // refusal (D-036), not a broken map — the old synchronous `/execute` route
+  // sent its `kind`/`code`/`details` back in the HTTP response; a queued run
+  // has no response, so the runner writes the same shape into `decoration`
+  // instead (controller ruling: no new column).
+  it('records a REFUSED run with its code and details when the planner declines, not a generic failure', async () => {
+    const { deps } = makeDeps();
+    deps.prepareQuery.mockRejectedValueOnce(
+      new SqlGenerationError(
+        'This query fans out from more than one folder at once',
+        { folders: ['Sales', 'Sales Lines'] },
+        'FAN_TRAP_R4',
+      ),
+    );
+    await expect(processMapRun('run-1', deps)).resolves.toBe('ran');
+    expect(deps.failRun).toHaveBeenCalledWith('run-1', {
+      status: 'FAILED',
+      errorMessage: 'This query fans out from more than one folder at once',
+      expiresAt: new Date(NOW.getTime() + 24 * HOUR),
+      decoration: {
+        error: {
+          kind: 'REFUSED',
+          refusal: { code: 'FAN_TRAP_R4', details: { folders: ['Sales', 'Sales Lines'] } },
+        },
+      },
+    });
+    expect(deps.completeRun).not.toHaveBeenCalled();
+    // A refusal is not an Oracle connection — nothing to release.
+    expect(deps.releaseConnection).not.toHaveBeenCalled();
+  });
+
+  it('records a codeless SqlGenerationError as CONFIG, not REFUSED', async () => {
+    const { deps } = makeDeps();
+    deps.prepareQuery.mockRejectedValueOnce(new SqlGenerationError('No usable join path'));
+    await processMapRun('run-1', deps);
+    expect(deps.failRun).toHaveBeenCalledWith(
+      'run-1',
+      expect.objectContaining({
+        errorMessage: 'No usable join path',
+        decoration: { error: { kind: 'CONFIG' } },
+      }),
+    );
   });
 
   it('retries the job (busy) when the claim itself throws, so a DB blip does not strand a QUEUED run', async () => {

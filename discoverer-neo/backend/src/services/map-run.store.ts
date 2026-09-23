@@ -113,7 +113,19 @@ export async function completeRun(
 
 export async function failRun(
   runId: string,
-  r: { status: 'FAILED' | 'CANCELLED'; errorMessage: string | null; expiresAt: Date },
+  r: {
+    status: 'FAILED' | 'CANCELLED';
+    errorMessage: string | null;
+    expiresAt: Date;
+    /**
+     * The error's `kind` and, for a deliberate refusal (D-036), its
+     * `refusal` code/details — the same shape `/execute` used to return in
+     * its HTTP response, kept here because a queued run's failure has no
+     * response to hang it off of (controller ruling, fix round 1: no new
+     * column, reuse this jsonb).
+     */
+    decoration?: Record<string, unknown> | null;
+  },
 ): Promise<void> {
   await db
     .update(mapRuns)
@@ -122,6 +134,7 @@ export async function failRun(
       errorMessage: r.errorMessage,
       completedAt: new Date(),
       expiresAt: r.expiresAt,
+      ...(r.decoration !== undefined ? { decoration: r.decoration } : {}),
     })
     .where(eq(mapRuns.id, runId));
 }

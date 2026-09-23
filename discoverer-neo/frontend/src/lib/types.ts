@@ -691,6 +691,22 @@ export interface ResultDecoration {
   totals?: ResultTotalsGroup[]
   conditionalFormats?: ResultConditionalFormat[]
   warnings?: string[]
+  /**
+   * The worksheet heading with this run's own parameter values substituted —
+   * mirrors `ExecuteResult.heading`. Present once the run completes.
+   */
+  heading?: { title: string | null; description: string | null }
+  /**
+   * Set only when the run failed (fix round 1): the error's `kind` and, for a
+   * deliberate refusal (D-036), the `code`/`details` the old synchronous
+   * `/execute` route used to return in its HTTP response. A queued run's
+   * failure has no response to carry that on, so it lives here instead —
+   * deliberately not a new column (controller ruling).
+   */
+  error?: {
+    kind: ExecutionErrorKind
+    refusal?: { code: RefusalCode; details?: Record<string, unknown> }
+  }
 }
 
 /** A queued/running/finished map execution, backed by `map_runs` (see `POST /maps/:id/runs`). */

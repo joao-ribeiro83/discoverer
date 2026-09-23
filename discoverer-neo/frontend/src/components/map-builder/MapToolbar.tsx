@@ -16,8 +16,6 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu'
 import { useMapBuilderStore } from '@/store/mapBuilder'
 import { ShareDialog } from '@/components/map-builder/ShareDialog'
@@ -113,14 +111,14 @@ export function MapToolbar({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>{t('mapBuilder:toolbar.exportDataHeader')}</DropdownMenuLabel>
-            <DropdownMenuItem disabled={!mapId || isExporting} onSelect={() => onExport('excel')}>
-              {t('mapBuilder:toolbar.exportExcel')}
-            </DropdownMenuItem>
-            <DropdownMenuItem disabled={!mapId || isExporting} onSelect={() => onExport('csv')}>
-              {t('mapBuilder:toolbar.exportCsv')}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
+            {/*
+              Excel/CSV/PDF export reads from a completed, stored run — the
+              builder preview never has one (it runs through `/execute`, live,
+              not through the run queue), so those formats have no data to
+              read here and are hidden rather than offered and always failing
+              (fix round 1). XML — the map's own definition, not its result —
+              needs no run and stays.
+            */}
             <DropdownMenuItem disabled={!mapId} onSelect={() => onExport('xml')}>
               {t('mapBuilder:toolbar.exportXml')}
             </DropdownMenuItem>

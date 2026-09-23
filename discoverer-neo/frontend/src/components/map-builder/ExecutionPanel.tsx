@@ -33,6 +33,7 @@ import type {
   ExecutionErrorKind,
   MapRun,
   MapType,
+  RefusalCode,
 } from '@/lib/types'
 
 // Short headline labels for the error banner, keyed by the backend's `kind`
@@ -70,6 +71,16 @@ export interface ExecutionPanelProps {
   runError?: unknown
   /** Called whenever this panel obtains a new/updated result (load more, background run). */
   onResultChange: (result: ExecuteResult | null) => void
+  /**
+   * Pages through a stored run's rows (`useMapRun.loadMore`) instead of the
+   * panel's own built-in `/execute`-offset "Load more". When provided, the
+   * button calls this and is shown/hidden by `hasMore` rather than
+   * `result.truncated`. The builder preview (no run) omits it and keeps the
+   * live re-execute path.
+   */
+  onLoadMore?: () => void
+  /** Whether more of the run's rows remain to page in. Ignored without `onLoadMore`. */
+  hasMore?: boolean
   onClose?: () => void
   /**
    * The map's view type. `CROSSTAB` pivots the result instead of listing it;
@@ -93,6 +104,8 @@ export function ExecutionPanel({
   isRunning,
   runError,
   onResultChange,
+  onLoadMore,
+  hasMore,
   onClose,
   mapType,
 }: ExecutionPanelProps) {
@@ -158,17 +171,32 @@ export function ExecutionPanel({
       }),
   })
 
-  const errorKind = runError ? getErrorKind(runError) : undefined
+  // A viewer run's failure carries its classification in `run.decoration.error`
+  // (fix round 1) — the backend writes it there because the run's failure
+  // surfaces asynchronously, with no HTTP response to hang a `kind` off of.
+  // The builder preview's `runError` is still the raw axios error from a
+  // direct `/execute` call, so that path is kept as a fallback.
+  const decorationError = run?.decoration?.error
+  const errorKind: ExecutionErrorKind | undefined = decorationError
+    ? decorationError.kind
+    : runError
+      ? getErrorKind(runError)
+      : undefined
   // A refusal is a separate surface, not a red banner (D-036). Only fall back
   // to the error banner when the backend sent no recognised refusal code.
-  const refusalCode = errorKind === 'REFUSED' ? getRefusalCode(runError) : undefined
+  const refusalCode: RefusalCode | undefined =
+    errorKind === 'REFUSED' ? (decorationError?.refusal?.code ?? getRefusalCode(runError)) : undefined
+  const refusalDetails = refusalCode
+    ? (decorationError?.refusal?.details ?? getRefusalDetails(runError))
+    : undefined
   // `runError` is either the raw axios error from a direct `/execute` (the
   // builder preview) or the plain message string `useMapRun` surfaces for a
   // queued run (the viewer) — `getErrorMessage` only understands the former.
-  const errorText = runError && !refusalCode
-    ? typeof runError === 'string'
-      ? runError
-      : getErrorMessage(runError)
+  const errorMessageSource = decorationError ? (run?.errorMessage ?? undefined) : runError
+  const errorText = errorMessageSource && !refusalCode
+    ? typeof errorMessageSource === 'string'
+      ? errorMessageSource
+      : getErrorMessage(errorMessageSource)
     : null
 
   // Exports read from a run's stored rows, never from a live re-execute — so
@@ -311,7 +339,7 @@ export function ExecutionPanel({
       )}
 
       {refusalCode && (
-        <ExecutionRefusal code={refusalCode} details={getRefusalDetails(runError)} />
+        <ExecutionRefusal code={refusalCode} details={refusalDetails} />
       )}
 
       {errorText && (
@@ -392,17 +420,19 @@ export function ExecutionPanel({
         />
       )}
 
-      {result?.truncated && (
+      {result && (onLoadMore ? hasMore : result.truncated) && (
         <div className="flex flex-wrap items-center gap-2 border-t px-4 py-2 text-xs text-muted-foreground">
           <span>{t('mapViewer:execution.notAllRowsLoaded')}</span>
           <Button
             variant="outline"
             size="sm"
             className="h-7 gap-1 text-xs"
-            disabled={loadMoreMutation.isPending || !mapId}
-            onClick={() => loadMoreMutation.mutate()}
+            disabled={onLoadMore ? false : loadMoreMutation.isPending || !mapId}
+            onClick={() => (onLoadMore ? onLoadMore() : loadMoreMutation.mutate())}
           >
-            {loadMoreMutation.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+            {!onLoadMore && loadMoreMutation.isPending && (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            )}
             {t('common:actions.loadMore')}
           </Button>
         </div>

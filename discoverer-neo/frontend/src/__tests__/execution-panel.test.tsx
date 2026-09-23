@@ -171,6 +171,66 @@ describe('ExecutionPanel', () => {
     )
   })
 
+  // --- onLoadMore / hasMore (fix round 1, CRITICAL 1) ---------------------
+  //
+  // A viewer run pages through its own stored rows via `useMapRun.loadMore`,
+  // never through a live `/execute` offset re-run — the whole point of
+  // reading from `map_run_batches` instead of Oracle again. Before this fix,
+  // the panel only ever offered `/execute`-offset paging (gated on
+  // `result.truncated`, which a run's `result` never sets), so a viewer with
+  // more than 500 stored rows had no way to see the rest.
+
+  describe('onLoadMore / hasMore', () => {
+    it('hides Load more when onLoadMore is passed and hasMore is false, even if result.truncated is true', () => {
+      renderWithProviders(
+        <ExecutionPanel
+          mapId="map-1"
+          mapName="My Map"
+          result={baseResult({ truncated: true })}
+          run={baseRun()}
+          parameters={{}}
+          onResultChange={() => {}}
+          onLoadMore={() => {}}
+          hasMore={false}
+        />,
+      )
+      expect(screen.queryByRole('button', { name: /Load more/ })).toBeNull()
+    })
+
+    it('shows Load more when onLoadMore is passed and hasMore is true, and calls onLoadMore on click', () => {
+      const onLoadMore = vi.fn()
+      renderWithProviders(
+        <ExecutionPanel
+          mapId="map-1"
+          mapName="My Map"
+          result={baseResult({ truncated: false })}
+          run={baseRun()}
+          parameters={{}}
+          onResultChange={() => {}}
+          onLoadMore={onLoadMore}
+          hasMore={true}
+        />,
+      )
+      fireEvent.click(screen.getByRole('button', { name: /Load more/ }))
+      expect(onLoadMore).toHaveBeenCalledTimes(1)
+      // The stored-run path never re-executes live.
+      expect(mockedApi.maps.execute).not.toHaveBeenCalled()
+    })
+
+    it('falls back to result.truncated when onLoadMore is not passed (the builder preview)', () => {
+      renderWithProviders(
+        <ExecutionPanel
+          mapId="map-1"
+          mapName="My Map"
+          result={baseResult({ truncated: true })}
+          parameters={{}}
+          onResultChange={() => {}}
+        />,
+      )
+      expect(screen.getByRole('button', { name: /Load more/ })).toBeInTheDocument()
+    })
+  })
+
   it('exports to Excel: creates the job, polls to completion, and downloads the file', async () => {
     mockedApi.maps.createExport.mockResolvedValue(
       envelope({ jobId: 'job-1', status: 'PENDING' }) as never,
@@ -433,5 +493,62 @@ describe('ExecutionPanel', () => {
     )
     expect(screen.queryByTestId('execution-refusal')).toBeNull()
     expect(screen.getByTestId('execution-error')).toBeTruthy()
+  })
+
+  // --- Refusal/error surfaced via run.decoration.error (fix round 1, IMPORTANT 3) ---
+  //
+  // A queued run's failure has no HTTP response to carry a `kind`/`code` on,
+  // so the runner writes it into `run.decoration.error` instead; `runError`
+  // for the viewer is just the plain message string `useMapRun` surfaces.
+  // Before this fix, that string bypassed `getErrorKind`/`getRefusalCode`
+  // entirely (they only understand an axios error) and every viewer failure
+  // — refusal included — rendered as the generic red banner (D-036 regressed).
+
+  it('renders the D-036 refusal explanation from run.decoration.error, not a red banner, for a viewer run', () => {
+    renderWithProviders(
+      <ExecutionPanel
+        mapId="map-1"
+        mapName="My Map"
+        result={null}
+        run={baseRun({
+          status: 'FAILED',
+          errorMessage: 'This query fans out from more than one folder at once',
+          decoration: {
+            error: {
+              kind: 'REFUSED',
+              refusal: { code: 'FAN_TRAP_R4', details: { folders: ['Sales', 'Sales Lines'] } },
+            },
+          },
+        })}
+        parameters={{}}
+        runError="This query fans out from more than one folder at once"
+        onResultChange={() => {}}
+      />,
+    )
+    const refusal = screen.getByTestId('execution-refusal')
+    expect(refusal.textContent).toContain('Sales Lines')
+    expect(screen.queryByTestId('execution-error')).toBeNull()
+  })
+
+  it('shows the real message (not a generic fallback) for a non-refused viewer run failure', () => {
+    renderWithProviders(
+      <ExecutionPanel
+        mapId="map-1"
+        mapName="My Map"
+        result={null}
+        run={baseRun({
+          status: 'FAILED',
+          errorMessage: 'The map is not configured correctly and cannot be run.',
+          decoration: { error: { kind: 'CONFIG' } },
+        })}
+        parameters={{}}
+        runError="The map is not configured correctly and cannot be run."
+        onResultChange={() => {}}
+      />,
+    )
+    expect(screen.queryByTestId('execution-refusal')).toBeNull()
+    expect(
+      screen.getByText('The map is not configured correctly and cannot be run.'),
+    ).toBeInTheDocument()
   })
 })

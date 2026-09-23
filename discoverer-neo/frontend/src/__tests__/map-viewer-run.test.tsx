@@ -95,11 +95,11 @@ function makeMap(over: Partial<MapWithDetails> = {}): MapWithDetails {
   } as MapWithDetails
 }
 
-function renderViewer(ui: ReactNode) {
+function renderViewer(ui: ReactNode, path = '/maps/map-1/view') {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/maps/map-1/view']}>
+      <MemoryRouter initialEntries={[path]}>
         <Routes>
           <Route path="/maps/:id/view" element={ui} />
         </Routes>
@@ -179,6 +179,26 @@ describe('MapViewerPage — Run', () => {
         force: false,
       }),
     )
+  })
+
+  // Fix round 1, MINOR 5: `?run=` names a run id the caller can read, but
+  // that run can belong to any map — a stale bookmark, a hand-edited URL, a
+  // link copied from the wrong tab. Before this fix the viewer showed
+  // whichever map's run it was handed and would replay its parameters on
+  // "Run again"; now it's ignored entirely when the map doesn't match.
+  it('ignores ?run= when the run belongs to a different map', async () => {
+    mockedApi.maps.get.mockResolvedValue(envelope(makeMap()) as never)
+    mockedApi.runs.get.mockResolvedValue(
+      envelope(makeRun({ id: 'run-9', mapId: 'map-2', parameters: { region: 'WEST' } })) as never,
+    )
+
+    renderViewer(<MapViewerPage />, '/maps/map-1/view?run=run-9')
+
+    await waitFor(() => expect(mockedApi.runs.get).toHaveBeenCalledWith('run-9'))
+
+    // Neither the foreign run's result nor its "Run again" affordance shows.
+    expect(await screen.findByText(/run the map to see results/i)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /run again/i })).toBeNull()
   })
 
   it('disables Run with a stated reason when the map has no output columns', async () => {
