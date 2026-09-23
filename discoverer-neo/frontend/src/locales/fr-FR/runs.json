@@ -59,5 +59,6 @@
     "deletedTitle": "Exécution supprimée",
     "deleteFailedTitle": "Impossible de supprimer l'exécution"
   },
-  "deleteConfirmItemLabel": "exécution"
+  "deleteConfirmItemLabel": "exécution",
+  "deleteConfirmDescription": "Cela supprime définitivement cette exécution de {{name}} et ses lignes enregistrées. Cette action est irréversible."
 }

@@ -340,6 +340,7 @@ export function RunsPage() {
         onOpenChange={(open) => !open && setDeleting(null)}
         itemName={deleting?.mapName ?? ''}
         itemLabel={t('runs:deleteConfirmItemLabel')}
+        description={t('runs:deleteConfirmDescription', { name: deleting?.mapName ?? '' })}
         isPending={deleteMutation.isPending}
         onConfirm={() => deleting && deleteMutation.mutate(deleting.id)}
       />
