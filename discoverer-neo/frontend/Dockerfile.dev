@@ -9,7 +9,10 @@ WORKDIR /app
 
 # Install dependencies first for better layer caching
 COPY package.json package-lock.json* ./
-RUN npm install
+# The base image's npm 10.9.8 crashes resolving this peer-dependency graph
+# (arborist bug: "Cannot read properties of null (reading 'edgesOut')" in
+# #loadPeerSet) — npm 11+ does not have this bug.
+RUN npm install -g npm@11 && npm install
 
 # Copy source
 COPY . .
