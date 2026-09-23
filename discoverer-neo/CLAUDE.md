@@ -20,8 +20,16 @@ npm run typecheck --workspaces && npm run lint --workspaces
 ```
 
 Per workspace: `npm test -w backend`, `npm test -w frontend`,
-`npm test -w migrate`. Backend `pretest` provisions its own test database, so
-Docker must be up (`docker compose -f docker-compose.dev.yml up -d`).
+`npm test -w migrate`. Each runs once with coverage and fails below its
+branch gate (backend 71%, frontend 78%, migrate 71%) — the same command CI
+runs. Backend `pretest` provisions its own test database, so Docker must be
+up (`docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+postgres redis`).
+
+One test file: `npx jest <file>` (backend, migrate) or `npx vitest run <file>`
+(frontend), from the workspace directory. Passing a file through `npm test`
+fails the coverage gate, because the gate is global. Watch mode:
+`npm run test:watch -w <workspace>`.
 
 Database: `npm run db:generate -w backend` writes a migration,
 `db:migrate` applies it, `db:seed` loads fixtures.
