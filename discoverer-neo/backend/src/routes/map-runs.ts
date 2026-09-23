@@ -213,8 +213,15 @@ export default function mapRunRoutes(fastify: FastifyInstance) {
         }
       }
 
-      const admin = isAdmin(request);
-      return { data: visible.map(({ run, map }) => toRunDto(run, map.name, admin)) };
+      // The list is a summary: columns, decoration (totals, formats) and sql
+      // cost ~8 KB a run and no list view reads them; GET /api/runs/:id has them.
+      return {
+        data: visible.map(({ run, map }) => ({
+          ...toRunDto(run, map.name, false),
+          columns: null,
+          decoration: null,
+        })),
+      };
     },
   );
 

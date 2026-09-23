@@ -292,6 +292,39 @@ describe('GET /api/runs — list', () => {
       await db.delete(mapShares).where(eq(mapShares.id, share!.id));
     }
   });
+
+  it('leaves columns, decoration and sql out of list entries; GET /api/runs/:id keeps them', async () => {
+    const run = await createRun({
+      mapId,
+      requestedBy: ownerId,
+      kind: 'LIVE',
+      runKey: `list-summary-${randomUUID()}`,
+      parameters: {},
+      calculatedFields: [],
+      expiresAt: new Date(Date.now() + 3_600_000),
+    });
+    await completeRun(run.id, {
+      columns: [{ name: 'IDX', label: 'Idx', isAggregate: false }],
+      decoration: { totals: [{ IDX: 1 }] },
+      rowCount: 1,
+      truncated: false,
+      executionTimeMs: 5,
+      sqlText: 'SELECT 1 FROM dual',
+      expiresAt: new Date(Date.now() + 3_600_000),
+    });
+
+    const list = await app.inject({ method: 'GET', url: '/api/runs?all=true', headers: auth(adminToken) });
+    const entry = (list.json().data as Record<string, unknown>[]).find((r) => r.id === run.id)!;
+    expect(entry.columns).toBeNull();
+    expect(entry.decoration).toBeNull();
+    expect(entry).not.toHaveProperty('sql');
+    expect(entry.rowCount).toBe(1);
+
+    const one = await app.inject({ method: 'GET', url: `/api/runs/${run.id}`, headers: auth(adminToken) });
+    expect(one.json().data.columns).toHaveLength(1);
+    expect(one.json().data.decoration).toEqual({ totals: [{ IDX: 1 }] });
+    expect(one.json().data.sql).toBe('SELECT 1 FROM dual');
+  });
 });
 
 describe('GET /api/runs/:id/rows', () => {
