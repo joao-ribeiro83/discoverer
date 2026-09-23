@@ -18,11 +18,23 @@ grid draws.
 
 ### From Map Execution
 
-1. After executing a map, click the **Export** button
-2. Choose format: **Excel**, **CSV**, or **PDF**
-3. Click **Export**
+1. Run a map and wait for it to reach **Completed**
+2. Click **Excel**, **CSV**, or **PDF**
+3. The export job is queued and will begin processing
 
-The export job is queued and will begin processing.
+### Why the Export Buttons Are Sometimes Missing
+
+The export buttons export the **rows a run already saved** — they never
+query the data source again. They only appear once a run exists for the
+current parameters, that run is **Completed**, and its result has not yet
+expired (see [Result Validity](executing-maps.md#result-validity)). A run
+still **Queued** or **Running** has no rows yet, and an expired run's rows
+are gone, so both hide the buttons. Click **Run again** to get a fresh,
+exportable result.
+
+A quick preview built in the map builder (before you save and run it
+properly) is not saved either, so it has no export buttons for the same
+reason.
 
 ### Download Status
 

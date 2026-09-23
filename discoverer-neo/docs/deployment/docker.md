@@ -298,6 +298,7 @@ Remove in-process workers for scalability:
 ```bash
 EXPORT_WORKER_ENABLED=false
 SCHEDULER_WORKER_ENABLED=false
+MAP_RUN_WORKER_ENABLED=false
 ```
 
 Then run workers separately:
@@ -308,6 +309,7 @@ docker compose up -d backend
 # In separate container
 docker run ... npm run worker
 docker run ... npm run worker:scheduler
+docker run ... npm run worker:map-runs
 ```
 
 ### Load Balancer
