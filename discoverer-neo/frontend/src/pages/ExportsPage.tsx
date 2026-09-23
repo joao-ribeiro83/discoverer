@@ -16,6 +16,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 const ACTIVE: ExportJobStatus[] = ['PENDING', 'PROCESSING']
 /** How often to re-poll the list while any job is still running. */
 const POLL_MS = 2000
+/** With nothing in flight, still look for exports requested elsewhere (viewer, runs page, another tab). */
+const IDLE_POLL_MS = 30_000
 const LIST_LIMIT = 100
 
 function StatusBadge({ status }: { status: ExportJobStatus }) {
@@ -76,8 +78,11 @@ export function ExportsPage() {
   const { data: jobs, isLoading } = useQuery({
     queryKey: ['exports'],
     queryFn: async () => (await apiClient.exports.list(LIST_LIMIT)).data.data,
+    // The app-wide 5 min staleTime would serve a return visit from cache and
+    // miss the export just requested; always refetch on mount and focus.
+    staleTime: 0,
     refetchInterval: (query) =>
-      (query.state.data ?? []).some((j) => ACTIVE.includes(j.status)) ? POLL_MS : false,
+      (query.state.data ?? []).some((j) => ACTIVE.includes(j.status)) ? POLL_MS : IDLE_POLL_MS,
   })
 
   async function download(job: ExportJob) {
