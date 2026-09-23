@@ -38,7 +38,7 @@
   "expired": "Expiré",
   "expiresInMinutes": "{{count}}m",
   "expiresInHours": "{{count}}h",
-  "expiresInDays": "{{count}}d",
+  "expiresInDays": "{{count}} j",
   "actions": {
     "open": "Ouvrir",
     "runAgain": "Exécuter à nouveau",

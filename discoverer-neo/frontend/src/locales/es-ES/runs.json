@@ -24,7 +24,7 @@
     "actions": "Acciones"
   },
   "kinds": {
-    "LIVE": "En vivo",
+    "LIVE": "En directo",
     "SCHEDULED": "Programada"
   },
   "statuses": {
@@ -52,7 +52,7 @@
     "reusedTitle": "Resultado reutilizado",
     "reusedDescription": "Ya existía un resultado válido, por lo que no se ejecutó nada nuevo.",
     "queuedTitle": "En cola",
-    "queuedDescription": "La ejecución se agregó a la cola.",
+    "queuedDescription": "La ejecución se añadió a la cola.",
     "runAgainFailedTitle": "No se pudo ejecutar de nuevo",
     "cancelledTitle": "Ejecución cancelada",
     "cancelFailedTitle": "No se pudo cancelar la ejecución",
