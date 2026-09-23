@@ -68,6 +68,19 @@ export function formatCurrency(
 }
 
 /**
+ * Whether a stored run/result's `expiresAt` is still in the future. Shared by
+ * every export-button gate (ExecutionPanel, RunsPage, the schedule history
+ * dialog) so the one piece of the "can this be exported" rule that's
+ * identical everywhere — the expiry comparison — can't drift between them;
+ * each caller still applies its own status check on top, since a `MapRun`'s
+ * `COMPLETED` and a `ScheduledResult`'s `SUCCESS` are different DTOs.
+ */
+export function isExpiryValid(expiresAt: DateInput): boolean {
+  const date = toDate(expiresAt)
+  return date !== null && date.getTime() > Date.now()
+}
+
+/**
  * "2h" / "3d" / an "expired" label — how long until `expiresAt`, for a stored
  * run's result. Shared by `RunsPage` and the schedule history dialog, both of
  * which show it next to a run's export buttons. Unlike the formatters above
@@ -84,7 +97,9 @@ export function formatExpiresIn(
   if (!date) return ''
   const diffMs = date.getTime() - Date.now()
   if (diffMs <= 0) return t('runs:expired')
-  const minutes = Math.round(diffMs / 60_000)
+  // Still valid (diffMs > 0) must never round down to 0 — that reads as
+  // already expired.
+  const minutes = Math.max(1, Math.round(diffMs / 60_000))
   if (minutes < 60) return t('runs:expiresInMinutes', { count: minutes })
   const hours = Math.round(minutes / 60)
   if (hours < 24) return t('runs:expiresInHours', { count: hours })

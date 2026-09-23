@@ -1,6 +1,6 @@
 import { describe, it, expect, jest } from '@jest/globals';
 import type { Connection } from 'oracledb';
-import { processMapRun, type RunnerDeps } from '../services/map-run.runner.js';
+import { processMapRun, requestCancel, type RunnerDeps } from '../services/map-run.runner.js';
 import type { MapRunRow } from '../services/map-run.store.js';
 import type { PreparedQuery, RowStream } from '../services/map-execution.service.js';
 import { SqlGenerationError } from '../types/sql.js';
@@ -172,6 +172,38 @@ describe('processMapRun', () => {
     expect(deps.completeRun).not.toHaveBeenCalled();
     expect(deps.releaseConnection).toHaveBeenCalledWith('ds-1', conn);
     consoleError.mockRestore();
+  });
+
+  it('records CANCELLED, not FAILED, when requestCancel interrupts a run mid-stream', async () => {
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    const { deps, conn } = makeDeps();
+    deps.openRowStream.mockImplementationOnce(async () => {
+      async function* gen(): AsyncGenerator<Record<string, unknown>[]> {
+        yield rows(1);
+        // The connection is registered by the time a batch is mid-flight —
+        // this is what the cancel route's requestCancel() call does for real.
+        expect(requestCancel('run-1')).toBe(true);
+        throw Object.assign(new Error('ORA-01013: user requested cancel of current operation'), {
+          code: 'ORA-01013',
+        });
+      }
+      return { metaData: [{ name: 'C1' }], batches: gen(), close: async () => undefined };
+    });
+    await expect(processMapRun('run-1', deps)).resolves.toBe('ran');
+    expect(deps.failRun).toHaveBeenCalledWith(
+      'run-1',
+      expect.objectContaining({ status: 'CANCELLED', decoration: { error: { kind: 'CANCELLED' } } }),
+    );
+    expect(deps.completeRun).not.toHaveBeenCalled();
+    expect(deps.releaseConnection).toHaveBeenCalledWith('ds-1', conn);
+    // A cancel not asked for must never be misclassified, even with the same
+    // ORA-01013 code — requestCancel is what marks it as ours to claim.
+    expect(requestCancel('run-1')).toBe(false);
+    consoleError.mockRestore();
+  });
+
+  it('requestCancel returns false for a run with no connection registered in this process', () => {
+    expect(requestCancel('some-other-run')).toBe(false);
   });
 
   // Fix round 1, IMPORTANT 3: a coded SqlGenerationError is a deliberate

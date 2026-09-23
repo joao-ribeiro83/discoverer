@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
 import { useMapExport } from '@/hooks/useMapExport'
+import { isExpiryValid } from '@/lib/format'
 import {
   apiClient,
   getErrorKind,
@@ -202,7 +203,7 @@ export function ExecutionPanel({
   // Exports read from a run's stored rows, never from a live re-execute — so
   // the buttons only exist for a completed, still-valid run. The builder
   // preview (`/execute`, no run) passes no `run` at all and shows none.
-  const canExport = !!run && run.status === 'COMPLETED' && new Date(run.expiresAt) > new Date()
+  const canExport = !!run && run.status === 'COMPLETED' && isExpiryValid(run.expiresAt)
 
   // A crosstab needs a column edge, and Discoverer records none — so a
   // migrated crosstab arrives with every axis column on the row edge and

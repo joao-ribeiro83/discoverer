@@ -12,7 +12,7 @@ import type { Schedule, ScheduleParameterValue, MapParameter, ScheduledResult } 
 import { useMapExport } from '@/hooks/useMapExport'
 import { useToast } from '@/hooks/use-toast'
 import { useLocale } from '@/hooks/useLocale'
-import { formatDateTime, formatNumber, formatExpiresIn } from '@/lib/format'
+import { formatDateTime, formatNumber, formatExpiresIn, isExpiryValid } from '@/lib/format'
 import { AdminPageWrapper } from '@/components/admin/AdminPageWrapper'
 import { DataTable } from '@/components/admin/DataTable'
 import { CreateEditDialog } from '@/components/admin/CreateEditDialog'
@@ -655,7 +655,13 @@ export function SchedulesPage() {
         </Dialog>
       )}
 
-      {historyFor && <ScheduleHistoryDialog schedule={historyFor} onClose={() => setHistoryFor(null)} />}
+      {historyFor && (
+        <ScheduleHistoryDialog
+          schedule={historyFor}
+          mapName={mapNameById.get(historyFor.mapId)}
+          onClose={() => setHistoryFor(null)}
+        />
+      )}
     </AdminPageWrapper>
   )
 }
@@ -667,12 +673,7 @@ export function SchedulesPage() {
  * Open link has no such requirement: it just shows what happened.
  */
 function canExportResult(result: ScheduledResult): boolean {
-  return (
-    result.status === 'SUCCESS' &&
-    !!result.runId &&
-    !!result.expiresAt &&
-    new Date(result.expiresAt) > new Date()
-  )
+  return result.status === 'SUCCESS' && !!result.runId && isExpiryValid(result.expiresAt)
 }
 
 /** Per-row export buttons — `useMapExport` is a hook, so each row gets its own instance. */
@@ -718,7 +719,15 @@ function ScheduleResultExportButtons({
   )
 }
 
-export function ScheduleHistoryDialog({ schedule, onClose }: { schedule: Schedule; onClose: () => void }) {
+export function ScheduleHistoryDialog({
+  schedule,
+  mapName,
+  onClose,
+}: {
+  schedule: Schedule
+  mapName?: string
+  onClose: () => void
+}) {
   // `runs` isn't otherwise used on this page — it's pulled in only for the
   // expiry keys `formatExpiresIn` reads, shared with RunsPage rather than
   // duplicated here.
@@ -810,7 +819,7 @@ export function ScheduleHistoryDialog({ schedule, onClose }: { schedule: Schedul
                       {r.runId ? (
                         <ScheduleResultExportButtons
                           mapId={schedule.mapId}
-                          mapName={schedule.name}
+                          mapName={mapName ?? schedule.name}
                           runId={r.runId}
                           canExport={canExportResult(r)}
                         />

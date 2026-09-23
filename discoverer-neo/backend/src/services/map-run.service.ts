@@ -8,6 +8,7 @@ import { enqueueRun, mapRunQueue } from '../queues/map-run.queue.js';
 import type { CalcFieldInput } from './calculated-field-evaluator.js';
 import * as store from './map-run.store.js';
 import type { MapRunRow, RunKind } from './map-run.store.js';
+import { requestCancel } from './map-run.runner.js';
 import { loadMapDefinition } from './sql-generator.js';
 
 export interface RequestRunInput {
@@ -34,6 +35,8 @@ export interface MapRunServiceDeps {
   loadMapUpdatedAt: (mapId: string) => Promise<Date>;
   enqueueRun: (runId: string) => Promise<void>;
   removeJob: (runId: string) => Promise<void>;
+  /** Interrupt a RUNNING run's in-flight Oracle call, if this process owns it. */
+  requestCancel: typeof requestCancel;
   now: () => Date;
 }
 
@@ -46,6 +49,7 @@ function defaultDeps(): MapRunServiceDeps {
     failRun: store.failRun,
     loadMapUpdatedAt: async (mapId) => (await loadMapDefinition(mapId)).map.updatedAt,
     enqueueRun,
+    requestCancel,
     removeJob: async (runId) => {
       await mapRunQueue().remove(runId);
     },
@@ -106,12 +110,22 @@ export async function requestRun(
 export async function cancelRun(
   runId: string,
   deps: MapRunServiceDeps = defaultDeps(),
-): Promise<'cancelled' | 'not_queued' | 'not_found'> {
+): Promise<'cancelled' | 'cancelling' | 'not_queued' | 'not_found'> {
   if (await deps.cancelIfQueued(runId)) {
     // Best effort: a job the worker already holds is ended by the runner,
     // which sees the run is no longer QUEUED.
     await deps.removeJob(runId).catch(() => undefined);
     return 'cancelled';
   }
-  return (await deps.getRun(runId)) ? 'not_queued' : 'not_found';
+  const run = await deps.getRun(runId);
+  if (!run) return 'not_found';
+  // A RUNNING run still owns an in-flight Oracle query — interrupt it rather
+  // than only refusing. `requestCancel` returns false when this process isn't
+  // the one executing it (already finished, or a different worker instance),
+  // so the caller falls back to 'not_queued' rather than claiming progress
+  // that was never made.
+  if (run.status === 'RUNNING' && deps.requestCancel(runId)) {
+    return 'cancelling';
+  }
+  return 'not_queued';
 }

@@ -12,7 +12,8 @@ import { writeXlsx } from './exporters/excel-exporter.js';
 import { writeCsv } from './exporters/csv-exporter.js';
 import { writePdf, type PdfExportRequest } from './exporters/pdf-exporter.js';
 import type { ExportHeading, ExportSource, ExportWriteResult } from './exporters/types.js';
-import { resolveHeading } from './map.service.js';
+import { canAccessMap, getById as getMapById, resolveHeading } from './map.service.js';
+import { getSessionUser } from './user.service.js';
 import {
   createWorksheetRowBuilder,
   formatTotalsRowRecord,
@@ -118,7 +119,11 @@ export interface ExportJobDeps {
    * the file's document header. Optional so a test's minimal deps object
    * still works; production always supplies it.
    */
-  resolveHeading?(mapId: string, parameters: Record<string, unknown>): Promise<ExportHeading>;
+  resolveHeading?(
+    mapId: string,
+    parameters: Record<string, unknown>,
+    now?: Date,
+  ): Promise<ExportHeading>;
   /** Enqueue the background job that performs the export. */
   enqueue(data: ExportJobData): Promise<void>;
 }
@@ -224,7 +229,7 @@ export function defaultExportDeps(): ExportJobDeps {
     getJob: defaultGetJob,
     listJobs: defaultListJobs,
     writeExportFile: defaultWriteExportFile,
-    resolveHeading: (mapId, parameters) => resolveHeading(mapId, parameters),
+    resolveHeading: (mapId, parameters, now) => resolveHeading(mapId, parameters, now),
     enqueue: defaultEnqueue,
   };
 }
@@ -362,6 +367,20 @@ export async function processExportJob(
     throw new Error('Run not found or no longer available');
   }
 
+  // Same point-in-time gap as above, for entitlement rather than freshness: a
+  // grant or RLS policy revoked after the route's check but before this job
+  // ran must still refuse. Re-resolve the requester and the map fresh from
+  // the database rather than trusting the enqueue-time decision.
+  const requester = await getSessionUser(data.requestedBy);
+  const exportMap = requester ? await getMapById(mapId) : null;
+  if (
+    !requester ||
+    !exportMap ||
+    !(await canAccessMap({ sub: requester.id, role: requester.role }, exportMap, 'EXPORT'))
+  ) {
+    throw new Error('Export no longer authorized');
+  }
+
   await safeUpdate(deps, exportJobId, { progress: PROGRESS_STREAMING_START });
 
   const columns = (run.columns ?? []) as ResultColumn[];
@@ -414,7 +433,11 @@ export async function processExportJob(
   const source: ExportSource = { columns, batches };
   const filePath = buildExportFilePath(exportJobId, format);
   const heading = deps.resolveHeading
-    ? await deps.resolveHeading(mapId, (run.parameters ?? {}) as Record<string, unknown>)
+    ? await deps.resolveHeading(
+        mapId,
+        (run.parameters ?? {}) as Record<string, unknown>,
+        run.completedAt ?? undefined,
+      )
     : undefined;
 
   // Progress writes are chained and awaited before COMPLETED, so a late one

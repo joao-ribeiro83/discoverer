@@ -51,6 +51,7 @@ function makeDeps(hit: MapRunRow | null = null) {
     loadMapUpdatedAt: jest.fn(async () => MAP_UPDATED),
     enqueueRun: jest.fn(async () => undefined),
     removeJob: jest.fn(async () => undefined),
+    requestCancel: jest.fn(() => false),
     now: () => NOW,
   } satisfies MapRunServiceDeps;
   return { deps, created };
@@ -144,10 +145,25 @@ describe('cancelRun', () => {
     expect(deps.removeJob).toHaveBeenCalledWith('run-1');
   });
 
-  it('reports not_queued for a run past QUEUED', async () => {
+  it('reports not_queued for a RUNNING run this process does not own', async () => {
     const { deps } = makeDeps(makeRun({ status: 'RUNNING' }));
+    // requestCancel defaults to false: nothing in this process is executing it.
     await expect(cancelRun('run-1', deps)).resolves.toBe('not_queued');
     expect(deps.removeJob).not.toHaveBeenCalled();
+  });
+
+  it('signals an interrupt for a RUNNING run this process owns', async () => {
+    const { deps } = makeDeps(makeRun({ status: 'RUNNING' }));
+    deps.requestCancel.mockReturnValue(true);
+    await expect(cancelRun('run-1', deps)).resolves.toBe('cancelling');
+    expect(deps.requestCancel).toHaveBeenCalledWith('run-1');
+    expect(deps.removeJob).not.toHaveBeenCalled();
+  });
+
+  it('reports not_queued for a terminal run', async () => {
+    const { deps } = makeDeps(makeRun({ status: 'COMPLETED' }));
+    await expect(cancelRun('run-1', deps)).resolves.toBe('not_queued');
+    expect(deps.requestCancel).not.toHaveBeenCalled();
   });
 
   it('reports not_found for an unknown run', async () => {
