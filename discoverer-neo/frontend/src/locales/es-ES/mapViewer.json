@@ -9,7 +9,12 @@
     "scheduleManagement": "Administración de programaciones",
     "runRefusedTitle": "Hoja no ejecutada",
     "runRefusedDescription": "El planificador de consultas rechazó esta solicitud. El panel de resultados explica por qué.",
-    "cannotRunNoColumns": "Esta hoja no tiene columnas de salida, por lo que no hay nada que ejecutar. Ábrala en el generador y añada al menos una columna."
+    "cannotRunNoColumns": "Esta hoja no tiene columnas de salida, por lo que no hay nada que ejecutar. Ábrala en el generador y añada al menos una columna.",
+    "statusQueued": "En cola (posición desconocida)",
+    "statusRunning": "En ejecución…",
+    "statusResult": "Resultado de {{time}}, válido hasta {{until}}.",
+    "statusResultReused": "Mostrando un resultado en caché de {{time}}, válido hasta {{until}}.",
+    "runAgain": "Ejecutar de nuevo"
   },
   "mapsList": {
     "title": "Mapas",
@@ -136,6 +141,7 @@
   },
   "export": {
     "saveBeforeExport": "Guarde el mapa antes de exportarlo.",
+    "noRunToExport": "Ejecute el mapa antes de exportar.",
     "exportFailedTitle": "Error en la exportación",
     "exportQueuedTitle": "Exportación en cola",
     "exportQueuedDescription": "Esto puede tardar un momento con conjuntos de resultados grandes.",

@@ -1,0 +1,63 @@
+{
+  "title": "Execuções",
+  "description": "Cada execução de mapa que solicitou — em fila, em progresso ou concluída — e quanto tempo o seu resultado permanece válido.",
+  "loading": "Carregando execuções…",
+  "empty": "Sem execuções ainda. Execute um mapa para ver o seu histórico aqui.",
+  "filters": {
+    "map": "Mapa",
+    "allMaps": "Todos os mapas",
+    "status": "Estado",
+    "allStatuses": "Todos os estados",
+    "kind": "Tipo",
+    "allKinds": "Todos os tipos",
+    "allUsers": "Mostrar execuções de todos os utilizadores"
+  },
+  "columns": {
+    "map": "Mapa",
+    "kind": "Tipo",
+    "parameters": "Parâmetros",
+    "status": "Estado",
+    "rows": "Linhas",
+    "duration": "Duração",
+    "ranAt": "Executado em",
+    "expiresIn": "Expira em",
+    "actions": "Ações"
+  },
+  "kinds": {
+    "LIVE": "Em direto",
+    "SCHEDULED": "Agendado"
+  },
+  "statuses": {
+    "QUEUED": "Em fila",
+    "RUNNING": "Em execução",
+    "COMPLETED": "Concluído",
+    "FAILED": "Falhou",
+    "CANCELLED": "Cancelado"
+  },
+  "noParameters": "—",
+  "expired": "Expirado",
+  "expiresInMinutes": "{{count}}m",
+  "expiresInHours": "{{count}}h",
+  "expiresInDays": "{{count}}d",
+  "actions": {
+    "open": "Abrir",
+    "runAgain": "Executar novamente",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "xlsx": "XLSX",
+    "csv": "CSV",
+    "pdf": "PDF"
+  },
+  "toasts": {
+    "reusedTitle": "Resultado reutilizado",
+    "reusedDescription": "Já existia um resultado válido, portanto nada de novo foi executado.",
+    "queuedTitle": "Em fila",
+    "queuedDescription": "A execução foi adicionada à fila.",
+    "runAgainFailedTitle": "Não foi possível executar novamente",
+    "cancelledTitle": "Execução cancelada",
+    "cancelFailedTitle": "Não foi possível cancelar a execução",
+    "deletedTitle": "Execução eliminada",
+    "deleteFailedTitle": "Não foi possível eliminar a execução"
+  },
+  "deleteConfirmItemLabel": "execução"
+}
