@@ -6,6 +6,8 @@ import { CalendarClock, Loader2, Play } from 'lucide-react'
 import { apiClient, getErrorMessage } from '@/lib/api'
 import { useMapRun } from '@/hooks/useMapRun'
 import { useToast } from '@/hooks/use-toast'
+import { useLocale } from '@/hooks/useLocale'
+import { formatDateTime } from '@/lib/format'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ExecutionPanel } from '@/components/map-builder/ExecutionPanel'
@@ -20,6 +22,7 @@ export function MapViewerPage() {
   const [searchParams] = useSearchParams()
   const { toast } = useToast()
   const { t } = useTranslation(['mapViewer', 'common'])
+  const { locale } = useLocale()
 
   const [promptOpen, setPromptOpen] = useState(false)
   // `request()`/`open()` queue or fetch a run and resolve as soon as that
@@ -109,8 +112,8 @@ export function MapViewerPage() {
     if (queued) return t('mapViewer:viewer.statusQueued')
     if (executing) return t('mapViewer:viewer.statusRunning')
     if (run?.status === 'COMPLETED') {
-      const time = run.completedAt ? new Date(run.completedAt).toLocaleTimeString() : ''
-      const until = new Date(run.expiresAt).toLocaleString()
+      const time = formatDateTime(run.completedAt, locale, { timeStyle: 'short' })
+      const until = formatDateTime(run.expiresAt, locale)
       return isReused
         ? t('mapViewer:viewer.statusResultReused', { time, until })
         : t('mapViewer:viewer.statusResult', { time, until })
