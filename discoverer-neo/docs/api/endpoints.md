@@ -1599,7 +1599,7 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 
 | Status | Body |
 | --- | --- |
-| 200 | — |
+| 200 | { data?: { jobId?: string mapId?: string mapName?: string format?: "XLSX" \| "CSV" \| "PDF" status?: "PENDING" \| "PROCESSING" \| "COMPLETED" \| "FAILED" progress?: integer rowCount?: integer truncated?: boolean errorMessage?: string createdAt?: string (date-time) completedAt?: string (date-time) }[] } |
 
 #### GET /api/exports/{jobId}
 
@@ -2026,7 +2026,7 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 
 | Status | Body |
 | --- | --- |
-| 200 | — |
+| 200 | { data?: { id?: string scheduleId?: string executedAt?: string (date-time) rowCount?: integer filePath?: string executionTimeMs?: integer status?: "SUCCESS" \| "FAILED" \| "TIMEOUT" errorMessage?: string runId?: string expiresAt?: string (date-time) }[] } |
 
 #### GET /api/schedules/{id}/results/{resultId}/download
 

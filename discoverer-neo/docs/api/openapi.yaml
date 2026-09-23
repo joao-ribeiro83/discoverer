@@ -6449,6 +6449,53 @@ paths:
       responses:
         '200':
           description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        jobId:
+                          type: string
+                        mapId:
+                          type: string
+                        mapName:
+                          type: string
+                          nullable: true
+                        format:
+                          type: string
+                          enum:
+                            - XLSX
+                            - CSV
+                            - PDF
+                        status:
+                          type: string
+                          enum:
+                            - PENDING
+                            - PROCESSING
+                            - COMPLETED
+                            - FAILED
+                        progress:
+                          type: integer
+                        rowCount:
+                          type: integer
+                          nullable: true
+                        truncated:
+                          type: boolean
+                        errorMessage:
+                          type: string
+                          nullable: true
+                        createdAt:
+                          type: string
+                          format: date-time
+                        completedAt:
+                          type: string
+                          format: date-time
+                          nullable: true
   /api/exports/{jobId}:
     get:
       tags:
@@ -6694,6 +6741,48 @@ paths:
       responses:
         '200':
           description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        scheduleId:
+                          type: string
+                        executedAt:
+                          type: string
+                          format: date-time
+                        rowCount:
+                          type: integer
+                          nullable: true
+                        filePath:
+                          type: string
+                          nullable: true
+                        executionTimeMs:
+                          type: integer
+                          nullable: true
+                        status:
+                          type: string
+                          enum:
+                            - SUCCESS
+                            - FAILED
+                            - TIMEOUT
+                        errorMessage:
+                          type: string
+                          nullable: true
+                        runId:
+                          type: string
+                          nullable: true
+                        expiresAt:
+                          type: string
+                          format: date-time
+                          nullable: true
   /api/schedules/{id}/results/{resultId}/download:
     get:
       tags:

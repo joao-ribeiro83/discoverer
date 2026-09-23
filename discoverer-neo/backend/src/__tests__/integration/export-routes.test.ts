@@ -323,6 +323,18 @@ describe('GET /api/exports and /api/exports/:jobId', () => {
     // own map list, which misses maps shared through a group or an admin's view.
     const mine = (res.json().data as Array<Record<string, unknown>>).find((j) => j['mapId'] === mapId);
     expect(mine?.['mapName']).toBe('Export Map');
+    expect(Date.parse(mine?.['createdAt'] as string)).not.toBeNaN();
+  });
+
+  it('documents every list field in the OpenAPI spec', () => {
+    const spec = app.swagger() as unknown as {
+      paths: Record<string, Record<string, { responses: Record<string, { content?: Record<string, { schema: { properties: { data: { items: { properties: Record<string, unknown> } } } } }> }> }>>;
+    };
+    const item = spec.paths['/api/exports']!['get']!.responses['200']!.content!['application/json']!.schema
+      .properties.data.items.properties;
+    expect(Object.keys(item).sort()).toEqual(
+      ['completedAt', 'createdAt', 'errorMessage', 'format', 'jobId', 'mapId', 'mapName', 'progress', 'rowCount', 'status', 'truncated'],
+    );
   });
 
   it('polls a job status', async () => {

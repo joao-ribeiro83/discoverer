@@ -53,6 +53,35 @@ const listQuerySchema = {
   },
 } as const;
 
+/** 200 body of GET /api/exports. Every field of `toResponse` must be listed:
+ * fast-json-stringify drops any property the schema does not name. */
+const listResponseSchema = {
+  200: {
+    type: 'object',
+    properties: {
+      data: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            jobId: { type: 'string' },
+            mapId: { type: 'string' },
+            mapName: { type: 'string', nullable: true },
+            format: { type: 'string', enum: ['XLSX', 'CSV', 'PDF'] },
+            status: { type: 'string', enum: ['PENDING', 'PROCESSING', 'COMPLETED', 'FAILED'] },
+            progress: { type: 'integer' },
+            rowCount: { type: 'integer', nullable: true },
+            truncated: { type: 'boolean' },
+            errorMessage: { type: 'string', nullable: true },
+            createdAt: { type: 'string', format: 'date-time' },
+            completedAt: { type: 'string', format: 'date-time', nullable: true },
+          },
+        },
+      },
+    },
+  },
+} as const;
+
 /** Shape returned to clients — `filePath` is server-side detail. */
 function toResponse(job: ExportJobRecord) {
   return {
@@ -190,6 +219,7 @@ export default function exportRoutes(fastify: FastifyInstance) {
         tags: ['Export'],
         security: [{ bearerAuth: [] }],
         querystring: listQuerySchema,
+        response: listResponseSchema,
       },
     },
     async (request) => {
