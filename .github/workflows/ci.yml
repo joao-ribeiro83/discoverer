@@ -202,8 +202,10 @@ jobs:
       - name: Typecheck
         run: npm run typecheck --workspace @discoverer-neo/core
 
+      # The script itself runs with coverage, so a local `npm test` hits the
+      # same 71% branch gate CI does.
       - name: Test
-        run: npm test --workspace @discoverer-neo/core -- --coverage
+        run: npm test --workspace @discoverer-neo/core
 
       # The D-059 four-bucket partition over the committed formula corpus —
       # now printed twice, for the display rendering (fidelity, Phase 4.4) and

@@ -30,7 +30,7 @@
     "build": "tsc --noEmit false",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "jest",
+    "test": "jest --coverage",
     "start": "node dist/index.js",
     "cli": "tsx src/bin.ts",
     "rebuild-corpus": "tsx src/scripts/build-formula-corpus.ts",
