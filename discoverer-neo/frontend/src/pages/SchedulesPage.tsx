@@ -827,7 +827,11 @@ export function ScheduleHistoryDialog({ schedule, onClose }: { schedule: Schedul
                           </Button>
                         )
                       )}
-                      {r.expiresAt && (
+                      {/* `canExportResult` already means "expiresAt is set and in the
+                          future" — reusing it (rather than just `r.expiresAt`) keeps this
+                          text off a FAILED row's 24h housekeeping expiry and off an
+                          expired SUCCESS row (which would otherwise read "Expires Expired"). */}
+                      {canExportResult(r) && (
                         <span className="text-xs text-muted-foreground">
                           {t('schedules:history.expiresIn', { value: formatExpiresIn(r.expiresAt, t) })}
                         </span>
