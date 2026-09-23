@@ -47,6 +47,7 @@ Configure and manage the Discoverer Neo system.
 - **[Security Policies](admin-guide/security.md)** — Row-level security and access control
 - **[Custom Functions](admin-guide/custom-functions.md)** — Defining SQL/PLSQL functions
 - **[Audit Logging](admin-guide/audit-logging.md)** — Monitoring system activity
+- **[Map Runs, Retention and the Sweeper](admin-guide/map-runs.md)** — The run queue, live vs scheduled retention, `BR_EXPIRY`
 - **[Migrated Users & Passwords](migration/user-credentials.md)** — Temporary passwords, the credentials file, forced password change
 
 ## API Documentation
