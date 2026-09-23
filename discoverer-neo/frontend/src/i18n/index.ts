@@ -51,6 +51,7 @@ export const NAMESPACES = [
   'admin',
   'mapBuilder',
   'mapViewer',
+  'runs',
   'schedules',
   'security',
   'migration',

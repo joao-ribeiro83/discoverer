@@ -17,6 +17,7 @@ import {
   FunctionSquare,
   ShieldCheck,
   ScrollText,
+  History,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Separator } from '@/components/ui/separator'
@@ -46,6 +47,7 @@ const mapsNavItems = [
 /** A plain user can run, schedule and export their maps — nothing else. */
 const otherNavItems = [
   { to: '/schedules', labelKey: 'items.schedules', icon: CalendarClock },
+  { to: '/runs', labelKey: 'items.runs', icon: History },
   { to: '/exports', labelKey: 'items.exports', icon: Download },
 ]
 
