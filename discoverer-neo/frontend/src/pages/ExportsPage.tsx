@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Download, Loader2, CheckCircle2, XCircle, Clock } from 'lucide-react'
@@ -63,18 +62,6 @@ export function ExportsPage() {
   const { toast } = useToast()
   const { locale } = useLocale()
 
-  const { data: mapOptions } = useQuery({
-    queryKey: ['maps'],
-    queryFn: async () => (await apiClient.maps.listMine()).data.data,
-  })
-  const mapNameById = useMemo(() => {
-    const lookup = new Map<string, string>()
-    for (const m of [...(mapOptions?.mine ?? []), ...(mapOptions?.shared ?? [])]) {
-      lookup.set(m.id, m.name)
-    }
-    return lookup
-  }, [mapOptions])
-
   const { data: jobs, isLoading } = useQuery({
     queryKey: ['exports'],
     queryFn: async () => (await apiClient.exports.list(LIST_LIMIT)).data.data,
@@ -89,7 +76,7 @@ export function ExportsPage() {
     try {
       const res = await apiClient.exports.download(job.jobId)
       const ext = job.format === 'CSV' ? 'csv' : job.format === 'PDF' ? 'pdf' : 'xlsx'
-      const name = mapNameById.get(job.mapId) ?? job.mapId
+      const name = job.mapName ?? job.mapId
       downloadBlob(res.data, `${safeFilename(name)}.${ext}`)
     } catch (err) {
       toast({
@@ -134,7 +121,7 @@ export function ExportsPage() {
               (jobs ?? []).map((job) => (
                 <TableRow key={job.jobId}>
                   <TableCell className="font-medium" title={job.mapId}>
-                    {mapNameById.get(job.mapId) ?? job.mapId.slice(0, 8)}
+                    {job.mapName ?? job.mapId.slice(0, 8)}
                   </TableCell>
                   <TableCell>{job.format}</TableCell>
                   <TableCell title={job.errorMessage ?? undefined}>

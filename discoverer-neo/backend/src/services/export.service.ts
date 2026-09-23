@@ -57,6 +57,8 @@ export interface ExportOptions {
 export interface ExportJobRecord {
   id: string;
   mapId: string;
+  /** Set by the list query only (a join on maps); null once the map is deleted. */
+  mapName?: string | null;
   requestedBy: string;
   format: ExportFormat;
   status: ExportJobStatus;
@@ -167,12 +169,13 @@ async function defaultGetJob(id: string): Promise<ExportJobRecord | null> {
 
 async function defaultListJobs(userId: string, limit: number): Promise<ExportJobRecord[]> {
   const rows = await db
-    .select()
+    .select({ job: exportJobs, mapName: maps.name })
     .from(exportJobs)
+    .leftJoin(maps, eq(maps.id, exportJobs.mapId))
     .where(eq(exportJobs.requestedBy, userId))
     .orderBy(desc(exportJobs.createdAt))
     .limit(limit);
-  return rows.map(rowToRecord);
+  return rows.map(({ job, mapName }) => ({ ...rowToRecord(job), mapName }));
 }
 
 async function defaultWriteExportFile(

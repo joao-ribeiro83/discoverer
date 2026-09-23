@@ -58,6 +58,7 @@ function toResponse(job: ExportJobRecord) {
   return {
     jobId: job.id,
     mapId: job.mapId,
+    mapName: job.mapName ?? null,
     format: job.format,
     status: job.status,
     progress: job.progress,
