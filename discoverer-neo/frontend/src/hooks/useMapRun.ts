@@ -48,6 +48,7 @@ export function useMapRun(mapId: string | undefined): UseMapRunResult {
   // replies tell a stale run apart from the current one before touching state.
   const currentRunIdRef = useRef<string | null>(null)
   const loadingMoreRef = useRef(false)
+  const cancellingRef = useRef(false)
 
   const runQuery = useQuery({
     queryKey: ['map-run', runId],
@@ -140,7 +141,11 @@ export function useMapRun(mapId: string | undefined): UseMapRunResult {
   }, [])
 
   const cancel = useCallback(async () => {
-    if (!runId) return
+    // DELETE on a run that is no longer QUEUED deletes it, so a second click
+    // (or a click after the run was claimed) must not reach the server.
+    if (!runId || cancellingRef.current) return
+    if (queryClient.getQueryData<MapRun>(['map-run', runId])?.status !== 'QUEUED') return
+    cancellingRef.current = true
     try {
       await apiClient.runs.cancel(runId)
       // A poll already in flight can resolve after this and overwrite the
@@ -151,6 +156,8 @@ export function useMapRun(mapId: string | undefined): UseMapRunResult {
       )
     } catch (err) {
       setError(getErrorMessage(err))
+    } finally {
+      cancellingRef.current = false
     }
   }, [runId, queryClient])
 
