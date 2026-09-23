@@ -66,3 +66,27 @@ export function formatCurrency(
 ): string {
   return formatNumber(value, locale, { style: 'currency', currency, ...options })
 }
+
+/**
+ * "2h" / "3d" / an "expired" label — how long until `expiresAt`, for a stored
+ * run's result. Shared by `RunsPage` and the schedule history dialog, both of
+ * which show it next to a run's export buttons. Unlike the formatters above
+ * this takes a translation function rather than a locale, because the unit
+ * ("2h" vs "2m") needs its own translated string, not just number formatting;
+ * the keys live in the `runs` namespace (added there first) and are reused by
+ * both pages rather than duplicated per namespace.
+ */
+export function formatExpiresIn(
+  expiresAt: DateInput,
+  t: (key: string, opts?: Record<string, unknown>) => string,
+): string {
+  const date = toDate(expiresAt)
+  if (!date) return ''
+  const diffMs = date.getTime() - Date.now()
+  if (diffMs <= 0) return t('runs:expired')
+  const minutes = Math.round(diffMs / 60_000)
+  if (minutes < 60) return t('runs:expiresInMinutes', { count: minutes })
+  const hours = Math.round(minutes / 60)
+  if (hours < 24) return t('runs:expiresInHours', { count: hours })
+  return t('runs:expiresInDays', { count: Math.round(hours / 24) })
+}
