@@ -96,20 +96,24 @@ const mockTables = [
   {
     tableName: 'EMPLOYEES',
     tableOwner: 'HR',
+    objectType: 'TABLE' as const,
+    comments: null,
     columns: [
-      { columnName: 'EMPLOYEE_ID', dataType: 'NUMBER', dataLength: 6, nullable: false },
-      { columnName: 'FIRST_NAME', dataType: 'VARCHAR2', dataLength: 50, nullable: true },
-      { columnName: 'LAST_NAME', dataType: 'VARCHAR2', dataLength: 50, nullable: false },
-      { columnName: 'HIRE_DATE', dataType: 'DATE', dataLength: 7, nullable: false },
-      { columnName: 'SALARY', dataType: 'NUMBER', dataLength: 10, nullable: true },
+      { columnName: 'EMPLOYEE_ID', dataType: 'NUMBER', dataLength: 6, nullable: false, comments: null },
+      { columnName: 'FIRST_NAME', dataType: 'VARCHAR2', dataLength: 50, nullable: true, comments: null },
+      { columnName: 'LAST_NAME', dataType: 'VARCHAR2', dataLength: 50, nullable: false, comments: null },
+      { columnName: 'HIRE_DATE', dataType: 'DATE', dataLength: 7, nullable: false, comments: null },
+      { columnName: 'SALARY', dataType: 'NUMBER', dataLength: 10, nullable: true, comments: null },
     ],
   },
   {
     tableName: 'DEPARTMENTS',
     tableOwner: 'HR',
+    objectType: 'TABLE' as const,
+    comments: null,
     columns: [
-      { columnName: 'DEPARTMENT_ID', dataType: 'NUMBER', dataLength: 4, nullable: false },
-      { columnName: 'DEPARTMENT_NAME', dataType: 'VARCHAR2', dataLength: 100, nullable: false },
+      { columnName: 'DEPARTMENT_ID', dataType: 'NUMBER', dataLength: 4, nullable: false, comments: null },
+      { columnName: 'DEPARTMENT_NAME', dataType: 'VARCHAR2', dataLength: 100, nullable: false, comments: null },
     ],
   },
 ];
@@ -601,7 +605,7 @@ describe('Oracle introspection', () => {
     // GET /tables reads the cache (POST /introspect deliberately invalidates it
     // to force a fresh pull), so seeding Redis lets us cover the 200 path.
     await app.redis.setex(
-      `oracle:introspection:${testDataSourceId}`,
+      `oracle:introspection:v2:${testDataSourceId}`,
       300,
       JSON.stringify(mockTables),
     );
@@ -622,10 +626,12 @@ describe('Oracle introspection', () => {
     const manyTables = Array.from({ length: 12 }, (_, i) => ({
       tableName: `TABLE_${i}`,
       tableOwner: 'HR',
+      objectType: 'TABLE' as const,
+      comments: null,
       columns: mockTables[0]!.columns,
     }));
     await app.redis.setex(
-      `oracle:introspection:${testDataSourceId}`,
+      `oracle:introspection:v2:${testDataSourceId}`,
       300,
       JSON.stringify(manyTables),
     );
@@ -743,7 +749,7 @@ describe('Oracle import', () => {
     // Seed the introspection cache so importFromOracle resolves table columns
     // without a live Oracle (introspectSchema checks Redis first).
     await app.redis.setex(
-      `oracle:introspection:${testDataSourceId}`,
+      `oracle:introspection:v2:${testDataSourceId}`,
       300,
       JSON.stringify(mockTables),
     );
@@ -792,10 +798,12 @@ describe('Oracle import', () => {
     const poisonedTable = {
       tableName: 'POISONED',
       tableOwner: 'HR',
-      columns: [{ columnName: 'X'.repeat(300), dataType: 'VARCHAR2', dataLength: 50, nullable: true }],
+      objectType: 'TABLE' as const,
+      comments: null,
+      columns: [{ columnName: 'X'.repeat(300), dataType: 'VARCHAR2', dataLength: 50, nullable: true, comments: null }],
     };
     await app.redis.setex(
-      `oracle:introspection:${testDataSourceId}`,
+      `oracle:introspection:v2:${testDataSourceId}`,
       300,
       JSON.stringify([...mockTables, poisonedTable]),
     );

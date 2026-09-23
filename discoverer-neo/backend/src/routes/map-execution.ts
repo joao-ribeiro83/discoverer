@@ -5,10 +5,7 @@ import { resolveHeading } from '../services/map.service.js';
 import { SqlGenerationError, planDraft } from '../services/sql-generator.js';
 import {
   executeMap,
-  executeMapAsync,
   explainMap,
-  getExecutionStatus,
-  cancelExecution,
   getExecutionHistory,
   MapExecutionError,
   type ExecutionErrorKind,
@@ -25,7 +22,9 @@ const CalculatedFieldSchema = z.object({
   displayOrder: z.number().int().optional(),
 });
 
-const ExecuteBodySchema = z.object({
+// Exported so routes/map-runs.ts's request-run body can reuse the same
+// calculated-fields rule (max 50) rather than duplicating it and risking drift.
+export const ExecuteBodySchema = z.object({
   parameters: z.record(z.string(), z.unknown()).optional(),
   /** Optional per-request statement timeout (ms); the service clamps it. */
   timeoutMs: z.number().int().positive().optional(),
@@ -55,9 +54,11 @@ const PlanBodySchema = z.object({
 
 /**
  * The generated SQL and the execution plan are administrator views of a map,
- * not parts of its result. Both name the schema behind it.
+ * not parts of its result. Both name the schema behind it. Exported so
+ * routes/map-runs.ts's admin-only `sql` field and `all=true` gate use the
+ * same check rather than a second copy.
  */
-function isAdmin(request: { user?: unknown }): boolean {
+export function isAdmin(request: { user?: unknown }): boolean {
   return (request.user as { role?: string } | undefined)?.role === 'ADMIN';
 }
 
@@ -76,15 +77,6 @@ const idParamsSchema = {
   type: 'object',
   required: ['id'],
   properties: { id: { type: 'string', format: 'uuid' } },
-} as const;
-
-const jobParamsSchema = {
-  type: 'object',
-  required: ['id', 'jobId'],
-  properties: {
-    id: { type: 'string', format: 'uuid' },
-    jobId: { type: 'string', format: 'uuid' },
-  },
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -282,76 +274,6 @@ export default function mapExecutionRoutes(fastify: FastifyInstance) {
     },
   );
 
-  // POST /api/maps/:id/execute-async — queue a background execution.
-  fastify.post(
-    '/api/maps/:id/execute-async',
-    {
-      preHandler: [fastify.authenticate],
-      schema: {
-        tags: ['Map Execution'],
-        security: [{ bearerAuth: [] }],
-        params: idParamsSchema,
-      },
-    },
-    async (request, reply) => {
-      const map = await loadMapWithAccess(request, reply, 'VIEW');
-      if (!map) return;
-
-      const parsed = ExecuteBodySchema.safeParse(request.body ?? {});
-      if (!parsed.success) {
-        return reply
-          .code(400)
-          .send({ error: 'Invalid request body', details: parsed.error.issues });
-      }
-
-      const user = request.user as { sub: string };
-      const { jobId } = await executeMapAsync(
-        map.id,
-        parsed.data.parameters ?? {},
-        user.sub,
-        {
-          timeoutMs: parsed.data.timeoutMs,
-          calculatedFields: parsed.data.calculatedFields,
-        },
-      );
-      return reply.code(202).send({ data: { jobId } });
-    },
-  );
-
-  // GET /api/maps/:id/executions/:jobId — async execution status/result.
-  fastify.get(
-    '/api/maps/:id/executions/:jobId',
-    {
-      preHandler: [fastify.authenticate],
-      schema: {
-        tags: ['Map Execution'],
-        security: [{ bearerAuth: [] }],
-        params: jobParamsSchema,
-      },
-    },
-    async (request, reply) => {
-      const map = await loadMapWithAccess(request, reply, 'VIEW');
-      if (!map) return;
-
-      const { jobId } = request.params as { jobId: string };
-      const user = request.user as { sub: string };
-      const job = getExecutionStatus(jobId);
-      // 404 for a job on another map or started by someone else. The result
-      // carries its owner's row-level security, so a second viewer of the same
-      // map must not collect it (D-021) — nor learn that the id exists.
-      if (!job || job.mapId !== map.id || job.userId !== user.sub) {
-        return reply.code(404).send({ error: 'Execution job not found' });
-      }
-      // Same withholding as the synchronous path: the generated SQL is an
-      // administrator's view of the map, not a result column.
-      if (job.result && !isAdmin(request)) {
-        const { sql: _generatedSql, ...result } = job.result;
-        return { data: { ...job, result } };
-      }
-      return { data: job };
-    },
-  );
-
   // POST /api/maps/:id/explain — Oracle's execution plan for this map.
   //
   // Administrator-only, like the generated SQL it is a plan of: it names the
@@ -389,33 +311,6 @@ export default function mapExecutionRoutes(fastify: FastifyInstance) {
         if (handleExecutionError(reply, err, request.id)) return;
         throw err;
       }
-    },
-  );
-
-  // DELETE /api/maps/:id/executions/:jobId — cancel a running execution.
-  fastify.delete(
-    '/api/maps/:id/executions/:jobId',
-    {
-      preHandler: [fastify.authenticate],
-      schema: {
-        tags: ['Map Execution'],
-        security: [{ bearerAuth: [] }],
-        params: jobParamsSchema,
-      },
-    },
-    async (request, reply) => {
-      const map = await loadMapWithAccess(request, reply, 'VIEW');
-      if (!map) return;
-
-      const { jobId } = request.params as { jobId: string };
-      const user = request.user as { sub: string };
-      const job = getExecutionStatus(jobId);
-      if (!job || job.mapId !== map.id || job.userId !== user.sub) {
-        return reply.code(404).send({ error: 'Execution job not found' });
-      }
-
-      const outcome = await cancelExecution(jobId);
-      return { data: outcome };
     },
   );
 

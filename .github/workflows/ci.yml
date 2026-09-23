@@ -98,8 +98,10 @@ jobs:
       # which creates the test database and applies every migration to it.
       # A `db:migrate` before that would target a database that does not
       # exist yet.
+      # The script itself runs with coverage, so a local `npm test` hits the
+      # same 71% branch gate CI does.
       - name: Test
-        run: npm test --workspace @discoverer-neo/backend -- --coverage
+        run: npm test --workspace @discoverer-neo/backend
 
   frontend:
     name: Frontend (lint, typecheck, test)
@@ -133,7 +135,9 @@ jobs:
         run: node scripts/docs-i18n-check.mjs pt-PT fr-FR es-ES
 
       - name: Test
-        run: npm test --workspace @discoverer-neo/frontend -- --run --coverage
+        # The script itself runs once with coverage, so a local `npm test`
+        # hits the same 78% branch gate CI does.
+        run: npm test --workspace @discoverer-neo/frontend
 
       - name: Build
         run: npm run build --workspace @discoverer-neo/frontend
@@ -198,8 +202,10 @@ jobs:
       - name: Typecheck
         run: npm run typecheck --workspace @discoverer-neo/core
 
+      # The script itself runs with coverage, so a local `npm test` hits the
+      # same 71% branch gate CI does.
       - name: Test
-        run: npm test --workspace @discoverer-neo/core -- --coverage
+        run: npm test --workspace @discoverer-neo/core
 
       # The D-059 four-bucket partition over the committed formula corpus —
       # now printed twice, for the display rendering (fidelity, Phase 4.4) and

@@ -34,12 +34,9 @@ import {
 } from '../../services/join.service.js';
 import {
   executeMap,
-  executeMapAsync,
-  getExecutionStatus,
   MapExecutionError,
   resolveDataSourceId,
   defaultDeps,
-  _resetAsyncState,
   type MapExecutionDeps,
   type ExecuteOptions,
 } from '../../services/map-execution.service.js';
@@ -110,33 +107,6 @@ function makeFailingConn(err: unknown): {
   return { conn: raw as unknown as Connection, execute };
 }
 
-/** A fake Connection that streams rows through a result set (async path). */
-function makeResultSetConn(
-  rows: Record<string, unknown>[],
-  metaData?: Array<{ name: string }>,
-): { conn: Connection; execute: jest.Mock } {
-  const md =
-    metaData ??
-    (rows[0] ? Object.keys(rows[0]).map((name) => ({ name })) : []);
-  let cursor = 0;
-  const resultSet = {
-    getRows: jest.fn(async (n: number) => {
-      const slice = rows.slice(cursor, cursor + n);
-      cursor += slice.length;
-      return slice;
-    }),
-    close: jest.fn(async () => {}),
-  };
-  const execute = jest.fn(async () => ({ resultSet, metaData: md })) as jest.Mock;
-  const raw: Record<string, unknown> = {
-    callTimeout: undefined,
-    execute,
-    break: jest.fn(async () => {}),
-    close: jest.fn(async () => {}),
-  };
-  return { conn: raw as unknown as Connection, execute };
-}
-
 /**
  * Wrap a fake connection in the production dependency bundle: the REAL
  * prepareQuery (loadMapDefinition + generateSql + parameter resolution) and the
@@ -164,17 +134,6 @@ const norm = (sql: string) => sql.replace(/\s+/g, ' ').trim();
 /** Assert generated SQL contains an expected fragment (whitespace-insensitive). */
 function assertSqlContains(sql: string, expected: string): void {
   expect(norm(sql)).toContain(norm(expected));
-}
-
-async function waitFor(
-  predicate: () => boolean,
-  { timeoutMs = 2000, stepMs = 5 } = {},
-): Promise<void> {
-  const start = Date.now();
-  while (!predicate()) {
-    if (Date.now() - start > timeoutMs) throw new Error('waitFor timed out');
-    await new Promise((r) => setTimeout(r, stepMs));
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -442,7 +401,6 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  _resetAsyncState();
   await cleanupIntegrationUsers();
 
   const admin = await createTestUser(
@@ -878,50 +836,6 @@ describe('Scenario 8: execution logging', () => {
     expect(entry.executedBy).toBe(adminId);
     expect(entry.sqlText).toContain('SELECT');
     expect(entry.executionTimeMs).toBeGreaterThanOrEqual(0);
-  });
-});
-
-// ===========================================================================
-// Scenario 9 — async execution: submit, poll, fetch results
-// ===========================================================================
-
-describe('Scenario 9: async execution', () => {
-  it('submits a job, polls to completion, and exposes results', async () => {
-    const mapId = await createTestMap({
-      items: [{ item: fx.region }, { item: fx.amount, displayOrder: 1 }],
-    });
-
-    const rows = [
-      { REGION: 'EAST', AMOUNT: 1 },
-      { REGION: 'WEST', AMOUNT: 2 },
-      { REGION: 'NORTH', AMOUNT: 3 },
-    ];
-    const { conn } = makeResultSetConn(rows);
-    const deps = execDeps(conn);
-
-    const { jobId } = await executeMapAsync(mapId, {}, adminId, {}, deps);
-    expect(jobId).toBeTruthy();
-    // Initially queued/running.
-    expect(getExecutionStatus(jobId)?.mapId).toBe(mapId);
-
-    await waitFor(() => getExecutionStatus(jobId)?.status === 'COMPLETED');
-
-    const job = getExecutionStatus(jobId)!;
-    expect(job.status).toBe('COMPLETED');
-    expect(job.rowCount).toBe(3);
-    expect(job.result?.rows).toEqual(rows);
-
-    // Logged as a successful execution too — with NO extra wait. The status is
-    // the signal that everything it implies is already true, so reading the
-    // history the instant a poller sees COMPLETED must find the row. This
-    // assertion was intermittent until the terminal status stopped being set
-    // before the log write (F-23).
-    expect(job.finishedAt).toBeInstanceOf(Date);
-    const logs = await db
-      .select()
-      .from(queryExecutionLog)
-      .where(eq(queryExecutionLog.mapId, mapId));
-    expect(logs.some((l) => l.status === 'SUCCESS')).toBe(true);
   });
 });
 

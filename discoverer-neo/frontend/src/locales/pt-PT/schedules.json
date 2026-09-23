@@ -65,7 +65,12 @@
     "loading": "A carregar...",
     "noRuns": "Ainda não existem execuções.",
     "download": "Transferir",
-    "durationSeconds": "{{seconds}}s"
+    "durationSeconds": "{{seconds}}s",
+    "xlsx": "XLSX",
+    "csv": "CSV",
+    "pdf": "PDF",
+    "open": "Abrir",
+    "expiresIn": "Expira {{value}}"
   },
   "toasts": {
     "scheduleUpdated": "Agendamento atualizado",

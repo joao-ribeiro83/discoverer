@@ -57,10 +57,10 @@ export function startSchedulerWorker(logger: WorkerLogger): SchedulerWorkerHandl
     },
   );
 
-  worker.on('completed', (job, result: { skipped: boolean; rowCount?: number } | undefined) => {
+  worker.on('completed', (job, result: { skipped: boolean; runId?: string } | undefined) => {
     recordScheduleOutcome(result?.skipped ? 'skipped' : 'completed');
     logger.info(
-      { scheduleId: job.data.scheduleId, skipped: result?.skipped, rowCount: result?.rowCount },
+      { scheduleId: job.data.scheduleId, skipped: result?.skipped, runId: result?.runId },
       'Schedule run finished',
     );
   });

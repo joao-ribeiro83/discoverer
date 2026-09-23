@@ -2,10 +2,13 @@ import os from 'node:os';
 import path from 'node:path';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
-import type { Connection } from 'oracledb';
+import { describe, it, expect, beforeAll, afterAll, jest } from '@jest/globals';
 import ExcelJS from 'exceljs';
 import { parseFile } from 'fast-csv';
+import { eq } from 'drizzle-orm';
+import { db } from '../../db/index.js';
+import { users, maps } from '../../db/schema.js';
+import { hashPassword } from '../../lib/password.js';
 import {
   createExportJob,
   processExportJob,
@@ -24,106 +27,119 @@ import {
   type ExportFormat,
   type CleanupDeps,
 } from '../../services/export.service.js';
+import { createRun, completeRun, appendBatch } from '../../services/map-run.store.js';
 import { attemptsExhausted } from '../../workers/export.worker.js';
 import { writeXlsx, excelNumberFormat, sheetNameFor } from '../../services/exporters/excel-exporter.js';
 import { writeCsv } from '../../services/exporters/csv-exporter.js';
 import { writePdf } from '../../services/exporters/pdf-exporter.js';
 import type { ExportSource } from '../../services/exporters/types.js';
-import type { PreparedQuery, ResultColumn } from '../../services/map-execution.service.js';
+import type { ResultColumn } from '../../services/map-execution.service.js';
 import { EXPORT_JOB_OPTIONS, type ExportJobData } from '../../queues/export.queue.js';
 import type { Job } from 'bullmq';
 
 // ---------------------------------------------------------------------------
 // Fixtures & fakes.
 //
-// Hermetic: no Postgres, Oracle or Redis. The job row store, the Oracle
-// connection and the queue are all faked, but the exporters are exercised for
-// real against the filesystem — a mocked file writer would prove nothing about
-// whether the .xlsx/.csv we ship is actually valid.
+// The `export_jobs` row store and the queue are faked (hermetic, no Postgres
+// needed for those), and the exporters are exercised for real against the
+// filesystem — a mocked file writer would prove nothing about whether the
+// .xlsx/.csv we ship is actually valid.
+//
+// `processExportJob` itself is no longer an Oracle caller (Task 4.3): it just
+// reads a run's already-materialised rows, so its tests seed a real
+// `map_runs` row (`createRun`/`appendBatch`/`completeRun`, the real Postgres
+// store) instead of faking an Oracle connection.
 // ---------------------------------------------------------------------------
 
-const USER_ID = 'user-1';
-const MAP_ID = 'map-1';
+const USER_EMAIL = 'export-svc-test@example.com';
+const TEST_PASSWORD = 'SecurePass123!';
 
-function makePrepared(overrides: Partial<PreparedQuery> = {}): PreparedQuery {
-  return {
-    sql: 'SELECT "F"."AMOUNT" AS "C1"\nFROM "S"."SALES" "F"',
-    bindParams: {},
-    columns: [{ alias: 'C1', label: 'Amount', isAggregate: false }],
-    dataSourceId: 'ds-1',
-    ...overrides,
-  };
-}
+let USER_ID: string;
+let MAP_ID: string;
 
-/** A fake Connection that streams rows via a result set. */
-function makeResultSetConn(
+const RUN_COLUMNS: ResultColumn[] = [{ name: 'C1', label: 'Amount', isAggregate: false }];
+
+beforeAll(async () => {
+  await db.delete(users).where(eq(users.email, USER_EMAIL));
+  const passwordHash = await hashPassword(TEST_PASSWORD);
+  const [user] = await db
+    .insert(users)
+    .values({ email: USER_EMAIL, passwordHash, name: 'Export Service Test', role: 'USER' })
+    .returning();
+  USER_ID = user!.id;
+
+  const [map] = await db
+    .insert(maps)
+    .values({ name: 'Export Service Map', mapType: 'TABLE', createdBy: USER_ID })
+    .returning();
+  MAP_ID = map!.id;
+});
+
+afterAll(async () => {
+  // Cascades: users -> maps (created_by) -> map_runs (map_id) -> map_run_batches,
+  // same as map-run-store.test.ts.
+  await db.delete(users).where(eq(users.email, USER_EMAIL));
+});
+
+/** Seeds a COMPLETED run with one batch of `rows` and returns its id. */
+async function seedRun(
   rows: Record<string, unknown>[],
-  metaData: Array<{ name: string }> = [{ name: 'C1' }],
-) {
-  let cursor = 0;
-  const resultSet = {
-    getRows: jest.fn(async (n: number) => {
-      const slice = rows.slice(cursor, cursor + n);
-      cursor += slice.length;
-      return slice;
-    }),
-    close: jest.fn(async () => {}),
-  };
-  const raw: Record<string, unknown> = {
-    callTimeout: undefined,
-    execute: jest.fn(async () => ({ resultSet, metaData })),
-    break: jest.fn(async () => {}),
-    close: jest.fn(async () => {}),
-  };
-  return { raw, conn: raw as unknown as Connection, resultSet };
+  overrides: Partial<{
+    columns: ResultColumn[];
+    expiresAt: Date;
+    decoration: Record<string, unknown>;
+  }> = {},
+): Promise<string> {
+  const run = await createRun({
+    mapId: MAP_ID,
+    requestedBy: USER_ID,
+    kind: 'LIVE',
+    runKey: `export-svc-${Math.random().toString(36).slice(2)}`,
+    parameters: {},
+    calculatedFields: [],
+    expiresAt: new Date(Date.now() + 3_600_000),
+  });
+  if (rows.length > 0) await appendBatch(run.id, 0, rows);
+  await completeRun(run.id, {
+    columns: overrides.columns ?? RUN_COLUMNS,
+    decoration: overrides.decoration ?? {},
+    rowCount: rows.length,
+    truncated: false,
+    executionTimeMs: 1,
+    sqlText: null,
+    expiresAt: overrides.expiresAt ?? new Date(Date.now() + 3_600_000),
+  });
+  return run.id;
 }
 
-/**
- * A fake Connection that answers a small non-streaming `execute` (as
- * `runTotalsQueries` issues) from `totalsRowsBySql`, keyed by exact SQL text,
- * and a streaming `execute` (`resultSet: true`, as `openRowStream` issues)
- * from `detailRows` — so a totals-aware export can be driven end to end
- * without a real Oracle connection.
- */
-function makeWorksheetConn(
-  detailRows: Record<string, unknown>[],
-  totalsRowsBySql: Record<string, Record<string, unknown>[]>,
-  metaData: Array<{ name: string }>,
-) {
-  let cursor = 0;
-  const resultSet = {
-    getRows: jest.fn(async (n: number) => {
-      const slice = detailRows.slice(cursor, cursor + n);
-      cursor += slice.length;
-      return slice;
-    }),
-    close: jest.fn(async () => {}),
-  };
-  const raw: Record<string, unknown> = {
-    callTimeout: undefined,
-    execute: jest.fn(
-      async (sql: string, _binds: unknown, opts?: { resultSet?: boolean }) => {
-        if (opts?.resultSet) return { resultSet, metaData };
-        return { rows: totalsRowsBySql[sql] ?? [] };
-      },
-    ),
-    break: jest.fn(async () => {}),
-    close: jest.fn(async () => {}),
-  };
-  return { raw, conn: raw as unknown as Connection, resultSet };
-}
-
-/** A fake Connection whose `execute` rejects. */
-function makeFailingConn(err: unknown) {
-  const raw: Record<string, unknown> = {
-    callTimeout: undefined,
-    execute: jest.fn(async () => {
-      throw err;
-    }),
-    break: jest.fn(async () => {}),
-    close: jest.fn(async () => {}),
-  };
-  return { raw, conn: raw as unknown as Connection };
+/** Same as `seedRun`, but spread across several batches — for progress-cadence tests. */
+async function seedRunBatched(totalRows: number, batchSize = 1000): Promise<string> {
+  const run = await createRun({
+    mapId: MAP_ID,
+    requestedBy: USER_ID,
+    kind: 'LIVE',
+    runKey: `export-svc-batched-${Math.random().toString(36).slice(2)}`,
+    parameters: {},
+    calculatedFields: [],
+    expiresAt: new Date(Date.now() + 3_600_000),
+  });
+  let seq = 0;
+  for (let i = 0; i < totalRows; i += batchSize) {
+    const batch = Array.from({ length: Math.min(batchSize, totalRows - i) }, (_, j) => ({
+      C1: i + j,
+    }));
+    await appendBatch(run.id, seq++, batch);
+  }
+  await completeRun(run.id, {
+    columns: RUN_COLUMNS,
+    decoration: {},
+    rowCount: totalRows,
+    truncated: false,
+    executionTimeMs: 1,
+    sqlText: null,
+    expiresAt: new Date(Date.now() + 3_600_000),
+  });
+  return run.id;
 }
 
 /** In-memory fake of the `export_jobs` table. */
@@ -145,6 +161,7 @@ class FakeJobStore {
       status: 'PENDING',
       progress: 0,
       rowCount: null,
+      truncated: false,
       filePath: null,
       errorMessage: null,
       createdAt: new Date(),
@@ -173,25 +190,15 @@ class FakeJobStore {
   };
 }
 
-function makeDeps(
-  conn: Connection,
-  overrides: Partial<ExportJobDeps> = {},
-): {
+function makeDeps(overrides: Partial<ExportJobDeps> = {}): {
   deps: ExportJobDeps;
   store: FakeJobStore;
-  prepareQuery: jest.Mock;
-  getConnection: jest.Mock;
-  releaseConnection: jest.Mock;
   writeExportFile: jest.Mock;
   enqueue: jest.Mock;
   /** Rows the fake writer consumed from the streaming source. */
   drained: Record<string, unknown>[];
 } {
-  const prepared = makePrepared();
   const store = new FakeJobStore();
-  const prepareQuery = jest.fn(async () => prepared) as jest.Mock;
-  const getConnection = jest.fn(async () => conn) as jest.Mock;
-  const releaseConnection = jest.fn(async () => {}) as jest.Mock;
   // Drains the source the way a real writer does, and keeps what it saw so
   // tests can assert on the rows that would have been written. (Re-iterating
   // `source.batches` afterwards yields nothing — it is a one-shot generator.)
@@ -203,9 +210,6 @@ function makeDeps(
   const enqueue = jest.fn(async () => {}) as jest.Mock;
 
   const deps = {
-    prepareQuery,
-    getConnection,
-    releaseConnection,
     createJob: store.createJob,
     updateJob: store.updateJob,
     getJob: store.getJob,
@@ -215,24 +219,16 @@ function makeDeps(
     ...overrides,
   } as unknown as ExportJobDeps;
 
-  return {
-    deps,
-    store,
-    prepareQuery,
-    getConnection,
-    releaseConnection,
-    writeExportFile,
-    enqueue,
-    drained,
-  };
+  return { deps, store, writeExportFile, enqueue, drained };
 }
 
-function jobData(over: Partial<ExportJobData> = {}): ExportJobData {
+function jobData(runId: string, over: Partial<ExportJobData> = {}): ExportJobData {
   return {
     exportJobId: 'job-1',
     mapId: MAP_ID,
     format: 'CSV',
     requestedBy: USER_ID,
+    runId,
     ...over,
   };
 }
@@ -242,11 +238,11 @@ function jobData(over: Partial<ExportJobData> = {}): ExportJobData {
 // ---------------------------------------------------------------------------
 
 describe('createExportJob', () => {
-  it('creates a PENDING row and enqueues a job carrying its id', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps, enqueue } = makeDeps(conn);
+  it('creates a PENDING row and enqueues a job carrying its id and runId', async () => {
+    const runId = await seedRun([]);
+    const { deps, enqueue } = makeDeps();
 
-    const { jobId } = await createExportJob(MAP_ID, 'XLSX', USER_ID, {}, deps);
+    const { jobId } = await createExportJob(MAP_ID, 'XLSX', USER_ID, runId, {}, deps);
 
     const job = await getExportJob(jobId, deps);
     expect(job).not.toBeNull();
@@ -260,40 +256,32 @@ describe('createExportJob', () => {
       mapId: MAP_ID,
       format: 'XLSX',
       requestedBy: USER_ID,
-      parameters: undefined,
-      calculatedFields: undefined,
+      runId,
+      locale: undefined,
+      pdf: undefined,
     });
   });
 
-  it('forwards parameters and calculated fields onto the queued job', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps, enqueue } = makeDeps(conn);
+  it('forwards locale and pdf options onto the queued job', async () => {
+    const runId = await seedRun([]);
+    const { deps, enqueue } = makeDeps();
 
-    await createExportJob(
-      MAP_ID,
-      'CSV',
-      USER_ID,
-      {
-        parameters: { region: 'EAST' },
-        calculatedFields: [{ name: 'DOUBLED', formula: 'C1 * 2' }],
-      },
-      deps,
-    );
+    await createExportJob(MAP_ID, 'CSV', USER_ID, runId, { locale: 'fr-FR' }, deps);
 
     const data = enqueue.mock.calls[0]![0] as ExportJobData;
-    expect(data.parameters).toEqual({ region: 'EAST' });
-    expect(data.calculatedFields).toEqual([{ name: 'DOUBLED', formula: 'C1 * 2' }]);
+    expect(data.locale).toBe('fr-FR');
+    expect(data.runId).toBe(runId);
   });
 
   it('fails the row when queueing fails, rather than leaving it PENDING forever', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps } = makeDeps(conn, {
+    const runId = await seedRun([]);
+    const { deps } = makeDeps({
       enqueue: jest.fn(async () => {
         throw new Error('Redis unavailable');
       }) as unknown as ExportJobDeps['enqueue'],
     });
 
-    await expect(createExportJob(MAP_ID, 'CSV', USER_ID, {}, deps)).rejects.toThrow(
+    await expect(createExportJob(MAP_ID, 'CSV', USER_ID, runId, {}, deps)).rejects.toThrow(
       'Redis unavailable',
     );
 
@@ -301,32 +289,26 @@ describe('createExportJob', () => {
     expect(job!.status).toBe('FAILED');
     expect(job!.errorMessage).toContain('Could not queue export');
   });
-
-  it('does no query work at creation time — that is the worker’s job', async () => {
-    const { conn } = makeResultSetConn([{ C1: 1 }]);
-    const { deps, prepareQuery, getConnection } = makeDeps(conn);
-
-    await createExportJob(MAP_ID, 'CSV', USER_ID, {}, deps);
-
-    expect(prepareQuery).not.toHaveBeenCalled();
-    expect(getConnection).not.toHaveBeenCalled();
-  });
 });
 
 // ---------------------------------------------------------------------------
-// processExportJob — what the worker runs.
+// processExportJob — what the worker runs. Reads a run's stored rows; no
+// Oracle connection, no calculated-field evaluation (both already happened
+// when the run was created — see map-run.runner.ts).
 // ---------------------------------------------------------------------------
 
 describe('processExportJob', () => {
-  it('streams rows to a file and completes the job with a row count', async () => {
-    const { conn } = makeResultSetConn([{ C1: 10 }, { C1: 20 }]);
-    const { deps, store, writeExportFile, releaseConnection } = makeDeps(conn);
+  it('reads the run’s stored rows into the file and completes the job with a row count', async () => {
+    const rows = [{ C1: 10 }, { C1: 20 }];
+    const runId = await seedRun(rows);
+    const { deps, store, writeExportFile, drained } = makeDeps();
     await store.createJob({ mapId: MAP_ID, requestedBy: USER_ID, format: 'XLSX' });
 
-    const result = await processExportJob(jobData({ format: 'XLSX' }), deps);
+    const result = await processExportJob(jobData(runId, { format: 'XLSX' }), deps);
 
     expect(result.rowCount).toBe(2);
     expect(result.filePath).toBe(buildExportFilePath('job-1', 'XLSX'));
+    expect(drained).toEqual(rows);
 
     const job = await getExportJob('job-1', deps);
     expect(job!.status).toBe('COMPLETED');
@@ -340,22 +322,89 @@ describe('processExportJob', () => {
       string,
       string,
     ];
-    expect(source.columns).toEqual([
-      { name: 'C1', label: 'Amount', isAggregate: false, dataType: undefined, formatMask: undefined, columnWidth: undefined },
-    ]);
+    expect(source.columns).toEqual(RUN_COLUMNS);
     expect(format).toBe('XLSX');
     expect(filePath).toBe(buildExportFilePath('job-1', 'XLSX'));
+  });
 
-    expect(releaseConnection).toHaveBeenCalledTimes(1);
+  it('rebuilds group-break subtotal and grand-total rows from the run’s stored decoration', async () => {
+    // REGION (break) + AMOUNT (totalled), matching ResultsTable's placement
+    // rules — the same scenario the old Oracle-driven totals test covered,
+    // but the totals here are exactly what map-run.runner.ts would have
+    // written to `decoration` at run time, not a live query.
+    const columns: ResultColumn[] = [
+      { name: 'C1', label: 'Region', isAggregate: false },
+      { name: 'C2', label: 'Amount', isAggregate: true },
+    ];
+    const decoration = {
+      groupBreakAliases: ['C1'],
+      totals: [
+        {
+          breakAlias: null,
+          totals: [
+            {
+              id: 't1',
+              kind: 'TOTAL',
+              alias: 'T1',
+              targetAlias: 'C2',
+              targetLabel: 'Amount',
+              aggFunction: 'SUM',
+              displayOrder: 0,
+            },
+          ],
+          rows: [{ T1: 30 }],
+        },
+        {
+          breakAlias: 'BREAK_C1',
+          breakLabel: 'Region',
+          breakTargetAlias: 'C1',
+          totals: [
+            {
+              id: 't2',
+              kind: 'TOTAL',
+              alias: 'T2',
+              targetAlias: 'C2',
+              targetLabel: 'Amount',
+              aggFunction: 'SUM',
+              displayOrder: 0,
+              label: 'Total for &value',
+            },
+          ],
+          rows: [
+            { BREAK_C1: 'East', T2: 10 },
+            { BREAK_C1: 'West', T2: 20 },
+          ],
+        },
+      ],
+    };
+    const rows = [
+      { C1: 'East', C2: 5 },
+      { C1: 'East', C2: 5 },
+      { C1: 'West', C2: 20 },
+    ];
+    const runId = await seedRun(rows, { columns, decoration });
+    const { deps, store, drained } = makeDeps();
+    await store.createJob({ mapId: MAP_ID, requestedBy: USER_ID, format: 'CSV' });
+
+    await processExportJob(jobData(runId), deps);
+
+    expect(drained).toEqual([
+      { C1: 'East', C2: 5 },
+      { C1: null, C2: 5 },
+      { C1: 'Total for East', C2: 10 },
+      { C1: 'West', C2: 20 },
+      { C1: 'Total for West', C2: 20 },
+      { C1: 'Grand total', C2: 30 },
+    ]);
   });
 
   it('marks the job PROCESSING before doing any work', async () => {
-    const { conn } = makeResultSetConn([{ C1: 1 }]);
+    const runId = await seedRun([{ C1: 1 }]);
     const seen: string[] = [];
     const store = new FakeJobStore();
     await store.createJob({ mapId: MAP_ID, requestedBy: USER_ID, format: 'CSV' });
 
-    const { deps } = makeDeps(conn, {
+    const { deps } = makeDeps({
       createJob: store.createJob,
       getJob: store.getJob,
       listJobs: store.listJobs,
@@ -365,120 +414,61 @@ describe('processExportJob', () => {
       },
     });
 
-    await processExportJob(jobData(), deps);
+    await processExportJob(jobData(runId), deps);
     expect(seen).toEqual(['PROCESSING', 'COMPLETED']);
   });
 
-  it('throws (so BullMQ can retry) when the query fails, and still releases the connection', async () => {
-    const { conn } = makeFailingConn(new Error('ORA-00942: table or view does not exist'));
-    const { deps, store, releaseConnection } = makeDeps(conn);
+  it('throws (so BullMQ can retry) when the run is gone by the time the worker runs it', async () => {
+    const { deps, store } = makeDeps();
     await store.createJob({ mapId: MAP_ID, requestedBy: USER_ID, format: 'CSV' });
 
-    await expect(processExportJob(jobData(), deps)).rejects.toThrow('ORA-00942');
+    await expect(
+      processExportJob(jobData('00000000-0000-4000-8000-000000000000'), deps),
+    ).rejects.toThrow('Run not found or no longer available');
 
     // Deliberately NOT marked FAILED here: an attempt failing is not terminal.
     const job = await getExportJob('job-1', deps);
     expect(job!.status).toBe('PROCESSING');
-    expect(releaseConnection).toHaveBeenCalledTimes(1);
   });
 
-  it('throws without writing a file when the connection cannot be acquired', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps, store, writeExportFile, releaseConnection } = makeDeps(conn, {
-      getConnection: jest.fn(async () => {
-        throw new Error('pool exhausted');
-      }) as unknown as ExportJobDeps['getConnection'],
-    });
+  it('throws (never completes the job) when the run has expired by the time the worker runs it', async () => {
+    // The route only checks COMPLETED-and-unexpired at enqueue time; a job
+    // sitting in the queue, or a BullMQ retry, can run well after that check
+    // passed. The run still exists and is still COMPLETED — it is simply too
+    // old now — so this is a distinct case from "run not found".
+    const runId = await seedRun([{ C1: 1 }], { expiresAt: new Date(Date.now() - 1000) });
+    const { deps, store } = makeDeps();
     await store.createJob({ mapId: MAP_ID, requestedBy: USER_ID, format: 'CSV' });
 
-    await expect(processExportJob(jobData(), deps)).rejects.toThrow('pool exhausted');
-    expect(writeExportFile).not.toHaveBeenCalled();
-    expect(releaseConnection).not.toHaveBeenCalled();
-  });
-
-  it('throws when prepareQuery rejects (e.g. bad map config)', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps, store } = makeDeps(conn, {
-      prepareQuery: jest.fn(async () => {
-        throw new Error('This map has no data source configured');
-      }) as unknown as ExportJobDeps['prepareQuery'],
-    });
-    await store.createJob({ mapId: MAP_ID, requestedBy: USER_ID, format: 'CSV' });
-
-    await expect(processExportJob(jobData(), deps)).rejects.toThrow(
-      'no data source configured',
-    );
-  });
-
-  it('closes the DB cursor even when the writer throws mid-stream', async () => {
-    const { conn, resultSet } = makeResultSetConn([{ C1: 1 }, { C1: 2 }]);
-    const { deps, store } = makeDeps(conn, {
-      writeExportFile: jest.fn(async () => {
-        throw new Error('disk full');
-      }) as unknown as ExportJobDeps['writeExportFile'],
-    });
-    await store.createJob({ mapId: MAP_ID, requestedBy: USER_ID, format: 'CSV' });
-
-    await expect(processExportJob(jobData(), deps)).rejects.toThrow('disk full');
-    // Releasing a connection with an open cursor leaks it (eventually
-    // ORA-01000), so this must happen regardless of how the export ended.
-    expect(resultSet.close).toHaveBeenCalled();
-  });
-
-  it('applies ad-hoc calculated fields to the streamed columns and rows', async () => {
-    const { conn } = makeResultSetConn([{ C1: 10 }, { C1: 20 }]);
-    const { deps, store, writeExportFile, drained } = makeDeps(conn);
-    await store.createJob({ mapId: MAP_ID, requestedBy: USER_ID, format: 'CSV' });
-
-    await processExportJob(
-      jobData({ calculatedFields: [{ name: 'DOUBLED', formula: 'C1 * 2' }] }),
-      deps,
+    await expect(processExportJob(jobData(runId), deps)).rejects.toThrow(
+      'Run not found or no longer available',
     );
 
-    const source = writeExportFile.mock.calls[0]![0] as ExportSource;
-    expect(source.columns.map((c) => c.name)).toEqual(['C1', 'DOUBLED']);
-
-    // Evaluated per batch as they stream, not over a buffered result set.
-    expect(drained).toEqual([
-      { C1: 10, DOUBLED: 20 },
-      { C1: 20, DOUBLED: 40 },
-    ]);
+    const job = await getExportJob('job-1', deps);
+    expect(job!.status).toBe('PROCESSING');
   });
 
-  it('rejects a bad calculated-field formula before reading any row', async () => {
-    const { conn, resultSet } = makeResultSetConn([{ C1: 1 }]);
-    const { deps, store } = makeDeps(conn);
+  it('throws when the writer fails', async () => {
+    const runId = await seedRun([{ C1: 1 }, { C1: 2 }]);
+    const failingWriter = jest.fn(async () => {
+      throw new Error('disk full');
+    });
+    const { deps, store } = makeDeps({
+      writeExportFile: failingWriter as unknown as ExportJobDeps['writeExportFile'],
+    });
     await store.createJob({ mapId: MAP_ID, requestedBy: USER_ID, format: 'CSV' });
 
-    await expect(
-      processExportJob(
-        jobData({ calculatedFields: [{ name: 'BAD', formula: 'C1 +' }] }),
-        deps,
-      ),
-    ).rejects.toThrow();
-
-    expect(resultSet.getRows).not.toHaveBeenCalled();
-  });
-
-  it('forwards parameters to prepareQuery with no row limit', async () => {
-    const { conn } = makeResultSetConn([{ C1: 1 }]);
-    const { deps, store, prepareQuery } = makeDeps(conn);
-    await store.createJob({ mapId: MAP_ID, requestedBy: USER_ID, format: 'CSV' });
-
-    await processExportJob(jobData({ parameters: { region: 'EAST' } }), deps);
-
-    // An export must not inherit the interactive row cap.
-    expect(prepareQuery).toHaveBeenCalledWith(MAP_ID, { region: 'EAST' }, USER_ID);
+    await expect(processExportJob(jobData(runId), deps)).rejects.toThrow('disk full');
+    expect(failingWriter).toHaveBeenCalled();
   });
 
   it('reports progress that rises but never reaches 100 until completion', async () => {
-    const rows = Array.from({ length: 25_000 }, (_, i) => ({ C1: i }));
-    const { conn } = makeResultSetConn(rows);
+    const runId = await seedRunBatched(25_000);
     const progress: number[] = [];
     const store = new FakeJobStore();
     await store.createJob({ mapId: MAP_ID, requestedBy: USER_ID, format: 'CSV' });
 
-    const { deps } = makeDeps(conn, {
+    const { deps } = makeDeps({
       createJob: store.createJob,
       getJob: store.getJob,
       listJobs: store.listJobs,
@@ -497,7 +487,7 @@ describe('processExportJob', () => {
       },
     });
 
-    await processExportJob(jobData(), deps);
+    await processExportJob(jobData(runId), deps);
 
     const beforeDone = progress.slice(0, -1);
     expect(beforeDone.length).toBeGreaterThan(1);
@@ -507,127 +497,6 @@ describe('processExportJob', () => {
       expect(beforeDone[i]!).toBeGreaterThanOrEqual(beforeDone[i - 1]!);
     }
     expect(progress.at(-1)).toBe(100);
-  });
-
-  describe('worksheet totals (BE-07 follow-on: group breaks, subtotals, grand totals)', () => {
-    /** REGION (break) + AMOUNT (totalled), matching ResultsTable's placement rules. */
-    function makeWorksheetPrepared(): PreparedQuery {
-      return makePrepared({
-        sql: 'SELECT "F"."REGION" AS "C1", "F"."AMOUNT" AS "C2"\nFROM "S"."SALES" "F"',
-        columns: [
-          { alias: 'C1', label: 'Region', isAggregate: false },
-          { alias: 'C2', label: 'Amount', isAggregate: false },
-        ],
-        groupBreakAliases: ['C1'],
-        totals: [
-          {
-            breakAlias: null,
-            sql: 'SELECT_GRAND',
-            bindParams: {},
-            totals: [
-              {
-                id: 't1',
-                kind: 'TOTAL',
-                alias: 'T1',
-                targetAlias: 'C2',
-                targetLabel: 'Amount',
-                aggFunction: 'SUM',
-                displayOrder: 0,
-              },
-            ],
-          },
-          {
-            breakAlias: 'BREAK_C1',
-            breakLabel: 'Region',
-            breakTargetAlias: 'C1',
-            sql: 'SELECT_BREAK',
-            bindParams: {},
-            totals: [
-              {
-                id: 't2',
-                kind: 'TOTAL',
-                alias: 'T2',
-                targetAlias: 'C2',
-                targetLabel: 'Amount',
-                aggFunction: 'SUM',
-                displayOrder: 0,
-                label: 'Total for &value',
-              },
-            ],
-          },
-        ],
-      });
-    }
-
-    it('interleaves subtotal and grand-total rows the way ResultsTable draws them, and suppresses repeated break values', async () => {
-      const { conn } = makeWorksheetConn(
-        [
-          { C1: 'East', C2: 5 },
-          { C1: 'East', C2: 5 },
-          { C1: 'West', C2: 20 },
-        ],
-        {
-          SELECT_GRAND: [{ T1: 30 }],
-          SELECT_BREAK: [
-            { BREAK_C1: 'East', T2: 10 },
-            { BREAK_C1: 'West', T2: 20 },
-          ],
-        },
-        [{ name: 'C1' }, { name: 'C2' }],
-      );
-      const { deps, store, drained } = makeDeps(conn, {
-        prepareQuery: jest.fn(async () => makeWorksheetPrepared()) as unknown as ExportJobDeps['prepareQuery'],
-      });
-      await store.createJob({ mapId: MAP_ID, requestedBy: USER_ID, format: 'CSV' });
-
-      await processExportJob(jobData(), deps);
-
-      expect(drained).toEqual([
-        { C1: 'East', C2: 5 },
-        { C1: null, C2: 5 },
-        { C1: 'Total for East', C2: 10 },
-        { C1: 'West', C2: 20 },
-        { C1: 'Total for West', C2: 20 },
-        { C1: 'Grand total', C2: 30 },
-      ]);
-    });
-
-    it('labels totals in the requested locale', async () => {
-      const { conn } = makeWorksheetConn(
-        [{ C1: 'East', C2: 5 }],
-        { SELECT_GRAND: [{ T1: 5 }], SELECT_BREAK: [{ BREAK_C1: 'East', T2: 5 }] },
-        [{ name: 'C1' }, { name: 'C2' }],
-      );
-      const { deps, store, drained } = makeDeps(conn, {
-        prepareQuery: jest.fn(async () => makeWorksheetPrepared()) as unknown as ExportJobDeps['prepareQuery'],
-      });
-      await store.createJob({ mapId: MAP_ID, requestedBy: USER_ID, format: 'CSV' });
-
-      await processExportJob(jobData({ locale: 'fr-FR' }), deps);
-
-      expect(drained.at(-1)).toEqual({ C1: 'Total général', C2: 5 });
-    });
-
-    it('runs the totals statements before opening the detail-row cursor', async () => {
-      const { conn, raw } = makeWorksheetConn(
-        [{ C1: 'East', C2: 5 }],
-        { SELECT_GRAND: [{ T1: 5 }], SELECT_BREAK: [{ BREAK_C1: 'East', T2: 5 }] },
-        [{ name: 'C1' }, { name: 'C2' }],
-      );
-      const { deps, store } = makeDeps(conn, {
-        prepareQuery: jest.fn(async () => makeWorksheetPrepared()) as unknown as ExportJobDeps['prepareQuery'],
-      });
-      await store.createJob({ mapId: MAP_ID, requestedBy: USER_ID, format: 'CSV' });
-
-      await processExportJob(jobData(), deps);
-
-      const execute = raw.execute as jest.Mock;
-      const sqlArgs = execute.mock.calls.map((call) => call[0] as string);
-      // The two totals statements, in the order the generator planned them,
-      // then the streaming detail query last.
-      expect(sqlArgs.slice(0, 2)).toEqual(['SELECT_GRAND', 'SELECT_BREAK']);
-      expect(sqlArgs[2]).toContain('SELECT "F"."REGION"');
-    });
   });
 });
 
@@ -651,15 +520,14 @@ describe('streamingProgress', () => {
 
 describe('failExportJob', () => {
   it('records the error and stamps completedAt', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps, store } = makeDeps(conn);
+    const { deps, store } = makeDeps();
     await store.createJob({ mapId: MAP_ID, requestedBy: USER_ID, format: 'CSV' });
 
-    await failExportJob('job-1', 'ORA-12541: TNS:no listener', deps);
+    await failExportJob('job-1', 'Run not found or no longer available', deps);
 
     const job = await getExportJob('job-1', deps);
     expect(job!.status).toBe('FAILED');
-    expect(job!.errorMessage).toContain('ORA-12541');
+    expect(job!.errorMessage).toContain('Run not found');
     expect(job!.completedAt).not.toBeNull();
   });
 });
@@ -670,14 +538,12 @@ describe('failExportJob', () => {
 
 describe('getExportJob / listExportJobs', () => {
   it('returns null for an unknown job id', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps } = makeDeps(conn);
+    const { deps } = makeDeps();
     expect(await getExportJob('does-not-exist', deps)).toBeNull();
   });
 
   it('lists only the requesting user’s jobs, newest first', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps, store } = makeDeps(conn);
+    const { deps, store } = makeDeps();
 
     await store.createJob({ mapId: MAP_ID, requestedBy: USER_ID, format: 'CSV' });
     await new Promise((r) => setTimeout(r, 2));
@@ -691,8 +557,7 @@ describe('getExportJob / listExportJobs', () => {
   });
 
   it('honours the limit', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps, store } = makeDeps(conn);
+    const { deps, store } = makeDeps();
     for (let i = 0; i < 5; i += 1) {
       await store.createJob({ mapId: MAP_ID, requestedBy: USER_ID, format: 'CSV' });
     }
@@ -718,11 +583,11 @@ describe('buildExportFilePath', () => {
 describe('exporters', () => {
   let dir: string;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     dir = await fsp.mkdtemp(path.join(os.tmpdir(), 'export-test-'));
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await fsp.rm(dir, { recursive: true, force: true });
   });
 
@@ -1074,11 +939,11 @@ describe('exporters', () => {
 describe('downloadExport', () => {
   let dir: string;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     dir = await fsp.mkdtemp(path.join(os.tmpdir(), 'download-test-'));
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await fsp.rm(dir, { recursive: true, force: true });
   });
 
@@ -1091,6 +956,7 @@ describe('downloadExport', () => {
       status: 'COMPLETED',
       progress: 100,
       rowCount: 1,
+      truncated: false,
       filePath,
       errorMessage: null,
       createdAt: new Date(),
@@ -1147,11 +1013,11 @@ describe('downloadExport', () => {
 describe('cleanupOldExports', () => {
   let dir: string;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     dir = await fsp.mkdtemp(path.join(os.tmpdir(), 'cleanup-test-'));
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await fsp.rm(dir, { recursive: true, force: true });
   });
 
@@ -1273,9 +1139,9 @@ describe('export queue configuration', () => {
   });
 
   it('uses the export job id as the BullMQ job id, so a request cannot double-queue', async () => {
-    const { conn } = makeResultSetConn([]);
-    const { deps, enqueue } = makeDeps(conn);
-    const { jobId } = await createExportJob(MAP_ID, 'CSV', USER_ID, {}, deps);
+    const runId = await seedRun([]);
+    const { deps, enqueue } = makeDeps();
+    const { jobId } = await createExportJob(MAP_ID, 'CSV', USER_ID, runId, {}, deps);
     expect((enqueue.mock.calls[0]![0] as ExportJobData).exportJobId).toBe(jobId);
   });
 });

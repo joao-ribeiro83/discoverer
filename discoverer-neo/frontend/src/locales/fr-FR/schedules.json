@@ -65,7 +65,12 @@
     "loading": "Chargement...",
     "noRuns": "Aucune exécution pour le moment.",
     "download": "Télécharger",
-    "durationSeconds": "{{seconds}} s"
+    "durationSeconds": "{{seconds}} s",
+    "xlsx": "XLSX",
+    "csv": "CSV",
+    "pdf": "PDF",
+    "open": "Ouvrir",
+    "expiresIn": "Expire {{value}}"
   },
   "toasts": {
     "scheduleUpdated": "Planification mise à jour",

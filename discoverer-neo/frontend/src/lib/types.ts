@@ -683,20 +683,52 @@ export interface QueryPlanSummary {
   message?: string
 }
 
-export type AsyncJobStatus = 'QUEUED' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'TIMEOUT' | 'CANCELLED'
+// --- map runs (async run queue) ---------------------------------------------
 
-export interface AsyncExecutionJob {
-  jobId: string
+/** Presentation extras resolved once for a run and reused for every page of its rows. */
+export interface ResultDecoration {
+  groupBreakAliases?: string[]
+  totals?: ResultTotalsGroup[]
+  conditionalFormats?: ResultConditionalFormat[]
+  warnings?: string[]
+  /**
+   * The worksheet heading with this run's own parameter values substituted —
+   * mirrors `ExecuteResult.heading`. Present once the run completes.
+   */
+  heading?: { title: string | null; description: string | null }
+  /**
+   * Set only when the run failed (fix round 1): the error's `kind` and, for a
+   * deliberate refusal (D-036), the `code`/`details` the old synchronous
+   * `/execute` route used to return in its HTTP response. A queued run's
+   * failure has no response to carry that on, so it lives here instead —
+   * deliberately not a new column (controller ruling).
+   */
+  error?: {
+    kind: ExecutionErrorKind
+    refusal?: { code: RefusalCode; details?: Record<string, unknown> }
+  }
+}
+
+/** A queued/running/finished map execution, backed by `map_runs` (see `POST /maps/:id/runs`). */
+export interface MapRun {
+  id: string
   mapId: string
-  status: AsyncJobStatus
+  mapName: string
+  kind: 'LIVE' | 'SCHEDULED'
+  scheduleId: string | null
+  status: 'QUEUED' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CANCELLED'
+  parameters: Record<string, unknown>
+  calculatedFields: MapCalculatedFieldInput[]
+  columns: ResultColumn[] | null
+  decoration: ResultDecoration | null
+  rowCount: number | null
+  truncated: boolean
+  executionTimeMs: number | null
+  errorMessage: string | null
   createdAt: string
-  startedAt?: string
-  finishedAt?: string
-  rowCount?: number
-  executionTimeMs?: number
-  truncated?: boolean
-  error?: string
-  result?: ExecuteResult
+  startedAt: string | null
+  completedAt: string | null
+  expiresAt: string
 }
 
 export interface ExecutionHistoryEntry {
@@ -719,6 +751,8 @@ export type ExportJobStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED'
 export interface ExportJob {
   jobId: string
   mapId: string
+  /** Present in the export list; null once the map is deleted. */
+  mapName?: string | null
   format: ExportFileFormat
   status: ExportJobStatus
   /**
@@ -744,6 +778,12 @@ export interface PdfExportRequest {
 
 export interface ExportMapBody {
   format: ExportFileFormat
+  /**
+   * The completed run this export reads its rows from — the backend requires
+   * it (exports are built from stored run rows, never from Oracle) and 400s
+   * without one.
+   */
+  runId: string
   parameters?: Record<string, unknown>
   calculatedFields?: MapCalculatedFieldInput[]
   /** Locale for a grand/subtotal row's label text. Defaults to `en`. */
@@ -810,6 +850,10 @@ export interface ScheduledResult {
   executionTimeMs: number | null
   status: ScheduleRunStatus
   errorMessage: string | null
+  /** The map run this result reads its rows from, when it used the run queue rather than a written file. */
+  runId: string | null
+  /** How long that run's stored rows stay valid, joined from `map_runs`. Null when there is no run. */
+  expiresAt: string | null
 }
 
 // ---------------------------------------------------------------------------

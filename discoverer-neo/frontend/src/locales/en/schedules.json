@@ -65,7 +65,12 @@
     "loading": "Loading...",
     "noRuns": "No runs yet.",
     "download": "Download",
-    "durationSeconds": "{{seconds}}s"
+    "durationSeconds": "{{seconds}}s",
+    "xlsx": "XLSX",
+    "csv": "CSV",
+    "pdf": "PDF",
+    "open": "Open",
+    "expiresIn": "Expires {{value}}"
   },
   "toasts": {
     "scheduleUpdated": "Schedule updated",

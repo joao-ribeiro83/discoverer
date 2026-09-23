@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Download, Loader2, CheckCircle2, XCircle, Clock } from 'lucide-react'
@@ -16,6 +15,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 const ACTIVE: ExportJobStatus[] = ['PENDING', 'PROCESSING']
 /** How often to re-poll the list while any job is still running. */
 const POLL_MS = 2000
+/** With nothing in flight, still look for exports requested elsewhere (viewer, runs page, another tab). */
+const IDLE_POLL_MS = 30_000
 const LIST_LIMIT = 100
 
 function StatusBadge({ status }: { status: ExportJobStatus }) {
@@ -61,30 +62,21 @@ export function ExportsPage() {
   const { toast } = useToast()
   const { locale } = useLocale()
 
-  const { data: mapOptions } = useQuery({
-    queryKey: ['maps'],
-    queryFn: async () => (await apiClient.maps.listMine()).data.data,
-  })
-  const mapNameById = useMemo(() => {
-    const lookup = new Map<string, string>()
-    for (const m of [...(mapOptions?.mine ?? []), ...(mapOptions?.shared ?? [])]) {
-      lookup.set(m.id, m.name)
-    }
-    return lookup
-  }, [mapOptions])
-
   const { data: jobs, isLoading } = useQuery({
     queryKey: ['exports'],
     queryFn: async () => (await apiClient.exports.list(LIST_LIMIT)).data.data,
+    // The app-wide 5 min staleTime would serve a return visit from cache and
+    // miss the export just requested; always refetch on mount and focus.
+    staleTime: 0,
     refetchInterval: (query) =>
-      (query.state.data ?? []).some((j) => ACTIVE.includes(j.status)) ? POLL_MS : false,
+      (query.state.data ?? []).some((j) => ACTIVE.includes(j.status)) ? POLL_MS : IDLE_POLL_MS,
   })
 
   async function download(job: ExportJob) {
     try {
       const res = await apiClient.exports.download(job.jobId)
       const ext = job.format === 'CSV' ? 'csv' : job.format === 'PDF' ? 'pdf' : 'xlsx'
-      const name = mapNameById.get(job.mapId) ?? job.mapId
+      const name = job.mapName ?? job.mapId
       downloadBlob(res.data, `${safeFilename(name)}.${ext}`)
     } catch (err) {
       toast({
@@ -129,7 +121,7 @@ export function ExportsPage() {
               (jobs ?? []).map((job) => (
                 <TableRow key={job.jobId}>
                   <TableCell className="font-medium" title={job.mapId}>
-                    {mapNameById.get(job.mapId) ?? job.mapId.slice(0, 8)}
+                    {job.mapName ?? job.mapId.slice(0, 8)}
                   </TableCell>
                   <TableCell>{job.format}</TableCell>
                   <TableCell title={job.errorMessage ?? undefined}>

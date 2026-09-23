@@ -577,7 +577,7 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 
 | Status | Body |
 | --- | --- |
-| 200 | { data?: { tables?: { tableName?: string tableOwner?: string columns?: { columnName?: string dataType?: string dataLength?: null,integer nullable?: boolean }[] }[] count?: integer cached?: boolean } } |
+| 200 | { data?: { tables?: { tableName?: string tableOwner?: string objectType?: "TABLE" \| "VIEW" comments?: null,string columns?: { columnName?: string dataType?: string dataLength?: null,integer nullable?: boolean comments?: null,string }[] }[] count?: integer cached?: boolean } } |
 | 400 | { error?: string } |
 | 401 | { error?: string } |
 | 403 | { error?: string } |
@@ -598,7 +598,7 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 
 | Status | Body |
 | --- | --- |
-| 200 | { data?: { tables?: { tableName?: string tableOwner?: string columns?: { columnName?: string dataType?: string dataLength?: null,integer nullable?: boolean }[] }[] count?: integer total?: integer limit?: integer offset?: integer } } |
+| 200 | { data?: { tables?: { tableName?: string tableOwner?: string objectType?: "TABLE" \| "VIEW" comments?: null,string columns?: { columnName?: string dataType?: string dataLength?: null,integer nullable?: boolean comments?: null,string }[] }[] count?: integer total?: integer limit?: integer offset?: integer } } |
 | 400 | { error?: string } |
 | 401 | { error?: string } |
 | 403 | { error?: string } |
@@ -1278,6 +1278,23 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 | 403 | { error?: string details?: any } |
 | 409 | { error?: string details?: any } |
 
+#### POST /api/users/credentials
+
+**Request body:**
+```
+{
+  userIds?: string (uuid)[]
+}
+```
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 400 | — |
+| 401 | — |
+| 403 | — |
+
 #### GET /api/users/{id}
 
 **Parameters:**
@@ -1582,7 +1599,7 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 
 | Status | Body |
 | --- | --- |
-| 200 | — |
+| 200 | { data?: { jobId?: string mapId?: string mapName?: string format?: "XLSX" \| "CSV" \| "PDF" status?: "PENDING" \| "PROCESSING" \| "COMPLETED" \| "FAILED" progress?: integer rowCount?: integer truncated?: boolean errorMessage?: string createdAt?: string (date-time) completedAt?: string (date-time) }[] } |
 
 #### GET /api/exports/{jobId}
 
@@ -1615,6 +1632,57 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 ### Workbooks
 
 #### GET /api/workbooks
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### GET /api/workbooks/{id}/shares
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### POST /api/workbooks/{id}/shares
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Request body:**
+```
+{
+  userId: string (uuid)
+  permissionLevel: "VIEW" | "EDIT" | "EXPORT"
+}
+```
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### DELETE /api/workbooks/{id}/shares/{userId}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+| `userId` | path | yes | string (uuid) |
 
 **Responses:**
 
@@ -1730,43 +1798,13 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 | --- | --- |
 | 200 | — |
 
-#### POST /api/maps/{id}/execute-async
+#### POST /api/maps/{id}/explain
 
 **Parameters:**
 
 | Name | In | Required | Type |
 | --- | --- | --- | --- |
 | `id` | path | yes | string (uuid) |
-
-**Responses:**
-
-| Status | Body |
-| --- | --- |
-| 200 | — |
-
-#### GET /api/maps/{id}/executions/{jobId}
-
-**Parameters:**
-
-| Name | In | Required | Type |
-| --- | --- | --- | --- |
-| `id` | path | yes | string (uuid) |
-| `jobId` | path | yes | string (uuid) |
-
-**Responses:**
-
-| Status | Body |
-| --- | --- |
-| 200 | — |
-
-#### DELETE /api/maps/{id}/executions/{jobId}
-
-**Parameters:**
-
-| Name | In | Required | Type |
-| --- | --- | --- | --- |
-| `id` | path | yes | string (uuid) |
-| `jobId` | path | yes | string (uuid) |
 
 **Responses:**
 
@@ -1780,6 +1818,84 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 
 | Name | In | Required | Type |
 | --- | --- | --- | --- |
+| `limit` | query | no | integer |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+### Map Runs
+
+#### POST /api/maps/{id}/runs
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### GET /api/runs
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `mapId` | query | no | string (uuid) |
+| `status` | query | no | "QUEUED" \| "RUNNING" \| "COMPLETED" \| "FAILED" \| "CANCELLED" |
+| `kind` | query | no | "LIVE" \| "SCHEDULED" |
+| `limit` | query | no | integer |
+| `all` | query | no | boolean |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### GET /api/runs/{id}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### DELETE /api/runs/{id}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### GET /api/runs/{id}/rows
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `offset` | query | no | integer |
 | `limit` | query | no | integer |
 | `id` | path | yes | string (uuid) |
 
@@ -1910,7 +2026,7 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 
 | Status | Body |
 | --- | --- |
-| 200 | — |
+| 200 | { data?: { id?: string scheduleId?: string executedAt?: string (date-time) rowCount?: integer filePath?: string executionTimeMs?: integer status?: "SUCCESS" \| "FAILED" \| "TIMEOUT" errorMessage?: string runId?: string expiresAt?: string (date-time) }[] } |
 
 #### GET /api/schedules/{id}/results/{resultId}/download
 
@@ -2117,6 +2233,19 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 | 409 | { error?: string } |
 
 #### POST /api/migration/reimport-maps
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 202 | { data?: object } |
+| 400 | { error?: string } |
+| 401 | { error?: string } |
+| 403 | { error?: string } |
+| 404 | { error?: string } |
+| 409 | { error?: string } |
+
+#### POST /api/migration/delta
 
 **Responses:**
 

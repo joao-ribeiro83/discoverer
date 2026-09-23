@@ -43,6 +43,7 @@ const CreateBodySchema = z.object({
   outputFormat: z.enum(['XLSX', 'CSV']),
   isActive: z.boolean().optional(),
   parameters: z.array(ParameterValueSchema).max(100).optional(),
+  resultRetentionDays: z.number().int().min(1).max(3650).optional(),
 });
 
 const UpdateBodySchema = CreateBodySchema.partial();
@@ -75,6 +76,35 @@ const historyQuerySchema = {
   properties: { limit: { type: 'integer', minimum: 1, maximum: 200 } },
 } as const;
 
+/** 200 body of GET /api/schedules/:id/history. Every field of
+ * `ScheduledResultWithRunInfo` must be listed: fast-json-stringify drops any
+ * property the schema does not name, and the UI keys Download on `filePath`. */
+const historyResponseSchema = {
+  200: {
+    type: 'object',
+    properties: {
+      data: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            scheduleId: { type: 'string' },
+            executedAt: { type: 'string', format: 'date-time' },
+            rowCount: { type: 'integer', nullable: true },
+            filePath: { type: 'string', nullable: true },
+            executionTimeMs: { type: 'integer', nullable: true },
+            status: { type: 'string', enum: ['SUCCESS', 'FAILED', 'TIMEOUT'] },
+            errorMessage: { type: 'string', nullable: true },
+            runId: { type: 'string', nullable: true },
+            expiresAt: { type: 'string', format: 'date-time', nullable: true },
+          },
+        },
+      },
+    },
+  },
+} as const;
+
 /** Shape returned to clients, with a computed `nextRunAt` convenience field. */
 function toResponse(schedule: ScheduleRecord, nextRunAt: Date | null) {
   return {
@@ -91,6 +121,7 @@ function toResponse(schedule: ScheduleRecord, nextRunAt: Date | null) {
     createdAt: schedule.createdAt,
     updatedAt: schedule.updatedAt,
     parameters: schedule.parameters,
+    resultRetentionDays: schedule.resultRetentionDays,
     plannerDecision: schedule.plannerDecision,
     plannerRefusalDetail: schedule.plannerRefusalDetail,
     nextRunAt,
@@ -342,6 +373,7 @@ export default function scheduleRoutes(fastify: FastifyInstance) {
         security: [{ bearerAuth: [] }],
         params: idParamsSchema,
         querystring: historyQuerySchema,
+        response: historyResponseSchema,
       },
     },
     async (request, reply) => {
@@ -367,8 +399,13 @@ export default function scheduleRoutes(fastify: FastifyInstance) {
 
       const { resultId } = request.params as { resultId: string };
       const result = await getScheduledResult(schedule.id, resultId);
-      if (!result || result.status !== 'SUCCESS' || !result.filePath) {
+      if (!result || result.status !== 'SUCCESS' || (!result.filePath && !result.runId)) {
         return reply.code(404).send({ error: 'Result not found or not available' });
+      }
+      if (!result.filePath) {
+        // New (post-queue) results keep their rows in the map-run store, not
+        // a file on disk — the frontend turns this into a normal export job.
+        return reply.code(409).send({ error: 'USE_EXPORT', runId: result.runId });
       }
       if (!fs.existsSync(result.filePath)) {
         return reply.code(404).send({ error: 'Result file no longer exists' });

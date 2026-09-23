@@ -1,0 +1,64 @@
+{
+  "title": "Runs",
+  "description": "Every map run you've requested — queued, in progress, or finished — and how long its result stays valid.",
+  "loading": "Loading runs…",
+  "empty": "No runs yet. Run a map to see its history here.",
+  "filters": {
+    "map": "Map",
+    "allMaps": "All maps",
+    "status": "Status",
+    "allStatuses": "All statuses",
+    "kind": "Kind",
+    "allKinds": "All kinds",
+    "allUsers": "Show every user's runs"
+  },
+  "columns": {
+    "map": "Map",
+    "kind": "Kind",
+    "parameters": "Parameters",
+    "status": "Status",
+    "rows": "Rows",
+    "duration": "Duration",
+    "ranAt": "Ran at",
+    "expiresIn": "Expires in",
+    "actions": "Actions"
+  },
+  "kinds": {
+    "LIVE": "Live",
+    "SCHEDULED": "Scheduled"
+  },
+  "statuses": {
+    "QUEUED": "Queued",
+    "RUNNING": "Running",
+    "COMPLETED": "Completed",
+    "FAILED": "Failed",
+    "CANCELLED": "Cancelled"
+  },
+  "noParameters": "—",
+  "expired": "Expired",
+  "expiresInMinutes": "{{count}}m",
+  "expiresInHours": "{{count}}h",
+  "expiresInDays": "{{count}}d",
+  "actions": {
+    "open": "Open",
+    "runAgain": "Run again",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "xlsx": "XLSX",
+    "csv": "CSV",
+    "pdf": "PDF"
+  },
+  "toasts": {
+    "reusedTitle": "Result reused",
+    "reusedDescription": "A valid result already existed, so nothing new ran.",
+    "queuedTitle": "Queued",
+    "queuedDescription": "The run was added to the queue.",
+    "runAgainFailedTitle": "Couldn't run again",
+    "cancelledTitle": "Run cancelled",
+    "cancelFailedTitle": "Couldn't cancel the run",
+    "deletedTitle": "Run deleted",
+    "deleteFailedTitle": "Couldn't delete the run"
+  },
+  "deleteConfirmItemLabel": "run",
+  "deleteConfirmDescription": "This permanently deletes this run of {{name}} and its stored rows. This cannot be undone."
+}

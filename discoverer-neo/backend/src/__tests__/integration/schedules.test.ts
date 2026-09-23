@@ -34,6 +34,7 @@ import {
 } from '../../db/schema.js';
 import { hashPassword } from '../../lib/password.js';
 import { removeScheduleJob, closeSchedulerQueue } from '../../queues/scheduler.queue.js';
+import { createRun } from '../../services/map-run.store.js';
 
 let app: FastifyInstance;
 
@@ -202,6 +203,33 @@ describe('map-scoped schedule routes', () => {
     expect(entry!.nextRunAt).not.toBeNull();
   });
 
+  it('creates a schedule with a custom result retention and reads it back', async () => {
+    const id = await createScheduleViaApi(ownerToken, { resultRetentionDays: 45 });
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/schedules/${id}`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().data.resultRetentionDays).toBe(45);
+  });
+
+  it('400s creating a schedule with resultRetentionDays out of range', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/maps/${mapId}/schedules`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload: {
+        name: 'Bad Retention',
+        cronExpression: '0 0 * * *',
+        outputFormat: 'CSV',
+        resultRetentionDays: 0,
+      },
+    });
+    expect(res.statusCode).toBe(400);
+  });
+
   it('404s creating a schedule on an unknown map', async () => {
     const res = await app.inject({
       method: 'POST',
@@ -337,6 +365,30 @@ describe('schedule mutation routes', () => {
     expect(res.statusCode).toBe(200);
     expect(res.json().data.name).toBe('After');
     expect(res.json().data.cronExpression).toBe('30 2 * * *');
+  });
+
+  it('keeps resultRetentionDays on an update that omits it', async () => {
+    const id = await createScheduleViaApi(ownerToken, { resultRetentionDays: 45 });
+    const res = await app.inject({
+      method: 'PUT',
+      url: `/api/schedules/${id}`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload: { name: 'Still 45' },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().data.resultRetentionDays).toBe(45);
+  });
+
+  it('changes resultRetentionDays on an update that includes it', async () => {
+    const id = await createScheduleViaApi(ownerToken, { resultRetentionDays: 45 });
+    const res = await app.inject({
+      method: 'PUT',
+      url: `/api/schedules/${id}`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload: { resultRetentionDays: 7 },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().data.resultRetentionDays).toBe(7);
   });
 
   it('400s updating with an invalid body', async () => {
@@ -506,6 +558,120 @@ describe('schedule history + result download', () => {
     const res = await app.inject({
       method: 'GET',
       url: `/api/schedules/${id}/results/00000000-0000-4000-8000-000000000000/download`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+    });
+    expect(res.statusCode).toBe(404);
+  });
+
+  it('409s a result stored in the run queue with USE_EXPORT and the run id', async () => {
+    const id = await createScheduleViaApi(ownerToken);
+    const run = await createRun({
+      mapId,
+      requestedBy: ownerId,
+      kind: 'SCHEDULED',
+      runKey: `sched-download-${id}`,
+      parameters: {},
+      calculatedFields: [],
+      expiresAt: new Date(Date.now() + 3600_000),
+    });
+    const [result] = await db
+      .insert(scheduledResults)
+      .values({
+        scheduleId: id,
+        rowCount: 1,
+        filePath: null,
+        executionTimeMs: 12,
+        status: 'SUCCESS',
+        runId: run.id,
+      })
+      .returning();
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/schedules/${id}/results/${result!.id}/download`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+    });
+    expect(res.statusCode).toBe(409);
+    expect(res.json()).toEqual({ error: 'USE_EXPORT', runId: run.id });
+  });
+
+  it('history joins runId and expiresAt from the run, null when there is no run', async () => {
+    const id = await createScheduleViaApi(ownerToken);
+    const expiresAt = new Date(Date.now() + 3600_000);
+    const run = await createRun({
+      mapId,
+      requestedBy: ownerId,
+      kind: 'SCHEDULED',
+      runKey: `sched-history-${id}`,
+      parameters: {},
+      calculatedFields: [],
+      expiresAt,
+    });
+    const [withRun] = await db
+      .insert(scheduledResults)
+      .values({
+        scheduleId: id,
+        rowCount: 3,
+        filePath: null,
+        executionTimeMs: 20,
+        status: 'SUCCESS',
+        runId: run.id,
+      })
+      .returning();
+    const [withoutRun] = await db
+      .insert(scheduledResults)
+      .values({
+        scheduleId: id,
+        rowCount: 1,
+        filePath: null,
+        executionTimeMs: 5,
+        status: 'FAILED',
+        runId: null,
+      })
+      .returning();
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/schedules/${id}/history?limit=5`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+    });
+    expect(res.statusCode).toBe(200);
+    const rows = res.json().data as Array<{ id: string; runId: string | null; expiresAt: string | null }>;
+    const rowWithRun = rows.find((r) => r.id === withRun!.id);
+    const rowWithoutRun = rows.find((r) => r.id === withoutRun!.id);
+    expect(rowWithRun?.runId).toBe(run.id);
+    expect(rowWithRun?.expiresAt).toBe(expiresAt.toISOString());
+    expect(rowWithoutRun?.runId).toBeNull();
+    expect(rowWithoutRun?.expiresAt).toBeNull();
+  });
+
+  it('documents every history field in the OpenAPI spec', () => {
+    const spec = app.swagger() as unknown as {
+      paths: Record<string, Record<string, { responses: Record<string, { content?: Record<string, { schema: { properties: { data: { items: { properties: Record<string, unknown> } } } } }> }> }>>;
+    };
+    const item = spec.paths['/api/schedules/{id}/history']!['get']!.responses['200']!.content!['application/json']!.schema
+      .properties.data.items.properties;
+    expect(Object.keys(item).sort()).toEqual(
+      ['errorMessage', 'executedAt', 'executionTimeMs', 'expiresAt', 'filePath', 'id', 'rowCount', 'runId', 'scheduleId', 'status'],
+    );
+  });
+
+  it('404s a result with neither a file nor a run', async () => {
+    const id = await createScheduleViaApi(ownerToken);
+    const [result] = await db
+      .insert(scheduledResults)
+      .values({
+        scheduleId: id,
+        rowCount: 1,
+        filePath: null,
+        executionTimeMs: 12,
+        status: 'SUCCESS',
+      })
+      .returning();
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/schedules/${id}/results/${result!.id}/download`,
       headers: { authorization: `Bearer ${ownerToken}` },
     });
     expect(res.statusCode).toBe(404);

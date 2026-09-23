@@ -39,6 +39,7 @@ export function useMapExport(
   mapId: string | null,
   mapName: string,
   parameters: Record<string, unknown> = {},
+  runId?: string | null,
 ): UseMapExportResult {
   const { t } = useTranslation(['mapViewer'])
   const { locale } = useLocale()
@@ -59,8 +60,10 @@ export function useMapExport(
       pdf?: PdfExportRequest
     }) => {
       if (!mapId) throw new Error(t('mapViewer:export.saveBeforeExport'))
+      if (!runId) throw new Error(t('mapViewer:export.noRunToExport'))
       const res = await apiClient.maps.createExport(mapId, {
         format,
+        runId,
         parameters,
         calculatedFields,
         locale,

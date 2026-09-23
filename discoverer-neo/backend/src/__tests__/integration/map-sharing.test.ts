@@ -13,6 +13,7 @@ import {
   users,
 } from '../../db/schema.js';
 import { hashPassword } from '../../lib/password.js';
+import { createRun, completeRun } from '../../services/map-run.store.js';
 
 // ===========================================================================
 // Map sharing — end-to-end access-control integration tests (Session 5.7)
@@ -73,6 +74,34 @@ function updateBody(name: string) {
     name,
     items: [{ itemId, displayOrder: 0 }],
   };
+}
+
+/**
+ * Seeds a COMPLETED run owned by `requestedBy` for `mapId` the way
+ * `map-run.runner.ts` would leave one — export.ts requires an exportable
+ * run's id in the request body (Task 4.3), and these tests are about the
+ * share permission gate in front of that route, not the run lifecycle.
+ */
+async function seedCompletedRun(mapId: string, requestedBy: string): Promise<string> {
+  const run = await createRun({
+    mapId,
+    requestedBy,
+    kind: 'LIVE',
+    runKey: `int57-share-${Math.random().toString(36).slice(2)}`,
+    parameters: {},
+    calculatedFields: [],
+    expiresAt: new Date(Date.now() + 3_600_000),
+  });
+  await completeRun(run.id, {
+    columns: [{ name: 'C1', label: 'Value', isAggregate: false }],
+    decoration: {},
+    rowCount: 0,
+    truncated: false,
+    executionTimeMs: 1,
+    sqlText: null,
+    expiresAt: new Date(Date.now() + 3_600_000),
+  });
+  return run.id;
 }
 
 async function cleanup(): Promise<void> {
@@ -299,11 +328,12 @@ describe('upgrade share to EDIT', () => {
   });
 
   it('EDIT implies EXPORT (queues an export job)', async () => {
+    const runId = await seedCompletedRun(privateMapId, shareeId);
     const res = await app.inject({
       method: 'POST',
       url: `/api/maps/${privateMapId}/export`,
       headers: authHeaders(shareeToken),
-      payload: { format: 'CSV' },
+      payload: { format: 'CSV', runId },
     });
     expect(res.statusCode).toBe(202);
   });
@@ -377,11 +407,12 @@ describe('public map', () => {
   });
 
   it('lets that user EXPORT it (public implies VIEW+EXPORT)', async () => {
+    const runId = await seedCompletedRun(publicMapId, otherId);
     const res = await app.inject({
       method: 'POST',
       url: `/api/maps/${publicMapId}/export`,
       headers: authHeaders(otherToken),
-      payload: { format: 'CSV' },
+      payload: { format: 'CSV', runId },
     });
     expect(res.statusCode).toBe(202);
   });

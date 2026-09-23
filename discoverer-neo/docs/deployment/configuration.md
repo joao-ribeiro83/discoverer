@@ -140,8 +140,24 @@ gets no CORS headers at all (INF-13).
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `SCHEDULE_RESULT_DIR` | `<project>/backend/scheduled-results` | Directory for scheduled run output |
+| `SCHEDULE_RESULT_DIR` | `<project>/backend/scheduled-results` | Legacy file storage for results migrated before the map-run queue; new scheduled runs store rows in Postgres instead |
 | `SCHEDULER_WORKER_ENABLED` | depends on NODE_ENV | Run scheduler worker in this process |
+
+### Map Runs (Queue, Retention, Sweeper)
+
+Every live and scheduled map execution goes through one queue and its rows
+land in Postgres — see [Map Runs, Retention and the Sweeper](../admin-guide/map-runs.md)
+for how the queue, per-user ordering and retention work.
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `MAP_RUN_WORKER_ENABLED` | depends on NODE_ENV | Run the map-run worker in this process |
+| `MAP_RUN_WORKER_CONCURRENCY` | 3 | Max different users' runs executing at once (max 8) |
+| `MAP_RUN_LIVE_TTL_HOURS` | 24 | Live result validity in hours — clamped to 24 regardless of this value |
+| `MAP_RUN_MAX_ROWS` | 100000 | Rows captured per run before it is marked truncated |
+| `MAP_RUN_BATCH_SIZE` | 1000 | Rows per stored batch |
+| `MAP_RUN_CLEANUP_INTERVAL_MINUTES` | 15 | How often the sweeper deletes expired runs |
+| `MAP_RUN_STALE_HOURS` | 24 | A Queued/Running run older than this is marked Failed by the sweeper |
 
 ### Frontend
 
@@ -211,6 +227,15 @@ EXPORT_DIR=/app/exports
 # --- Scheduler ---
 SCHEDULER_WORKER_ENABLED=true
 SCHEDULE_RESULT_DIR=/app/scheduled-results
+
+# --- Map runs ---
+MAP_RUN_WORKER_ENABLED=true
+MAP_RUN_WORKER_CONCURRENCY=3
+MAP_RUN_LIVE_TTL_HOURS=24
+MAP_RUN_MAX_ROWS=100000
+MAP_RUN_BATCH_SIZE=1000
+MAP_RUN_CLEANUP_INTERVAL_MINUTES=15
+MAP_RUN_STALE_HOURS=24
 
 # --- Frontend ---
 FRONTEND_PORT=80

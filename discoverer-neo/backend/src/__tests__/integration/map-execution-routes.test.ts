@@ -47,7 +47,6 @@ let otherToken: string;
 let ownerId: string;
 let baId: string;
 let mapId: string;
-let otherMapId: string;
 let execMapId: string;
 let planItemId: string;
 const DS_NAME = 'mx-exec-ds';
@@ -151,17 +150,6 @@ beforeAll(async () => {
   mapId = map!.id;
   planItemId = item!.id;
   await db.insert(mapItems).values({ mapId, itemId: item!.id, displayOrder: 0 });
-
-  const [otherMap] = await db
-    .insert(maps)
-    .values({
-      name: 'MX Other Map',
-      mapType: 'TABLE',
-      businessAreaId: baId,
-      createdBy: ownerId,
-    })
-    .returning();
-  otherMapId = otherMap!.id;
 
   // A fully-executable map: its folder has a (deliberately unreachable) Oracle
   // data source, so prepareQuery runs end-to-end — loadMapDefinition,
@@ -472,132 +460,22 @@ describe('POST /api/maps/:id/drill-to-detail', () => {
   }, 30_000);
 });
 
-describe('POST /api/maps/:id/execute-async and status/cancel', () => {
-  it('queues an async execution and returns a job id', async () => {
+describe('removed async execution routes', () => {
+  // Stage 3 deleted these three route registrations outright (map runs
+  // replace them, see map-runs-routes.test.ts) — an unregistered route is a
+  // plain Fastify 404, not a 410 stub.
+  it.each<['POST' | 'GET' | 'DELETE', string]>([
+    ['POST', 'execute-async'],
+    ['GET', 'executions/00000000-0000-4000-8000-000000000000'],
+    ['DELETE', 'executions/00000000-0000-4000-8000-000000000000'],
+  ])('%s %s answers 404', async (method, path) => {
     const res = await app.inject({
-      method: 'POST',
-      url: `/api/maps/${mapId}/execute-async`,
+      method,
+      url: `/api/maps/${mapId}/${path}`,
       headers: { authorization: `Bearer ${ownerToken}` },
-      payload: {},
-    });
-    expect(res.statusCode).toBe(202);
-    expect(res.json().data.jobId).toBeTruthy();
-  });
-
-  it('400s on an invalid async body', async () => {
-    const res = await app.inject({
-      method: 'POST',
-      url: `/api/maps/${mapId}/execute-async`,
-      headers: { authorization: `Bearer ${ownerToken}` },
-      payload: { timeoutMs: -1 },
-    });
-    expect(res.statusCode).toBe(400);
-  });
-
-  it('returns status for a known job', async () => {
-    const create = await app.inject({
-      method: 'POST',
-      url: `/api/maps/${mapId}/execute-async`,
-      headers: { authorization: `Bearer ${ownerToken}` },
-      payload: {},
-    });
-    const jobId = create.json().data.jobId as string;
-    const res = await app.inject({
-      method: 'GET',
-      url: `/api/maps/${mapId}/executions/${jobId}`,
-      headers: { authorization: `Bearer ${ownerToken}` },
-    });
-    expect(res.statusCode).toBe(200);
-    expect(res.json().data.jobId).toBe(jobId);
-  });
-
-  it('404s for an unknown execution job', async () => {
-    const res = await app.inject({
-      method: 'GET',
-      url: `/api/maps/${mapId}/executions/00000000-0000-4000-8000-000000000000`,
-      headers: { authorization: `Bearer ${ownerToken}` },
+      payload: method === 'POST' ? {} : undefined,
     });
     expect(res.statusCode).toBe(404);
-  });
-
-  it('404s when the job belongs to another map', async () => {
-    const create = await app.inject({
-      method: 'POST',
-      url: `/api/maps/${mapId}/execute-async`,
-      headers: { authorization: `Bearer ${ownerToken}` },
-      payload: {},
-    });
-    const jobId = create.json().data.jobId as string;
-    const res = await app.inject({
-      method: 'GET',
-      url: `/api/maps/${otherMapId}/executions/${jobId}`,
-      headers: { authorization: `Bearer ${ownerToken}` },
-    });
-    expect(res.statusCode).toBe(404);
-  });
-
-  it('cancels a known execution job', async () => {
-    const create = await app.inject({
-      method: 'POST',
-      url: `/api/maps/${mapId}/execute-async`,
-      headers: { authorization: `Bearer ${ownerToken}` },
-      payload: {},
-    });
-    const jobId = create.json().data.jobId as string;
-    const res = await app.inject({
-      method: 'DELETE',
-      url: `/api/maps/${mapId}/executions/${jobId}`,
-      headers: { authorization: `Bearer ${ownerToken}` },
-    });
-    expect(res.statusCode).toBe(200);
-    expect(res.json().data).toHaveProperty('cancelled');
-  });
-
-  it('404s cancelling an unknown execution job', async () => {
-    const res = await app.inject({
-      method: 'DELETE',
-      url: `/api/maps/${mapId}/executions/00000000-0000-4000-8000-000000000000`,
-      headers: { authorization: `Bearer ${ownerToken}` },
-    });
-    expect(res.statusCode).toBe(404);
-  });
-
-  it("404s another user's job, even on a map they may open", async () => {
-    // A job's result is filtered by its OWNER's row-level security. Handing it
-    // to a second viewer of the same map is the summary/RLS bypass (D-021).
-    const [shared] = await db
-      .insert(maps)
-      .values({
-        name: 'MX Public Map',
-        mapType: 'TABLE',
-        businessAreaId: baId,
-        createdBy: ownerId,
-        isPublic: true,
-      })
-      .returning();
-    const create = await app.inject({
-      method: 'POST',
-      url: `/api/maps/${shared!.id}/execute-async`,
-      headers: { authorization: `Bearer ${ownerToken}` },
-      payload: {},
-    });
-    const jobId = create.json().data.jobId as string;
-
-    for (const method of ['GET', 'DELETE'] as const) {
-      const res = await app.inject({
-        method,
-        url: `/api/maps/${shared!.id}/executions/${jobId}`,
-        headers: { authorization: `Bearer ${otherToken}` },
-      });
-      expect(res.statusCode).toBe(404);
-    }
-
-    const own = await app.inject({
-      method: 'GET',
-      url: `/api/maps/${shared!.id}/executions/${jobId}`,
-      headers: { authorization: `Bearer ${ownerToken}` },
-    });
-    expect(own.statusCode).toBe(200);
   });
 });
 

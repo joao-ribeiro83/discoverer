@@ -23,10 +23,11 @@ import type {
   DashboardStats,
   CreateMapInput,
   UpdateMapInput,
+  MapCalculatedFieldInput,
   ExecuteResult,
   ExecuteMapBody,
   DrillToDetailBody,
-  AsyncExecutionJob,
+  MapRun,
   ExecutionHistoryEntry,
   ExecutionErrorKind,
   RefusalCode,
@@ -409,19 +410,24 @@ export const apiClient = {
       api.post<Envelope<QueryPlanSummary>>('/maps/plan', { items }),
     execute: (id: string, body: ExecuteMapBody = {}) =>
       api.post<Envelope<ExecuteResult>>(`/maps/${id}/execute`, body),
-    executeAsync: (id: string, body: ExecuteMapBody = {}) =>
-      api.post<Envelope<{ jobId: string }>>(`/maps/${id}/execute-async`, body),
+    /**
+     * Request a run (Task 3.1's queue, replacing `executeAsync`). The backend
+     * answers `200` when it re-used a still-valid result and `202` when it
+     * queued a new one (see Spec > "same map, same conditions") — the HTTP
+     * status is the only signal for that, there is no field for it in the body.
+     */
+    requestRun: async (
+      id: string,
+      body: { parameters?: Record<string, unknown>; calculatedFields?: MapCalculatedFieldInput[]; force?: boolean } = {}
+    ): Promise<{ data: MapRun; reused: boolean }> => {
+      const res = await api.post<Envelope<MapRun>>(`/maps/${id}/runs`, body)
+      return { data: res.data.data, reused: res.status === 200 }
+    },
     /** Oracle's execution plan for the map's statement. Administrators only. */
     explain: (id: string, body: ExecuteMapBody = {}) =>
       api.post<Envelope<{ sql: string; plan: string }>>(`/maps/${id}/explain`, body),
     drillToDetail: (id: string, body: DrillToDetailBody) =>
       api.post<Envelope<ExecuteResult>>(`/maps/${id}/drill-to-detail`, body),
-    getExecutionStatus: (id: string, jobId: string) =>
-      api.get<Envelope<AsyncExecutionJob>>(`/maps/${id}/executions/${jobId}`),
-    cancelExecution: (id: string, jobId: string) =>
-      api.delete<Envelope<{ cancelled: boolean; status: string }>>(
-        `/maps/${id}/executions/${jobId}`
-      ),
     getHistory: (id: string, limit?: number) =>
       api.get<Envelope<ExecutionHistoryEntry[]>>(`/maps/${id}/history`, { params: { limit } }),
     exportXml: (id: string) => api.get<string>(`/maps/${id}/export`, { responseType: 'text' }),
@@ -453,6 +459,21 @@ export const apiClient = {
       api.put<Envelope<ConditionalFormatRule>>(`/maps/${id}/conditional-formats/${formatId}`, data),
     deleteConditionalFormat: (id: string, formatId: string) =>
       api.delete<void>(`/maps/${id}/conditional-formats/${formatId}`),
+  },
+  // Map runs — the queue behind `maps.requestRun`. Addressed by their own id
+  // (not nested under the map), same shape as `exports` below.
+  runs: {
+    list: (
+      params: { mapId?: string; status?: MapRun['status']; kind?: MapRun['kind']; limit?: number; all?: boolean } = {}
+    ) => api.get<Envelope<MapRun[]>>('/runs', { params }),
+    get: (id: string) => api.get<Envelope<MapRun>>(`/runs/${id}`),
+    rows: (id: string, offset?: number, limit?: number) =>
+      api.get<Envelope<Record<string, unknown>[]>>(`/runs/${id}/rows`, {
+        params: { offset, limit },
+      }),
+    // Cancels a still-QUEUED run, or deletes a finished one and its batches.
+    cancel: (id: string) =>
+      api.delete<Envelope<{ cancelled: boolean; deleted?: boolean }>>(`/runs/${id}`),
   },
   // Workbook browse view (Phase 7.1b) — read-only grouping of maps by their
   // source workbook. Same visibility as maps.listAll(); see workbooks.ts.

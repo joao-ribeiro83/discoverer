@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
+import { useMutation } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import {
   X,
@@ -11,12 +11,12 @@ import {
   Loader2,
   Network,
   Download,
-  PlayCircle,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
 import { useMapExport } from '@/hooks/useMapExport'
+import { isExpiryValid } from '@/lib/format'
 import {
   apiClient,
   getErrorKind,
@@ -30,19 +30,12 @@ import { ExecutionRefusal } from '@/components/map-builder/ExecutionRefusal'
 import { DrillDialog } from '@/components/map-builder/DrillDialog'
 import { PdfExportDialog } from '@/components/map-builder/PdfExportDialog'
 import type {
-  AsyncExecutionJob,
-  AsyncJobStatus,
   ExecuteResult,
   ExecutionErrorKind,
+  MapRun,
   MapType,
+  RefusalCode,
 } from '@/lib/types'
-
-const TERMINAL_JOB_STATUSES: AsyncJobStatus[] = [
-  'COMPLETED',
-  'FAILED',
-  'TIMEOUT',
-  'CANCELLED',
-]
 
 // Short headline labels for the error banner, keyed by the backend's `kind`
 // discriminant. Deliberately distinct from the longer `errors:execution.*`
@@ -66,12 +59,29 @@ export interface ExecutionPanelProps {
   result: ExecuteResult | null
   /** Parameter values the result (and any "load more"/export) should be run with. */
   parameters: Record<string, unknown>
+  /**
+   * The stored run backing `result`, when there is one. Exports read from a
+   * run's stored rows, never from a live re-execute — so the export buttons
+   * only render for a `COMPLETED` run that has not expired (the builder
+   * preview passes no run at all, and shows none).
+   */
+  run?: MapRun | null
   /** True while the caller's own primary "Run" mutation is in flight. */
   isRunning?: boolean
   /** The primary "Run" mutation's error, if any (mapped to CONFIG/QUERY/etc.). */
   runError?: unknown
   /** Called whenever this panel obtains a new/updated result (load more, background run). */
   onResultChange: (result: ExecuteResult | null) => void
+  /**
+   * Pages through a stored run's rows (`useMapRun.loadMore`) instead of the
+   * panel's own built-in `/execute`-offset "Load more". When provided, the
+   * button calls this and is shown/hidden by `hasMore` rather than
+   * `result.truncated`. The builder preview (no run) omits it and keeps the
+   * live re-execute path.
+   */
+  onLoadMore?: () => void
+  /** Whether more of the run's rows remain to page in. Ignored without `onLoadMore`. */
+  hasMore?: boolean
   onClose?: () => void
   /**
    * The map's view type. `CROSSTAB` pivots the result instead of listing it;
@@ -91,16 +101,18 @@ export function ExecutionPanel({
   mapName,
   result,
   parameters,
+  run,
   isRunning,
   runError,
   onResultChange,
+  onLoadMore,
+  hasMore,
   onClose,
   mapType,
 }: ExecutionPanelProps) {
   const { t } = useTranslation(['mapViewer', 'common'])
   const { toast } = useToast()
   const [sqlOpen, setSqlOpen] = useState(false)
-  const [bgJobId, setBgJobId] = useState<string | null>(null)
   const [drillRow, setDrillRow] = useState<Record<string, unknown> | null>(null)
   const [explainPlan, setExplainPlan] = useState<string | null>(null)
 
@@ -123,7 +135,7 @@ export function ExecutionPanel({
     },
   })
 
-  const exportCtl = useMapExport(mapId, mapName, parameters)
+  const exportCtl = useMapExport(mapId, mapName, parameters, run?.id)
   const [pdfOpen, setPdfOpen] = useState(false)
 
   // --- "Load more": re-executes with a growing offset, appending pages ------
@@ -160,65 +172,38 @@ export function ExecutionPanel({
       }),
   })
 
-  // --- Background (async) run: full result up to the async row cap ---------
-  const bgRunMutation = useMutation({
-    mutationFn: async () => {
-      if (!mapId) throw new Error(t('mapViewer:execution.saveBeforeBackgroundRun'))
-      const res = await apiClient.maps.executeAsync(mapId, { parameters })
-      return res.data.data
-    },
-    onSuccess: ({ jobId }) => setBgJobId(jobId),
-    onError: (err) =>
-      toast({
-        title: t('mapViewer:execution.runFailedTitle'),
-        description: getErrorMessage(err),
-        variant: 'destructive',
-      }),
-  })
-
-  const bgStatusQuery = useQuery({
-    queryKey: ['map-execution-job', mapId, bgJobId],
-    queryFn: async () => (await apiClient.maps.getExecutionStatus(mapId!, bgJobId!)).data.data,
-    enabled: !!mapId && !!bgJobId,
-    refetchInterval: (query) => {
-      const status = query.state.data?.status
-      return status && TERMINAL_JOB_STATUSES.includes(status) ? false : 700
-    },
-  })
-
-  const bgJob: AsyncExecutionJob | null = bgStatusQuery.data ?? null
-
-  useEffect(() => {
-    if (!bgJob || !bgJobId) return
-    if (bgJob.status === 'COMPLETED' && bgJob.result) {
-      onResultChange(bgJob.result)
-      toast({
-        title: t('mapViewer:execution.backgroundRunCompleteTitle'),
-        description: t('mapViewer:execution.rowsReturned', { count: bgJob.result.rowCount }),
-      })
-      setBgJobId(null)
-    } else if (bgJob.status === 'FAILED' || bgJob.status === 'TIMEOUT') {
-      toast({
-        title: t('mapViewer:execution.backgroundRunFailedTitle'),
-        description: bgJob.error ?? t('mapViewer:execution.executionFailedFallback'),
-        variant: 'destructive',
-      })
-      setBgJobId(null)
-    } else if (bgJob.status === 'CANCELLED') {
-      setBgJobId(null)
-    }
-    // Deliberately keyed on status alone (not `bgJob`/`onResultChange`/`toast`,
-    // which are referentially unstable across renders) — this should fire
-    // exactly once per terminal status transition, not on every render.
-  }, [bgJob?.status])
-
-  const bgRunning = bgRunMutation.isPending || (!!bgJob && !TERMINAL_JOB_STATUSES.includes(bgJob.status))
-
-  const errorKind = runError ? getErrorKind(runError) : undefined
+  // A viewer run's failure carries its classification in `run.decoration.error`
+  // (fix round 1) — the backend writes it there because the run's failure
+  // surfaces asynchronously, with no HTTP response to hang a `kind` off of.
+  // The builder preview's `runError` is still the raw axios error from a
+  // direct `/execute` call, so that path is kept as a fallback.
+  const decorationError = run?.decoration?.error
+  const errorKind: ExecutionErrorKind | undefined = decorationError
+    ? decorationError.kind
+    : runError
+      ? getErrorKind(runError)
+      : undefined
   // A refusal is a separate surface, not a red banner (D-036). Only fall back
   // to the error banner when the backend sent no recognised refusal code.
-  const refusalCode = errorKind === 'REFUSED' ? getRefusalCode(runError) : undefined
-  const errorText = runError && !refusalCode ? getErrorMessage(runError) : null
+  const refusalCode: RefusalCode | undefined =
+    errorKind === 'REFUSED' ? (decorationError?.refusal?.code ?? getRefusalCode(runError)) : undefined
+  const refusalDetails = refusalCode
+    ? (decorationError?.refusal?.details ?? getRefusalDetails(runError))
+    : undefined
+  // `runError` is either the raw axios error from a direct `/execute` (the
+  // builder preview) or the plain message string `useMapRun` surfaces for a
+  // queued run (the viewer) — `getErrorMessage` only understands the former.
+  const errorMessageSource = decorationError ? (run?.errorMessage ?? undefined) : runError
+  const errorText = errorMessageSource && !refusalCode
+    ? typeof errorMessageSource === 'string'
+      ? errorMessageSource
+      : getErrorMessage(errorMessageSource)
+    : null
+
+  // Exports read from a run's stored rows, never from a live re-execute — so
+  // the buttons only exist for a completed, still-valid run. The builder
+  // preview (`/execute`, no run) passes no `run` at all and shows none.
+  const canExport = !!run && run.status === 'COMPLETED' && isExpiryValid(run.expiresAt)
 
   // A crosstab needs a column edge, and Discoverer records none — so a
   // migrated crosstab arrives with every axis column on the row edge and
@@ -276,7 +261,7 @@ export function ExecutionPanel({
         )}
 
         <div className="ml-auto flex items-center gap-1.5">
-          {result && (
+          {canExport && result && (
             <>
               <Button
                 variant="outline"
@@ -355,7 +340,7 @@ export function ExecutionPanel({
       )}
 
       {refusalCode && (
-        <ExecutionRefusal code={refusalCode} details={getRefusalDetails(runError)} />
+        <ExecutionRefusal code={refusalCode} details={refusalDetails} />
       )}
 
       {errorText && (
@@ -436,35 +421,20 @@ export function ExecutionPanel({
         />
       )}
 
-      {result?.truncated && (
+      {result && (onLoadMore ? hasMore : result.truncated) && (
         <div className="flex flex-wrap items-center gap-2 border-t px-4 py-2 text-xs text-muted-foreground">
           <span>{t('mapViewer:execution.notAllRowsLoaded')}</span>
           <Button
             variant="outline"
             size="sm"
             className="h-7 gap-1 text-xs"
-            disabled={loadMoreMutation.isPending || !mapId}
-            onClick={() => loadMoreMutation.mutate()}
+            disabled={onLoadMore ? false : loadMoreMutation.isPending || !mapId}
+            onClick={() => (onLoadMore ? onLoadMore() : loadMoreMutation.mutate())}
           >
-            {loadMoreMutation.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-            {t('common:actions.loadMore')}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 gap-1 text-xs"
-            disabled={bgRunning || !mapId}
-            onClick={() => bgRunMutation.mutate()}
-            title={t('mapViewer:execution.runFullResultTooltip')}
-          >
-            {bgRunning ? (
+            {!onLoadMore && loadMoreMutation.isPending && (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <PlayCircle className="h-3.5 w-3.5" />
             )}
-            {bgRunning
-              ? t('mapViewer:execution.runningStatus', { status: bgJob?.status ?? 'QUEUED' })
-              : t('mapViewer:execution.runFullResult')}
+            {t('common:actions.loadMore')}
           </Button>
         </div>
       )}

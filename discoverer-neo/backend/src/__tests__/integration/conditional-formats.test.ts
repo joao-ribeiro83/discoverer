@@ -8,6 +8,7 @@
  */
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import type { FastifyInstance } from 'fastify';
+import { eq } from 'drizzle-orm';
 import { db } from '../../db/index.js';
 import { maps, mapItems } from '../../db/schema.js';
 import {
@@ -58,6 +59,12 @@ afterAll(async () => {
   await closeApp();
 });
 
+/** The run key includes maps.updatedAt, so every format write must move it. */
+async function mapUpdatedAt(): Promise<number> {
+  const [row] = await db.select({ t: maps.updatedAt }).from(maps).where(eq(maps.id, mapId));
+  return row!.t.getTime();
+}
+
 describe('conditional formats CRUD', () => {
   it('401s without a token', async () => {
     const res = await app.inject({
@@ -105,6 +112,7 @@ describe('conditional formats CRUD', () => {
   let formatId: string;
 
   it('creates a rule', async () => {
+    const before = await mapUpdatedAt();
     const res = await app.inject({
       method: 'POST',
       url: `/api/maps/${mapId}/conditional-formats`,
@@ -126,6 +134,7 @@ describe('conditional formats CRUD', () => {
     expect(body.backgroundColor).toBe('#ffcc00');
     expect(body.isBold).toBe(true);
     formatId = body.id;
+    expect(await mapUpdatedAt()).toBeGreaterThan(before);
   });
 
   it('lists the created rule', async () => {
@@ -172,12 +181,14 @@ describe('conditional formats CRUD', () => {
   });
 
   it('deletes a rule', async () => {
+    const before = await mapUpdatedAt();
     const res = await app.inject({
       method: 'DELETE',
       url: `/api/maps/${mapId}/conditional-formats/${formatId}`,
       headers: { authorization: `Bearer ${ownerToken}` },
     });
     expect(res.statusCode).toBe(204);
+    expect(await mapUpdatedAt()).toBeGreaterThan(before);
 
     const list = await app.inject({
       method: 'GET',

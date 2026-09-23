@@ -1,20 +1,23 @@
 import { test, expect } from '@playwright/test'
-import { EXECUTE_RESULT, MAP_WITH_DETAILS, jsonRoute, seedAuthedSession } from './fixtures'
+import { MAP_WITH_DETAILS, jsonRoute, mockMapRunFlow, seedAuthedSession } from './fixtures'
 
 test.describe('Export', () => {
   test.beforeEach(async ({ page }) => {
     await seedAuthedSession(page)
     await page.route(`**/api/maps/${MAP_WITH_DETAILS.id}`, (route) => jsonRoute(route, { data: MAP_WITH_DETAILS }))
-    await page.route(`**/api/maps/${MAP_WITH_DETAILS.id}/execute`, (route) =>
-      jsonRoute(route, { data: EXECUTE_RESULT }),
-    )
+    // Export reads from a stored run, not a live query — so the map has to be
+    // run through the queue first, same as the viewer does.
+    await mockMapRunFlow(page)
   })
 
   // Creating an export is map-scoped; polling and downloading are keyed by the
   // job id alone (`/api/exports/:jobId`).
-  test('exports the executed result to CSV and downloads it', async ({ page }) => {
+  test('exports the run to CSV and downloads it', async ({ page }) => {
     await page.route(`**/api/maps/${MAP_WITH_DETAILS.id}/export`, (route) => {
       if (route.request().method() !== 'POST') return route.continue()
+      // The export body carries the completed run's id — exporting has
+      // nothing else to read rows from since Task 5.3.
+      expect(route.request().postDataJSON().runId).toBeTruthy()
       return jsonRoute(route, { data: { jobId: 'job-1', status: 'PENDING' } }, 202)
     })
     await page.route('**/api/exports/job-1', (route) =>
@@ -38,7 +41,7 @@ test.describe('Export', () => {
 
     await page.goto(`/maps/${MAP_WITH_DETAILS.id}/view`)
     await page.getByRole('button', { name: 'Run', exact: true }).click()
-    await expect(page.getByText('Map executed').first()).toBeVisible()
+    await expect(page.getByText('Acme Corp')).toBeVisible()
 
     const downloadPromise = page.waitForEvent('download')
     await page.getByRole('button', { name: 'CSV' }).click()
@@ -70,7 +73,7 @@ test.describe('Export', () => {
 
     await page.goto(`/maps/${MAP_WITH_DETAILS.id}/view`)
     await page.getByRole('button', { name: 'Run', exact: true }).click()
-    await expect(page.getByText('Map executed').first()).toBeVisible()
+    await expect(page.getByText('Acme Corp')).toBeVisible()
 
     await page.getByRole('button', { name: 'Excel' }).click()
     await expect(page.getByText('Query timed out while generating the export.').first()).toBeVisible()

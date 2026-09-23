@@ -20,6 +20,7 @@
     "auditLog": "Registro de auditoría",
     "maps": "Mapas",
     "schedules": "Programaciones",
+    "runs": "Ejecuciones",
     "exports": "Exportaciones",
     "migration": "Migración",
     "settings": "Configuración"

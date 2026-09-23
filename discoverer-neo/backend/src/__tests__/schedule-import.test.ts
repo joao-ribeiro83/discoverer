@@ -3,6 +3,7 @@ import {
   classifyFrequencyUnit,
   classifyRunOutcome,
   buildCronPlan,
+  resolveRetentionDays,
 } from '../services/schedule-import.service.js';
 
 describe('classifyFrequencyUnit', () => {
@@ -45,6 +46,20 @@ describe('classifyRunOutcome', () => {
   });
 });
 
+describe('resolveRetentionDays', () => {
+  it('reads BR_EXPIRY as the retention window in days', () => {
+    expect(resolveRetentionDays(10)).toBe(10);
+  });
+
+  it('falls back to 30 when BR_EXPIRY is null (unset on the source row)', () => {
+    expect(resolveRetentionDays(null)).toBe(30);
+  });
+
+  it.each([0, -1, 4.5, 5000])('falls back to 30 for an invalid BR_EXPIRY of %p', (expiry) => {
+    expect(resolveRetentionDays(expiry)).toBe(30);
+  });
+});
+
 describe('buildCronPlan', () => {
   const anchor = new Date(Date.UTC(2025, 3, 9, 9, 5)); // 2025-04-09T09:05Z
 
@@ -71,5 +86,47 @@ describe('buildCronPlan', () => {
   it('a recurring minutes job steps the minute field', () => {
     const plan = buildCronPlan(anchor, true, 15, 'MINUTES');
     expect(plan.cronExpression).toBe('*/15 * * * *');
+  });
+
+  it('a recurring minutes job clamps numUnits at 59', () => {
+    const plan = buildCronPlan(anchor, true, 500, 'MINUTES');
+    expect(plan.cronExpression).toBe('*/59 * * * *');
+  });
+
+  it('a recurring hours job steps the hour field', () => {
+    const plan = buildCronPlan(anchor, true, 3, 'HOURS');
+    expect(plan.cronExpression).toBe('5 */3 * * *');
+  });
+
+  it('a recurring hours job clamps numUnits at 23', () => {
+    const plan = buildCronPlan(anchor, true, 100, 'HOURS');
+    expect(plan.cronExpression).toBe('5 */23 * * *');
+  });
+
+  it('a recurring months job steps the month field', () => {
+    const plan = buildCronPlan(anchor, true, 2, 'MONTHS');
+    expect(plan.cronExpression).toBe('5 9 9 */2 *');
+  });
+
+  it('a recurring months job clamps numUnits at 11', () => {
+    const plan = buildCronPlan(anchor, true, 100, 'MONTHS');
+    expect(plan.cronExpression).toBe('5 9 9 */11 *');
+  });
+
+  it('a recurring years job fires on the anchor day/month every year', () => {
+    const plan = buildCronPlan(anchor, true, 1, 'YEARS');
+    expect(plan.cronExpression).toBe('5 9 9 4 *');
+    expect(plan.validFrom).toBeNull();
+    expect(plan.validUntil).toBeNull();
+  });
+
+  it('a recurring days job (the default case) clamps numUnits at 27', () => {
+    const plan = buildCronPlan(anchor, true, 100, 'DAYS');
+    expect(plan.cronExpression).toBe('5 9 */27 * *');
+  });
+
+  it('a non-positive numUnits floors to 1', () => {
+    const plan = buildCronPlan(anchor, true, 0, 'DAYS');
+    expect(plan.cronExpression).toBe('5 9 */1 * *');
   });
 });
