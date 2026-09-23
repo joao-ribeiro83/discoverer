@@ -1,7 +1,7 @@
 {
   "title": "Execuções",
   "description": "Cada execução de mapa que solicitou — em fila, em progresso ou concluída — e quanto tempo o seu resultado permanece válido.",
-  "loading": "Carregando execuções…",
+  "loading": "A carregar execuções…",
   "empty": "Sem execuções ainda. Execute um mapa para ver o seu histórico aqui.",
   "filters": {
     "map": "Mapa",
@@ -25,14 +25,14 @@
   },
   "kinds": {
     "LIVE": "Em direto",
-    "SCHEDULED": "Agendado"
+    "SCHEDULED": "Agendada"
   },
   "statuses": {
     "QUEUED": "Em fila",
     "RUNNING": "Em execução",
-    "COMPLETED": "Concluído",
-    "FAILED": "Falhou",
-    "CANCELLED": "Cancelado"
+    "COMPLETED": "Concluída",
+    "FAILED": "Falhada",
+    "CANCELLED": "Cancelada"
   },
   "noParameters": "—",
   "expired": "Expirado",

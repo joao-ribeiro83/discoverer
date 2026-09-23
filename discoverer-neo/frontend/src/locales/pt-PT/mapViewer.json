@@ -13,7 +13,7 @@
     "statusQueued": "Em fila (posição desconhecida)",
     "statusRunning": "Em execução…",
     "statusResult": "Resultado de {{time}}, válido até {{until}}.",
-    "statusResultReused": "Mostrando um resultado em cache de {{time}}, válido até {{until}}.",
+    "statusResultReused": "A mostrar um resultado em cache de {{time}}, válido até {{until}}.",
     "runAgain": "Executar novamente"
   },
   "mapsList": {
