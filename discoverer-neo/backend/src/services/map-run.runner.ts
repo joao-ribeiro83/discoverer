@@ -13,6 +13,8 @@ import { config } from '../config.js';
 import { db } from '../db/index.js';
 import { schedules, scheduledResults } from '../db/schema.js';
 import { liveExpiry, scheduledExpiry } from '../lib/map-run-key.js';
+import { SqlGenerationError, type RefusalCode } from '../types/sql.js';
+import { resolveHeading } from './map.service.js';
 import type { CalcFieldInput } from './calculated-field-evaluator.js';
 import {
   applyCalculatedFields,
@@ -30,6 +32,17 @@ import {
 } from './map-execution.service.js';
 import * as store from './map-run.store.js';
 import type { MapRunRow } from './map-run.store.js';
+
+/**
+ * The run's failure, as recorded into `map_runs.decoration.error` (fix round
+ * 1): a `REFUSED` kind always carries `refusal` — the same code/details the
+ * old synchronous `/execute` route put in its HTTP response (D-036). Every
+ * other kind is a genuine failure with no next step to explain.
+ */
+export interface RunErrorDecoration {
+  kind: ExecutionErrorKind | 'REFUSED';
+  refusal?: { code: RefusalCode; details?: unknown };
+}
 
 export type ClaimOutcome = 'ran' | 'busy' | 'gone';
 
@@ -52,6 +65,8 @@ export interface RunnerDeps extends MapExecutionDeps {
   completeRun: typeof store.completeRun;
   failRun: typeof store.failRun;
   openRowStream: typeof openRowStream;
+  /** The worksheet heading (`&Date`, `&Time`, `&<ParamName>`) resolved with this run's own parameters — same source `/execute` reads it from. */
+  resolveHeading: typeof resolveHeading;
   loadRetentionDays: (scheduleId: string) => Promise<number | null>;
   /** Task 4.2: the schedule-history row a SCHEDULED run leaves behind, once it completes or fails. */
   insertScheduledResult: (input: InsertScheduledResultInput) => Promise<void>;
@@ -68,6 +83,7 @@ function defaultRunnerDeps(): RunnerDeps {
     completeRun: store.completeRun,
     failRun: store.failRun,
     openRowStream,
+    resolveHeading,
     loadRetentionDays: async (scheduleId) => {
       const [row] = await db
         .select({ days: schedules.resultRetentionDays })
@@ -98,8 +114,18 @@ const DEFAULT_RETENTION_DAYS = 30;
  * and block this user's FIFO until the stale sweep. Try a few times first.
  * ponytail: 3 tries over ~6 s; an outage longer than that still falls to the sweep.
  */
-async function recordFailure(deps: RunnerDeps, runId: string, errorMessage: string): Promise<void> {
-  const r = { status: 'FAILED' as const, errorMessage, expiresAt: new Date(deps.now().getTime() + FAILED_TTL_MS) };
+async function recordFailure(
+  deps: RunnerDeps,
+  runId: string,
+  errorMessage: string,
+  decoration?: RunErrorDecoration,
+): Promise<void> {
+  const r = {
+    status: 'FAILED' as const,
+    errorMessage,
+    expiresAt: new Date(deps.now().getTime() + FAILED_TTL_MS),
+    ...(decoration ? { decoration: { error: decoration } } : {}),
+  };
   for (let attempt = 1; ; attempt++) {
     try {
       await deps.failRun(runId, r);
@@ -192,11 +218,21 @@ export async function processMapRun(
       ? await runTotalsQueries(conn, prepared.totals, runId)
       : { groups: [], warnings: [] };
     const warnings = [...(prepared.warnings ?? []), ...totalsRun.warnings];
+    // The heading carries `&Date`, `&Time` and `&<ParamName>` tokens resolved
+    // with this run's own parameters — same source the old synchronous
+    // `/execute` read it from (fix round 1: the viewer lost it when it moved
+    // to reading a stored run instead of that response).
+    const heading = await deps.resolveHeading(
+      run.mapId,
+      run.parameters as Record<string, unknown>,
+      deps.now(),
+    );
     const decoration = {
       ...(prepared.groupBreakAliases?.length ? { groupBreakAliases: prepared.groupBreakAliases } : {}),
       ...(totalsRun.groups.length ? { totals: totalsRun.groups } : {}),
       ...(prepared.conditionalFormats?.length ? { conditionalFormats: prepared.conditionalFormats } : {}),
       ...(warnings.length ? { warnings } : {}),
+      heading: { title: heading.title, description: heading.description },
     };
 
     const now = deps.now();
@@ -241,17 +277,37 @@ export async function processMapRun(
       });
     }
   } catch (err) {
+    // A `SqlGenerationError` is either a deliberate refusal (D-036 — carries
+    // a `code`) or a generation-time config problem, never a driver error —
+    // its message is already curated to be safe, same as the old synchronous
+    // `/execute` route (`handleExecutionError` in routes/map-execution.ts)
+    // treated it. Anything else is the general driver-error path, unchanged.
     // SEC-07: wrapExecutionError logs the raw driver error (ORA- text) server
     // side and hands back only the kind's generic message for the row.
-    const kind: ExecutionErrorKind = isTimeoutError(err)
-      ? 'TIMEOUT'
-      : prepared && !conn
-        ? 'CONNECT'
-        : 'QUERY';
-    const wrapped = wrapExecutionError(err, kind, runId);
+    let message: string;
+    let errorKind: ExecutionErrorKind | 'REFUSED';
+    let refusal: RunErrorDecoration['refusal'];
+    if (err instanceof SqlGenerationError) {
+      message = err.message;
+      if (err.code) {
+        errorKind = 'REFUSED';
+        refusal = { code: err.code, details: err.details };
+      } else {
+        errorKind = 'CONFIG';
+      }
+    } else {
+      const kind: ExecutionErrorKind = isTimeoutError(err)
+        ? 'TIMEOUT'
+        : prepared && !conn
+          ? 'CONNECT'
+          : 'QUERY';
+      const wrapped = wrapExecutionError(err, kind, runId);
+      message = wrapped.message;
+      errorKind = wrapped.kind;
+    }
     const now = deps.now();
     const executionTimeMs = now.getTime() - start;
-    await recordFailure(deps, runId, wrapped.message);
+    await recordFailure(deps, runId, message, { kind: errorKind, ...(refusal ? { refusal } : {}) });
     await safeRecord(deps, {
       mapId: run.mapId,
       executedBy: run.requestedBy,
@@ -259,8 +315,8 @@ export async function processMapRun(
       rowCount: null,
       sqlText: prepared?.sql ?? null,
       planDecision: prepared?.planDecision,
-      errorMessage: wrapped.message,
-      status: wrapped.kind === 'TIMEOUT' ? 'TIMEOUT' : 'FAILED',
+      errorMessage: message,
+      status: errorKind === 'TIMEOUT' ? 'TIMEOUT' : 'FAILED',
     });
     if (run.scheduleId) {
       await safeInsertScheduledResult(deps, {
@@ -269,8 +325,8 @@ export async function processMapRun(
         executedAt: now,
         rowCount: null,
         executionTimeMs,
-        status: wrapped.kind === 'TIMEOUT' ? 'TIMEOUT' : 'FAILED',
-        errorMessage: wrapped.message,
+        status: errorKind === 'TIMEOUT' ? 'TIMEOUT' : 'FAILED',
+        errorMessage: message,
         filePath: null,
       });
     }

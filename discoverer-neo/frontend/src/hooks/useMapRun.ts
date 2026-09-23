@@ -179,6 +179,7 @@ export function useMapRun(mapId: string | undefined): UseMapRunResult {
           totals: run.decoration?.totals,
           conditionalFormats: run.decoration?.conditionalFormats,
           warnings: run.decoration?.warnings,
+          heading: run.decoration?.heading,
         }
       : null
 

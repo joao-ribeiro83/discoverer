@@ -33,7 +33,17 @@ export function MapViewerPage() {
     enabled: !!id,
   })
 
-  const { run, result, isQueued, isRunning, isReused, error, request, open } = useMapRun(id)
+  const { run: rawRun, result: rawResult, rows, isQueued, isRunning, isReused, error: rawError, request, open, loadMore } =
+    useMapRun(id)
+
+  // `?run=<id>` can point at any run the caller can read — the Runs page
+  // links to one by its own map, but a hand-edited or stale URL can name a
+  // run for a *different* map. Ignore it entirely rather than show another
+  // worksheet's result or let "Run again" replay its parameters here.
+  const foreignRun = !!rawRun && rawRun.mapId !== id
+  const run = foreignRun ? null : rawRun
+  const result = foreignRun ? null : rawResult
+  const error = foreignRun ? null : rawError
 
   // `?run=<id>` (from the Runs page, or a shared link) opens that run instead
   // of starting a new one. `open` is a stable callback, so this only re-fires
@@ -44,14 +54,16 @@ export function MapViewerPage() {
   }, [searchParams, open])
 
   useEffect(() => {
-    if (error) {
-      toast({
-        title: t('mapViewer:viewer.runFailedTitle'),
-        description: error,
-        variant: 'destructive',
-      })
-    }
-  }, [error, toast, t])
+    if (!error) return
+    // A refusal is not a failure — the panel explains it in full, so the
+    // toast says "not run", never "failed", and is not destructive-styled.
+    const refused = run?.decoration?.error?.kind === 'REFUSED'
+    toast({
+      title: refused ? t('mapViewer:viewer.runRefusedTitle') : t('mapViewer:viewer.runFailedTitle'),
+      description: refused ? t('mapViewer:viewer.runRefusedDescription') : error,
+      variant: refused ? 'default' : 'destructive',
+    })
+  }, [error, run, toast, t])
 
   async function runWith(parameters: Record<string, unknown>, force = false) {
     setIsRequesting(true)
@@ -84,12 +96,18 @@ export function MapViewerPage() {
     void runWith(run?.parameters ?? {}, true)
   }
 
+  // Neither flag can actually be true for a foreign run in practice (a run
+  // for another map was never requested from here), but gate them anyway so
+  // nothing about it — running or not — reaches this page's UI.
+  const queued = !foreignRun && isQueued
+  const executing = !foreignRun && isRunning
+
   // "Queued (position unknown)" / "Running…" while the run is in flight, then
   // "Result from <time>, valid until <time>" once it lands — the line the
   // "Run again" button sits under.
   function statusLine(): string | null {
-    if (isQueued) return t('mapViewer:viewer.statusQueued')
-    if (isRunning) return t('mapViewer:viewer.statusRunning')
+    if (queued) return t('mapViewer:viewer.statusQueued')
+    if (executing) return t('mapViewer:viewer.statusRunning')
     if (run?.status === 'COMPLETED') {
       const time = run.completedAt ? new Date(run.completedAt).toLocaleTimeString() : ''
       const until = new Date(run.expiresAt).toLocaleString()
@@ -139,16 +157,25 @@ export function MapViewerPage() {
 
   const noOutputColumns = map.items.length === 0
   const disabledReason = noOutputColumns ? t('mapViewer:viewer.cannotRunNoColumns') : null
-  const running = isRequesting || isQueued || isRunning
+  const running = isRequesting || queued || executing
   const status = statusLine()
+  // More of the run's stored rows remain to page in via `useMapRun.loadMore`
+  // (not the panel's own `/execute`-offset path — there is no live query to
+  // re-run here, only a stored result to keep reading).
+  const hasMore = !!run && run.status === 'COMPLETED' && run.rowCount != null && rows.length < run.rowCount
 
   return (
     <div className="flex h-full flex-col space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">{map.name}</h2>
-          {map.description && (
-            <p className="whitespace-pre-line text-muted-foreground">{map.description}</p>
+          {/* After a run the heading shows the parameters that were entered
+              (`&Date`, `&Time`, `&<ParamName>`); before one it shows the
+              stored default text. */}
+          {(result?.heading?.description ?? map.description) && (
+            <p className="whitespace-pre-line text-muted-foreground">
+              {result?.heading?.description ?? map.description}
+            </p>
           )}
           {/* A filter that did not migrate has no other symptom: the map runs
               and returns more rows than Discoverer did. Say so. */}
@@ -211,6 +238,8 @@ export function MapViewerPage() {
             isRunning={running}
             runError={error}
             onResultChange={() => {}}
+            onLoadMore={() => void loadMore()}
+            hasMore={hasMore}
           />
         </CardContent>
       </Card>
