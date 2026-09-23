@@ -36,6 +36,7 @@ const MapViewerPage = lazy(() =>
   import('@/pages/MapViewerPage').then((m) => ({ default: m.MapViewerPage })),
 )
 const SchedulesPage = lazy(() => import('@/pages/SchedulesPage').then((m) => ({ default: m.SchedulesPage })))
+const RunsPage = lazy(() => import('@/pages/RunsPage').then((m) => ({ default: m.RunsPage })))
 const ExportsPage = lazy(() => import('@/pages/ExportsPage').then((m) => ({ default: m.ExportsPage })))
 const ChangePasswordPage = lazy(() =>
   import('@/pages/ChangePasswordPage').then((m) => ({ default: m.ChangePasswordPage })),
@@ -100,6 +101,7 @@ export function App() {
           <Route path=":id/view" element={<MapViewerPage />} />
         </Route>
         <Route path="schedules" element={<SchedulesPage />} />
+        <Route path="runs" element={<RunsPage />} />
         <Route path="exports" element={<ExportsPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
