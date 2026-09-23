@@ -751,6 +751,8 @@ export type ExportJobStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED'
 export interface ExportJob {
   jobId: string
   mapId: string
+  /** Present in the export list; null once the map is deleted. */
+  mapName?: string | null
   format: ExportFileFormat
   status: ExportJobStatus
   /**

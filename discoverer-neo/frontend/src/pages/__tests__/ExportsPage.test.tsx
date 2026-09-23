@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ExportsPage } from '@/pages/ExportsPage'
@@ -9,7 +9,6 @@ import type { ExportJob } from '@/lib/types'
 vi.mock('@/lib/api', () => ({
   apiClient: {
     exports: { list: vi.fn(), download: vi.fn() },
-    maps: { listMine: vi.fn() },
   },
   getErrorMessage: () => 'error',
 }))
@@ -19,6 +18,7 @@ const mockedApi = vi.mocked(apiClient, true)
 const job: ExportJob = {
   jobId: 'job-1',
   mapId: 'map-1',
+  mapName: 'Sales by Region',
   format: 'CSV',
   status: 'COMPLETED',
   progress: 100,
@@ -48,9 +48,6 @@ beforeEach(() => {
   vi.resetAllMocks()
   vi.useFakeTimers({ shouldAdvanceTime: true })
   mockedApi.exports.list.mockResolvedValue({ data: { data: [job] } } as never)
-  mockedApi.maps.listMine.mockResolvedValue({
-    data: { data: [{ id: 'map-1', name: 'Sales by Region' }] },
-  } as never)
 })
 
 afterEach(() => {
@@ -74,5 +71,10 @@ describe('ExportsPage refresh', () => {
 
     await vi.advanceTimersByTimeAsync(30_000)
     await waitFor(() => expect(mockedApi.exports.list).toHaveBeenCalledTimes(2))
+  })
+
+  it('names each map from the export list, not from the caller’s own maps', async () => {
+    render(page(makeClient()))
+    expect(await screen.findByText('Sales by Region')).toBeInTheDocument()
   })
 })

@@ -319,6 +319,10 @@ describe('GET /api/exports and /api/exports/:jobId', () => {
     for (const job of res.json().data as Array<Record<string, unknown>>) {
       expect(job['filePath']).toBeUndefined();
     }
+    // The page names the map from this field; it cannot rely on the caller's
+    // own map list, which misses maps shared through a group or an admin's view.
+    const mine = (res.json().data as Array<Record<string, unknown>>).find((j) => j['mapId'] === mapId);
+    expect(mine?.['mapName']).toBe('Export Map');
   });
 
   it('polls a job status', async () => {
