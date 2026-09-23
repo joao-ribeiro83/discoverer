@@ -1,0 +1,63 @@
+{
+  "title": "Exécutions",
+  "description": "Chaque exécution de carte que vous avez demandée — en attente, en cours ou terminée — et combien de temps son résultat reste valide.",
+  "loading": "Chargement des exécutions…",
+  "empty": "Aucune exécution pour le moment. Exécutez une carte pour voir son historique ici.",
+  "filters": {
+    "map": "Carte",
+    "allMaps": "Toutes les cartes",
+    "status": "Statut",
+    "allStatuses": "Tous les statuts",
+    "kind": "Type",
+    "allKinds": "Tous les types",
+    "allUsers": "Afficher les exécutions de tous les utilisateurs"
+  },
+  "columns": {
+    "map": "Carte",
+    "kind": "Type",
+    "parameters": "Paramètres",
+    "status": "Statut",
+    "rows": "Lignes",
+    "duration": "Durée",
+    "ranAt": "Exécutée le",
+    "expiresIn": "Expire dans",
+    "actions": "Actions"
+  },
+  "kinds": {
+    "LIVE": "En direct",
+    "SCHEDULED": "Programmée"
+  },
+  "statuses": {
+    "QUEUED": "En attente",
+    "RUNNING": "En cours",
+    "COMPLETED": "Terminée",
+    "FAILED": "Échec",
+    "CANCELLED": "Annulée"
+  },
+  "noParameters": "—",
+  "expired": "Expiré",
+  "expiresInMinutes": "{{count}}m",
+  "expiresInHours": "{{count}}h",
+  "expiresInDays": "{{count}}d",
+  "actions": {
+    "open": "Ouvrir",
+    "runAgain": "Exécuter à nouveau",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "xlsx": "XLSX",
+    "csv": "CSV",
+    "pdf": "PDF"
+  },
+  "toasts": {
+    "reusedTitle": "Résultat réutilisé",
+    "reusedDescription": "Un résultat valide existait déjà, donc rien de nouveau n'a été exécuté.",
+    "queuedTitle": "En attente",
+    "queuedDescription": "L'exécution a été ajoutée à la file d'attente.",
+    "runAgainFailedTitle": "Impossible d'exécuter à nouveau",
+    "cancelledTitle": "Exécution annulée",
+    "cancelFailedTitle": "Impossible d'annuler l'exécution",
+    "deletedTitle": "Exécution supprimée",
+    "deleteFailedTitle": "Impossible de supprimer l'exécution"
+  },
+  "deleteConfirmItemLabel": "exécution"
+}
