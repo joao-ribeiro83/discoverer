@@ -59,5 +59,6 @@
     "deletedTitle": "Run deleted",
     "deleteFailedTitle": "Couldn't delete the run"
   },
-  "deleteConfirmItemLabel": "run"
+  "deleteConfirmItemLabel": "run",
+  "deleteConfirmDescription": "This permanently deletes this run of {{name}} and its stored rows. This cannot be undone."
 }

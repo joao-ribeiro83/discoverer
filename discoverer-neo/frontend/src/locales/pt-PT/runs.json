@@ -59,5 +59,6 @@
     "deletedTitle": "Execução eliminada",
     "deleteFailedTitle": "Não foi possível eliminar a execução"
   },
-  "deleteConfirmItemLabel": "execução"
+  "deleteConfirmItemLabel": "execução",
+  "deleteConfirmDescription": "Isto elimina permanentemente esta execução de {{name}} e as respetivas linhas guardadas. Esta ação não pode ser anulada."
 }
