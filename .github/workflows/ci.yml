@@ -98,8 +98,10 @@ jobs:
       # which creates the test database and applies every migration to it.
       # A `db:migrate` before that would target a database that does not
       # exist yet.
+      # The script itself runs with coverage, so a local `npm test` hits the
+      # same 71% branch gate CI does.
       - name: Test
-        run: npm test --workspace @discoverer-neo/backend -- --coverage
+        run: npm test --workspace @discoverer-neo/backend
 
   frontend:
     name: Frontend (lint, typecheck, test)
