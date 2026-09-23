@@ -140,4 +140,38 @@ describe('RunsPage', () => {
     expect(within(doneRow).queryByRole('button', { name: /cancel/i })).not.toBeInTheDocument()
     expect(within(failedRow).queryByRole('button', { name: /cancel/i })).not.toBeInTheDocument()
   })
+
+  it('keeps polling slowly when every run has finished, so runs started elsewhere appear', async () => {
+    mockedApi.runs.list.mockResolvedValue(envelope([makeRun()]) as never)
+
+    renderPage()
+    await screen.findByText('Sales by Region')
+    expect(mockedApi.runs.list).toHaveBeenCalledTimes(1)
+
+    await vi.advanceTimersByTimeAsync(30_000)
+    await waitFor(() => expect(mockedApi.runs.list).toHaveBeenCalledTimes(2))
+  })
+
+  it('refetches on mount even though the app caches queries for five minutes', async () => {
+    mockedApi.runs.list.mockResolvedValue(envelope([makeRun()]) as never)
+    // Same defaults as main.tsx: without an override, a second visit within
+    // five minutes would show the cached list and miss runs requested since.
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false, staleTime: 5 * 60 * 1000 } },
+    })
+    const page = (
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter>
+          <RunsPage />
+        </MemoryRouter>
+      </QueryClientProvider>
+    )
+
+    const first = render(page)
+    await screen.findByText('Sales by Region')
+    first.unmount()
+
+    render(page)
+    await waitFor(() => expect(mockedApi.runs.list).toHaveBeenCalledTimes(2))
+  })
 })

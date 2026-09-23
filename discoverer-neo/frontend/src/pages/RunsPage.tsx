@@ -32,6 +32,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 const ACTIVE: MapRun['status'][] = ['QUEUED', 'RUNNING']
 const TERMINAL: MapRun['status'][] = ['COMPLETED', 'FAILED', 'CANCELLED']
 const POLL_MS = 2000
+/** With nothing in flight, still look for runs started elsewhere (viewer, another tab, a schedule). */
+const IDLE_POLL_MS = 30_000
 const LIST_LIMIT = 200
 
 function isExpired(run: MapRun): boolean {
@@ -130,8 +132,12 @@ export function RunsPage() {
     queryKey: ['runs', isAdmin && allUsers],
     queryFn: async () =>
       (await apiClient.runs.list({ all: isAdmin && allUsers, limit: LIST_LIMIT })).data.data,
+    // The app-wide 5 min staleTime would show a cached list on a return
+    // visit and miss the run the user just requested; always refetch on
+    // mount and window focus instead.
+    staleTime: 0,
     refetchInterval: (query) =>
-      (query.state.data ?? []).some((r) => ACTIVE.includes(r.status)) ? POLL_MS : false,
+      (query.state.data ?? []).some((r) => ACTIVE.includes(r.status)) ? POLL_MS : IDLE_POLL_MS,
   })
 
   const maps = useMemo(() => {
