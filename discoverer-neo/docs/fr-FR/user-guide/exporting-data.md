@@ -13,11 +13,26 @@ Découvrez comment télécharger les résultats de cartes sous forme de fichiers
 
 ### Depuis l'exécution d'une carte
 
-1. Après avoir exécuté une carte, cliquez sur le bouton **Exporter**
-2. Choisissez le format : **XLSX** ou **CSV**
-3. Cliquez sur **Exporter**
+1. Exécutez une carte et attendez qu'elle soit **Terminée**
+2. Cliquez sur **Excel**, **CSV** ou **PDF**
+3. La tâche d'exportation est mise en file d'attente et son traitement va commencer
 
-La tâche d'exportation est mise en file d'attente et son traitement va commencer.
+### Pourquoi les boutons d'exportation sont parfois absents
+
+Les boutons d'exportation exportent **les lignes qu'une exécution a déjà
+enregistrées** — ils n'interrogent jamais la source de données à nouveau. Ils
+n'apparaissent qu'une fois qu'une exécution existe pour les paramètres
+actuels, que cette exécution est **Terminée**, et que son résultat n'a pas
+encore expiré (consultez
+[Validité du résultat](executing-maps.md#validité-du-résultat)). Une
+exécution encore **En file d'attente** ou **En cours** n'a pas encore de
+lignes, et une exécution expirée n'a plus les siennes, donc les deux masquent
+les boutons. Cliquez sur **Réexécuter** pour obtenir un résultat frais et
+exportable.
+
+Un aperçu rapide créé dans le générateur de cartes (avant d'enregistrer et
+d'exécuter la carte pour de bon) n'est pas non plus enregistré, il n'a donc
+pas de boutons d'exportation, pour la même raison.
 
 ### État du téléchargement
 

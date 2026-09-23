@@ -13,11 +13,25 @@ Aprenda a descargar los resultados de un mapa como archivos Excel o CSV.
 
 ### Desde la ejecución de un mapa
 
-1. Tras ejecutar un mapa, haga clic en el botón **Exportar**
-2. Elija el formato: **XLSX** o **CSV**
-3. Haga clic en **Exportar**
+1. Ejecute un mapa y espere a que quede **Finalizado**
+2. Haga clic en **Excel**, **CSV** o **PDF**
+3. El trabajo de exportación se pone en cola y comenzará a procesarse
 
-El trabajo de exportación se pone en cola y comenzará a procesarse.
+### Por qué a veces faltan los botones de exportación
+
+Los botones de exportación exportan **las filas que una ejecución ya
+guardó** — nunca vuelven a consultar el origen de datos. Solo aparecen una
+vez que existe una ejecución para los parámetros actuales, esa ejecución está
+**Finalizada**, y su resultado aún no ha expirado (consulte
+[Validez del resultado](executing-maps.md#validez-del-resultado)). Una
+ejecución todavía **En cola** o **En ejecución** aún no tiene filas, y una
+ejecución expirada ya no conserva las suyas, así que ambas ocultan los
+botones. Haga clic en **Ejecutar de nuevo** para obtener un resultado nuevo y
+exportable.
+
+Una vista previa rápida creada en el generador de mapas (antes de guardar y
+ejecutar el mapa de verdad) tampoco se guarda, así que tampoco tiene botones
+de exportación, por el mismo motivo.
 
 ### Estado de la descarga
 

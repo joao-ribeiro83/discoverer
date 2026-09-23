@@ -181,34 +181,56 @@ Survolez les en-têtes de colonne pour afficher les options :
 
 Consultez [Exportation de données](exporting-data.md).
 
-## Exécution asynchrone (requêtes longues)
+## En file d'attente, en cours et réutilisé
 
-Pour les requêtes qui prennent plus de 30 secondes :
+Chaque **exécution** passe par une seule file d'attente — il n'y a plus de
+bouton séparé pour les requêtes longues. Cliquez sur **Exécuter** et la carte
+passe par :
 
-1. Cliquez sur **Exécuter en arrière-plan**
-2. Vous revenez au tableau de bord
-3. Consultez **Tâches planifiées** ou **Historique d'exécution** pour connaître l'état
+- **En file d'attente** — en attente de son tour. Vos propres exécutions
+  avancent une à la fois, dans l'ordre où vous les avez demandées ; les
+  exécutions d'un autre utilisateur n'attendent jamais derrière les vôtres.
+- **En cours** — la requête s'exécute sur la source de données.
+- **Terminée** — les lignes sont prêtes et s'affichent dans la grille de
+  résultats.
 
-Valeurs d'état :
-- **PENDING** — En file d'attente, en attente d'exécution
-- **PROCESSING** — En cours d'exécution
-- **COMPLETED** — Terminé, résultats disponibles
-- **FAILED** — La requête a échoué (voir l'erreur)
+Si vous exécutez à nouveau la même carte avec les mêmes paramètres pendant
+qu'un résultat valide existe déjà, Neo saute la file d'attente et le renvoie
+instantanément, avec la mention **Résultat réutilisé**. Cliquez sur
+**Réexécuter** pour forcer une nouvelle exécution malgré tout.
 
-Cliquez sur une tâche terminée pour consulter les résultats.
+### Validité du résultat
+
+Un résultat terminé reste disponible pendant **un jour maximum** après son
+achèvement (votre administrateur peut fixer une limite plus courte). Le
+résultat d'une exécution planifiée suit plutôt la propre durée de
+conservation de sa planification — consultez
+[Planification de cartes](scheduling.md). Une fois qu'un résultat a expiré,
+réexécuter la carte remet une nouvelle exécution en file d'attente, et ses
+lignes ne sont plus téléchargeables — consultez
+[pourquoi les boutons d'exportation manquent parfois](exporting-data.md#pourquoi-les-boutons-dexportation-sont-parfois-absents).
+
+## La page Exécutions
+
+Cliquez sur **Exécutions** dans la barre latérale pour voir toutes les
+exécutions que vous avez demandées, en direct ou planifiées, avec leur état,
+le nombre de lignes, la durée et la date d'expiration. Vous pouvez ici :
+
+- **Ouvrir** — revenir à la visionneuse de cartes avec les lignes de cette
+  exécution
+- **Réexécuter** — répéter les mêmes paramètres (renvoie instantanément si le
+  résultat est encore valide)
+- **Annuler** — arrêter une exécution encore en file d'attente
+- **Supprimer** — retirer une exécution terminée
+- **XLSX / CSV / PDF** — télécharger les lignes enregistrées (consultez
+  [Exportation de données](exporting-data.md))
+
+Un administrateur peut en plus voir les exécutions de tous les utilisateurs.
 
 ## Historique d'exécution
 
-Consultez les exécutions récentes d'une carte :
-
-1. Ouvrez une carte → cliquez sur **Historique**
-2. Consultez la liste des exécutions récentes avec :
-   - Date/heure d'exécution
-   - Utilisateur qui l'a exécutée
-   - Nombre de lignes renvoyées
-   - Durée d'exécution
-
-Cliquez sur une ligne pour consulter à nouveau ces résultats.
+Pour ne voir que les exécutions d'une carte, ouvrez la
+[page Exécutions](#la-page-exécutions) et filtrez par cette carte.
 
 ## Dépannage
 

@@ -178,34 +178,52 @@ Passe o cursor sobre os cabeçalhos das colunas para ver as opções:
 
 Consulte [Exportar Dados](exporting-data.md).
 
-## Execução Assíncrona (Consultas Longas)
+## Em Fila, A Executar e Reutilizado
 
-Para consultas que demoram > 30 segundos:
+Cada **Execução** passa por uma única fila — já não existe um botão separado
+para consultas longas. Clique em **Executar** e o mapa passa por:
 
-1. Clique em **Executar em Segundo Plano**
-2. Regressa ao painel
-3. Consulte **Tarefas Agendadas** ou **Histórico de Execução** para ver o estado
+- **Em fila** — a aguardar a sua vez. As suas próprias execuções avançam uma
+  de cada vez, pela ordem em que as pediu; as execuções de outro utilizador
+  nunca esperam pela sua.
+- **A executar** — a consulta está a ser executada na fonte de dados.
+- **Concluída** — as linhas estão prontas e aparecem na grelha de resultados.
 
-Valores de estado:
-- **PENDING** — Em fila, a aguardar execução
-- **PROCESSING** — Em execução
-- **COMPLETED** — Concluído, resultados disponíveis
-- **FAILED** — A consulta falhou (consulte o erro)
+Se executar o mesmo mapa com os mesmos parâmetros enquanto já existir um
+resultado válido, o Neo salta a fila e devolve-o de imediato, identificado
+como **Resultado reutilizado**. Clique em **Executar novamente** para forçar
+uma nova execução mesmo assim.
 
-Clique numa tarefa concluída para visualizar os resultados.
+### Validade do Resultado
+
+Um resultado concluído fica disponível durante **até um dia** depois de
+terminar (o administrador pode definir um limite mais curto). O resultado de
+uma execução agendada segue antes a definição de retenção do próprio
+agendamento — consulte [Agendar Mapas](scheduling.md). Assim que um resultado
+expira, executar o mapa novamente coloca em fila uma nova execução, e as suas
+linhas deixam de poder ser transferidas — consulte
+[porque faltam os botões de exportação](exporting-data.md#porque-e-que-os-botoes-de-exportacao-por-vezes-nao-aparecem).
+
+## A Página de Execuções
+
+Clique em **Execuções** na barra lateral para ver todas as execuções que
+pediu, ao vivo ou agendadas, com o estado, número de linhas, duração e
+validade de cada uma. A partir daqui pode:
+
+- **Abrir** — voltar ao visualizador de mapas com as linhas dessa execução
+- **Executar novamente** — repetir os mesmos parâmetros (devolve de imediato
+  se o resultado ainda for válido)
+- **Cancelar** — parar uma execução que ainda esteja em fila
+- **Eliminar** — remover uma execução terminada
+- **XLSX / CSV / PDF** — transferir as linhas guardadas (consulte
+  [Exportar Dados](exporting-data.md))
+
+Um administrador pode ainda ver as execuções de todos os utilizadores.
 
 ## Histórico de Execução
 
-Visualize as execuções recentes de um mapa:
-
-1. Abra um mapa → clique em **Histórico**
-2. Veja a lista de execuções recentes com:
-   - Data/hora de execução
-   - Utilizador que a executou
-   - Número de linhas devolvidas
-   - Tempo de execução
-
-Clique em qualquer linha para voltar a visualizar esses resultados.
+Para ver apenas as execuções de um mapa, abra a
+[Página de Execuções](#a-página-de-execuções) e filtre por esse mapa.
 
 ## Resolução de Problemas
 
