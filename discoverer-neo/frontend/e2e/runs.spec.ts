@@ -1,46 +1,10 @@
 import { test, expect } from '@playwright/test'
-import { EXECUTE_RESULT, MAP_WITH_DETAILS, jsonRoute, seedAuthedSession } from './fixtures'
+import { COMPLETED_RUN, EXECUTE_RESULT, MAP_WITH_DETAILS, QUEUED_RUN, RUN_ID, jsonRoute, seedAuthedSession } from './fixtures'
 
-const RUN_ID = 'run-e2e-1'
-const NOW_ISO = '2026-01-01T00:00:00.000Z'
-// Fixed far in the future so `expiresAt > now` holds regardless of when this
-// suite actually runs (RunsPage/ExecutionPanel gate exports on the real clock).
-const FAR_FUTURE_ISO = '2099-01-01T00:00:00.000Z'
-
-function makeRun(overrides: Record<string, unknown> = {}) {
-  return {
-    id: RUN_ID,
-    mapId: MAP_WITH_DETAILS.id,
-    mapName: MAP_WITH_DETAILS.name,
-    kind: 'LIVE',
-    scheduleId: null,
-    status: 'QUEUED',
-    parameters: {},
-    calculatedFields: [],
-    columns: null,
-    decoration: null,
-    rowCount: null,
-    truncated: false,
-    executionTimeMs: null,
-    errorMessage: null,
-    createdAt: NOW_ISO,
-    startedAt: null,
-    completedAt: null,
-    expiresAt: FAR_FUTURE_ISO,
-    ...overrides,
-  }
-}
-
-const QUEUED_RUN = makeRun()
-const COMPLETED_RUN = makeRun({
-  status: 'COMPLETED',
-  columns: EXECUTE_RESULT.columns,
-  decoration: { groupBreakAliases: [], totals: [], conditionalFormats: [], warnings: [] },
-  rowCount: EXECUTE_RESULT.rowCount,
-  executionTimeMs: EXECUTE_RESULT.executionTimeMs,
-  startedAt: NOW_ISO,
-  completedAt: NOW_ISO,
-})
+// Between QUEUED and COMPLETED — fixtures.ts only exports those two, since
+// `mockMapRunFlow` never needs to show RUNNING within a test's window; this
+// spec does, to prove the status line actually transitions.
+const RUNNING_RUN = { ...QUEUED_RUN, status: 'RUNNING', startedAt: '2026-01-06T00:00:00.500Z' }
 
 test.describe('Runs', () => {
   test.beforeEach(async ({ page }) => {
@@ -59,31 +23,51 @@ test.describe('Runs', () => {
       return jsonRoute(route, { data: first ? QUEUED_RUN : COMPLETED_RUN }, first ? 202 : 200)
     })
     // `useMapRun` shows the QUEUED run it just got back from the POST above
-    // immediately (no fetch needed) and only polls this endpoint afterwards
-    // — by the time it's ever called, the run has completed.
-    await page.route(`**/api/runs/${RUN_ID}`, (route) => jsonRoute(route, { data: COMPLETED_RUN }))
+    // immediately (no fetch needed) — the first actual poll of this endpoint
+    // reports QUEUED again, the next RUNNING, and only the one after that
+    // COMPLETED, so the status line is seen to genuinely transition rather
+    // than just matching whatever `useMapRun` already had in hand.
+    let pollCount = 0
+    await page.route(`**/api/runs/${RUN_ID}`, (route) => {
+      pollCount += 1
+      const run = pollCount === 1 ? QUEUED_RUN : pollCount === 2 ? RUNNING_RUN : COMPLETED_RUN
+      return jsonRoute(route, { data: run })
+    })
     // `runs.rows()` appends `?offset=&limit=` — the trailing `*` absorbs it.
     await page.route(`**/api/runs/${RUN_ID}/rows*`, (route) => jsonRoute(route, { data: EXECUTE_RESULT.rows }))
-    // The Runs page's list — a single completed row throughout.
-    await page.route(/\/api\/runs(\?.*)?$/, (route) => jsonRoute(route, { data: [COMPLETED_RUN] }))
+    // The Runs page's list: QUEUED on the first read (Cancel should show),
+    // COMPLETED afterwards (Cancel should disappear, exports should appear)
+    // — whichever request gets there first, the auto-poll or "Run again"'s
+    // cache invalidation.
+    let listCallCount = 0
+    await page.route(/\/api\/runs(\?.*)?$/, (route) => {
+      listCallCount += 1
+      const run = listCallCount === 1 ? QUEUED_RUN : COMPLETED_RUN
+      return jsonRoute(route, { data: [run] })
+    })
 
     await page.goto(`/maps/${MAP_WITH_DETAILS.id}/view`)
     await expect(page.getByRole('heading', { name: MAP_WITH_DETAILS.name })).toBeVisible()
 
     await page.getByRole('button', { name: 'Run', exact: true }).click()
-    await expect(page.getByText(/Queued|Running/)).toBeVisible()
+    // Exact strings, not a regex — the Run button's own label also reads
+    // "Running…" while either state is in flight, so a loose match risks a
+    // strict-mode violation once both are on screen at once.
+    await expect(page.getByText('Queued (position unknown)')).toBeVisible()
+    await expect(page.locator('p', { hasText: 'Running…' })).toBeVisible()
     await expect(page.getByText('Acme Corp')).toBeVisible()
 
     await page.goto('/runs')
     const row = page.getByRole('row', { name: new RegExp(MAP_WITH_DETAILS.name) })
     await expect(row).toBeVisible()
+    await expect(row.getByTitle('Cancel')).toBeVisible()
 
     await row.getByTitle('Run again').click()
     await expect(page.getByText('Result reused').first()).toBeVisible()
 
+    await expect(row.getByTitle('Cancel')).toHaveCount(0)
     await expect(row.getByText('XLSX')).toBeVisible()
     await expect(row.getByText('CSV')).toBeVisible()
     await expect(row.getByText('PDF')).toBeVisible()
-    await expect(row.getByTitle('Cancel')).toHaveCount(0)
   })
 })
