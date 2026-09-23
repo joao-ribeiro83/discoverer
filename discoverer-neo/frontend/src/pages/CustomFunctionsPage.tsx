@@ -5,9 +5,9 @@ import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
 import type { ColumnDef } from '@tanstack/react-table'
-import { Plus, Pencil, Trash2, Search } from 'lucide-react'
+import { Plus, Pencil, Trash2, Search, RefreshCw } from 'lucide-react'
 import { apiClient, getErrorMessage } from '@/lib/api'
-import type { CustomFunction, DatabaseFunction } from '@/lib/types'
+import type { CustomFunction, DatabaseFunction, FunctionRefreshResponse } from '@/lib/types'
 import { useToast } from '@/hooks/use-toast'
 import { AdminPageWrapper } from '@/components/admin/AdminPageWrapper'
 import { DataTable } from '@/components/admin/DataTable'
@@ -212,6 +212,31 @@ export function CustomFunctionsPage() {
     },
   })
 
+  // Re-read signatures from Oracle. Changed ones are written back and the
+  // calculated fields recompiled; functions Oracle no longer has are only listed.
+  const [refreshed, setRefreshed] = useState<FunctionRefreshResponse | null>(null)
+  const refreshMutation = useMutation({
+    mutationFn: async (id?: string) =>
+      (id ? await apiClient.customFunctions.refresh(id) : await apiClient.customFunctions.refreshAll()).data.data,
+    onSuccess: (data) => {
+      setRefreshed(data)
+      void queryClient.invalidateQueries({ queryKey: ['custom-functions'] })
+      const failed = data.results.filter((r) => r.error).length
+      toast({
+        title: t('admin:customFunctions.refresh.done', { count: data.results.length }),
+        description: t('admin:customFunctions.refresh.summary', {
+          changed: data.results.filter((r) => r.changed.length > 0).length,
+          missing: data.results.filter((r) => r.missing).length,
+          failed,
+        }),
+        variant: failed > 0 || data.compile?.ok === false ? 'destructive' : undefined,
+      })
+    },
+    onError: (err) =>
+      toast({ title: t('admin:customFunctions.refresh.failed'), description: getErrorMessage(err), variant: 'destructive' }),
+  })
+  const notable = (refreshed?.results ?? []).filter((r) => r.error || r.missing || r.changed.length > 0)
+
   const columns: ColumnDef<CustomFunction>[] = [
     { accessorKey: 'name', header: t('common:labels.name') },
     { accessorKey: 'functionType', header: t('common:labels.type'), cell: ({ row }) => <Badge variant="outline">{row.original.functionType}</Badge> },
@@ -247,6 +272,17 @@ export function CustomFunctionsPage() {
       header: '',
       cell: ({ row }) => (
         <div className="flex justify-end gap-1">
+          {row.original.dataSourceId && (
+            <Button
+              variant="ghost"
+              size="icon"
+              disabled={refreshMutation.isPending}
+              onClick={() => refreshMutation.mutate(row.original.id)}
+              title={t('admin:customFunctions.refresh.one')}
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+          )}
           <Button variant="ghost" size="icon" onClick={() => openEdit(row.original)} title={t('common:actions.edit')}>
             <Pencil className="h-4 w-4" />
           </Button>
@@ -266,11 +302,51 @@ export function CustomFunctionsPage() {
       title={t('admin:customFunctions.title')}
       description={t('admin:customFunctions.description')}
       action={
-        <Button onClick={openCreate}>
-          <Plus className="h-4 w-4" /> {t('admin:customFunctions.createButton')}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => refreshMutation.mutate(undefined)}
+            disabled={refreshMutation.isPending}
+            title={t('admin:customFunctions.refresh.allHint')}
+          >
+            <RefreshCw className={`h-4 w-4 ${refreshMutation.isPending ? 'animate-spin' : ''}`} />{' '}
+            {t('admin:customFunctions.refresh.all')}
+          </Button>
+          <Button onClick={openCreate}>
+            <Plus className="h-4 w-4" /> {t('admin:customFunctions.createButton')}
+          </Button>
+        </div>
       }
     >
+      {refreshed && (notable.length > 0 || refreshed.compile) && (
+        <div className="mb-4 space-y-2 rounded-md border p-3 text-sm">
+          <div className="flex items-center justify-between">
+            <p className="font-medium">{t('admin:customFunctions.refresh.resultsTitle')}</p>
+            <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setRefreshed(null)}>
+              {t('common:actions.close')}
+            </Button>
+          </div>
+          {refreshed.compile && (
+            <p className={refreshed.compile.ok ? undefined : 'text-destructive'}>
+              {t('admin:customFunctions.refresh.compile', { message: refreshed.compile.message })}
+            </p>
+          )}
+          <ul className="max-h-[40vh] space-y-1 overflow-y-auto">
+            {notable.map((r) => (
+              <li key={r.functionId}>
+                <span className="font-medium">{r.name}</span>{' '}
+                {r.error ? (
+                  <span className="text-destructive">{r.error}</span>
+                ) : r.missing ? (
+                  <span className="text-amber-600 dark:text-amber-400">{t('admin:customFunctions.refresh.missing')}</span>
+                ) : (
+                  <span>{t('admin:customFunctions.refresh.changed', { what: r.changed.join(', ') })}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <div className="mb-4 max-w-sm">
         <Input
           value={filter}

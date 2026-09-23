@@ -5,9 +5,9 @@ import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
 import type { ColumnDef } from '@tanstack/react-table'
-import { Plus, Pencil, Trash2, Wand2, Share2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, Wand2, Share2, RefreshCw } from 'lucide-react'
 import { apiClient, getErrorMessage } from '@/lib/api'
-import type { DataSource, Folder, IntrospectedTable } from '@/lib/types'
+import type { DataSource, Folder, FolderRefreshResult, IntrospectedTable } from '@/lib/types'
 import { useToast } from '@/hooks/use-toast'
 import { AdminPageWrapper } from '@/components/admin/AdminPageWrapper'
 import { DataTable } from '@/components/admin/DataTable'
@@ -197,6 +197,39 @@ export function FoldersPage() {
     },
   })
 
+  // Re-read tables/views from the data source: new columns become items,
+  // changed types are updated, vanished columns are only listed.
+  const [refreshResults, setRefreshResults] = useState<FolderRefreshResult[]>([])
+  const refreshMutation = useMutation({
+    mutationFn: async (folderId?: string) =>
+      (folderId
+        ? await apiClient.folders.refresh(folderId)
+        : await apiClient.folders.refreshAll(businessAreaId)
+      ).data.data,
+    onSuccess: (results) => {
+      setRefreshResults(results)
+      void queryClient.invalidateQueries({ queryKey: ['folders', businessAreaId] })
+      void queryClient.invalidateQueries({ queryKey: ['items'] })
+      const sum = (k: 'added' | 'updated' | 'missing') => results.reduce((n, r) => n + r[k].length, 0)
+      const failed = results.filter((r) => r.error).length
+      toast({
+        title: t('admin:folders.refresh.done', { count: results.length }),
+        description: t('admin:folders.refresh.summary', {
+          added: sum('added'),
+          updated: sum('updated'),
+          missing: sum('missing'),
+          failed,
+        }),
+        variant: failed > 0 ? 'destructive' : undefined,
+      })
+    },
+    onError: (err) =>
+      toast({ title: t('admin:folders.refresh.failed'), description: getErrorMessage(err), variant: 'destructive' }),
+  })
+  const notableResults = refreshResults.filter(
+    (r) => r.error || r.added.length > 0 || r.updated.length > 0 || r.missing.length > 0,
+  )
+
   const columns: ColumnDef<Folder>[] = [
     {
       accessorKey: 'name',
@@ -223,6 +256,19 @@ export function FoldersPage() {
       header: '',
       cell: ({ row }) => (
         <div className="flex justify-end gap-1">
+          {(row.original.folderType === 'TABLE' || row.original.folderType === 'VIEW') &&
+            row.original.dataSourceId &&
+            !row.original.isShared && (
+              <Button
+                variant="ghost"
+                size="icon"
+                disabled={refreshMutation.isPending}
+                onClick={() => refreshMutation.mutate(row.original.id)}
+                title={t('admin:folders.refresh.one')}
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+            )}
           <Button
             variant="ghost"
             size="icon"
@@ -249,9 +295,20 @@ export function FoldersPage() {
       title={t('admin:folders.title')}
       description={t('admin:folders.description')}
       action={
-        <Button onClick={openCreate} disabled={!businessAreaId}>
-          <Plus className="h-4 w-4" /> {t('admin:folders.createButton')}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => refreshMutation.mutate(undefined)}
+            disabled={!businessAreaId || refreshMutation.isPending}
+            title={t('admin:folders.refresh.allHint')}
+          >
+            <RefreshCw className={`h-4 w-4 ${refreshMutation.isPending ? 'animate-spin' : ''}`} />{' '}
+            {t('admin:folders.refresh.all')}
+          </Button>
+          <Button onClick={openCreate} disabled={!businessAreaId}>
+            <Plus className="h-4 w-4" /> {t('admin:folders.createButton')}
+          </Button>
+        </div>
       }
     >
       <div className="w-72 space-y-2">
@@ -274,6 +331,36 @@ export function FoldersPage() {
         <DataTable columns={columns} data={folders ?? []} isLoading={isLoading} emptyMessage={t('admin:folders.emptyMessage')} />
       ) : (
         <p className="text-sm text-muted-foreground">{t('admin:folders.selectBusinessAreaPrompt')}</p>
+      )}
+
+      {notableResults.length > 0 && (
+        <div className="space-y-2 rounded-md border p-3 text-sm">
+          <div className="flex items-center justify-between">
+            <p className="font-medium">{t('admin:folders.refresh.resultsTitle')}</p>
+            <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setRefreshResults([])}>
+              {t('common:actions.close')}
+            </Button>
+          </div>
+          <ul className="max-h-[40vh] space-y-2 overflow-y-auto">
+            {notableResults.map((r) => (
+              <li key={r.folderId}>
+                <span className="font-medium">{r.folderName}</span>
+                {r.error && <p className="text-destructive">{r.error}</p>}
+                {r.added.length > 0 && (
+                  <p>{t('admin:folders.refresh.added', { names: r.added.join(', ') })}</p>
+                )}
+                {r.updated.length > 0 && (
+                  <p>{t('admin:folders.refresh.updated', { names: r.updated.join(', ') })}</p>
+                )}
+                {r.missing.length > 0 && (
+                  <p className="text-amber-600 dark:text-amber-400">
+                    {t('admin:folders.refresh.missing', { names: r.missing.join(', ') })}
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       <CreateEditDialog open={dialogOpen} onOpenChange={setDialogOpen} title={editing ? t('admin:folders.dialog.editTitle') : t('admin:folders.dialog.createTitle')}>

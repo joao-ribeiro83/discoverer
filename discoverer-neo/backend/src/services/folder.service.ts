@@ -1,4 +1,4 @@
-import { eq, and } from 'drizzle-orm';
+import { eq, and, inArray } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import {
   folderBusinessAreas,
@@ -7,7 +7,13 @@ import {
   type Folder,
   type NewFolder,
 } from '../db/schema.js';
-import { introspectSchema, testTableExists, type IntrospectedTable } from './oracle-introspection.js';
+import {
+  describeObjects,
+  introspectSchema,
+  neoDataType,
+  testTableExists,
+  type IntrospectedTable,
+} from './oracle-introspection.js';
 import type { Redis } from 'ioredis';
 
 // ---------------------------------------------------------------------------
@@ -517,16 +523,145 @@ export async function importFromOracle(
 }
 
 // ---------------------------------------------------------------------------
+// Refresh from the data source
+// ---------------------------------------------------------------------------
+
+export interface RefreshResult {
+  folderId: string;
+  folderName: string;
+  /** Columns new in the source, now items. */
+  added: string[];
+  /** Items whose data type changed, plus the folder itself if TABLE/VIEW flipped. */
+  updated: string[];
+  /** Items whose column is gone from the source. Reported, never deleted. */
+  missing: string[];
+  error: string | null;
+}
+
+/**
+ * Re-read each folder's table or view from its data source and bring the
+ * items in line: a new column becomes an item, a changed data type is updated.
+ * A column that is gone is only reported — maps may still use its item, so
+ * deleting it is the admin's call. Only TABLE/VIEW folders with a data source.
+ */
+export async function refreshFromSource(
+  folderIds: string[],
+  describe: typeof describeObjects = describeObjects,
+): Promise<RefreshResult[]> {
+  const rows =
+    folderIds.length === 0
+      ? []
+      : await db
+          .select()
+          .from(folders)
+          .where(and(inArray(folders.id, folderIds), eq(folders.isActive, true)));
+
+  const results: RefreshResult[] = [];
+  const byDataSource = new Map<string, Folder[]>();
+  for (const folder of rows) {
+    if ((folder.folderType !== 'TABLE' && folder.folderType !== 'VIEW') || !folder.tableName || !folder.dataSourceId) {
+      results.push(emptyRefresh(folder, 'Folder is not based on a table or view of a data source'));
+      continue;
+    }
+    byDataSource.set(folder.dataSourceId, [...(byDataSource.get(folder.dataSourceId) ?? []), folder]);
+  }
+
+  for (const [dataSourceId, list] of byDataSource) {
+    let described: Array<IntrospectedTable | null>;
+    try {
+      described = await describe(
+        dataSourceId,
+        list.map((f) => ({ owner: f.tableOwner, name: f.tableName! })),
+      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      for (const folder of list) results.push(emptyRefresh(folder, message));
+      continue;
+    }
+    for (const [i, folder] of list.entries()) {
+      results.push(await syncFolder(folder, described[i] ?? null));
+    }
+  }
+  return results;
+}
+
+function emptyRefresh(folder: Folder, error: string | null): RefreshResult {
+  return { folderId: folder.id, folderName: folder.name, added: [], updated: [], missing: [], error };
+}
+
+async function syncFolder(folder: Folder, table: IntrospectedTable | null): Promise<RefreshResult> {
+  const result = emptyRefresh(folder, null);
+  if (!table) {
+    result.error =
+      `${folder.tableOwner ? `${folder.tableOwner}.` : ''}${folder.tableName} ` +
+      'no longer exists, or the data source user cannot see it';
+    return result;
+  }
+
+  const current = await db
+    .select()
+    .from(items)
+    .where(and(eq(items.folderId, folder.id), eq(items.isActive, true)));
+  // Several items may sit on one column (a date and its year, say).
+  const byColumn = new Map<string, typeof current>();
+  for (const item of current) {
+    if (!item.columnName) continue;
+    const key = item.columnName.toUpperCase();
+    byColumn.set(key, [...(byColumn.get(key) ?? []), item]);
+  }
+  let order = Math.max(-1, ...current.map((i) => i.displayOrder)) + 1;
+
+  await db.transaction(async (tx) => {
+    for (const col of table.columns) {
+      const dataType = neoDataType(col.dataType);
+      const onColumn = byColumn.get(col.columnName.toUpperCase());
+      if (!onColumn) {
+        await tx.insert(items).values({
+          folderId: folder.id,
+          name: humanizeName(col.columnName),
+          description: col.comments,
+          itemType: 'CO',
+          columnName: col.columnName,
+          dataType,
+          displayOrder: order++,
+        });
+        result.added.push(col.columnName);
+        continue;
+      }
+      for (const item of onColumn) {
+        if (neoDataType(item.dataType ?? '') === dataType) continue;
+        await tx.update(items).set({ dataType, updatedAt: new Date() }).where(eq(items.id, item.id));
+        result.updated.push(item.name);
+      }
+    }
+    if (folder.folderType !== table.objectType) {
+      await tx
+        .update(folders)
+        .set({ folderType: table.objectType, updatedAt: new Date() })
+        .where(eq(folders.id, folder.id));
+      result.updated.push(`${folder.name} (${table.objectType})`);
+    }
+  });
+
+  const live = new Set(table.columns.map((c) => c.columnName.toUpperCase()));
+  result.missing = [...byColumn]
+    .filter(([column]) => !live.has(column))
+    .flatMap(([, onColumn]) => onColumn.map((i) => i.name));
+  return result;
+}
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function generateFolderName(table: IntrospectedTable): string {
-  // Convert table name to a human-readable folder name
-  const base = table.tableName
+/** `CAP_PAGO` → `Cap Pago`, Discoverer's default naming. */
+function humanizeName(name: string): string {
+  return name
     .split('_')
     .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
     .join(' ');
+}
 
-  // If there's an existing folder with the same name, append the owner
-  return base;
+function generateFolderName(table: IntrospectedTable): string {
+  return humanizeName(table.tableName);
 }

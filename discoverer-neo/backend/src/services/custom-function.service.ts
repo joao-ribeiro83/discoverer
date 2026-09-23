@@ -1,9 +1,10 @@
-import { and, eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import {
   customFunctions,
   type CustomFunction,
 } from '../db/schema.js';
+import { describeFunctions, type DatabaseFunction } from './oracle-introspection.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -247,4 +248,114 @@ export async function softDelete(id: string): Promise<boolean> {
     .returning({ id: customFunctions.id });
 
   return !!row;
+}
+
+// ---------------------------------------------------------------------------
+// Refresh from the database
+// ---------------------------------------------------------------------------
+
+export interface FunctionRefreshResult {
+  functionId: string;
+  name: string;
+  /** What changed — `parameters`, `return type`. Empty when Oracle agrees. */
+  changed: string[];
+  /** Oracle no longer has it. The row is kept: calculated fields may still call it. */
+  missing: boolean;
+  error: string | null;
+}
+
+/** The part of a signature SQL cares about: argument order, types, which are required. */
+function signature(params: readonly FunctionParameter[]): string {
+  return JSON.stringify(params.map((p) => [p.name.toUpperCase(), p.type, p.required !== false]));
+}
+
+/**
+ * Re-read each function's signature from its data source (`ALL_ARGUMENTS`)
+ * and write back the parameters and return type where they differ. A function
+ * Oracle no longer has is only reported. `ids` null means every active one.
+ * Recompiling the calculated fields afterwards is the caller's job.
+ */
+export async function refreshFromDatabase(
+  ids: string[] | null,
+  describe: typeof describeFunctions = describeFunctions,
+): Promise<FunctionRefreshResult[]> {
+  const rows = await db
+    .select()
+    .from(customFunctions)
+    .where(
+      ids === null
+        ? eq(customFunctions.isActive, true)
+        : and(eq(customFunctions.isActive, true), inArray(customFunctions.id, ids.length > 0 ? ids : [''])),
+    )
+    .orderBy(customFunctions.name);
+
+  const results: FunctionRefreshResult[] = [];
+  const blank = (fn: CustomFunction, error: string | null = null): FunctionRefreshResult => ({
+    functionId: fn.id,
+    name: fn.name,
+    changed: [],
+    missing: false,
+    error,
+  });
+
+  const byDataSource = new Map<string, CustomFunction[]>();
+  for (const fn of rows) {
+    if (!fn.dataSourceId) results.push(blank(fn, 'No data source: set one to refresh this function'));
+    else if (fn.extDbLink) results.push(blank(fn, `It is called over database link ${fn.extDbLink}, which refresh cannot read`));
+    else byDataSource.set(fn.dataSourceId, [...(byDataSource.get(fn.dataSourceId) ?? []), fn]);
+  }
+
+  for (const [dataSourceId, list] of byDataSource) {
+    let found: DatabaseFunction[][];
+    try {
+      found = await describe(
+        dataSourceId,
+        list.map((fn) => ({ owner: fn.extOwner, packageName: fn.extPackage, name: fn.extName ?? fn.name })),
+      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      for (const fn of list) results.push(blank(fn, message));
+      continue;
+    }
+
+    for (const [i, fn] of list.entries()) {
+      const result = blank(fn);
+      results.push(result);
+      const overloads = found[i] ?? [];
+      const current = (fn.parameters as FunctionParameter[] | null) ?? [];
+      if (overloads.length === 0) {
+        result.missing = true;
+        continue;
+      }
+      // Several overloads: keep the one with the same argument count, if only one has it.
+      const sameCount = overloads.filter((o) => o.parameters.length === current.length);
+      const match = overloads.length === 1 ? overloads[0] : sameCount.length === 1 ? sameCount[0] : undefined;
+      if (!match) {
+        result.error = `Oracle has ${overloads.length} versions (overloads) of it; edit this one by hand`;
+        continue;
+      }
+
+      const defaults = new Map(current.map((p) => [p.name.toUpperCase(), p.defaultValue]));
+      const parameters: FunctionParameter[] = match.parameters.map((p) => ({
+        name: p.name,
+        type: p.type,
+        required: p.required,
+        position: p.position,
+        ...(defaults.get(p.name.toUpperCase()) != null ? { defaultValue: defaults.get(p.name.toUpperCase()) } : {}),
+      }));
+      const set: Partial<typeof customFunctions.$inferInsert> = {};
+      if (signature(parameters) !== signature(current)) {
+        set.parameters = parameters;
+        result.changed.push('parameters');
+      }
+      if (match.returnType !== fn.returnType) {
+        set.returnType = match.returnType;
+        result.changed.push('return type');
+      }
+      if (result.changed.length > 0) {
+        await db.update(customFunctions).set(set).where(eq(customFunctions.id, fn.id));
+      }
+    }
+  }
+  return results;
 }

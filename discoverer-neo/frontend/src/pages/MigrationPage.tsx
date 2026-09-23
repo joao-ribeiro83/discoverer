@@ -249,6 +249,16 @@ export function MigrationPage() {
       toast({ title: t('migration:toasts.couldNotStart'), description: getErrorMessage(err), variant: 'destructive' }),
   })
 
+  const compileMutation = useMutation({
+    mutationFn: async () => (await apiClient.migration.compile()).data.data,
+    onSuccess: (started) => {
+      setActiveJobId(started.id)
+      toast({ title: t('migration:toasts.compileStarted'), description: t('migration:toasts.progressUpdatesBelow') })
+    },
+    onError: (err) =>
+      toast({ title: t('migration:toasts.couldNotStart'), description: getErrorMessage(err), variant: 'destructive' }),
+  })
+
   // Announce the outcome once, when the job leaves RUNNING.
   const lastStatusRef = useRef<string | null>(null)
   useEffect(() => {
@@ -429,6 +439,19 @@ export function MigrationPage() {
               )}
               {t('migration:actions.reimportAll')}
             </Button>
+
+            <Button
+              variant="outline"
+              onClick={() => compileMutation.mutate()}
+              disabled={busy || isRunning || compileMutation.isPending}
+            >
+              {compileMutation.isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="mr-2 h-4 w-4" />
+              )}
+              {t('migration:actions.compile')}
+            </Button>
           </div>
 
           <p className="text-sm text-muted-foreground">
@@ -436,6 +459,9 @@ export function MigrationPage() {
           </p>
           <p className="text-sm text-muted-foreground">
             {t('migration:source.reimportAllHelp')}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            {t('migration:source.compileHelp')}
           </p>
 
           {!dryRun && (

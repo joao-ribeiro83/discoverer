@@ -10,6 +10,8 @@ import {
   shareWithBusinessArea,
   unshareWithBusinessArea,
   listSharedBusinessAreas,
+  refreshFromSource,
+  type RefreshResult,
 } from '../services/folder.service.js';
 import {
   requireBusinessAreaAccess,
@@ -149,7 +151,71 @@ const importResultSchema = {
 // Routes
 // ---------------------------------------------------------------------------
 
+const refreshResultSchema = {
+  type: 'object',
+  properties: {
+    folderId: { type: 'string' },
+    folderName: { type: 'string' },
+    added: { type: 'array', items: { type: 'string' } },
+    updated: { type: 'array', items: { type: 'string' } },
+    missing: { type: 'array', items: { type: 'string' } },
+    error: { type: ['string', 'null'] },
+  },
+} as const;
+
+const refreshResponse = {
+  200: { type: 'object', properties: { data: { type: 'array', items: refreshResultSchema } } },
+  400: { type: 'object', properties: { error: { type: 'string' } } },
+  401: { type: 'object', properties: { error: { type: 'string' } } },
+  403: { type: 'object', properties: { error: { type: 'string' } } },
+} as const;
+
 export default function folderRoutes(fastify: FastifyInstance) {
+  // Folder type and items can both change, so drop both cache levels.
+  async function invalidateRefreshed(results: RefreshResult[], businessAreaId: string): Promise<void> {
+    await invalidate(
+      fastify.redis,
+      metadataKeys.foldersByBusinessArea(businessAreaId),
+      ...results.map((r) => metadataKeys.itemsByFolder(r.folderId)),
+    );
+  }
+
+  // POST /api/folders/:id/refresh — re-read the folder's table/view and sync its items
+  fastify.post(
+    '/api/folders/:id/refresh',
+    {
+      preHandler: [fastify.authenticate, requireFolderAccess('EDIT')],
+      schema: { tags: ['Folders'], security: [{ bearerAuth: [] }], response: refreshResponse },
+    },
+    async (request, reply) => {
+      const parsed = IdParamSchema.safeParse(request.params);
+      if (!parsed.success) return reply.code(400).send({ error: 'Invalid folder ID format' });
+      const folder = await getById(parsed.data.id);
+      if (!folder) return reply.code(400).send({ error: 'Folder not found' });
+      const results = await refreshFromSource([folder.id]);
+      await invalidateRefreshed(results, folder.businessAreaId);
+      return reply.code(200).send({ data: results });
+    },
+  );
+
+  // POST /api/business-areas/:baId/folders/refresh — the same, for every folder the area owns
+  fastify.post(
+    '/api/business-areas/:baId/folders/refresh',
+    {
+      preHandler: [fastify.authenticate, requireBusinessAreaAccess('EDIT')],
+      schema: { tags: ['Folders'], security: [{ bearerAuth: [] }], response: refreshResponse },
+    },
+    async (request, reply) => {
+      const parsed = BaIdParamSchema.safeParse(request.params);
+      if (!parsed.success) return reply.code(400).send({ error: 'Invalid business area ID format' });
+      // Shared-in folders belong to another area; refresh them from there.
+      const owned = (await listByBusinessArea(parsed.data.baId)).filter((f) => !f.isShared);
+      const results = await refreshFromSource(owned.map((f) => f.id));
+      await invalidateRefreshed(results, parsed.data.baId);
+      return reply.code(200).send({ data: results });
+    },
+  );
+
   // GET /api/business-areas/:baId/folders — list folders in a business area
   fastify.get(
     '/api/business-areas/:baId/folders',

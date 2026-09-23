@@ -18,6 +18,7 @@ import {
   listJobs,
   startMapReimport,
   startDelta,
+  startCompile,
   startMigration,
 } from '../services/migration.service.js';
 import { invalidateAll } from '../lib/metadata-cache.js';
@@ -304,6 +305,32 @@ export default function migrationRoutes(fastify: FastifyInstance) {
         return reply.code(400).send({
           error: `Failed to start re-import: ${err instanceof Error ? err.message : String(err)}`,
         });
+      }
+    },
+  );
+
+  // POST /api/migration/compile — compile every calculated field in place
+  fastify.post(
+    '/api/migration/compile',
+    {
+      preHandler: adminPreHandler,
+      schema: {
+        tags,
+        security,
+        response: { 202: looseData, 401: errorResponse, 403: errorResponse, 409: errorResponse },
+      },
+    },
+    async (request, reply) => {
+      const userId = request.user?.sub;
+      if (!userId) return reply.code(401).send({ error: 'Unauthenticated' });
+      try {
+        const job = startCompile({ startedBy: userId, onSettled: () => invalidateAll(fastify.redis) });
+        return reply.code(202).send({ data: job });
+      } catch (err) {
+        if (err instanceof MigrationError && err.statusCode === 409) {
+          return reply.code(409).send({ error: err.message });
+        }
+        throw err;
       }
     },
   );

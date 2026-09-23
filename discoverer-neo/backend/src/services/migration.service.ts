@@ -39,6 +39,7 @@ import {
   createDeltaDb,
   commitShaFromEnv,
   verifyMigration,
+  checkFormulaCompileRate,
 } from '@discoverer-neo/core/migration';
 import type {
   AssessmentReport,
@@ -234,9 +235,10 @@ export interface MigrationLogLine {
  *
  * `FULL` is the whole EUL → Neo pipeline; `MAPS` re-reads only the workbooks
  * and rebuilds the migrated maps in place — see `reimportMaps` for why that is
- * a separate operation rather than a second full run.
+ * a separate operation rather than a second full run. `COMPILE` only
+ * publishes the calculated-field partition (`verify --compile`).
  */
-export type MigrationJobKind = 'FULL' | 'MAPS' | 'DELTA';
+export type MigrationJobKind = 'FULL' | 'MAPS' | 'DELTA' | 'COMPILE';
 
 /**
  * What a "re-import everything" (delta) job reports: the replay re-transforms
@@ -325,6 +327,36 @@ export function hasRunningJob(): boolean {
 /** Test-only: clear the in-memory registry between cases. */
 export function resetJobs(): void {
   jobs.clear();
+}
+
+/**
+ * Publish the calculated-field partition — `dn-migrate verify --compile`.
+ *
+ * Every write of `map_calculated_fields` (full run, maps re-import, delta)
+ * leaves `compile_status` NULL, and a NULL status is refused at query time
+ * ("has not compiled (status: not verified)"). So every live write ends here.
+ * Returns false when the compile itself threw: the rows are committed, so the
+ * job is COMPLETED_WITH_BLOCKERS, not FAILED.
+ */
+async function compileCalculatedFields(
+  verifyDb: NonNullable<MigrationTargetHandle['verifyDb']>,
+  log: (level: MigrationLogLine['level'], message: string) => void,
+): Promise<boolean> {
+  log('INFO', 'Compiling calculated fields…');
+  try {
+    const seam = await checkFormulaCompileRate(verifyDb, { writeCompileStatus: true });
+    const m = seam.metrics;
+    log(
+      seam.status === 'PASS' ? 'INFO' : 'WARN',
+      `Compiled ${(m.compiled ?? 0) + (m.compiledUnverified ?? 0)} of ${m.formulas ?? 0} calculated field(s); ` +
+        `${m.quarantined ?? 0} quarantined, ${m.failed ?? 0} failed.` +
+        (seam.findings.length > 0 ? ` Top reasons: ${seam.findings.slice(0, 3).join('; ')}` : ''),
+    );
+    return true;
+  } catch (err) {
+    log('ERROR', `Compile failed: ${err instanceof Error ? err.message : String(err)}`);
+    return false;
+  }
 }
 
 export interface StartMigrationOptions extends SourceOptions {
@@ -468,10 +500,17 @@ export function startMigration(
 
       job.result = result;
       job.detectedVersion = result.version.version;
+      const compiled =
+        result.dryRun || !target.verifyDb
+          ? true
+          : await compileCalculatedFields(target.verifyDb, (level, message) =>
+              onEvent({ type: 'log', level, phase: 'compile', message }),
+            );
       // The post-insert count reconciliation was already computed and, until
       // now, thrown away: a run whose own numbers did not add up still
       // reported COMPLETED.
-      job.status = result.validation && !result.validation.valid ? 'COMPLETED_WITH_BLOCKERS' : 'COMPLETED';
+      job.status =
+        (result.validation && !result.validation.valid) || !compiled ? 'COMPLETED_WITH_BLOCKERS' : 'COMPLETED';
       job.progress = 100;
       job.currentPhase = 'done';
     } catch (err) {
@@ -592,7 +631,14 @@ export function startMapReimport(
         : (Object.keys(result.planned) as Array<keyof typeof result.planned>).filter(
             (table) => result.written[table] !== result.planned[table],
           );
-      job.status = shortfall.length > 0 ? 'COMPLETED_WITH_BLOCKERS' : 'COMPLETED';
+      // The re-import rewrites every calculated field with a NULL status.
+      const compiled =
+        result.dryRun || !target.verifyDb
+          ? true
+          : await compileCalculatedFields(target.verifyDb, (level, message) =>
+              onEvent({ type: 'log', level, phase: 'compile', message }),
+            );
+      job.status = shortfall.length > 0 || !compiled ? 'COMPLETED_WITH_BLOCKERS' : 'COMPLETED';
       if (shortfall.length > 0) {
         append({
           level: 'WARN',
@@ -729,6 +775,87 @@ export function startDelta(
       job.status = 'FAILED';
       job.error = err instanceof Error ? err.message : String(err);
       log('ERROR', 'failed', job.error);
+    } finally {
+      job.finishedAt = new Date().toISOString();
+      if (target) {
+        try {
+          await target.close();
+        } catch {
+          // The pool is being discarded anyway.
+        }
+      }
+      try {
+        await options.onSettled?.();
+      } catch {
+        // Best-effort — see StartMigrationOptions.onSettled.
+      }
+    }
+  })();
+
+  return job;
+}
+
+/**
+ * Compile now, inside the caller's request — a few seconds on the live
+ * estate. For a change that shifts what compiled SQL says (a custom function's
+ * signature). Refused while a migration job runs, which compiles at its end.
+ */
+export async function compileNow(
+  deps: MigrationDeps = defaultDeps(),
+): Promise<{ ok: boolean; message: string }> {
+  if (hasRunningJob()) {
+    throw new MigrationError('A migration is already running; it compiles when it finishes', 409);
+  }
+  const target = deps.makeTarget();
+  try {
+    if (!target.verifyDb) throw new Error('This target cannot compile');
+    let last = { ok: true, message: '' };
+    const ok = await compileCalculatedFields(target.verifyDb, (level, message) => {
+      last = { ok: level !== 'ERROR', message };
+    });
+    return { ok, message: last.message };
+  } finally {
+    try {
+      await target.close();
+    } catch {
+      // The pool is being discarded anyway.
+    }
+  }
+}
+
+/**
+ * Compile every calculated field in place — the `verify --compile` step on
+ * its own, for a target migrated before every job ran it. Needs no EUL.
+ */
+export function startCompile(
+  options: { startedBy: string; onSettled?: () => void | Promise<void> },
+  deps: MigrationDeps = defaultDeps(),
+): MigrationJob {
+  if (hasRunningJob()) {
+    throw new MigrationError('A migration is already running; wait for it to finish', 409);
+  }
+
+  const job = createJob('COMPILE', { dataSourceId: '', startedBy: options.startedBy });
+  const log = (level: MigrationLogLine['level'], message: string): void => {
+    job.logs.push({ level, phase: 'compile', message, at: new Date().toISOString() });
+  };
+
+  void (async () => {
+    let target: MigrationTargetHandle | null = null;
+    try {
+      target = deps.makeTarget();
+      if (!target.verifyDb) throw new Error('This target cannot compile');
+      job.currentPhase = 'compile';
+      job.progress = 10;
+      const compiled = await compileCalculatedFields(target.verifyDb, log);
+      job.status = compiled ? 'COMPLETED' : 'COMPLETED_WITH_BLOCKERS';
+      job.progress = 100;
+      job.currentPhase = 'done';
+    } catch (err) {
+      job.status = 'FAILED';
+      job.error = err instanceof Error ? err.message : String(err);
+      job.currentPhase = 'failed';
+      log('ERROR', job.error);
     } finally {
       job.finishedAt = new Date().toISOString();
       if (target) {

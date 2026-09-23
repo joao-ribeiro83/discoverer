@@ -24,6 +24,8 @@ import {
   loadEulConnection,
   getJob,
   resetJobs,
+  startCompile,
+  compileNow,
   startMapReimport,
   startMigration,
 } from '../../services/migration.service.js';
@@ -510,5 +512,47 @@ describe('startMapReimport', () => {
 
     release();
     await waitForJob(first.id);
+  });
+});
+
+describe('calculated-field compile', () => {
+  // The backend's own pool is a drizzle node-postgres handle, which is what
+  // the verifier takes. Against the test database it compiles whatever is there.
+  const verifyDb = db as unknown as NonNullable<ReturnType<MigrationDeps['makeTarget']>['verifyDb']>;
+
+  it('startCompile publishes the partition without touching the EUL', async () => {
+    const { deps } = testDeps({
+      loadConnection: () => Promise.reject(new Error('compile must not read the EUL')),
+    });
+    const target = deps.makeTarget;
+    deps.makeTarget = () => ({ ...target(), verifyDb });
+
+    const job = await waitForJob(startCompile({ startedBy: 'tester' }, deps).id);
+
+    expect(job.kind).toBe('COMPILE');
+    expect(job.status).toBe('COMPLETED');
+    expect(job.logs.some((l) => l.phase === 'compile' && /^Compiled \d+ of \d+/.test(l.message))).toBe(true);
+  });
+
+  it('a live full migration ends by compiling', async () => {
+    const { deps } = testDeps();
+    const target = deps.makeTarget;
+    deps.makeTarget = () => ({ ...target(), verifyDb });
+
+    const job = await waitForJob(startMigration({ dataSourceId: oracleDsId, startedBy: 'tester' }, deps).id);
+
+    expect(job.status).toBe('COMPLETED');
+    expect(job.logs.some((l) => l.phase === 'compile' && /^Compiled/.test(l.message))).toBe(true);
+  });
+
+  it('compileNow compiles inside the request and reports the outcome', async () => {
+    const { deps } = testDeps();
+    const target = deps.makeTarget;
+    deps.makeTarget = () => ({ ...target(), verifyDb });
+
+    const result = await compileNow(deps);
+
+    expect(result.ok).toBe(true);
+    expect(result.message).toMatch(/^Compiled \d+ of \d+/);
   });
 });

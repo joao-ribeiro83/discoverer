@@ -8,6 +8,8 @@ import type {
   IntrospectedTable,
   ImportResult,
   Folder,
+  FolderRefreshResult,
+  FunctionRefreshResponse,
   Item,
   ItemValues,
   Join,
@@ -252,6 +254,10 @@ export const apiClient = {
       api.post<Envelope<Folder>>(`/business-areas/${businessAreaId}/folders`, data),
     update: (id: string, data: unknown) => api.put<Envelope<Folder>>(`/folders/${id}`, data),
     delete: (id: string) => api.delete<Envelope<{ message: string }>>(`/folders/${id}`),
+    // Re-read the table/view from the data source and sync the items.
+    refresh: (id: string) => api.post<Envelope<FolderRefreshResult[]>>(`/folders/${id}/refresh`),
+    refreshAll: (businessAreaId: string) =>
+      api.post<Envelope<FolderRefreshResult[]>>(`/business-areas/${businessAreaId}/folders/refresh`),
     // Folder↔business-area is many-to-many in Discoverer (BA_OBJ_LINKS): a
     // folder is owned by one area and can be shared into others.
     listSharedBusinessAreas: (id: string) =>
@@ -310,6 +316,9 @@ export const apiClient = {
     create: (data: unknown) => api.post<Envelope<CustomFunction>>('/custom-functions', data),
     update: (id: string, data: unknown) => api.put<Envelope<CustomFunction>>(`/custom-functions/${id}`, data),
     delete: (id: string) => api.delete<Envelope<{ message: string }>>(`/custom-functions/${id}`),
+    // Re-read signatures from Oracle; recompiles calculated fields when one changed.
+    refresh: (id: string) => api.post<Envelope<FunctionRefreshResponse>>(`/custom-functions/${id}/refresh`),
+    refreshAll: () => api.post<Envelope<FunctionRefreshResponse>>('/custom-functions/refresh'),
     searchDatabase: (dataSourceId: string, params: { owner?: string; search?: string }) =>
       api.get<Envelope<{ owner: string; functions: DatabaseFunction[]; truncated: boolean }>>(
         `/data-sources/${dataSourceId}/functions`,
@@ -563,6 +572,8 @@ export const apiClient = {
     // Re-imports every object in place with the current migrator (delta).
     reimportAll: (data: StartMapReimportInput) =>
       api.post<Envelope<MigrationJob>>('/migration/delta', data),
+    // Compiles every calculated field in place; reads no EUL.
+    compile: () => api.post<Envelope<MigrationJob>>('/migration/compile'),
     listJobs: () => api.get<Envelope<MigrationJob[]>>('/migration/jobs'),
     getJob: (jobId: string) => api.get<Envelope<MigrationJob>>(`/migration/jobs/${jobId}`),
   },

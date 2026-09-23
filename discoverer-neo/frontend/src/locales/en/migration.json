@@ -9,7 +9,8 @@
     "runDryRun": "Run dry run",
     "runMigration": "Run migration",
     "reimportMaps": "Re-import maps",
-    "reimportAll": "Re-import everything"
+    "reimportAll": "Re-import everything",
+    "compile": "Compile calculated fields"
   },
   "source": {
     "title": "Source",
@@ -26,7 +27,8 @@
     "dryRunLabel": "Dry run (validate without writing)",
     "liveMigrationWarning": "A live migration writes into this Discoverer Neo database. Run a dry run first and review the report below.",
     "reimportMapsHelp": "Re-import maps rebuilds only the maps of a database that has already been migrated, from the workbooks in the EUL. It replaces every map in the \"Migrated Workbooks\" business area — edits made to one since the original migration are lost — and leaves users, folders, items and grants untouched. Run it as a dry run first.",
-    "reimportAllHelp": "Re-import everything replays the whole migration with the current version of the migrator and rewrites, object by object, whatever now differs: business areas, folders, items, joins, hierarchies, functions, users, grants and maps. Nothing is deleted and map ids survive, so schedules and shares are kept; objects removed from the EUL are only reported. A live run ends by compiling the calculated fields. Run it as a dry run first."
+    "reimportAllHelp": "Re-import everything replays the whole migration with the current version of the migrator and rewrites, object by object, whatever now differs: business areas, folders, items, joins, hierarchies, functions, users, grants and maps. Nothing is deleted and map ids survive, so schedules and shares are kept; objects removed from the EUL are only reported. A live run ends by compiling the calculated fields. Run it as a dry run first.",
+    "compileHelp": "Compile calculated fields checks every calculated field and writes the SQL that maps run. A migration and a re-import now do this at the end; use this button if a map says a field \"has not compiled\". It does not read the EUL."
   },
   "detected": {
     "title": "Detected source",
@@ -144,6 +146,7 @@
     "mapReimportStarted": "Map re-import started",
     "migrationBlockers": "Migration finished with blockers",
     "migrationBlockersBody": "The rows landed, but the run's own reconciliation did not add up. Run dn-migrate verify against the target before using this estate.",
-    "deltaStarted": "Re-import of everything started"
+    "deltaStarted": "Re-import of everything started",
+    "compileStarted": "Compiling calculated fields"
   }
 }

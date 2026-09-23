@@ -81,6 +81,33 @@ export interface Folder {
   isShared?: boolean
 }
 
+/** A custom-function refresh: each function's outcome, then the recompile (null when nothing changed). */
+export interface FunctionRefreshResponse {
+  results: Array<{
+    functionId: string
+    name: string
+    /** `parameters`, `return type` — empty when Oracle agrees. */
+    changed: string[]
+    /** Oracle no longer has it; the function is kept. */
+    missing: boolean
+    error: string | null
+  }>
+  compile: { ok: boolean; message: string } | null
+}
+
+/** One folder's outcome of a refresh from its data source. */
+export interface FolderRefreshResult {
+  folderId: string
+  folderName: string
+  /** Columns new in the source, now items. */
+  added: string[]
+  /** Items whose data type changed (and the folder, if TABLE/VIEW flipped). */
+  updated: string[]
+  /** Items whose column is gone from the source — reported, not deleted. */
+  missing: string[]
+  error: string | null
+}
+
 // CO is the plain column-backed database item; CI is a *created* item (a
 // calculation). Listed CO-first to match how they are presented in the UI.
 export type ItemType = 'CO' | 'CI' | 'CU' | 'JI' | 'HI' | 'AG' | 'FU'
@@ -1055,7 +1082,7 @@ export interface MigrationLogLine {
 }
 
 /** 'FULL' is the whole pipeline; 'MAPS' rebuilds only the migrated maps. */
-export type MigrationJobKind = 'FULL' | 'MAPS' | 'DELTA'
+export type MigrationJobKind = 'FULL' | 'MAPS' | 'DELTA' | 'COMPILE'
 
 /** Mirrors the backend's DeltaSummary — what a "re-import everything" job reports. */
 export interface DeltaSummary {
