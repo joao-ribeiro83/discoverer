@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
 import type { ColumnDef } from '@tanstack/react-table'
-import { Plus, Pencil, Trash2, Play, History, Download, Pause } from 'lucide-react'
+import { Plus, Pencil, Trash2, Play, History, Download, Pause, ExternalLink, Loader2 } from 'lucide-react'
 import { apiClient, getErrorMessage } from '@/lib/api'
-import type { Schedule, ScheduleParameterValue, MapParameter } from '@/lib/types'
+import type { Schedule, ScheduleParameterValue, MapParameter, ScheduledResult } from '@/lib/types'
+import { useMapExport } from '@/hooks/useMapExport'
 import { useToast } from '@/hooks/use-toast'
 import { useLocale } from '@/hooks/useLocale'
 import { formatDateTime, formatNumber } from '@/lib/format'
@@ -659,7 +660,44 @@ export function SchedulesPage() {
   )
 }
 
-function ScheduleHistoryDialog({ schedule, onClose }: { schedule: Schedule; onClose: () => void }) {
+/** `runId` present and its result hasn't expired — same rule `RunsPage`/`ExecutionPanel` use. */
+function canExportResult(result: ScheduledResult): boolean {
+  return !!result.runId && !!result.expiresAt && new Date(result.expiresAt) > new Date()
+}
+
+/** Per-row export buttons — `useMapExport` is a hook, so each row gets its own instance. */
+function ScheduleResultExportButtons({ mapId, mapName, result }: { mapId: string; mapName: string; result: ScheduledResult }) {
+  const { t } = useTranslation(['schedules'])
+  const exportCtl = useMapExport(mapId, mapName, {}, result.runId)
+  return (
+    <>
+      {(['XLSX', 'CSV', 'PDF'] as const).map((format) => (
+        <Button
+          key={format}
+          variant="outline"
+          size="sm"
+          className="h-7 gap-1 text-xs"
+          disabled={exportCtl.isExporting}
+          onClick={() => exportCtl.exportFormat(format)}
+        >
+          {exportCtl.isExporting && exportCtl.format === format ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Download className="h-3.5 w-3.5" />
+          )}
+          {t(`schedules:history.${format.toLowerCase()}`)}
+        </Button>
+      ))}
+      <Button variant="ghost" size="icon" title={t('schedules:history.open')} asChild>
+        <Link to={`/maps/${mapId}/view?run=${result.runId}`}>
+          <ExternalLink className="h-4 w-4" />
+        </Link>
+      </Button>
+    </>
+  )
+}
+
+export function ScheduleHistoryDialog({ schedule, onClose }: { schedule: Schedule; onClose: () => void }) {
   const { t } = useTranslation(['schedules'])
   const { locale } = useLocale()
   const { toast } = useToast()
@@ -744,16 +782,23 @@ function ScheduleHistoryDialog({ schedule, onClose }: { schedule: Schedule; onCl
                       : '—'}
                   </TableCell>
                   <TableCell>
-                    {r.status === 'SUCCESS' && r.filePath && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        title={t('schedules:history.download')}
-                        onClick={() => void download(r.id)}
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
-                    )}
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {canExportResult(r) ? (
+                        <ScheduleResultExportButtons mapId={schedule.mapId} mapName={schedule.name} result={r} />
+                      ) : (
+                        r.status === 'SUCCESS' &&
+                        r.filePath && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title={t('schedules:history.download')}
+                            onClick={() => void download(r.id)}
+                          >
+                            <Download className="h-4 w-4" />
+                          </Button>
+                        )
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
