@@ -20,6 +20,7 @@
     "auditLog": "Journal d'audit",
     "maps": "Cartes",
     "schedules": "Planifications",
+    "runs": "Exécutions",
     "exports": "Exportations",
     "migration": "Migration",
     "settings": "Paramètres"

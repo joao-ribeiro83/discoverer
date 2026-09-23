@@ -1,7 +1,9 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { loadMapWithAccess } from './maps.js';
+import { isAdmin } from './map-execution.js';
 import { getById, canAccessMap, type MapAction } from '../services/map.service.js';
+import { getRun } from '../services/map-run.store.js';
 import {
   createExportJob,
   getExportJob,
@@ -16,16 +18,10 @@ import {
 // Validation
 // ---------------------------------------------------------------------------
 
-const CalculatedFieldSchema = z.object({
-  name: z.string().min(1).max(255),
-  formula: z.string().min(1).max(4000),
-  displayOrder: z.number().int().optional(),
-});
-
 const ExportBodySchema = z.object({
   format: z.enum(['XLSX', 'CSV', 'PDF']),
-  parameters: z.record(z.string(), z.unknown()).optional(),
-  calculatedFields: z.array(CalculatedFieldSchema).max(50).optional(),
+  /** The completed run this export reads its rows from. */
+  runId: z.string().uuid(),
   /** Locale for a grand/subtotal row's label text. Defaults to `en`. */
   locale: z.enum(['en', 'es-ES', 'fr-FR', 'pt-PT']).optional(),
   /** PDF only: page size, orientation and which result columns to print. */
@@ -57,15 +53,46 @@ const listQuerySchema = {
   },
 } as const;
 
+/** 200 body of GET /api/exports. Every field of `toResponse` must be listed:
+ * fast-json-stringify drops any property the schema does not name. */
+const listResponseSchema = {
+  200: {
+    type: 'object',
+    properties: {
+      data: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            jobId: { type: 'string' },
+            mapId: { type: 'string' },
+            mapName: { type: 'string', nullable: true },
+            format: { type: 'string', enum: ['XLSX', 'CSV', 'PDF'] },
+            status: { type: 'string', enum: ['PENDING', 'PROCESSING', 'COMPLETED', 'FAILED'] },
+            progress: { type: 'integer' },
+            rowCount: { type: 'integer', nullable: true },
+            truncated: { type: 'boolean' },
+            errorMessage: { type: 'string', nullable: true },
+            createdAt: { type: 'string', format: 'date-time' },
+            completedAt: { type: 'string', format: 'date-time', nullable: true },
+          },
+        },
+      },
+    },
+  },
+} as const;
+
 /** Shape returned to clients — `filePath` is server-side detail. */
 function toResponse(job: ExportJobRecord) {
   return {
     jobId: job.id,
     mapId: job.mapId,
+    mapName: job.mapName ?? null,
     format: job.format,
     status: job.status,
     progress: job.progress,
     rowCount: job.rowCount,
+    truncated: job.truncated,
     errorMessage: job.errorMessage,
     createdAt: job.createdAt,
     completedAt: job.completedAt,
@@ -158,12 +185,24 @@ export default function exportRoutes(fastify: FastifyInstance) {
           .send({ error: 'Invalid request body', details: parsed.error.issues });
       }
 
-      // Query/config validation happens inside the worker, so a bad map can
-      // only surface later as a FAILED job status, not as a rejection here.
-      const user = request.user as { sub: string };
-      const { jobId } = await createExportJob(map.id, parsed.data.format, user.sub, {
-        parameters: parsed.data.parameters,
-        calculatedFields: parsed.data.calculatedFields,
+      const user = request.user as { sub: string; role: string };
+
+      // A run is exportable only when it is the caller's own (or the caller
+      // is an admin), belongs to this map, has finished, and has not expired
+      // — a single 409 that names none of those reasons, so a run id is not
+      // confirmed either way (same rule `loadOwnJob` applies to a job id).
+      const run = await getRun(parsed.data.runId);
+      if (
+        !run ||
+        (run.requestedBy !== user.sub && !isAdmin(request)) ||
+        run.mapId !== map.id ||
+        run.status !== 'COMPLETED' ||
+        run.expiresAt.getTime() <= Date.now()
+      ) {
+        return reply.code(409).send({ error: 'RUN_NOT_EXPORTABLE' });
+      }
+
+      const { jobId } = await createExportJob(map.id, parsed.data.format, user.sub, run.id, {
         locale: parsed.data.locale,
         pdf: parsed.data.format === 'PDF' ? parsed.data.pdf : undefined,
       });
@@ -180,6 +219,7 @@ export default function exportRoutes(fastify: FastifyInstance) {
         tags: ['Export'],
         security: [{ bearerAuth: [] }],
         querystring: listQuerySchema,
+        response: listResponseSchema,
       },
     },
     async (request) => {

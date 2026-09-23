@@ -1,0 +1,64 @@
+{
+  "title": "Ejecuciones",
+  "description": "Cada ejecución de mapa que ha solicitado — en cola, en progreso o finalizada — y cuánto tiempo permanece válido su resultado.",
+  "loading": "Cargando ejecuciones…",
+  "empty": "Sin ejecuciones aún. Ejecute un mapa para ver su historial aquí.",
+  "filters": {
+    "map": "Mapa",
+    "allMaps": "Todos los mapas",
+    "status": "Estado",
+    "allStatuses": "Todos los estados",
+    "kind": "Tipo",
+    "allKinds": "Todos los tipos",
+    "allUsers": "Mostrar ejecuciones de todos los usuarios"
+  },
+  "columns": {
+    "map": "Mapa",
+    "kind": "Tipo",
+    "parameters": "Parámetros",
+    "status": "Estado",
+    "rows": "Filas",
+    "duration": "Duración",
+    "ranAt": "Ejecutado el",
+    "expiresIn": "Expira en",
+    "actions": "Acciones"
+  },
+  "kinds": {
+    "LIVE": "En directo",
+    "SCHEDULED": "Programada"
+  },
+  "statuses": {
+    "QUEUED": "En cola",
+    "RUNNING": "En ejecución",
+    "COMPLETED": "Completada",
+    "FAILED": "Falló",
+    "CANCELLED": "Cancelada"
+  },
+  "noParameters": "—",
+  "expired": "Expirado",
+  "expiresInMinutes": "{{count}}m",
+  "expiresInHours": "{{count}}h",
+  "expiresInDays": "{{count}}d",
+  "actions": {
+    "open": "Abrir",
+    "runAgain": "Ejecutar de nuevo",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "xlsx": "XLSX",
+    "csv": "CSV",
+    "pdf": "PDF"
+  },
+  "toasts": {
+    "reusedTitle": "Resultado reutilizado",
+    "reusedDescription": "Ya existía un resultado válido, por lo que no se ejecutó nada nuevo.",
+    "queuedTitle": "En cola",
+    "queuedDescription": "La ejecución se añadió a la cola.",
+    "runAgainFailedTitle": "No se pudo ejecutar de nuevo",
+    "cancelledTitle": "Ejecución cancelada",
+    "cancelFailedTitle": "No se pudo cancelar la ejecución",
+    "deletedTitle": "Ejecución eliminada",
+    "deleteFailedTitle": "No se pudo eliminar la ejecución"
+  },
+  "deleteConfirmItemLabel": "ejecución",
+  "deleteConfirmDescription": "Esto elimina de forma permanente esta ejecución de {{name}} y sus filas almacenadas. Esta acción no se puede deshacer."
+}

@@ -9,7 +9,12 @@
     "scheduleManagement": "Gestion des planifications",
     "runRefusedTitle": "Feuille non exécutée",
     "runRefusedDescription": "Le planificateur de requêtes a refusé cette demande. Le panneau de résultats explique pourquoi.",
-    "cannotRunNoColumns": "Cette feuille n'a aucune colonne de sortie, il n'y a donc rien à exécuter. Ouvrez-la dans le générateur et ajoutez au moins une colonne."
+    "cannotRunNoColumns": "Cette feuille n'a aucune colonne de sortie, il n'y a donc rien à exécuter. Ouvrez-la dans le générateur et ajoutez au moins une colonne.",
+    "statusQueued": "En attente (position inconnue)",
+    "statusRunning": "En cours…",
+    "statusResult": "Résultat de {{time}}, valide jusqu'à {{until}}.",
+    "statusResultReused": "Affichage d'un résultat en cache de {{time}}, valide jusqu'à {{until}}.",
+    "runAgain": "Exécuter à nouveau"
   },
   "mapsList": {
     "title": "Cartes",
@@ -136,6 +141,7 @@
   },
   "export": {
     "saveBeforeExport": "Enregistrez la carte avant de l'exporter.",
+    "noRunToExport": "Exécutez la carte avant de l'exporter.",
     "exportFailedTitle": "Échec de l'exportation",
     "exportQueuedTitle": "Exportation mise en file d'attente",
     "exportQueuedDescription": "Cela peut prendre un moment pour les grands ensembles de résultats.",

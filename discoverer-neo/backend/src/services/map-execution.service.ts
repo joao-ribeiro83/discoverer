@@ -58,19 +58,8 @@ export const MAX_SYNC_ROWS = 1000;
  */
 export const DEFAULT_TIMEOUT_MS = config.QUERY_TIMEOUT_MS;
 export const MAX_TIMEOUT_MS = config.QUERY_TIMEOUT_MAX_MS;
-/** Upper bound on rows an async job buffers in memory. */
-export const ASYNC_MAX_ROWS = 100_000;
-const ASYNC_FETCH_BATCH = 1_000;
-/**
- * Bounds on the in-memory `jobs` registry (BE-03). Without these, a job's
- * result — up to `ASYNC_MAX_ROWS` rows, JSON-serialisable — is retained for
- * the process lifetime; nothing ever removed a finished job. Same idiom as
- * `migration.service.ts`'s `pruneJobs`: async results are poll-until-done
- * working data, not a durable record (that is `queryExecutionLog`), so an
- * in-memory TTL + count cap is correct and Redis is not needed.
- */
-const ASYNC_JOB_TTL_MS = 30 * 60 * 1000;
-const ASYNC_JOB_MAX_COUNT = 200;
+/** Rows fetched per round trip by `openRowStream`. */
+const ROW_FETCH_BATCH = 1_000;
 
 /**
  * node-oracledb's OUT_FORMAT_OBJECT constant. Hard-coded so this service stays
@@ -98,9 +87,7 @@ export interface ExecuteOptions {
   /**
    * Row offset for "load more" pagination on the sync endpoint. The SQL
    * generator already supports OFFSET/FETCH (see `lib/sql/pagination.ts`), so
-   * a page can be re-run with a growing offset instead of switching to the
-   * async path. Ignored by the async job runner (which always streams the
-   * full result up to `ASYNC_MAX_ROWS`).
+   * a page can be re-run with a growing offset.
    */
   offset?: number;
   /**
@@ -216,38 +203,6 @@ export class MapExecutionError extends Error {
   }
 }
 
-export type AsyncJobStatus =
-  | 'QUEUED'
-  | 'RUNNING'
-  | 'COMPLETED'
-  | 'FAILED'
-  | 'TIMEOUT'
-  | 'CANCELLED';
-
-export interface AsyncJob {
-  jobId: string;
-  mapId: string;
-  /**
-   * Who started the job. Its result is filtered by THIS user's row-level
-   * security, so it is served to no one else (D-021): the status and cancel
-   * routes answer 404 for anyone else's job.
-   */
-  userId: string;
-  status: AsyncJobStatus;
-  createdAt: Date;
-  startedAt?: Date;
-  finishedAt?: Date;
-  rowCount?: number;
-  executionTimeMs?: number;
-  truncated?: boolean;
-  error?: string;
-  /** Set alongside `error`; `error` is already the generic public text (SEC-07). */
-  errorKind?: ExecutionErrorKind;
-  /** Populated once the job reaches COMPLETED. */
-  result?: ExecuteResult;
-}
-
-/** Persisted-log status is a narrower set than the in-memory job status. */
 export interface ExecutionLogEntry {
   mapId: string;
   executedBy: string;
@@ -669,6 +624,13 @@ function clampSyncMaxRows(n?: number): number {
   return Math.min(Math.max(Math.floor(n), 1), MAX_SYNC_ROWS);
 }
 
+/** `connection.break()` surfaces as ORA-01013 (user requested cancel). */
+export function isCancelError(err: unknown): boolean {
+  const code = (err as { code?: string })?.code ?? '';
+  const message = err instanceof Error ? err.message : String(err);
+  return code === 'ORA-01013' || /\bORA-01013\b|cancel/i.test(message);
+}
+
 /** Oracle raises DPI-1067 / an ORA timeout when callTimeout aborts a call. */
 export function isTimeoutError(err: unknown): boolean {
   const code = (err as { code?: string })?.code ?? '';
@@ -678,13 +640,6 @@ export function isTimeoutError(err: unknown): boolean {
     /\bDPI-1067\b/.test(message) ||
     /call\s*timeout|callTimeout|timed?\s*out|timeout/i.test(message)
   );
-}
-
-/** `connection.break()` surfaces as ORA-01013 (user requested cancel). */
-function isCancelError(err: unknown): boolean {
-  const code = (err as { code?: string })?.code ?? '';
-  const message = err instanceof Error ? err.message : String(err);
-  return code === 'ORA-01013' || /\bORA-01013\b|cancel/i.test(message);
 }
 
 /** Extract a printable message from a thrown value. Exported for reuse by `export.service.ts`. */
@@ -915,67 +870,6 @@ export async function executeMap(
   }
 }
 
-// ---------------------------------------------------------------------------
-// Asynchronous execution (in-process job runner)
-//
-// Large result sets run in the background so the request can return a job id.
-// State lives in-process: this is single-instance today. When file export
-// (a later session) introduces a durable queue/worker, `runAsyncJob` is the
-// seam to move onto it — the public API here does not change.
-// ---------------------------------------------------------------------------
-
-const jobs = new Map<string, AsyncJob>();
-const activeConnections = new Map<
-  string,
-  { dataSourceId: string; conn: Connection }
->();
-const cancelRequested = new Set<string>();
-
-const TERMINAL_JOB_STATUSES: readonly AsyncJobStatus[] = [
-  'COMPLETED',
-  'FAILED',
-  'TIMEOUT',
-  'CANCELLED',
-];
-
-/**
- * Evict finished jobs older than the TTL, then trim down to the count cap
- * (oldest finished jobs first) if still over. A job still QUEUED/RUNNING is
- * never evicted — only its terminal result is retention data. Run on every
- * new job so the registry cannot grow past these bounds even under sustained
- * async-execute traffic with nobody polling for results.
- */
-function pruneJobs(): void {
-  const cutoff = Date.now() - ASYNC_JOB_TTL_MS;
-  for (const [id, job] of jobs) {
-    if (job.finishedAt && job.finishedAt.getTime() < cutoff) jobs.delete(id);
-  }
-
-  if (jobs.size <= ASYNC_JOB_MAX_COUNT) return;
-  const finished = [...jobs.entries()]
-    .filter(([, job]) => TERMINAL_JOB_STATUSES.includes(job.status))
-    .sort((a, b) => a[1].createdAt.getTime() - b[1].createdAt.getTime());
-  for (const [id] of finished) {
-    if (jobs.size <= ASYNC_JOB_MAX_COUNT) break;
-    jobs.delete(id);
-  }
-}
-
-export function executeMapAsync(
-  mapId: string,
-  parameterValues: Record<string, unknown>,
-  userId: string,
-  options: ExecuteOptions = {},
-  deps: MapExecutionDeps = defaultDeps(),
-): Promise<{ jobId: string }> {
-  const jobId = randomUUID();
-  pruneJobs();
-  jobs.set(jobId, { jobId, mapId, userId, status: 'QUEUED', createdAt: new Date() });
-  // Fire-and-forget; runAsyncJob owns all state transitions and cleanup.
-  void runAsyncJob(jobId, mapId, parameterValues, userId, options, deps);
-  return Promise.resolve({ jobId });
-}
-
 /**
  * A lazily-consumed cursor over a result set.
  *
@@ -997,13 +891,13 @@ export interface RowStream {
  *
  * This is the primitive `export.service.ts` needs: an export of 1M+ rows can
  * never hold the result set in memory, so it pulls one batch at a time and
- * hands each straight to a file writer. `streamRows` (below) is the buffering
- * convenience wrapper for callers that genuinely want an array.
+ * hands each straight to a file writer. The map-run runner uses it the same
+ * way, one batch per `map_run_batches` row.
  */
 export async function openRowStream(
   conn: Connection,
   prepared: PreparedQuery,
-  batchSize: number = ASYNC_FETCH_BATCH,
+  batchSize: number = ROW_FETCH_BATCH,
 ): Promise<RowStream> {
   const result = await conn.execute(
     prepared.sql,
@@ -1061,288 +955,6 @@ export async function openRowStream(
   }
 
   return { metaData: result.metaData, batches: batches(), close };
-}
-
-/**
- * Buffer a result set into an array, up to `cap` rows.
- *
- * Used by the sync/async *execution* paths, which return rows over HTTP and so
- * are bounded by `ASYNC_MAX_ROWS` anyway. Exports must not use this — see
- * `openRowStream`.
- */
-export async function streamRows(
-  conn: Connection,
-  prepared: PreparedQuery,
-  cap: number,
-): Promise<{
-  rows: Record<string, unknown>[];
-  truncated: boolean;
-  metaData?: Array<{ name: string }>;
-}> {
-  const stream = await openRowStream(conn, prepared);
-
-  const rows: Record<string, unknown>[] = [];
-  let truncated = false;
-  try {
-    for await (const batch of stream.batches) {
-      for (const row of batch) {
-        if (rows.length >= cap) {
-          truncated = true;
-          break;
-        }
-        rows.push(row);
-      }
-      if (truncated) break;
-    }
-  } finally {
-    await stream.close();
-  }
-
-  return { rows, truncated, metaData: stream.metaData };
-}
-
-async function runAsyncJob(
-  jobId: string,
-  mapId: string,
-  parameterValues: Record<string, unknown>,
-  userId: string,
-  options: ExecuteOptions,
-  deps: MapExecutionDeps,
-): Promise<void> {
-  const job = jobs.get(jobId);
-  if (!job) return;
-
-  const timeoutMs = clampTimeout(options.timeoutMs);
-  job.status = 'RUNNING';
-  job.startedAt = new Date();
-  const start = Date.now();
-
-  let prepared: PreparedQuery;
-  try {
-    prepared = await deps.prepareQuery(
-      mapId,
-      parameterValues,
-      userId,
-      ASYNC_MAX_ROWS + 1,
-    );
-  } catch (err) {
-    finalizeFailure(job, deps, {
-      userId,
-      sqlText: null,
-      err,
-      elapsed: Date.now() - start,
-    });
-    return;
-  }
-
-  // Honour a cancel that arrived before we acquired a connection.
-  if (cancelRequested.has(jobId)) {
-    cancelRequested.delete(jobId);
-    job.status = 'CANCELLED';
-    job.executionTimeMs = Date.now() - start;
-    job.finishedAt = new Date();
-    job.error = 'Execution cancelled before it started';
-    await safeRecord(deps, {
-      mapId,
-      executedBy: userId,
-      executionTimeMs: job.executionTimeMs,
-      rowCount: null,
-      sqlText: prepared.sql,
-      planDecision: prepared.planDecision,
-      errorMessage: job.error,
-      status: 'FAILED',
-    });
-    return;
-  }
-
-  let conn: Connection;
-  try {
-    conn = await deps.getConnection(prepared.dataSourceId);
-  } catch (err) {
-    finalizeFailure(job, deps, {
-      userId,
-      sqlText: prepared.sql,
-      planDecision: prepared.planDecision,
-      err,
-      elapsed: Date.now() - start,
-    });
-    return;
-  }
-
-  activeConnections.set(jobId, { dataSourceId: prepared.dataSourceId, conn });
-
-  /**
-   * The terminal status is assigned LAST, in `finally`, once the execution-log
-   * row and `finishedAt` are already in place. It used to be set first, so a
-   * caller that polled to COMPLETED and immediately read the execution history
-   * could find nothing there — the job said done while the audit trail said
-   * nothing had happened. That race is what made the async-execution test
-   * intermittent (F-23); it was a real defect, not a flaky assertion.
-   */
-  let terminal: AsyncJobStatus | null = null;
-
-  try {
-    conn.callTimeout = timeoutMs;
-    const {
-      rows: baseRows,
-      truncated,
-      metaData,
-    } = await streamRows(conn, prepared, ASYNC_MAX_ROWS);
-    const { rows, columns } = applyCalculatedFields(
-      baseRows,
-      buildColumns(prepared.columns, metaData),
-      options.calculatedFields,
-    );
-    const executionTimeMs = Date.now() - start;
-
-    terminal = 'COMPLETED';
-    job.rowCount = rows.length;
-    job.truncated = truncated;
-    job.executionTimeMs = executionTimeMs;
-    job.result = {
-      columns,
-      rows,
-      rowCount: rows.length,
-      executionTimeMs,
-      truncated,
-      sql: prepared.sql,
-    };
-
-    await safeRecord(deps, {
-      mapId,
-      executedBy: userId,
-      executionTimeMs,
-      rowCount: rows.length,
-      sqlText: prepared.sql,
-      planDecision: prepared.planDecision,
-      errorMessage: null,
-      status: 'SUCCESS',
-    });
-  } catch (err) {
-    const elapsed = Date.now() - start;
-    job.executionTimeMs = elapsed;
-
-    if (cancelRequested.has(jobId) || isCancelError(err)) {
-      terminal = 'CANCELLED';
-      job.error = 'Execution cancelled by user';
-      job.errorKind = 'CANCELLED';
-      await safeRecord(deps, {
-        mapId,
-        executedBy: userId,
-        executionTimeMs: elapsed,
-        rowCount: null,
-        sqlText: prepared.sql,
-      planDecision: prepared.planDecision,
-        errorMessage: job.error,
-        status: 'FAILED',
-      });
-    } else if (isTimeoutError(err)) {
-      terminal = 'TIMEOUT';
-      const wrapped = wrapExecutionError(err, 'TIMEOUT', jobId);
-      job.error = wrapped.message;
-      job.errorKind = wrapped.kind;
-      await safeRecord(deps, {
-        mapId,
-        executedBy: userId,
-        executionTimeMs: elapsed,
-        rowCount: null,
-        sqlText: prepared.sql,
-      planDecision: prepared.planDecision,
-        errorMessage: job.error,
-        status: 'TIMEOUT',
-      });
-    } else {
-      terminal = 'FAILED';
-      const wrapped = wrapExecutionError(err, 'QUERY', jobId);
-      job.error = wrapped.message;
-      job.errorKind = wrapped.kind;
-      await safeRecord(deps, {
-        mapId,
-        executedBy: userId,
-        executionTimeMs: elapsed,
-        rowCount: null,
-        sqlText: prepared.sql,
-      planDecision: prepared.planDecision,
-        errorMessage: job.error,
-        status: 'FAILED',
-      });
-    }
-  } finally {
-    activeConnections.delete(jobId);
-    cancelRequested.delete(jobId);
-    job.finishedAt = new Date();
-    // Everything the status implies is now true. Flip it before releasing the
-    // connection, so a poller is not held up by driver teardown.
-    if (terminal) job.status = terminal;
-    await deps.releaseConnection(prepared.dataSourceId, conn);
-  }
-}
-
-function finalizeFailure(
-  job: AsyncJob,
-  deps: MapExecutionDeps,
-  args: {
-    userId: string;
-    sqlText: string | null;
-    planDecision?: string;
-    err: unknown;
-    elapsed: number;
-  },
-): void {
-  const timedOut = isTimeoutError(args.err);
-  const wrapped = wrapExecutionError(args.err, timedOut ? 'TIMEOUT' : 'QUERY', job.jobId);
-  job.status = wrapped.kind === 'TIMEOUT' ? 'TIMEOUT' : 'FAILED';
-  job.error = wrapped.message;
-  job.errorKind = wrapped.kind;
-  job.executionTimeMs = args.elapsed;
-  job.finishedAt = new Date();
-  void safeRecord(deps, {
-    mapId: job.mapId,
-    executedBy: args.userId,
-    executionTimeMs: args.elapsed,
-    rowCount: null,
-    sqlText: args.sqlText,
-    planDecision: args.planDecision,
-    errorMessage: job.error,
-    status: timedOut ? 'TIMEOUT' : 'FAILED',
-  });
-}
-
-/** Snapshot of an async job's state, or null if the id is unknown. */
-export function getExecutionStatus(jobId: string): AsyncJob | null {
-  const job = jobs.get(jobId);
-  return job ? { ...job } : null;
-}
-
-/**
- * Request cancellation of a running async job. Returns null for an unknown job.
- * Interrupts the in-flight Oracle call via `connection.break()` when possible.
- */
-export async function cancelExecution(
-  jobId: string,
-): Promise<{ cancelled: boolean; status: AsyncJobStatus } | null> {
-  const job = jobs.get(jobId);
-  if (!job) return null;
-
-  const terminal: AsyncJobStatus[] = ['COMPLETED', 'FAILED', 'TIMEOUT', 'CANCELLED'];
-  if (terminal.includes(job.status)) {
-    return { cancelled: false, status: job.status };
-  }
-
-  cancelRequested.add(jobId);
-  job.status = 'CANCELLED';
-
-  const active = activeConnections.get(jobId);
-  if (active) {
-    try {
-      await active.conn.break();
-    } catch {
-      // The call may have finished between our check and break() — the runner
-      // still observes cancelRequested and settles the job as CANCELLED.
-    }
-  }
-
-  return { cancelled: true, status: 'CANCELLED' };
 }
 
 /** Recent executions for a map, newest first. */
@@ -1409,11 +1021,4 @@ export async function explainMap(
   } finally {
     if (conn) await deps.releaseConnection(prepared.dataSourceId, conn);
   }
-}
-
-/** Test-only: clear in-memory async job state between test cases. */
-export function _resetAsyncState(): void {
-  jobs.clear();
-  activeConnections.clear();
-  cancelRequested.clear();
 }

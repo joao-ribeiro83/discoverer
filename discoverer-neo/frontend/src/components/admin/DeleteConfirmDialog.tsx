@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Dialog,
@@ -14,6 +15,8 @@ interface DeleteConfirmDialogProps {
   onOpenChange: (open: boolean) => void
   itemName: string
   itemLabel?: string
+  /** Replaces the default soft-delete wording, for items whose delete is permanent. */
+  description?: ReactNode
   onConfirm: () => void
   isPending?: boolean
 }
@@ -23,6 +26,7 @@ export function DeleteConfirmDialog({
   onOpenChange,
   itemName,
   itemLabel,
+  description,
   onConfirm,
   isPending,
 }: DeleteConfirmDialogProps) {
@@ -34,9 +38,13 @@ export function DeleteConfirmDialog({
         <DialogHeader>
           <DialogTitle>{t('admin:shared.deleteConfirmTitle', { itemLabel: label })}</DialogTitle>
           <DialogDescription>
-            {t('admin:shared.deleteConfirmDescriptionPrefix')}{' '}
-            <span className="font-medium text-foreground">{itemName}</span>.{' '}
-            {t('admin:shared.deleteConfirmDescriptionSuffix')}
+            {description ?? (
+              <>
+                {t('admin:shared.deleteConfirmDescriptionPrefix')}{' '}
+                <span className="font-medium text-foreground">{itemName}</span>.{' '}
+                {t('admin:shared.deleteConfirmDescriptionSuffix')}
+              </>
+            )}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

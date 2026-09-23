@@ -231,34 +231,49 @@ Hover over column headers for options:
 Export the results grid to Excel, CSV, or PDF. See
 [Exporting Data](exporting-data.md).
 
-## Async Execution (Long Queries)
+## Queued, Running and Reused
 
-For queries that take > 30 seconds:
+Every **Run** goes through one queue — there is no separate button for long
+queries anymore. Click **Run** and the map moves through:
 
-1. Click **Run in Background**
-2. You're returned to the dashboard
-3. Check **Scheduled Jobs** or **Execution History** for status
+- **Queued** — waiting its turn. Your own runs go one at a time, in the
+  order you requested them; another user's runs never wait behind yours.
+- **Running** — the query is executing against the data source.
+- **Completed** — rows are ready and appear in the results grid.
 
-Status values:
-- **PENDING** — Queued, waiting to run
-- **PROCESSING** — Currently executing
-- **COMPLETED** — Done, results available
-- **FAILED** — Query failed (see error)
+If you run the exact same map with the exact same parameters again while a
+valid result already exists, Neo skips the queue and returns it instantly,
+labelled **Result reused**. Click **Run again** to force a fresh run anyway.
 
-Click a completed job to view results.
+### Result Validity
+
+A completed result stays available for **up to one day** after it finishes
+(your administrator can set a shorter limit). A scheduled run's result
+follows its schedule's own retention setting instead — see
+[Scheduling Maps](scheduling.md). Once a result expires, running the map
+again queues a fresh execution, and its rows are no longer downloadable —
+see [why export buttons need a saved result](exporting-data.md#why-the-export-buttons-are-sometimes-missing).
+
+## The Runs Page
+
+Click **Runs** in the sidebar to see every run you have requested, live or
+scheduled, with its status, row count, how long it took and when it expires.
+From here you can:
+
+- **Open** — return to the map viewer showing that run's rows
+- **Run again** — repeat the same parameters (returns instantly if the
+  result is still valid)
+- **Cancel** — stop a run that is still queued
+- **Delete** — remove a finished run
+- **XLSX / CSV / PDF** — download the stored rows (see
+  [Exporting Data](exporting-data.md))
+
+An administrator can additionally see every user's runs.
 
 ## Execution History
 
-View recent executions of a map:
-
-1. Open a map → click **History**
-2. See list of recent runs with:
-   - Execution date/time
-   - User who ran it
-   - Number of rows returned
-   - Execution time
-
-Click any row to view those results again.
+To see just one map's own runs, open the [Runs page](#the-runs-page) and
+filter by that map.
 
 ## Troubleshooting
 

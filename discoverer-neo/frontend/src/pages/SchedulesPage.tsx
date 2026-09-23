@@ -1,17 +1,18 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
 import type { ColumnDef } from '@tanstack/react-table'
-import { Plus, Pencil, Trash2, Play, History, Download, Pause } from 'lucide-react'
+import { Plus, Pencil, Trash2, Play, History, Download, Pause, ExternalLink, Loader2 } from 'lucide-react'
 import { apiClient, getErrorMessage } from '@/lib/api'
-import type { Schedule, ScheduleParameterValue, MapParameter } from '@/lib/types'
+import type { Schedule, ScheduleParameterValue, MapParameter, ScheduledResult } from '@/lib/types'
+import { useMapExport } from '@/hooks/useMapExport'
 import { useToast } from '@/hooks/use-toast'
 import { useLocale } from '@/hooks/useLocale'
-import { formatDateTime, formatNumber } from '@/lib/format'
+import { formatDateTime, formatNumber, formatExpiresIn, isExpiryValid } from '@/lib/format'
 import { AdminPageWrapper } from '@/components/admin/AdminPageWrapper'
 import { DataTable } from '@/components/admin/DataTable'
 import { CreateEditDialog } from '@/components/admin/CreateEditDialog'
@@ -654,13 +655,83 @@ export function SchedulesPage() {
         </Dialog>
       )}
 
-      {historyFor && <ScheduleHistoryDialog schedule={historyFor} onClose={() => setHistoryFor(null)} />}
+      {historyFor && (
+        <ScheduleHistoryDialog
+          schedule={historyFor}
+          mapName={mapNameById.get(historyFor.mapId)}
+          onClose={() => setHistoryFor(null)}
+        />
+      )}
     </AdminPageWrapper>
   )
 }
 
-function ScheduleHistoryDialog({ schedule, onClose }: { schedule: Schedule; onClose: () => void }) {
+/**
+ * A FAILED (or TIMEOUT) run still carries a `runId` and a live `expiresAt` —
+ * the worker records the result either way — but the backend has nothing to
+ * export for a run that never completed, so exporting needs SUCCESS too. The
+ * Open link has no such requirement: it just shows what happened.
+ */
+function canExportResult(result: ScheduledResult): boolean {
+  return result.status === 'SUCCESS' && !!result.runId && isExpiryValid(result.expiresAt)
+}
+
+/** Per-row export buttons — `useMapExport` is a hook, so each row gets its own instance. */
+function ScheduleResultExportButtons({
+  mapId,
+  mapName,
+  runId,
+  canExport,
+}: {
+  mapId: string
+  mapName: string
+  runId: string
+  canExport: boolean
+}) {
   const { t } = useTranslation(['schedules'])
+  const exportCtl = useMapExport(mapId, mapName, {}, runId)
+  return (
+    <>
+      {canExport &&
+        (['XLSX', 'CSV', 'PDF'] as const).map((format) => (
+          <Button
+            key={format}
+            variant="outline"
+            size="sm"
+            className="h-7 gap-1 text-xs"
+            disabled={exportCtl.isExporting}
+            onClick={() => exportCtl.exportFormat(format)}
+          >
+            {exportCtl.isExporting && exportCtl.format === format ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Download className="h-3.5 w-3.5" />
+            )}
+            {t(`schedules:history.${format.toLowerCase()}`)}
+          </Button>
+        ))}
+      <Button variant="ghost" size="icon" title={t('schedules:history.open')} asChild>
+        <Link to={`/maps/${mapId}/view?run=${runId}`}>
+          <ExternalLink className="h-4 w-4" />
+        </Link>
+      </Button>
+    </>
+  )
+}
+
+export function ScheduleHistoryDialog({
+  schedule,
+  mapName,
+  onClose,
+}: {
+  schedule: Schedule
+  mapName?: string
+  onClose: () => void
+}) {
+  // `runs` isn't otherwise used on this page — it's pulled in only for the
+  // expiry keys `formatExpiresIn` reads, shared with RunsPage rather than
+  // duplicated here.
+  const { t } = useTranslation(['schedules', 'runs'])
   const { locale } = useLocale()
   const { toast } = useToast()
 
@@ -744,16 +815,37 @@ function ScheduleHistoryDialog({ schedule, onClose }: { schedule: Schedule; onCl
                       : '—'}
                   </TableCell>
                   <TableCell>
-                    {r.status === 'SUCCESS' && r.filePath && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        title={t('schedules:history.download')}
-                        onClick={() => void download(r.id)}
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
-                    )}
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {r.runId ? (
+                        <ScheduleResultExportButtons
+                          mapId={schedule.mapId}
+                          mapName={mapName ?? schedule.name}
+                          runId={r.runId}
+                          canExport={canExportResult(r)}
+                        />
+                      ) : (
+                        r.status === 'SUCCESS' &&
+                        r.filePath && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title={t('schedules:history.download')}
+                            onClick={() => void download(r.id)}
+                          >
+                            <Download className="h-4 w-4" />
+                          </Button>
+                        )
+                      )}
+                      {/* `canExportResult` already means "expiresAt is set and in the
+                          future" — reusing it (rather than just `r.expiresAt`) keeps this
+                          text off a FAILED row's 24h housekeeping expiry and off an
+                          expired SUCCESS row (which would otherwise read "Expires Expired"). */}
+                      {canExportResult(r) && (
+                        <span className="text-xs text-muted-foreground">
+                          {t('schedules:history.expiresIn', { value: formatExpiresIn(r.expiresAt, t) })}
+                        </span>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))

@@ -2,28 +2,18 @@ import path from 'node:path';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import { and, desc, eq, lt, isNotNull } from 'drizzle-orm';
-import type { Connection } from 'oracledb';
 import { config } from '../config.js';
 import { db } from '../db/index.js';
 import { exportJobs, maps, mapPageSetup } from '../db/schema.js';
 import { exportQueue, type ExportJobData } from '../queues/export.queue.js';
-import {
-  defaultDeps,
-  openRowStream,
-  buildColumns,
-  applyCalculatedFields,
-  runTotalsQueries,
-  errorMessage,
-  DEFAULT_TIMEOUT_MS,
-  type MapExecutionDeps,
-  type ResultColumn,
-  type RowStream,
-} from './map-execution.service.js';
+import { errorMessage, type ResultColumn, type ResultTotalsGroup } from './map-execution.service.js';
+import { getRun, readBatches } from './map-run.store.js';
 import { writeXlsx } from './exporters/excel-exporter.js';
 import { writeCsv } from './exporters/csv-exporter.js';
 import { writePdf, type PdfExportRequest } from './exporters/pdf-exporter.js';
 import type { ExportHeading, ExportSource, ExportWriteResult } from './exporters/types.js';
-import { resolveHeading } from './map.service.js';
+import { canAccessMap, getById as getMapById, resolveHeading } from './map.service.js';
+import { getSessionUser } from './user.service.js';
 import {
   createWorksheetRowBuilder,
   formatTotalsRowRecord,
@@ -33,7 +23,6 @@ import {
 } from './exporters/worksheet-rows.js';
 import { totalLabelsFor, type ExportLocale } from './exporters/total-labels.js';
 import { cellText } from './exporters/types.js';
-import type { CalcFieldInput } from './calculated-field-evaluator.js';
 
 // ---------------------------------------------------------------------------
 // Exports are durable, queued work.
@@ -60,8 +49,6 @@ export const EXPORT_DIR =
   config.EXPORT_DIR ?? path.resolve(process.cwd(), 'storage', 'exports');
 
 export interface ExportOptions {
-  parameters?: Record<string, unknown>;
-  calculatedFields?: CalcFieldInput[];
   /** Locale for a grand/subtotal row's label text. Defaults to `en`. */
   locale?: ExportLocale;
   /** PDF only: page size, orientation and the columns to print. */
@@ -71,11 +58,21 @@ export interface ExportOptions {
 export interface ExportJobRecord {
   id: string;
   mapId: string;
+  /** Set by the list query only (a join on maps); null once the map is deleted. */
+  mapName?: string | null;
   requestedBy: string;
   format: ExportFormat;
   status: ExportJobStatus;
   progress: number;
   rowCount: number | null;
+  /**
+   * True when the source run was itself capped (`map_runs.truncated`) —
+   * the file is a complete write of every row the run stored, but the run
+   * may not hold every row the map would otherwise return. Surfaced rather
+   * than silently dropped now that export has no independent, uncapped
+   * query of its own (Task 4.3 moved rows off Oracle and onto the run).
+   */
+  truncated: boolean;
   filePath: string | null;
   errorMessage: string | null;
   createdAt: Date;
@@ -85,7 +82,7 @@ export interface ExportJobRecord {
 export type ExportJobPatch = Partial<
   Pick<
     ExportJobRecord,
-    'status' | 'progress' | 'rowCount' | 'filePath' | 'errorMessage' | 'completedAt'
+    'status' | 'progress' | 'rowCount' | 'truncated' | 'filePath' | 'errorMessage' | 'completedAt'
   >
 >;
 
@@ -94,9 +91,6 @@ export type ExportJobPatch = Partial<
 // ---------------------------------------------------------------------------
 
 export interface ExportJobDeps {
-  prepareQuery: MapExecutionDeps['prepareQuery'];
-  getConnection: MapExecutionDeps['getConnection'];
-  releaseConnection: MapExecutionDeps['releaseConnection'];
   createJob(input: {
     mapId: string;
     requestedBy: string;
@@ -125,7 +119,11 @@ export interface ExportJobDeps {
    * the file's document header. Optional so a test's minimal deps object
    * still works; production always supplies it.
    */
-  resolveHeading?(mapId: string, parameters: Record<string, unknown>): Promise<ExportHeading>;
+  resolveHeading?(
+    mapId: string,
+    parameters: Record<string, unknown>,
+    now?: Date,
+  ): Promise<ExportHeading>;
   /** Enqueue the background job that performs the export. */
   enqueue(data: ExportJobData): Promise<void>;
 }
@@ -139,6 +137,7 @@ function rowToRecord(row: typeof exportJobs.$inferSelect): ExportJobRecord {
     status: row.status,
     progress: row.progress,
     rowCount: row.rowCount,
+    truncated: row.truncated,
     filePath: row.filePath,
     errorMessage: row.errorMessage,
     createdAt: row.createdAt,
@@ -175,12 +174,13 @@ async function defaultGetJob(id: string): Promise<ExportJobRecord | null> {
 
 async function defaultListJobs(userId: string, limit: number): Promise<ExportJobRecord[]> {
   const rows = await db
-    .select()
+    .select({ job: exportJobs, mapName: maps.name })
     .from(exportJobs)
+    .leftJoin(maps, eq(maps.id, exportJobs.mapId))
     .where(eq(exportJobs.requestedBy, userId))
     .orderBy(desc(exportJobs.createdAt))
     .limit(limit);
-  return rows.map(rowToRecord);
+  return rows.map(({ job, mapName }) => ({ ...rowToRecord(job), mapName }));
 }
 
 async function defaultWriteExportFile(
@@ -223,20 +223,13 @@ async function defaultEnqueue(data: ExportJobData): Promise<void> {
 }
 
 export function defaultExportDeps(): ExportJobDeps {
-  const mapDeps = defaultDeps();
   return {
-    // Wrapped (rather than passed by reference) so eslint's unbound-method
-    // check doesn't flag extracting a method-shorthand interface member as a
-    // bare value — these never relied on `this` binding to begin with.
-    prepareQuery: (...args) => mapDeps.prepareQuery(...args),
-    getConnection: (dataSourceId) => mapDeps.getConnection(dataSourceId),
-    releaseConnection: (dataSourceId, conn) => mapDeps.releaseConnection(dataSourceId, conn),
     createJob: defaultCreateJob,
     updateJob: defaultUpdateJob,
     getJob: defaultGetJob,
     listJobs: defaultListJobs,
     writeExportFile: defaultWriteExportFile,
-    resolveHeading: (mapId, parameters) => resolveHeading(mapId, parameters),
+    resolveHeading: (mapId, parameters, now) => resolveHeading(mapId, parameters, now),
     enqueue: defaultEnqueue,
   };
 }
@@ -310,6 +303,7 @@ export async function createExportJob(
   mapId: string,
   format: ExportFormat,
   requestedBy: string,
+  runId: string,
   options: ExportOptions = {},
   deps: ExportJobDeps = defaultExportDeps(),
 ): Promise<{ jobId: string }> {
@@ -321,8 +315,7 @@ export async function createExportJob(
       mapId,
       format,
       requestedBy,
-      parameters: options.parameters,
-      calculatedFields: options.calculatedFields,
+      runId,
       locale: options.locale,
       pdf: options.pdf,
     });
@@ -351,7 +344,7 @@ export async function processExportJob(
   data: ExportJobData,
   deps: ExportJobDeps = defaultExportDeps(),
 ): Promise<{ rowCount: number; filePath: string }> {
-  const { exportJobId, mapId, format, requestedBy } = data;
+  const { exportJobId, mapId, format } = data;
 
   await safeUpdate(deps, exportJobId, {
     status: 'PROCESSING',
@@ -360,131 +353,123 @@ export async function processExportJob(
     errorMessage: null,
   });
 
-  // No row limit: an export is precisely the case the interactive caps exist
-  // to avoid, and the writers stream rather than buffer.
-  const prepared = await deps.prepareQuery(mapId, data.parameters ?? {}, requestedBy);
-
-  const conn: Connection = await deps.getConnection(prepared.dataSourceId);
-  let stream: RowStream | undefined;
-
-  try {
-    // The per-statement timeout bounds how long Oracle may take to *start*
-    // returning rows. It deliberately does not bound the whole export: a
-    // legitimate multi-million-row fetch takes far longer than an interactive
-    // query is ever allowed to.
-    conn.callTimeout = DEFAULT_TIMEOUT_MS;
-
-    // Totals run first, on the same connection: a small, complete statement
-    // that has to finish before the (potentially very long-lived) streaming
-    // cursor for the detail rows opens on it.
-    const totalsRun = prepared.totals?.length
-      ? await runTotalsQueries(conn, prepared.totals, exportJobId)
-      : { groups: [], warnings: [] };
-
-    stream = await openRowStream(conn, prepared);
-    let columns: ResultColumn[] = buildColumns(prepared.columns, stream.metaData);
-
-    // Validate formulas and derive the calculated columns once, before any row
-    // is read — `evaluateCalculatedFields` parses up front, so an empty array
-    // surfaces a bad formula without touching data.
-    const calcFields = data.calculatedFields;
-    if (calcFields?.length) {
-      columns = applyCalculatedFields([], columns, calcFields).columns;
-    }
-
-    await safeUpdate(deps, exportJobId, { progress: PROGRESS_STREAMING_START });
-    conn.callTimeout = 0;
-
-    // Calculated fields are scalar-only (the evaluator rejects aggregates), so
-    // applying them per batch is equivalent to applying them to the whole set —
-    // which is what makes them compatible with streaming at all.
-    const rawBatches = calcFields?.length
-      ? (async function* () {
-          for await (const batch of stream.batches) {
-            yield applyCalculatedFields(batch, columns, calcFields).rows;
-          }
-        })()
-      : stream.batches;
-
-    // A map with group breaks or totals gets its rows interleaved with
-    // subtotal/grand-total rows the same way ResultsTable draws them on
-    // screen (same placement rules — see exporters/worksheet-rows.ts),
-    // pushed one row at a time so the export never holds the result set in
-    // memory.
-    const groupBreakAliases = prepared.groupBreakAliases ?? [];
-    const labels = totalLabelsFor(data.locale);
-    const toRecord = (display: DisplayRow): Record<string, unknown> => {
-      if (display.kind === 'data') return applySuppression(display.row, display.suppressed);
-      if (display.kind === 'grand') {
-        return formatTotalsRowRecord(columns, display.entries, labels.grandTotal);
-      }
-      const value = cellText(display.breakValue);
-      const label = interpolateTotalLabel(
-        display.entries[0]?.total.label,
-        { value, item: display.breakLabel },
-        labels.subtotalFor(value),
-      );
-      return formatTotalsRowRecord(columns, display.entries, label);
-    };
-
-    const batches =
-      groupBreakAliases.length > 0 || totalsRun.groups.length > 0
-        ? (async function* () {
-            const builder = createWorksheetRowBuilder(groupBreakAliases, totalsRun.groups);
-            for await (const batch of rawBatches) {
-              const out: Record<string, unknown>[] = [];
-              for (const row of batch) {
-                for (const display of builder.pushRow(row)) out.push(toRecord(display));
-              }
-              if (out.length > 0) yield out;
-            }
-            const trailing = builder.finish().map(toRecord);
-            if (trailing.length > 0) yield trailing;
-          })()
-        : rawBatches;
-
-    const source: ExportSource = { columns, batches };
-    const filePath = buildExportFilePath(exportJobId, format);
-    const heading = deps.resolveHeading
-      ? await deps.resolveHeading(mapId, data.parameters ?? {})
-      : undefined;
-
-    const result = await deps.writeExportFile(
-      source,
-      format,
-      filePath,
-      mapId,
-      (rows) => {
-        void safeUpdate(deps, exportJobId, { progress: streamingProgress(rows) });
-      },
-      data.locale,
-      heading,
-      data.pdf,
-    );
-
-    await deps.updateJob(exportJobId, {
-      status: 'COMPLETED',
-      progress: 100,
-      rowCount: result.rowCount,
-      filePath,
-      errorMessage: null,
-      completedAt: new Date(),
-    });
-
-    return { rowCount: result.rowCount, filePath };
-  } finally {
-    // Close the cursor before handing the connection back: a writer that threw
-    // mid-stream may have abandoned the iterator, and releasing a connection
-    // with an open cursor leaks it (eventually ORA-01000). `close` is
-    // idempotent, so doing this after a clean run is harmless.
-    await stream?.close();
-    try {
-      await deps.releaseConnection(prepared.dataSourceId, conn);
-    } catch {
-      // A connection we cannot return is the pool's problem to reap, not a
-      // reason to fail an otherwise-successful export.
-    }
+  // The run already did the Oracle work (and the RLS-bearing query that goes
+  // with it) when it was created — an export just reads what it stored. A run
+  // gone by the time the worker gets here (deleted, expired and swept) is a
+  // terminal fault: nothing to read, no way to make one. The route checks
+  // COMPLETED-and-unexpired at enqueue time, but that is a point-in-time
+  // check — a retry, or a job that sits in the queue a while, can run well
+  // after it, so the worker re-checks rather than trusting it: an expired or
+  // still-running run must never produce a "successful", silently truncated
+  // file.
+  const run = await getRun(data.runId);
+  if (!run || run.status !== 'COMPLETED' || run.expiresAt.getTime() <= Date.now()) {
+    throw new Error('Run not found or no longer available');
   }
+
+  // Same point-in-time gap as above, for entitlement rather than freshness: a
+  // grant or RLS policy revoked after the route's check but before this job
+  // ran must still refuse. Re-resolve the requester and the map fresh from
+  // the database rather than trusting the enqueue-time decision.
+  const requester = await getSessionUser(data.requestedBy);
+  const exportMap = requester ? await getMapById(mapId) : null;
+  if (
+    !requester ||
+    !exportMap ||
+    !(await canAccessMap({ sub: requester.id, role: requester.role }, exportMap, 'EXPORT'))
+  ) {
+    throw new Error('Export no longer authorized');
+  }
+
+  await safeUpdate(deps, exportJobId, { progress: PROGRESS_STREAMING_START });
+
+  const columns = (run.columns ?? []) as ResultColumn[];
+  const decoration = (run.decoration ?? {}) as {
+    groupBreakAliases?: string[];
+    totals?: ResultTotalsGroup[];
+  };
+  const groupBreakAliases = decoration.groupBreakAliases ?? [];
+  const totalsGroups = decoration.totals ?? [];
+  const rawBatches = readBatches(data.runId);
+
+  // A run with group breaks or totals gets its rows interleaved with
+  // subtotal/grand-total rows the same way ResultsTable draws them on screen
+  // (same placement rules — see exporters/worksheet-rows.ts), pushed one row
+  // at a time so the export never holds the result set in memory. The totals
+  // themselves were computed once, against Oracle, when the run was created
+  // (map-run.runner.ts) and stored on `run.decoration` — export only
+  // rebuilds their placement, it never re-queries.
+  const labels = totalLabelsFor(data.locale);
+  const toRecord = (display: DisplayRow): Record<string, unknown> => {
+    if (display.kind === 'data') return applySuppression(display.row, display.suppressed);
+    if (display.kind === 'grand') {
+      return formatTotalsRowRecord(columns, display.entries, labels.grandTotal);
+    }
+    const value = cellText(display.breakValue);
+    const label = interpolateTotalLabel(
+      display.entries[0]?.total.label,
+      { value, item: display.breakLabel },
+      labels.subtotalFor(value),
+    );
+    return formatTotalsRowRecord(columns, display.entries, label);
+  };
+
+  const batches =
+    groupBreakAliases.length > 0 || totalsGroups.length > 0
+      ? (async function* () {
+          const builder = createWorksheetRowBuilder(groupBreakAliases, totalsGroups);
+          for await (const batch of rawBatches) {
+            const out: Record<string, unknown>[] = [];
+            for (const row of batch) {
+              for (const display of builder.pushRow(row)) out.push(toRecord(display));
+            }
+            if (out.length > 0) yield out;
+          }
+          const trailing = builder.finish().map(toRecord);
+          if (trailing.length > 0) yield trailing;
+        })()
+      : rawBatches;
+
+  const source: ExportSource = { columns, batches };
+  const filePath = buildExportFilePath(exportJobId, format);
+  const heading = deps.resolveHeading
+    ? await deps.resolveHeading(
+        mapId,
+        (run.parameters ?? {}) as Record<string, unknown>,
+        run.completedAt ?? undefined,
+      )
+    : undefined;
+
+  // Progress writes are chained and awaited before COMPLETED, so a late one
+  // can never overwrite progress 100.
+  let progressWrite: Promise<unknown> = Promise.resolve();
+  const result = await deps.writeExportFile(
+    source,
+    format,
+    filePath,
+    mapId,
+    (rows) => {
+      progressWrite = progressWrite.then(() =>
+        safeUpdate(deps, exportJobId, { progress: streamingProgress(rows) }),
+      );
+    },
+    data.locale,
+    heading,
+    data.pdf,
+  );
+  await progressWrite;
+
+  await deps.updateJob(exportJobId, {
+    status: 'COMPLETED',
+    progress: 100,
+    rowCount: result.rowCount,
+    truncated: run.truncated,
+    filePath,
+    errorMessage: null,
+    completedAt: new Date(),
+  });
+
+  return { rowCount: result.rowCount, filePath };
 }
 
 /** Mark a job failed. Called by the worker once BullMQ exhausts its attempts. */

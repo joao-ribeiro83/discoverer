@@ -25,6 +25,7 @@ import workbookRoutes from './routes/workbooks.js';
 import dashboardRoutes from './routes/dashboard.js';
 import mapShareRoutes from './routes/map-shares.js';
 import mapExecutionRoutes from './routes/map-execution.js';
+import mapRunRoutes from './routes/map-runs.js';
 import exportRoutes from './routes/export.js';
 import conditionalFormatRoutes from './routes/conditional-formats.js';
 import scheduleRoutes from './routes/schedules.js';
@@ -37,7 +38,9 @@ import { config } from './config.js';
 import { closeExportQueue } from './queues/export.queue.js';
 import { startExportWorker, type ExportWorkerHandle } from './workers/export.worker.js';
 import { closeSchedulerQueue } from './queues/scheduler.queue.js';
+import { closeMapRunQueue } from './queues/map-run.queue.js';
 import { startSchedulerWorker, type SchedulerWorkerHandle } from './workers/scheduler.worker.js';
+import { startMapRunWorker, type MapRunWorkerHandle } from './workers/map-run.worker.js';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const { TRUST_PROXY } = config;
@@ -122,6 +125,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(dashboardRoutes);
   await app.register(mapShareRoutes);
   await app.register(mapExecutionRoutes);
+  await app.register(mapRunRoutes);
   await app.register(exportRoutes);
   await app.register(conditionalFormatRoutes);
   await app.register(scheduleRoutes);
@@ -144,6 +148,11 @@ export async function buildApp(): Promise<FastifyInstance> {
   let schedulerWorker: SchedulerWorkerHandle | undefined;
   if (config.SCHEDULER_WORKER_ENABLED) {
     schedulerWorker = startSchedulerWorker(app.log);
+  }
+
+  let mapRunWorker: MapRunWorkerHandle | undefined;
+  if (config.MAP_RUN_WORKER_ENABLED) {
+    mapRunWorker = startMapRunWorker(app.log);
   }
 
   // Temporary-password files are the most sensitive artefact this application
@@ -181,11 +190,13 @@ export async function buildApp(): Promise<FastifyInstance> {
     // process only, in server.ts's shutdown handler.
     clearInterval(credentialSweepTimer);
 
-    app.log.info('Stopping export/scheduler workers...');
+    app.log.info('Stopping export/scheduler/map-run workers...');
     await exportWorker?.close();
     await schedulerWorker?.close();
+    await mapRunWorker?.close();
     await closeExportQueue();
     await closeSchedulerQueue();
+    await closeMapRunQueue();
 
     app.log.info('Closing Oracle connection pools...');
     await closeOraclePools();

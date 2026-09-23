@@ -68,9 +68,22 @@ describe('useMapExport', () => {
     expect(mockedApi.maps.createExport).not.toHaveBeenCalled()
   })
 
+  it('refuses to export without a run and surfaces the failure toast', async () => {
+    const { result } = renderHook(() => useMapExport('map-1', 'My Map'), { wrapper })
+
+    act(() => {
+      result.current.exportFormat('CSV')
+    })
+
+    await waitFor(() => expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({ variant: 'destructive' }),
+    ))
+    expect(mockedApi.maps.createExport).not.toHaveBeenCalled()
+  })
+
   it('surfaces a toast when job creation itself fails', async () => {
     mockedApi.maps.createExport.mockRejectedValueOnce({ message: 'server exploded' })
-    const { result } = renderHook(() => useMapExport('map-1', 'My Map'), { wrapper })
+    const { result } = renderHook(() => useMapExport('map-1', 'My Map', {}, 'run-1'), { wrapper })
 
     act(() => {
       result.current.exportFormat('XLSX')
@@ -99,7 +112,7 @@ describe('useMapExport', () => {
       }) as never,
     )
 
-    const { result } = renderHook(() => useMapExport('map-1', 'My Map'), { wrapper })
+    const { result } = renderHook(() => useMapExport('map-1', 'My Map', {}, 'run-1'), { wrapper })
     act(() => {
       result.current.exportFormat('CSV')
     })
@@ -127,7 +140,7 @@ describe('useMapExport', () => {
       }) as never,
     )
 
-    const { result } = renderHook(() => useMapExport('map-1', 'My Map'), { wrapper })
+    const { result } = renderHook(() => useMapExport('map-1', 'My Map', {}, 'run-1'), { wrapper })
     act(() => {
       result.current.exportFormat('CSV')
     })
@@ -154,7 +167,7 @@ describe('useMapExport', () => {
     )
     mockedApi.exports.download.mockRejectedValueOnce({ message: 'network blip' })
 
-    const { result } = renderHook(() => useMapExport('map-1', 'My Map'), { wrapper })
+    const { result } = renderHook(() => useMapExport('map-1', 'My Map', {}, 'run-1'), { wrapper })
     act(() => {
       result.current.exportFormat('XLSX')
     })
@@ -182,7 +195,7 @@ describe('useMapExport', () => {
       }) as never,
     )
 
-    const { result } = renderHook(() => useMapExport('map-1', 'My Map'), { wrapper })
+    const { result } = renderHook(() => useMapExport('map-1', 'My Map', {}, 'run-1'), { wrapper })
     act(() => {
       result.current.exportFormat('CSV')
     })
@@ -219,7 +232,7 @@ describe('useMapExport', () => {
         }) as never,
     )
 
-    const { result } = renderHook(() => useMapExport('map-1', 'My Map'), { wrapper })
+    const { result } = renderHook(() => useMapExport('map-1', 'My Map', {}, 'run-1'), { wrapper })
     act(() => {
       result.current.exportFormat('CSV')
     })

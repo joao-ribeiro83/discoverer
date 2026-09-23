@@ -33,11 +33,6 @@ import {
   type MapExecutionDeps,
 } from '../../services/map-execution.service.js';
 import {
-  defaultExportDeps,
-  processExportJob,
-  type ExportJobDeps,
-} from '../../services/export.service.js';
-import {
   effectiveFolderSet,
   securityRelevantFolderIds,
 } from '../../lib/sql/folder-set.js';
@@ -991,13 +986,23 @@ describe('data entitlement gate (D-016)', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Gate 11 — an export carries the SAME predicates as the on-screen query.
+// Gate 11 — a run carries the SAME predicates as the on-screen query.
 //
-// Asserting the predicates, not the rows: an unfiltered export returning the
+// Asserting the predicates, not the rows: an unfiltered run returning the
 // same rows as a filtered screen query would pass a row comparison.
+//
+// Task 4.3 stopped `processExportJob` from touching Oracle at all — it now
+// only reads the rows a run already materialised (`export.service.ts`'s
+// `ExportJobDeps` has no `prepareQuery`/`getConnection` any more). RLS is
+// therefore enforced once, when the run's query is prepared — the same
+// `prepareQuery` the screen path uses (`map-run.runner.ts`, via
+// `defaultDeps()`) — not a second time at export. The two tests below pin
+// that shared `prepareQuery` call directly; the former `processExportJob`
+// variants of them are gone because there is no Oracle call left inside
+// `processExportJob` to capture.
 // ---------------------------------------------------------------------------
 
-describe('exports carry the same predicates as the screen query (D-016)', () => {
+describe('a run carries the same predicates as the screen query (D-016)', () => {
   let policyId: string;
 
   beforeAll(async () => {
@@ -1015,95 +1020,30 @@ describe('exports carry the same predicates as the screen query (D-016)', () => 
     await dropPolicy(policyId);
   });
 
-  it('the export path prepares the same WHERE clause', async () => {
-    // The export service takes prepareQuery from the execution service; this
-    // asserts the wiring AND the resulting predicate, not just that rows match.
-    const exportPrepared = await defaultExportDeps().prepareQuery(
-      plainMapId,
-      {},
-      userOkId,
-    );
-    expect(exportPrepared.sql).toContain("(REGION = 'EMEA')");
+  it('the run path prepares the same WHERE clause', async () => {
+    // map-run.runner.ts calls this same `prepareQuery`; this asserts the
+    // resulting predicate matches what the screen query gets, not just that
+    // rows match.
+    const runPrepared = await defaultDeps().prepareQuery(plainMapId, {}, userOkId);
+    expect(runPrepared.sql).toContain("(REGION = 'EMEA')");
 
     const screenSql = await captureSql(plainMapId, userOkId);
     // Cut at ORDER BY, not just FETCH: this map configures no sort, so the
     // screen path's OFFSET/FETCH pagination picks up BE-06's deterministic
-    // `ORDER BY 1` tiebreaker while the export path (unpaginated — it streams
+    // `ORDER BY 1` tiebreaker while the run path (unpaginated — it streams
     // every row) does not. That is a real, correct difference in sort
     // clauses, not in the predicates this test is about.
     const whereOf = (sql: string) =>
       sql.slice(sql.indexOf('WHERE')).split(/\bORDER BY\b/)[0]!.trim();
-    expect(whereOf(exportPrepared.sql)).toBe(whereOf(screenSql));
+    expect(whereOf(runPrepared.sql)).toBe(whereOf(screenSql));
   });
 
-  it('the export path refuses the user the screen query refuses', async () => {
+  it('the run path refuses the user the screen query refuses', async () => {
     await expect(
-      defaultExportDeps().prepareQuery(plainMapId, {}, userNoPolicyId),
+      defaultDeps().prepareQuery(plainMapId, {}, userNoPolicyId),
     ).rejects.toThrow(MapExecutionError);
     await expect(
-      defaultExportDeps().prepareQuery(plainMapId, {}, userNoGrantId),
+      defaultDeps().prepareQuery(plainMapId, {}, userNoGrantId),
     ).rejects.toThrow(/do not have access to the data/);
-  });
-
-  // Phase 7.3 addition (E-08/D-09): the two tests above assert the WHERE
-  // clause `prepareQuery` builds in isolation. These run the SAME assertion
-  // through `processExportJob` itself — the code path a real export actually
-  // takes — so the proof is about the export, not just the function it
-  // happens to reuse.
-  function noopExportDeps(over: Partial<ExportJobDeps>): ExportJobDeps {
-    return {
-      prepareQuery: defaultDeps().prepareQuery,
-      getConnection: async () => {
-        throw new Error('not stubbed');
-      },
-      releaseConnection: async () => {},
-      createJob: async () => {
-        throw new Error('processExportJob does not call createJob');
-      },
-      updateJob: async () => {},
-      getJob: async () => null,
-      listJobs: async () => [],
-      writeExportFile: async () => ({ rowCount: 0 }),
-      enqueue: async () => {},
-      ...over,
-    };
-  }
-
-  it('an entitled user export sends Oracle the same predicate-bearing SQL as the screen query', async () => {
-    const { conn, execute } = makeCaptureConn();
-    const drained: Record<string, unknown>[] = [];
-
-    await processExportJob(
-      { exportJobId: 'rls-export-ok', mapId: plainMapId, format: 'CSV', requestedBy: userOkId },
-      noopExportDeps({
-        getConnection: async () => conn,
-        writeExportFile: async (source) => {
-          for await (const batch of source.batches) drained.push(...batch);
-          return { rowCount: drained.length };
-        },
-      }),
-    );
-
-    const sentSql = (execute.mock.calls[0] ?? [])[0] as string;
-    expect(sentSql).toContain("(REGION = 'EMEA')");
-  });
-
-  it('an unentitled user export refuses before any row is streamed to a file', async () => {
-    const { conn } = makeCaptureConn();
-    const writeExportFile = jest.fn(async () => ({ rowCount: 0 }));
-
-    await expect(
-      processExportJob(
-        {
-          exportJobId: 'rls-export-refused',
-          mapId: plainMapId,
-          format: 'CSV',
-          requestedBy: userNoPolicyId,
-        },
-        noopExportDeps({ getConnection: async () => conn, writeExportFile }),
-      ),
-    ).rejects.toThrow(/no row-level security policy resolves for you/);
-
-    expect(writeExportFile).not.toHaveBeenCalled();
   });
 });

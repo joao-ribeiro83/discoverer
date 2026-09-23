@@ -178,34 +178,53 @@ Pase el cursor sobre los encabezados de columna para ver las opciones:
 
 Consulte [Exportación de datos](exporting-data.md).
 
-## Ejecución asíncrona (consultas largas)
+## En cola, en ejecución y reutilizado
 
-Para consultas que tardan más de 30 segundos:
+Cada **ejecución** pasa por una única cola — ya no existe un botón aparte
+para consultas largas. Haga clic en **Ejecutar** y el mapa pasa por:
 
-1. Haga clic en **Ejecutar en segundo plano**
-2. Volverá al panel
-3. Consulte **Trabajos programados** o **Historial de ejecución** para ver el estado
+- **En cola** — esperando su turno. Sus propias ejecuciones avanzan una a la
+  vez, en el orden en que las pidió; las ejecuciones de otro usuario nunca
+  esperan detrás de las suyas.
+- **En ejecución** — la consulta se está ejecutando en el origen de datos.
+- **Finalizada** — las filas están listas y aparecen en la cuadrícula de
+  resultados.
 
-Valores de estado:
-- **PENDING** — En cola, a la espera de ejecutarse
-- **PROCESSING** — En ejecución
-- **COMPLETED** — Finalizado, resultados disponibles
-- **FAILED** — La consulta ha fallado (consulte el error)
+Si ejecuta el mismo mapa con los mismos parámetros mientras ya existe un
+resultado válido, Neo salta la cola y lo devuelve al instante, marcado como
+**Resultado reutilizado**. Haga clic en **Ejecutar de nuevo** para forzar una
+nueva ejecución de todos modos.
 
-Haga clic en un trabajo completado para ver los resultados.
+### Validez del resultado
+
+Un resultado finalizado permanece disponible durante **hasta un día** tras
+completarse (su administrador puede fijar un límite más corto). El resultado
+de una ejecución programada sigue en su lugar la propia retención de esa
+programación — consulte [Programación de mapas](scheduling.md). En cuanto un
+resultado expira, volver a ejecutar el mapa pone en cola una nueva ejecución,
+y sus filas dejan de poder descargarse — consulte
+[por qué faltan a veces los botones de exportación](exporting-data.md#por-qué-a-veces-faltan-los-botones-de-exportación).
+
+## La página Ejecuciones
+
+Haga clic en **Ejecuciones** en la barra lateral para ver todas las
+ejecuciones que ha pedido, en vivo o programadas, con su estado, número de
+filas, duración y caducidad. Desde aquí puede:
+
+- **Abrir** — volver al visor de mapas mostrando las filas de esa ejecución
+- **Ejecutar de nuevo** — repetir los mismos parámetros (devuelve al instante
+  si el resultado sigue siendo válido)
+- **Cancelar** — detener una ejecución que aún esté en cola
+- **Eliminar** — quitar una ejecución finalizada
+- **XLSX / CSV / PDF** — descargar las filas guardadas (consulte
+  [Exportación de datos](exporting-data.md))
+
+Un administrador puede además ver las ejecuciones de todos los usuarios.
 
 ## Historial de ejecución
 
-Consulte las ejecuciones recientes de un mapa:
-
-1. Abra un mapa → haga clic en **Historial**
-2. Verá una lista de las ejecuciones recientes con:
-   - Fecha y hora de ejecución
-   - Usuario que la ejecutó
-   - Número de filas devueltas
-   - Tiempo de ejecución
-
-Haga clic en cualquier fila para volver a ver esos resultados.
+Para ver solo las ejecuciones de un mapa, abra la
+[página Ejecuciones](#la-página-ejecuciones) y filtre por ese mapa.
 
 ## Resolución de problemas
 

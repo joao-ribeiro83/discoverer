@@ -168,6 +168,7 @@ interface EulBatchReportRow {
   euId: number;
   rfuId: number;
   autoRefresh: boolean;
+  expiry: number | null;
 }
 
 interface EulBatchSheetRow {
@@ -206,7 +207,7 @@ async function readEulSource(dataSourceId: string, schemaOwner?: string): Promis
   try {
     const reportsRes = await conn.execute(
       `SELECT BR_ID, BR_NAME, BR_WORKBOOK_NAME, BR_NEXT_RUN_DATE, BR_NUM_FREQ_UNITS,
-              BR_EU_ID, BR_RFU_ID, BR_AUTO_REFRESH
+              BR_EU_ID, BR_RFU_ID, BR_AUTO_REFRESH, BR_EXPIRY
          FROM ${schema}.${prefix}BATCH_REPORTS WHERE BR_ELEMENT_STATE = 0`,
       {},
       OBJ_FORMAT,
@@ -221,6 +222,7 @@ async function readEulSource(dataSourceId: string, schemaOwner?: string): Promis
         BR_EU_ID: number;
         BR_RFU_ID: number;
         BR_AUTO_REFRESH: number;
+        BR_EXPIRY: number | null;
       }>
     ).map((r) => ({
       brId: r.BR_ID,
@@ -231,6 +233,7 @@ async function readEulSource(dataSourceId: string, schemaOwner?: string): Promis
       euId: r.BR_EU_ID,
       rfuId: r.BR_RFU_ID,
       autoRefresh: r.BR_AUTO_REFRESH === 1,
+      expiry: r.BR_EXPIRY,
     }));
 
     const sheetsRes = await conn.execute(
@@ -362,6 +365,24 @@ export function classifyRunOutcome(errCode: number | null, errText: string | nul
   return { status: 'FAILED', errorMessage: `ORA-${Math.abs(errCode)}: ${errText ?? ''}`.trim() };
 }
 
+/**
+ * BR_EXPIRY (ground truth §BATCH_REPORTS) is read as a result-retention
+ * window in days. Falls back to the schedules table's own default (30) when
+ * the source row has no value, rather than inventing a number — and the
+ * same fallback covers a value the API route's own validation
+ * (`z.number().int().min(1).max(3650)`, backend/src/routes/schedules.ts)
+ * would reject: non-integer, zero/negative, or absurdly large. An
+ * unvalidated raw value would let a 0/negative BR_EXPIRY expire a result at
+ * the moment it completes, a fractional one throw on the Postgres integer
+ * insert, and an over-large one make the schedule unsaveable from the UI.
+ */
+export function resolveRetentionDays(expiry: number | null): number {
+  if (expiry == null) return 30;
+  if (!Number.isInteger(expiry)) return 30;
+  if (expiry < 1 || expiry > 3650) return 30;
+  return expiry;
+}
+
 export interface ScheduleImportWarning {
   brId: number;
   brName: string;
@@ -485,6 +506,7 @@ export async function importSchedules(
           outputFormat,
           isActive: false,
           createdBy: ownerUserId,
+          resultRetentionDays: resolveRetentionDays(report.expiry),
         });
 
         const sheetParams = paramsBySheet.get(sheet.bsId) ?? [];
