@@ -18,7 +18,7 @@
     "format": "prettier --write .",
     "pretypecheck": "npm run build -w @discoverer-neo/core",
     "typecheck": "tsc --noEmit",
-    "test": "jest",
+    "test": "jest --coverage",
     "test:integration": "jest --testPathPattern='integration'",
     "pretest:integration": "npm run db:test:setup",
     "test:unit": "jest --testPathIgnorePatterns='/integration/'",
