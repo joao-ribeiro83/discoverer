@@ -36,7 +36,7 @@ export function MapViewerPage() {
     enabled: !!id,
   })
 
-  const { run: rawRun, result: rawResult, rows, isQueued, isRunning, isReused, error: rawError, request, open, loadMore } =
+  const { run: rawRun, result: rawResult, rows, isQueued, isRunning, isReused, error: rawError, request, open, cancel, loadMore } =
     useMapRun(id)
 
   // `?run=<id>` can point at any run the caller can read — the Runs page
@@ -218,6 +218,11 @@ export function MapViewerPage() {
             {run?.status === 'COMPLETED' && (
               <Button variant="ghost" size="sm" onClick={handleRunAgain} disabled={running}>
                 {t('mapViewer:viewer.runAgain')}
+              </Button>
+            )}
+            {queued && (
+              <Button variant="ghost" size="sm" onClick={() => void cancel()}>
+                {t('common:actions.cancel')}
               </Button>
             )}
           </div>
