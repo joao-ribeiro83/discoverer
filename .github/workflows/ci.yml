@@ -133,7 +133,9 @@ jobs:
         run: node scripts/docs-i18n-check.mjs pt-PT fr-FR es-ES
 
       - name: Test
-        run: npm test --workspace @discoverer-neo/frontend -- --run --coverage
+        # The script itself runs once with coverage, so a local `npm test`
+        # hits the same 78% branch gate CI does.
+        run: npm test --workspace @discoverer-neo/frontend
 
       - name: Build
         run: npm run build --workspace @discoverer-neo/frontend
