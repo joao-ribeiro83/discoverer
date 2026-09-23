@@ -19,7 +19,7 @@ import { useMapExport } from '@/hooks/useMapExport'
 import { useToast } from '@/hooks/use-toast'
 import { useLocale } from '@/hooks/useLocale'
 import { useAuthStore } from '@/store/auth'
-import { formatDateTime, formatInteger, formatExpiresIn } from '@/lib/format'
+import { formatDateTime, formatInteger, formatExpiresIn, isExpiryValid } from '@/lib/format'
 import { AdminPageWrapper } from '@/components/admin/AdminPageWrapper'
 import { DeleteConfirmDialog } from '@/components/admin/DeleteConfirmDialog'
 import { Badge } from '@/components/ui/badge'
@@ -36,12 +36,8 @@ const POLL_MS = 2000
 const IDLE_POLL_MS = 30_000
 const LIST_LIMIT = 200
 
-function isExpired(run: MapRun): boolean {
-  return new Date(run.expiresAt).getTime() <= Date.now()
-}
-
 function canExportRun(run: MapRun): boolean {
-  return run.status === 'COMPLETED' && !isExpired(run)
+  return run.status === 'COMPLETED' && isExpiryValid(run.expiresAt)
 }
 
 function StatusBadge({ status, t }: { status: MapRun['status']; t: (key: string) => string }) {

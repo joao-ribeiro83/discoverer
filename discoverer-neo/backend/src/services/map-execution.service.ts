@@ -624,6 +624,13 @@ function clampSyncMaxRows(n?: number): number {
   return Math.min(Math.max(Math.floor(n), 1), MAX_SYNC_ROWS);
 }
 
+/** `connection.break()` surfaces as ORA-01013 (user requested cancel). */
+export function isCancelError(err: unknown): boolean {
+  const code = (err as { code?: string })?.code ?? '';
+  const message = err instanceof Error ? err.message : String(err);
+  return code === 'ORA-01013' || /\bORA-01013\b|cancel/i.test(message);
+}
+
 /** Oracle raises DPI-1067 / an ORA timeout when callTimeout aborts a call. */
 export function isTimeoutError(err: unknown): boolean {
   const code = (err as { code?: string })?.code ?? '';

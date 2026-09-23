@@ -21,6 +21,7 @@ import {
   buildColumns,
   defaultDeps as defaultExecutionDeps,
   DEFAULT_TIMEOUT_MS,
+  isCancelError,
   isTimeoutError,
   openRowStream,
   runTotalsQueries,
@@ -109,6 +110,38 @@ const FAILED_TTL_MS = 24 * 60 * 60 * 1000;
 // Lifecycles: SCHEDULED default when the schedule is gone.
 const DEFAULT_RETENTION_DAYS = 30;
 
+// The Oracle connection a RUNNING run currently owns in this process, keyed by
+// run id — the only handle available to interrupt an in-flight query.
+// Per-process, not durable: a run executing on a different worker instance is
+// invisible here, same limitation the old in-memory async registry had.
+const activeConnections = new Map<string, Connection>();
+// Set while a break() is outstanding, so the catch block below can tell "the
+// user asked us to stop" apart from an unrelated Oracle error carrying the
+// same ORA-01013 code.
+const cancelRequested = new Set<string>();
+
+/**
+ * Interrupt a RUNNING run's in-flight Oracle call, if this process is the one
+ * executing it. Returns false when it isn't (already finished, or running on
+ * a different worker instance) — the caller falls back to refusing the
+ * cancel rather than claiming progress it can't confirm.
+ */
+export function requestCancel(runId: string): boolean {
+  const conn = activeConnections.get(runId);
+  if (!conn) return false;
+  cancelRequested.add(runId);
+  // The call may finish on its own before break() lands — the catch block
+  // below still needs cancelRequested to classify whatever error (if any)
+  // results, so this fires and forgets rather than awaiting.
+  try {
+    void conn.break().catch(() => undefined);
+  } catch {
+    // A driver that throws synchronously instead of rejecting still leaves
+    // cancelRequested set, which is all the catch block below relies on.
+  }
+  return true;
+}
+
 /**
  * The job has one attempt, so a lost failRun write would leave the row RUNNING
  * and block this user's FIFO until the stale sweep. Try a few times first.
@@ -119,9 +152,10 @@ async function recordFailure(
   runId: string,
   errorMessage: string,
   decoration?: RunErrorDecoration,
+  status: 'FAILED' | 'CANCELLED' = 'FAILED',
 ): Promise<void> {
   const r = {
-    status: 'FAILED' as const,
+    status,
     errorMessage,
     expiresAt: new Date(deps.now().getTime() + FAILED_TTL_MS),
     ...(decoration ? { decoration: { error: decoration } } : {}),
@@ -188,6 +222,7 @@ export async function processMapRun(
     );
     conn = await deps.getConnection(prepared.dataSourceId);
     conn.callTimeout = DEFAULT_TIMEOUT_MS;
+    activeConnections.set(runId, conn);
 
     const calcs = run.calculatedFields as CalcFieldInput[];
     const stream = await deps.openRowStream(conn, prepared, batchSize);
@@ -213,20 +248,19 @@ export async function processMapRun(
       await stream.close();
     }
 
-    // Totals run on the same connection, over the whole filtered set.
-    const totalsRun = prepared.totals?.length
-      ? await runTotalsQueries(conn, prepared.totals, runId)
-      : { groups: [], warnings: [] };
+    // Totals run on the same Oracle connection; the heading only reads
+    // Postgres — independent work, run concurrently. The heading carries
+    // `&Date`, `&Time` and `&<ParamName>` tokens resolved with this run's own
+    // parameters — same source the old synchronous `/execute` read it from
+    // (fix round 1: the viewer lost it when it moved to reading a stored run
+    // instead of that response).
+    const [totalsRun, heading] = await Promise.all([
+      prepared.totals?.length
+        ? runTotalsQueries(conn, prepared.totals, runId)
+        : Promise.resolve({ groups: [], warnings: [] }),
+      deps.resolveHeading(run.mapId, run.parameters as Record<string, unknown>, deps.now()),
+    ]);
     const warnings = [...(prepared.warnings ?? []), ...totalsRun.warnings];
-    // The heading carries `&Date`, `&Time` and `&<ParamName>` tokens resolved
-    // with this run's own parameters — same source the old synchronous
-    // `/execute` read it from (fix round 1: the viewer lost it when it moved
-    // to reading a stored run instead of that response).
-    const heading = await deps.resolveHeading(
-      run.mapId,
-      run.parameters as Record<string, unknown>,
-      deps.now(),
-    );
     const decoration = {
       ...(prepared.groupBreakAliases?.length ? { groupBreakAliases: prepared.groupBreakAliases } : {}),
       ...(totalsRun.groups.length ? { totals: totalsRun.groups } : {}),
@@ -296,18 +330,27 @@ export async function processMapRun(
         errorKind = 'CONFIG';
       }
     } else {
-      const kind: ExecutionErrorKind = isTimeoutError(err)
-        ? 'TIMEOUT'
-        : prepared && !conn
-          ? 'CONNECT'
-          : 'QUERY';
+      const kind: ExecutionErrorKind =
+        cancelRequested.has(runId) && isCancelError(err)
+          ? 'CANCELLED'
+          : isTimeoutError(err)
+            ? 'TIMEOUT'
+            : prepared && !conn
+              ? 'CONNECT'
+              : 'QUERY';
       const wrapped = wrapExecutionError(err, kind, runId);
       message = wrapped.message;
       errorKind = wrapped.kind;
     }
     const now = deps.now();
     const executionTimeMs = now.getTime() - start;
-    await recordFailure(deps, runId, message, { kind: errorKind, ...(refusal ? { refusal } : {}) });
+    await recordFailure(
+      deps,
+      runId,
+      message,
+      { kind: errorKind, ...(refusal ? { refusal } : {}) },
+      errorKind === 'CANCELLED' ? 'CANCELLED' : 'FAILED',
+    );
     await safeRecord(deps, {
       mapId: run.mapId,
       executedBy: run.requestedBy,
@@ -331,6 +374,8 @@ export async function processMapRun(
       });
     }
   } finally {
+    activeConnections.delete(runId);
+    cancelRequested.delete(runId);
     if (prepared && conn) await deps.releaseConnection(prepared.dataSourceId, conn);
   }
   return 'ran';

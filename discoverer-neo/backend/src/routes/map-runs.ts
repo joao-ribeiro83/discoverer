@@ -195,20 +195,30 @@ export default function mapRunRoutes(fastify: FastifyInstance) {
 
       // decoration.totals are real Oracle rows, same as the rows endpoint —
       // a grant revoked after the run finished must hide it here too, not
-      // just on GET /api/runs/:id. One getById per distinct map, cached: the
-      // list is capped at 200 rows and usually touches far fewer maps.
+      // just on GET /api/runs/:id. One getById and one canAccessMap per
+      // distinct map, fetched concurrently: the list is capped at 200 rows
+      // and usually touches far fewer maps.
       // ponytail: filtering after the LIMIT means a caller can see fewer than
       // `limit` rows even when more exist; fine at today's scale, revisit if
       // the list ever needs to paginate reliably past a wall of hidden maps.
-      const mapCache = new Map<string, MapWithDetails | null>();
+      const distinctMapIds = [...new Set(runs.map((run) => run.mapId))];
+      const mapCache = new Map<string, MapWithDetails | null>(
+        await Promise.all(
+          distinctMapIds.map(async (id) => [id, await getById(id)] as const),
+        ),
+      );
+      const accessCache = new Map<string, boolean>(
+        await Promise.all(
+          distinctMapIds.map(async (id) => {
+            const map = mapCache.get(id);
+            return [id, map ? await canAccessMap(user, map, 'VIEW') : false] as const;
+          }),
+        ),
+      );
       const visible: { run: MapRunRow; map: MapWithDetails }[] = [];
       for (const run of runs) {
-        let map = mapCache.get(run.mapId);
-        if (map === undefined) {
-          map = await getById(run.mapId);
-          mapCache.set(run.mapId, map);
-        }
-        if (map && (await canAccessMap(user, map, 'VIEW'))) {
+        const map = mapCache.get(run.mapId);
+        if (map && accessCache.get(run.mapId)) {
           visible.push({ run, map });
         }
       }
@@ -295,6 +305,12 @@ export default function mapRunRoutes(fastify: FastifyInstance) {
       const result = await cancelRun(loaded.run.id);
       if (result === 'cancelled') {
         return { data: { cancelled: true } };
+      }
+      if (result === 'cancelling') {
+        // The interrupt was sent but Oracle hasn't unwound yet — the run
+        // settles to CANCELLED asynchronously, same as any other terminal
+        // status the client already polls for.
+        return reply.code(202).send({ data: { cancelling: true } });
       }
       if (result === 'not_found') {
         return reply.code(404).send({ error: 'Run not found' });
