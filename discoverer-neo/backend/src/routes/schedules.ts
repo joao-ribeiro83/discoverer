@@ -76,6 +76,35 @@ const historyQuerySchema = {
   properties: { limit: { type: 'integer', minimum: 1, maximum: 200 } },
 } as const;
 
+/** 200 body of GET /api/schedules/:id/history. Every field of
+ * `ScheduledResultWithRunInfo` must be listed: fast-json-stringify drops any
+ * property the schema does not name, and the UI keys Download on `filePath`. */
+const historyResponseSchema = {
+  200: {
+    type: 'object',
+    properties: {
+      data: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            scheduleId: { type: 'string' },
+            executedAt: { type: 'string', format: 'date-time' },
+            rowCount: { type: 'integer', nullable: true },
+            filePath: { type: 'string', nullable: true },
+            executionTimeMs: { type: 'integer', nullable: true },
+            status: { type: 'string', enum: ['SUCCESS', 'FAILED', 'TIMEOUT'] },
+            errorMessage: { type: 'string', nullable: true },
+            runId: { type: 'string', nullable: true },
+            expiresAt: { type: 'string', format: 'date-time', nullable: true },
+          },
+        },
+      },
+    },
+  },
+} as const;
+
 /** Shape returned to clients, with a computed `nextRunAt` convenience field. */
 function toResponse(schedule: ScheduleRecord, nextRunAt: Date | null) {
   return {
@@ -344,6 +373,7 @@ export default function scheduleRoutes(fastify: FastifyInstance) {
         security: [{ bearerAuth: [] }],
         params: idParamsSchema,
         querystring: historyQuerySchema,
+        response: historyResponseSchema,
       },
     },
     async (request, reply) => {

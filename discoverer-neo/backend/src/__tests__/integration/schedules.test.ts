@@ -645,6 +645,17 @@ describe('schedule history + result download', () => {
     expect(rowWithoutRun?.expiresAt).toBeNull();
   });
 
+  it('documents every history field in the OpenAPI spec', () => {
+    const spec = app.swagger() as unknown as {
+      paths: Record<string, Record<string, { responses: Record<string, { content?: Record<string, { schema: { properties: { data: { items: { properties: Record<string, unknown> } } } } }> }> }>>;
+    };
+    const item = spec.paths['/api/schedules/{id}/history']!['get']!.responses['200']!.content!['application/json']!.schema
+      .properties.data.items.properties;
+    expect(Object.keys(item).sort()).toEqual(
+      ['errorMessage', 'executedAt', 'executionTimeMs', 'expiresAt', 'filePath', 'id', 'rowCount', 'runId', 'scheduleId', 'status'],
+    );
+  });
+
   it('404s a result with neither a file nor a run', async () => {
     const id = await createScheduleViaApi(ownerToken);
     const [result] = await db
