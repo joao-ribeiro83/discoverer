@@ -9,7 +9,8 @@
     "runDryRun": "Ejecutar simulación",
     "runMigration": "Ejecutar migración",
     "reimportMaps": "Reimportar mapas",
-    "reimportAll": "Reimportar todo"
+    "reimportAll": "Reimportar todo",
+    "compile": "Compilar campos calculados"
   },
   "source": {
     "title": "Origen",
@@ -26,7 +27,8 @@
     "dryRunLabel": "Simulación (validar sin escribir)",
     "liveMigrationWarning": "Una migración real escribe en esta base de datos de Discoverer Neo. Ejecute primero una simulación y revise el informe siguiente.",
     "reimportMapsHelp": "La reimportación de mapas reconstruye únicamente los mapas de una base de datos ya migrada, a partir de los libros del EUL. Sustituye todos los mapas del área de negocio «Migrated Workbooks» —los cambios hechos desde la migración original se pierden— y no toca usuarios, carpetas, elementos ni concesiones. Ejecútela primero como simulación.",
-    "reimportAllHelp": "Reimportar todo repite toda la migración con la versión actual del migrador y reescribe, objeto a objeto, lo que ahora difiere: áreas de negocio, carpetas, elementos, uniones, jerarquías, funciones, usuarios, permisos y mapas. No se borra nada y los ids de los mapas se conservan, así que programaciones y comparticiones se mantienen; los objetos eliminados del EUL solo se informan. Una ejecución real termina compilando los campos calculados. Haga primero una simulación."
+    "reimportAllHelp": "Reimportar todo repite toda la migración con la versión actual del migrador y reescribe, objeto a objeto, lo que ahora difiere: áreas de negocio, carpetas, elementos, uniones, jerarquías, funciones, usuarios, permisos y mapas. No se borra nada y los ids de los mapas se conservan, así que programaciones y comparticiones se mantienen; los objetos eliminados del EUL solo se informan. Una ejecución real termina compilando los campos calculados. Haga primero una simulación.",
+    "compileHelp": "Compilar campos calculados comprueba cada campo calculado y escribe el SQL que ejecutan los mapas. Una migración y una reimportación ya lo hacen al final; use este botón si un mapa dice que un campo \"no se ha compilado\". No lee el EUL."
   },
   "detected": {
     "title": "Origen detectado",
@@ -144,6 +146,7 @@
     "mapReimportStarted": "Reimportación de mapas iniciada",
     "migrationBlockers": "La migracion termino con bloqueos",
     "migrationBlockersBody": "Las filas se escribieron, pero la reconciliacion de la propia ejecucion no cuadra. Ejecute dn-migrate verify en el destino antes de usar este entorno.",
-    "deltaStarted": "Reimportación de todo iniciada"
+    "deltaStarted": "Reimportación de todo iniciada",
+    "compileStarted": "Compilación de campos calculados iniciada"
   }
 }

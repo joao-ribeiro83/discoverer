@@ -178,44 +178,107 @@ async function fetchAllTables(conn: Connection): Promise<IntrospectedTable[]> {
     OBJECT_TYPE: string;
     COMMENTS: string | null;
   }>) {
-    const tableName = row.TABLE_NAME;
-    const tableOwner = row.OWNER;
-
-    const colResult = await conn.execute(
-      `SELECT c.COLUMN_NAME, c.DATA_TYPE, c.DATA_LENGTH, c.NULLABLE, cc.COMMENTS
-         FROM ALL_TAB_COLUMNS c
-         LEFT JOIN ALL_COL_COMMENTS cc
-           ON cc.OWNER = c.OWNER AND cc.TABLE_NAME = c.TABLE_NAME AND cc.COLUMN_NAME = c.COLUMN_NAME
-        WHERE c.TABLE_NAME = :tableName AND c.OWNER = :owner
-        ORDER BY c.COLUMN_ID`,
-      { tableName, owner: tableOwner },
-      { outFormat: OUT_FORMAT_OBJECT },
-    );
-
-    const columns: IntrospectedColumn[] = (colResult.rows as Array<{
-      COLUMN_NAME: string;
-      DATA_TYPE: string;
-      DATA_LENGTH: number | null;
-      NULLABLE: string;
-      COMMENTS: string | null;
-    }>).map((col) => ({
-      columnName: col.COLUMN_NAME,
-      dataType: col.DATA_TYPE,
-      dataLength: col.DATA_LENGTH ?? null,
-      nullable: col.NULLABLE === 'Y',
-      comments: col.COMMENTS?.trim() || null,
-    }));
-
     tables.push({
-      tableName,
-      tableOwner,
+      tableName: row.TABLE_NAME,
+      tableOwner: row.OWNER,
       objectType: row.OBJECT_TYPE === 'VIEW' ? 'VIEW' : 'TABLE',
       comments: row.COMMENTS?.trim() || null,
-      columns,
+      columns: await fetchColumns(conn, row.OWNER, row.TABLE_NAME),
     });
   }
 
   return tables;
+}
+
+async function fetchColumns(
+  conn: Connection,
+  owner: string,
+  tableName: string,
+): Promise<IntrospectedColumn[]> {
+  const colResult = await conn.execute(
+    `SELECT c.COLUMN_NAME, c.DATA_TYPE, c.DATA_LENGTH, c.NULLABLE, cc.COMMENTS
+       FROM ALL_TAB_COLUMNS c
+       LEFT JOIN ALL_COL_COMMENTS cc
+         ON cc.OWNER = c.OWNER AND cc.TABLE_NAME = c.TABLE_NAME AND cc.COLUMN_NAME = c.COLUMN_NAME
+      WHERE c.TABLE_NAME = :tableName AND c.OWNER = :owner
+      ORDER BY c.COLUMN_ID`,
+    { tableName, owner },
+    { outFormat: OUT_FORMAT_OBJECT },
+  );
+
+  return (colResult.rows as Array<{
+    COLUMN_NAME: string;
+    DATA_TYPE: string;
+    DATA_LENGTH: number | null;
+    NULLABLE: string;
+    COMMENTS: string | null;
+  }>).map((col) => ({
+    columnName: col.COLUMN_NAME,
+    dataType: col.DATA_TYPE,
+    dataLength: col.DATA_LENGTH ?? null,
+    nullable: col.NULLABLE === 'Y',
+    comments: col.COMMENTS?.trim() || null,
+  }));
+}
+
+/**
+ * Read named tables/views live — no cache, any owner the connecting user can
+ * see (a migrated folder often sits in another schema than the data source
+ * user, which `introspectSchema` does not list). One connection for the lot.
+ * A missing object maps to null. `owner` null means the connecting user.
+ */
+export async function describeObjects(
+  dataSourceId: string,
+  refs: ReadonlyArray<{ owner: string | null; name: string }>,
+): Promise<Array<IntrospectedTable | null>> {
+  const [ds] = await db.select().from(dataSources).where(eq(dataSources.id, dataSourceId)).limit(1);
+  if (!ds) throw new Error('Data source not found');
+  if (ds.connectionType !== 'oracle') {
+    throw new Error(`Introspection is only supported for Oracle data sources (got: ${ds.connectionType})`);
+  }
+
+  const conn = await getOracleConnection(ds);
+  try {
+    const out: Array<IntrospectedTable | null> = [];
+    for (const ref of refs) {
+      // Exact name first, then Oracle's folded upper case — a quoted mixed-case
+      // name still matches itself.
+      const obj = await conn.execute(
+        `SELECT o.OWNER, o.OBJECT_NAME, o.OBJECT_TYPE, c.COMMENTS
+           FROM ALL_OBJECTS o
+           LEFT JOIN ALL_TAB_COMMENTS c ON c.OWNER = o.OWNER AND c.TABLE_NAME = o.OBJECT_NAME
+          WHERE o.OWNER IN (:owner, UPPER(:owner)) AND o.OBJECT_NAME IN (:name, UPPER(:name))
+            AND o.OBJECT_TYPE IN ('TABLE', 'VIEW')
+          ORDER BY CASE WHEN o.OBJECT_NAME = :name THEN 0 ELSE 1 END`,
+        { owner: ref.owner || conn.user || ds.username || '', name: ref.name },
+        { outFormat: OUT_FORMAT_OBJECT },
+      );
+      const row = (obj.rows as Array<{
+        OWNER: string;
+        OBJECT_NAME: string;
+        OBJECT_TYPE: string;
+        COMMENTS: string | null;
+      }>)[0];
+      out.push(
+        row
+          ? {
+              tableName: row.OBJECT_NAME,
+              tableOwner: row.OWNER,
+              objectType: row.OBJECT_TYPE === 'VIEW' ? 'VIEW' : 'TABLE',
+              comments: row.COMMENTS?.trim() || null,
+              columns: await fetchColumns(conn, row.OWNER, row.OBJECT_NAME),
+            }
+          : null,
+      );
+    }
+    return out;
+  } finally {
+    try {
+      await conn.close();
+    } catch {
+      // Ignore close errors
+    }
+  }
 }
 
 /**
@@ -405,6 +468,48 @@ export async function searchDatabaseFunctions(
       } catch {
         // Ignore close errors
       }
+    }
+  }
+}
+
+/**
+ * Read named functions live, one connection for the lot: every overload of
+ * `owner.package.name` in `ALL_ARGUMENTS`, empty when it is gone. `owner` null
+ * means the connecting user. Names match exactly, then in Oracle's upper case.
+ */
+export async function describeFunctions(
+  dataSourceId: string,
+  refs: ReadonlyArray<{ owner: string | null; packageName: string | null; name: string }>,
+): Promise<DatabaseFunction[][]> {
+  const [ds] = await db.select().from(dataSources).where(eq(dataSources.id, dataSourceId)).limit(1);
+  if (!ds) throw new Error('Data source not found');
+  if (ds.connectionType !== 'oracle') {
+    throw new Error(`Function lookup is only supported for Oracle data sources (got: ${ds.connectionType})`);
+  }
+
+  const conn = await getOracleConnection(ds);
+  try {
+    const out: DatabaseFunction[][] = [];
+    for (const ref of refs) {
+      const result = await conn.execute(
+        `SELECT OWNER, PACKAGE_NAME, OBJECT_NAME, OVERLOAD, ARGUMENT_NAME, POSITION,
+                DATA_TYPE, DEFAULTED, IN_OUT
+           FROM ALL_ARGUMENTS
+          WHERE OWNER IN (:owner, UPPER(:owner)) AND OBJECT_NAME IN (:name, UPPER(:name))
+            AND (PACKAGE_NAME IN (:pkg, UPPER(:pkg)) OR (:pkg IS NULL AND PACKAGE_NAME IS NULL))
+            AND DATA_LEVEL = 0
+          ORDER BY PACKAGE_NAME, OBJECT_NAME, OVERLOAD, POSITION`,
+        { owner: ref.owner || conn.user || ds.username || '', name: ref.name, pkg: ref.packageName },
+        { outFormat: OUT_FORMAT_OBJECT },
+      );
+      out.push(groupDatabaseFunctions((result.rows ?? []) as AllArgumentsRow[]));
+    }
+    return out;
+  } finally {
+    try {
+      await conn.close();
+    } catch {
+      // Ignore close errors
     }
   }
 }

@@ -108,6 +108,18 @@
       "unshared": "Uso compartido eliminado",
       "shareFailed": "No se pudo compartir la carpeta",
       "unshareFailed": "No se pudo quitar el uso compartido"
+    },
+    "refresh": {
+      "one": "Actualizar desde el origen de datos",
+      "all": "Actualizar todo",
+      "allHint": "Volver a leer cada tabla y vista de esta área de negocio desde su origen de datos",
+      "done": "{{count}} carpeta(s) actualizada(s)",
+      "summary": "{{added}} elemento(s) nuevo(s), {{updated}} actualizado(s), {{missing}} columna(s) ausente(s), {{failed}} carpeta(s) con error",
+      "failed": "La actualización falló",
+      "resultsTitle": "Resultado de la actualización",
+      "added": "Elementos nuevos: {{names}}",
+      "updated": "Actualizados: {{names}}",
+      "missing": "La columna ya no existe en el origen (elemento conservado — bórrelo si ningún mapa lo usa): {{names}}"
     }
   },
   "items": {
@@ -272,6 +284,18 @@
       "noResults": "No se encontraron funciones.",
       "notCallable": "No se puede llamar desde SQL: {{reason}}",
       "truncated": "Hay más funciones. Escriba más del nombre para acotar la búsqueda."
+    },
+    "refresh": {
+      "one": "Actualizar desde la base de datos",
+      "all": "Actualizar todo",
+      "allHint": "Volver a leer cada función en Oracle y recompilar los campos calculados si alguna cambió",
+      "done": "{{count}} función(es) comprobada(s)",
+      "summary": "{{changed}} cambiada(s), {{missing}} ya no existe(n) en Oracle, {{failed}} con error",
+      "failed": "La actualización falló",
+      "resultsTitle": "Resultado de la actualización",
+      "compile": "Campos calculados recompilados: {{message}}",
+      "changed": "actualizado: {{what}}",
+      "missing": "ya no existe en Oracle — se conserva, porque los campos calculados aún pueden llamarla"
     }
   },
   "dataSources": {

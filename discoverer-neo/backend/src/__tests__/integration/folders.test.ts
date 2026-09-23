@@ -5,6 +5,7 @@ import { buildApp } from '../../app.js';
 import { db } from '../../db/index.js';
 import { users, businessAreas, dataSources, folders, items } from '../../db/schema.js';
 import { hashPassword } from '../../lib/password.js';
+import { refreshFromSource } from '../../services/folder.service.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -1093,5 +1094,81 @@ describe('SQL validation', () => {
       expect(response.statusCode).toBe(200);
       expect(response.json().data.customSql).toBe('SELECT EMPLOYEE_ID FROM EMPLOYEES');
     });
+  });
+});
+
+describe('Refresh from data source', () => {
+  async function folder(values: Partial<typeof folders.$inferInsert>) {
+    const [row] = await db
+      .insert(folders)
+      .values({ businessAreaId: testBusinessAreaId, name: 'F', folderType: 'TABLE', ...values })
+      .returning();
+    return row!;
+  }
+
+  it('adds new columns, updates changed types and folder type, reports gone columns', async () => {
+    const f = await folder({ name: 'Emp', tableName: 'EMPLOYEES', tableOwner: 'HR', dataSourceId: testDataSourceId });
+    const gone = await folder({ name: 'Gone', tableName: 'NOPE', tableOwner: 'HR', dataSourceId: testDataSourceId });
+    const derived = await folder({ name: 'Calc', folderType: 'DERIVED', customSql: 'SELECT 1 FROM DUAL' });
+    await db.insert(items).values([
+      { folderId: f.id, name: 'Employee Id', itemType: 'CO', columnName: 'EMPLOYEE_ID', dataType: 'NUMBER', displayOrder: 0 },
+      { folderId: f.id, name: 'First Name', itemType: 'CO', columnName: 'FIRST_NAME', dataType: 'NUMBER', displayOrder: 1 },
+      { folderId: f.id, name: 'Old', itemType: 'CO', columnName: 'OLD_COL', dataType: 'TEXT', displayOrder: 2 },
+      { folderId: f.id, name: 'Calc', itemType: 'CI', formula: '1', displayOrder: 3 },
+    ]);
+
+    const results = await refreshFromSource([f.id, gone.id, derived.id], async (_ds, refs) =>
+      refs.map((r) =>
+        r.name === 'EMPLOYEES'
+          ? {
+              tableName: 'EMPLOYEES',
+              tableOwner: 'HR',
+              objectType: 'VIEW' as const,
+              comments: null,
+              columns: [
+                { columnName: 'EMPLOYEE_ID', dataType: 'NUMBER', dataLength: 6, nullable: false, comments: null },
+                { columnName: 'FIRST_NAME', dataType: 'VARCHAR2', dataLength: 50, nullable: true, comments: null },
+                { columnName: 'HIRE_DATE', dataType: 'DATE', dataLength: 7, nullable: false, comments: 'Hired' },
+              ],
+            }
+          : null,
+      ),
+    );
+
+    const byId = new Map(results.map((r) => [r.folderId, r]));
+    expect(byId.get(f.id)).toMatchObject({
+      added: ['HIRE_DATE'],
+      updated: ['First Name', 'Emp (VIEW)'],
+      missing: ['Old'],
+      error: null,
+    });
+    expect(byId.get(gone.id)!.error).toMatch(/no longer exists/);
+    expect(byId.get(derived.id)!.error).toMatch(/not based on a table or view/);
+
+    const rows = await db.select().from(items).where(eq(items.folderId, f.id));
+    expect(rows.find((i) => i.columnName === 'FIRST_NAME')!.dataType).toBe('TEXT');
+    expect(rows.find((i) => i.columnName === 'HIRE_DATE')).toMatchObject({
+      name: 'Hire Date',
+      dataType: 'DATE',
+      description: 'Hired',
+      itemType: 'CO',
+      displayOrder: 4,
+    });
+    expect(rows).toHaveLength(5); // nothing deleted
+    const [after] = await db.select().from(folders).where(eq(folders.id, f.id));
+    expect(after!.folderType).toBe('VIEW');
+  });
+
+  it('POST /api/folders/:id/refresh reports a folder that is not on a table', async () => {
+    await createTestUser(TEST_ADMIN_EMAIL, TEST_PASSWORD, 'ADMIN');
+    const token = await loginAndReturnToken(TEST_ADMIN_EMAIL, TEST_PASSWORD);
+    const derived = await folder({ name: 'Calc', folderType: 'DERIVED', customSql: 'SELECT 1 FROM DUAL' });
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/folders/${derived.id}/refresh`,
+      headers: { authorization: `Bearer ${token}` },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().data[0].error).toMatch(/not based on a table or view/);
   });
 });

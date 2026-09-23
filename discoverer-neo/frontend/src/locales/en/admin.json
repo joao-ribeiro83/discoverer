@@ -108,6 +108,18 @@
       "unshared": "Share removed",
       "shareFailed": "Could not share folder",
       "unshareFailed": "Could not remove share"
+    },
+    "refresh": {
+      "one": "Refresh from data source",
+      "all": "Refresh all",
+      "allHint": "Re-read every table and view of this business area from its data source",
+      "done": "Refreshed {{count}} folder(s)",
+      "summary": "{{added}} new item(s), {{updated}} updated, {{missing}} column(s) missing, {{failed}} folder(s) failed",
+      "failed": "Refresh failed",
+      "resultsTitle": "Refresh results",
+      "added": "New items: {{names}}",
+      "updated": "Updated: {{names}}",
+      "missing": "Column gone from the source (item kept — delete it if no map uses it): {{names}}"
     }
   },
   "items": {
@@ -272,6 +284,18 @@
       "noResults": "No functions found.",
       "notCallable": "Cannot be called from SQL: {{reason}}",
       "truncated": "More functions match. Type more of the name to narrow the search."
+    },
+    "refresh": {
+      "one": "Refresh from database",
+      "all": "Refresh all",
+      "allHint": "Re-read every function from Oracle and recompile the calculated fields if one changed",
+      "done": "Checked {{count}} function(s)",
+      "summary": "{{changed}} changed, {{missing}} gone from Oracle, {{failed}} failed",
+      "failed": "Refresh failed",
+      "resultsTitle": "Refresh results",
+      "compile": "Calculated fields recompiled: {{message}}",
+      "changed": "updated: {{what}}",
+      "missing": "gone from Oracle — kept, because calculated fields may still call it"
     }
   },
   "dataSources": {

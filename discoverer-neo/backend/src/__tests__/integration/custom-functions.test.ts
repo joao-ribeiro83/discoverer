@@ -3,11 +3,12 @@ import type { FastifyInstance } from 'fastify';
 import { eq } from 'drizzle-orm';
 import { buildApp } from '../../app.js';
 import { db } from '../../db/index.js';
-import { users, customFunctions } from '../../db/schema.js';
+import { users, customFunctions, dataSources } from '../../db/schema.js';
 import { hashPassword } from '../../lib/password.js';
 import {
   validateParameters,
   validateFunctionType,
+  refreshFromDatabase,
 } from '../../services/custom-function.service.js';
 
 // ---------------------------------------------------------------------------
@@ -472,5 +473,71 @@ describe('Custom function permission enforcement', () => {
       headers: { authorization: `Bearer ${userToken}` },
     });
     expect(delRes.statusCode).toBe(403);
+  });
+});
+
+describe('refreshFromDatabase', () => {
+  const fnDef = (params: Array<[string, string, boolean]>, returnType = 'NUMBER', overload: string | null = null) => ({
+    owner: 'SIID',
+    packageName: 'PKG',
+    name: 'X',
+    overload,
+    returnType,
+    parameters: params.map(([name, type, required], i) => ({ name, type, required, position: i + 1 })),
+    callableFromSql: true,
+    reason: null,
+  });
+
+  it('writes changed signatures, reports gone and ambiguous functions, never deletes', async () => {
+    const [ds] = await db
+      .insert(dataSources)
+      .values({ name: 'Fn Refresh DS', connectionType: 'oracle', host: 'h', port: 1521, serviceName: 'S', username: 'u' })
+      .returning();
+    try {
+      const base = { functionType: 'PACKAGE' as const, extOwner: 'SIID', extPackage: 'PKG', dataSourceId: ds!.id };
+      const [same, changed, gone, ambiguous, noDs, linked] = await db
+        .insert(customFunctions)
+        .values([
+          { ...base, name: 'SAME', extName: 'SAME', returnType: 'NUMBER', parameters: [{ name: 'A', type: 'NUMBER', required: true, position: 2 }] },
+          { ...base, name: 'CHANGED', extName: 'CHANGED', returnType: 'NUMBER', parameters: [{ name: 'A', type: 'NUMBER', required: true, defaultValue: 7 }] },
+          { ...base, name: 'GONE', extName: 'GONE', returnType: 'NUMBER', parameters: [] },
+          { ...base, name: 'AMBIG', extName: 'AMBIG', returnType: 'NUMBER', parameters: [] },
+          { ...base, name: 'NODS', extName: 'NODS', dataSourceId: null },
+          { ...base, name: 'LINKED', extName: 'LINKED', extDbLink: 'REMOTE' },
+        ])
+        .returning();
+
+      const results = await refreshFromDatabase(null, async (_ds, refs) =>
+        refs.map((r) => {
+          if (r.name === 'SAME') return [fnDef([['A', 'NUMBER', true]])];
+          if (r.name === 'CHANGED') return [fnDef([['A', 'NUMBER', true], ['B', 'DATE', false]], 'TEXT')];
+          if (r.name === 'AMBIG') return [fnDef([['A', 'NUMBER', true]], 'NUMBER', '1'), fnDef([['A', 'TEXT', true]], 'NUMBER', '2')];
+          return [];
+        }),
+      );
+      const by = new Map(results.map((r) => [r.functionId, r]));
+
+      expect(by.get(same!.id)).toMatchObject({ changed: [], missing: false, error: null });
+      expect(by.get(changed!.id)!.changed).toEqual(['parameters', 'return type']);
+      expect(by.get(gone!.id)).toMatchObject({ missing: true, error: null });
+      expect(by.get(ambiguous!.id)!.error).toMatch(/2 versions/);
+      expect(by.get(noDs!.id)!.error).toMatch(/No data source/);
+      expect(by.get(linked!.id)!.error).toMatch(/database link REMOTE/);
+
+      const [after] = await db.select().from(customFunctions).where(eq(customFunctions.id, changed!.id));
+      expect(after!.returnType).toBe('TEXT');
+      expect(after!.parameters).toEqual([
+        { name: 'A', type: 'NUMBER', required: true, position: 1, defaultValue: 7 },
+        { name: 'B', type: 'DATE', required: false, position: 2 },
+      ]);
+      // An unchanged function keeps its stored positions: nothing was written.
+      const [kept] = await db.select().from(customFunctions).where(eq(customFunctions.id, same!.id));
+      expect(kept!.parameters).toEqual([{ name: 'A', type: 'NUMBER', required: true, position: 2 }]);
+      const [stillThere] = await db.select().from(customFunctions).where(eq(customFunctions.id, gone!.id));
+      expect(stillThere!.isActive).toBe(true);
+    } finally {
+      await db.delete(customFunctions);
+      await db.delete(dataSources).where(eq(dataSources.id, ds!.id));
+    }
   });
 });

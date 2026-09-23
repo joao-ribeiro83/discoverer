@@ -108,6 +108,18 @@
       "unshared": "Partage retiré",
       "shareFailed": "Impossible de partager le dossier",
       "unshareFailed": "Impossible de retirer le partage"
+    },
+    "refresh": {
+      "one": "Actualiser depuis la source de données",
+      "all": "Tout actualiser",
+      "allHint": "Relire chaque table et vue de ce domaine depuis sa source de données",
+      "done": "{{count}} dossier(s) actualisé(s)",
+      "summary": "{{added}} nouvel(s) élément(s), {{updated}} mis à jour, {{missing}} colonne(s) absente(s), {{failed}} dossier(s) en échec",
+      "failed": "Échec de l’actualisation",
+      "resultsTitle": "Résultat de l’actualisation",
+      "added": "Nouveaux éléments : {{names}}",
+      "updated": "Mis à jour : {{names}}",
+      "missing": "Colonne disparue de la source (élément conservé — supprimez-le si aucune carte ne l’utilise) : {{names}}"
     }
   },
   "items": {
@@ -272,6 +284,18 @@
       "noResults": "Aucune fonction trouvée.",
       "notCallable": "Ne peut pas être appelée en SQL : {{reason}}",
       "truncated": "D'autres fonctions correspondent. Saisissez plus du nom pour affiner."
+    },
+    "refresh": {
+      "one": "Actualiser depuis la base de données",
+      "all": "Tout actualiser",
+      "allHint": "Relire chaque fonction dans Oracle et recompiler les champs calculés si l’une a changé",
+      "done": "{{count}} fonction(s) vérifiée(s)",
+      "summary": "{{changed}} modifiée(s), {{missing}} absente(s) d’Oracle, {{failed}} en échec",
+      "failed": "Échec de l’actualisation",
+      "resultsTitle": "Résultat de l’actualisation",
+      "compile": "Champs calculés recompilés : {{message}}",
+      "changed": "mis à jour : {{what}}",
+      "missing": "absente d’Oracle — conservée, car des champs calculés peuvent encore l’appeler"
     }
   },
   "dataSources": {

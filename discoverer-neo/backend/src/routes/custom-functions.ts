@@ -7,8 +7,11 @@ import {
   getById,
   listAll,
   softDelete,
+  refreshFromDatabase,
   CustomFunctionValidationError,
 } from '../services/custom-function.service.js';
+import { compileNow } from '../services/migration.service.js';
+import { invalidateAll } from '../lib/metadata-cache.js';
 
 // ---------------------------------------------------------------------------
 // Validation schemas
@@ -405,6 +408,75 @@ export default function customFunctionRoutes(fastify: FastifyInstance) {
         }
         throw err;
       }
+    },
+  );
+
+  // POST /api/custom-functions/refresh and /api/custom-functions/:id/refresh —
+  // re-read signatures from Oracle, then recompile the calculated fields when
+  // one changed (the compiled SQL carries each call's argument count).
+  const refreshSchema = {
+    tags: ['Custom Functions'],
+    security: [{ bearerAuth: [] }],
+    response: {
+      200: {
+        type: 'object',
+        properties: {
+          data: {
+            type: 'object',
+            properties: {
+              results: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    functionId: { type: 'string' },
+                    name: { type: 'string' },
+                    changed: { type: 'array', items: { type: 'string' } },
+                    missing: { type: 'boolean' },
+                    error: { type: ['string', 'null'] },
+                  },
+                },
+              },
+              compile: {
+                type: ['object', 'null'],
+                properties: { ok: { type: 'boolean' }, message: { type: 'string' } },
+              },
+            },
+          },
+        },
+      },
+      400: errorResponse,
+      401: errorResponse,
+      403: errorResponse,
+    },
+  };
+
+  async function refreshAndCompile(ids: string[] | null) {
+    const results = await refreshFromDatabase(ids);
+    if (!results.some((r) => r.changed.length > 0)) return { results, compile: null };
+    let compile: { ok: boolean; message: string };
+    try {
+      compile = await compileNow();
+    } catch (err) {
+      compile = { ok: false, message: err instanceof Error ? err.message : String(err) };
+    }
+    await invalidateAll(fastify.redis);
+    return { results, compile };
+  }
+
+  fastify.post(
+    '/api/custom-functions/refresh',
+    { preHandler: adminManagerPreHandler, schema: refreshSchema },
+    async (_request, reply) => reply.code(200).send({ data: await refreshAndCompile(null) }),
+  );
+
+  fastify.post(
+    '/api/custom-functions/:id/refresh',
+    { preHandler: adminManagerPreHandler, schema: refreshSchema },
+    async (request, reply) => {
+      const parsed = IdParamSchema.safeParse(request.params);
+      if (!parsed.success) return reply.code(400).send({ error: 'Invalid function ID format' });
+      return reply.code(200).send({ data: await refreshAndCompile([parsed.data.id]) });
     },
   );
 

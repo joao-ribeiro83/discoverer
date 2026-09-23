@@ -9,7 +9,8 @@
     "runDryRun": "Lancer une simulation",
     "runMigration": "Lancer la migration",
     "reimportMaps": "Réimporter les cartes",
-    "reimportAll": "Tout réimporter"
+    "reimportAll": "Tout réimporter",
+    "compile": "Compiler les champs calculés"
   },
   "source": {
     "title": "Source",
@@ -26,7 +27,8 @@
     "dryRunLabel": "Simulation (valider sans écrire)",
     "liveMigrationWarning": "Une migration réelle écrit dans cette base de données Discoverer Neo. Lancez d'abord une simulation et examinez le rapport ci-dessous.",
     "reimportMapsHelp": "La réimportation des cartes reconstruit uniquement les cartes d'une base déjà migrée, à partir des classeurs de l'EUL. Elle remplace toutes les cartes du domaine d'activité « Migrated Workbooks » — les modifications apportées depuis la migration initiale sont perdues — et ne touche ni aux utilisateurs, ni aux dossiers, ni aux éléments, ni aux octrois d'accès. Lancez d'abord une simulation.",
-    "reimportAllHelp": "Tout réimporter rejoue toute la migration avec la version actuelle du migrateur et réécrit, objet par objet, ce qui diffère désormais : domaines d'activité, dossiers, éléments, jointures, hiérarchies, fonctions, utilisateurs, droits et cartes. Rien n'est supprimé et les identifiants des cartes sont conservés, donc les planifications et les partages restent ; les objets retirés de l'EUL sont seulement signalés. Une exécution réelle se termine par la compilation des champs calculés. Faites d'abord une simulation."
+    "reimportAllHelp": "Tout réimporter rejoue toute la migration avec la version actuelle du migrateur et réécrit, objet par objet, ce qui diffère désormais : domaines d'activité, dossiers, éléments, jointures, hiérarchies, fonctions, utilisateurs, droits et cartes. Rien n'est supprimé et les identifiants des cartes sont conservés, donc les planifications et les partages restent ; les objets retirés de l'EUL sont seulement signalés. Une exécution réelle se termine par la compilation des champs calculés. Faites d'abord une simulation.",
+    "compileHelp": "Compiler les champs calculés vérifie chaque champ calculé et écrit le SQL qu’exécutent les cartes. Une migration et une réimportation le font désormais à la fin ; utilisez ce bouton si une carte indique qu’un champ « n’a pas été compilé ». L’EUL n’est pas lu."
   },
   "detected": {
     "title": "Source détectée",
@@ -144,6 +146,7 @@
     "mapReimportStarted": "Réimportation des cartes démarrée",
     "migrationBlockers": "Migration terminee avec des blocages",
     "migrationBlockersBody": "Les lignes ont ete ecrites, mais la reconciliation de l'execution ne concorde pas. Executez dn-migrate verify sur la cible avant d'utiliser cet environnement.",
-    "deltaStarted": "Réimportation de tout lancée"
+    "deltaStarted": "Réimportation de tout lancée",
+    "compileStarted": "Compilation des champs calculés lancée"
   }
 }
