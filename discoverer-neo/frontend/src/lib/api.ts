@@ -121,7 +121,9 @@ export function getRefusalDetails(err: unknown): Record<string, unknown> | undef
   return undefined
 }
 
-const API_URL = import.meta.env.VITE_API_URL || '/api'
+// BASE_URL is Vite's `base` ("/" or e.g. "/discoverer-neo/"), always with a
+// trailing slash.
+const API_URL = import.meta.env.VITE_API_URL || `${import.meta.env.BASE_URL}api`
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -189,7 +191,7 @@ api.interceptors.response.use(
           }
         }
         useAuthStore.getState().logout()
-        window.location.href = '/login'
+        window.location.href = `${import.meta.env.BASE_URL}login`
       }
     }
     return Promise.reject(error instanceof Error ? error : new Error(String(error)))

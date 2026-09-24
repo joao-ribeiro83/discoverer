@@ -38,7 +38,7 @@ createRoot(document.getElementById('root')!).render(
         store, which is readable regardless of nesting depth. */}
     <ThemeProvider>
       <PaletteProvider>
-        <BrowserRouter>
+        <BrowserRouter basename={import.meta.env.BASE_URL}>
           <QueryClientProvider client={queryClient}>
             <ToastProvider>
               {/* Inside ToastProvider so the fallback can still reach the

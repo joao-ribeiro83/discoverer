@@ -2,6 +2,9 @@
 
 Deploy Discoverer Neo using Docker Compose.
 
+> Sharing a server with Consulta Online behind its `nginx-proxy`, at
+> `https://<host>/discoverer-neo/`? Follow [debian-coexistence.md](debian-coexistence.md) instead.
+
 ## What is Included
 
 The Docker setup includes:

@@ -112,7 +112,7 @@ export function ShareDialog({ open, onOpenChange, mapId, isPublic }: ShareDialog
   })
 
   async function copyLink() {
-    const url = `${window.location.origin}/maps/${mapId}/view`
+    const url = `${window.location.origin}${import.meta.env.BASE_URL}maps/${mapId}/view`
     try {
       await navigator.clipboard.writeText(url)
       toast({ title: t('mapBuilder:share.toastLinkCopied') })

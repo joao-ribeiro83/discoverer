@@ -11,6 +11,11 @@ const backendTarget =
   `http://localhost:${process.env.BACKEND_PORT || 3000}`
 
 export default defineConfig({
+  // Sub-path the built app is served under, e.g. /discoverer-neo/ behind a
+  // shared reverse proxy (docker-compose.coexist.yml). Surfaces at runtime as
+  // import.meta.env.BASE_URL, which the router, the API client and share links
+  // all build on. Must start and end with a slash.
+  base: process.env.VITE_BASE_PATH || '/',
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
