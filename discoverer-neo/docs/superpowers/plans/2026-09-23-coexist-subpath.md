@@ -1,6 +1,8 @@
 # Plan: Consulta Online and Discoverer Neo on one host, under sub-paths
 
-Date: 2026-09-23. Status: **draft — Part B needs approval before anyone edits co_allianz.**
+Date: 2026-09-23. Status: **Parts A and B done 2026-09-24** (approved). One deviation: the B2 redirects go
+through a new `appUrl(request, path)` helper in `src/lib/request-origin.ts` instead of five hand-written
+`new URL(...)` calls. Install steps and the changed-file list: `docs/deployment/debian-coexistence.md`.
 
 ## Goal
 

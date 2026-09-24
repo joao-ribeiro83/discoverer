@@ -38,6 +38,11 @@ COPY frontend/tsconfig.json frontend/tsconfig.node.json frontend/
 COPY frontend/vite.config.ts frontend/index.html frontend/
 COPY frontend/public frontend/public
 COPY frontend/src frontend/src
+# URL sub-path the app is served under (vite.config.ts `base`). "/" by default;
+# docker-compose.coexist.yml sets /discoverer-neo/. Baked into the bundle, so
+# changing it needs a rebuild.
+ARG VITE_BASE_PATH=/
+ENV VITE_BASE_PATH=$VITE_BASE_PATH
 # tsc -b (typecheck only) followed by vite build -> frontend/dist
 RUN npm run build --workspace @discoverer-neo/frontend
 

@@ -1,0 +1,32 @@
+# =============================================
+# Overlay: Discoverer Neo behind Consulta Online's nginx-proxy
+# =============================================
+# Serves Neo at https://<host>/discoverer-neo/ on a server where the
+# co_allianz stack already owns ports 80/443. Neo publishes no host port:
+# nginx-proxy reaches discoverer-neo-frontend over consulta-network and strips
+# the /discoverer-neo prefix. See docs/deployment/debian-coexistence.md.
+#
+#   docker compose -f docker-compose.prod.yml -f docker-compose.coexist.yml up -d --build
+# =============================================
+
+services:
+  frontend:
+    build:
+      args:
+        VITE_BASE_PATH: /discoverer-neo/
+    networks: [default, consulta-network]
+
+  backend:
+    environment:
+      # nginx-proxy -> frontend nginx -> backend: two hops, so the client IP
+      # that login rate limiting counts is two entries back in X-Forwarded-For.
+      TRUST_PROXY: 2
+
+  # nginx-proxy owns 80/443. The bundled proxy starts only if asked for with
+  # --profile bundled-nginx.
+  nginx:
+    profiles: [bundled-nginx]
+
+networks:
+  consulta-network:
+    external: true
