@@ -1,10 +1,22 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import type { FastifyInstance } from 'fastify';
 import { db } from '../db/index.js';
 import { sql } from 'drizzle-orm';
 import { getOracleClientStatus } from '../services/oracle-connection-pool.js';
 
-/** Version — kept in sync with package.json. */
-const version = '0.1.0';
+/**
+ * The app version, read from backend/package.json. Resolved from
+ * `process.cwd()` — the backend root under `tsx watch`, the image's
+ * `WORKDIR /app/backend`, and jest — for the reason export.service.ts gives
+ * (ts-jest does not reliably allow `import.meta`). Every workspace carries the
+ * same version; CHANGELOG.md says how to bump it.
+ */
+const version = (
+  JSON.parse(readFileSync(path.resolve(process.cwd(), 'package.json'), 'utf8')) as {
+    version: string;
+  }
+).version;
 
 async function checkDatabase(): Promise<'connected' | 'disconnected'> {
   try {

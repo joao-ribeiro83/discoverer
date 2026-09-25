@@ -8,8 +8,20 @@ import { describe, it, expect, beforeAll, afterAll, jest } from '@jest/globals';
 import type { FastifyInstance } from 'fastify';
 import { buildApp } from '../../app.js';
 import { db } from '../../db/index.js';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+
+// jest runs from the backend root, the same place health.ts reads from.
+const manifest = (p: string) =>
+  (JSON.parse(readFileSync(path.resolve(process.cwd(), p), 'utf8')) as { version: string }).version;
+const appVersion = manifest('package.json');
 
 let app: FastifyInstance;
+
+it('every workspace manifest carries the same version', () => {
+  const others = ['../package.json', '../frontend/package.json', '../migrate/package.json'].map(manifest);
+  expect(others).toEqual([appVersion, appVersion, appVersion]);
+});
 
 beforeAll(async () => {
   app = await buildApp();
@@ -27,7 +39,8 @@ describe('readiness (/health, /api/health)', () => {
       expect(res.statusCode).toBe(200);
       const body = res.json();
       expect(body.status).toBe('ok');
-      expect(body.version).toBeTruthy();
+      // The one version every workspace manifest carries — not a hard-coded copy.
+      expect(body.version).toBe(appVersion);
       expect(typeof body.uptime).toBe('number');
       expect(body.database).toBe('connected');
       expect(body.redis).toBe('connected');
