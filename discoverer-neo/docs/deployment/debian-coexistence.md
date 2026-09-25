@@ -75,7 +75,7 @@ Free resources:
 
 - Neo alone: about 2.5 GB RAM, 4 vCPU at peak (the limits in `docker-compose.prod.yml`), 20 GB disk to start.
 - The build needs outbound HTTPS to `registry-1.docker.io` and `registry.npmjs.org`. With Neo thick mode it
-  also needs `download.oracle.com`. If the server has no direct internet access, see step 10.
+  also needs `https://deb.debian.org` (the Instant Client zip is copied by hand, see step 3). If the server has no direct internet access, see step 10.
 
 ## 3. What to copy to the server
 
@@ -122,6 +122,15 @@ mkdir -p ~/APPS/discoverer-neo && tar -xzf ~/APPS/discoverer-neo.tgz -C ~/APPS/d
 
 Keep the folder name `discoverer-neo`. Compose uses it as the project name.
 
+#### Oracle Instant Client (thick mode only)
+
+With `ORACLE_THICK_MODE=true`, copy `instantclient-basic-linux.x64-19.31.0.0.0dbru.zip` to
+`~/APPS/discoverer-neo/` (next to `package.json`). `git archive` does not send it. Keep exactly one
+`instantclient-basic` zip there. Use 19c, not 23.x: 23.x cannot connect to databases older than 19c.
+
+The build unzips it and gets `libaio1` from `https://deb.debian.org`, the same way graphql-oracle-server
+does. These servers block plain HTTP, so the build uses HTTPS.
+
 ## 4. Install graphql-oracle-server
 
 1. Check `tnsnames.ora`. `COSEC_DB` must point to the database of this environment (test or prod).
@@ -152,7 +161,8 @@ Make three secrets. Run this command three times and copy each result:
 openssl rand -hex 32
 ```
 
-Edit `.env` and set these values:
+Edit `.env` and set these values. Some lines start with `#` in the template (for example
+`# CORS_ALLOWED_ORIGINS=…` and the three `# ORACLE_NLS_…` lines): remove the `#` so the value is read.
 
 | Variable | Value |
 |---|---|
