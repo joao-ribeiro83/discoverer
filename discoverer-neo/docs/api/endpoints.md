@@ -406,6 +406,40 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 
 ### Folders
 
+#### POST /api/folders/{id}/refresh
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { folderId?: string folderName?: string added?: string[] updated?: string[] missing?: string[] error?: null,string }[] } |
+| 400 | { error?: string } |
+| 401 | { error?: string } |
+| 403 | { error?: string } |
+
+#### POST /api/business-areas/{baId}/folders/refresh
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `baId` | path | yes | string |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { folderId?: string folderName?: string added?: string[] updated?: string[] missing?: string[] error?: null,string }[] } |
+| 400 | { error?: string } |
+| 401 | { error?: string } |
+| 403 | { error?: string } |
+
 #### GET /api/business-areas/{baId}/folders
 
 **Parameters:**
@@ -1229,6 +1263,34 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 | 403 | { error?: string details?: any } |
 | 404 | { error?: string details?: any } |
 
+#### POST /api/custom-functions/refresh
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { results?: { functionId?: string name?: string changed?: string[] missing?: boolean error?: null,string }[] compile?: { ok?: boolean message?: string } } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
+
+#### POST /api/custom-functions/{id}/refresh
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { results?: { functionId?: string name?: string changed?: string[] missing?: boolean error?: null,string }[] compile?: { ok?: boolean message?: string } } } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
+
 ### Users
 
 #### GET /api/users/search
@@ -1632,6 +1694,34 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 ### Workbooks
 
 #### GET /api/workbooks
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### POST /api/workbooks/{id}/duplicate
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### DELETE /api/workbooks/{id}
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
 
 **Responses:**
 
@@ -2256,6 +2346,17 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 | 401 | { error?: string } |
 | 403 | { error?: string } |
 | 404 | { error?: string } |
+| 409 | { error?: string } |
+
+#### POST /api/migration/compile
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 202 | { data?: object } |
+| 401 | { error?: string } |
+| 403 | { error?: string } |
 | 409 | { error?: string } |
 
 #### GET /api/migration/jobs

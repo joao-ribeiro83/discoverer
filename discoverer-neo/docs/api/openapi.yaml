@@ -1566,6 +1566,150 @@ paths:
                   error:
                     type: string
                   details: {}
+  /api/folders/{id}/refresh:
+    post:
+      tags:
+        - Folders
+      security:
+        - bearerAuth: []
+      parameters:
+        - schema:
+            type: string
+          in: path
+          name: id
+          required: true
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        folderId:
+                          type: string
+                        folderName:
+                          type: string
+                        added:
+                          type: array
+                          items:
+                            type: string
+                        updated:
+                          type: array
+                          items:
+                            type: string
+                        missing:
+                          type: array
+                          items:
+                            type: string
+                        error:
+                          type:
+                            - 'null'
+                            - string
+        '400':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '401':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /api/business-areas/{baId}/folders/refresh:
+    post:
+      tags:
+        - Folders
+      security:
+        - bearerAuth: []
+      parameters:
+        - schema:
+            type: string
+          in: path
+          name: baId
+          required: true
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        folderId:
+                          type: string
+                        folderName:
+                          type: string
+                        added:
+                          type: array
+                          items:
+                            type: string
+                        updated:
+                          type: array
+                          items:
+                            type: string
+                        missing:
+                          type: array
+                          items:
+                            type: string
+                        error:
+                          type:
+                            - 'null'
+                            - string
+        '400':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '401':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
   /api/business-areas/{baId}/folders:
     get:
       tags:
@@ -5260,6 +5404,160 @@ paths:
                   error:
                     type: string
                   details: {}
+  /api/custom-functions/refresh:
+    post:
+      tags: &ref_0
+        - Custom Functions
+      security: &ref_1
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      results:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            functionId:
+                              type: string
+                            name:
+                              type: string
+                            changed:
+                              type: array
+                              items:
+                                type: string
+                            missing:
+                              type: boolean
+                            error:
+                              type:
+                                - 'null'
+                                - string
+                      compile:
+                        type:
+                          - 'null'
+                          - object
+                        properties:
+                          ok:
+                            type: boolean
+                          message:
+                            type: string
+        '400':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details: {}
+        '401':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details: {}
+        '403':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details: {}
+  /api/custom-functions/{id}/refresh:
+    post:
+      tags: *ref_0
+      security: *ref_1
+      parameters:
+        - schema:
+            type: string
+          in: path
+          name: id
+          required: true
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      results:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            functionId:
+                              type: string
+                            name:
+                              type: string
+                            changed:
+                              type: array
+                              items:
+                                type: string
+                            missing:
+                              type: boolean
+                            error:
+                              type:
+                                - 'null'
+                                - string
+                      compile:
+                        type:
+                          - 'null'
+                          - object
+                        properties:
+                          ok:
+                            type: boolean
+                          message:
+                            type: string
+        '400':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details: {}
+        '401':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details: {}
+        '403':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details: {}
   /api/users/search:
     get:
       tags:
@@ -6073,6 +6371,38 @@ paths:
       responses:
         '200':
           description: Default Response
+  /api/workbooks/{id}/duplicate:
+    post:
+      tags:
+        - Workbooks
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: id
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Default Response
+  /api/workbooks/{id}:
+    delete:
+      tags:
+        - Workbooks
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: id
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Default Response
   /api/workbooks/{id}/shares:
     get:
       tags:
@@ -6807,9 +7137,9 @@ paths:
           description: Default Response
   /api/security/policies:
     get:
-      tags: &ref_0
+      tags: &ref_2
         - Security
-      security: &ref_1
+      security: &ref_3
         - bearerAuth: []
       responses:
         '200':
@@ -6882,8 +7212,8 @@ paths:
                     type: string
                   details: {}
     post:
-      tags: *ref_0
-      security: *ref_1
+      tags: *ref_2
+      security: *ref_3
       responses:
         '201':
           description: Default Response
@@ -6984,8 +7314,8 @@ paths:
                   details: {}
   /api/security/policies/{id}:
     get:
-      tags: *ref_0
-      security: *ref_1
+      tags: *ref_2
+      security: *ref_3
       parameters:
         - schema:
             type: string
@@ -7081,8 +7411,8 @@ paths:
                     type: string
                   details: {}
     put:
-      tags: *ref_0
-      security: *ref_1
+      tags: *ref_2
+      security: *ref_3
       parameters:
         - schema:
             type: string
@@ -7188,8 +7518,8 @@ paths:
                     type: string
                   details: {}
     delete:
-      tags: *ref_0
-      security: *ref_1
+      tags: *ref_2
+      security: *ref_3
       parameters:
         - schema:
             type: string
@@ -7251,8 +7581,8 @@ paths:
                   details: {}
   /api/security/policies/{id}/assignments:
     get:
-      tags: *ref_0
-      security: *ref_1
+      tags: *ref_2
+      security: *ref_3
       parameters:
         - schema:
             type: string
@@ -7329,8 +7659,8 @@ paths:
                     type: string
                   details: {}
     post:
-      tags: *ref_0
-      security: *ref_1
+      tags: *ref_2
+      security: *ref_3
       parameters:
         - schema:
             type: string
@@ -7416,8 +7746,8 @@ paths:
                   details: {}
   /api/security/policies/{id}/assignments/{assignmentId}:
     delete:
-      tags: *ref_0
-      security: *ref_1
+      tags: *ref_2
+      security: *ref_3
       parameters:
         - schema:
             type: string
@@ -7484,8 +7814,8 @@ paths:
                   details: {}
   /api/security/policies/test:
     post:
-      tags: *ref_0
-      security: *ref_1
+      tags: *ref_2
+      security: *ref_3
       responses:
         '200':
           description: Default Response
@@ -7547,9 +7877,9 @@ paths:
                   details: {}
   /api/migration/detect:
     post:
-      tags: &ref_2
+      tags: &ref_4
         - Migration
-      security: &ref_3
+      security: &ref_5
         - bearerAuth: []
       responses:
         '200':
@@ -7610,8 +7940,8 @@ paths:
                     type: string
   /api/migration/analyze:
     post:
-      tags: *ref_2
-      security: *ref_3
+      tags: *ref_4
+      security: *ref_5
       responses:
         '200':
           description: Default Response
@@ -7671,8 +8001,8 @@ paths:
                     type: string
   /api/migration/run:
     post:
-      tags: *ref_2
-      security: *ref_3
+      tags: *ref_4
+      security: *ref_5
       responses:
         '202':
           description: Default Response
@@ -7732,8 +8062,8 @@ paths:
                     type: string
   /api/migration/reimport-maps:
     post:
-      tags: *ref_2
-      security: *ref_3
+      tags: *ref_4
+      security: *ref_5
       responses:
         '202':
           description: Default Response
@@ -7793,8 +8123,8 @@ paths:
                     type: string
   /api/migration/delta:
     post:
-      tags: *ref_2
-      security: *ref_3
+      tags: *ref_4
+      security: *ref_5
       responses:
         '202':
           description: Default Response
@@ -7852,10 +8182,53 @@ paths:
                 properties:
                   error:
                     type: string
+  /api/migration/compile:
+    post:
+      tags: *ref_4
+      security: *ref_5
+      responses:
+        '202':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    additionalProperties: true
+                additionalProperties: true
+        '401':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '403':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        '409':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
   /api/migration/jobs:
     get:
-      tags: *ref_2
-      security: *ref_3
+      tags: *ref_4
+      security: *ref_5
       responses:
         '200':
           description: Default Response
@@ -7890,8 +8263,8 @@ paths:
                     type: string
   /api/migration/jobs/{jobId}:
     get:
-      tags: *ref_2
-      security: *ref_3
+      tags: *ref_4
+      security: *ref_5
       parameters:
         - schema:
             type: string
@@ -7957,9 +8330,9 @@ paths:
                     type: string
   /api/audit:
     get:
-      tags: &ref_4
+      tags: &ref_6
         - Audit
-      security: &ref_5
+      security: &ref_7
         - bearerAuth: []
       responses:
         '200':
@@ -8036,8 +8409,8 @@ paths:
                   details: {}
   /api/audit/stats:
     get:
-      tags: *ref_4
-      security: *ref_5
+      tags: *ref_6
+      security: *ref_7
       responses:
         '200':
           description: Default Response
@@ -8114,8 +8487,8 @@ paths:
                   details: {}
   /api/audit/entity/{type}/{id}:
     get:
-      tags: *ref_4
-      security: *ref_5
+      tags: *ref_6
+      security: *ref_7
       parameters:
         - schema:
             type: string
@@ -8196,8 +8569,8 @@ paths:
                   details: {}
   /api/audit/user/{id}:
     get:
-      tags: *ref_4
-      security: *ref_5
+      tags: *ref_6
+      security: *ref_7
       parameters:
         - schema:
             type: string
