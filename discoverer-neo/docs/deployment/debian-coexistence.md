@@ -291,8 +291,10 @@ Consulta Online to `/consulta-online` and adds Neo.
    cp -a ~/APPS/co_allianz ~/APPS/co_allianz.pre-subpath
    ```
 
-2. Copy the changed co_allianz files to the server (list in step 12). `graphql-oracle-server` has no changes.
-   Do not copy `.env` to the prod server: it has the test host names.
+2. Send the whole committed co_allianz project and unpack it into an empty folder. Follow "Updating the
+   Application" in co_allianz's `DEPLOYMENT.md`, steps 1 to 3. Do not copy only the changed files: the
+   test server was older than the list in step 12 assumed, and the leftover files broke `next build`.
+   `graphql-oracle-server` has no changes.
 3. Install Neo: steps 3 (Neo part), 5 and 7. Nothing changes for users yet.
 4. Rebuild co_allianz: step 6.3. Consulta Online is down for a few seconds while the containers restart.
 5. Run the checks in step 8.
@@ -400,9 +402,13 @@ you remove that location from co_allianz's `nginx.conf`.
 
 ## 12. Files changed for the sub-path move
 
-Copy these files to the server, to the same relative path. Everything else is unchanged.
+These lists show what the move changed. They are for review only.
 
 ### co_allianz (`~/APPS/co_allianz`)
+
+Do not copy only these files to a server. They are enough only when the server already runs commit
+`1a7478e`. The test server ran an older version, and the build failed on old files. Send the whole project
+instead: "Updating the Application" in co_allianz's `DEPLOYMENT.md`.
 
 ```
 next.config.ts
@@ -428,18 +434,6 @@ hosts only:
 - `scripts/run_curl_tests.ps1` — run it from a Windows PC in the network:
   `.\scripts\run_curl_tests.ps1 -TargetHost SDOCApp01-Prod.cosec.pt`. It reads `payload.json` from the
   `scripts` folder.
-
-To pack them in one file before you commit, run this in `E:\VSCODE\co_allianz` (Git Bash):
-
-```bash
-git diff --name-only -z | tar --null -T - -czf co_allianz-subpath.tgz
-```
-
-On the server:
-
-```bash
-tar -xzf co_allianz-subpath.tgz -C ~/APPS/co_allianz
-```
 
 ### graphql-oracle-server
 
@@ -469,7 +463,8 @@ docs/deployment/docker.md
 | Neo login fails. Backend log says `Origin "…" is not allowed` | Host missing from `CORS_ALLOWED_ORIGINS`, or written with capital letters | Fix `.env`, then run step 5.2 again (no `--build` needed). |
 | All Neo users are blocked at login together after a few failed tries | The backend counts every request as coming from nginx | `TRUST_PROXY` must be `2`. Use both `-f` files. |
 | Every `?id=` link ends on the logout page | `apollo-server` is down or cannot reach Oracle | `docker logs --tail 50 apollo-server`. Check `.env` and `tnsnames.ora`. |
-| Consulta Online pages load without styles, or PDFs do not open | co_allianz was built from old files | Check the files in step 12, then step 6.3 with `--build`. |
+| Consulta Online pages load without styles, or PDFs do not open | co_allianz was built from old files | Send the whole project again (co_allianz `DEPLOYMENT.md`, "Updating the Application"), then step 6.3 with `--build`. |
+| co_allianz `next build` fails: `is not exported from`, `has no exported member` or `Cannot find module` | Old and new co_allianz files are mixed on the server | co_allianz `DEPLOYMENT.md`, Troubleshooting: it moves the leftover `src/` files aside. |
 | `nginx-proxy` does not start | Error in `nginx.conf`, or a bad PFX password | `docker logs nginx-proxy`. Roll back (step 9) if needed. |
 | Neo backend stops at start with an Oracle client error | `ORACLE_THICK_MODE=true`, but the image was built without the Instant Client | Rebuild with `--build`. The build reads the same variable. |
 | Neo upload or import fails with `413` | File larger than 20 MB | Raise `client_max_body_size` in the Neo location in co_allianz's `nginx.conf`, then step 6.3. |
