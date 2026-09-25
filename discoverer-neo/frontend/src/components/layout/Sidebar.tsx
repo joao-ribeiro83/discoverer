@@ -22,6 +22,8 @@ import {
 import { cn } from '@/lib/utils'
 import { Separator } from '@/components/ui/separator'
 import { useAuthStore } from '@/store/auth'
+// Named import: Vite inlines only this string, not the whole manifest.
+import { version } from '../../../package.json'
 
 const mainNavItems = [
   { to: '/dashboard', labelKey: 'items.dashboard', icon: LayoutDashboard },
@@ -139,6 +141,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
           <Settings className="h-4 w-4" />
           {t('items.settings')}
         </NavLink>
+        <p className="px-3 pt-2 text-xs text-muted-foreground">Discoverer Neo v{version}</p>
       </div>
     </>
   )
