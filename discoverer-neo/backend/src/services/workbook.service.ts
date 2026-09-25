@@ -1,8 +1,11 @@
-import { inArray } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { db } from '../db/index.js';
-import { workbooks, mapLayouts, type Map } from '../db/schema.js';
+import { workbooks, maps, mapLayouts, type Map } from '../db/schema.js';
 import {
+  canAccessMap,
+  canDuplicate,
   canManageShares,
+  duplicate,
   listAll,
   listShares,
   revokeShare,
@@ -146,6 +149,101 @@ export async function listWorkbookShares(
       (a.name ?? a.email ?? '').localeCompare(b.name ?? b.email ?? ''),
     ),
   };
+}
+
+/**
+ * Copy a whole workbook — Discoverer's "Save As". The copy gets a new name,
+ * belongs to the caller, and holds a private copy of every worksheet, so the
+ * copy can be edited while the original stays as it was.
+ *
+ * Only worksheets the caller can see are copied (D-020: membership grants
+ * nothing). If they may not copy any one of those, nothing is copied and the
+ * refused sheets are named — a copy missing sheets is not the same workbook.
+ * One transaction: a failure part-way leaves no half-copy behind.
+ */
+export async function duplicateWorkbook(
+  workbookId: string,
+  actor: { sub: string; role: string },
+  newName?: string,
+): Promise<
+  | { status: 'not_found' }
+  | { status: 'refused'; refused: string[] }
+  | { status: 'ok'; workbook: WorkbookWithMaps }
+> {
+  const visible = await listAll(actor);
+  const sheets = visible.filter((m) => m.workbookId === workbookId);
+  if (sheets.length === 0) return { status: 'not_found' };
+
+  const refused: string[] = [];
+  for (const sheet of sheets) {
+    if (!(await canDuplicate(actor, sheet))) refused.push(sheet.name);
+  }
+  if (refused.length) return { status: 'refused', refused };
+
+  const [source] = await db.select().from(workbooks).where(eq(workbooks.id, workbookId));
+  if (!source) return { status: 'not_found' };
+
+  const workbook = await db.transaction(async (tx) => {
+    const [wb] = await tx
+      .insert(workbooks)
+      .values({
+        name: newName ?? `${source.name} (copy)`,
+        description: source.description,
+        createdBy: actor.sub,
+      })
+      .returning();
+    const copies: Map[] = [];
+    for (const sheet of sheets) {
+      // Worksheets keep their names; the layout copy keeps their order.
+      const copy = await duplicate(sheet.id, actor.sub, sheet.name, { workbookId: wb!.id, tx });
+      if (!copy) throw new Error(`Worksheet ${sheet.id} vanished during the copy`);
+      copies.push(copy);
+    }
+    return { ...wb!, maps: copies };
+  });
+  return { status: 'ok', workbook };
+}
+
+/**
+ * Delete a workbook: soft-delete every worksheet the caller can see, the same
+ * delete a single map gets. All-or-nothing, like `duplicateWorkbook` — if the
+ * caller may not delete one sheet, nothing is deleted and that sheet is named.
+ *
+ * The workbook row itself goes only once no active worksheet is left in it.
+ * Sheets the caller cannot see (D-020) stay where they are, still grouped.
+ */
+export async function deleteWorkbook(
+  workbookId: string,
+  actor: { sub: string; role: string },
+): Promise<
+  | { status: 'not_found' }
+  | { status: 'refused'; refused: string[] }
+  | { status: 'ok'; deleted: number }
+> {
+  const visible = await listAll(actor);
+  const sheets = visible.filter((m) => m.workbookId === workbookId);
+  if (sheets.length === 0) return { status: 'not_found' };
+
+  const refused: string[] = [];
+  for (const sheet of sheets) {
+    if (!(await canAccessMap(actor, sheet, 'DELETE'))) refused.push(sheet.name);
+  }
+  if (refused.length) return { status: 'refused', refused };
+
+  await db.transaction(async (tx) => {
+    const now = new Date();
+    await tx
+      .update(maps)
+      .set({ isActive: false, updatedAt: now })
+      .where(inArray(maps.id, sheets.map((s) => s.id)));
+    const [left] = await tx
+      .select({ id: maps.id })
+      .from(maps)
+      .where(and(eq(maps.workbookId, workbookId), eq(maps.isActive, true)))
+      .limit(1);
+    if (!left) await tx.delete(workbooks).where(eq(workbooks.id, workbookId));
+  });
+  return { status: 'ok', deleted: sheets.length };
 }
 
 /** Narrowest first — see `listWorkbookShares`. */

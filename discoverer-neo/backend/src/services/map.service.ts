@@ -975,11 +975,16 @@ export async function softDelete(id: string): Promise<boolean> {
 /**
  * Deep-copy a map with all child entities. The copy is owned by
  * `newCreatedBy` and is always private initially.
+ *
+ * `workbookId` files the copy as a worksheet of that workbook; without it the
+ * copy stands alone. `tx` runs the copy inside a caller's transaction, so a
+ * workbook copy is all-or-nothing.
  */
 export async function duplicate(
   id: string,
   newCreatedBy: string,
   newName?: string,
+  opts: { workbookId?: string; tx?: Tx } = {},
 ): Promise<MapWithDetails | null> {
   const source = await getById(id);
   if (!source) return null;
@@ -999,7 +1004,7 @@ export async function duplicate(
     source.calculatedFields.map((f) => [f.id, f.name]),
   );
 
-  return db.transaction(async (tx) => {
+  return (opts.tx ?? db).transaction(async (tx) => {
     const [copy] = await tx
       .insert(maps)
       .values({
@@ -1010,6 +1015,9 @@ export async function duplicate(
         createdBy: newCreatedBy,
         isPublic: false,
         selectDistinct: source.selectDistinct,
+        // Same query, same filters lost in migration — keep saying so.
+        droppedFilters: source.droppedFilters,
+        workbookId: opts.workbookId ?? null,
       })
       .returning();
 
@@ -1296,6 +1304,23 @@ export async function canManageShares(
   if (map.createdBy === user.sub) return true;
   if (user.role === 'MANAGER') return canAccessMap(user, map, 'VIEW');
   return false;
+}
+
+/**
+ * May this user copy a map they can already see?
+ *
+ * A copy is a new map, so beyond reading the original it needs the right to
+ * create one in its business area. Owners and admins always may. No business
+ * area means no grant to find — fail closed.
+ */
+export async function canDuplicate(
+  user: { sub: string; role: string },
+  map: Map,
+): Promise<boolean> {
+  if (user.role === 'ADMIN' || map.createdBy === user.sub) return true;
+  if (!map.businessAreaId) return false;
+  const { hasPermission } = await userHasPermission(user.sub, map.businessAreaId, 'CREATE');
+  return hasPermission;
 }
 
 // ---------------------------------------------------------------------------

@@ -8,7 +8,7 @@ import {
   afterEach,
 } from '@jest/globals';
 import type { FastifyInstance } from 'fastify';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, inArray, sql } from 'drizzle-orm';
 import { buildApp } from '../../app.js';
 import { db } from '../../db/index.js';
 import {
@@ -1415,6 +1415,172 @@ describe('sharing a workbook shares its worksheets', () => {
       payload: { userId: outsiderId, permissionLevel: 'VIEW' },
     });
     expect(res.statusCode).toBe(403);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Workbook "Save As" — copy every worksheet into a new workbook.
+// ---------------------------------------------------------------------------
+
+describe('duplicating a workbook', () => {
+  let wbId: string;
+  let sheet1Id: string;
+  let sheet2Id: string;
+
+  beforeAll(async () => {
+    const [wb] = await db
+      .insert(workbooks)
+      .values({ name: 'Copy source', description: 'three-sheet report', createdBy: ownerId })
+      .returning();
+    wbId = wb!.id;
+    const [s1, s2] = await db
+      .insert(maps)
+      .values([
+        { name: 'Copy source — Sheet 1', mapType: 'TABLE', businessAreaId: baId, createdBy: ownerId, workbookId: wbId },
+        { name: 'Copy source — Sheet 2', mapType: 'TABLE', businessAreaId: baId, createdBy: ownerId, workbookId: wbId },
+      ])
+      .returning();
+    sheet1Id = s1!.id;
+    sheet2Id = s2!.id;
+    await db.insert(mapItems).values([
+      { mapId: sheet1Id, itemId: itemId1, displayOrder: 0 },
+      { mapId: sheet2Id, itemId: itemId2, displayOrder: 0 },
+    ]);
+    // Sheet 2 comes first in the source, so order must come from the layout.
+    await db.insert(mapLayouts).values([
+      { mapId: sheet1Id, worksheetIndex: 1 },
+      { mapId: sheet2Id, worksheetIndex: 0 },
+    ]);
+  });
+
+  it('copies every worksheet into a new workbook and leaves the original alone', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/workbooks/${wbId}/duplicate`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+      payload: { name: 'Copy target' },
+    });
+    expect(res.statusCode).toBe(201);
+    const copy = res.json().data as { id: string; name: string; description: string };
+    expect(copy.id).not.toBe(wbId);
+    expect(copy.name).toBe('Copy target');
+    expect(copy.description).toBe('three-sheet report');
+
+    const list = await app.inject({
+      method: 'GET',
+      url: '/api/workbooks',
+      headers: { authorization: `Bearer ${ownerToken}` },
+    });
+    const books = list.json().data as Array<{ id: string; maps: Array<{ id: string; name: string }> }>;
+    const original = books.find((b) => b.id === wbId)!;
+    const copied = books.find((b) => b.id === copy.id)!;
+    expect(original.maps.map((m) => m.id).sort()).toEqual([sheet1Id, sheet2Id].sort());
+    expect(copied.maps.map((m) => m.name)).toEqual(['Copy source — Sheet 2', 'Copy source — Sheet 1']);
+    expect(copied.maps.some((m) => m.id === sheet1Id || m.id === sheet2Id)).toBe(false);
+
+    // The copies are real maps with their own items — editable apart from the source.
+    const sheet = await app.inject({
+      method: 'GET',
+      url: `/api/maps/${copied.maps[1]!.id}`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+    });
+    expect(sheet.json().data.items.map((i: { itemId: string }) => i.itemId)).toEqual([itemId1]);
+  });
+
+  it('names the copy "(copy)" when no name is given', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/workbooks/${wbId}/duplicate`,
+      headers: { authorization: `Bearer ${adminToken}` },
+    });
+    expect(res.statusCode).toBe(201);
+    expect(res.json().data.name).toBe('Copy source (copy)');
+  });
+
+  it('refuses a reader without CREATE rights, naming the sheets', async () => {
+    await db.insert(mapShares).values({
+      mapId: sheet1Id,
+      sharedWithUserId: viewerId,
+      permissionLevel: 'VIEW',
+      sharedBy: ownerId,
+    });
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/workbooks/${wbId}/duplicate`,
+      headers: { authorization: `Bearer ${viewerToken}` },
+    });
+    expect(res.statusCode).toBe(403);
+    expect(res.json().details).toContain('Copy source — Sheet 1');
+  });
+
+  it('answers 404 for a workbook the caller cannot see', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/workbooks/${wbId}/duplicate`,
+      headers: { authorization: `Bearer ${outsiderToken}` },
+    });
+    expect(res.statusCode).toBe(404);
+  });
+});
+
+describe('deleting a workbook', () => {
+  async function makeWorkbook(name: string) {
+    const [wb] = await db.insert(workbooks).values({ name, createdBy: ownerId }).returning();
+    const sheets = await db
+      .insert(maps)
+      .values([
+        { name: `${name} — Sheet 1`, mapType: 'TABLE', businessAreaId: baId, createdBy: ownerId, workbookId: wb!.id },
+        { name: `${name} — Sheet 2`, mapType: 'TABLE', businessAreaId: baId, createdBy: ownerId, workbookId: wb!.id },
+      ])
+      .returning();
+    return { wbId: wb!.id, sheetIds: sheets.map((s) => s.id) };
+  }
+
+  it('soft-deletes every worksheet and removes the workbook', async () => {
+    const { wbId, sheetIds } = await makeWorkbook('Delete me');
+    const res = await app.inject({
+      method: 'DELETE',
+      url: `/api/workbooks/${wbId}`,
+      headers: { authorization: `Bearer ${ownerToken}` },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().data.deleted).toBe(2);
+
+    const rows = await db.select().from(maps).where(inArray(maps.id, sheetIds));
+    expect(rows.every((r) => r.isActive === false)).toBe(true);
+    expect(await db.select().from(workbooks).where(eq(workbooks.id, wbId))).toHaveLength(0);
+  });
+
+  it('refuses a reader who may not delete, and deletes nothing', async () => {
+    const { wbId, sheetIds } = await makeWorkbook('Keep me');
+    await db.insert(mapShares).values({
+      mapId: sheetIds[0]!,
+      sharedWithUserId: viewerId,
+      permissionLevel: 'EDIT',
+      sharedBy: ownerId,
+    });
+    const res = await app.inject({
+      method: 'DELETE',
+      url: `/api/workbooks/${wbId}`,
+      headers: { authorization: `Bearer ${viewerToken}` },
+    });
+    expect(res.statusCode).toBe(403);
+    const rows = await db.select().from(maps).where(inArray(maps.id, sheetIds));
+    expect(rows.every((r) => r.isActive)).toBe(true);
+  });
+
+  it('keeps the workbook while a sheet the caller cannot see is still in it', async () => {
+    const { wbId, sheetIds } = await makeWorkbook('Half mine');
+    // The viewer owns one sheet and cannot see the other.
+    await db.update(maps).set({ createdBy: viewerId }).where(eq(maps.id, sheetIds[0]!));
+    const res = await app.inject({
+      method: 'DELETE',
+      url: `/api/workbooks/${wbId}`,
+      headers: { authorization: `Bearer ${viewerToken}` },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().data.deleted).toBe(1);
+    expect(await db.select().from(workbooks).where(eq(workbooks.id, wbId))).toHaveLength(1);
   });
 });
 
