@@ -249,8 +249,11 @@ parte superior**.
 
 1. Ejecute el mapa y espere hasta que muestre **Completada**.
 2. Haga clic en **Excel**, **CSV** o **PDF**.
-3. La exportación entra en una cola. Cuando esté lista, haga clic en
-   **Descargar**.
+3. **Excel** y **CSV** descargan el archivo en su equipo al momento. **PDF**
+   abre primero una ventana: elija el papel y las columnas y haga clic en
+   **Exportar**.
+4. El archivo también aparece en la página **Exportaciones**. Puede volver a
+   descargarlo desde allí.
 
 | Formato | Para qué sirve |
 |--------|-----------|

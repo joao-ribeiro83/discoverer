@@ -261,8 +261,11 @@ tableau croisé** sur **En haut**.
 
 1. Exécutez la carte et attendez qu'elle affiche **Terminée**.
 2. Cliquez sur **Excel**, **CSV** ou **PDF**.
-3. L'exportation entre dans une file d'attente. Une fois prête, cliquez sur
-   **Télécharger**.
+3. **Excel** et **CSV** téléchargent le fichier sur votre ordinateur
+   immédiatement. **PDF** ouvre d'abord une fenêtre : choisissez le papier et
+   les colonnes, puis cliquez sur **Exporter**.
+4. Le fichier apparaît aussi sur la page **Exportations**. Vous pouvez le
+   télécharger à nouveau depuis cette page.
 
 | Format | À utiliser pour |
 |--------|-----------|

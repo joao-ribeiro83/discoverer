@@ -230,7 +230,11 @@ top. If you can edit the map, open a column in the builder and set
 
 1. Run the map and wait until it shows **Completed**.
 2. Click **Excel**, **CSV** or **PDF**.
-3. The export goes into a queue. When it is ready, click **Download**.
+3. **Excel** and **CSV** download the file to your computer at once.
+   **PDF** first opens a window: choose the paper and the columns, then click
+   **Export**.
+4. The file also goes on the **Exports** page. You can download it again from
+   there.
 
 | Format | Use it for |
 |--------|-----------|

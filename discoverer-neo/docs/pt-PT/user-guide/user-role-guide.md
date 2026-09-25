@@ -245,8 +245,11 @@ no construtor e defina a **Margem da tabela cruzada** como **No topo**.
 
 1. Execute o mapa e aguarde até aparecer **Concluída**.
 2. Clique em **Excel**, **CSV** ou **PDF**.
-3. A exportação entra numa fila. Quando estiver pronta, clique em
-   **Transferir**.
+3. **Excel** e **CSV** transferem o ficheiro para o seu computador de
+   imediato. **PDF** abre primeiro uma janela: escolha o papel e as colunas e
+   clique em **Exportar**.
+4. O ficheiro fica também na página **Exportações**. Pode transferi-lo de novo
+   a partir daí.
 
 | Formato | Utilize para |
 |--------|-----------|
