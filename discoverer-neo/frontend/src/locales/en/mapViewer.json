@@ -35,7 +35,9 @@
       "title": "Workbooks",
       "worksheetCount_one": "{{count}} worksheet",
       "worksheetCount_other": "{{count}} worksheets",
-      "loadError": "Could not load workbooks."
+      "loadError": "Could not load workbooks.",
+      "filterPlaceholder": "Search workbooks or worksheets...",
+      "noMatch": "No workbook matches this search."
     },
     "columns": {
       "businessArea": "Business Area"
@@ -244,6 +246,25 @@
     "revokeFailed": "Could not remove access",
     "none": "Nobody holds this workbook yet.",
     "sheetsHeld": "{{held}} of {{total}} worksheets"
+  },
+  "workbookDuplicate": {
+    "button": "Copy workbook",
+    "title": "Copy \"{{name}}\"",
+    "description": "Makes a new workbook with a private copy of every worksheet. You can then edit the copy. The original does not change.",
+    "nameLabel": "Name of the new workbook",
+    "defaultName": "{{name}} (copy)",
+    "submit": "Copy",
+    "done": "Created \"{{name}}\"",
+    "failed": "Could not copy the workbook"
+  },
+  "workbookDelete": {
+    "button": "Delete workbook",
+    "editSheet": "Edit worksheet",
+    "entityLabel": "workbook",
+    "description_one": "This deletes \"{{name}}\" and its {{count}} worksheet. Only an administrator can bring it back.",
+    "description_other": "This deletes \"{{name}}\" and its {{count}} worksheets. Only an administrator can bring them back.",
+    "done": "Workbook deleted",
+    "failed": "Could not delete the workbook"
   },
   "droppedFilters": {
     "summary": "{{count}} filter(s) from Discoverer could not be migrated — this result may include more rows than the original"

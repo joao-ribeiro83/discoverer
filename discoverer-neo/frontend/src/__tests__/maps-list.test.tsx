@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, within } from '@testing-library/react'
+import { render, screen, fireEvent, within, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MapsListPage } from '@/pages/MapsListPage'
@@ -23,7 +23,7 @@ vi.mock('@/lib/api', () => ({
     maps: { listMine: vi.fn(), listAll: vi.fn(), delete: vi.fn(), listShares: vi.fn() },
     businessAreas: { list: vi.fn() },
     users: { search: vi.fn() },
-    workbooks: { listBrowse: vi.fn() },
+    workbooks: { listBrowse: vi.fn(), delete: vi.fn() },
   },
   getErrorMessage: (err: unknown) => (err instanceof Error ? err.message : 'error'),
 }))
@@ -358,6 +358,69 @@ describe('MapsListPage', () => {
     expect(screen.getByText('1 worksheet')).toBeInTheDocument()
     const link = await screen.findByRole('link', { name: 'Sheet One' })
     expect(link).toHaveAttribute('href', '/maps/m1/view')
+  })
+
+  it('edits a worksheet and deletes a workbook from the browse view', async () => {
+    mockedApi.maps.listMine.mockResolvedValue(envelope({ mine: [], shared: [] }) as never)
+    mockedApi.maps.listAll.mockResolvedValue(envelope({ all: [] }) as never)
+    mockedApi.workbooks.listBrowse.mockResolvedValue(envelope([workbook()]) as never)
+    mockedApi.workbooks.delete.mockResolvedValue(envelope({ deleted: 1 }) as never)
+    renderPage()
+
+    const edit = await screen.findByRole('link', { name: 'Edit worksheet' })
+    expect(edit).toHaveAttribute('href', '/maps/m1')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Delete workbook' }))
+    expect(
+      await screen.findByText('This deletes "GD_M.M27_V08" and its 1 worksheet. Only an administrator can bring it back.'),
+    ).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }))
+    await waitFor(() => expect(mockedApi.workbooks.delete).toHaveBeenCalledWith('wb1'))
+  })
+
+  it('filters workbooks by workbook or worksheet name', async () => {
+    mockedApi.maps.listMine.mockResolvedValue(envelope({ mine: [], shared: [] }) as never)
+    mockedApi.maps.listAll.mockResolvedValue(envelope({ all: [] }) as never)
+    mockedApi.workbooks.listBrowse.mockResolvedValue(
+      envelope([
+        workbook(),
+        workbook({
+          id: 'wb2',
+          name: 'Sales copy',
+          maps: [mapSummary({ id: 'm2', name: 'Regional Totals', workbookId: 'wb2' })],
+        }),
+      ]) as never,
+    )
+    renderPage()
+    const box = await screen.findByLabelText('Search workbooks or worksheets...')
+
+    fireEvent.change(box, { target: { value: 'SALES' } })
+    expect(screen.getByText('Sales copy')).toBeInTheDocument()
+    expect(screen.queryByText('GD_M.M27_V08')).not.toBeInTheDocument()
+
+    fireEvent.change(box, { target: { value: 'sheet one' } })
+    expect(screen.getByText('GD_M.M27_V08')).toBeInTheDocument()
+    expect(screen.queryByText('Sales copy')).not.toBeInTheDocument()
+
+    fireEvent.change(box, { target: { value: 'nothing like this' } })
+    expect(screen.getByText('No workbook matches this search.')).toBeInTheDocument()
+  })
+
+  it('hides workbook edit and delete from someone who owns none of it', async () => {
+    useAuthStore.setState({
+      user: { id: 'u2', email: 'viewer@example.com', name: 'Viewer', role: 'ANALYST' },
+      token: 't',
+      isAuthenticated: true,
+      hasHydrated: true,
+    })
+    mockedApi.maps.listMine.mockResolvedValue(envelope({ mine: [], shared: [] }) as never)
+    mockedApi.maps.listAll.mockResolvedValue(envelope({ all: [] }) as never)
+    mockedApi.workbooks.listBrowse.mockResolvedValue(envelope([workbook()]) as never)
+    renderPage()
+
+    await screen.findByRole('link', { name: 'Sheet One' })
+    expect(screen.queryByRole('link', { name: 'Edit worksheet' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Delete workbook' })).not.toBeInTheDocument()
   })
 
   it('hides the workbooks panel when there are none to browse', async () => {

@@ -1,6 +1,8 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import {
+  deleteWorkbook,
+  duplicateWorkbook,
   listWorkbookShares,
   listWorkbooksWithMaps,
   revokeWorkbookShare,
@@ -16,6 +18,9 @@ const UserParamsSchema = z.object({
 const ShareBodySchema = z.object({
   userId: z.string().uuid(),
   permissionLevel: z.enum(['VIEW', 'EDIT', 'EXPORT']),
+});
+const DuplicateBodySchema = z.object({
+  name: z.string().trim().min(1).max(255).optional(),
 });
 
 export default function workbookRoutes(fastify: FastifyInstance) {
@@ -34,6 +39,85 @@ export default function workbookRoutes(fastify: FastifyInstance) {
       const user = request.user as { sub: string; role: string };
       const data = await listWorkbooksWithMaps(user);
       return { data };
+    },
+  );
+
+  // POST /api/workbooks/:id/duplicate — "Save As" for a whole workbook. Open
+  // to any role: `duplicateWorkbook` applies the per-map copy rule to each
+  // worksheet, the same rule POST /api/maps/:id/duplicate uses.
+  fastify.post(
+    '/api/workbooks/:id/duplicate',
+    {
+      preHandler: [fastify.authenticate],
+      schema: {
+        tags: ['Workbooks'],
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          required: ['id'],
+          properties: { id: { type: 'string', format: 'uuid' } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const params = IdParamSchema.safeParse(request.params);
+      if (!params.success) return reply.code(400).send({ error: 'Invalid workbook id' });
+
+      const body = DuplicateBodySchema.safeParse(request.body ?? {});
+      if (!body.success) {
+        return reply
+          .code(400)
+          .send({ error: 'Invalid request body', details: body.error.issues });
+      }
+
+      const user = request.user as { sub: string; role: string };
+      const result = await duplicateWorkbook(params.data.id, user, body.data.name);
+      if (result.status === 'not_found') {
+        return reply.code(404).send({ error: 'Workbook not found' });
+      }
+      if (result.status === 'refused') {
+        return reply.code(403).send({
+          error: 'Forbidden',
+          details: `Copying needs "CREATE" permission for every worksheet. Refused: ${result.refused.join(', ')}`,
+        });
+      }
+      return reply.code(201).send({ data: result.workbook });
+    },
+  );
+
+  // DELETE /api/workbooks/:id — soft-delete every worksheet, then the workbook.
+  // Open to any role: `deleteWorkbook` applies the per-map DELETE rule to each
+  // worksheet, the same rule DELETE /api/maps/:id uses.
+  fastify.delete(
+    '/api/workbooks/:id',
+    {
+      preHandler: [fastify.authenticate],
+      schema: {
+        tags: ['Workbooks'],
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          required: ['id'],
+          properties: { id: { type: 'string', format: 'uuid' } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const params = IdParamSchema.safeParse(request.params);
+      if (!params.success) return reply.code(400).send({ error: 'Invalid workbook id' });
+
+      const user = request.user as { sub: string; role: string };
+      const result = await deleteWorkbook(params.data.id, user);
+      if (result.status === 'not_found') {
+        return reply.code(404).send({ error: 'Workbook not found' });
+      }
+      if (result.status === 'refused') {
+        return reply.code(403).send({
+          error: 'Forbidden',
+          details: `Deleting needs "DELETE" permission for every worksheet. Refused: ${result.refused.join(', ')}`,
+        });
+      }
+      return { data: { deleted: result.deleted } };
     },
   );
 

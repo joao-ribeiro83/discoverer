@@ -505,6 +505,11 @@ export const apiClient = {
       }),
     revokeShare: (id: string, userId: string) =>
       api.delete<Envelope<{ revoked: number }>>(`/workbooks/${id}/shares/${userId}`),
+    /** "Save As" — a new workbook holding a private copy of every worksheet. */
+    duplicate: (id: string, name?: string) =>
+      api.post<Envelope<WorkbookWithMaps>>(`/workbooks/${id}/duplicate`, { name }),
+    /** Soft-deletes every worksheet the caller can see, then the workbook. */
+    delete: (id: string) => api.delete<Envelope<{ deleted: number }>>(`/workbooks/${id}`),
   },
   // Export jobs. Addressed by their globally-unique job id rather than nested
   // under a map, which is what allows listing a user's exports across maps.

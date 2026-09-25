@@ -35,7 +35,9 @@
       "title": "Pastas de trabalho",
       "worksheetCount_one": "{{count}} folha de cálculo",
       "worksheetCount_other": "{{count}} folhas de cálculo",
-      "loadError": "Não foi possível carregar as pastas de trabalho."
+      "loadError": "Não foi possível carregar as pastas de trabalho.",
+      "filterPlaceholder": "Procurar pastas de trabalho ou folhas...",
+      "noMatch": "Nenhuma pasta de trabalho corresponde a esta pesquisa."
     },
     "columns": {
       "businessArea": "Área de Negócio"
@@ -244,6 +246,25 @@
     "revokeFailed": "Não foi possível remover o acesso",
     "none": "Ainda ninguém tem este livro.",
     "sheetsHeld": "{{held}} de {{total}} folhas"
+  },
+  "workbookDuplicate": {
+    "button": "Copiar livro",
+    "title": "Copiar \"{{name}}\"",
+    "description": "Cria um novo livro com uma cópia privada de cada folha de cálculo. Depois pode editar a cópia. O original não muda.",
+    "nameLabel": "Nome do novo livro",
+    "defaultName": "{{name}} (cópia)",
+    "submit": "Copiar",
+    "done": "Criado \"{{name}}\"",
+    "failed": "Não foi possível copiar o livro"
+  },
+  "workbookDelete": {
+    "button": "Eliminar livro",
+    "editSheet": "Editar folha de cálculo",
+    "entityLabel": "livro",
+    "description_one": "Isto elimina \"{{name}}\" e a sua {{count}} folha de cálculo. Só um administrador a pode recuperar.",
+    "description_other": "Isto elimina \"{{name}}\" e as suas {{count}} folhas de cálculo. Só um administrador as pode recuperar.",
+    "done": "Livro eliminado",
+    "failed": "Não foi possível eliminar o livro"
   },
   "droppedFilters": {
     "summary": "Não foi possível migrar {{count}} filtro(s) do Discoverer — este resultado pode incluir mais linhas do que o original"

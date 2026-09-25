@@ -35,7 +35,9 @@
       "title": "Classeurs",
       "worksheetCount_one": "{{count}} feuille",
       "worksheetCount_other": "{{count}} feuilles",
-      "loadError": "Impossible de charger les classeurs."
+      "loadError": "Impossible de charger les classeurs.",
+      "filterPlaceholder": "Rechercher des classeurs ou des feuilles...",
+      "noMatch": "Aucun classeur ne correspond à cette recherche."
     },
     "columns": {
       "businessArea": "Domaine Métier"
@@ -244,6 +246,25 @@
     "revokeFailed": "Impossible de retirer l’accès",
     "none": "Personne ne détient encore ce classeur.",
     "sheetsHeld": "{{held}} feuilles sur {{total}}"
+  },
+  "workbookDuplicate": {
+    "button": "Copier le classeur",
+    "title": "Copier « {{name}} »",
+    "description": "Crée un nouveau classeur avec une copie privée de chaque feuille. Vous pouvez ensuite modifier la copie. L’original ne change pas.",
+    "nameLabel": "Nom du nouveau classeur",
+    "defaultName": "{{name}} (copie)",
+    "submit": "Copier",
+    "done": "« {{name}} » créé",
+    "failed": "Impossible de copier le classeur"
+  },
+  "workbookDelete": {
+    "button": "Supprimer le classeur",
+    "editSheet": "Modifier la feuille",
+    "entityLabel": "classeur",
+    "description_one": "Ceci supprime « {{name}} » et sa {{count}} feuille. Seul un administrateur peut la restaurer.",
+    "description_other": "Ceci supprime « {{name}} » et ses {{count}} feuilles. Seul un administrateur peut les restaurer.",
+    "done": "Classeur supprimé",
+    "failed": "Impossible de supprimer le classeur"
   },
   "droppedFilters": {
     "summary": "{{count}} filtre(s) de Discoverer n'ont pas pu être migrés — ce résultat peut contenir plus de lignes que l'original"

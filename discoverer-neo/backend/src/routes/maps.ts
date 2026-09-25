@@ -12,10 +12,10 @@ import {
   duplicate,
   exportAsXml,
   canAccessMap,
+  canDuplicate,
   MapValidationError,
   type MapAction,
 } from '../services/map.service.js';
-import { userHasPermission } from '../services/business-area.service.js';
 import { requireBusinessAreaAccess } from '../middleware/business-area-auth.js';
 
 // ---------------------------------------------------------------------------
@@ -404,19 +404,11 @@ export default function mapRoutes(fastify: FastifyInstance) {
       if (!map) return;
 
       const user = request.user as { sub: string; role: string };
-      // Duplicating creates a new map, so the user also needs create
-      // rights in the business area (owners and admins always may).
-      if (user.role !== 'ADMIN' && map.createdBy !== user.sub) {
-        // No business area to check means no grant to find — fail closed.
-        const { hasPermission } = map.businessAreaId
-          ? await userHasPermission(user.sub, map.businessAreaId, 'CREATE')
-          : { hasPermission: false };
-        if (!hasPermission) {
-          return reply.code(403).send({
-            error: 'Forbidden',
-            details: 'Duplicating requires "CREATE" permission in the business area',
-          });
-        }
+      if (!(await canDuplicate(user, map))) {
+        return reply.code(403).send({
+          error: 'Forbidden',
+          details: 'Duplicating requires "CREATE" permission in the business area',
+        });
       }
 
       const parsed = DuplicateBodySchema.safeParse(request.body ?? {});
