@@ -16,32 +16,40 @@ WORKDIR /app
 # ---- Oracle Instant Client Builder ----
 # Opt-in. node-oracledb runs in thin mode by default and needs no client; the
 # client is only required for EUL sources older than 12.1, which the thin
-# driver cannot reach. Build those images with:
+# driver cannot reach. ORACLE_THICK_MODE=true in .env turns it on (compose
+# passes it as INSTALL_ORACLE_CLIENT), or by hand:
 #   docker compose build --build-arg INSTALL_ORACLE_CLIENT=true backend
 #
-# Unpacked to an unversioned directory so the version appears exactly once (in
-# ORACLE_CLIENT_URL) instead of being restated in ENV, compose, and .env — that
-# duplication is why ORACLE_CLIENT_PATH drifted to a directory that never
-# existed. Bumping the client is now a one-line URL change.
-FROM base AS oracle-builder
+# Same recipe as graphql-oracle-server's dockerfile, which builds on the COSEC
+# servers: the zip is supplied by hand in the project root (next to
+# package.json, not in Git), and apt goes out over HTTPS because those servers
+# block plain HTTP to deb.debian.org. The full bookworm image is used here
+# only because it ships ca-certificates and unzip; the slim one has neither.
+# Use the 19c basic zip: 19c reaches back to Oracle Database 11.2, 23ai only
+# to 19c.
+#
+# libaio (the client's only OS dependency) is fetched here as a .deb, so the
+# production stage installs it with dpkg and never runs apt itself.
+FROM node:22-bookworm AS oracle-builder
 ARG INSTALL_ORACLE_CLIENT=false
-# 19c reaches back to Oracle Database 11.2; 23ai only supports 19c and later.
-ARG ORACLE_CLIENT_URL="https://download.oracle.com/otn_software/linux/instantclient/1931000/instantclient-basic-linux.x64-19.31.0.0.0dbru.zip"
+# package.json is listed only so this COPY still has a match when there is no
+# zip (thin mode). Exactly one instantclient-basic zip may sit in the root.
+COPY package.json instantclient-basic-linux.x64-*.zip /tmp/oracle/
 RUN set -eu; \
-  mkdir -p /opt/oracle/instantclient; \
+  mkdir -p /opt/oracle/instantclient /opt/oracle/deb; \
   if [ "$INSTALL_ORACLE_CLIENT" != "true" ]; then \
     echo "INSTALL_ORACLE_CLIENT is not true — skipping (thin mode)."; \
   else \
+    sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources; \
     apt-get update; \
-    apt-get install -y --no-install-recommends curl unzip ca-certificates; \
-    curl -fsSL -o /tmp/ic.zip "$ORACLE_CLIENT_URL"; \
-    unzip -q /tmp/ic.zip -d /tmp/ic; \
+    cd /opt/oracle/deb && apt-get download libaio1; \
+    unzip -q /tmp/oracle/instantclient-basic-linux.x64-*.zip -d /tmp/ic; \
     mv /tmp/ic/instantclient_*/* /opt/oracle/instantclient/; \
-    # No `|| echo` anywhere above, and this asserts the payload really landed:
-    # the previous build swallowed a 404 and shipped an empty directory.
+    # Asserts the payload really landed: an earlier build swallowed a 404 and
+    # shipped an empty directory.
     test -e /opt/oracle/instantclient/libclntsh.so; \
-    rm -rf /tmp/ic /tmp/ic.zip /var/lib/apt/lists/*; \
-  fi
+  fi; \
+  rm -rf /tmp/oracle /tmp/ic /var/lib/apt/lists/*
 
 # ---- Workspace manifests ----
 # Every workspace manifest has to be present for npm to reconcile the root
@@ -83,14 +91,15 @@ RUN npm run build --workspace @discoverer-neo/core \
 FROM base AS production
 ENV NODE_ENV=production
 
-# libaio is the Instant Client's only OS dependency. Installed unconditionally
-# so one image definition serves both modes; it is a few hundred KB and unused
-# in thin mode.
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends libaio1 \
-  && rm -rf /var/lib/apt/lists/* \
-  && groupadd -r appuser \
-  && useradd -r -g appuser -d /app -s /bin/bash appuser
+# libaio is the Instant Client's only OS dependency. The oracle-builder stage
+# leaves its .deb in /opt/oracle/deb in thick mode only (empty in thin mode),
+# so this stage never runs apt and builds with no network.
+COPY --from=oracle-builder /opt/oracle/deb /tmp/deb
+RUN set -eu; \
+  for deb in /tmp/deb/*.deb; do if [ -e "$deb" ]; then dpkg -i "$deb"; fi; done; \
+  rm -rf /tmp/deb; \
+  groupadd -r appuser; \
+  useradd -r -g appuser -d /app -s /bin/bash appuser
 
 # Empty unless INSTALL_ORACLE_CLIENT=true. Harmless: thin mode never reads it,
 # and thick mode refuses to start rather than limping along (see server.ts).

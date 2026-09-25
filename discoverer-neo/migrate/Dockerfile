@@ -17,26 +17,24 @@ FROM node:22-bookworm-slim AS base
 WORKDIR /app
 
 # ---- Oracle Instant Client Builder ----
-# Opt-in; see backend/Dockerfile for the full rationale. This stage
-# previously had no `|| echo` fallback and a dead download URL, so the whole
-# image was unbuildable with INSTALL_ORACLE_CLIENT=true — masked only by
-# migrate not being a compose service, so nothing ever built it.
-FROM base AS oracle-builder
+# Opt-in; see backend/Dockerfile for the full rationale.
+FROM node:22-bookworm AS oracle-builder
 ARG INSTALL_ORACLE_CLIENT=false
-ARG ORACLE_CLIENT_URL="https://download.oracle.com/otn_software/linux/instantclient/1931000/instantclient-basic-linux.x64-19.31.0.0.0dbru.zip"
+# Zip in the project root, apt over HTTPS, libaio as a .deb for dpkg.
+COPY package.json instantclient-basic-linux.x64-*.zip /tmp/oracle/
 RUN set -eu; \
-  mkdir -p /opt/oracle/instantclient; \
+  mkdir -p /opt/oracle/instantclient /opt/oracle/deb; \
   if [ "$INSTALL_ORACLE_CLIENT" != "true" ]; then \
     echo "INSTALL_ORACLE_CLIENT is not true — skipping (thin mode)."; \
   else \
+    sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources; \
     apt-get update; \
-    apt-get install -y --no-install-recommends curl unzip ca-certificates; \
-    curl -fsSL -o /tmp/ic.zip "$ORACLE_CLIENT_URL"; \
-    unzip -q /tmp/ic.zip -d /tmp/ic; \
+    cd /opt/oracle/deb && apt-get download libaio1; \
+    unzip -q /tmp/oracle/instantclient-basic-linux.x64-*.zip -d /tmp/ic; \
     mv /tmp/ic/instantclient_*/* /opt/oracle/instantclient/; \
     test -e /opt/oracle/instantclient/libclntsh.so; \
-    rm -rf /tmp/ic /tmp/ic.zip /var/lib/apt/lists/*; \
-  fi
+  fi; \
+  rm -rf /tmp/oracle /tmp/ic /var/lib/apt/lists/*
 
 # ---- Workspace manifests ----
 FROM base AS manifests
@@ -65,11 +63,13 @@ RUN npm run build --workspace @discoverer-neo/core
 FROM base AS production
 ENV NODE_ENV=production
 
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends libaio1 \
-  && rm -rf /var/lib/apt/lists/* \
-  && groupadd -r migrateuser \
-  && useradd -r -g migrateuser -d /app -s /bin/bash migrateuser
+# libaio arrives as a .deb from oracle-builder (thick mode only): no apt here.
+COPY --from=oracle-builder /opt/oracle/deb /tmp/deb
+RUN set -eu; \
+  for deb in /tmp/deb/*.deb; do if [ -e "$deb" ]; then dpkg -i "$deb"; fi; done; \
+  rm -rf /tmp/deb; \
+  groupadd -r migrateuser; \
+  useradd -r -g migrateuser -d /app -s /bin/bash migrateuser
 
 # Empty unless INSTALL_ORACLE_CLIENT=true.
 COPY --from=oracle-builder /opt/oracle/instantclient /opt/oracle/instantclient

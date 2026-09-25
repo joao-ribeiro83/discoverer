@@ -63,3 +63,7 @@ credentials/
 # TLS cert + private key for docker-compose.prod.yml's nginx (see
 # nginx/nginx-ssl.conf's header for how to generate). NEVER commit these.
 certs/
+
+# Oracle Instant Client zip, supplied by hand in the project root (see the
+# oracle-builder stage in backend/Dockerfile). Oracle's licence: never commit.
+instantclient-*.zip
