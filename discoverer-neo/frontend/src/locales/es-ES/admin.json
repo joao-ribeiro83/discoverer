@@ -407,6 +407,21 @@
       "hint": "Emitir una nueva contraseña temporal para cada cuenta que todavía tenga una y descargar la lista en CSV",
       "issued": "Archivo de credenciales descargado",
       "failed": "No se pudieron emitir las credenciales"
+    },
+    "maps": {
+      "button": "Mapas que este usuario puede abrir",
+      "title": "Mapas de {{name}}",
+      "description": "Todos los mapas que este usuario puede abrir, y por qué.",
+      "count_one": "{{count}} mapa que este usuario puede abrir.",
+      "count_other": "{{count}} mapas que este usuario puede abrir.",
+      "empty": "Este usuario no puede abrir ningún mapa. Comparta un mapa o libro con él.",
+      "via": {
+        "ADMIN": "Administrador",
+        "OWNER": "Propietario",
+        "SHARE": "Compartido",
+        "PUBLIC": "Público",
+        "GRANT": "Área de negocio"
+      }
     }
   }
 }

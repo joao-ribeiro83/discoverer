@@ -77,6 +77,13 @@ function clickTab(tab: HTMLElement) {
   fireEvent.click(tab)
 }
 
+// A user who owns nothing lands on All once their maps load; wait for that,
+// or a click on Mine before it lands is overridden by the switch.
+async function openMineTab() {
+  await waitFor(() => expect(screen.getByRole('tab', { name: 'All' })).toHaveAttribute('aria-selected', 'true'))
+  clickTab(screen.getByRole('tab', { name: 'Mine' }))
+}
+
 function renderPage() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return render(
@@ -193,7 +200,20 @@ describe('MapsListPage', () => {
       }) as never,
     )
     renderPage()
+    await openMineTab()
     expect(await screen.findByText('5 worksheets exist; none are yours.')).toBeInTheDocument()
+  })
+
+  it('opens on the All tab when the user owns no maps', async () => {
+    mockedApi.maps.listMine.mockResolvedValue(
+      envelope({ mine: [], shared: [mapSummary({ id: 'm1', name: 'Shared To Me', createdBy: 'other' })] }) as never,
+    )
+    mockedApi.maps.listAll.mockResolvedValue(
+      envelope({ all: [mapSummary({ id: 'm1', name: 'Shared To Me', createdBy: 'other' })] }) as never,
+    )
+    renderPage()
+    expect(await screen.findByText('Shared To Me')).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'All' })).toHaveAttribute('aria-selected', 'true')
   })
 
   it('requires confirmation before deleting a map', async () => {
@@ -242,6 +262,7 @@ describe('MapsListPage', () => {
       envelope({ all: Array.from({ length: 3 }, (_, i) => mapSummary({ id: `m${i}`, name: `Map ${i}` })) }) as never,
     )
     renderPage()
+    await openMineTab()
     expect(await screen.findByText('3 worksheets exist; none are yours.')).toBeInTheDocument()
   })
 
@@ -428,7 +449,7 @@ describe('MapsListPage', () => {
     mockedApi.maps.listAll.mockResolvedValue(envelope({ all: [] }) as never)
     renderPage()
 
-    await screen.findByText('0 worksheets exist; none are yours.')
+    await waitFor(() => expect(screen.getByRole('tab', { name: 'All' })).toHaveAttribute('aria-selected', 'true'))
     expect(screen.queryByText('Workbooks')).not.toBeInTheDocument()
   })
 

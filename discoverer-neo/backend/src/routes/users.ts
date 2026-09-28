@@ -15,6 +15,7 @@ import {
   buildCredentialCsv,
   writeCredentialFile,
 } from '../services/credential-file.service.js';
+import { listAll, listSharedWithUser } from '../services/map.service.js';
 
 // ---------------------------------------------------------------------------
 // Validation schemas
@@ -243,6 +244,80 @@ export default function userRoutes(fastify: FastifyInstance) {
       }
 
       return reply.code(200).send({ data: user });
+    },
+  );
+
+  // GET /api/users/:id/maps — every map this user can open, and why.
+  // Uses the same `listAll` the user's own Maps page uses, so what the
+  // administrator sees here is exactly what the user sees there.
+  fastify.get(
+    '/api/users/:id/maps',
+    {
+      preHandler: adminPreHandler,
+      schema: {
+        tags: ['Users'],
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          required: ['id'],
+          properties: { id: { type: 'string', format: 'uuid' } },
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              data: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string' },
+                    name: { type: 'string' },
+                    via: { type: 'string', enum: ['ADMIN', 'OWNER', 'SHARE', 'PUBLIC', 'GRANT'] },
+                    sharePermission: { type: 'string', nullable: true },
+                  },
+                },
+              },
+            },
+          },
+          400: errorResponse,
+          401: errorResponse,
+          403: errorResponse,
+          404: errorResponse,
+        },
+      },
+    },
+    async (request, reply) => {
+      const parsed = IdParamSchema.safeParse(request.params);
+      if (!parsed.success) {
+        return reply.code(400).send({ error: 'Invalid user ID format' });
+      }
+      const user = await getById(parsed.data.id);
+      if (!user) {
+        return reply.code(404).send({ error: 'User not found' });
+      }
+
+      const [visible, shared] = await Promise.all([
+        listAll({ sub: user.id, role: user.role }),
+        listSharedWithUser(user.id),
+      ]);
+      const shareLevel = new Map(shared.map((m) => [m.id, m.sharePermission]));
+      const data = visible.map((m) => ({
+        id: m.id,
+        name: m.name,
+        via:
+          user.role === 'ADMIN'
+            ? 'ADMIN'
+            : m.createdBy === user.id
+              ? 'OWNER'
+              : shareLevel.has(m.id)
+                ? 'SHARE'
+                : m.isPublic
+                  ? 'PUBLIC'
+                  : 'GRANT',
+        sharePermission: shareLevel.get(m.id) ?? null,
+      }));
+      return reply.code(200).send({ data });
     },
   );
 

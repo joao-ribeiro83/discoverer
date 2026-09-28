@@ -33,7 +33,7 @@ export function MapsListPage() {
   const queryClient = useQueryClient()
   const currentUser = useAuthStore((s) => s.user)
 
-  const [tab, setTab] = useState<MapsTab>('mine')
+  const [pickedTab, setTab] = useState<MapsTab | null>(null)
   const [search, setSearch] = useState('')
   const [businessAreaId, setBusinessAreaId] = useState('all')
   const [sortKey, setSortKey] = useState<SortKey>('recency')
@@ -48,6 +48,10 @@ export function MapsListPage() {
     queryKey: ['maps', 'all'],
     queryFn: async () => (await apiClient.maps.listAll()).data.data,
   })
+  // A user who owns nothing (every migrated account but the owner's) would
+  // land on an empty "Mine" tab and think they have no maps. Open "All"
+  // for them until they pick a tab themselves.
+  const tab: MapsTab = pickedTab ?? (ownedQuery.data?.mine.length === 0 ? 'all' : 'mine')
   const businessAreasQuery = useQuery({
     queryKey: ['business-areas'],
     queryFn: async () => (await apiClient.businessAreas.list()).data.data,

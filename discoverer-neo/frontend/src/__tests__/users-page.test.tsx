@@ -1,13 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { MemoryRouter } from 'react-router-dom'
 import { UsersPage } from '@/pages/UsersPage'
 import { apiClient } from '@/lib/api'
 import { useAuthStore } from '@/store/auth'
 import type { AppUser } from '@/lib/types'
 
 vi.mock('@/lib/api', () => ({
-  apiClient: { users: { list: vi.fn(), update: vi.fn(), create: vi.fn(), delete: vi.fn() } },
+  apiClient: { users: { list: vi.fn(), update: vi.fn(), create: vi.fn(), delete: vi.fn(), maps: vi.fn() } },
   getErrorMessage: (e: unknown) => String(e),
 }))
 
@@ -21,7 +22,9 @@ function renderPage() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return render(
     <QueryClientProvider client={queryClient}>
-      <UsersPage />
+      <MemoryRouter>
+        <UsersPage />
+      </MemoryRouter>
     </QueryClientProvider>,
   )
 }
@@ -155,5 +158,37 @@ describe('UsersPage create/edit dialog', () => {
 
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
     expect(mockedApi.users.create).not.toHaveBeenCalled()
+  })
+})
+
+describe('UsersPage maps list', () => {
+  it('shows every map the user can open, and why', async () => {
+    mockedApi.users.maps.mockResolvedValue({
+      data: {
+        data: [
+          { id: 'm1', name: 'Shared Sales', via: 'SHARE', sharePermission: 'EXPORT' },
+          { id: 'm2', name: 'Own Costs', via: 'OWNER', sharePermission: null },
+        ],
+      },
+    } as never)
+    renderPage()
+    await waitFor(() => expect(screen.getByText('Bob User')).toBeInTheDocument())
+
+    fireEvent.click(within(rowOf('Bob User')).getByRole('button', { name: 'Maps this user can open' }))
+    const dialog = await screen.findByRole('dialog')
+    expect(await within(dialog).findByText('Shared Sales')).toBeInTheDocument()
+    expect(within(dialog).getByText('Shared · EXPORT')).toBeInTheDocument()
+    expect(within(dialog).getByText('Owner')).toBeInTheDocument()
+    expect(within(dialog).getByRole('link', { name: 'Shared Sales' })).toHaveAttribute('href', '/maps/m1/view')
+    expect(mockedApi.users.maps).toHaveBeenCalledWith('u-bob')
+  })
+
+  it('says so when the user can open no map', async () => {
+    mockedApi.users.maps.mockResolvedValue({ data: { data: [] } } as never)
+    renderPage()
+    await waitFor(() => expect(screen.getByText('Bob User')).toBeInTheDocument())
+
+    fireEvent.click(within(rowOf('Bob User')).getByRole('button', { name: 'Maps this user can open' }))
+    expect(await screen.findByText(/This user cannot open any map/)).toBeInTheDocument()
   })
 })

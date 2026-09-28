@@ -370,6 +370,18 @@ export const apiClient = {
     create: (data: unknown) => api.post<Envelope<AppUser>>('/users', data),
     update: (id: string, data: unknown) => api.put<Envelope<AppUser>>(`/users/${id}`, data),
     delete: (id: string) => api.delete<Envelope<{ message: string }>>(`/users/${id}`),
+    /** Every map this user can open, and why (admin-only). */
+    maps: (id: string) =>
+      api.get<
+        Envelope<
+          {
+            id: string
+            name: string
+            via: 'ADMIN' | 'OWNER' | 'SHARE' | 'PUBLIC' | 'GRANT'
+            sharePermission: string | null
+          }[]
+        >
+      >(`/users/${id}/maps`),
     /**
      * Re-issue temporary passwords and download them as a CSV. Omit `userIds`
      * for every account still on a temporary password — the migrated ones.

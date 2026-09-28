@@ -4,8 +4,9 @@ import { useForm } from 'react-hook-form'
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import type { ColumnDef } from '@tanstack/react-table'
-import { KeyRound, Plus, Pencil, Trash2, UserCheck, UserX } from 'lucide-react'
+import { KeyRound, Map as MapIcon, Plus, Pencil, Trash2, UserCheck, UserX } from 'lucide-react'
 import { apiClient, getErrorMessage } from '@/lib/api'
 import type { AppUser } from '@/lib/types'
 import { useToast } from '@/hooks/use-toast'
@@ -67,11 +68,18 @@ export function UsersPage() {
   const [editing, setEditing] = useState<AppUser | null>(null)
   const [deleting, setDeleting] = useState<AppUser | null>(null)
   const [deactivating, setDeactivating] = useState<AppUser | null>(null)
+  const [viewingMaps, setViewingMaps] = useState<AppUser | null>(null)
 
   const { data: users, isLoading } = useQuery({
     queryKey: ['users'],
     queryFn: async () => (await apiClient.users.list()).data.data,
     enabled: isAdmin,
+  })
+
+  const userMapsQuery = useQuery({
+    queryKey: ['users', viewingMaps?.id, 'maps'],
+    queryFn: async () => (await apiClient.users.maps(viewingMaps!.id)).data.data,
+    enabled: !!viewingMaps,
   })
 
   const form = useForm<FormValues>({
@@ -194,6 +202,15 @@ export function UsersPage() {
         const isSelf = user.id === currentUser?.id
         return (
         <div className="flex justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setViewingMaps(user)}
+            title={t('admin:users.maps.button')}
+            aria-label={t('admin:users.maps.button')}
+          >
+            <MapIcon className="h-4 w-4" />
+          </Button>
           <Button variant="ghost" size="icon" onClick={() => openEdit(user)} title={t('common:actions.edit')}>
             <Pencil className="h-4 w-4" />
           </Button>
@@ -326,6 +343,40 @@ export function UsersPage() {
           isPending={deleteMutation.isPending}
         />
       )}
+
+      <Dialog open={!!viewingMaps} onOpenChange={(open) => !open && setViewingMaps(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('admin:users.maps.title', { name: viewingMaps?.name ?? '' })}</DialogTitle>
+            <DialogDescription>
+              {userMapsQuery.data
+                ? t('admin:users.maps.count', { count: userMapsQuery.data.length })
+                : t('admin:users.maps.description')}
+            </DialogDescription>
+          </DialogHeader>
+          {userMapsQuery.isLoading ? (
+            <p className="text-sm text-muted-foreground">{t('common:states.loading')}</p>
+          ) : userMapsQuery.error ? (
+            <p className="text-sm text-destructive">{getErrorMessage(userMapsQuery.error)}</p>
+          ) : userMapsQuery.data?.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t('admin:users.maps.empty')}</p>
+          ) : (
+            <ul className="max-h-[60vh] divide-y overflow-y-auto">
+              {userMapsQuery.data?.map((m) => (
+                <li key={m.id} className="flex items-center justify-between gap-2 py-2 text-sm">
+                  <Link to={`/maps/${m.id}/view`} className="truncate hover:underline" title={m.name}>
+                    {m.name}
+                  </Link>
+                  <Badge variant="outline" className="shrink-0">
+                    {t(`admin:users.maps.via.${m.via}`)}
+                    {m.sharePermission ? ` · ${m.sharePermission}` : ''}
+                  </Badge>
+                </li>
+              ))}
+            </ul>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!deactivating} onOpenChange={(open) => !open && setDeactivating(null)}>
         <DialogContent>

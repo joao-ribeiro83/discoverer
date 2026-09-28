@@ -407,6 +407,21 @@
       "hint": "Emitir uma nova palavra-passe temporária para cada conta que ainda tenha uma e transferir a lista em CSV",
       "issued": "Ficheiro de credenciais transferido",
       "failed": "Não foi possível emitir as credenciais"
+    },
+    "maps": {
+      "button": "Mapas que este utilizador pode abrir",
+      "title": "Mapas de {{name}}",
+      "description": "Todos os mapas que este utilizador pode abrir, e porquê.",
+      "count_one": "{{count}} mapa que este utilizador pode abrir.",
+      "count_other": "{{count}} mapas que este utilizador pode abrir.",
+      "empty": "Este utilizador não pode abrir nenhum mapa. Partilhe um mapa ou livro com ele.",
+      "via": {
+        "ADMIN": "Administrador",
+        "OWNER": "Proprietário",
+        "SHARE": "Partilhado",
+        "PUBLIC": "Público",
+        "GRANT": "Área de negócio"
+      }
     }
   }
 }
