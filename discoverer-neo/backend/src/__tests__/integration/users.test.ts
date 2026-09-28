@@ -9,7 +9,7 @@ import type { FastifyInstance } from 'fastify';
 import { eq } from 'drizzle-orm';
 import { buildApp } from '../../app.js';
 import { db } from '../../db/index.js';
-import { users } from '../../db/schema.js';
+import { mapShares, maps, users } from '../../db/schema.js';
 import { hashPassword } from '../../lib/password.js';
 
 let app: FastifyInstance;
@@ -205,6 +205,56 @@ describe('GET /api/users/:id (admin)', () => {
     });
     expect(res.statusCode).toBe(200);
     expect(res.json().data.id).toBe(matchUserId);
+  });
+});
+
+describe('GET /api/users/:id/maps (admin)', () => {
+  let sharedMapId: string;
+
+  beforeAll(async () => {
+    const [map] = await db
+      .insert(maps)
+      .values({ name: 'Users-test shared map', mapType: 'TABLE', createdBy: adminUserId, isPublic: false })
+      .returning();
+    sharedMapId = map!.id;
+    await db
+      .insert(mapShares)
+      .values({ mapId: sharedMapId, sharedWithUserId: matchUserId, permissionLevel: 'VIEW', sharedBy: adminUserId });
+  });
+
+  afterAll(async () => {
+    await db.delete(maps).where(eq(maps.id, sharedMapId));
+  });
+
+  it('403s for a non-admin', async () => {
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/users/${matchUserId}/maps`,
+      headers: { authorization: `Bearer ${searcherToken}` },
+    });
+    expect(res.statusCode).toBe(403);
+  });
+
+  it('lists a map shared with the user, marked as a share', async () => {
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/users/${matchUserId}/maps`,
+      headers: { authorization: `Bearer ${adminToken}` },
+    });
+    expect(res.statusCode).toBe(200);
+    const hit = res.json().data.find((m: { id: string }) => m.id === sharedMapId);
+    expect(hit).toEqual({ id: sharedMapId, name: 'Users-test shared map', via: 'SHARE', sharePermission: 'VIEW' });
+  });
+
+  it('does not list it for a user it was not shared with', async () => {
+    const other = (await db.select().from(users).where(eq(users.email, OTHER_EMAIL)))[0]!;
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/users/${other.id}/maps`,
+      headers: { authorization: `Bearer ${adminToken}` },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().data.some((m: { id: string }) => m.id === sharedMapId)).toBe(false);
   });
 });
 

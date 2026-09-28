@@ -407,6 +407,21 @@
       "hint": "Émettre un nouveau mot de passe temporaire pour chaque compte qui en a encore un, et télécharger la liste en CSV",
       "issued": "Fichier d'identifiants téléchargé",
       "failed": "Impossible d'émettre les identifiants"
+    },
+    "maps": {
+      "button": "Cartes que cet utilisateur peut ouvrir",
+      "title": "Cartes de {{name}}",
+      "description": "Toutes les cartes que cet utilisateur peut ouvrir, et pourquoi.",
+      "count_one": "{{count}} carte que cet utilisateur peut ouvrir.",
+      "count_other": "{{count}} cartes que cet utilisateur peut ouvrir.",
+      "empty": "Cet utilisateur ne peut ouvrir aucune carte. Partagez une carte ou un classeur avec lui.",
+      "via": {
+        "ADMIN": "Administrateur",
+        "OWNER": "Propriétaire",
+        "SHARE": "Partagée",
+        "PUBLIC": "Publique",
+        "GRANT": "Domaine métier"
+      }
     }
   }
 }

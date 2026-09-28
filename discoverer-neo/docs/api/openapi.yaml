@@ -6075,6 +6075,87 @@ paths:
                   error:
                     type: string
                   details: {}
+  /api/users/{id}/maps:
+    get:
+      tags:
+        - Users
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: id
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        via:
+                          type: string
+                          enum:
+                            - ADMIN
+                            - OWNER
+                            - SHARE
+                            - PUBLIC
+                            - GRANT
+                        sharePermission:
+                          type: string
+                          nullable: true
+        '400':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details: {}
+        '401':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details: {}
+        '403':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details: {}
+        '404':
+          description: Default Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details: {}
   /api/users/me/preferences:
     get:
       tags:

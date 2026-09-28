@@ -1423,6 +1423,24 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 | 403 | { error?: string details?: any } |
 | 404 | { error?: string details?: any } |
 
+#### GET /api/users/{id}/maps
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | { data?: { id?: string name?: string via?: "ADMIN" \| "OWNER" \| "SHARE" \| "PUBLIC" \| "GRANT" sharePermission?: string }[] } |
+| 400 | { error?: string details?: any } |
+| 401 | { error?: string details?: any } |
+| 403 | { error?: string details?: any } |
+| 404 | { error?: string details?: any } |
+
 ### User Preferences
 
 #### GET /api/users/me/preferences
