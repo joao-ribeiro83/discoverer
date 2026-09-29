@@ -13,7 +13,7 @@ import { formatDate } from '@/lib/format'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { DeleteConfirmDialog } from '@/components/admin/DeleteConfirmDialog'
 import { ShareDialog } from '@/components/map-builder/ShareDialog'
@@ -151,157 +151,161 @@ export function MapsListPage() {
           <TabsTrigger value="shared">{t('mapViewer:mapsList.tabs.shared')}</TabsTrigger>
           <TabsTrigger value="all">{t('mapViewer:mapsList.tabs.all')}</TabsTrigger>
         </TabsList>
-      </Tabs>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="relative min-w-[220px] flex-1">
-          <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t('mapViewer:mapsList.searchPlaceholder')}
-            className="pl-8"
-          />
-        </div>
-        <Select value={businessAreaId} onValueChange={setBusinessAreaId}>
-          <SelectTrigger className="w-[220px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('mapViewer:mapsList.businessAreaAllOption')}</SelectItem>
-            {(businessAreasQuery.data ?? []).map((ba) => (
-              <SelectItem key={ba.id} value={ba.id}>
-                {ba.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
-          <SelectTrigger className="w-[200px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="recency">{t('mapViewer:mapsList.sortRecency')}</SelectItem>
-            <SelectItem value="name">{t('mapViewer:mapsList.sortName')}</SelectItem>
-          </SelectContent>
-        </Select>
-        {hasActiveFilters && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setSearch('')
-              setBusinessAreaId('all')
-            }}
-          >
-            <X className="h-4 w-4" /> {t('common:actions.clear')}
-          </Button>
-        )}
-        <span className="ml-auto text-sm text-muted-foreground">
-          {t('mapViewer:mapsList.rowCount', { shown: filtered.length, total: rowsForTab.length })}
-        </span>
-      </div>
-
-      {loadError && (
-        <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
-          {getErrorMessage(loadError)}
-        </div>
-      )}
-
-      {isLoading ? (
-        <p className="text-sm text-muted-foreground">{t('common:states.loading')}</p>
-      ) : empty ? (
-        <div className="rounded-md border p-8 text-center text-sm text-muted-foreground">{empty}</div>
-      ) : (
-        <div className="rounded-md border">
-          <div
-            className="grid gap-2 border-b bg-muted/50 px-3 py-2 text-xs font-medium text-muted-foreground"
-            style={{ gridTemplateColumns: GRID_COLS }}
-          >
-            <span>{t('common:labels.name')}</span>
-            <span>{t('mapViewer:mapsList.columns.businessArea')}</span>
-            <span>{t('common:labels.type')}</span>
-            <span>{t('common:labels.updatedAt')}</span>
-            <span className="text-right">{t('common:labels.actions')}</span>
-          </div>
-          <div ref={parentRef} className="h-[max(320px,calc(100vh-22rem))] overflow-auto">
-            <div style={{ height: rowVirtualizer.getTotalSize(), position: 'relative' }}>
-              {rowVirtualizer.getVirtualItems().map((vi) => {
-                const row = filtered[vi.index]
-                const manage = canManage(row)
-                return (
-                  <div
-                    key={row.id}
-                    className="grid items-center gap-2 border-b px-3 text-sm"
-                    style={{
-                      gridTemplateColumns: GRID_COLS,
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: vi.size,
-                      transform: `translateY(${vi.start}px)`,
-                    }}
-                  >
-                    <Link to={`/maps/${row.id}`} className="truncate font-medium hover:underline">
-                      {row.name}
-                    </Link>
-                    <span className="truncate text-muted-foreground">
-                      {baNameById.get(row.businessAreaId) ?? '—'}
-                    </span>
-                    <Badge variant="outline" className="w-fit">
-                      {row.mapType}
-                    </Badge>
-                    <span className="text-muted-foreground">{formatDate(row.updatedAt, locale)}</span>
-                    <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" asChild title={t('common:actions.view')}>
-                        <Link to={`/maps/${row.id}/view`}>
-                          <Eye className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                      {manage && (
-                        <>
-                          <Button variant="ghost" size="icon" asChild title={t('mapViewer:mapsList.actions.open')}>
-                            <Link to={`/maps/${row.id}`}>
-                              <Pencil className="h-4 w-4" />
-                            </Link>
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            title={t('mapViewer:mapsList.actions.share')}
-                            onClick={() => setSharingMap(row)}
-                          >
-                            <Share2 className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" asChild title={t('mapViewer:mapsList.actions.schedule')}>
-                            <Link to={`/schedules?mapId=${row.id}`}>
-                              <CalendarClock className="h-4 w-4" />
-                            </Link>
-                          </Button>
-                          <Button variant="ghost" size="icon" asChild title={t('common:actions.export')}>
-                            <Link to={`/maps/${row.id}`}>
-                              <Download className="h-4 w-4" />
-                            </Link>
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            title={t('common:actions.delete')}
-                            onClick={() => setDeleting(row)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
+        {/* One panel for every tab: the list is the same view, filtered by `tab`.
+            Without it each trigger's aria-controls points at nothing. */}
+        <TabsContent value={tab} className="space-y-6">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative min-w-[220px] flex-1">
+              <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={t('mapViewer:mapsList.searchPlaceholder')}
+                className="pl-8"
+              />
             </div>
+            <Select value={businessAreaId} onValueChange={setBusinessAreaId}>
+              <SelectTrigger className="w-[220px]" aria-label={t('mapViewer:mapsList.columns.businessArea')}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('mapViewer:mapsList.businessAreaAllOption')}</SelectItem>
+                {(businessAreasQuery.data ?? []).map((ba) => (
+                  <SelectItem key={ba.id} value={ba.id}>
+                    {ba.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
+              <SelectTrigger className="w-[200px]" aria-label={t('mapViewer:mapsList.sortLabel')}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="recency">{t('mapViewer:mapsList.sortRecency')}</SelectItem>
+                <SelectItem value="name">{t('mapViewer:mapsList.sortName')}</SelectItem>
+              </SelectContent>
+            </Select>
+            {hasActiveFilters && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSearch('')
+                  setBusinessAreaId('all')
+                }}
+              >
+                <X className="h-4 w-4" /> {t('common:actions.clear')}
+              </Button>
+            )}
+            <span className="ml-auto text-sm text-muted-foreground">
+              {t('mapViewer:mapsList.rowCount', { shown: filtered.length, total: rowsForTab.length })}
+            </span>
           </div>
-        </div>
-      )}
+
+          {loadError && (
+            <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+              {getErrorMessage(loadError)}
+            </div>
+          )}
+
+          {isLoading ? (
+            <p className="text-sm text-muted-foreground">{t('common:states.loading')}</p>
+          ) : empty ? (
+            <div className="rounded-md border p-8 text-center text-sm text-muted-foreground">{empty}</div>
+          ) : (
+            <div className="rounded-md border">
+              <div
+                className="grid gap-2 border-b bg-muted/50 px-3 py-2 text-xs font-medium text-muted-foreground"
+                style={{ gridTemplateColumns: GRID_COLS }}
+              >
+                <span>{t('common:labels.name')}</span>
+                <span>{t('mapViewer:mapsList.columns.businessArea')}</span>
+                <span>{t('common:labels.type')}</span>
+                <span>{t('common:labels.updatedAt')}</span>
+                <span className="text-right">{t('common:labels.actions')}</span>
+              </div>
+              <div ref={parentRef} className="h-[max(320px,calc(100vh-22rem))] overflow-auto">
+                <div style={{ height: rowVirtualizer.getTotalSize(), position: 'relative' }}>
+                  {rowVirtualizer.getVirtualItems().map((vi) => {
+                    const row = filtered[vi.index]
+                    const manage = canManage(row)
+                    return (
+                      <div
+                        key={row.id}
+                        className="grid items-center gap-2 border-b px-3 text-sm"
+                        style={{
+                          gridTemplateColumns: GRID_COLS,
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: vi.size,
+                          transform: `translateY(${vi.start}px)`,
+                        }}
+                      >
+                        <Link to={`/maps/${row.id}`} className="truncate font-medium hover:underline">
+                          {row.name}
+                        </Link>
+                        <span className="truncate text-muted-foreground">
+                          {baNameById.get(row.businessAreaId) ?? '—'}
+                        </span>
+                        <Badge variant="outline" className="w-fit">
+                          {row.mapType}
+                        </Badge>
+                        <span className="text-muted-foreground">{formatDate(row.updatedAt, locale)}</span>
+                        <div className="flex justify-end gap-1">
+                          <Button variant="ghost" size="icon" asChild title={t('common:actions.view')}>
+                            <Link to={`/maps/${row.id}/view`}>
+                              <Eye className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                          {manage && (
+                            <>
+                              <Button variant="ghost" size="icon" asChild title={t('mapViewer:mapsList.actions.open')}>
+                                <Link to={`/maps/${row.id}`}>
+                                  <Pencil className="h-4 w-4" />
+                                </Link>
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                title={t('mapViewer:mapsList.actions.share')}
+                                onClick={() => setSharingMap(row)}
+                              >
+                                <Share2 className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" asChild title={t('mapViewer:mapsList.actions.schedule')}>
+                                <Link to={`/schedules?mapId=${row.id}`}>
+                                  <CalendarClock className="h-4 w-4" />
+                                </Link>
+                              </Button>
+                              <Button variant="ghost" size="icon" asChild title={t('common:actions.export')}>
+                                <Link to={`/maps/${row.id}`}>
+                                  <Download className="h-4 w-4" />
+                                </Link>
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                title={t('common:actions.delete')}
+                                onClick={() => setDeleting(row)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
 
       {sharingMap && (
         <ShareDialog
