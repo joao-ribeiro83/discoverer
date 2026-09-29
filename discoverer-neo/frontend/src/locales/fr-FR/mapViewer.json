@@ -24,6 +24,7 @@
     "businessAreaAllOption": "Tous les domaines métier",
     "sortRecency": "Récemment modifiés",
     "sortName": "Nom (A–Z)",
+    "sortLabel": "Trier par",
     "entityLabel": "carte",
     "rowCount": "{{shown}} sur {{total}} cartes",
     "tabs": {
