@@ -36,6 +36,9 @@ const GATES = [
   'loadOwnJob(',
   'loadOwnSchedule(',
   'loadOwnRun(',
+  // Workbook service: only sees the caller's visible sheets (listAll), then
+  // refuses unless canAccessMap(…, 'DELETE') holds for every one of them.
+  'deleteWorkbook(',
 ];
 
 /** Routes with an id param and no gate, each with the reason that is safe. */

@@ -24,6 +24,7 @@
     "businessAreaAllOption": "All business areas",
     "sortRecency": "Recently updated",
     "sortName": "Name (A–Z)",
+    "sortLabel": "Sort by",
     "entityLabel": "map",
     "rowCount": "{{shown}} of {{total}} maps",
     "tabs": {

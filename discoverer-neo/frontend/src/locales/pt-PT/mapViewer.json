@@ -24,6 +24,7 @@
     "businessAreaAllOption": "Todas as áreas de negócio",
     "sortRecency": "Recentemente atualizado",
     "sortName": "Nome (A–Z)",
+    "sortLabel": "Ordenar por",
     "entityLabel": "mapa",
     "rowCount": "{{shown}} de {{total}} mapas",
     "tabs": {
