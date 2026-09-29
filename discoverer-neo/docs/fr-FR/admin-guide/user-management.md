@@ -68,24 +68,40 @@ Une fois les utilisateurs créés, accordez-leur l'accès à des domaines d'acti
    - **Niveau d'autorisation** — CREATE, EDIT, DELETE, EXPORT, SCHEDULE ou VIEW
 5. Cliquez sur **Accorder**
 
-**Niveaux d'autorisation dans un domaine d'activité :**
+### Niveaux d'autorisation
 
-| Autorisation | Cartes | Métadonnées | Planification | Exportation |
-|-----------|------|----------|----------|--------|
-| **CREATE** | Créer de nouvelles cartes | ✗ | ✗ | ✗ |
-| **EDIT** | Modifier les cartes | ✗ | ✗ | ✗ |
-| **DELETE** | Supprimer les cartes | ✗ | ✗ | ✗ |
-| **EXPORT** | Exporter les résultats | ✓ | ✗ | ✓ |
-| **SCHEDULE** | Créer des planifications | ✓ | ✗ | ✓ |
-| **VIEW** | Exécuter/consulter les cartes | ✓ | ✓ | ✗ |
+Les niveaux forment une hiérarchie. Chaque niveau inclut tous les niveaux supérieurs du tableau.
 
-### Accorder plusieurs autorisations
+| Niveau | Ce qu'il ajoute |
+|-------|--------------|
+| **VIEW** | Lire les données des dossiers de la domaine. Voir les dossiers, éléments, jointures et hiérarchies de la domaine. Exécuter des cartes dont vous êtes propriétaire, des cartes partagées avec vous et des cartes publiques. |
+| **EXPORT** | Identique à VIEW actuellement (voir la note 2). |
+| **SCHEDULE** | Identique à VIEW actuellement (voir la note 2). |
+| **CREATE** | Créer des cartes, dossiers, éléments, jointures et hiérarchies. Voir, exécuter, exporter, planifier et copier **toutes** les cartes de la domaine. |
+| **EDIT** | Modifier la domaine, ses dossiers, éléments, jointures, hiérarchies et toutes les cartes qu'elle contient. |
+| **DELETE** | Supprimer des dossiers, éléments, jointures, hiérarchies et toutes les cartes de la domaine. |
 
-Les utilisateurs ont généralement besoin de plusieurs autorisations :
+Les utilisateurs ADMIN contournent tous ces contrôles.
 
-- **Utilisateurs de données :** VIEW + EXPORT (peuvent exécuter des cartes et télécharger)
-- **Créateurs de rapports :** VIEW + CREATE + EDIT (peuvent créer et tester)
-- **Publieurs :** CREATE + EDIT + EXPORT + SCHEDULE (cycle de vie complet des cartes)
+**Note 1 — deux portes.** Pour exécuter une carte, un utilisateur doit passer deux contrôles :
+
+1. **Puis-je voir cette carte ?** Oui si vous en êtes propriétaire, elle est publique, elle est partagée avec vous ou vous déteniez CREATE ou plus dans sa domaine.
+2. **Puis-je lire ses données ?** Oui si vous détenez **une** autorisation dans la domaine d'activité de chaque dossier utilisé par la carte.
+
+Ainsi, une carte partagée avec un utilisateur échoue si l'utilisateur n'a pas d'autorisation sur la domaine d'où proviennent les données.
+
+**Note 2 — VIEW, EXPORT et SCHEDULE fonctionnent de la même façon sur les cartes.** Aucune des trois ne permet à un utilisateur de voir les cartes d'autres personnes. Sur une carte partagée, le **partage** détermine ce que l'utilisateur peut faire : un partage VIEW lui permet de l'exécuter ; un partage EXPORT ajoute l'exportation et la planification ; un partage EDIT ajoute les modifications. Voir [Partage](../user-guide/sharing.md).
+
+### Quel niveau accorder
+
+Accordez **une** autorisation par utilisateur et par domaine d'activité — le niveau le plus élevé dont il a besoin. Il inclut déjà les niveaux en dessous. N'ajoutez pas de niveaux inférieurs au-dessus.
+
+| L'utilisateur doit… | Accordez |
+|----------------|-------|
+| Exécuter des cartes que d'autres partagent avec lui | VIEW |
+| Créer ses propres cartes | CREATE |
+| Gérer les dossiers, éléments et cartes de la domaine | EDIT |
+| Les supprimer également | DELETE |
 
 ### Révoquer une autorisation
 
