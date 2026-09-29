@@ -65,27 +65,43 @@ Depois de os utilizadores existirem, conceda-lhes acesso a áreas de negócio es
 3. Clique em **+ Conceder Permissão**
 4. Selecione:
    - **Utilizador** — A partir da lista pendente
-   - **Nível de Permissão** — Criar, Editar, Eliminar, Exportar, Agendar ou Ver
+   - **Nível de Permissão** — CREATE, EDIT, DELETE, EXPORT, SCHEDULE ou VIEW
 5. Clique em **Conceder**
 
-**Níveis de Permissão numa Área de Negócio:**
+### Níveis de Permissão
 
-| Permissão | Mapas | Metadados | Agendar | Exportar |
-|-----------|------|----------|----------|--------|
-| **Criar** | Criar novos mapas | ✗ | ✗ | ✗ |
-| **Editar** | Modificar mapas | ✗ | ✗ | ✗ |
-| **Eliminar** | Eliminar mapas | ✗ | ✗ | ✗ |
-| **Exportar** | Exportar resultados | ✓ | ✗ | ✓ |
-| **Agendar** | Criar agendamentos | ✓ | ✗ | ✓ |
-| **Ver** | Executar/ver mapas | ✓ | ✓ | ✗ |
+Os níveis formam uma escada. Cada nível inclui todos os níveis acima dele na tabela.
 
-### Conceder Várias Permissões
+| Nível | O que adiciona |
+|-------|--------------|
+| **VIEW** | Ler os dados nas pastas da área. Ver as pastas, itens, junções e hierarquias da área. Executar mapas que o utilizador possui, mapas partilhados com o utilizador e mapas públicos. |
+| **EXPORT** | Igual a VIEW atualmente (ver nota 2). |
+| **SCHEDULE** | Igual a VIEW atualmente (ver nota 2). |
+| **CREATE** | Criar mapas, pastas, itens, junções e hierarquias. Ver, executar, exportar, agendar e copiar **todos** os mapas da área. |
+| **EDIT** | Alterar a área, as suas pastas, itens, junções, hierarquias e todos os mapas nela. |
+| **DELETE** | Eliminar pastas, itens, junções, hierarquias e todos os mapas da área. |
 
-Normalmente, os utilizadores precisam de várias permissões:
+Os utilizadores ADMIN ignoram todas estas verificações.
 
-- **Utilizadores de Dados:** Ver + Exportar (podem executar mapas e transferir)
-- **Criadores de Relatórios:** Ver + Criar + Editar (podem criar e testar)
-- **Publicadores:** Criar + Editar + Exportar + Agendar (ciclo de vida completo do mapa)
+**Nota 1 — duas verificações.** Para executar um mapa, um utilizador tem de passar por duas verificações:
+
+1. **Posso ver este mapa?** Sim se o utilizador é o proprietário, é público, está partilhado com o utilizador ou detém CREATE ou superior na área.
+2. **Posso ler os seus dados?** Sim se o utilizador detém **qualquer** nível na área de negócio de todas as pastas que o mapa utiliza.
+
+Portanto, um mapa partilhado com um utilizador falha se o utilizador não tiver concessão na área de onde os dados vêm.
+
+**Nota 2 — VIEW, EXPORT e SCHEDULE funcionam do mesmo modo nos mapas.** Nenhum destes três permite que um utilizador veja os mapas de outras pessoas. Num mapa partilhado, a **partilha** determina o que o utilizador pode fazer: uma partilha VIEW permite executá-lo; uma partilha EXPORT adiciona exportação e agendamento; uma partilha EDIT adiciona alterações. Ver [Partilha](../user-guide/sharing.md).
+
+### Qual é o Nível a Conceder
+
+Conceda **um** nível por utilizador por área de negócio — o nível mais elevado de que o utilizador necessita. Já inclui os níveis abaixo. Não adicione níveis inferiores acima.
+
+| O utilizador tem de… | Conceda |
+|----------------|-------|
+| Executar mapas que outros partilham com o utilizador | VIEW |
+| Criar os seus próprios mapas | CREATE |
+| Manter as pastas, itens e mapas da área | EDIT |
+| Também removê-los | DELETE |
 
 ### Revogar Permissão
 

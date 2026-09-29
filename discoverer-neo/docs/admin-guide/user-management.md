@@ -68,24 +68,49 @@ After users exist, grant them access to specific business areas.
    - **Permission Level** — CREATE, EDIT, DELETE, EXPORT, SCHEDULE, or VIEW
 5. Click **Grant**
 
-**Permission Levels in Business Area:**
+### Permission Levels
 
-| Permission | Maps | Metadata | Schedule | Export |
-|-----------|------|----------|----------|--------|
-| **CREATE** | Create new maps | ✗ | ✗ | ✗ |
-| **EDIT** | Modify maps | ✗ | ✗ | ✗ |
-| **DELETE** | Delete maps | ✗ | ✗ | ✗ |
-| **EXPORT** | Export results | ✓ | ✗ | ✓ |
-| **SCHEDULE** | Create schedules | ✓ | ✗ | ✓ |
-| **VIEW** | Run/view maps | ✓ | ✓ | ✗ |
+The levels form a ladder. Each level includes every level above it in the
+table.
 
-### Granting Multiple Permissions
+| Level | What it adds |
+|-------|--------------|
+| **VIEW** | Read the data in the area's folders. See the area's folders, items, joins and hierarchies. Run maps you own, maps shared with you, and public maps. |
+| **EXPORT** | Same as VIEW today (see note 2). |
+| **SCHEDULE** | Same as VIEW today (see note 2). |
+| **CREATE** | Create maps, folders, items, joins and hierarchies. See, run, export, schedule and copy **every** map in the area. |
+| **EDIT** | Change the area, its folders, items, joins, hierarchies, and every map in it. |
+| **DELETE** | Delete folders, items, joins, hierarchies, and every map in the area. |
 
-Users typically need multiple permissions:
+ADMIN users skip all of these checks.
 
-- **Data Users:** VIEW + EXPORT (can run maps and download)
-- **Report Builders:** VIEW + CREATE + EDIT (can build and test)
-- **Publishers:** CREATE + EDIT + EXPORT + SCHEDULE (full map lifecycle)
+**Note 1 — two gates.** To run a map, a user must pass two checks:
+
+1. **May I see this map?** Yes if you own it, it is public, it is shared with
+   you, or you hold CREATE or higher in its area.
+2. **May I read its data?** Yes if you hold **any** level in the business area
+   of every folder the map uses.
+
+So a map shared with a user still fails if the user has no grant on the
+area its data comes from.
+
+**Note 2 — VIEW, EXPORT and SCHEDULE act the same on maps.** None of the
+three lets a user see other people's maps. On a shared map, the **share**
+decides what the user may do: a VIEW share lets them run it; an EXPORT share
+adds export and schedule; an EDIT share adds changes. See
+[Sharing](../user-guide/sharing.md).
+
+### Which Level to Grant
+
+Grant **one** level per user per business area — the highest one they need.
+It already includes the levels below it. Do not add lower levels on top.
+
+| The user must… | Grant |
+|----------------|-------|
+| Run maps that others share with them | VIEW |
+| Build their own maps | CREATE |
+| Maintain the area's folders, items and maps | EDIT |
+| Also remove them | DELETE |
 
 ### Revoke Permission
 

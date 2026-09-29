@@ -68,24 +68,40 @@ Una vez que existan los usuarios, concédales acceso a áreas de negocio especí
    - **Nivel de permiso** — CREATE, EDIT, DELETE, EXPORT, SCHEDULE o VIEW
 5. Haga clic en **Conceder**
 
-**Niveles de permiso en un área de negocio:**
+### Niveles de permiso
 
-| Permiso | Mapas | Metadatos | Programación | Exportación |
-|-----------|------|----------|----------|--------|
-| **CREATE** | Crear mapas nuevos | ✗ | ✗ | ✗ |
-| **EDIT** | Modificar mapas | ✗ | ✗ | ✗ |
-| **DELETE** | Eliminar mapas | ✗ | ✗ | ✗ |
-| **EXPORT** | Exportar resultados | ✓ | ✗ | ✓ |
-| **SCHEDULE** | Crear programaciones | ✓ | ✗ | ✓ |
-| **VIEW** | Ejecutar/ver mapas | ✓ | ✓ | ✗ |
+Los niveles forman una jerarquía. Cada nivel incluye todos los niveles anteriores de la tabla.
 
-### Conceder varios permisos
+| Nivel | Lo que añade |
+|-------|--------------|
+| **VIEW** | Leer los datos en las carpetas del área. Ver las carpetas, elementos, combinaciones y jerarquías del área. Ejecutar mapas que usted posee, mapas compartidos con usted y mapas públicos. |
+| **EXPORT** | Igual que VIEW actualmente (ver nota 2). |
+| **SCHEDULE** | Igual que VIEW actualmente (ver nota 2). |
+| **CREATE** | Crear mapas, carpetas, elementos, combinaciones y jerarquías. Ver, ejecutar, exportar, programar y copiar **todos** los mapas del área. |
+| **EDIT** | Cambiar el área, sus carpetas, elementos, combinaciones, jerarquías y todos los mapas en él. |
+| **DELETE** | Eliminar carpetas, elementos, combinaciones, jerarquías y todos los mapas del área. |
 
-Los usuarios suelen necesitar varios permisos:
+Los usuarios ADMIN omiten todas estas comprobaciones.
 
-- **Usuarios de datos:** VIEW + EXPORT (pueden ejecutar mapas y descargar)
-- **Creadores de informes:** VIEW + CREATE + EDIT (pueden crear y probar)
-- **Publicadores:** CREATE + EDIT + EXPORT + SCHEDULE (ciclo de vida completo del mapa)
+**Nota 1 — dos comprobaciones.** Para ejecutar un mapa, un usuario debe pasar dos comprobaciones:
+
+1. **¿Puedo ver este mapa?** Sí si es propietario, es público, está compartido con usted o tiene CREATE o superior en su área.
+2. **¿Puedo leer sus datos?** Sí si tiene **cualquier** permiso en el área de negocio de cada carpeta que utiliza el mapa.
+
+Por lo tanto, un mapa compartido con un usuario falla si el usuario no tiene permiso en el área de la que provienen los datos.
+
+**Nota 2 — VIEW, EXPORT y SCHEDULE actúan igual en los mapas.** Ninguno de estos tres permite a un usuario ver los mapas de otras personas. En un mapa compartido, el **uso compartido** determina lo que el usuario puede hacer: un uso compartido VIEW le permite ejecutarlo; un uso compartido EXPORT añade exportación y programación; un uso compartido EDIT añade cambios. Consulte [Compartir](../user-guide/sharing.md).
+
+### Qué nivel conceder
+
+Conceda **un** permiso por usuario y por área de negocio — el nivel más alto que necesite. Ya incluye los niveles inferiores. No añada permisos inferiores.
+
+| El usuario debe… | Conceda |
+|----------------|-------|
+| Ejecutar mapas que otros comparten con usted | VIEW |
+| Crear sus propios mapas | CREATE |
+| Mantener las carpetas, elementos y mapas del área | EDIT |
+| También eliminarlos | DELETE |
 
 ### Revocar un permiso
 
