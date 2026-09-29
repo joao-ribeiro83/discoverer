@@ -275,6 +275,24 @@ describe('Folder-scoped routes resolve grants via the owning business area', () 
     expect(response.statusCode).toBe(403);
   });
 
+  it('judges a USER holding VIEW and EDIT rows by the higher level', async () => {
+    // The VIEW row was inserted first, so an unordered LIMIT 1 would return it.
+    await db.insert(userBusinessAreaGrants).values({
+      userId: viewerId,
+      businessAreaId: testBusinessAreaId,
+      permissionLevel: 'EDIT',
+    });
+
+    const response = await app.inject({
+      method: 'POST',
+      url: `/api/folders/${testFolderId}/items`,
+      headers: { authorization: `Bearer ${viewerToken}` },
+      payload: { name: 'Created By Two-Level User', itemType: 'CI', columnName: 'TWO_LEVEL_COL' },
+    });
+
+    expect(response.statusCode).toBe(201);
+  });
+
   it('allows a USER with an EDIT grant to import items from Oracle columns', async () => {
     const response = await app.inject({
       method: 'POST',
