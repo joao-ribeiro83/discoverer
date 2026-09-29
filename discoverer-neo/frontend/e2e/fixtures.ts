@@ -253,6 +253,8 @@ export async function mockCommonApi(page: Page): Promise<void> {
     if (scope === 'all') return jsonRoute(route, { data: { all: [MAP_SUMMARY] } })
     return jsonRoute(route, { data: { mine: [MAP_SUMMARY], shared: [] } })
   })
+  // MapsListPage's workbook browse section — same unmocked-401 logout trap.
+  await page.route(/\/api\/workbooks$/, (route) => jsonRoute(route, { data: [] }))
   await page.route('**/api/data-sources', (route) => {
     if (route.request().method() === 'GET') return jsonRoute(route, { data: [DATA_SOURCE] })
     return route.continue()
