@@ -287,24 +287,31 @@ export async function userHasPermission(
   businessAreaId: string,
   requiredLevel: PermissionLevel,
 ): Promise<{ hasPermission: boolean; heldLevel: PermissionLevel | null }> {
-  const [grant] = await db
-    .select()
+  // A user may hold several levels in one area (the unique index is per
+  // level), so judge by the highest one held, not an arbitrary row.
+  const rows = await db
+    .select({ permissionLevel: userBusinessAreaGrants.permissionLevel })
     .from(userBusinessAreaGrants)
     .where(
       and(
         eq(userBusinessAreaGrants.userId, userId),
         eq(userBusinessAreaGrants.businessAreaId, businessAreaId),
       ),
-    )
-    .limit(1);
+    );
 
-  if (!grant) {
+  if (rows.length === 0) {
     return { hasPermission: false, heldLevel: null };
   }
 
+  const heldLevel = rows
+    .map((r) => r.permissionLevel)
+    .reduce((a, b) =>
+      PERMISSION_HIERARCHY.indexOf(b) > PERMISSION_HIERARCHY.indexOf(a) ? b : a,
+    );
+
   return {
-    hasPermission: permissionSatisfies(grant.permissionLevel, requiredLevel),
-    heldLevel: grant.permissionLevel,
+    hasPermission: permissionSatisfies(heldLevel, requiredLevel),
+    heldLevel,
   };
 }
 
