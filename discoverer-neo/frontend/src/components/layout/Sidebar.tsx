@@ -141,7 +141,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
           <Settings className="h-4 w-4" />
           {t('items.settings')}
         </NavLink>
-        <p className="px-3 pt-2 text-xs text-muted-foreground">Discoverer Neo v{version}</p>
+        <p className="px-3 pt-2 text-xs text-sidebar-foreground">Discoverer Neo v{version}</p>
       </div>
     </>
   )
