@@ -80,6 +80,23 @@ export function requireBusinessAreaAccess(permissionLevel: PermissionLevel) {
   };
 }
 
+/**
+ * A MANAGER runs, shares and schedules maps over the data model but never
+ * changes it, whatever grants they hold. Goes before the grant check on every
+ * route that writes a business area, folder, item, join or hierarchy.
+ */
+export async function forbidManagerModelling(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  if (request.user?.role === 'MANAGER') {
+    return reply.code(403).send({
+      error: 'Forbidden',
+      details: 'A MANAGER cannot change the data model',
+    });
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Entity-scoped variants
 //

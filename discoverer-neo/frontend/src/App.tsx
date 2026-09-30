@@ -83,15 +83,15 @@ export function App() {
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="admin" element={<RequireRole roles={['ADMIN', 'MANAGER']} />}>
-          <Route path="business-areas" element={<BusinessAreasPage />} />
-          <Route path="folders" element={<FoldersPage />} />
-          <Route path="items" element={<ItemsPage />} />
-          <Route path="joins" element={<JoinsPage />} />
-          <Route path="hierarchies" element={<HierarchiesPage />} />
           <Route path="custom-functions" element={<CustomFunctionsPage />} />
           <Route path="data-sources" element={<DataSourcesPage />} />
           <Route path="users" element={<UsersPage />} />
           <Route element={<RequireRole roles={['ADMIN']} />}>
+            <Route path="business-areas" element={<BusinessAreasPage />} />
+            <Route path="folders" element={<FoldersPage />} />
+            <Route path="items" element={<ItemsPage />} />
+            <Route path="joins" element={<JoinsPage />} />
+            <Route path="hierarchies" element={<HierarchiesPage />} />
             <Route path="security" element={<SecurityPage />} />
             <Route path="migration" element={<MigrationPage />} />
             <Route path="audit" element={<AuditLogPage />} />

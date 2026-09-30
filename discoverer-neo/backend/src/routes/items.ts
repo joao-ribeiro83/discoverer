@@ -9,7 +9,11 @@ import {
   importFromOracleColumns,
   getDescendants,
 } from '../services/item.service.js';
-import { requireFolderAccess, requireItemAccess } from '../middleware/business-area-auth.js';
+import {
+  forbidManagerModelling,
+  requireFolderAccess,
+  requireItemAccess,
+} from '../middleware/business-area-auth.js';
 import { cached, invalidate, metadataKeys } from '../lib/metadata-cache.js';
 import { LovError, LOV_MAX_LIMIT, resolveLov } from '../services/lov.service.js';
 import { DataEntitlementError } from '../services/business-area.service.js';
@@ -225,7 +229,7 @@ export default function itemRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/api/folders/:folderId/items',
     {
-      preHandler: [fastify.authenticate, requireFolderAccess('CREATE')],
+      preHandler: [fastify.authenticate, forbidManagerModelling, requireFolderAccess('CREATE')],
       schema: {
         tags: ['Items'],
         security: [{ bearerAuth: [] }],
@@ -324,7 +328,7 @@ export default function itemRoutes(fastify: FastifyInstance) {
   fastify.put(
     '/api/items/:id',
     {
-      preHandler: [fastify.authenticate, requireItemAccess('EDIT')],
+      preHandler: [fastify.authenticate, forbidManagerModelling, requireItemAccess('EDIT')],
       schema: {
         tags: ['Items'],
         security: [{ bearerAuth: [] }],
@@ -405,7 +409,7 @@ export default function itemRoutes(fastify: FastifyInstance) {
   fastify.delete(
     '/api/items/:id',
     {
-      preHandler: [fastify.authenticate, requireItemAccess('DELETE')],
+      preHandler: [fastify.authenticate, forbidManagerModelling, requireItemAccess('DELETE')],
       schema: {
         tags: ['Items'],
         security: [{ bearerAuth: [] }],
@@ -457,7 +461,7 @@ export default function itemRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/api/folders/:folderId/items/import',
     {
-      preHandler: [fastify.authenticate, requireFolderAccess('CREATE')],
+      preHandler: [fastify.authenticate, forbidManagerModelling, requireFolderAccess('CREATE')],
       schema: {
         tags: ['Items'],
         security: [{ bearerAuth: [] }],

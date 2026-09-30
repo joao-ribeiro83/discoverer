@@ -10,6 +10,7 @@ import {
   HierarchyValidationError,
 } from '../services/hierarchy.service.js';
 import {
+  forbidManagerModelling,
   requireBusinessAreaAccess,
   requireHierarchyAccess,
 } from '../middleware/business-area-auth.js';
@@ -183,7 +184,7 @@ export default function hierarchyRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/api/business-areas/:baId/hierarchies',
     {
-      preHandler: [fastify.authenticate, requireBusinessAreaAccess('CREATE')],
+      preHandler: [fastify.authenticate, forbidManagerModelling, requireBusinessAreaAccess('CREATE')],
       schema: {
         tags: ['Hierarchies'],
         security: [{ bearerAuth: [] }],
@@ -264,7 +265,7 @@ export default function hierarchyRoutes(fastify: FastifyInstance) {
   fastify.put(
     '/api/hierarchies/:id',
     {
-      preHandler: [fastify.authenticate, requireHierarchyAccess('EDIT')],
+      preHandler: [fastify.authenticate, forbidManagerModelling, requireHierarchyAccess('EDIT')],
       schema: {
         tags: ['Hierarchies'],
         security: [{ bearerAuth: [] }],
@@ -340,7 +341,7 @@ export default function hierarchyRoutes(fastify: FastifyInstance) {
   fastify.delete(
     '/api/hierarchies/:id',
     {
-      preHandler: [fastify.authenticate, requireHierarchyAccess('DELETE')],
+      preHandler: [fastify.authenticate, forbidManagerModelling, requireHierarchyAccess('DELETE')],
       schema: {
         tags: ['Hierarchies'],
         security: [{ bearerAuth: [] }],

@@ -486,7 +486,7 @@ describe('Hierarchy permission enforcement', () => {
     expect([400, 403]).toContain(response.statusCode);
   });
 
-  it('allows MANAGER with CREATE grant to create', async () => {
+  it('refuses a MANAGER even with a CREATE grant — managers do not model', async () => {
     const { userBusinessAreaGrants } = await import('../../db/schema.js');
     await db.insert(userBusinessAreaGrants).values({
       userId: (await db.select().from(users).where(eq(users.email, TEST_MANAGER_EMAIL)))[0]!.id,
@@ -503,6 +503,6 @@ describe('Hierarchy permission enforcement', () => {
         levels: [{ levelName: 'L1', itemId: testItemId1, levelNumber: 1 }],
       },
     });
-    expect(response.statusCode).toBe(201);
+    expect(response.statusCode).toBe(403);
   });
 });

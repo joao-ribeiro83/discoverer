@@ -28,7 +28,8 @@ beforeEach(() => {
 })
 
 describe('Sidebar role gates', () => {
-  // Security, Audit Log and Migration APIs are authorize('ADMIN') only.
+  // Security, Audit Log and Migration APIs are authorize('ADMIN') only, and a
+  // MANAGER may not change the data model.
   it.each([
     ['ADMIN', true],
     ['MANAGER', false],
@@ -40,7 +41,10 @@ describe('Sidebar role gates', () => {
       </MemoryRouter>,
     )
     expect(screen.getByRole('link', { name: 'Users' })).toBeInTheDocument()
-    for (const name of ['Security', 'Audit Log', 'Migration']) {
+    for (const name of [
+      'Business Areas', 'Folders', 'Items', 'Joins', 'Hierarchies',
+      'Security', 'Audit Log', 'Migration',
+    ]) {
       expect(!!screen.queryByRole('link', { name })).toBe(visible)
     }
   })

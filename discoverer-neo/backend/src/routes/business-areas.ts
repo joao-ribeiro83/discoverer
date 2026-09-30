@@ -14,6 +14,7 @@ import {
   type PermissionLevel,
 } from '../services/business-area.service.js';
 import { cached, invalidate, metadataKeys } from '../lib/metadata-cache.js';
+import { forbidManagerModelling } from '../middleware/business-area-auth.js';
 
 // ---------------------------------------------------------------------------
 // Validation schemas
@@ -294,7 +295,7 @@ export default function businessAreasRoutes(fastify: FastifyInstance) {
   fastify.put(
     '/api/business-areas/:id',
     {
-      preHandler: [fastify.authenticate, fastify.requireBusinessAreaAccess('EDIT')],
+      preHandler: [fastify.authenticate, forbidManagerModelling, fastify.requireBusinessAreaAccess('EDIT')],
       schema: {
         tags: ['Business Areas'],
         security: [{ bearerAuth: [] }],

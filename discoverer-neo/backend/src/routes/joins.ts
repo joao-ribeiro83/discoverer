@@ -9,6 +9,7 @@ import {
   autoSuggestJoins,
 } from '../services/join.service.js';
 import {
+  forbidManagerModelling,
   requireBusinessAreaAccess,
   requireFolderAccess,
   requireJoinAccess,
@@ -236,7 +237,7 @@ export default function joinRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/api/business-areas/:baId/joins',
     {
-      preHandler: [fastify.authenticate, requireBusinessAreaAccess('CREATE')],
+      preHandler: [fastify.authenticate, forbidManagerModelling, requireBusinessAreaAccess('CREATE')],
       schema: {
         tags: ['Joins'],
         security: [{ bearerAuth: [] }],
@@ -318,7 +319,7 @@ export default function joinRoutes(fastify: FastifyInstance) {
   fastify.put(
     '/api/joins/:id',
     {
-      preHandler: [fastify.authenticate, requireJoinAccess('EDIT')],
+      preHandler: [fastify.authenticate, forbidManagerModelling, requireJoinAccess('EDIT')],
       schema: {
         tags: ['Joins'],
         security: [{ bearerAuth: [] }],
@@ -392,7 +393,7 @@ export default function joinRoutes(fastify: FastifyInstance) {
   fastify.delete(
     '/api/joins/:id',
     {
-      preHandler: [fastify.authenticate, requireJoinAccess('DELETE')],
+      preHandler: [fastify.authenticate, forbidManagerModelling, requireJoinAccess('DELETE')],
       schema: {
         tags: ['Joins'],
         security: [{ bearerAuth: [] }],

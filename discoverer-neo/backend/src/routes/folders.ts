@@ -14,6 +14,7 @@ import {
   type RefreshResult,
 } from '../services/folder.service.js';
 import {
+  forbidManagerModelling,
   requireBusinessAreaAccess,
   requireFolderAccess,
 } from '../middleware/business-area-auth.js';
@@ -184,7 +185,7 @@ export default function folderRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/api/folders/:id/refresh',
     {
-      preHandler: [fastify.authenticate, requireFolderAccess('EDIT')],
+      preHandler: [fastify.authenticate, forbidManagerModelling, requireFolderAccess('EDIT')],
       schema: { tags: ['Folders'], security: [{ bearerAuth: [] }], response: refreshResponse },
     },
     async (request, reply) => {
@@ -202,7 +203,7 @@ export default function folderRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/api/business-areas/:baId/folders/refresh',
     {
-      preHandler: [fastify.authenticate, requireBusinessAreaAccess('EDIT')],
+      preHandler: [fastify.authenticate, forbidManagerModelling, requireBusinessAreaAccess('EDIT')],
       schema: { tags: ['Folders'], security: [{ bearerAuth: [] }], response: refreshResponse },
     },
     async (request, reply) => {
@@ -306,7 +307,7 @@ export default function folderRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/api/business-areas/:baId/folders',
     {
-      preHandler: [fastify.authenticate, requireBusinessAreaAccess('CREATE')],
+      preHandler: [fastify.authenticate, forbidManagerModelling, requireBusinessAreaAccess('CREATE')],
       schema: {
         tags: ['Folders'],
         security: [{ bearerAuth: [] }],
@@ -398,7 +399,7 @@ export default function folderRoutes(fastify: FastifyInstance) {
   fastify.put(
     '/api/folders/:id',
     {
-      preHandler: [fastify.authenticate, requireFolderAccess('EDIT')],
+      preHandler: [fastify.authenticate, forbidManagerModelling, requireFolderAccess('EDIT')],
       schema: {
         tags: ['Folders'],
         security: [{ bearerAuth: [] }],
@@ -481,7 +482,7 @@ export default function folderRoutes(fastify: FastifyInstance) {
   fastify.delete(
     '/api/folders/:id',
     {
-      preHandler: [fastify.authenticate, requireFolderAccess('DELETE')],
+      preHandler: [fastify.authenticate, forbidManagerModelling, requireFolderAccess('DELETE')],
       schema: {
         tags: ['Folders'],
         security: [{ bearerAuth: [] }],
@@ -571,7 +572,7 @@ export default function folderRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/api/folders/:id/business-areas',
     {
-      preHandler: [fastify.authenticate, requireFolderAccess('EDIT')],
+      preHandler: [fastify.authenticate, forbidManagerModelling, requireFolderAccess('EDIT')],
       schema: {
         tags: ['Folders'],
         security: [{ bearerAuth: [] }],
@@ -612,7 +613,7 @@ export default function folderRoutes(fastify: FastifyInstance) {
   fastify.delete(
     '/api/folders/:id/business-areas/:baId',
     {
-      preHandler: [fastify.authenticate, requireFolderAccess('EDIT')],
+      preHandler: [fastify.authenticate, forbidManagerModelling, requireFolderAccess('EDIT')],
       schema: {
         tags: ['Folders'],
         security: [{ bearerAuth: [] }],
