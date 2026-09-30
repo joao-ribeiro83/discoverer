@@ -4,7 +4,7 @@ info:
   description: >-
     REST API for Oracle Discoverer Neo metadata management backend. Manage data sources, business
     areas, folders, items, joins, hierarchies, and custom functions.
-  version: 0.1.0
+  version: 2.0.1
   contact:
     name: Discoverer Neo
 components:

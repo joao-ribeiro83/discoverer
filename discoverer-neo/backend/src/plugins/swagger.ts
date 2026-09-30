@@ -2,6 +2,7 @@ import fp from 'fastify-plugin';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import type { FastifyInstance } from 'fastify';
+import { version } from '../routes/health.js';
 
 export default fp(
   async function swaggerPlugin(app: FastifyInstance) {
@@ -12,7 +13,7 @@ export default fp(
           description:
             'REST API for Oracle Discoverer Neo metadata management backend. ' +
             'Manage data sources, business areas, folders, items, joins, hierarchies, and custom functions.',
-          version: '0.1.0',
+          version,
           contact: {
             name: 'Discoverer Neo',
           },

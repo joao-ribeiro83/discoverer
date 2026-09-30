@@ -18,12 +18,14 @@ Before 1.0.0 (the `0.x` versions), the app was not in production, so any
 release could change anything.
 
 Every workspace (`backend`, `frontend`, `migrate`) and the root carry the same
-version. The backend reports it at `GET /health`, and the sidebar shows it. A
-test fails if the manifests disagree. To release, add a section below, then set
-the version everywhere with one command from `discoverer-neo/`:
+version. The backend reports it at `GET /health` and in the API docs, and the
+sidebar shows it. A test fails if the manifests disagree. To release, add a
+section below, then set the version everywhere from `discoverer-neo/`, and
+regenerate the API spec (CI fails if `docs/api/openapi.yaml` is stale):
 
 ```bash
 npm version 1.2.0 --workspaces --include-workspace-root --no-git-tag-version
+npm run generate-spec --workspace @discoverer-neo/backend
 ```
 
 **Versions 0.1.0 to 1.0.0 were assigned after the fact** (on 2026-09-25), from

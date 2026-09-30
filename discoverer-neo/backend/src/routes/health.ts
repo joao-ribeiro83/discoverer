@@ -12,7 +12,7 @@ import { getOracleClientStatus } from '../services/oracle-connection-pool.js';
  * (ts-jest does not reliably allow `import.meta`). Every workspace carries the
  * same version; CHANGELOG.md says how to bump it.
  */
-const version = (
+export const version = (
   JSON.parse(readFileSync(path.resolve(process.cwd(), 'package.json'), 'utf8')) as {
     version: string;
   }
