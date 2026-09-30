@@ -1015,7 +1015,7 @@ You cannot deactivate or delete your own account. Those icons are greyed out on 
 | Option (**Role**) | What it means / when to pick it |
 |---|---|
 | ADMIN | Does everything: users, business areas, data sources, security and audit. Opens, changes, shares and deletes every map. Give it to very few people. |
-| MANAGER | Opens, runs, exports, schedules and shares every map, and changes who owns a map. Changes only their own maps and maps shared with **Can edit**. Cannot change business areas, folders, items, joins or hierarchies, whatever grant they hold. Cannot use **Security**, **Audit Log** or **Migration**. |
+| MANAGER | Opens, runs, exports, schedules and shares every map, and changes who owns a map. Changes only their own maps and maps shared with **Can edit**. Sees, edits, activates and deactivates MANAGER, USER and VIEWER accounts, but never sees administrators and cannot create or delete users or give the ADMIN role. Cannot change business areas, folders, items, joins or hierarchies, whatever grant they hold. Cannot use **Custom Functions**, **Data Sources**, **Security**, **Audit Log** or **Migration**. |
 | USER | Sees their own maps, public maps and maps shared with them. Runs, exports and schedules as each share allows. Copies maps, and creates new maps where they hold a CREATE grant. The default. |
 | VIEWER | Like USER, but cannot copy maps or workbooks. For a person who must only read, share maps with **Can view** and give no CREATE grant. |
 

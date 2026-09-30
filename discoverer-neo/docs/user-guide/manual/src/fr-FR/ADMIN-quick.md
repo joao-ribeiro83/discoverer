@@ -158,7 +158,7 @@ Ajoutez des personnes, définissez des rôles, désactivez des comptes, confiez 
 | Choix | Signification |
 |---|---|
 | ADMIN | Tous les droits. |
-| MANAGER | Voit, exécute, exporte, planifie et partage toutes les cartes. Ne modifie jamais le modèle de données. |
+| MANAGER | Voit, exécute, exporte, planifie et partage toutes les cartes. Modifie les comptes MANAGER, USER et VIEWER. Ne modifie jamais le modèle de données, les fonctions personnalisées ni les sources de données. |
 | USER | Ses cartes, les cartes publiques et les cartes partagées. |
 | VIEWER | Comme USER, mais ne peut pas copier de cartes. |
 | **Désactiver** | Conserve le compte. Réversible. |

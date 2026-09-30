@@ -529,7 +529,7 @@ steps.manager = async (c) => {
   const email = creds.users.MANAGER
   await c.goto('/dashboard')
   await page.setViewportSize({ width: 1280, height: 1150 })
-  await c.shot('dashboard-sidebar', 'Dashboard for the Manager role with its sidebar: Overview, Data Modeling (Custom Functions, Data Sources, Users only), Maps, Other (Schedules, Runs, Exports) and Settings. No Business Areas, Folders, Items, Joins, Hierarchies, Security, Audit Log or Migration.')
+  await c.shot('dashboard-sidebar', 'Dashboard for the Manager role with its sidebar: Overview, Data Modeling (Users only), Maps, Other (Schedules, Runs, Exports) and Settings. No Business Areas, Folders, Items, Joins, Hierarchies, Custom Functions, Data Sources, Security, Audit Log or Migration.')
   await page.setViewportSize({ width: 1280, height: 800 })
   await ensureCopy(c, email)
   await c.goto('/maps')
@@ -556,9 +556,7 @@ steps.manager = async (c) => {
   })
   await page.setViewportSize({ width: 1280, height: 800 })
   for (const [p, slug, d] of [
-    ['/admin/users', 'users', 'Users page for a Manager: read-only list (no "Credentials file" or "New User" buttons); the only row icon is "Maps this user can open". Real users blurred.'],
-    ['/admin/data-sources', 'data-sources', 'Data Sources page for a Manager: the list and the read-only row icons; creating, editing and deleting are refused by the server.'],
-    ['/admin/custom-functions', 'custom-functions', 'Custom Functions page for a Manager: full page with the list, Refresh all and New Function.'],
+    ['/admin/users', 'users', 'Users page for a Manager: only MANAGER, USER and VIEWER accounts (no administrators), no "Credentials file" or "New User" buttons; row icons Maps this user can open, Edit and Deactivate, no Delete. Real users blurred.'],
     ['/schedules', 'schedules', 'Schedules page for a Manager: own schedules only.'],
     ['/runs', 'runs', 'Runs page for a Manager: own runs only, without the "Show every user\'s runs" checkbox.'],
   ]) {
@@ -567,7 +565,9 @@ steps.manager = async (c) => {
   await c.tryStep('users-maps', async () => {
     await c.goto('/admin/users')
     const nx = page.getByRole('button', { name: t('common', 'actions.next') })
-    for (let i = 0; i < 3; i++) { if (await nx.isEnabled()) { await nx.click(); await page.waitForTimeout(800) } }
+    // Page until the row shows: which page holds it depends on who the list may show.
+    const ursula = page.getByRole('row').filter({ hasText: 'Ursula User' })
+    for (let i = 0; i < 5 && !(await ursula.count()) && (await nx.isEnabled()); i++) { await nx.click(); await page.waitForTimeout(800) }
     await page.getByRole('row').filter({ hasText: 'Ursula User' }).getByRole('button', { name: t('admin', 'users.maps.button') }).click()
     await c.dialog()
     await c.shot('users-maps-dialog', 'Maps for a user dialog (Manager): the list of maps that user can open with badges, share-level select and owner/remove icons (user name blurred).', { el: '[role=dialog]' })

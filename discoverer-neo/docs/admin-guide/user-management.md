@@ -9,14 +9,16 @@ Discoverer Neo has four user roles with different capabilities:
 | Role | Capabilities |
 |------|-------------|
 | **ADMIN** | Full system access — users, business areas, data sources, audit logs. Opens, changes, shares and deletes every map. |
-| **MANAGER** | Opens, runs, exports, schedules and shares **every** map, and can change a map's owner. Changes only their own maps. Manages custom functions; views and tests data sources. Cannot change the data model (business areas, folders, items, joins, hierarchies), even with a grant. |
+| **MANAGER** | Opens, runs, exports, schedules and shares **every** map, and can change a map's owner. Changes only their own maps. Sees, edits, activates and deactivates MANAGER, USER and VIEWER accounts. Cannot see administrators, create or delete users, or give the ADMIN role. Cannot change the data model (business areas, folders, items, joins, hierarchies), even with a grant, and cannot use custom functions or data sources. |
 | **USER** | Sees only their own maps and the maps shared with them. Builds a new map by copying one of those. |
 | **VIEWER** | Read-only. Opens and runs the maps shared with them. Cannot create, copy or change maps. |
 
 The Users page shows these rules under the **Role** field when you edit a
-user. A MANAGER can open the Users page to see each user's maps, and there
-change a share's level, remove a share, or give a map to a new owner. Only an
-ADMIN can create, change or delete users.
+user. A MANAGER's Users page lists only MANAGER, USER and VIEWER accounts.
+There they can edit an account (name, email, password, and a role other than
+ADMIN), activate or deactivate it, and see each user's maps: change a share's
+level, remove a share, or give a map to a new owner. Only an ADMIN sees
+administrator accounts, creates or deletes users, and gives the ADMIN role.
 
 Anyone except a VIEWER can copy a map they can see. The copy belongs to them.
 Running it still needs a grant on its business area (see "two gates" below).
@@ -293,12 +295,13 @@ Give the **MANAGER** role to someone who looks after other people's maps.
 A MANAGER can:
 - See, run, export, schedule and share every map
 - Give a map to a new owner, change or remove its shares (Users → map icon)
-- Manage custom functions, and view and test data sources
+- Edit, activate and deactivate MANAGER, USER and VIEWER accounts
 
 A MANAGER cannot:
-- Create, change or delete users, or grant business-area access
+- See or change administrator accounts, create or delete users, give the
+  ADMIN role, or grant business-area access
 - Change the data model: business areas, folders, items, joins, hierarchies
-- Open Security, Audit Log or Migration
+- Open Custom Functions, Data Sources, Security, Audit Log or Migration
 
 ## Audit Trail
 

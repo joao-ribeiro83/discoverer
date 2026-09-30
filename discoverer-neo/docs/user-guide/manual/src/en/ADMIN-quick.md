@@ -158,7 +158,7 @@ Add people, set roles, switch accounts off, hand maps to others.
 | Choice | Meaning |
 |---|---|
 | ADMIN | Everything. |
-| MANAGER | Sees, runs, exports, schedules and shares every map. Never changes the data model. |
+| MANAGER | Sees, runs, exports, schedules and shares every map. Edits MANAGER, USER and VIEWER accounts. Never changes the data model, custom functions or data sources. |
 | USER | Own, public and shared maps. |
 | VIEWER | Like USER, but cannot copy maps. |
 | **Deactivate** | Keeps the account. Reversible. |

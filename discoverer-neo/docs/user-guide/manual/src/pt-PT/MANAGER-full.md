@@ -1,6 +1,6 @@
 # A sua função num relance
 
-É um **Manager**. Vê todos os mapas do Discoverer Neo, executa-os, exporta-os, agenda-os e partilha-os. Cuida de quem pode abrir o quê. Não altera o modelo de dados. Isso é trabalho de um administrador.
+É um **Manager**. Vê todos os mapas do Discoverer Neo, executa-os, exporta-os, agenda-os e partilha-os. Cuida de quem pode abrir o quê e cuida das contas Manager, User e Viewer. Não altera o modelo de dados, as funções personalizadas nem as origens de dados. Isso é trabalho de um administrador.
 
 Um **mapa** é um relatório (no Oracle Discoverer, era uma folha de cálculo). Um **livro** é um grupo de mapas. Uma **área de negócio** é um grupo de dados relacionados. Uma **pasta** é uma tabela ou vista dentro de uma área de negócio, e um **item** é uma coluna de uma pasta.
 
@@ -11,14 +11,13 @@ Um **mapa** é um relatório (no Oracle Discoverer, era uma folha de cálculo). 
 | Ver todos os mapas, incluindo os privados | Alterar um mapa de que não é proprietário, exceto se for partilhado consigo como **Pode editar** |
 | Executar, exportar e agendar todos os mapas (as regras de dados abaixo continuam a aplicar-se) | Eliminar um mapa de que não é proprietário |
 | Partilhar qualquer mapa, e alterar ou remover qualquer partilha | Ver o texto SQL ou o plano da base de dados de uma execução |
-| Copiar qualquer mapa para fazer a sua própria versão | Criar, eliminar ou alterar permissões em áreas de negócio |
-| Entregar um mapa a outro proprietário | Criar, editar ou eliminar utilizadores |
-| Abrir a página Utilizadores e ver que mapas cada pessoa pode abrir | Criar, editar ou eliminar origens de dados, nem importar tabelas de uma |
-| Criar, editar e eliminar funções personalizadas | Ver as execuções, exportações ou agendamentos de outras pessoas |
-| Testar e ler origens de dados | Usar Segurança, Registo de Auditoria ou Migração (só administradores) |
-| Criar mapas nas áreas de negócio em que tem uma permissão | Alterar áreas de negócio, pastas, itens, junções ou hierarquias, qualquer que seja a permissão que tenha |
+| Copiar qualquer mapa para fazer a sua própria versão | Alterar áreas de negócio, as suas permissões, pastas, itens, junções ou hierarquias, qualquer que seja a permissão que tenha |
+| Entregar um mapa a outro proprietário | Criar ou eliminar utilizadores, nem dar a ninguém a função ADMIN |
+| Ver as contas Manager, User e Viewer e os mapas que cada pessoa pode abrir | Ver ou alterar contas de administrador |
+| Editar, ativar e desativar as contas Manager, User e Viewer | Ver as execuções, exportações ou agendamentos de outras pessoas |
+| Criar mapas nas áreas de negócio em que tem uma permissão | Usar Funções Personalizadas, Origens de Dados, Segurança, Registo de Auditoria ou Migração (só administradores) |
 
-> **Nota:** **Áreas de Negócio**, **Pastas**, **Itens**, **Junções**, **Hierarquias**, **Segurança**, **Registo de Auditoria** e **Migração** são só para administradores. Não aparecem na sua barra lateral.
+> **Nota:** **Áreas de Negócio**, **Pastas**, **Itens**, **Junções**, **Hierarquias**, **Funções Personalizadas**, **Origens de Dados**, **Segurança**, **Registo de Auditoria** e **Migração** são só para administradores. Não aparecem na sua barra lateral.
 
 ## De onde vem o seu acesso
 
@@ -81,80 +80,27 @@ A ligação **Ver agendamentos** em dois cartões abre a página **Agendamentos*
 
 ---
 
-# Funções Personalizadas
-
-Uma função personalizada é uma função guardada na base de dados Oracle que os itens calculados podem chamar. Tem todos os direitos aqui. Não é preciso nenhuma permissão de área de negócio.
-
-![A página Funções Personalizadas com a lista, Atualizar tudo e Nova Função.](shots/pt-PT/manager/08-custom-functions.png)
-
-| Botão ou controlo | O que faz |
-|---|---|
-| **Filtrar por nome ou função da base de dados…** | Reduz a lista à medida que escreve. |
-| **Atualizar tudo** | Volta a ler todas as funções do Oracle. As assinaturas alteradas são guardadas e os campos calculados são recompilados. As funções que já não existem no Oracle são mantidas e listadas. |
-| **Nova Função** | Abre a caixa de diálogo da função. |
-| Ícone da linha **Atualizar a partir da base de dados** | Atualiza uma função. |
-| Ícone da linha **Editar** | Altera a função. |
-| Ícone da linha **Eliminar** | Desativa a função depois de confirmar. |
-| **Fechar** por baixo de **Resultado da atualização** | Esconde a lista de resultados. |
-
-| Campo | O que significa |
-|---|---|
-| **Origem de dados** | A base de dados onde a função existe. |
-| **Proprietário**, **Procurar uma função**, **Procurar** | Procura funções e packages no Oracle. Só origens de dados Oracle. |
-| **Proprietário**, **Package**, **Nome da função**, **Database link** | As partes do nome completo. Apenas letras, dígitos, _, $ ou #, começando por uma letra. |
-| **Nome** e **Descrição** | O nome a apresentar e uma nota. |
-| **Tipo de Função** | Veja abaixo. |
-| **Tipo de Retorno** | Por exemplo NUMBER. |
-| **Parâmetros (JSON)** | A lista de entradas. Cada uma precisa de um nome e de um tipo. |
-
-| Opção (**Tipo de Função**) | O que significa |
-|---|---|
-| SQL | Uma função SQL simples. |
-| PLSQL | Uma função PL/SQL guardada. A predefinida. |
-| PACKAGE | Uma função dentro de um package Oracle. |
-
-## Exemplo: registar uma função de um package
-
-1. Clique em **Funções Personalizadas** e depois em **Nova Função**.
-2. Escolha a **Origem de dados**.
-3. Escreva parte do nome em **Procurar uma função** e clique em **Procurar**.
-4. Clique no resultado certo. O tipo, o proprietário, o package, o tipo de retorno e os parâmetros ficam preenchidos. Os resultados que o Oracle não consegue chamar a partir de SQL aparecem a cinzento.
-5. Verifique o **Nome** e clique em **Guardar**.
-
----
-
-# Origens de Dados
-
-Uma origem de dados é uma ligação guardada a uma base de dados. Pode consultá-las e testá-las. Não as pode alterar.
-
-![A página Origens de Dados com a lista de ligações e os ícones de linha.](shots/pt-PT/manager/07-data-sources.png)
-
-| Botão ou controlo | O que faz |
-|---|---|
-| Ícone da linha **Testar ligação** | Experimenta o início de sessão guardado. Uma mensagem diz **Ligação bem-sucedida** ou **Falha na ligação**. |
-| Ícone da linha **Introspetar esquema** | Lê o esquema Oracle para encontrar as suas tabelas. Mostra quantas tabelas foram encontradas. Só Oracle. |
-| **Nova Origem de Dados** | Reservado aos administradores. |
-| Ícone da linha **Editar** | Reservado aos administradores. |
-| Ícone da linha **Eliminar** | Reservado aos administradores. |
-| Ícone da linha **Importar tabelas** | Pode abrir a caixa de diálogo e usar **Descobrir Tabelas**. **Importar** é reservado aos administradores. |
-
-> **Nota:** O ecrã oferece **Nova Origem de Dados**, **Editar**, **Eliminar** e o passo de importação. O sistema recusa-os para si. Para criar pastas a partir de tabelas, use antes **Pastas** e **Descobrir Tabelas**.
-
----
-
 # Utilizadores
 
-A página **Utilizadores** é só de leitura para si. Use-a para ver contas, para descobrir que mapas uma pessoa pode abrir e para corrigir quem é o proprietário ou partilha um mapa.
+Use a página **Utilizadores** para cuidar das contas Manager, User e Viewer, para descobrir que mapas uma pessoa pode abrir e para corrigir quem é o proprietário ou partilha um mapa. As contas de administrador não aparecem na sua lista.
 
-![A lista de Utilizadores só de leitura, sem os botões Novo Utilizador nem Ficheiro de credenciais.](shots/pt-PT/manager/06-users.png)
+![A lista de Utilizadores para um Manager, sem administradores e sem os botões Novo Utilizador nem Ficheiro de credenciais.](shots/pt-PT/manager/06-users.png)
 
-A lista mostra **Nome**, **Email**, **Função** e **Estado** (**Ativo** ou **Inativo**). Não pode criar, editar, desativar, ativar nem eliminar utilizadores. Não pode emitir um ficheiro de credenciais. Fale com um administrador.
+A lista mostra **Nome**, **Email**, **Função** e **Estado** (**Ativo** ou **Inativo**).
+
+| Botão ou controlo | O que faz |
+|---|---|
+| Ícone da linha **Mapas que este utilizador pode abrir** | Abre os mapas dessa pessoa. Veja abaixo. |
+| Ícone da linha **Editar** | Altera o nome, o email, a palavra-passe ou a função. A função pode ser MANAGER, USER ou VIEWER. Deixe **Palavra-passe** em branco para a manter. |
+| Ícone da linha **Desativar** / **Ativar** | Impede a pessoa de iniciar sessão, ou deixa-a iniciar sessão outra vez. Não pode desativar-se a si próprio. |
+
+Não pode criar nem eliminar utilizadores, dar a função ADMIN, nem emitir um ficheiro de credenciais. Fale com um administrador.
 
 ## Mapas de uma pessoa
 
 Clique no ícone da linha **Mapas que este utilizador pode abrir**. A caixa de diálogo **Mapas de {name}** lista todos os mapas que essa pessoa vê.
 
-![A caixa de diálogo Mapas de um utilizador, com listas de nível de partilha e ícones de proprietário e remover.](shots/pt-PT/manager/11-users-maps-dialog.png)
+![A caixa de diálogo Mapas de um utilizador, com listas de nível de partilha e ícones de proprietário e remover.](shots/pt-PT/manager/09-users-maps-dialog.png)
 
 | Botão ou controlo | O que faz |
 |---|---|
@@ -168,7 +114,6 @@ Clique no ícone da linha **Mapas que este utilizador pode abrir**. A caixa de d
 
 | Opção (etiqueta) | O que significa |
 |---|---|
-| Administrador | A pessoa é administradora e vê todos os mapas. |
 | Proprietário | A pessoa é proprietária do mapa. |
 | Partilhado | Alguém partilhou o mapa com a pessoa. Pode alterar ou remover isto. |
 | Público | O mapa é público. |
@@ -495,7 +440,7 @@ O **Histórico de Execuções** lista os últimos 50 resultados com **Executado*
 
 **Execuções** lista todas as execuções que pediu, quer estejam em espera, em curso ou terminadas. Mostra apenas as suas próprias execuções, não as de outras pessoas.
 
-![A página Execuções com os filtros Mapa, Estado e Tipo e a lista de execuções.](shots/pt-PT/manager/10-runs.png)
+![A página Execuções com os filtros Mapa, Estado e Tipo e a lista de execuções.](shots/pt-PT/manager/08-runs.png)
 
 | Botão ou controlo | O que faz |
 |---|---|
@@ -590,5 +535,3 @@ Não existe ligação de recuperação. Fale com um administrador.
 | Execução | Uma execução de um mapa. As suas linhas são guardadas durante 24 horas. |
 | Exportação | Um ficheiro (Excel, CSV ou PDF) feito a partir de uma execução terminada. |
 | Agendamento | Um horário que executa um mapa automaticamente e guarda o resultado. |
-| Origem de dados | Uma ligação guardada a uma base de dados. |
-| Função personalizada | Uma função da base de dados que os itens calculados podem chamar. |

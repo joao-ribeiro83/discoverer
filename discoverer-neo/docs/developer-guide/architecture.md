@@ -317,7 +317,7 @@ rate and the refusal histogram.
 
 **User Roles:**
 - ADMIN — All permissions
-- MANAGER — See, run, share and schedule every map; never changes the data model
+- MANAGER — See, run, share and schedule every map; edit MANAGER, USER and VIEWER accounts; no data model, custom functions or data sources
 - USER — Create maps, execute queries
 - VIEWER — Read-only access
 

@@ -1,18 +1,17 @@
 # A sua função numa página
 
-É um **Manager**. Vê, executa, exporta, agenda e partilha todos os mapas. Não altera o modelo de dados. Isso é trabalho de um administrador.
+É um **Manager**. Vê, executa, exporta, agenda e partilha todos os mapas, e cuida das contas Manager, User e Viewer. Não altera o modelo de dados, as funções personalizadas nem as origens de dados. Isso é trabalho de um administrador.
 
 | Pode | Não pode |
 |---|---|
 | Ver, executar, exportar e agendar todos os mapas | Alterar ou eliminar um mapa de que não é proprietário (exceto se for partilhado consigo como **Pode editar**) |
 | Partilhar qualquer mapa e alterar qualquer partilha | Ver o SQL ou o plano da base de dados |
-| Copiar qualquer mapa para criar o seu | Criar utilizadores, origens de dados ou áreas de negócio, nem dar permissões |
+| Copiar qualquer mapa para criar o seu | Criar ou eliminar utilizadores, dar a função ADMIN, nem dar permissões |
 | Atribuir um mapa a um novo proprietário | Ver as execuções, exportações ou agendamentos de outras pessoas |
-| Gerir funções personalizadas | Usar Segurança, Registo de Auditoria ou Migração |
-| Ler, testar e introspetar origens de dados | Importar tabelas de uma origem de dados |
-| Criar mapas nas áreas de negócio em que tem uma permissão | Alterar áreas de negócio, pastas, itens, junções ou hierarquias |
+| Editar, ativar e desativar as contas Manager, User e Viewer | Ver ou alterar contas de administrador |
+| Criar mapas nas áreas de negócio em que tem uma permissão | Alterar áreas de negócio, pastas, itens, junções, hierarquias, funções personalizadas ou origens de dados |
 
-> **Nota:** **Áreas de Negócio**, **Pastas**, **Itens**, **Junções**, **Hierarquias**, **Segurança**, **Registo de Auditoria** e **Migração** são só para administradores. Não aparecem na sua barra lateral.
+> **Nota:** **Áreas de Negócio**, **Pastas**, **Itens**, **Junções**, **Hierarquias**, **Funções Personalizadas**, **Origens de Dados**, **Segurança**, **Registo de Auditoria** e **Migração** são só para administradores. Não aparecem na sua barra lateral.
 
 Ver um mapa não lhe dá os respetivos dados. Uma execução precisa de uma permissão de área de negócio em cada pasta que o mapa usa. Sem ela, aparece **Sem autorização para executar**.
 
@@ -115,7 +114,7 @@ O agendamento é executado como si, por isso as suas permissões decidem que dad
 
 **Execuções** lista as suas próprias execuções. **Exportações** lista os seus próprios ficheiros exportados. Não vê os de outras pessoas.
 
-![A página Execuções com os filtros Mapa, Estado e Tipo e a lista de execuções.](shots/pt-PT/manager/10-runs.png)
+![A página Execuções com os filtros Mapa, Estado e Tipo e a lista de execuções.](shots/pt-PT/manager/08-runs.png)
 
 1. Clique em **Execuções** para ver as execuções em espera, em curso e concluídas.
 2. Clique no ícone **Abrir** para ver um resultado guardado. Use **Executar novamente** para o repetir.
@@ -126,9 +125,11 @@ O agendamento é executado como si, por isso as suas permissões decidem que dad
 
 # Utilizadores
 
-A página **Utilizadores** é só de leitura para si. Pode listar contas e corrigir o acesso aos mapas.
+A página **Utilizadores** lista as contas Manager, User e Viewer. Os administradores não aparecem na sua lista. Clique no ícone da linha **Editar** para alterar o nome, o email, a palavra-passe ou a função (MANAGER, USER ou VIEWER) de uma pessoa. Use **Desativar** ou **Ativar** para impedir ou permitir o início de sessão.
 
-![A caixa de diálogo Mapas de um utilizador, com listas de nível de partilha e ícones de proprietário e remover.](shots/pt-PT/manager/11-users-maps-dialog.png)
+Para corrigir o acesso aos mapas:
+
+![A caixa de diálogo Mapas de um utilizador, com listas de nível de partilha e ícones de proprietário e remover.](shots/pt-PT/manager/09-users-maps-dialog.png)
 
 1. Clique no ícone da linha **Mapas que este utilizador pode abrir**.
 2. Para alterar um mapa partilhado, use a lista de níveis junto a ele.
@@ -137,23 +138,7 @@ A página **Utilizadores** é só de leitura para si. Pode listar contas e corri
 
 > **Atenção:** O novo proprietário pode alterar, partilhar e eliminar o mapa.
 
-Criar, editar e eliminar utilizadores é da responsabilidade dos administradores.
-
----
-
-# Funções Personalizadas e Origens de Dados
-
-As **Funções Personalizadas** são funções da base de dados que os itens calculados podem chamar. Tem todos os direitos sobre elas. As **Origens de Dados** são ligações guardadas a bases de dados. Só pode consultá-las e testá-las.
-
-![A página Funções Personalizadas com a lista, Atualizar tudo e Nova Função.](shots/pt-PT/manager/08-custom-functions.png)
-
-1. Em **Funções Personalizadas**, clique em **Nova Função**.
-2. Escolha uma **Origem de dados**, escreva parte de um nome em **Procurar uma função** e clique em **Procurar**.
-3. Clique num resultado para preencher a caixa de diálogo e depois clique em **Guardar**.
-4. Use **Atualizar tudo** para voltar a ler todas as funções do Oracle.
-5. Em **Origens de Dados**, clique em **Testar ligação** para verificar uma ligação.
-
-**Nova Origem de Dados**, **Editar**, **Eliminar** e **Importar** numa origem de dados são só para administradores. O sistema recusa-os.
+Criar e eliminar utilizadores, e a função ADMIN, são da responsabilidade dos administradores.
 
 ---
 

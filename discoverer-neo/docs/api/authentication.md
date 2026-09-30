@@ -331,7 +331,7 @@ Tokens include a `role` claim. Use it for client-side UI logic (authorization st
 | Role | Capabilities |
 |------|-------------|
 | **ADMIN** | Full system access, user management |
-| **MANAGER** | Sees, runs, shares and schedules every map; cannot change the data model |
+| **MANAGER** | Sees, runs, shares and schedules every map; edits MANAGER, USER and VIEWER accounts; no data model, custom functions or data sources |
 | **USER** | Can create and run maps |
 | **VIEWER** | Read-only access to shared maps |
 

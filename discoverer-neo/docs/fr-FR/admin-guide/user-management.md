@@ -9,15 +9,17 @@ Discoverer Neo comporte quatre rôles utilisateur aux capacités différentes :
 | Rôle | Capacités |
 |------|-------------|
 | **ADMIN** | Accès système complet — utilisateurs, domaines d'activité, sources de données, journaux d'audit. Ouvre, modifie, partage et supprime toutes les cartes. |
-| **MANAGER** | Ouvre, exécute, exporte, planifie et partage **toutes** les cartes, et peut changer le propriétaire d'une carte. Ne modifie que ses propres cartes. Gère les fonctions personnalisées ; consulte et teste les sources de données. Ne peut pas modifier le modèle de données (domaines d'activité, dossiers, éléments, jointures, hiérarchies), même avec un accès. |
+| **MANAGER** | Ouvre, exécute, exporte, planifie et partage **toutes** les cartes, et peut changer le propriétaire d'une carte. Ne modifie que ses propres cartes. Voit, modifie, active et désactive les comptes MANAGER, USER et VIEWER. Ne peut pas voir les administrateurs, créer ou supprimer des utilisateurs, ni donner le rôle ADMIN. Ne peut pas modifier le modèle de données (domaines d'activité, dossiers, éléments, jointures, hiérarchies), même avec un accès, et ne peut pas utiliser les fonctions personnalisées ni les sources de données. |
 | **USER** | Ne voit que ses propres cartes et celles partagées avec lui. Crée une nouvelle carte en copiant l'une d'elles. |
 | **VIEWER** | Lecture seule. Ouvre et exécute les cartes partagées avec lui. Ne peut ni créer, ni copier, ni modifier de cartes. |
 
 La page Utilisateurs affiche ces règles sous le champ **Rôle** lorsque vous
-modifiez un utilisateur. Un MANAGER peut ouvrir la page Utilisateurs pour voir
-les cartes de chaque utilisateur et, à cet endroit, changer le niveau d'un
-partage, retirer un partage ou attribuer une carte à un nouveau propriétaire.
-Seul un ADMIN peut créer, modifier ou supprimer des utilisateurs.
+modifiez un utilisateur. La page Utilisateurs d'un MANAGER ne liste que les comptes MANAGER, USER et VIEWER.
+Il peut y modifier un compte (nom, e-mail, mot de passe et un rôle autre que
+ADMIN), l'activer ou le désactiver, et voir les cartes de chaque utilisateur :
+changer le niveau d'un partage, retirer un partage ou attribuer une carte à un
+nouveau propriétaire. Seul un ADMIN voit les comptes d'administrateur, crée ou
+supprime des utilisateurs et donne le rôle ADMIN.
 
 Toute personne autre qu'un VIEWER peut copier une carte qu'elle voit. La copie
 lui appartient. Son exécution exige toujours une autorisation sur son domaine
@@ -289,12 +291,12 @@ Donnez le rôle **MANAGER** à une personne qui s'occupe des cartes des autres.
 Un MANAGER peut :
 - Voir, exécuter, exporter, planifier et partager toutes les cartes
 - Donner une carte à un nouveau propriétaire, modifier ou retirer ses partages (Utilisateurs → icône de carte)
-- Gérer les fonctions personnalisées, et consulter et tester les sources de données
+- Modifier, activer et désactiver les comptes MANAGER, USER et VIEWER
 
 Un MANAGER ne peut pas :
-- Créer, modifier ou supprimer des utilisateurs, ni donner un accès à un domaine d'activité
+- Voir ou modifier les comptes d'administrateur, créer ou supprimer des utilisateurs, donner le rôle ADMIN, ni donner un accès à un domaine d'activité
 - Modifier le modèle de données : domaines d'activité, dossiers, éléments, jointures, hiérarchies
-- Ouvrir Sécurité, Journal d'audit ou Migration
+- Ouvrir Fonctions personnalisées, Sources de données, Sécurité, Journal d'audit ou Migration
 
 ## Piste d'audit
 

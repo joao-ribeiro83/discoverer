@@ -175,7 +175,7 @@ discoverer-neo/
 | Role | Capabilities |
 |------|-------------|
 | **ADMIN** | Full access to all features, user management, system settings |
-| **MANAGER** | Sees, runs, shares and schedules every map; cannot change the data model or users |
+| **MANAGER** | Sees, runs, shares and schedules every map; edits MANAGER, USER and VIEWER accounts; no data model, custom functions or data sources |
 | **USER** | Can build maps, execute queries, create workbooks |
 | **VIEWER** | Read-only access to shared maps and dashboards |
 

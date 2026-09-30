@@ -9,15 +9,17 @@ O Discoverer Neo tem quatro funções de utilizador com capacidades diferentes:
 | Função | Capacidades |
 |------|-------------|
 | **ADMIN** | Acesso total ao sistema — utilizadores, áreas de negócio, origens de dados, registos de auditoria. Abre, altera, partilha e elimina todos os mapas. |
-| **MANAGER** | Abre, executa, exporta, agenda e partilha **todos** os mapas, e pode alterar o proprietário de um mapa. Altera apenas os seus próprios mapas. Gere funções personalizadas; vê e testa origens de dados. Não pode alterar o modelo de dados (áreas de negócio, pastas, itens, junções, hierarquias), mesmo com uma permissão. |
+| **MANAGER** | Abre, executa, exporta, agenda e partilha **todos** os mapas, e pode alterar o proprietário de um mapa. Altera apenas os seus próprios mapas. Vê, edita, ativa e desativa contas MANAGER, USER e VIEWER. Não pode ver administradores, criar ou eliminar utilizadores, nem dar a função ADMIN. Não pode alterar o modelo de dados (áreas de negócio, pastas, itens, junções, hierarquias), mesmo com uma permissão, nem usar funções personalizadas ou origens de dados. |
 | **USER** | Vê apenas os seus próprios mapas e os mapas partilhados consigo. Cria um novo mapa copiando um destes. |
 | **VIEWER** | Só de leitura. Abre e executa os mapas partilhados consigo. Não pode criar, copiar nem alterar mapas. |
 
 A página Utilizadores mostra estas regras no campo **Função** quando edita um
-utilizador. Um MANAGER pode abrir a página Utilizadores para ver os mapas de
-cada utilizador e, aí, alterar o nível de uma partilha, remover uma partilha ou
-atribuir um mapa a um novo proprietário. Apenas um ADMIN pode criar, alterar ou
-eliminar utilizadores.
+utilizador. A página Utilizadores de um MANAGER lista apenas contas MANAGER, USER e VIEWER.
+Aí pode editar uma conta (nome, email, palavra-passe e uma função diferente de
+ADMIN), ativá-la ou desativá-la, e ver os mapas de cada utilizador: alterar o
+nível de uma partilha, remover uma partilha ou atribuir um mapa a um novo
+proprietário. Apenas um ADMIN vê as contas de administrador, cria ou elimina
+utilizadores e dá a função ADMIN.
 
 Qualquer pessoa, exceto um VIEWER, pode copiar um mapa que consiga ver. A cópia
 pertence-lhe. Executá-la continua a exigir uma permissão na sua área de negócio
@@ -286,12 +288,13 @@ Atribua a função **MANAGER** a quem cuida dos mapas de outras pessoas.
 Um MANAGER pode:
 - Ver, executar, exportar, agendar e partilhar todos os mapas
 - Dar um mapa a um novo proprietário, alterar ou remover as suas partilhas (Utilizadores → ícone de mapa)
-- Gerir funções personalizadas, e ver e testar origens de dados
+- Editar, ativar e desativar contas MANAGER, USER e VIEWER
 
 Um MANAGER não pode:
-- Criar, alterar ou eliminar utilizadores, nem conceder acesso a áreas de negócio
+- Ver ou alterar contas de administrador, criar ou eliminar utilizadores, dar a
+  função ADMIN, nem conceder acesso a áreas de negócio
 - Alterar o modelo de dados: áreas de negócio, pastas, itens, junções, hierarquias
-- Abrir Segurança, Registo de Auditoria ou Migração
+- Abrir Funções Personalizadas, Origens de Dados, Segurança, Registo de Auditoria ou Migração
 
 ## Trilho de Auditoria
 

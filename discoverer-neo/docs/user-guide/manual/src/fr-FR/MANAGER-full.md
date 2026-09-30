@@ -1,6 +1,6 @@
 # Votre rôle en un coup d'œil
 
-Vous êtes **Manager**. Vous voyez toutes les cartes de Discoverer Neo, vous les exécutez, les exportez, les planifiez et les partagez. Vous veillez à qui peut ouvrir quoi. Vous ne modifiez pas le modèle de données. C'est le travail d'un administrateur.
+Vous êtes **Manager**. Vous voyez toutes les cartes de Discoverer Neo, vous les exécutez, les exportez, les planifiez et les partagez. Vous veillez à qui peut ouvrir quoi, et vous gérez les comptes Manager, User et Viewer. Vous ne modifiez pas le modèle de données, les fonctions personnalisées ni les sources de données. C'est le travail d'un administrateur.
 
 Une **carte** est un rapport (dans Oracle Discoverer, c'était une feuille de calcul). Un **classeur** est un groupe de cartes. Un **domaine d'activité** est un groupe de données liées. Un **dossier** est une table ou une vue d'un domaine d'activité, et un **élément** est une colonne d'un dossier.
 
@@ -11,14 +11,13 @@ Une **carte** est un rapport (dans Oracle Discoverer, c'était une feuille de ca
 | Voir toutes les cartes, y compris les cartes privées | Modifier une carte qui ne vous appartient pas, sauf si elle est partagée avec vous en **Peut modifier** |
 | Exécuter, exporter et planifier toutes les cartes (les règles de données ci-dessous s'appliquent toujours) | Supprimer une carte qui ne vous appartient pas |
 | Partager n'importe quelle carte, et modifier ou retirer n'importe quel partage | Voir le texte SQL ou le plan de base de données d'une exécution |
-| Copier n'importe quelle carte pour créer votre propre version | Créer, supprimer ou modifier les accès sur les domaines d'activité |
-| Transmettre une carte à un autre propriétaire | Créer, modifier ou supprimer des utilisateurs |
-| Ouvrir la page Utilisateurs et voir quelles cartes chaque personne peut ouvrir | Créer, modifier ou supprimer des sources de données, ni en importer des tables |
-| Créer, modifier et supprimer des fonctions personnalisées | Voir les exécutions, exportations ou planifications des autres |
-| Tester et lire les sources de données | Utiliser Sécurité, Journal d'audit ou Migration (administrateurs uniquement) |
-| Créer des cartes sur les domaines d'activité où vous avez un accès | Modifier les domaines d'activité, dossiers, éléments, jointures ou hiérarchies, quel que soit votre accès |
+| Copier n'importe quelle carte pour créer votre propre version | Modifier les domaines d'activité, leurs accès, dossiers, éléments, jointures ou hiérarchies, quel que soit votre accès |
+| Transmettre une carte à un autre propriétaire | Créer ou supprimer des utilisateurs, ni donner à quiconque le rôle ADMIN |
+| Voir les comptes Manager, User et Viewer, et quelles cartes chaque personne peut ouvrir | Voir ou modifier les comptes d'administrateur |
+| Modifier, activer et désactiver les comptes Manager, User et Viewer | Voir les exécutions, exportations ou planifications des autres |
+| Créer des cartes sur les domaines d'activité où vous avez un accès | Utiliser Fonctions personnalisées, Sources de données, Sécurité, Journal d'audit ou Migration (administrateurs uniquement) |
 
-> **Remarque :** **Domaines d'activité**, **Dossiers**, **Éléments**, **Jointures**, **Hiérarchies**, **Sécurité**, **Journal d'audit** et **Migration** sont réservés aux administrateurs. Ils ne figurent pas dans votre barre latérale.
+> **Remarque :** **Domaines d'activité**, **Dossiers**, **Éléments**, **Jointures**, **Hiérarchies**, **Fonctions personnalisées**, **Sources de données**, **Sécurité**, **Journal d'audit** et **Migration** sont réservés aux administrateurs. Ils ne figurent pas dans votre barre latérale.
 
 ## D'où viennent vos accès
 
@@ -81,80 +80,27 @@ Le lien **Voir les planifications** sur deux cartes ouvre la page **Planificatio
 
 ---
 
-# Fonctions personnalisées
-
-Une fonction personnalisée est une fonction stockée dans la base de données Oracle que les éléments calculés peuvent appeler. Vous avez tous les droits ici. Aucun accès à un domaine d'activité n'est nécessaire.
-
-![La page Fonctions personnalisées avec la liste, Tout actualiser et Nouvelle fonction.](shots/fr-FR/manager/08-custom-functions.png)
-
-| Bouton ou contrôle | Ce qu'il fait |
-|---|---|
-| **Filtrer par nom ou fonction de la base…** | Réduit la liste pendant la saisie. |
-| **Tout actualiser** | Relit chaque fonction depuis Oracle. Les signatures modifiées sont enregistrées et les champs calculés sont recompilés. Les fonctions disparues d'Oracle sont conservées et listées. |
-| **Nouvelle fonction** | Ouvre la boîte de dialogue de fonction. |
-| Icône de ligne **Actualiser depuis la base de données** | Actualise une seule fonction. |
-| Icône de ligne **Modifier** | Modifie la fonction. |
-| Icône de ligne **Supprimer** | Désactive la fonction après confirmation. |
-| **Fermer** sous **Résultat de l’actualisation** | Masque la liste des résultats. |
-
-| Champ | Signification |
-|---|---|
-| **Source de données** | La base de données où se trouve la fonction. |
-| **Propriétaire**, **Rechercher une fonction**, **Rechercher** | Recherche des fonctions et des packages dans Oracle. Sources de données Oracle uniquement. |
-| **Propriétaire**, **Package**, **Nom de la fonction**, **Lien de base de données** | Les parties du nom complet. Lettres, chiffres, _, $ ou # uniquement, en commençant par une lettre. |
-| **Nom** et **Description** | Le nom d'affichage et une note. |
-| **Type de fonction** | Voir ci-dessous. |
-| **Type de retour** | Par exemple NUMBER. |
-| **Paramètres (JSON)** | La liste des entrées. Chacune exige un nom et un type. |
-
-| Option (**Type de fonction**) | Signification |
-|---|---|
-| SQL | Une fonction SQL simple. |
-| PLSQL | Une fonction PL/SQL stockée. La valeur par défaut. |
-| PACKAGE | Une fonction dans un package Oracle. |
-
-## Exemple : enregistrer une fonction de package
-
-1. Cliquez sur **Fonctions personnalisées**, puis sur **Nouvelle fonction**.
-2. Choisissez la **Source de données**.
-3. Saisissez une partie du nom dans **Rechercher une fonction**, puis cliquez sur **Rechercher**.
-4. Cliquez sur le bon résultat. Le type, le propriétaire, le package, le type de retour et les paramètres sont remplis. Les résultats qu'Oracle ne peut pas appeler depuis SQL sont grisés.
-5. Vérifiez le **Nom**, puis cliquez sur **Enregistrer**.
-
----
-
-# Sources de données
-
-Une source de données est une connexion enregistrée à une base de données. Vous pouvez les consulter et les tester. Vous ne pouvez pas les modifier.
-
-![La page Sources de données avec la liste des connexions et les icônes de ligne.](shots/fr-FR/manager/07-data-sources.png)
-
-| Bouton ou contrôle | Ce qu'il fait |
-|---|---|
-| Icône de ligne **Tester la connexion** | Essaie l'identifiant enregistré. Un message indique **Connexion réussie** ou **Échec de la connexion**. |
-| Icône de ligne **Introspecter le schéma** | Lit le schéma Oracle pour trouver ses tables. Indique combien de tables ont été trouvées. Oracle uniquement. |
-| **Nouvelle source de données** | Réservé aux administrateurs. |
-| Icône de ligne **Modifier** | Réservé aux administrateurs. |
-| Icône de ligne **Supprimer** | Réservé aux administrateurs. |
-| Icône de ligne **Importer des tables** | Vous pouvez ouvrir la boîte de dialogue et **Découvrir les tables**. **Importer** est réservé aux administrateurs. |
-
-> **Remarque :** l'écran propose **Nouvelle source de données**, **Modifier**, **Supprimer** et l'étape d'importation. Le système les refuse pour vous. Pour créer des dossiers à partir de tables, utilisez plutôt **Dossiers** et **Découvrir les tables**.
-
----
-
 # Utilisateurs
 
-La page **Utilisateurs** est en lecture seule pour vous. Utilisez-la pour voir les comptes, savoir quelles cartes une personne peut ouvrir, et corriger qui possède ou partage une carte.
+Utilisez la page **Utilisateurs** pour gérer les comptes Manager, User et Viewer, savoir quelles cartes une personne peut ouvrir, et corriger qui possède ou partage une carte. Les comptes d'administrateur ne figurent pas dans votre liste.
 
-![La liste Utilisateurs en lecture seule, sans les boutons Nouvel utilisateur ni Fichier d'identifiants.](shots/fr-FR/manager/06-users.png)
+![La liste Utilisateurs d'un Manager, sans administrateurs et sans les boutons Nouvel utilisateur ni Fichier d'identifiants.](shots/fr-FR/manager/06-users.png)
 
-La liste affiche **Nom**, **E-mail**, **Rôle** et **Statut** (**Actif** ou **Inactif**). Vous ne pouvez pas créer, modifier, désactiver, activer ni supprimer d'utilisateurs. Vous ne pouvez pas émettre de fichier d'identifiants. Demandez à un administrateur.
+La liste affiche **Nom**, **E-mail**, **Rôle** et **Statut** (**Actif** ou **Inactif**).
+
+| Bouton ou contrôle | Ce qu'il fait |
+|---|---|
+| Icône de ligne **Cartes que cet utilisateur peut ouvrir** | Ouvre les cartes de cette personne. Voir ci-dessous. |
+| Icône de ligne **Modifier** | Change le nom, l'e-mail, le mot de passe ou le rôle. Le rôle peut être MANAGER, USER ou VIEWER. Laissez **Mot de passe** vide pour le conserver. |
+| Icône de ligne **Désactiver** / **Activer** | Empêche la personne de se connecter, ou l'autorise à se connecter de nouveau. Vous ne pouvez pas vous désactiver vous-même. |
+
+Vous ne pouvez pas créer ni supprimer d'utilisateurs, donner le rôle ADMIN, ni émettre de fichier d'identifiants. Demandez à un administrateur.
 
 ## Cartes d'une personne
 
 Cliquez sur l'icône de ligne **Cartes que cet utilisateur peut ouvrir**. La boîte de dialogue **Cartes de {name}** liste chaque carte que cette personne voit.
 
-![La boîte de dialogue Cartes d'un utilisateur, avec les listes de niveau de partage et les icônes de propriétaire et de retrait.](shots/fr-FR/manager/11-users-maps-dialog.png)
+![La boîte de dialogue Cartes d'un utilisateur, avec les listes de niveau de partage et les icônes de propriétaire et de retrait.](shots/fr-FR/manager/09-users-maps-dialog.png)
 
 | Bouton ou contrôle | Ce qu'il fait |
 |---|---|
@@ -168,7 +114,6 @@ Cliquez sur l'icône de ligne **Cartes que cet utilisateur peut ouvrir**. La bo�
 
 | Option (badge) | Signification |
 |---|---|
-| Administrateur | La personne est administratrice et voit toutes les cartes. |
 | Propriétaire | La personne possède la carte. |
 | Partagée | Quelqu'un a partagé la carte avec la personne. Vous pouvez le modifier ou le retirer. |
 | Publique | La carte est publique. |
@@ -495,7 +440,7 @@ La colonne **Statut** affiche **Actif** ou **En pause**. La colonne **Planificat
 
 **Exécutions** liste chaque exécution que vous avez demandée, qu'elle soit en attente, en cours ou terminée. Elle n'affiche que vos propres exécutions, pas celles des autres.
 
-![La page Exécutions avec les filtres Carte, Statut et Type et la liste des exécutions.](shots/fr-FR/manager/10-runs.png)
+![La page Exécutions avec les filtres Carte, Statut et Type et la liste des exécutions.](shots/fr-FR/manager/08-runs.png)
 
 | Bouton ou contrôle | Ce qu'il fait |
 |---|---|
@@ -590,5 +535,3 @@ Il n'y a pas de lien de réinitialisation. Demandez à un administrateur.
 | Exécution | Un lancement d'une carte. Ses lignes sont stockées 24 heures. |
 | Exportation | Un fichier (Excel, CSV ou PDF) créé à partir d'une exécution terminée. |
 | Planification | Un calendrier qui exécute une carte automatiquement et stocke le résultat. |
-| Source de données | Une connexion enregistrée à une base de données. |
-| Fonction personnalisée | Une fonction de base de données que les éléments calculés peuvent appeler. |

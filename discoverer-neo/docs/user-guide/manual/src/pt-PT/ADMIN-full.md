@@ -1015,7 +1015,7 @@ Não pode desativar nem eliminar a sua própria conta. Esses ícones aparecem a 
 | Opção (**Função**) | O que significa / quando escolher |
 |---|---|
 | ADMIN | Faz tudo: utilizadores, áreas de negócio, origens de dados, segurança e auditoria. Abre, altera, partilha e elimina todos os mapas. Dê-a a muito poucas pessoas. |
-| MANAGER | Abre, executa, exporta, agenda e partilha todos os mapas, e altera quem é o proprietário de um mapa. Só altera os seus próprios mapas e os mapas partilhados como **Pode editar**. Não pode alterar áreas de negócio, pastas, itens, junções nem hierarquias, qualquer que seja a permissão que tenha. Não pode usar **Segurança**, **Registo de Auditoria** nem **Migração**. |
+| MANAGER | Abre, executa, exporta, agenda e partilha todos os mapas, e altera quem é o proprietário de um mapa. Só altera os seus próprios mapas e os mapas partilhados como **Pode editar**. Vê, edita, ativa e desativa as contas MANAGER, USER e VIEWER, mas nunca vê administradores e não pode criar nem eliminar utilizadores nem dar a função ADMIN. Não pode alterar áreas de negócio, pastas, itens, junções nem hierarquias, qualquer que seja a permissão que tenha. Não pode usar **Funções Personalizadas**, **Origens de Dados**, **Segurança**, **Registo de Auditoria** nem **Migração**. |
 | USER | Vê os seus próprios mapas, os mapas públicos e os mapas partilhados consigo. Executa, exporta e agenda conforme cada partilha o permite. Copia mapas e cria mapas novos onde tem uma permissão CREATE. A predefinida. |
 | VIEWER | Como USER, mas não pode copiar mapas nem livros. Para uma pessoa que só deve ler, partilhe mapas como **Pode ver** e não dê nenhuma permissão CREATE. |
 

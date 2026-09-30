@@ -1,6 +1,6 @@
 # Discoverer Neo — Capability Matrix (ground truth for the four role manuals)
 
-> **Status 2026-09-30:** written from the code at 2.0.0 (806922a). Since then, commits 08af919 and c15da50 fixed these section 4 items: admin-only sidebar links and route guards (MANAGER no longer sees Security, Audit Log, Migration; USER/VIEWER cannot open /admin by URL), server-side log out, the Users delete wording, the wrong-current-password log-out, VIEW-only shares in the Schedules map list, and the missing SQL/Plan buttons for admins. Commit ded6ac8 then took data modelling away from MANAGER: every route that writes a business area, folder, item, join or hierarchy refuses a MANAGER whatever grants they hold (`forbidManagerModelling`, BE/middleware/business-area-auth.ts), and those five pages are ADMIN-only in the sidebar and router. MANAGER cells in sections 1-3 that say otherwise are superseded. The role manuals follow the fixed behaviour.
+> **Status 2026-09-30:** written from the code at 2.0.0 (806922a). Since then, commits 08af919 and c15da50 fixed these section 4 items: admin-only sidebar links and route guards (MANAGER no longer sees Security, Audit Log, Migration; USER/VIEWER cannot open /admin by URL), server-side log out, the Users delete wording, the wrong-current-password log-out, VIEW-only shares in the Schedules map list, and the missing SQL/Plan buttons for admins. Commit ded6ac8 then took data modelling away from MANAGER: every route that writes a business area, folder, item, join or hierarchy refuses a MANAGER whatever grants they hold (`forbidManagerModelling`, BE/middleware/business-area-auth.ts), and those five pages are ADMIN-only in the sidebar and router. Commit debe06b then made Custom Functions and Data Sources ADMIN-only too (list of custom functions stays readable by anyone signed in), and scoped the Users page: a MANAGER lists, edits, activates and deactivates only MANAGER, USER and VIEWER accounts, never gives the ADMIN role, and gets 404 for an ADMIN account. MANAGER cells in sections 1-3 that say otherwise are superseded. The role manuals follow the fixed behaviour.
 
 Version 2.0.0 (CHANGELOG [2.0.0], map access by role). Every claim is cited as `file:line`; `FE/` = `frontend/src/`, `BE/` = `backend/src/`. Built by reading code only; nothing was run. Cells: **Y** yes, **N** no, **UI:Y/API:403** = the button/page is shown but the server refuses. Role columns are ADMIN | MANAGER | USER | VIEWER. **UNVERIFIED** = could not be confirmed in code.
 
@@ -20,9 +20,9 @@ Version 2.0.0 (CHANGELOG [2.0.0], map access by role). Every claim is cited as `
 | Items | /admin/items | admin:items.title | Items | Sidebar, full | no link; URL sends to dashboard; writes 403 | URL only | URL only |
 | Joins | /admin/joins | admin:joins.title | Joins | Sidebar, full | no link; URL sends to dashboard; writes 403 | URL only | URL only |
 | Hierarchies | /admin/hierarchies | admin:hierarchies.title | Hierarchies | Sidebar, full | no link; URL sends to dashboard; writes 403 | URL only | URL only |
-| Custom Functions | /admin/custom-functions | admin:customFunctions.title | Custom Functions | Sidebar, full | Sidebar, full (read, write, refresh) | URL only; list readable, writes 403 | same as USER |
-| Data Sources | /admin/data-sources | admin:dataSources.title | Data Sources | Sidebar, full | Sidebar; read, test, introspect; create/edit/delete 403 | URL only; list 403 | URL only; list 403 |
-| Users | /admin/users | admin:users.title | Users | Sidebar, full | Sidebar; read-only list, per-user map list, share change, owner change | URL only; list 403 | URL only; list 403 |
+| Custom Functions | /admin/custom-functions | admin:customFunctions.title | Custom Functions | Sidebar, full | no link; URL sends to dashboard; writes 403 | URL only; list readable, writes 403 | same as USER |
+| Data Sources | /admin/data-sources | admin:dataSources.title | Data Sources | Sidebar, full | no link; URL sends to dashboard; API 403 | URL only; list 403 | URL only; list 403 |
+| Users | /admin/users | admin:users.title | Users | Sidebar, full | Sidebar; lists MANAGER/USER/VIEWER only; edit (no ADMIN role), activate, deactivate, per-user map list, share and owner change; no create/delete/credentials | URL only; list 403 | URL only; list 403 |
 | Security | /admin/security | security:page.title | Security Policies | Sidebar, full | Sidebar; page says administrators only (SecurityPage.tsx:407) | URL only; same message | URL only; same message |
 | Audit Log | /admin/audit | audit:page.title | Audit Log | Sidebar, full | Sidebar; API ADMIN-only (403) | URL only; 403 | URL only; 403 |
 | Migration | /admin/migration | migration:page.title | Migration | Sidebar (Other section) | Sidebar link shown (Sidebar.tsx:126); API ADMIN-only | no link; 403 | no link; 403 |
@@ -100,8 +100,8 @@ Visibility rule: `canModel = role==='ADMIN' || role==='MANAGER'` (Sidebar.tsx:10
 | Data Modeling | Items (`items`) | `/admin/items` | Y | N (since ded6ac8) | N | N | UNVERIFIED here | Sidebar.tsx:35 |
 | Data Modeling | Joins (`joins`) | `/admin/joins` | Y | N (since ded6ac8) | N | N | UNVERIFIED here | Sidebar.tsx:36 |
 | Data Modeling | Hierarchies (`hierarchies`) | `/admin/hierarchies` | Y | N (since ded6ac8) | N | N | UNVERIFIED here | Sidebar.tsx:37 |
-| Data Modeling | Custom Functions (`customFunctions`) | `/admin/custom-functions` | Y | Y | N | N | UNVERIFIED here | Sidebar.tsx:38 |
-| Data Modeling | Data Sources (`dataSources`) | `/admin/data-sources` | Y | Y | N | N | UNVERIFIED here | Sidebar.tsx:39 |
+| Data Modeling | Custom Functions (`customFunctions`) | `/admin/custom-functions` | Y | N (since debe06b) | N | N | UNVERIFIED here | Sidebar.tsx:38 |
+| Data Modeling | Data Sources (`dataSources`) | `/admin/data-sources` | Y | N (since debe06b) | N | N | UNVERIFIED here | Sidebar.tsx:39 |
 | Data Modeling | Users (`users`) | `/admin/users` | Y | Y | N | N | UNVERIFIED here | Sidebar.tsx:40 |
 | Data Modeling | Security (`security`) | `/admin/security` | Y | Y | N | N | UNVERIFIED here | Sidebar.tsx:41 |
 | Data Modeling | Audit Log (`auditLog`) | `/admin/audit` | Y | Y | N | N | UNVERIFIED here | Sidebar.tsx:42 |

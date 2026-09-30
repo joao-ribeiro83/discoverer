@@ -1,18 +1,17 @@
 # Votre rôle en une page
 
-Vous êtes **Manager**. Vous voyez, exécutez, exportez, planifiez et partagez toutes les cartes. Vous ne modifiez pas le modèle de données. C'est le travail d'un administrateur.
+Vous êtes **Manager**. Vous voyez, exécutez, exportez, planifiez et partagez toutes les cartes, et vous gérez les comptes Manager, User et Viewer. Vous ne modifiez pas le modèle de données, les fonctions personnalisées ni les sources de données. C'est le travail d'un administrateur.
 
 | Vous pouvez | Vous ne pouvez pas |
 |---|---|
 | Voir, exécuter, exporter et planifier toutes les cartes | Modifier ou supprimer une carte qui ne vous appartient pas (sauf si elle est partagée avec vous en **Peut modifier**) |
 | Partager n'importe quelle carte et modifier n'importe quel partage | Voir le SQL ou le plan de la base de données |
-| Copier n'importe quelle carte pour créer la vôtre | Créer des utilisateurs, des sources de données ou des domaines d'activité, ni donner des accès |
+| Copier n'importe quelle carte pour créer la vôtre | Créer ou supprimer des utilisateurs, donner le rôle ADMIN, ni donner des accès |
 | Donner une carte à un nouveau propriétaire | Voir les exécutions, exportations ou planifications des autres |
-| Gérer les fonctions personnalisées | Utiliser Sécurité, Journal d'audit ou Migration |
-| Lire, tester et introspecter les sources de données | Importer des tables depuis une source de données |
-| Créer des cartes sur les domaines d'activité où vous avez un accès | Modifier les domaines d'activité, dossiers, éléments, jointures ou hiérarchies |
+| Modifier, activer et désactiver les comptes Manager, User et Viewer | Voir ou modifier les comptes d'administrateur |
+| Créer des cartes sur les domaines d'activité où vous avez un accès | Modifier les domaines d'activité, dossiers, éléments, jointures, hiérarchies, fonctions personnalisées ou sources de données |
 
-> **Remarque :** **Domaines d'activité**, **Dossiers**, **Éléments**, **Jointures**, **Hiérarchies**, **Sécurité**, **Journal d'audit** et **Migration** sont réservés aux administrateurs. Ils ne figurent pas dans votre barre latérale.
+> **Remarque :** **Domaines d'activité**, **Dossiers**, **Éléments**, **Jointures**, **Hiérarchies**, **Fonctions personnalisées**, **Sources de données**, **Sécurité**, **Journal d'audit** et **Migration** sont réservés aux administrateurs. Ils ne figurent pas dans votre barre latérale.
 
 Voir une carte ne donne pas accès à ses données. Une exécution exige un accès au domaine d'activité pour chaque dossier utilisé par la carte. Sans cet accès, vous obtenez **Exécution non autorisée**.
 
@@ -115,7 +114,7 @@ La planification s'exécute sous votre identité : vos accès décident donc des
 
 **Exécutions** liste vos propres exécutions. **Exportations** liste vos propres fichiers d'exportation. Vous ne voyez pas ceux des autres.
 
-![La page Exécutions avec les filtres Carte, Statut et Type et la liste des exécutions.](shots/fr-FR/manager/10-runs.png)
+![La page Exécutions avec les filtres Carte, Statut et Type et la liste des exécutions.](shots/fr-FR/manager/08-runs.png)
 
 1. Cliquez sur **Exécutions** pour voir les exécutions en attente, en cours et terminées.
 2. Cliquez sur l'icône **Ouvrir** pour voir un résultat stocké. Utilisez **Exécuter à nouveau** pour le refaire.
@@ -126,9 +125,11 @@ La planification s'exécute sous votre identité : vos accès décident donc des
 
 # Utilisateurs
 
-La page **Utilisateurs** est en lecture seule pour vous. Vous pouvez lister les comptes et corriger l'accès aux cartes.
+La page **Utilisateurs** liste les comptes Manager, User et Viewer. Les administrateurs ne figurent pas dans votre liste. Cliquez sur l'icône de ligne **Modifier** pour changer le nom, l'e-mail, le mot de passe ou le rôle (MANAGER, USER ou VIEWER) d'une personne. Utilisez **Désactiver** ou **Activer** pour bloquer ou autoriser sa connexion.
 
-![La boîte de dialogue Cartes d'un utilisateur, avec les listes de niveau de partage et les icônes de propriétaire et de retrait.](shots/fr-FR/manager/11-users-maps-dialog.png)
+Pour corriger l'accès aux cartes :
+
+![La boîte de dialogue Cartes d'un utilisateur, avec les listes de niveau de partage et les icônes de propriétaire et de retrait.](shots/fr-FR/manager/09-users-maps-dialog.png)
 
 1. Cliquez sur l'icône de ligne **Cartes que cet utilisateur peut ouvrir**.
 2. Pour modifier une carte partagée, utilisez la liste de niveaux à côté d'elle.
@@ -137,23 +138,7 @@ La page **Utilisateurs** est en lecture seule pour vous. Vous pouvez lister les 
 
 > **Attention :** le nouveau propriétaire peut modifier, partager et supprimer la carte.
 
-Créer, modifier et supprimer des utilisateurs est réservé aux administrateurs.
-
----
-
-# Fonctions personnalisées et sources de données
-
-Les **Fonctions personnalisées** sont des fonctions de base de données que les éléments calculés peuvent appeler. Vous avez tous les droits dessus. Les **Sources de données** sont des connexions enregistrées à une base de données. Vous pouvez seulement les consulter et les tester.
-
-![La page Fonctions personnalisées avec la liste, Tout actualiser et Nouvelle fonction.](shots/fr-FR/manager/08-custom-functions.png)
-
-1. Dans **Fonctions personnalisées**, cliquez sur **Nouvelle fonction**.
-2. Choisissez une **Source de données**, saisissez une partie d'un nom dans **Rechercher une fonction**, cliquez sur **Rechercher**.
-3. Cliquez sur un résultat pour remplir la boîte de dialogue, puis cliquez sur **Enregistrer**.
-4. Utilisez **Tout actualiser** pour relire toutes les fonctions depuis Oracle.
-5. Dans **Sources de données**, cliquez sur **Tester la connexion** pour vérifier une connexion.
-
-**Nouvelle source de données**, **Modifier**, **Supprimer** et **Importer** sur une source de données sont réservés aux administrateurs. Le système les refuse.
+Créer et supprimer des utilisateurs, ainsi que le rôle ADMIN, sont réservés aux administrateurs.
 
 ---
 

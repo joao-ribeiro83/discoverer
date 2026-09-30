@@ -9,15 +9,17 @@ Discoverer Neo tiene cuatro roles de usuario con capacidades diferentes:
 | Rol | Capacidades |
 |------|-------------|
 | **ADMIN** | Acceso completo al sistema: usuarios, áreas de negocio, orígenes de datos, registros de auditoría. Abre, cambia, comparte y elimina todos los mapas. |
-| **MANAGER** | Abre, ejecuta, exporta, programa y comparte **todos** los mapas, y puede cambiar el propietario de un mapa. Solo cambia sus propios mapas. Gestiona funciones personalizadas; ve y prueba orígenes de datos. No puede cambiar el modelo de datos (áreas de negocio, carpetas, elementos, combinaciones, jerarquías), ni siquiera con una concesión. |
+| **MANAGER** | Abre, ejecuta, exporta, programa y comparte **todos** los mapas, y puede cambiar el propietario de un mapa. Solo cambia sus propios mapas. Ve, edita, activa y desactiva cuentas MANAGER, USER y VIEWER. No puede ver a los administradores, crear ni eliminar usuarios, ni dar el rol ADMIN. No puede cambiar el modelo de datos (áreas de negocio, carpetas, elementos, combinaciones, jerarquías), ni siquiera con una concesión, y no puede usar funciones personalizadas ni orígenes de datos. |
 | **USER** | Solo ve sus propios mapas y los que se han compartido con él. Crea un mapa nuevo copiando uno de ellos. |
 | **VIEWER** | Solo lectura. Abre y ejecuta los mapas compartidos con él. No puede crear, copiar ni cambiar mapas. |
 
 La página Usuarios muestra estas reglas bajo el campo **Rol** cuando edita un
-usuario. Un MANAGER puede abrir la página Usuarios para ver los mapas de cada
-usuario y, allí, cambiar el nivel de un uso compartido, quitarlo o asignar un
-mapa a un nuevo propietario. Solo un ADMIN puede crear, cambiar o eliminar
-usuarios.
+usuario. La página Usuarios de un MANAGER muestra solo cuentas MANAGER, USER y
+VIEWER. Allí puede editar una cuenta (nombre, correo electrónico, contraseña y
+un rol distinto de ADMIN), activarla o desactivarla, y ver los mapas de cada
+usuario: cambiar el nivel de un uso compartido, quitarlo o asignar un mapa a un
+nuevo propietario. Solo un ADMIN ve las cuentas de administrador, crea o
+elimina usuarios y da el rol ADMIN.
 
 Cualquier persona, salvo un VIEWER, puede copiar un mapa que pueda ver. La copia
 le pertenece. Ejecutarla sigue exigiendo un permiso sobre su área de negocio
@@ -284,12 +286,13 @@ Dé el rol **MANAGER** a quien se ocupe de los mapas de otras personas.
 Un MANAGER puede:
 - Ver, ejecutar, exportar, programar y compartir todos los mapas
 - Entregar un mapa a un nuevo propietario, y cambiar o quitar sus recursos compartidos (Usuarios → icono de mapa)
-- Gestionar funciones personalizadas, y ver y probar orígenes de datos
+- Editar, activar y desactivar cuentas MANAGER, USER y VIEWER
 
 Un MANAGER no puede:
-- Crear, cambiar o eliminar usuarios, ni dar acceso a áreas de negocio
+- Ver o cambiar cuentas de administrador, crear o eliminar usuarios, dar el
+  rol ADMIN, ni dar acceso a áreas de negocio
 - Cambiar el modelo de datos: áreas de negocio, carpetas, elementos, combinaciones, jerarquías
-- Abrir Seguridad, Registro de auditoría ni Migración
+- Abrir Funciones personalizadas, Orígenes de datos, Seguridad, Registro de auditoría ni Migración
 
 ## Traza de auditoría
 

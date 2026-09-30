@@ -1,6 +1,6 @@
 # Su rol de un vistazo
 
-Usted es **Manager**. Ve todos los mapas de Discoverer Neo, los ejecuta, los exporta, los programa y los comparte. Se ocupa de quién puede abrir qué. No cambia el modelo de datos: eso es cosa de los administradores.
+Usted es **Manager**. Ve todos los mapas de Discoverer Neo, los ejecuta, los exporta, los programa y los comparte. Se ocupa de quién puede abrir qué y de las cuentas Manager, User y Viewer. No cambia el modelo de datos, las funciones personalizadas ni los orígenes de datos: eso es cosa de los administradores.
 
 Un **mapa** es un informe (en Oracle Discoverer era una hoja de trabajo). Un **libro** es un grupo de mapas. Un **área de negocio** es un grupo de datos relacionados. Una **carpeta** es una tabla o una vista dentro de un área de negocio, y un **elemento** es una columna de una carpeta.
 
@@ -11,14 +11,13 @@ Un **mapa** es un informe (en Oracle Discoverer era una hoja de trabajo). Un **l
 | Ver todos los mapas, también los privados | Cambiar un mapa que no es suyo, salvo que se haya compartido con usted como **Puede editar** |
 | Ejecutar, exportar y programar todos los mapas (siguen aplicándose las reglas de datos que se indican más abajo) | Eliminar un mapa que no es suyo |
 | Compartir cualquier mapa, y cambiar o quitar cualquier recurso compartido | Ver el texto SQL o el plan de base de datos de una ejecución |
-| Copiar cualquier mapa para crear su propia versión | Crear, eliminar o cambiar concesiones en áreas de negocio |
-| Entregar un mapa a otro propietario | Crear, editar o eliminar usuarios |
-| Abrir la página Usuarios y ver qué mapas puede abrir cada persona | Crear, editar o eliminar orígenes de datos, ni importar tablas desde uno |
-| Crear, editar y eliminar funciones personalizadas | Ver las ejecuciones, exportaciones o programaciones de otras personas |
-| Probar y leer orígenes de datos | Usar Seguridad, Registro de auditoría o Migración (solo administradores) |
-| Crear mapas en las áreas de negocio en las que tiene una concesión | Cambiar áreas de negocio, carpetas, elementos, combinaciones o jerarquías, sea cual sea su concesión |
+| Copiar cualquier mapa para crear su propia versión | Cambiar áreas de negocio, sus concesiones, carpetas, elementos, combinaciones o jerarquías, sea cual sea su concesión |
+| Entregar un mapa a otro propietario | Crear o eliminar usuarios, ni dar a nadie el rol ADMIN |
+| Ver las cuentas Manager, User y Viewer, y qué mapas puede abrir cada persona | Ver o cambiar cuentas de administrador |
+| Editar, activar y desactivar cuentas Manager, User y Viewer | Ver las ejecuciones, exportaciones o programaciones de otras personas |
+| Crear mapas en las áreas de negocio en las que tiene una concesión | Usar Funciones personalizadas, Orígenes de datos, Seguridad, Registro de auditoría o Migración (solo administradores) |
 
-> **Nota:** **Áreas de negocio**, **Carpetas**, **Elementos**, **Combinaciones**, **Jerarquías**, **Seguridad**, **Registro de auditoría** y **Migración** son solo para administradores. No aparecen en su barra lateral.
+> **Nota:** **Áreas de negocio**, **Carpetas**, **Elementos**, **Combinaciones**, **Jerarquías**, **Funciones personalizadas**, **Orígenes de datos**, **Seguridad**, **Registro de auditoría** y **Migración** son solo para administradores. No aparecen en su barra lateral.
 
 ## De dónde procede su acceso
 
@@ -81,80 +80,27 @@ El enlace **Ver programaciones** de dos tarjetas abre la página **Programacione
 
 ---
 
-# Funciones personalizadas
-
-Una función personalizada es una función almacenada en la base de datos de Oracle que pueden llamar los elementos calculados. Aquí tiene todos los derechos. No se necesita concesión de área de negocio.
-
-![La página Funciones personalizadas con la lista, Actualizar todo y Nueva función.](shots/es-ES/manager/08-custom-functions.png)
-
-| Botón o control | Qué hace |
-|---|---|
-| **Filtrar por nombre o función de la base de datos…** | Acota la lista mientras escribe. |
-| **Actualizar todo** | Vuelve a leer todas las funciones desde Oracle. Las firmas modificadas se guardan y los campos calculados se recompilan. Las funciones que ya no están en Oracle se conservan y se enumeran. |
-| **Nueva función** | Abre el cuadro de la función. |
-| Icono de fila **Actualizar desde la base de datos** | Actualiza una función. |
-| Icono de fila **Editar** | Cambia la función. |
-| Icono de fila **Eliminar** | Desactiva la función después de confirmar. |
-| **Cerrar** bajo **Resultado de la actualización** | Oculta la lista de resultados. |
-
-| Campo | Qué significa |
-|---|---|
-| **Origen de datos** | La base de datos donde está la función. |
-| **Propietario**, **Buscar una función**, **Buscar** | Busca funciones y paquetes en Oracle. Solo orígenes de datos Oracle. |
-| **Propietario**, **Paquete**, **Nombre de la función**, **Enlace de base de datos** | Las partes del nombre completo. Solo letras, dígitos, _, $ o #, empezando por una letra. |
-| **Nombre** y **Descripción** | El nombre para mostrar y una nota. |
-| **Tipo de función** | Vea más abajo. |
-| **Tipo de retorno** | Por ejemplo NUMBER. |
-| **Parámetros (JSON)** | La lista de entradas. Cada una necesita un nombre y un tipo. |
-
-| Opción (**Tipo de función**) | Qué significa |
-|---|---|
-| SQL | Una función SQL simple. |
-| PLSQL | Una función PL/SQL almacenada. El valor predeterminado. |
-| PACKAGE | Una función dentro de un paquete de Oracle. |
-
-## Ejemplo: registrar una función de paquete
-
-1. Haga clic en **Funciones personalizadas** y después en **Nueva función**.
-2. Elija el **Origen de datos**.
-3. Escriba parte del nombre en **Buscar una función** y después haga clic en **Buscar**.
-4. Haga clic en el resultado correcto. Se rellenan el tipo, el propietario, el paquete, el tipo de retorno y los parámetros. Los resultados que Oracle no puede llamar desde SQL aparecen en gris.
-5. Compruebe el **Nombre** y después haga clic en **Guardar**.
-
----
-
-# Orígenes de datos
-
-Un origen de datos es una conexión guardada a una base de datos. Puede consultarlos y probarlos. No puede cambiarlos.
-
-![La página Orígenes de datos con la lista de conexiones y los iconos de fila.](shots/es-ES/manager/07-data-sources.png)
-
-| Botón o control | Qué hace |
-|---|---|
-| Icono de fila **Probar conexión** | Prueba el inicio de sesión guardado. Un mensaje dice **Conexión establecida** o **Error de conexión**. |
-| Icono de fila **Inspeccionar esquema** | Lee el esquema de Oracle para encontrar sus tablas. Muestra cuántas tablas se encontraron. Solo Oracle. |
-| **Nuevo origen de datos** | Reservado a los administradores. |
-| Icono de fila **Editar** | Reservado a los administradores. |
-| Icono de fila **Eliminar** | Reservado a los administradores. |
-| Icono de fila **Importar tablas** | Puede abrir el cuadro y **Descubrir tablas**. **Importar** está reservado a los administradores. |
-
-> **Nota:** La pantalla ofrece **Nuevo origen de datos**, **Editar**, **Eliminar** y el paso de importación. El sistema los rechaza en su caso. Para crear carpetas a partir de tablas, use en su lugar **Carpetas** y **Descubrir tablas**.
-
----
-
 # Usuarios
 
-La página **Usuarios** es de solo lectura para usted. Úsela para ver cuentas, para averiguar qué mapas puede abrir una persona y para corregir quién es propietario de un mapa o lo comparte.
+Use la página **Usuarios** para ocuparse de las cuentas Manager, User y Viewer, para averiguar qué mapas puede abrir una persona y para corregir quién es propietario de un mapa o lo comparte. Las cuentas de administrador no aparecen en su lista.
 
-![La lista de Usuarios de solo lectura, sin los botones Nuevo usuario ni Archivo de credenciales.](shots/es-ES/manager/06-users.png)
+![La lista de Usuarios para un Manager, sin administradores y sin los botones Nuevo usuario ni Archivo de credenciales.](shots/es-ES/manager/06-users.png)
 
-La lista muestra **Nombre**, **Correo electrónico**, **Rol** y **Estado** (**Activo** o **Inactivo**). No puede crear, editar, desactivar, activar ni eliminar usuarios. No puede emitir un archivo de credenciales. Pídalo a un administrador.
+La lista muestra **Nombre**, **Correo electrónico**, **Rol** y **Estado** (**Activo** o **Inactivo**).
+
+| Botón o control | Qué hace |
+|---|---|
+| Icono de fila **Mapas que este usuario puede abrir** | Abre los mapas de esa persona. Véase más abajo. |
+| Icono de fila **Editar** | Cambia el nombre, el correo electrónico, la contraseña o el rol. El rol puede ser MANAGER, USER o VIEWER. Deje **Contraseña** vacía para conservarla. |
+| Icono de fila **Desactivar** / **Activar** | Impide que la persona inicie sesión, o le permite volver a hacerlo. No puede desactivarse a sí mismo. |
+
+No puede crear ni eliminar usuarios, dar el rol ADMIN ni emitir un archivo de credenciales. Pídalo a un administrador.
 
 ## Mapas de una persona
 
 Haga clic en el icono de fila **Mapas que este usuario puede abrir**. El cuadro **Mapas de {name}** muestra todos los mapas que esa persona ve.
 
-![El cuadro Mapas de un usuario, con selectores de nivel de acceso compartido e iconos de propietario y de quitar.](shots/es-ES/manager/11-users-maps-dialog.png)
+![El cuadro Mapas de un usuario, con selectores de nivel de acceso compartido e iconos de propietario y de quitar.](shots/es-ES/manager/09-users-maps-dialog.png)
 
 | Botón o control | Qué hace |
 |---|---|
@@ -168,7 +114,6 @@ Haga clic en el icono de fila **Mapas que este usuario puede abrir**. El cuadro 
 
 | Opción (insignia) | Qué significa |
 |---|---|
-| Administrador | La persona es administradora y ve todos los mapas. |
 | Propietario | La persona es propietaria del mapa. |
 | Compartido | Alguien compartió el mapa con la persona. Puede cambiarlo o quitarlo. |
 | Público | El mapa es público. |
@@ -495,7 +440,7 @@ La columna **Estado** muestra **Activa** o **En pausa**. La columna **Planificad
 
 **Ejecuciones** muestra todas las ejecuciones que ha pedido, estén en espera, en curso o terminadas. Muestra solo sus propias ejecuciones, no las de otras personas.
 
-![La página Ejecuciones con los filtros Mapa, Estado y Tipo y la lista de ejecuciones.](shots/es-ES/manager/10-runs.png)
+![La página Ejecuciones con los filtros Mapa, Estado y Tipo y la lista de ejecuciones.](shots/es-ES/manager/08-runs.png)
 
 | Botón o control | Qué hace |
 |---|---|
@@ -590,5 +535,3 @@ No hay enlace de restablecimiento. Pida ayuda a un administrador.
 | Ejecución | Una vez que se ejecuta un mapa. Sus filas se guardan 24 horas. |
 | Exportación | Un archivo (Excel, CSV o PDF) creado a partir de una ejecución terminada. |
 | Programación | Un horario que ejecuta un mapa por sí solo y guarda el resultado. |
-| Origen de datos | Una conexión guardada a una base de datos. |
-| Función personalizada | Una función de la base de datos que pueden llamar los elementos calculados. |

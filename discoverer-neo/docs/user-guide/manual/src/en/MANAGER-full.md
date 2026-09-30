@@ -1,6 +1,6 @@
 # Your role at a glance
 
-You are a **Manager**. You see every map in Discoverer Neo, run it, export it, schedule it and share it. You look after who can open what. You do not change the data model. That is an administrator's job.
+You are a **Manager**. You see every map in Discoverer Neo, run it, export it, schedule it and share it. You look after who can open what, and you look after the Manager, User and Viewer accounts. You do not change the data model, custom functions or data sources. That is an administrator's job.
 
 A **map** is a report (in Oracle Discoverer this was a worksheet). A **workbook** is a group of maps. A **business area** is a group of related data. A **folder** is one table or view inside a business area, and an **item** is one column of a folder.
 
@@ -11,14 +11,13 @@ A **map** is a report (in Oracle Discoverer this was a worksheet). A **workbook*
 | See every map, including private ones | Change a map you do not own, unless it is shared with you at **Can edit** |
 | Run, export and schedule every map (the data rules below still apply) | Delete a map you do not own |
 | Share any map, and change or remove any share | See the SQL text or the database plan of a run |
-| Copy any map to make your own version | Create, delete or change grants on business areas |
-| Hand a map over to another owner | Create, edit or delete users |
-| Open the Users page and see which maps each person can open | Create, edit or delete data sources, or import tables from one |
-| Create, edit and delete custom functions | See other people's runs, exports or schedules |
-| Test and read data sources | Use Security, Audit Log or Migration (administrators only) |
-| Build maps on the business areas you hold a grant on | Change business areas, folders, items, joins or hierarchies, whatever grant you hold |
+| Copy any map to make your own version | Change business areas, their grants, folders, items, joins or hierarchies, whatever grant you hold |
+| Hand a map over to another owner | Create or delete users, or give anyone the ADMIN role |
+| See Manager, User and Viewer accounts, and which maps each person can open | See or change administrator accounts |
+| Edit, activate and deactivate Manager, User and Viewer accounts | See other people's runs, exports or schedules |
+| Build maps on the business areas you hold a grant on | Use Custom Functions, Data Sources, Security, Audit Log or Migration (administrators only) |
 
-> **Note:** **Business Areas**, **Folders**, **Items**, **Joins**, **Hierarchies**, **Security**, **Audit Log** and **Migration** are for administrators only. They are not in your sidebar.
+> **Note:** **Business Areas**, **Folders**, **Items**, **Joins**, **Hierarchies**, **Custom Functions**, **Data Sources**, **Security**, **Audit Log** and **Migration** are for administrators only. They are not in your sidebar.
 
 ## Where your access comes from
 
@@ -81,80 +80,27 @@ The **View schedules** link on two cards opens the **Schedules** page.
 
 ---
 
-# Custom Functions
-
-A custom function is a function stored in the Oracle database that calculated items can call. You have full rights here. No business-area grant is needed.
-
-![The Custom Functions page with the list, Refresh all and New Function.](shots/en/manager/08-custom-functions.png)
-
-| Button or control | What it does |
-|---|---|
-| **Filter by name or database function…** | Narrows the list as you type. |
-| **Refresh all** | Reads every function again from Oracle. Changed signatures are saved and calculated fields are recompiled. Functions gone from Oracle are kept and listed. |
-| **New Function** | Opens the function dialog. |
-| Row icon **Refresh from database** | Refreshes one function. |
-| Row icon **Edit** | Changes the function. |
-| Row icon **Delete** | Deactivates the function after you confirm. |
-| **Close** under **Refresh results** | Hides the result list. |
-
-| Field | What it means |
-|---|---|
-| **Data source** | The database where the function lives. |
-| **Owner**, **Find a function**, **Search** | Searches Oracle for functions and packages. Oracle data sources only. |
-| **Owner**, **Package**, **Function name**, **Database link** | The parts of the full name. Letters, digits, _, $ or # only, starting with a letter. |
-| **Name** and **Description** | The display name and a note. |
-| **Function Type** | See below. |
-| **Return Type** | For example NUMBER. |
-| **Parameters (JSON)** | The list of inputs. Each needs a name and a type. |
-
-| Option (**Function Type**) | What it means |
-|---|---|
-| SQL | A plain SQL function. |
-| PLSQL | A stored PL/SQL function. The default. |
-| PACKAGE | A function inside an Oracle package. |
-
-## Example: register a package function
-
-1. Click **Custom Functions**, then **New Function**.
-2. Choose the **Data source**.
-3. Type part of the name in **Find a function**, then click **Search**.
-4. Click the right result. The type, owner, package, return type and parameters are filled. Results Oracle cannot call from SQL are greyed out.
-5. Check the **Name**, then click **Save**.
-
----
-
-# Data Sources
-
-A data source is a saved connection to a database. You can look at them and test them. You cannot change them.
-
-![The Data Sources page with the list of connections and row icons.](shots/en/manager/07-data-sources.png)
-
-| Button or control | What it does |
-|---|---|
-| Row icon **Test connection** | Tries the stored login. A message says **Connection succeeded** or **Connection failed**. |
-| Row icon **Introspect schema** | Reads the Oracle schema to find its tables. Shows how many tables were found. Oracle only. |
-| **New Data Source** | Reserved for administrators. |
-| Row icon **Edit** | Reserved for administrators. |
-| Row icon **Delete** | Reserved for administrators. |
-| Row icon **Import tables** | You can open the dialog and **Discover Tables**. **Import** is reserved for administrators. |
-
-> **Note:** The screen offers **New Data Source**, **Edit**, **Delete** and the import step. The system refuses them for you. To create folders from tables, use **Folders** and **Discover Tables** instead.
-
----
-
 # Users
 
-The **Users** page is read-only for you. Use it to see accounts, to find out which maps a person can open, and to fix who owns or shares a map.
+Use the **Users** page to look after Manager, User and Viewer accounts, to find out which maps a person can open, and to fix who owns or shares a map. Administrator accounts are not in your list.
 
-![The read-only Users list, without New User or Credentials file buttons.](shots/en/manager/06-users.png)
+![The Users list for a Manager, without administrators and without New User or Credentials file buttons.](shots/en/manager/06-users.png)
 
-The list shows **Name**, **Email**, **Role** and **Status** (**Active** or **Inactive**). You cannot create, edit, deactivate, activate or delete users. You cannot issue a credentials file. Ask an administrator.
+The list shows **Name**, **Email**, **Role** and **Status** (**Active** or **Inactive**).
+
+| Button or control | What it does |
+|---|---|
+| Row icon **Maps this user can open** | Opens the maps of that person. See below. |
+| Row icon **Edit** | Changes the name, email, password or role. The role can be MANAGER, USER or VIEWER. Leave **Password** empty to keep it. |
+| Row icon **Deactivate** / **Activate** | Stops the person from signing in, or lets them sign in again. You cannot deactivate yourself. |
+
+You cannot create or delete users, give the ADMIN role, or issue a credentials file. Ask an administrator.
 
 ## Maps for a person
 
 Click the row icon **Maps this user can open**. The dialog **Maps for {name}** lists every map that person sees.
 
-![The Maps dialog for a user, with share-level selects and owner and remove icons.](shots/en/manager/11-users-maps-dialog.png)
+![The Maps dialog for a user, with share-level selects and owner and remove icons.](shots/en/manager/09-users-maps-dialog.png)
 
 | Button or control | What it does |
 |---|---|
@@ -168,7 +114,6 @@ Click the row icon **Maps this user can open**. The dialog **Maps for {name}** l
 
 | Option (badge) | What it means |
 |---|---|
-| Administrator | The person is an administrator and sees all maps. |
 | Owner | The person owns the map. |
 | Shared | Someone shared the map with the person. You can change or remove this. |
 | Public | The map is public. |
@@ -495,7 +440,7 @@ The **Status** column shows **Active** or **Paused**. The **Planner** column is 
 
 **Runs** lists every run you requested, whether it is waiting, running or finished. It shows only your own runs, not other people's.
 
-![The Runs page with map, status and kind filters and the list of runs.](shots/en/manager/10-runs.png)
+![The Runs page with map, status and kind filters and the list of runs.](shots/en/manager/08-runs.png)
 
 | Button or control | What it does |
 |---|---|
@@ -590,5 +535,3 @@ There is no reset link. Ask an administrator.
 | Run | One execution of a map. Its rows are stored for 24 hours. |
 | Export | A file (Excel, CSV or PDF) made from a finished run. |
 | Schedule | A timetable that runs a map by itself and stores the result. |
-| Data source | A saved connection to a database. |
-| Custom function | A database function that calculated items can call. |

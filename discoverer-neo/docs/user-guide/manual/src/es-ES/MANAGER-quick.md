@@ -1,18 +1,17 @@
 # Su rol en una página
 
-Usted es **Manager**. Ve, ejecuta, exporta, programa y comparte todos los mapas. No cambia el modelo de datos: eso es cosa de los administradores.
+Usted es **Manager**. Ve, ejecuta, exporta, programa y comparte todos los mapas, y se ocupa de las cuentas Manager, User y Viewer. No cambia el modelo de datos, las funciones personalizadas ni los orígenes de datos: eso es cosa de los administradores.
 
 | Puede | No puede |
 |---|---|
 | Ver, ejecutar, exportar y programar todos los mapas | Cambiar o eliminar un mapa que no es suyo (salvo que se haya compartido con usted como **Puede editar**) |
 | Compartir cualquier mapa y cambiar cualquier recurso compartido | Ver el SQL o el plan de la base de datos |
-| Copiar cualquier mapa para crear el suyo | Crear usuarios, orígenes de datos o áreas de negocio, ni dar concesiones |
+| Copiar cualquier mapa para crear el suyo | Crear o eliminar usuarios, dar el rol ADMIN, ni dar concesiones |
 | Entregar un mapa a un nuevo propietario | Ver las ejecuciones, exportaciones o programaciones de otras personas |
-| Gestionar funciones personalizadas | Usar Seguridad, Registro de auditoría o Migración |
-| Leer, probar e inspeccionar orígenes de datos | Importar tablas desde un origen de datos |
-| Crear mapas en las áreas de negocio en las que tiene una concesión | Cambiar áreas de negocio, carpetas, elementos, combinaciones o jerarquías |
+| Editar, activar y desactivar cuentas Manager, User y Viewer | Ver o cambiar cuentas de administrador |
+| Crear mapas en las áreas de negocio en las que tiene una concesión | Cambiar áreas de negocio, carpetas, elementos, combinaciones, jerarquías, funciones personalizadas u orígenes de datos |
 
-> **Nota:** **Áreas de negocio**, **Carpetas**, **Elementos**, **Combinaciones**, **Jerarquías**, **Seguridad**, **Registro de auditoría** y **Migración** son solo para administradores. No aparecen en su barra lateral.
+> **Nota:** **Áreas de negocio**, **Carpetas**, **Elementos**, **Combinaciones**, **Jerarquías**, **Funciones personalizadas**, **Orígenes de datos**, **Seguridad**, **Registro de auditoría** y **Migración** son solo para administradores. No aparecen en su barra lateral.
 
 Ver un mapa no le da sus datos. Una ejecución necesita una concesión de área de negocio en cada carpeta que use el mapa. Sin ella verá **Sin autorización para ejecutar**.
 
@@ -115,7 +114,7 @@ La programación se ejecuta como usted, así que sus concesiones deciden qué da
 
 **Ejecuciones** muestra sus propias ejecuciones. **Exportaciones** muestra sus propios archivos de exportación. No ve los de otras personas.
 
-![La página Ejecuciones con los filtros Mapa, Estado y Tipo y la lista de ejecuciones.](shots/es-ES/manager/10-runs.png)
+![La página Ejecuciones con los filtros Mapa, Estado y Tipo y la lista de ejecuciones.](shots/es-ES/manager/08-runs.png)
 
 1. Haga clic en **Ejecuciones** para ver las ejecuciones en espera, en curso y terminadas.
 2. Haga clic en el icono **Abrir** para ver un resultado guardado. Use **Ejecutar de nuevo** para repetirlo.
@@ -126,9 +125,11 @@ La programación se ejecuta como usted, así que sus concesiones deciden qué da
 
 # Usuarios
 
-La página **Usuarios** es de solo lectura para usted. Puede ver la lista de cuentas y corregir el acceso a los mapas.
+La página **Usuarios** muestra las cuentas Manager, User y Viewer. Los administradores no aparecen en su lista. Haga clic en el icono de fila **Editar** para cambiar el nombre, el correo electrónico, la contraseña o el rol de una persona (MANAGER, USER o VIEWER). Use **Desactivar** o **Activar** para impedir o permitir que inicie sesión.
 
-![El cuadro Mapas de un usuario, con selectores de nivel de acceso compartido e iconos de propietario y de quitar.](shots/es-ES/manager/11-users-maps-dialog.png)
+Para corregir el acceso a los mapas:
+
+![El cuadro Mapas de un usuario, con selectores de nivel de acceso compartido e iconos de propietario y de quitar.](shots/es-ES/manager/09-users-maps-dialog.png)
 
 1. Haga clic en el icono de fila **Mapas que este usuario puede abrir**.
 2. Para cambiar un mapa compartido, use la lista de niveles que hay junto a él.
@@ -137,23 +138,7 @@ La página **Usuarios** es de solo lectura para usted. Puede ver la lista de cue
 
 > **Advertencia:** El nuevo propietario puede cambiar, compartir y eliminar el mapa.
 
-Crear, editar y eliminar usuarios es cosa de los administradores.
-
----
-
-# Funciones personalizadas y Orígenes de datos
-
-Las **Funciones personalizadas** son funciones de la base de datos que pueden llamar los elementos calculados. Tiene todos los derechos sobre ellas. Los **Orígenes de datos** son conexiones guardadas a bases de datos. Solo puede consultarlos y probarlos.
-
-![La página Funciones personalizadas con la lista, Actualizar todo y Nueva función.](shots/es-ES/manager/08-custom-functions.png)
-
-1. En **Funciones personalizadas**, haga clic en **Nueva función**.
-2. Elija un **Origen de datos**, escriba parte de un nombre en **Buscar una función** y haga clic en **Buscar**.
-3. Haga clic en un resultado para rellenar el cuadro de diálogo y después haga clic en **Guardar**.
-4. Use **Actualizar todo** para volver a leer todas las funciones desde Oracle.
-5. En **Orígenes de datos**, haga clic en **Probar conexión** para comprobar una conexión.
-
-**Nuevo origen de datos**, **Editar**, **Eliminar** e **Importar** en un origen de datos son cosa de los administradores. El sistema los rechaza.
+Crear y eliminar usuarios, y el rol ADMIN, son cosa de los administradores.
 
 ---
 

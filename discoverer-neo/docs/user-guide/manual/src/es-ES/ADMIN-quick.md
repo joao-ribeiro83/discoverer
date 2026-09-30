@@ -158,7 +158,7 @@ Agregue personas, establezca roles, desactive cuentas y traspase mapas a otros.
 | Opción | Significado |
 |---|---|
 | ADMIN | Todo. |
-| MANAGER | Ve, ejecuta, exporta, programa y comparte todos los mapas. Nunca cambia el modelo de datos. |
+| MANAGER | Ve, ejecuta, exporta, programa y comparte todos los mapas. Edita cuentas MANAGER, USER y VIEWER. Nunca cambia el modelo de datos, las funciones personalizadas ni los orígenes de datos. |
 | USER | Mapas propios, públicos y compartidos. |
 | VIEWER | Igual que USER, pero no puede copiar mapas. |
 | **Desactivar** | Conserva la cuenta. Es reversible. |
