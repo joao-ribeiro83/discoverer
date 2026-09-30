@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useMapBuilderStore } from '@/store/mapBuilder'
 import { ShareDialog } from '@/components/map-builder/ShareDialog'
+import { BackButton } from '@/components/layout/BackButton'
 import { ConditionalFormatDialog } from '@/components/map-builder/ConditionalFormatDialog'
 import type { MapType } from '@/lib/types'
 
@@ -62,6 +63,7 @@ export function MapToolbar({
 
   return (
     <div className="flex flex-wrap items-center gap-2 border-b bg-card px-4 py-2">
+      <BackButton fallback="/maps" />
       <Input
         value={name}
         onChange={(e) => setName(e.target.value)}
@@ -89,19 +91,19 @@ export function MapToolbar({
       )}
 
       <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
-        <Button variant="secondary" onClick={onRun} disabled={isRunning}>
+        <Button variant="secondary" onClick={onRun} disabled={isRunning} title={t('mapBuilder:toolbar.runTooltip')}>
           {isRunning ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
           {t('common:actions.run')}
         </Button>
 
-        <Button onClick={onSave} disabled={isSaving}>
+        <Button onClick={onSave} disabled={isSaving} title={t('mapBuilder:toolbar.saveTooltip')}>
           {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           {t('common:actions.save')}
         </Button>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" disabled={isExporting}>
+            <Button variant="outline" disabled={isExporting} title={t('mapBuilder:toolbar.exportTooltip')}>
               {isExporting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
@@ -112,12 +114,10 @@ export function MapToolbar({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {/*
-              Excel/CSV/PDF export reads from a completed, stored run — the
-              builder preview never has one (it runs through `/execute`, live,
-              not through the run queue), so those formats have no data to
-              read here and are hidden rather than offered and always failing
-              (fix round 1). XML — the map's own definition, not its result —
-              needs no run and stays.
+              Excel/CSV/PDF export reads from a completed, stored run, so
+              those buttons live on the results panel, next to the run they
+              export. XML — the map's own definition, not its result — needs
+              no run and stays here.
             */}
             <DropdownMenuItem disabled={!mapId} onSelect={() => onExport('xml')}>
               {t('mapBuilder:toolbar.exportXml')}
@@ -128,7 +128,7 @@ export function MapToolbar({
         <Button
           variant="outline"
           disabled={!mapId}
-          title={mapId ? undefined : t('mapBuilder:toolbar.scheduleDisabledTitle')}
+          title={mapId ? t('mapBuilder:toolbar.scheduleTooltip') : t('mapBuilder:toolbar.scheduleDisabledTitle')}
           onClick={() => void navigate(`/schedules?mapId=${mapId}`)}
         >
           <CalendarClock className="h-4 w-4" /> {t('mapBuilder:toolbar.schedule')}
@@ -137,7 +137,7 @@ export function MapToolbar({
         <Button
           variant="outline"
           disabled={!mapId}
-          title={mapId ? undefined : t('mapBuilder:toolbar.conditionalFormatDisabledTitle')}
+          title={mapId ? t('mapBuilder:toolbar.conditionalFormatTooltip') : t('mapBuilder:toolbar.conditionalFormatDisabledTitle')}
           onClick={() => setFormatOpen(true)}
         >
           <Paintbrush className="h-4 w-4" /> {t('mapBuilder:toolbar.conditionalFormat')}
@@ -146,7 +146,7 @@ export function MapToolbar({
         <Button
           variant="outline"
           disabled={!mapId}
-          title={mapId ? undefined : t('mapBuilder:toolbar.shareDisabledTitle')}
+          title={mapId ? t('mapBuilder:toolbar.shareTooltip') : t('mapBuilder:toolbar.shareDisabledTitle')}
           onClick={() => setShareOpen(true)}
         >
           <Share2 className="h-4 w-4" /> {t('mapBuilder:toolbar.share')}

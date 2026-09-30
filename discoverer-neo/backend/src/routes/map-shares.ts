@@ -5,6 +5,7 @@ import {
   listShares,
   shareWith,
   revokeShare,
+  transferOwnership,
   MapValidationError,
 } from '../services/map.service.js';
 import { loadMapWithAccess } from './maps.js';
@@ -22,6 +23,10 @@ const CreateShareBodySchema = z.object({
 
 const UpdateShareBodySchema = z.object({
   permissionLevel: SharePermissionEnum,
+});
+
+const TransferOwnerBodySchema = z.object({
+  userId: z.string().uuid(),
 });
 
 const ShareParamSchema = z.object({
@@ -215,6 +220,46 @@ export default function mapShareRoutes(fastify: FastifyInstance) {
         return reply.code(404).send({ error: 'Share not found' });
       }
       return { data: { revoked: true } };
+    },
+  );
+
+  // PUT /api/maps/:id/owner — give the map to another user. ADMIN or MANAGER
+  // only: both may see every map, and this is the tidy-up the Users page does.
+  fastify.put(
+    '/api/maps/:id/owner',
+    {
+      preHandler: [fastify.authenticate],
+      schema: {
+        tags: ['Map Shares'],
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          required: ['id'],
+          properties: { id: { type: 'string', format: 'uuid' } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const user = request.user as { sub: string; role: string };
+      if (user.role !== 'ADMIN' && user.role !== 'MANAGER') {
+        return reply.code(403).send({
+          error: 'Forbidden',
+          details: 'Only an admin or a manager can change a map owner',
+        });
+      }
+      const map = await loadMapWithAccess(request, reply, 'VIEW');
+      if (!map) return;
+
+      const parsed = TransferOwnerBodySchema.safeParse(request.body ?? {});
+      if (!parsed.success) {
+        return reply
+          .code(400)
+          .send({ error: 'Invalid request body', details: parsed.error.issues });
+      }
+      if (!(await transferOwnership(map.id, parsed.data.userId))) {
+        return reply.code(404).send({ error: 'User not found' });
+      }
+      return { data: { mapId: map.id, ownerId: parsed.data.userId } };
     },
   );
 }

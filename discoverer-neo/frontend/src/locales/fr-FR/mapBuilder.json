@@ -22,7 +22,13 @@
     "exportCsv": "CSV (.csv)",
     "exportXml": "Définition de la carte (.xml)",
     "shareDisabledTitle": "Enregistrez la carte avant de la partager",
-    "scheduleDisabledTitle": "Enregistrez la carte avant de la planifier"
+    "scheduleDisabledTitle": "Enregistrez la carte avant de la planifier",
+    "runTooltip": "Enregistrer la carte et l'exécuter. L'exécution apparaît également sur la page Exécutions.",
+    "saveTooltip": "Enregistrer vos modifications à cette carte",
+    "exportTooltip": "Télécharger la définition de la carte en XML",
+    "scheduleTooltip": "Exécuter cette carte selon un calendrier et conserver les résultats",
+    "conditionalFormatTooltip": "Colorer les cellules qui répondent à une règle que vous définissez",
+    "shareTooltip": "Choisir qui d'autre peut ouvrir cette carte et ce qu'il peut en faire"
   },
   "page": {
     "loading": "Chargement de la carte…",
@@ -63,7 +69,8 @@
     "roleDimension": "Dimension",
     "addAria": "Ajouter {{name}} à la carte",
     "addedTitle": "Ajouté à la carte",
-    "addedDescription": "« {{name}} » ajouté au canevas."
+    "addedDescription": "« {{name}} » ajouté au canevas.",
+    "toggleButtonTooltip": "Développer ou réduire"
   },
   "canvas": {
     "title": "Colonnes",
@@ -72,7 +79,8 @@
     "emptyPickHint": "Choisissez des dimensions et des mesures dans l'arborescence de gauche.",
     "reorderAria": "Réorganiser la colonne",
     "configureTitle": "Configurer la colonne",
-    "removeAria": "Retirer {{label}}"
+    "removeAria": "Retirer {{label}}",
+    "removeButtonTooltip": "Retirer de la zone de travail"
   },
   "columnConfig": {
     "title": "Configurer la colonne",
@@ -122,12 +130,7 @@
     "description": "Accordez à d'autres utilisateurs l'accès pour consulter, exporter ou modifier cette carte.",
     "searchPlaceholder": "Rechercher par nom ou e-mail…",
     "searchAria": "Rechercher des utilisateurs avec qui partager",
-    "searching": "Recherche…",
     "noMatchingUsers": "Aucun utilisateur correspondant",
-    "permissionAria": "Niveau d'autorisation",
-    "shareButton": "Partager",
-    "peopleWithAccess": "Personnes ayant accès",
-    "notSharedYet": "Pas encore partagée avec personne.",
     "permissionForAria": "Autorisation pour {{name}}",
     "revokeAria": "Révoquer l'accès de {{name}}",
     "publicNotice": "Cette carte est publique — toute personne disposant du lien peut la consulter.",
@@ -140,11 +143,17 @@
     "toastShared": "Carte partagée",
     "toastShareFailedTitle": "Impossible de partager la carte",
     "toastPermissionUpdated": "Autorisation mise à jour",
-    "toastPermissionUpdateFailedTitle": "Impossible de mettre à jour l'autorisation",
     "toastRevoked": "Accès révoqué",
     "toastRevokeFailedTitle": "Impossible de révoquer l'accès",
     "toastLinkCopied": "Lien copié dans le presse-papiers",
-    "toastCopyFailedTitle": "Impossible de copier le lien"
+    "toastCopyFailedTitle": "Impossible de copier le lien",
+    "listHint": "Cliquez sur un niveau à côté d'une personne pour partager avec elle. Le bouton foncé correspond à ce qu'elle a actuellement. ✕ supprime son accès.",
+    "copyLinkTooltip": "Copier l'adresse de cette carte, pour l'envoyer à quelqu'un",
+    "permissionHelp": {
+      "VIEW": "Peut ouvrir et exécuter la carte. Ne peut pas l'exporter, la planifier ni la modifier.",
+      "EXPORT": "Peut ouvrir et exécuter la carte, exporter son résultat et la planifier.",
+      "EDIT": "Peut faire tout ce qui précède, et aussi modifier la carte."
+    }
   },
   "conditionalFormat": {
     "title": "Mise en forme conditionnelle",
@@ -184,7 +193,10 @@
     "toastCreated": "Règle ajoutée",
     "toastCreateFailedTitle": "Impossible d'ajouter la règle",
     "toastDeleted": "Règle supprimée",
-    "toastDeleteFailedTitle": "Impossible de supprimer la règle"
+    "toastDeleteFailedTitle": "Impossible de supprimer la règle",
+    "addRuleTooltip": "Ajouter une nouvelle règle de mise en forme",
+    "clearBackgroundColorTooltip": "Supprimer la couleur de fond",
+    "clearTextColorTooltip": "Supprimer la couleur du texte"
   },
   "panels": {
     "tabs": {
@@ -236,7 +248,12 @@
       "valuePlaceholderDefault": "Valeur",
       "parameterNameAria": "Nom du paramètre",
       "parameterNamePlaceholder": "Nom du paramètre",
-      "deleteAria": "Supprimer la condition"
+      "deleteAria": "Supprimer la condition",
+      "addTooltip": "Ajouter une nouvelle condition",
+      "groupTooltip": "Grouper les conditions sélectionnées dans un bloc OR",
+      "ungroupTooltip": "Supprimer le regroupement OR de ce bloc",
+      "staticValueTooltip": "Utiliser une valeur fixe pour cette condition",
+      "promptAtRuntimeTooltip": "Demander cette valeur à l'exécution de la carte"
     },
     "sort": {
       "emptyNoColumns": "Ajoutez des colonnes pour configurer le tri.",
@@ -248,11 +265,14 @@
       "addSortButton": "Ajouter un tri",
       "reorderAria": "Réorganiser {{label}}",
       "sortDirectionAria": "Sens du tri pour {{label}}",
-      "removeAria": "Retirer le tri sur {{label}}"
+      "removeAria": "Retirer le tri sur {{label}}",
+      "addButtonTooltip": "Ajouter un autre niveau de tri",
+      "removeButtonTooltip": "Supprimer ce niveau de tri"
     },
     "parameters": {
       "title": "Paramètres",
       "addButton": "Ajouter un paramètre",
+      "addButtonTooltip": "Ajouter un nouveau paramètre",
       "empty": "Aucun paramètre. Ajoutez-en un pour interroger les utilisateurs à l'exécution.",
       "previewLabel": "Aperçu de l'invite d'exécution",
       "unnamed": "Paramètre sans nom",
@@ -260,6 +280,7 @@
       "namePlaceholder": "Nom du paramètre",
       "typeAria": "Type de paramètre",
       "deleteAria": "Supprimer le paramètre {{name}}",
+      "removeButtonTooltip": "Supprimer ce paramètre",
       "defaultValueAria": "Valeur par défaut",
       "defaultValuePlaceholder": "Valeur par défaut",
       "defaultValueListPlaceholder": "valeurs, séparées, par des virgules",
@@ -268,6 +289,7 @@
     "calculatedFields": {
       "title": "Champs calculés",
       "addButton": "Ajouter un champ calculé",
+      "addButtonTooltip": "Ajouter un nouveau champ calculé",
       "empty": "Aucun champ calculé. Ajoutez-en un pour dériver une nouvelle colonne à partir d'une formule.",
       "reorderAria": "Réorganiser {{name}}",
       "fallbackName": "champ calculé",
@@ -276,6 +298,8 @@
       "displayOrderAria": "Ordre d'affichage",
       "displayOrderTitle": "Ordre d'affichage",
       "deleteAria": "Supprimer {{name}}",
+      "editButtonTooltip": "Modifier la formule du champ",
+      "removeButtonTooltip": "Supprimer ce champ calculé",
       "clickToWriteFormula": "Cliquez pour écrire une formule…"
     },
     "formula": {
@@ -301,7 +325,11 @@
         "unbalancedBrackets": "Références de colonne [ ] non équilibrées.",
         "unknownFunction": "Fonction inconnue « {{name}} ».",
         "unknownColumnReference": "Référence de colonne inconnue « [{{name}}] »."
-      }
+      },
+      "testFormulaTooltip": "Exécuter la formule sur les 5 premières lignes pour vérifier qu'elle fonctionne"
+    },
+    "descriptionEditor": {
+      "insertButtonTooltip": "Insérer une variable ou un paramètre"
     }
   }
 }

@@ -22,7 +22,13 @@
     "exportCsv": "CSV (.csv)",
     "exportXml": "Map definition (.xml)",
     "shareDisabledTitle": "Save the map before sharing it",
-    "scheduleDisabledTitle": "Save the map first to schedule it"
+    "scheduleDisabledTitle": "Save the map first to schedule it",
+    "runTooltip": "Save the map and run it. The run also shows on the Executions page.",
+    "saveTooltip": "Save your changes to this map",
+    "exportTooltip": "Download the map's definition as XML",
+    "scheduleTooltip": "Run this map on a timetable and keep the results",
+    "conditionalFormatTooltip": "Colour cells that meet a rule you set",
+    "shareTooltip": "Choose who else can open this map and what they may do with it"
   },
   "page": {
     "loading": "Loading map…",
@@ -63,7 +69,8 @@
     "roleDimension": "Dimension",
     "addAria": "Add {{name}} to map",
     "addedTitle": "Added to map",
-    "addedDescription": "\"{{name}}\" added to the canvas."
+    "addedDescription": "\"{{name}}\" added to the canvas.",
+    "toggleButtonTooltip": "Expand or collapse"
   },
   "canvas": {
     "title": "Columns",
@@ -72,7 +79,8 @@
     "emptyPickHint": "Pick dimensions and measures from the tree on the left.",
     "reorderAria": "Reorder column",
     "configureTitle": "Configure column",
-    "removeAria": "Remove {{label}}"
+    "removeAria": "Remove {{label}}",
+    "removeButtonTooltip": "Remove from canvas"
   },
   "columnConfig": {
     "title": "Configure column",
@@ -122,12 +130,7 @@
     "description": "Give other users access to view, export, or edit this map.",
     "searchPlaceholder": "Search by name or email…",
     "searchAria": "Search users to share with",
-    "searching": "Searching…",
     "noMatchingUsers": "No matching users",
-    "permissionAria": "Permission level",
-    "shareButton": "Share",
-    "peopleWithAccess": "People with access",
-    "notSharedYet": "Not shared with anyone yet.",
     "permissionForAria": "Permission for {{name}}",
     "revokeAria": "Revoke access for {{name}}",
     "publicNotice": "This map is public — anyone with the link can view it.",
@@ -140,11 +143,17 @@
     "toastShared": "Map shared",
     "toastShareFailedTitle": "Could not share map",
     "toastPermissionUpdated": "Permission updated",
-    "toastPermissionUpdateFailedTitle": "Could not update permission",
     "toastRevoked": "Access revoked",
     "toastRevokeFailedTitle": "Could not revoke access",
     "toastLinkCopied": "Link copied to clipboard",
-    "toastCopyFailedTitle": "Could not copy link"
+    "toastCopyFailedTitle": "Could not copy link",
+    "listHint": "Click a level next to a person to share with them. The dark button is what they have now. ✕ removes their access.",
+    "copyLinkTooltip": "Copy this map's address, to send to someone",
+    "permissionHelp": {
+      "VIEW": "Can open and run the map. Cannot export, schedule or change it.",
+      "EXPORT": "Can open and run the map, export its result, and put it on a schedule.",
+      "EDIT": "Can do all of the above, and also change the map."
+    }
   },
   "conditionalFormat": {
     "title": "Conditional formatting",
@@ -152,6 +161,7 @@
     "unknownColumn": "Unknown column",
     "noRules": "No conditional formats yet.",
     "addRule": "Add rule",
+    "addRuleTooltip": "Add a new formatting rule",
     "column": "Column",
     "applyTo": "Apply to",
     "operator": "Operator",
@@ -161,6 +171,8 @@
     "backgroundColor": "Background color",
     "textColor": "Text color",
     "clearColor": "Clear",
+    "clearBackgroundColorTooltip": "Remove background color",
+    "clearTextColorTooltip": "Remove text color",
     "bold": "Bold",
     "italic": "Italic",
     "underline": "Underline",
@@ -214,14 +226,20 @@
         "noParameters": "No parameters defined yet"
       }
     },
+    "descriptionEditor": {
+      "insertButtonTooltip": "Insert variable or parameter"
+    },
     "conditions": {
       "title": "Conditions",
       "addButton": "Add Condition",
+      "addTooltip": "Add a new condition",
       "addColumnsHint": "Add columns to the canvas before adding conditions.",
       "groupSelected": "Group {{count}} selected conditions",
+      "groupTooltip": "Group selected conditions into an OR block",
       "noConditionsYet": "No conditions yet.",
       "groupHeader": "Group ({{count}})",
       "ungroup": "Ungroup",
+      "ungroupTooltip": "Remove OR grouping from this block",
       "logicOperatorAria": "Logic operator",
       "itemFallbackLabel": "item",
       "selectConditionAria": "Select condition on {{label}}",
@@ -229,7 +247,9 @@
       "itemPlaceholder": "Item",
       "operatorAria": "Operator",
       "staticValue": "Static value",
+      "staticValueTooltip": "Use a fixed value for this condition",
       "promptAtRuntime": "Prompt at runtime",
+      "promptAtRuntimeTooltip": "Ask for this value when running the map",
       "conditionValueAria": "Condition value",
       "valuePlaceholderIn": "value1, value2, …",
       "valuePlaceholderBetween": "low, high",
@@ -246,13 +266,16 @@
       "pickColumnAria": "Pick column to sort",
       "pickColumnPlaceholder": "Choose a column",
       "addSortButton": "Add Sort",
+      "addButtonTooltip": "Add another sort level",
       "reorderAria": "Reorder {{label}}",
       "sortDirectionAria": "Sort direction for {{label}}",
-      "removeAria": "Remove sort on {{label}}"
+      "removeAria": "Remove sort on {{label}}",
+      "removeButtonTooltip": "Remove this sort level"
     },
     "parameters": {
       "title": "Parameters",
       "addButton": "Add Parameter",
+      "addButtonTooltip": "Add a new parameter",
       "empty": "No parameters. Add one to prompt users at run time.",
       "previewLabel": "Run-time prompt preview",
       "unnamed": "Unnamed parameter",
@@ -260,6 +283,7 @@
       "namePlaceholder": "Parameter name",
       "typeAria": "Parameter type",
       "deleteAria": "Delete parameter {{name}}",
+      "removeButtonTooltip": "Remove this parameter",
       "defaultValueAria": "Default value",
       "defaultValuePlaceholder": "Default value",
       "defaultValueListPlaceholder": "comma, separated, values",
@@ -268,6 +292,7 @@
     "calculatedFields": {
       "title": "Calculated fields",
       "addButton": "Add Calculated Field",
+      "addButtonTooltip": "Add a new calculated field",
       "empty": "No calculated fields. Add one to derive a new column from a formula.",
       "reorderAria": "Reorder {{name}}",
       "fallbackName": "calculated field",
@@ -276,12 +301,15 @@
       "displayOrderAria": "Display order",
       "displayOrderTitle": "Display order",
       "deleteAria": "Delete {{name}}",
+      "editButtonTooltip": "Edit field formula",
+      "removeButtonTooltip": "Remove this calculated field",
       "clickToWriteFormula": "Click to write a formula…"
     },
     "formula": {
       "title": "Formula editor",
       "fallbackFieldName": "Calculated field",
       "testFormula": "Test formula",
+      "testFormulaTooltip": "Run the formula against the first 5 rows to verify it works",
       "saveHint": "Save the map to test formulas against live data.",
       "noRows": "No rows.",
       "previewHeader_one": "{{columnName}} (first {{count}} row)",

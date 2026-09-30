@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
   SelectContent,
@@ -36,6 +37,7 @@ function buildFormSchema(t: (key: string) => string) {
 type FormValues = z.infer<ReturnType<typeof buildFormSchema>>
 
 const PERMISSION_LEVELS = ['VIEW', 'EXPORT', 'SCHEDULE', 'CREATE', 'EDIT', 'DELETE'] as const
+type PermissionLevel = (typeof PERMISSION_LEVELS)[number]
 
 export function BusinessAreasPage() {
   const { t } = useTranslation(['admin', 'common'])
@@ -151,7 +153,7 @@ export function BusinessAreasPage() {
       title={t('admin:businessAreas.title')}
       description={t('admin:businessAreas.description')}
       action={
-        <Button onClick={openCreate}>
+        <Button onClick={openCreate} title={t('admin:businessAreas.createButtonTooltip')}>
           <Plus className="h-4 w-4" /> {t('admin:businessAreas.createButton')}
         </Button>
       }
@@ -211,8 +213,9 @@ function GrantsDialog({ businessArea, onClose }: { businessArea: BusinessArea; o
   const { t } = useTranslation(['admin', 'common'])
   const queryClient = useQueryClient()
   const { toast } = useToast()
-  const [userId, setUserId] = useState('')
-  const [permissionLevel, setPermissionLevel] = useState<string>('VIEW')
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [userFilter, setUserFilter] = useState('')
+  const [permissionLevel, setPermissionLevel] = useState<PermissionLevel>('VIEW')
 
   const { data: grants, isLoading } = useQuery({
     queryKey: ['business-areas', businessArea.id, 'grants'],
@@ -225,22 +228,50 @@ function GrantsDialog({ businessArea, onClose }: { businessArea: BusinessArea; o
     retry: false,
   })
 
+  // One grant call per selected user. allSettled, so one refusal does not
+  // hide how many of the others went through.
   const grantMutation = useMutation({
-    mutationFn: async () =>
-      apiClient.businessAreas.grant(businessArea.id, { userId, permissionLevel }),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['business-areas', businessArea.id, 'grants'] })
-      setUserId('')
-      toast({ title: t('admin:businessAreas.grants.toast.accessGranted') })
+    mutationFn: async () => {
+      const results = await Promise.allSettled(
+        [...selectedIds].map((userId) =>
+          apiClient.businessAreas.grant(businessArea.id, { userId, permissionLevel }),
+        ),
+      )
+      const failed = results.find((r): r is PromiseRejectedResult => r.status === 'rejected')
+      return { granted: results.length - results.filter((r) => r.status === 'rejected').length, failed }
     },
-    onError: (err) => {
-      toast({
-        title: t('admin:businessAreas.grants.toast.grantFailed'),
-        description: getErrorMessage(err),
-        variant: 'destructive',
-      })
+    onSuccess: ({ granted, failed }) => {
+      void queryClient.invalidateQueries({ queryKey: ['business-areas', businessArea.id, 'grants'] })
+      setSelectedIds(new Set())
+      if (granted > 0) {
+        toast({ title: t('admin:businessAreas.grants.toast.accessGrantedCount', { count: granted }) })
+      }
+      if (failed) {
+        toast({
+          title: t('admin:businessAreas.grants.toast.grantFailed'),
+          description: getErrorMessage(failed.reason),
+          variant: 'destructive',
+        })
+      }
     },
   })
+
+  const filterText = userFilter.trim().toLowerCase()
+  const visibleUsers = (users ?? []).filter(
+    (u) =>
+      !filterText ||
+      u.name.toLowerCase().includes(filterText) ||
+      u.email.toLowerCase().includes(filterText),
+  )
+
+  function toggleUser(id: string, checked: boolean) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (checked) next.add(id)
+      else next.delete(id)
+      return next
+    })
+  }
 
   const revokeMutation = useMutation({
     mutationFn: async (targetUserId: string) => apiClient.businessAreas.revoke(businessArea.id, targetUserId),
@@ -258,25 +289,40 @@ function GrantsDialog({ businessArea, onClose }: { businessArea: BusinessArea; o
       description={t('admin:businessAreas.grants.dialogDescription')}
     >
       <div className="space-y-4">
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="grant-user-filter">{t('admin:businessAreas.grants.userLabel')}</Label>
+            <span className="text-xs text-muted-foreground">
+              {t('admin:businessAreas.grants.selectedCount', { count: selectedIds.size })}
+            </span>
+          </div>
+          <Input
+            id="grant-user-filter"
+            value={userFilter}
+            onChange={(e) => setUserFilter(e.target.value)}
+            placeholder={t('admin:businessAreas.grants.filterUsersPlaceholder')}
+          />
+          <div className="max-h-48 space-y-1 overflow-y-auto rounded-md border p-2">
+            {visibleUsers.map((u) => (
+              <label
+                key={u.id}
+                className="flex cursor-pointer items-center gap-2 rounded px-1 py-0.5 text-sm hover:bg-muted/50"
+              >
+                <Checkbox
+                  checked={selectedIds.has(u.id)}
+                  onCheckedChange={(v) => toggleUser(u.id, v === true)}
+                />
+                <span className="truncate">{u.name}</span>
+                <span className="truncate text-xs text-muted-foreground">{u.email}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
         <div className="flex items-end gap-2">
           <div className="flex-1 space-y-2">
-            <Label>{t('admin:businessAreas.grants.userLabel')}</Label>
-            <Select value={userId} onValueChange={setUserId}>
-              <SelectTrigger>
-                <SelectValue placeholder={t('admin:businessAreas.grants.selectUserPlaceholder')} />
-              </SelectTrigger>
-              <SelectContent>
-                {(users ?? []).map((u) => (
-                  <SelectItem key={u.id} value={u.id}>
-                    {u.name} ({u.email})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="w-40 space-y-2">
             <Label>{t('admin:businessAreas.grants.permissionLabel')}</Label>
-            <Select value={permissionLevel} onValueChange={setPermissionLevel}>
+            <Select value={permissionLevel} onValueChange={(v) => setPermissionLevel(v as PermissionLevel)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -290,12 +336,18 @@ function GrantsDialog({ businessArea, onClose }: { businessArea: BusinessArea; o
             </Select>
           </div>
           <Button
-            disabled={!userId || grantMutation.isPending}
+            disabled={selectedIds.size === 0 || grantMutation.isPending}
             onClick={() => grantMutation.mutate()}
+            title={t('admin:businessAreas.grants.addTooltip')}
           >
             {t('admin:businessAreas.grants.addButton')}
           </Button>
         </div>
+        {/* What the chosen level lets a user do — the levels form a ladder. */}
+        <p className="rounded-md bg-muted/50 p-2 text-xs text-muted-foreground" data-testid="permission-level-help">
+          <span className="font-medium text-foreground">{permissionLevel}:</span>{' '}
+          {t(`admin:businessAreas.grants.levelHelp.${permissionLevel}`)}
+        </p>
 
         <div className="max-h-[50vh] space-y-2 overflow-y-auto rounded-md border p-2">
           {isLoading && <p className="text-sm text-muted-foreground">{t('admin:businessAreas.grants.loadingGrants')}</p>}
@@ -309,7 +361,9 @@ function GrantsDialog({ businessArea, onClose }: { businessArea: BusinessArea; o
                 <p className="text-xs text-muted-foreground">{grant.userEmail}</p>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant="outline">{grant.permissionLevel}</Badge>
+                <Badge variant="outline" title={t(`admin:businessAreas.grants.levelHelp.${grant.permissionLevel}`)}>
+                  {grant.permissionLevel}
+                </Badge>
                 <Button
                   variant="ghost"
                   size="icon"

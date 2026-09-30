@@ -324,6 +324,92 @@ el hook de auditoría no tiene forma de avisarle.
 
 `backend/src/__tests__/audit-redaction.test.ts` fija la regla.
 
+## Qué ha cambiado en los permisos de las áreas de negocio
+
+Tres cambios en la forma de leer un permiso. Todos restringen el acceso; ninguno
+lo amplía.
+
+### 1. Un permiso sobre el área de negocio del mapa ya no basta
+
+Ejecutar un mapa exige ahora un permiso sobre **cada carpeta que toca la
+consulta**, y no sobre el área de negocio registrada en el mapa. Una carpeta
+queda cubierta por un permiso sobre *cualquier* área de negocio a la que
+pertenece: la que la posee o cualquiera en la que se ha compartido.
+
+Esto cierra una escalada: antes, ser propietario de un mapa o tenerlo compartido
+permitía leer carpetas de un área de negocio en la que nunca se le había
+concedido permiso, porque las comprobaciones de propietario, público y uso
+compartido terminaban antes de ejecutarse la comprobación del permiso.
+
+**Lo que puede ver:** un usuario que antes podía abrir un informe compartido o
+público recibe ahora *«No tiene acceso a los datos de la carpeta X»*. La
+solución es un permiso sobre un área de negocio a la que pertenezca esa carpeta,
+no un cambio en el mapa.
+
+Los administradores siguen omitiendo esta comprobación. La omisión queda ahora
+registrada en el registro de auditoría como `DATA_ENTITLEMENT_ADMIN_BYPASS`, y
+solo cuando el administrador realmente no tiene permiso, de modo que el registro
+muestra omisiones reales y no todas las consultas de administradores.
+
+### 2. Una política de área de negocio sigue ahora a las carpetas, no al mapa
+
+Una regla con ámbito `BUSINESS_AREA` se aplica cuando **cualquier carpeta que
+lee la consulta** pertenece a esa área de negocio, ya sea como propietaria o por
+uso compartido. Antes se comparaba con una sola columna de la fila del mapa.
+
+**Lo que puede ver:** una política que alcanza un informe que no esperaba,
+porque ese informe lee una carpeta de su área de negocio aunque el informe esté
+archivado en otro lugar. Es el comportamiento previsto: la política protege los
+datos, no el informe.
+
+### 3. Se rechaza una carpeta sin política para usted
+
+Ejecutar una consulta exige una política de seguridad a nivel de fila que cubra
+**cada carpeta que lee**. Un usuario que no la tiene es rechazado, con el nombre
+de la carpeta, en lugar de recibir todas las filas; véase la sección sobre la
+seguridad a nivel de fila que falla en modo cerrado.
+
+**Lo que puede ver:** *«Refusing to run unfiltered: no row-level security policy
+resolves for you on folder(s) X»*. La solución es asignar a ese usuario (o a su
+rol) una política que cubra la carpeta. Si debe verlo todo, asígnele una
+política permisiva (`1 = 1`) en lugar de dejarlo sin política: la ausencia de
+política nunca se interpreta como permiso.
+
+Esto se aplica **también a los administradores**. Los administradores omiten los
+permisos; no omiten las políticas a nivel de fila.
+
+Empezó en la fase 1.1 como una regla más estrecha (rechazar solo una carpeta a
+la que ya apuntara alguna política activa) y pasó a ser el modo cerrado completo
+en la fase 6.3. `ROW_LEVEL_FAIL_MODE=OPEN` recupera la regla más estrecha; nunca
+permite que se ejecute sin filtrar una carpeta a la que apunta una política.
+
+### 4. Un permiso de área de negocio ya no le muestra los mapas de otras personas
+
+Un permiso de área de negocio, a cualquier nivel, es un derecho sobre los
+**datos**. Le permite crear y ejecutar sus propios mapas sobre esa área de
+negocio; no pone en su lista todos los mapas que otra persona haya guardado en
+ella.
+
+Para ver el mapa de otra persona hace falta una de estas condiciones: es ADMIN o
+MANAGER, es propietario, el mapa es público o se ha compartido con usted
+(`map_shares`). Un MANAGER puede ver, ejecutar, exportar, programar y compartir
+todos los mapas, pero cambiar solo los suyos. (Hasta la versión posterior a la
+1.1.0, un permiso de autoría —`CREATE`, `EDIT` o `DELETE`— también mostraba los
+mapas de un área. Ya no lo hace.)
+
+Esto coincide con Discoverer, donde un permiso de área de negocio permitía
+escribir hojas sobre esos datos, pero abrir el libro guardado de otra persona
+exigía un permiso explícito sobre el libro (`ACCESS_PRIVS.AP_TYPE = 'GD'`). Esos
+permisos de libro migran ahora a `map_shares`, un uso compartido por hoja, con
+nivel `EXPORT`, lo que permite al destinatario ejecutar el mapa, exportar el
+resultado y programarlo, pero no editarlo.
+
+**Lo que puede ver:** un usuario migrado cuya lista de mapas se queda de repente
+corta. Todos los permisos que escribe una migración están por debajo de
+`CREATE`; por eso, antes de este cambio, un solo permiso `VIEW` mostraba todos
+los mapas del área de negocio. La solución es compartir los mapas que esa
+persona deba tener, o convertirla en MANAGER si debe ver todos los mapas.
+
 ## Acceso a nivel de objeto
 
 Leer una carpeta, un elemento, una unión o una jerarquía por su id requiere el

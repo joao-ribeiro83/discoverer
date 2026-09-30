@@ -53,7 +53,7 @@ export function CalculatedFieldsPanel() {
     <div className="space-y-4 p-4">
       <div className="flex items-center justify-between gap-2">
         <h4 className="text-sm font-semibold">{t('mapBuilder:panels.calculatedFields.title')}</h4>
-        <Button size="sm" onClick={addCalculatedField}>
+        <Button size="sm" onClick={addCalculatedField} title={t('mapBuilder:panels.calculatedFields.addButtonTooltip')}>
           <Sigma className="h-3.5 w-3.5" /> {t('mapBuilder:panels.calculatedFields.addButton')}
         </Button>
       </div>
@@ -148,6 +148,7 @@ function CalculatedFieldRow({
           size="icon"
           className="h-8 w-8 shrink-0"
           onClick={onRemove}
+          title={t('mapBuilder:panels.calculatedFields.removeButtonTooltip')}
           aria-label={t('mapBuilder:panels.calculatedFields.deleteAria', {
             name: field.name || fallbackName,
           })}
@@ -161,6 +162,7 @@ function CalculatedFieldRow({
         size="sm"
         className="h-auto min-h-8 w-full justify-start whitespace-pre-wrap break-all py-1.5 text-left font-mono text-xs font-normal"
         onClick={onEditFormula}
+        title={t('mapBuilder:panels.calculatedFields.editButtonTooltip')}
       >
         {field.formula.trim()
           ? field.formula

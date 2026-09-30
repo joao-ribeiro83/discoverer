@@ -328,7 +328,7 @@ produces numbers that look plausible and are wrong.
 
 Each join has one or more conditions linking columns:
 
-1. Click **+ Add Condition**
+1. Click **Add column pair**
 2. Select:
    - **Item 1** — Column in the master folder
    - **Operator** — one of `=`, `<`, `>`, `<=`, `>=`, `<>`

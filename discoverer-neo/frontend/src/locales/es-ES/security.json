@@ -80,5 +80,13 @@
     "assignFailed": "Error al asignar",
     "assignmentRemoved": "Asignación eliminada",
     "removeFailed": "Error al quitar"
+  },
+  "actions": {
+    "validatePredicate": "Validar este predicado SQL",
+    "testPolicy": "Probar esta política con una consulta de ejemplo",
+    "newPolicy": "Crear una nueva política de seguridad",
+    "addRule": "Añadir otra regla a esta política",
+    "assignPolicy": "Asignar esta política a usuarios o roles",
+    "runPolicyTest": "Ejecutar la prueba de política en esta consulta de ejemplo"
   }
 }

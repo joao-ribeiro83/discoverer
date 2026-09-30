@@ -14,6 +14,11 @@
       "light": "Light",
       "dark": "Dark",
       "high-contrast": "High contrast"
+    },
+    "tooltip": {
+      "light": "Use light theme",
+      "dark": "Use dark theme",
+      "high-contrast": "Use high contrast theme for better accessibility"
     }
   },
   "palette": {
@@ -28,6 +33,14 @@
       "wine": "Wine",
       "ocean": "Ocean",
       "ochre": "Ochre"
+    },
+    "tooltip": {
+      "default": "Use classic palette",
+      "navy": "Use navy palette",
+      "forest": "Use forest palette",
+      "wine": "Use wine palette",
+      "ocean": "Use ocean palette",
+      "ochre": "Use ochre palette"
     }
   },
   "saved": "Preferences saved"

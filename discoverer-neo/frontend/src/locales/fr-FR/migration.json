@@ -10,7 +10,13 @@
     "runMigration": "Lancer la migration",
     "reimportMaps": "Réimporter les cartes",
     "reimportAll": "Tout réimporter",
-    "compile": "Compiler les champs calculés"
+    "compile": "Compiler les champs calculés",
+    "detectVersionTitle": "Détecter la version de l'EUL de la source de données sélectionnée",
+    "analyzeTitle": "Analyser l'EUL pour évaluer la préparation et la complexité de la migration",
+    "runTitle": "Démarrer la tâche de migration",
+    "reimportMapsTitle": "Réimporter les cartes depuis l'EUL en remplaçant les cartes existantes",
+    "reimportAllTitle": "Réimporter tous les objets depuis l'EUL avec la version actuelle du migrateur",
+    "compileTitle": "Compiler tous les champs calculés et générer leur SQL"
   },
   "source": {
     "title": "Source",

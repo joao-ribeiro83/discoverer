@@ -14,7 +14,10 @@
     "statusRunning": "En ejecución…",
     "statusResult": "Resultado de {{time}}, válido hasta {{until}}.",
     "statusResultReused": "Mostrando un resultado en caché de {{time}}, válido hasta {{until}}.",
-    "runAgain": "Ejecutar de nuevo"
+    "runAgain": "Ejecutar de nuevo",
+    "runTitle": "Ejecutar el mapa y mostrar los resultados",
+    "scheduleManagementTitle": "Ver y gestionar las programaciones del mapa",
+    "runAgainTitle": "Ejecutar el mapa de nuevo con los mismos parámetros"
   },
   "mapsList": {
     "title": "Mapas",
@@ -41,16 +44,27 @@
       "noMatch": "Ningún libro coincide con esta búsqueda."
     },
     "columns": {
-      "businessArea": "Área de Negocio"
+      "businessArea": "Área de Negocio",
+      "workbook": "Libro",
+      "owner": "Propietario"
     },
     "actions": {
       "open": "Abrir",
       "share": "Compartir",
-      "schedule": "Programar"
+      "schedule": "Programar",
+      "viewTooltip": "Abrir el mapa y ejecutarlo para ver sus filas",
+      "editTooltip": "Cambiar las columnas, las condiciones y el diseño del mapa",
+      "copyTooltip": "Crear su propia copia de este mapa, que podrá cambiar después",
+      "shareTooltip": "Elegir quién más puede abrir este mapa y qué puede hacer con él",
+      "scheduleTooltip": "Ejecutar este mapa en un horario y mantener los resultados",
+      "exportTooltip": "Abrir el mapa para exportar su resultado a Excel, CSV o PDF",
+      "deleteTooltip": "Eliminar este mapa"
     },
     "toast": {
       "deleted": "Mapa eliminado",
-      "deleteFailed": "Error al eliminar el mapa"
+      "deleteFailed": "Error al eliminar el mapa",
+      "copied": "Mapa copiado. Ahora está editando su copia.",
+      "copyFailed": "No se pudo copiar el mapa"
     },
     "emptyNoneAtAll": "Aún no existen mapas. Cree uno para comenzar.",
     "emptyNoMatches": "No hay mapas que coincidan con su búsqueda o filtros.",
@@ -132,7 +146,13 @@
     },
     "explain": "Plan",
     "explainFailed": "No se pudo leer el plan de ejecución",
-    "nothingToExplain": "Ejecute primero el mapa"
+    "nothingToExplain": "Ejecute primero el mapa",
+    "toggleSqlTooltip": "Mostrar u ocultar la instrucción SQL",
+    "explainTooltip": "Mostrar el plan de ejecución de la base de datos para esta consulta",
+    "exportExcelTooltip": "Exportar los resultados como hoja de cálculo de Excel",
+    "exportCsvTooltip": "Exportar los resultados como archivo CSV",
+    "exportPdfTooltip": "Exportar los resultados como documento PDF",
+    "loadMoreTooltip": "Cargar más filas del resultado"
   },
   "parameters": {
     "title": "Parámetros de ejecución",
@@ -165,7 +185,8 @@
         "A4": "A4",
         "A3": "A3",
         "LETTER": "Carta"
-      }
+      },
+      "selectToggleTooltip": "Alternar todas las columnas"
     }
   },
   "exportHistory": {
@@ -237,15 +258,12 @@
   "workbookShare": {
     "title": "Compartir \"{{name}}\"",
     "description": "Dar a alguien todas las hojas de este libro — {{count}} en total.",
-    "pickUser": "Elija primero una persona",
     "shareButton": "Compartir libro",
-    "revokeButton": "Quitar acceso",
     "shared": "{{count}} hoja(s) compartida(s)",
     "refused": "No compartido: {{names}}",
     "shareFailed": "No se pudo compartir el libro",
     "revoked": "Acceso retirado",
     "revokeFailed": "No se pudo quitar el acceso",
-    "none": "Todavía nadie tiene este libro.",
     "sheetsHeld": "{{held}} de {{total}} hojas"
   },
   "workbookDuplicate": {
@@ -256,7 +274,8 @@
     "defaultName": "{{name}} (copia)",
     "submit": "Copiar",
     "done": "Creado \"{{name}}\"",
-    "failed": "No se pudo copiar el libro"
+    "failed": "No se pudo copiar el libro",
+    "tooltip": "Crear su propia copia de todo el libro, que podrá cambiar después"
   },
   "workbookDelete": {
     "button": "Eliminar libro",

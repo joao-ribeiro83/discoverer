@@ -12,21 +12,30 @@ Share maps to:
 
 ## Sharing a Map
 
-### Step 1: Open Map
+### Who can share
 
-1. Click **Maps** → select your map
-2. Click **Share** or **Manage Sharing**
+- The map's **owner**
+- A **MANAGER** — any map
+- An **ADMIN** — any map
 
-### Step 2: Add User
+A user who received a map, even with EDIT, cannot pass it on.
 
-In the sharing panel:
+### Step 1: Open the share window
 
-1. Click **+ Add User** or **+ Grant Access**
-2. Select a user from the list
-3. Choose permission level (see below)
-4. Click **Grant**
+1. Click **Maps**
+2. Click the share icon on the map's row, or on a workbook to share every
+   worksheet in it
 
-The user can now access the map with the selected permission level.
+### Step 2: Pick people and levels
+
+The window lists every user. People who already have the map come first.
+
+1. Type in the filter box to find someone (optional)
+2. Click a level next to their name: **Can view**, **Can export** or
+   **Can edit**. Hover a level to see what it allows.
+
+The dark button is the level they have now. Click another level to change it.
+Click **✕** to take the map away from them.
 
 ## Permission Levels
 
@@ -37,8 +46,8 @@ The user can now access the map with the selected permission level.
 | **EXPORT** | ✓ | ✗ | ✗ | ✓ | ✓ | ✗ |
 
 - **VIEW** — Can see map definition and run it (read-only)
-- **EDIT** — Can modify map and share it with others
-- **EXPORT** — Can run map and export results
+- **EDIT** — Can run, export, schedule and change the map (not share it)
+- **EXPORT** — Can run the map, export results and schedule it
 - **Owner** — You (can always modify, share, delete)
 
 ## Public vs. Private
@@ -48,24 +57,21 @@ Toggle **Public** to make a map discoverable to all users:
 - **Private** (default) — Only shared with specific users
 - **Public** — All authenticated users can see and run it
 
-## Changing Permissions
+## Changing or Revoking Access
 
-To change a user's access level:
+In the share window, click a different level to change it, or **✕** to
+remove it. The change takes effect immediately.
 
-1. Find the user in the sharing list
-2. Click the permission dropdown
-3. Select new level
-4. Changes take effect immediately
+An ADMIN or MANAGER can also do this from **Users** → the map icon on a
+user's row. That list shows every map the user can open, with its owner.
+There you can change a share's level, remove it, or give the map to a new
+owner.
 
-## Revoking Access
+## Copying a Map
 
-To remove a user's access:
-
-1. Find the user in the sharing list
-2. Click **Remove** or the trash icon
-3. Confirm removal
-
-The user loses access immediately.
+Anyone except a VIEWER can copy a map they can see: click the copy icon on
+its row in **Maps**. The copy is yours, so you can change it. Running it still
+needs a grant on the map's business area.
 
 ## Shared with Me
 

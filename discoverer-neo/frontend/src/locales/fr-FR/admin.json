@@ -38,7 +38,6 @@
       "dialogTitle": "Accès — {{name}}",
       "dialogDescription": "Contrôlez quels utilisateurs peuvent accéder à ce domaine d'activité et ce qu'ils peuvent y faire.",
       "userLabel": "Utilisateur",
-      "selectUserPlaceholder": "Sélectionner un utilisateur",
       "permissionLabel": "Autorisation",
       "addButton": "Ajouter",
       "revokeTitle": "Révoquer",
@@ -48,9 +47,23 @@
       "toast": {
         "accessGranted": "Accès accordé",
         "grantFailed": "Échec de l'octroi de l'accès",
-        "accessRevoked": "Accès révoqué"
+        "accessRevoked": "Accès révoqué",
+        "accessGrantedCount_one": "Accès accordé à {{count}} utilisateur",
+        "accessGrantedCount_other": "Accès accordé à {{count}} utilisateurs"
+      },
+      "addTooltip": "Accorder à chaque utilisateur coché l'autorisation choisie sur ce domaine d'activité",
+      "filterUsersPlaceholder": "Filtrer les utilisateurs par nom ou e-mail",
+      "selectedCount": "{{count}} sélectionné",
+      "levelHelp": {
+        "VIEW": "Lire les données dans les dossiers de ce domaine. Exécuter les cartes partagées avec l'utilisateur. Voir les dossiers, éléments, jointures et hiérarchies du domaine.",
+        "EXPORT": "Identique à VIEW. Les droits d'exportation et de planification d'une carte dépendent de la façon dont cette carte est partagée.",
+        "SCHEDULE": "Identique à VIEW. Les droits d'exportation et de planification d'une carte dépendent de la façon dont cette carte est partagée.",
+        "CREATE": "Tout ce qui est dans VIEW, plus la création de nouvelles cartes, de nouveaux dossiers, éléments, jointures et hiérarchies dans ce domaine.",
+        "EDIT": "Tout ce qui est dans CREATE, plus la modification de ce domaine et de ses dossiers, éléments, jointures et hiérarchies.",
+        "DELETE": "Tout ce qui est dans EDIT, plus la suppression des dossiers, éléments, jointures et hiérarchies de ce domaine."
       }
-    }
+    },
+    "createButtonTooltip": "Créer un nouveau domaine d'activité"
   },
   "folders": {
     "title": "Dossiers",
@@ -120,7 +133,8 @@
       "added": "Nouveaux éléments : {{names}}",
       "updated": "Mis à jour : {{names}}",
       "missing": "Colonne disparue de la source (élément conservé — supprimez-le si aucune carte ne l’utilise) : {{names}}"
-    }
+    },
+    "createButtonTooltip": "Créer un nouveau dossier"
   },
   "items": {
     "title": "Éléments",
@@ -164,7 +178,8 @@
       "updated": "Élément mis à jour",
       "created": "Élément créé",
       "deactivated": "Élément désactivé"
-    }
+    },
+    "createButtonTooltip": "Créer un nouvel élément"
   },
   "joins": {
     "title": "Jointures",
@@ -175,7 +190,8 @@
     "entityLabel": "jointure",
     "columns": {
       "leftFolder": "Dossier de gauche",
-      "rightFolder": "Dossier de droite"
+      "rightFolder": "Dossier de droite",
+      "columns": "Colonnes"
     },
     "dialog": {
       "editTitle": "Modifier la jointure",
@@ -189,7 +205,12 @@
       "leftItemLabel": "Élément de gauche",
       "rightItemLabel": "Élément de droite",
       "selectItemPlaceholder": "Sélectionner un élément",
-      "joinTypeLabel": "Type de jointure"
+      "joinTypeLabel": "Type de jointure",
+      "operatorLabel": "Opérateur",
+      "operatorTooltip": "Comment les deux colonnes doivent être comparées. Presque toujours « = ».",
+      "addPairButton": "Ajouter une paire de colonnes",
+      "addPairTooltip": "Faire correspondre les deux dossiers sur une colonne de plus. Toutes les paires doivent correspondre (AND).",
+      "removePairTooltip": "Retirer cette paire de colonnes de la jointure"
     },
     "validation": {
       "leftFolderRequired": "Le dossier de gauche est obligatoire",
@@ -201,7 +222,8 @@
       "updated": "Jointure mise à jour",
       "created": "Jointure créée",
       "deactivated": "Jointure désactivée"
-    }
+    },
+    "createButtonTooltip": "Créer une nouvelle jointure"
   },
   "hierarchies": {
     "title": "Hiérarchies",
@@ -224,13 +246,15 @@
       "noLevelsYet": "Aucun niveau pour le moment — ajoutez-en au moins un.",
       "levelNamePlaceholder": "Nom du niveau",
       "itemPlaceholder": "Élément",
-      "reorderAria": "Réordonner le niveau"
+      "reorderAria": "Réordonner le niveau",
+      "removeLevelButtonTooltip": "Supprimer ce niveau"
     },
     "toast": {
       "updated": "Hiérarchie mise à jour",
       "created": "Hiérarchie créée",
       "deactivated": "Hiérarchie désactivée"
-    }
+    },
+    "createButtonTooltip": "Créer une nouvelle hiérarchie"
   },
   "customFunctions": {
     "title": "Fonctions personnalisées",
@@ -283,7 +307,8 @@
       "button": "Rechercher",
       "noResults": "Aucune fonction trouvée.",
       "notCallable": "Ne peut pas être appelée en SQL : {{reason}}",
-      "truncated": "D'autres fonctions correspondent. Saisissez plus du nom pour affiner."
+      "truncated": "D'autres fonctions correspondent. Saisissez plus du nom pour affiner.",
+      "buttonTooltip": "Rechercher des fonctions et des packages de la base de données"
     },
     "refresh": {
       "one": "Actualiser depuis la base de données",
@@ -296,7 +321,8 @@
       "compile": "Champs calculés recompilés : {{message}}",
       "changed": "mis à jour : {{what}}",
       "missing": "absente d’Oracle — conservée, car des champs calculés peuvent encore l’appeler"
-    }
+    },
+    "createButtonTooltip": "Créer une nouvelle fonction personnalisée"
   },
   "dataSources": {
     "title": "Sources de données",
@@ -354,8 +380,10 @@
         "importComplete": "Importation terminée",
         "importCompleteDescription": "{{created}} dossier(s) créé(s), {{skipped}} ignoré(s).",
         "importFailed": "Échec de l'importation"
-      }
-    }
+      },
+      "discoverTablesButtonTooltip": "Relire les tables de ce schéma"
+    },
+    "createButtonTooltip": "Créer une nouvelle connexion de source de données"
   },
   "users": {
     "title": "Utilisateurs",
@@ -420,8 +448,27 @@
         "OWNER": "Propriétaire",
         "SHARE": "Partagée",
         "PUBLIC": "Publique",
-        "GRANT": "Domaine métier"
+        "ROLE": "Rôle de gestionnaire"
+      },
+      "owner": "Propriétaire: {{name}}",
+      "newOwner": "Nouveau propriétaire",
+      "changeOwnerTooltip": "Donner cette carte à un autre utilisateur. Le nouveau propriétaire peut la modifier, la partager et la supprimer.",
+      "removeShareTooltip": "Retirer cette carte à l'utilisateur. Il ne pourra plus l'ouvrir.",
+      "shareLevelTooltip": "Ce que cet utilisateur peut faire avec la carte partagée",
+      "toast": {
+        "shareChanged": "Partage modifié",
+        "shareRemoved": "Partage supprimé",
+        "ownerChanged": "Propriétaire modifié"
       }
+    },
+    "createTooltip": "Ajouter un nouveau compte utilisateur",
+    "editTooltip": "Modifier le nom, l'e-mail, le mot de passe ou le rôle de cet utilisateur",
+    "deleteTooltip": "Supprimer définitivement ce compte utilisateur",
+    "roleHelp": {
+      "ADMIN": "Peut tout faire : utilisateurs, domaines d'activité, sources de données, sécurité et audit. Peut ouvrir, modifier, partager et supprimer toutes les cartes.",
+      "MANAGER": "Modélise les données (domaines d'activité, dossiers, éléments, jointures). Peut ouvrir, exécuter et partager toutes les cartes, et changer le propriétaire d'une carte. Ne modifie que ses propres cartes ; copie une carte pour en créer une nouvelle.",
+      "USER": "Ne voit que ses propres cartes et les cartes partagées avec lui. Crée de nouvelles cartes en copiant l'une d'elles. Exécute, exporte et planifie selon ce que permet chaque partage.",
+      "VIEWER": "Lecture seule. Ouvre et exécute les cartes partagées avec lui. Ne peut pas créer, copier ni modifier de cartes."
     }
   }
 }

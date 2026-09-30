@@ -3669,6 +3669,31 @@ paths:
                           type:
                             - 'null'
                             - string
+                        predicateCount:
+                          type: number
+                        predicates:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              leftItemId:
+                                type:
+                                  - 'null'
+                                  - string
+                              rightItemId:
+                                type:
+                                  - 'null'
+                                  - string
+                              leftItemName:
+                                type:
+                                  - 'null'
+                                  - string
+                              rightItemName:
+                                type:
+                                  - 'null'
+                                  - string
+                              operator:
+                                type: string
                         businessAreaId:
                           type: string
         '400':
@@ -3733,6 +3758,34 @@ paths:
                     - string
                     - 'null'
                   format: uuid
+                predicates:
+                  type: array
+                  maxItems: 20
+                  items:
+                    type: object
+                    required:
+                      - leftItemId
+                      - rightItemId
+                    properties:
+                      leftItemId:
+                        type:
+                          - string
+                          - 'null'
+                        format: uuid
+                      rightItemId:
+                        type:
+                          - string
+                          - 'null'
+                        format: uuid
+                      operator:
+                        type: string
+                        enum:
+                          - '='
+                          - <
+                          - '>'
+                          - <=
+                          - '>='
+                          - <>
                 joinType:
                   type: string
                   enum:
@@ -3781,6 +3834,31 @@ paths:
                           - INNER
                           - LEFT
                           - RIGHT
+                      predicateCount:
+                        type: number
+                      predicates:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            leftItemId:
+                              type:
+                                - 'null'
+                                - string
+                            rightItemId:
+                              type:
+                                - 'null'
+                                - string
+                            leftItemName:
+                              type:
+                                - 'null'
+                                - string
+                            rightItemName:
+                              type:
+                                - 'null'
+                                - string
+                            operator:
+                              type: string
                       isActive:
                         type: boolean
                       createdAt:
@@ -3875,6 +3953,31 @@ paths:
                         type:
                           - 'null'
                           - string
+                      predicateCount:
+                        type: number
+                      predicates:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            leftItemId:
+                              type:
+                                - 'null'
+                                - string
+                            rightItemId:
+                              type:
+                                - 'null'
+                                - string
+                            leftItemName:
+                              type:
+                                - 'null'
+                                - string
+                            rightItemName:
+                              type:
+                                - 'null'
+                                - string
+                            operator:
+                              type: string
                       businessAreaId:
                         type: string
         '400':
@@ -3934,6 +4037,34 @@ paths:
                     - string
                     - 'null'
                   format: uuid
+                predicates:
+                  type: array
+                  maxItems: 20
+                  items:
+                    type: object
+                    required:
+                      - leftItemId
+                      - rightItemId
+                    properties:
+                      leftItemId:
+                        type:
+                          - string
+                          - 'null'
+                        format: uuid
+                      rightItemId:
+                        type:
+                          - string
+                          - 'null'
+                        format: uuid
+                      operator:
+                        type: string
+                        enum:
+                          - '='
+                          - <
+                          - '>'
+                          - <=
+                          - '>='
+                          - <>
                 joinType:
                   type: string
                   enum:
@@ -3982,6 +4113,31 @@ paths:
                           - INNER
                           - LEFT
                           - RIGHT
+                      predicateCount:
+                        type: number
+                      predicates:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            leftItemId:
+                              type:
+                                - 'null'
+                                - string
+                            rightItemId:
+                              type:
+                                - 'null'
+                                - string
+                            leftItemName:
+                              type:
+                                - 'null'
+                                - string
+                            rightItemName:
+                              type:
+                                - 'null'
+                                - string
+                            operator:
+                              type: string
                       isActive:
                         type: boolean
                       createdAt:
@@ -6112,8 +6268,13 @@ paths:
                             - OWNER
                             - SHARE
                             - PUBLIC
-                            - GRANT
+                            - ROLE
                         sharePermission:
+                          type: string
+                          nullable: true
+                        ownerId:
+                          type: string
+                        ownerName:
                           type: string
                           nullable: true
         '400':
@@ -6633,6 +6794,22 @@ paths:
             format: uuid
           in: path
           name: userId
+          required: true
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Default Response
+  /api/maps/{id}/owner:
+    put:
+      tags:
+        - Map Shares
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+          in: path
+          name: id
           required: true
       security:
         - bearerAuth: []

@@ -305,7 +305,7 @@ export function FoldersPage() {
             <RefreshCw className={`h-4 w-4 ${refreshMutation.isPending ? 'animate-spin' : ''}`} />{' '}
             {t('admin:folders.refresh.all')}
           </Button>
-          <Button onClick={openCreate} disabled={!businessAreaId}>
+          <Button onClick={openCreate} disabled={!businessAreaId} title={t('admin:folders.createButtonTooltip')}>
             <Plus className="h-4 w-4" /> {t('admin:folders.createButton')}
           </Button>
         </div>

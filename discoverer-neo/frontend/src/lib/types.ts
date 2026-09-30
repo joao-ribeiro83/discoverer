@@ -153,6 +153,14 @@ export interface Join {
   mandatory: boolean
   /** How many column pairs the predicate has. 0 means the join cannot run. */
   predicateCount: number
+  /** Every column pair, ANDed in order. */
+  predicates?: {
+    leftItemId: string | null
+    rightItemId: string | null
+    leftItemName: string | null
+    rightItemName: string | null
+    operator: string
+  }[]
 }
 
 export interface JoinSuggestion {
@@ -355,6 +363,9 @@ export interface MapSummary {
   isPublic: boolean
   isActive: boolean
   workbookId?: string | null
+  /** Display names the Maps list adds; absent elsewhere. */
+  ownerName?: string | null
+  workbookName?: string | null
   createdAt: string
   updatedAt: string
 }

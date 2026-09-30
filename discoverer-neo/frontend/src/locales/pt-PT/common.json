@@ -75,5 +75,6 @@
     "count_other": "{{count}} linhas",
     "selected_one": "{{count}} linha selecionada",
     "selected_other": "{{count}} linhas selecionadas"
-  }
+  },
+  "backTooltip": "Voltar à página de onde veio"
 }

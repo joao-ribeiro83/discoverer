@@ -99,7 +99,7 @@ describe('ExportsPage download', () => {
     renderPage()
 
     const row = (await screen.findByText('Sales by Region')).closest('tr')!
-    fireEvent.click(within(row).getByTitle('Download'))
+    fireEvent.click(within(row).getByRole('button', { name: 'Download' }))
 
     await waitFor(() => expect(mockedApi.exports.download).toHaveBeenCalledWith('job-1'))
     expect(mockToast).not.toHaveBeenCalled()
@@ -109,7 +109,7 @@ describe('ExportsPage download', () => {
     mockedApi.exports.list.mockResolvedValue({ data: { data: [job({ status: 'PROCESSING' })] } } as never)
     renderPage()
     const row = (await screen.findByText('Sales by Region')).closest('tr')!
-    expect(within(row).queryByTitle('Download')).not.toBeInTheDocument()
+    expect(within(row).queryByRole('button', { name: 'Download' })).not.toBeInTheDocument()
   })
 
   it('toasts a failure when the download rejects', async () => {
@@ -118,7 +118,7 @@ describe('ExportsPage download', () => {
     renderPage()
 
     const row = (await screen.findByText('Sales by Region')).closest('tr')!
-    fireEvent.click(within(row).getByTitle('Download'))
+    fireEvent.click(within(row).getByRole('button', { name: 'Download' }))
 
     await waitFor(() =>
       expect(mockToast).toHaveBeenCalledWith(

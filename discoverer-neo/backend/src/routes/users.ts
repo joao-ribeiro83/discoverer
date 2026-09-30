@@ -15,7 +15,7 @@ import {
   buildCredentialCsv,
   writeCredentialFile,
 } from '../services/credential-file.service.js';
-import { listAll, listSharedWithUser } from '../services/map.service.js';
+import { listAll, listSharedWithUser, withListNames } from '../services/map.service.js';
 
 // ---------------------------------------------------------------------------
 // Validation schemas
@@ -79,6 +79,9 @@ const errorResponse = {
 export default function userRoutes(fastify: FastifyInstance) {
   // All user-management endpoints are admin-only.
   const adminPreHandler = [fastify.authenticate, fastify.authorizeAdmin];
+  // Read-only user routes a MANAGER needs: the Users page's list and its
+  // per-user map list, where a manager tidies shares and ownership.
+  const adminManagerPreHandler = [fastify.authenticate, fastify.authorize('ADMIN', 'MANAGER')];
 
   // GET /api/users/search?q= — any authenticated user may search for a
   // teammate to share a map with. Deliberately NOT admin-gated (unlike every
@@ -126,7 +129,7 @@ export default function userRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/api/users',
     {
-      preHandler: adminPreHandler,
+      preHandler: adminManagerPreHandler,
       schema: {
         tags: ['Users'],
         security: [{ bearerAuth: [] }],
@@ -253,7 +256,7 @@ export default function userRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/api/users/:id/maps',
     {
-      preHandler: adminPreHandler,
+      preHandler: adminManagerPreHandler,
       schema: {
         tags: ['Users'],
         security: [{ bearerAuth: [] }],
@@ -273,8 +276,10 @@ export default function userRoutes(fastify: FastifyInstance) {
                   properties: {
                     id: { type: 'string' },
                     name: { type: 'string' },
-                    via: { type: 'string', enum: ['ADMIN', 'OWNER', 'SHARE', 'PUBLIC', 'GRANT'] },
+                    via: { type: 'string', enum: ['ADMIN', 'OWNER', 'SHARE', 'PUBLIC', 'ROLE'] },
                     sharePermission: { type: 'string', nullable: true },
+                    ownerId: { type: 'string' },
+                    ownerName: { type: 'string', nullable: true },
                   },
                 },
               },
@@ -298,7 +303,7 @@ export default function userRoutes(fastify: FastifyInstance) {
       }
 
       const [visible, shared] = await Promise.all([
-        listAll({ sub: user.id, role: user.role }),
+        listAll({ sub: user.id, role: user.role }).then(withListNames),
         listSharedWithUser(user.id),
       ]);
       const shareLevel = new Map(shared.map((m) => [m.id, m.sharePermission]));
@@ -314,8 +319,10 @@ export default function userRoutes(fastify: FastifyInstance) {
                 ? 'SHARE'
                 : m.isPublic
                   ? 'PUBLIC'
-                  : 'GRANT',
+                  : 'ROLE',
         sharePermission: shareLevel.get(m.id) ?? null,
+        ownerId: m.createdBy,
+        ownerName: m.ownerName,
       }));
       return reply.code(200).send({ data });
     },

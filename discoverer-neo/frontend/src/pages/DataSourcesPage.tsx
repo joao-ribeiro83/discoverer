@@ -221,7 +221,7 @@ export function DataSourcesPage() {
       title={t('admin:dataSources.title')}
       description={t('admin:dataSources.description')}
       action={
-        <Button onClick={openCreate}>
+        <Button onClick={openCreate} title={t('admin:dataSources.createButtonTooltip')}>
           <Plus className="h-4 w-4" /> {t('admin:dataSources.createButton')}
         </Button>
       }
@@ -389,7 +389,7 @@ function ImportTablesDialog({ dataSource, onClose }: { dataSource: DataSource; o
             <Label>{t('admin:dataSources.import.tableOwnerLabel')}</Label>
             <Input value={tableOwner} onChange={(e) => setTableOwner(e.target.value)} placeholder={t('admin:dataSources.import.tableOwnerPlaceholder')} />
           </div>
-          <Button onClick={() => void tablesQuery.refetch()} disabled={tablesQuery.isFetching}>
+          <Button onClick={() => void tablesQuery.refetch()} disabled={tablesQuery.isFetching} title={t('admin:dataSources.import.discoverTablesButtonTooltip')}>
             <Search className="h-4 w-4" /> {t('admin:shared.discoverTablesButton')}
           </Button>
         </div>

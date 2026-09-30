@@ -324,6 +324,90 @@ fuga, e o hook de auditoria não tem forma de o avisar.
 
 `backend/src/__tests__/audit-redaction.test.ts` fixa a regra.
 
+## O que mudou nas permissões de áreas de negócio
+
+Três alterações à forma como uma permissão é lida. Todas restringem o acesso;
+nenhuma o alarga.
+
+### 1. Uma permissão na área de negócio do mapa já não basta
+
+Executar um mapa exige agora uma permissão em **todas as pastas que a consulta
+utiliza**, e não na área de negócio registada no mapa. Uma pasta é abrangida por
+uma permissão em *qualquer* área de negócio a que pertence — a que é sua
+proprietária ou qualquer uma com que foi partilhada.
+
+Isto fecha uma escalada: antes, ser proprietário de um mapa ou tê-lo partilhado
+permitia ler pastas de uma área de negócio em que nunca tinha recebido permissão,
+porque as verificações de proprietário, público e partilha terminavam antes de a
+verificação da permissão ser executada.
+
+**O que pode ver:** um utilizador que antes conseguia abrir um relatório
+partilhado ou público recebe agora *"Não tem acesso aos dados da pasta X"*. A
+solução é uma permissão numa área de negócio a que essa pasta pertence — não uma
+alteração ao mapa.
+
+Os administradores continuam a contornar esta verificação. O contorno fica agora
+registado no registo de auditoria como `DATA_ENTITLEMENT_ADMIN_BYPASS`, e só
+quando o administrador realmente não tem permissão, pelo que o registo mostra
+contornos reais e não todas as consultas de administradores.
+
+### 2. Uma política de área de negócio segue agora as pastas, não o mapa
+
+Uma regra com âmbito `BUSINESS_AREA` é aplicada quando **qualquer pasta que a
+consulta lê** pertence a essa área de negócio — como proprietária ou por partilha.
+Antes, era comparada com uma única coluna da linha do mapa.
+
+**O que pode ver:** uma política a atingir um relatório que não esperava, porque
+esse relatório lê uma pasta da sua área de negócio, embora o relatório em si
+esteja arquivado noutro local. É o comportamento pretendido: a política protege
+os dados, não o relatório.
+
+### 3. Uma pasta sem política para o utilizador é recusada
+
+Executar uma consulta exige uma política de segurança ao nível da linha que cubra
+**todas as pastas que ela lê**. Um utilizador sem essa política é recusado, com
+indicação da pasta, em vez de receber todas as linhas — ver a secção sobre a
+segurança ao nível da linha que falha em modo fechado.
+
+**O que pode ver:** *"Refusing to run unfiltered: no row-level security policy
+resolves for you on folder(s) X"*. A solução é atribuir a esse utilizador (ou à
+sua função) uma política que cubra a pasta. Se deve ver tudo, atribua-lhe uma
+política permissiva (`1 = 1`) em vez de o deixar sem política — a ausência de
+política nunca é lida como permissão.
+
+Isto aplica-se **também aos administradores**. Os administradores contornam as
+permissões; não contornam as políticas ao nível da linha.
+
+Começou na fase 1.1 como uma regra mais estreita — recusar apenas uma pasta que
+alguma política ativa já visasse — e tornou-se o modo fechado completo na fase
+6.3. `ROW_LEVEL_FAIL_MODE=OPEN` repõe a regra mais estreita; nunca deixa correr
+sem filtro uma pasta visada por uma política.
+
+### 4. Uma permissão de área de negócio já não mostra os mapas de outras pessoas
+
+Uma permissão de área de negócio, a qualquer nível, é um direito sobre os
+**dados**. Permite criar e executar os seus próprios mapas sobre essa área de
+negócio; não coloca na sua lista todos os mapas que outra pessoa guardou nela.
+
+Ver o mapa de outra pessoa exige uma de: é ADMIN ou MANAGER, é o proprietário, o
+mapa é público ou foi partilhado consigo (`map_shares`). Um MANAGER pode ver,
+executar, exportar, agendar e partilhar todos os mapas, mas alterar apenas os
+seus. (Até à versão seguinte à 1.1.0, uma permissão de autoria — `CREATE`,
+`EDIT` ou `DELETE` — também mostrava os mapas de uma área. Já não mostra.)
+
+Isto corresponde ao Discoverer, onde uma permissão de área de negócio permitia
+escrever folhas sobre esses dados, mas abrir o livro de outra pessoa exigia uma
+permissão explícita sobre o livro (`ACCESS_PRIVS.AP_TYPE = 'GD'`). Essas
+permissões de livro migram agora para `map_shares`, uma partilha por folha, ao
+nível `EXPORT` — o que permite ao destinatário executar o mapa, exportar o
+resultado e agendá-lo, mas não editá-lo.
+
+**O que pode ver:** um utilizador migrado cuja lista de mapas fica de repente
+curta. Todas as permissões que uma migração escreve estão abaixo de `CREATE`,
+pelo que, antes desta alteração, uma única permissão `VIEW` mostrava todos os
+mapas da área de negócio. A solução é partilhar os mapas que essa pessoa deve
+ter, ou torná-la MANAGER se tiver de ver todos os mapas.
+
 ## Acesso ao nível do objecto
 
 Ler uma pasta, um item, uma junção ou uma hierarquia pelo seu id exige a mesma

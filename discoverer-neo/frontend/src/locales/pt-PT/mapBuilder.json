@@ -22,7 +22,13 @@
     "exportCsv": "CSV (.csv)",
     "exportXml": "Definição do mapa (.xml)",
     "shareDisabledTitle": "Guarde o mapa antes de o partilhar",
-    "scheduleDisabledTitle": "Guarde o mapa antes de o agendar"
+    "scheduleDisabledTitle": "Guarde o mapa antes de o agendar",
+    "runTooltip": "Guardar o mapa e executá-lo. A execução também aparece na página Execuções.",
+    "saveTooltip": "Guardar as suas alterações neste mapa",
+    "exportTooltip": "Descarregar a definição do mapa como XML",
+    "scheduleTooltip": "Executar este mapa de acordo com um horário e manter os resultados",
+    "conditionalFormatTooltip": "Colorir as células que cumprem uma regra que defina",
+    "shareTooltip": "Escolher quem mais pode abrir este mapa e o que pode fazer com ele"
   },
   "page": {
     "loading": "A carregar mapa…",
@@ -63,7 +69,8 @@
     "roleDimension": "Dimensão",
     "addAria": "Adicionar {{name}} ao mapa",
     "addedTitle": "Adicionado ao mapa",
-    "addedDescription": "\"{{name}}\" adicionado à tela."
+    "addedDescription": "\"{{name}}\" adicionado à tela.",
+    "toggleButtonTooltip": "Expandir ou recolher"
   },
   "canvas": {
     "title": "Colunas",
@@ -72,7 +79,8 @@
     "emptyPickHint": "Escolha dimensões e medidas a partir da árvore à esquerda.",
     "reorderAria": "Reordenar coluna",
     "configureTitle": "Configurar coluna",
-    "removeAria": "Remover {{label}}"
+    "removeAria": "Remover {{label}}",
+    "removeButtonTooltip": "Remover do quadro"
   },
   "columnConfig": {
     "title": "Configurar coluna",
@@ -122,12 +130,7 @@
     "description": "Conceda a outros utilizadores acesso para ver, exportar ou editar este mapa.",
     "searchPlaceholder": "Pesquisar por nome ou email…",
     "searchAria": "Pesquisar utilizadores com quem partilhar",
-    "searching": "A pesquisar…",
     "noMatchingUsers": "Nenhum utilizador correspondente",
-    "permissionAria": "Nível de permissão",
-    "shareButton": "Partilhar",
-    "peopleWithAccess": "Pessoas com acesso",
-    "notSharedYet": "Ainda não foi partilhado com ninguém.",
     "permissionForAria": "Permissão para {{name}}",
     "revokeAria": "Revogar acesso de {{name}}",
     "publicNotice": "Este mapa é público — qualquer pessoa com a ligação pode vê-lo.",
@@ -140,11 +143,17 @@
     "toastShared": "Mapa partilhado",
     "toastShareFailedTitle": "Não foi possível partilhar o mapa",
     "toastPermissionUpdated": "Permissão atualizada",
-    "toastPermissionUpdateFailedTitle": "Não foi possível atualizar a permissão",
     "toastRevoked": "Acesso revogado",
     "toastRevokeFailedTitle": "Não foi possível revogar o acesso",
     "toastLinkCopied": "Ligação copiada para a área de transferência",
-    "toastCopyFailedTitle": "Não foi possível copiar a ligação"
+    "toastCopyFailedTitle": "Não foi possível copiar a ligação",
+    "listHint": "Clique num nível junto a uma pessoa para partilhar com ela. O botão escuro é o que ela tem agora. ✕ remove o acesso dessa pessoa.",
+    "copyLinkTooltip": "Copiar o endereço deste mapa, para enviar a alguém",
+    "permissionHelp": {
+      "VIEW": "Pode abrir e executar o mapa. Não pode exportá-lo, agendá-lo nem alterá-lo.",
+      "EXPORT": "Pode abrir e executar o mapa, exportar o seu resultado e agendá-lo.",
+      "EDIT": "Pode fazer tudo o que foi indicado acima e também alterar o mapa."
+    }
   },
   "conditionalFormat": {
     "title": "Formatação condicional",
@@ -184,7 +193,10 @@
     "toastCreated": "Regra adicionada",
     "toastCreateFailedTitle": "Não foi possível adicionar a regra",
     "toastDeleted": "Regra eliminada",
-    "toastDeleteFailedTitle": "Não foi possível eliminar a regra"
+    "toastDeleteFailedTitle": "Não foi possível eliminar a regra",
+    "addRuleTooltip": "Adicionar uma nova regra de formatação",
+    "clearBackgroundColorTooltip": "Remover a cor de fundo",
+    "clearTextColorTooltip": "Remover a cor do texto"
   },
   "panels": {
     "tabs": {
@@ -236,7 +248,12 @@
       "valuePlaceholderDefault": "Valor",
       "parameterNameAria": "Nome do parâmetro",
       "parameterNamePlaceholder": "Nome do parâmetro",
-      "deleteAria": "Eliminar condição"
+      "deleteAria": "Eliminar condição",
+      "addTooltip": "Adicionar uma nova condição",
+      "groupTooltip": "Agrupar as condições selecionadas num bloco OR",
+      "ungroupTooltip": "Remover o agrupamento OR deste bloco",
+      "staticValueTooltip": "Usar um valor fixo para esta condição",
+      "promptAtRuntimeTooltip": "Pedir este valor ao executar o mapa"
     },
     "sort": {
       "emptyNoColumns": "Adicione colunas para configurar a ordenação.",
@@ -248,11 +265,14 @@
       "addSortButton": "Adicionar Ordenação",
       "reorderAria": "Reordenar {{label}}",
       "sortDirectionAria": "Direção de ordenação de {{label}}",
-      "removeAria": "Remover ordenação de {{label}}"
+      "removeAria": "Remover ordenação de {{label}}",
+      "addButtonTooltip": "Adicionar outro nível de ordenação",
+      "removeButtonTooltip": "Remover este nível de ordenação"
     },
     "parameters": {
       "title": "Parâmetros",
       "addButton": "Adicionar Parâmetro",
+      "addButtonTooltip": "Adicionar um novo parâmetro",
       "empty": "Nenhum parâmetro. Adicione um para pedir aos utilizadores em tempo de execução.",
       "previewLabel": "Pré-visualização do pedido em tempo de execução",
       "unnamed": "Parâmetro sem nome",
@@ -260,6 +280,7 @@
       "namePlaceholder": "Nome do parâmetro",
       "typeAria": "Tipo de parâmetro",
       "deleteAria": "Eliminar parâmetro {{name}}",
+      "removeButtonTooltip": "Remover este parâmetro",
       "defaultValueAria": "Valor predefinido",
       "defaultValuePlaceholder": "Valor predefinido",
       "defaultValueListPlaceholder": "valores, separados, por vírgula",
@@ -268,6 +289,7 @@
     "calculatedFields": {
       "title": "Campos calculados",
       "addButton": "Adicionar Campo Calculado",
+      "addButtonTooltip": "Adicionar um novo campo calculado",
       "empty": "Nenhum campo calculado. Adicione um para derivar uma nova coluna a partir de uma fórmula.",
       "reorderAria": "Reordenar {{name}}",
       "fallbackName": "campo calculado",
@@ -276,6 +298,8 @@
       "displayOrderAria": "Ordem de exibição",
       "displayOrderTitle": "Ordem de exibição",
       "deleteAria": "Eliminar {{name}}",
+      "editButtonTooltip": "Editar a fórmula do campo",
+      "removeButtonTooltip": "Remover este campo calculado",
       "clickToWriteFormula": "Clique para escrever uma fórmula…"
     },
     "formula": {
@@ -301,7 +325,11 @@
         "unbalancedBrackets": "Referências de coluna [ ] não balanceadas.",
         "unknownFunction": "Função desconhecida \"{{name}}\".",
         "unknownColumnReference": "Referência de coluna desconhecida \"[{{name}}]\"."
-      }
+      },
+      "testFormulaTooltip": "Executar a fórmula nas primeiras 5 linhas para verificar se funciona"
+    },
+    "descriptionEditor": {
+      "insertButtonTooltip": "Inserir variável ou parâmetro"
     }
   }
 }

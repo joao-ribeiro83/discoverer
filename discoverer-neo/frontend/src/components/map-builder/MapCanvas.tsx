@@ -139,6 +139,7 @@ function ColumnRow({
         size="icon"
         className="h-7 w-7 shrink-0"
         onClick={() => removeItem(item.key)}
+        title={t('mapBuilder:canvas.removeButtonTooltip')}
         aria-label={t('mapBuilder:canvas.removeAria', { label: columnLabel(item) })}
       >
         <X className="h-4 w-4" />

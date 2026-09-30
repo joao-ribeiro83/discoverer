@@ -369,15 +369,17 @@ active policy already targeted — and became the full fail-closed in Phase 6.3.
 `ROW_LEVEL_FAIL_MODE=OPEN` brings the narrower rule back; it never lets a
 folder that a policy targets run unfiltered.
 
-### 4. A grant below CREATE no longer shows you other people's maps
+### 4. A business-area grant no longer shows you other people's maps
 
-A business-area grant of `VIEW`, `EXPORT` or `SCHEDULE` is a **data**
-entitlement. It lets you build and run your own maps over that business area;
-it does not put every map somebody else saved there into your list.
+A business-area grant, at any level, is a **data** entitlement. It lets you
+build and run your own maps over that business area; it does not put every map
+somebody else saved there into your list.
 
-Seeing another person's map needs one of: you own it, it is public, it was
-shared with you (`map_shares`), or you hold an **authoring** grant — `CREATE`,
-`EDIT` or `DELETE` — on its business area.
+Seeing another person's map needs one of: you are an ADMIN or a MANAGER, you
+own it, it is public, or it was shared with you (`map_shares`). A MANAGER may
+view, run, export, schedule and share every map, but change only their own.
+(Until the next release after 1.1.0, an authoring grant — `CREATE`, `EDIT` or
+`DELETE` — also showed an area's maps. It no longer does.)
 
 This matches Discoverer, where a business-area grant let you write worksheets
 over that data while opening somebody else's saved workbook needed an explicit
@@ -389,7 +391,7 @@ it.
 **What you may see:** a migrated user whose map list is suddenly short. Every
 grant a migration writes is below `CREATE`, so before this change one `VIEW`
 grant showed every map in the business area. The fix is to share the maps that
-person is meant to have, or raise their grant to `CREATE` if they are an author.
+person is meant to have, or make them a MANAGER if they must see every map.
 
 ## Object-level access
 

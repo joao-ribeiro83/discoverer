@@ -5,7 +5,7 @@ import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
 import type { ColumnDef } from '@tanstack/react-table'
-import { Plus, Pencil, Trash2, Wand2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, Wand2, X } from 'lucide-react'
 import { apiClient, getErrorMessage } from '@/lib/api'
 import type { Folder, Item, Join, JoinSuggestion } from '@/lib/types'
 import { useToast } from '@/hooks/use-toast'
@@ -38,12 +38,18 @@ function buildFormSchema(t: (key: string) => string) {
     name: z.string().min(1, t('admin:shared.validation.nameRequired')).max(255),
     leftFolderId: z.string().min(1, t('admin:joins.validation.leftFolderRequired')),
     rightFolderId: z.string().min(1, t('admin:joins.validation.rightFolderRequired')),
-    leftItemId: z.string().optional(),
-    rightItemId: z.string().optional(),
     joinType: z.enum(JOIN_TYPES),
   })
 }
 type FormValues = z.infer<ReturnType<typeof buildFormSchema>>
+
+const JOIN_OPERATORS = ['=', '<>', '<', '<=', '>', '>='] as const
+interface JoinPair {
+  leftItemId: string
+  rightItemId: string
+  operator: string
+}
+const EMPTY_PAIR: JoinPair = { leftItemId: '', rightItemId: '', operator: '=' }
 
 export function JoinsPage() {
   const { t } = useTranslation(['admin', 'common'])
@@ -55,6 +61,8 @@ export function JoinsPage() {
   const [editing, setEditing] = useState<Join | null>(null)
   const [deleting, setDeleting] = useState<Join | null>(null)
   const [suggestions, setSuggestions] = useState<JoinSuggestion[]>([])
+  // The join's column pairs, ANDed. Two folders can match on more than one column.
+  const [pairs, setPairs] = useState<JoinPair[]>([EMPTY_PAIR])
 
   const { data: businessAreas } = useQuery({
     queryKey: ['business-areas'],
@@ -75,7 +83,7 @@ export function JoinsPage() {
 
   const form = useForm<FormValues>({
     resolver: standardSchemaResolver(buildFormSchema(t)),
-    defaultValues: { name: '', leftFolderId: '', rightFolderId: '', leftItemId: '', rightItemId: '', joinType: 'INNER' },
+    defaultValues: { name: '', leftFolderId: '', rightFolderId: '', joinType: 'INNER' },
   })
 
   const leftFolderId = form.watch('leftFolderId')
@@ -96,7 +104,8 @@ export function JoinsPage() {
   function openCreate() {
     setEditing(null)
     setSuggestions([])
-    form.reset({ name: '', leftFolderId: '', rightFolderId: '', leftItemId: '', rightItemId: '', joinType: 'INNER' })
+    form.reset({ name: '', leftFolderId: '', rightFolderId: '', joinType: 'INNER' })
+    setPairs([EMPTY_PAIR])
     setDialogOpen(true)
   }
 
@@ -107,10 +116,17 @@ export function JoinsPage() {
       name: join.name,
       leftFolderId: join.leftFolderId,
       rightFolderId: join.rightFolderId,
-      leftItemId: join.leftItemId ?? '',
-      rightItemId: join.rightItemId ?? '',
       joinType: join.joinType,
     })
+    setPairs(
+      join.predicates?.length
+        ? join.predicates.map((p) => ({
+            leftItemId: p.leftItemId ?? '',
+            rightItemId: p.rightItemId ?? '',
+            operator: p.operator,
+          }))
+        : [{ leftItemId: join.leftItemId ?? '', rightItemId: join.rightItemId ?? '', operator: '=' }],
+    )
     setDialogOpen(true)
   }
 
@@ -134,8 +150,12 @@ export function JoinsPage() {
   function applySuggestion(s: JoinSuggestion) {
     form.setValue('leftFolderId', s.leftFolderId)
     form.setValue('rightFolderId', s.rightFolderId)
-    form.setValue('leftItemId', s.leftItemId)
-    form.setValue('rightItemId', s.rightItemId)
+    // A suggestion fills the first empty pair, or adds one.
+    setPairs((prev) => {
+      const pair = { leftItemId: s.leftItemId, rightItemId: s.rightItemId, operator: '=' }
+      const empty = prev.findIndex((p) => !p.leftItemId && !p.rightItemId)
+      return empty >= 0 ? prev.map((p, i) => (i === empty ? pair : p)) : [...prev, pair]
+    })
     form.setValue('joinType', s.suggestedJoinType)
     if (!form.getValues('name')) {
       form.setValue('name', `${s.leftColumnName} = ${s.rightColumnName}`)
@@ -148,8 +168,13 @@ export function JoinsPage() {
         name: values.name,
         leftFolderId: values.leftFolderId,
         rightFolderId: values.rightFolderId,
-        leftItemId: values.leftItemId || null,
-        rightItemId: values.rightItemId || null,
+        predicates: pairs
+          .filter((p) => p.leftItemId || p.rightItemId)
+          .map((p) => ({
+            leftItemId: p.leftItemId || null,
+            rightItemId: p.rightItemId || null,
+            operator: p.operator,
+          })),
         joinType: values.joinType,
       }
 
@@ -185,6 +210,20 @@ export function JoinsPage() {
     { accessorKey: 'name', header: t('common:labels.name') },
     { accessorKey: 'leftFolderName', header: t('admin:joins.columns.leftFolder') },
     { accessorKey: 'rightFolderName', header: t('admin:joins.columns.rightFolder') },
+    {
+      id: 'columns',
+      header: t('admin:joins.columns.columns'),
+      cell: ({ row }) => {
+        const text = (row.original.predicates ?? [])
+          .map((p) => `${p.leftItemName ?? '?'} ${p.operator} ${p.rightItemName ?? '?'}`)
+          .join(' AND ')
+        return (
+          <span className="block max-w-xs truncate text-muted-foreground" title={text}>
+            {text || '—'}
+          </span>
+        )
+      },
+    },
     { accessorKey: 'joinType', header: t('common:labels.type'), cell: ({ row }) => <Badge variant="outline">{row.original.joinType}</Badge> },
     {
       id: 'actions',
@@ -207,7 +246,7 @@ export function JoinsPage() {
       title={t('admin:joins.title')}
       description={t('admin:joins.description')}
       action={
-        <Button onClick={openCreate} disabled={!businessAreaId}>
+        <Button onClick={openCreate} disabled={!businessAreaId} title={t('admin:joins.createButtonTooltip')}>
           <Plus className="h-4 w-4" /> {t('admin:joins.createButton')}
         </Button>
       }
@@ -311,37 +350,84 @@ export function JoinsPage() {
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
+          <div className="space-y-2">
+            <div className="grid grid-cols-[1fr_72px_1fr_36px] gap-2 text-sm font-medium">
               <Label>{t('admin:joins.form.leftItemLabel')}</Label>
-              <Select value={form.watch('leftItemId')} onValueChange={(v) => form.setValue('leftItemId', v)} disabled={!leftFolderId}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('admin:joins.form.selectItemPlaceholder')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {(leftItems ?? []).map((it) => (
-                    <SelectItem key={it.id} value={it.id}>
-                      {it.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
+              <span />
               <Label>{t('admin:joins.form.rightItemLabel')}</Label>
-              <Select value={form.watch('rightItemId')} onValueChange={(v) => form.setValue('rightItemId', v)} disabled={!rightFolderId}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('admin:joins.form.selectItemPlaceholder')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {(rightItems ?? []).map((it) => (
-                    <SelectItem key={it.id} value={it.id}>
-                      {it.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <span />
             </div>
+            {pairs.map((pair, i) => (
+              <div key={i} className="grid grid-cols-[1fr_72px_1fr_36px] items-center gap-2">
+                <Select
+                  value={pair.leftItemId}
+                  onValueChange={(v) => setPairs((prev) => prev.map((p, j) => (j === i ? { ...p, leftItemId: v } : p)))}
+                  disabled={!leftFolderId}
+                >
+                  <SelectTrigger aria-label={t('admin:joins.form.leftItemLabel')}>
+                    <SelectValue placeholder={t('admin:joins.form.selectItemPlaceholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(leftItems ?? []).map((it) => (
+                      <SelectItem key={it.id} value={it.id}>
+                        {it.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={pair.operator}
+                  onValueChange={(v) => setPairs((prev) => prev.map((p, j) => (j === i ? { ...p, operator: v } : p)))}
+                >
+                  <SelectTrigger aria-label={t('admin:joins.form.operatorLabel')} title={t('admin:joins.form.operatorTooltip')}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {JOIN_OPERATORS.map((op) => (
+                      <SelectItem key={op} value={op}>
+                        {op}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={pair.rightItemId}
+                  onValueChange={(v) => setPairs((prev) => prev.map((p, j) => (j === i ? { ...p, rightItemId: v } : p)))}
+                  disabled={!rightFolderId}
+                >
+                  <SelectTrigger aria-label={t('admin:joins.form.rightItemLabel')}>
+                    <SelectValue placeholder={t('admin:joins.form.selectItemPlaceholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(rightItems ?? []).map((it) => (
+                      <SelectItem key={it.id} value={it.id}>
+                        {it.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  disabled={pairs.length === 1}
+                  onClick={() => setPairs((prev) => prev.filter((_, j) => j !== i))}
+                  title={t('admin:joins.form.removePairTooltip')}
+                  aria-label={t('admin:joins.form.removePairTooltip')}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setPairs((prev) => [...prev, EMPTY_PAIR])}
+              title={t('admin:joins.form.addPairTooltip')}
+            >
+              <Plus className="h-4 w-4" /> {t('admin:joins.form.addPairButton')}
+            </Button>
           </div>
 
           <div className="space-y-2">

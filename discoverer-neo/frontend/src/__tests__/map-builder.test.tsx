@@ -22,11 +22,13 @@ vi.mock('@/lib/api', () => ({
       get: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
-      execute: vi.fn(),
+      requestRun: vi.fn(),
+      plan: vi.fn(),
       getHistory: vi.fn(),
       exportXml: vi.fn(),
       createExport: vi.fn(),
     },
+    runs: { get: vi.fn(), rows: vi.fn() },
     exports: {
       list: vi.fn(),
       getStatus: vi.fn(),
@@ -303,15 +305,17 @@ describe('MapBuilderPage run', () => {
   }
 
   function mockExecuteResult() {
-    mockedApi.maps.execute.mockResolvedValue(
-      envelope({
-        columns: [{ name: 'C1', label: 'Amount', isAggregate: false }],
-        rows: [{ C1: 10 }],
-        rowCount: 1,
-        executionTimeMs: 5,
-        truncated: false,
-      }) as never,
-    )
+    const run = {
+      id: 'run-1',
+      status: 'COMPLETED',
+      columns: [{ name: 'C1', label: 'Amount', isAggregate: false }],
+      rowCount: 1,
+      executionTimeMs: 5,
+      truncated: false,
+    }
+    mockedApi.maps.requestRun.mockResolvedValue({ data: run, reused: false } as never)
+    mockedApi.runs.get.mockResolvedValue(envelope(run) as never)
+    mockedApi.runs.rows.mockResolvedValue(envelope([{ C1: 10 }]) as never)
   }
 
   it('runs immediately (no prompt) when the map has no parameters', async () => {
@@ -340,8 +344,9 @@ describe('MapBuilderPage run', () => {
     fireEvent.click(runButton)
 
     expect(screen.queryByText('Run parameters')).not.toBeInTheDocument()
-    await waitFor(() => expect(mockedApi.maps.execute).toHaveBeenCalledTimes(1))
-    expect(mockedApi.maps.execute).toHaveBeenCalledWith('new-map-2', { parameters: {} })
+    await waitFor(() => expect(mockedApi.maps.requestRun).toHaveBeenCalledTimes(1))
+    expect(mockedApi.maps.requestRun).toHaveBeenCalledWith('new-map-2', { parameters: {} })
+    await waitFor(() => expect(mockedApi.runs.rows).toHaveBeenCalledWith('run-1', 0, 500))
   })
 
   it('opens the parameter prompt when a parameter lacks a default, then runs with the entered value', async () => {
@@ -373,13 +378,13 @@ describe('MapBuilderPage run', () => {
 
     const dialog = await screen.findByRole('dialog')
     within(dialog).getByText('Run parameters')
-    expect(mockedApi.maps.execute).not.toHaveBeenCalled()
+    expect(mockedApi.maps.requestRun).not.toHaveBeenCalled()
 
     fireEvent.change(within(dialog).getByLabelText('Parameter1'), { target: { value: 'East' } })
     fireEvent.click(within(dialog).getByRole('button', { name: 'Run' }))
 
-    await waitFor(() => expect(mockedApi.maps.execute).toHaveBeenCalledTimes(1))
-    expect(mockedApi.maps.execute).toHaveBeenCalledWith('new-map-3', {
+    await waitFor(() => expect(mockedApi.maps.requestRun).toHaveBeenCalledTimes(1))
+    expect(mockedApi.maps.requestRun).toHaveBeenCalledWith('new-map-3', {
       parameters: { Parameter1: 'East' },
     })
   })

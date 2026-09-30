@@ -4,7 +4,8 @@
     "description": "Every mutating request — data changes, exports, migrations, and authentication events — captured automatically."
   },
   "actions": {
-    "exportCsv": "Export CSV (this page)"
+    "exportCsv": "Export CSV (this page)",
+    "exportCsvTooltip": "Export the current page of audit entries as CSV"
   },
   "actorUnknown": "System / unauthenticated",
   "csv": {
@@ -47,7 +48,8 @@
     "actionLabel": "Action",
     "actionPlaceholder": "e.g. POST /api/maps",
     "fromLabel": "From",
-    "toLabel": "To"
+    "toLabel": "To",
+    "clearTooltip": "Clear all filters and reset to the beginning"
   },
   "pagination": {
     "noResults": "No results"

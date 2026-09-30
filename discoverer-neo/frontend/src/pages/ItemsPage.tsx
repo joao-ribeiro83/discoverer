@@ -188,7 +188,7 @@ export function ItemsPage() {
       title={t('admin:items.title')}
       description={t('admin:items.description')}
       action={
-        <Button onClick={openCreate} disabled={!folderId}>
+        <Button onClick={openCreate} disabled={!folderId} title={t('admin:items.createButtonTooltip')}>
           <Plus className="h-4 w-4" /> {t('admin:items.createButton')}
         </Button>
       }

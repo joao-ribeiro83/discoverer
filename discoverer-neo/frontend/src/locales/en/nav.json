@@ -27,6 +27,7 @@
   },
   "mobile": {
     "toggleMenu": "Toggle menu",
+    "toggleMenuTitle": "Toggle menu",
     "menuTitle": "Navigation menu"
   },
   "loadingPage": "Loading page"

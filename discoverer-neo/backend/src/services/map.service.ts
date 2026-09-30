@@ -11,10 +11,10 @@ import {
   mapPageSetup,
   mapTotals,
   mapShares,
-  userBusinessAreaGrants,
   items,
   folders,
   users,
+  workbooks,
   type Map,
   type MapItem,
   type MapCondition,
@@ -26,7 +26,6 @@ import {
   type MapTotal,
   type MapShare,
 } from '../db/schema.js';
-import { userHasPermission } from './business-area.service.js';
 import { makeBindName } from '../lib/sql/identifiers.js';
 import { substituteTitleTokens } from '../lib/title-tokens.js';
 
@@ -897,7 +896,8 @@ export async function listAll(user: {
   sub: string;
   role: string;
 }): Promise<Map[]> {
-  if (user.role === 'ADMIN') {
+  // A MANAGER sees every map (see canAccessMap), same as an ADMIN.
+  if (user.role === 'ADMIN' || user.role === 'MANAGER') {
     return db
       .select()
       .from(maps)
@@ -905,38 +905,18 @@ export async function listAll(user: {
       .orderBy(maps.name);
   }
 
-  const [grantRows, shareRows] = await Promise.all([
-    db
-      .select({ businessAreaId: userBusinessAreaGrants.businessAreaId })
-      .from(userBusinessAreaGrants)
-      .where(
-        and(
-          eq(userBusinessAreaGrants.userId, user.sub),
-          // Mirrors canAccessMap: only an authoring grant shows the maps.
-          inArray(userBusinessAreaGrants.permissionLevel, [...AUTHORING_GRANT_LEVELS]),
-        ),
-      ),
-    db
-      .select({ mapId: mapShares.mapId })
-      .from(mapShares)
-      .where(eq(mapShares.sharedWithUserId, user.sub)),
-  ]);
-
-  const grantedBaIds = [...new Set(grantRows.map((r) => r.businessAreaId))];
+  const shareRows = await db
+    .select({ mapId: mapShares.mapId })
+    .from(mapShares)
+    .where(eq(mapShares.sharedWithUserId, user.sub));
   const sharedMapIds = [...new Set(shareRows.map((r) => r.mapId))];
 
-  // Every share level grants VIEW (see SHARE_ALLOWS), and VIEW is the bottom
-  // of the permission hierarchy, so holding any grant on the business area is
-  // enough. `inArray` on a nullable column never matches NULL, which is the
-  // behaviour we want: a map with no business area is not visible through a
-  // grant — matching `canAccessMap`'s `if (!map.businessAreaId) return false`.
+  // Every share level grants VIEW (see SHARE_ALLOWS). A business-area grant
+  // no longer shows maps — it is a data entitlement only.
   const visible = [
     eq(maps.createdBy, user.sub),
     eq(maps.isPublic, true),
     ...(sharedMapIds.length ? [inArray(maps.id, sharedMapIds)] : []),
-    ...(grantedBaIds.length
-      ? [inArray(maps.businessAreaId, grantedBaIds)]
-      : []),
   ];
 
   return db
@@ -944,6 +924,35 @@ export async function listAll(user: {
     .from(maps)
     .where(and(eq(maps.isActive, true), or(...visible)))
     .orderBy(maps.name);
+}
+
+/**
+ * Add the owner's and the workbook's display names to listed maps, for the
+ * Maps page table. Two queries for the whole list, not two per row.
+ */
+export async function withListNames<T extends Map>(
+  rows: T[],
+): Promise<(T & { ownerName: string | null; workbookName: string | null })[]> {
+  const ownerIds = [...new Set(rows.map((r) => r.createdBy))];
+  const workbookIds = [...new Set(rows.map((r) => r.workbookId).filter((id): id is string => !!id))];
+  const [owners, books] = await Promise.all([
+    ownerIds.length
+      ? db.select({ id: users.id, name: users.name }).from(users).where(inArray(users.id, ownerIds))
+      : [],
+    workbookIds.length
+      ? db
+          .select({ id: workbooks.id, name: workbooks.name })
+          .from(workbooks)
+          .where(inArray(workbooks.id, workbookIds))
+      : [],
+  ]);
+  const ownerName = new globalThis.Map(owners.map((o) => [o.id, o.name]));
+  const workbookName = new globalThis.Map(books.map((b) => [b.id, b.name]));
+  return rows.map((r) => ({
+    ...r,
+    ownerName: ownerName.get(r.createdBy) ?? null,
+    workbookName: r.workbookId ? (workbookName.get(r.workbookId) ?? null) : null,
+  }));
 }
 
 /** List active maps shared with a user. */
@@ -1206,42 +1215,36 @@ const SHARE_ALLOWS: Record<string, MapAction[]> = {
 };
 
 /**
- * Business-area grant levels that also carry map-OBJECT visibility.
- *
- * A grant below CREATE is a data entitlement, not a licence to read every
- * saved map in the business area. Discoverer drew the same line: a business
- * area grant let you build your own worksheets over that data, while seeing
- * someone else's saved workbook needed an explicit workbook grant
- * (`ACCESS_PRIVS.AP_TYPE = 'GD'`), which migrates into `map_shares`.
- *
- * Without this, every migrated user holding the estate's default VIEW grant
- * saw all 923 maps.
+ * What a MANAGER may do to ANY map: see it, run it, export and schedule it —
+ * the same as an EXPORT share. Changing or deleting it stays with the owner,
+ * an EDIT share, or an admin.
  */
-const AUTHORING_GRANT_LEVELS = ['CREATE', 'EDIT', 'DELETE'] as const;
+const MANAGER_ALLOWS: MapAction[] = ['VIEW', 'EXPORT', 'SCHEDULE'];
 
 /**
  * GATE 1 of 2 (D-016): may this user see this map OBJECT?
  *
- * It does NOT answer "may this user read the data the map touches". Four of
- * the five grant paths below return before any business-area check, so a
- * folder rule bolted onto the last branch would leave map sharing as
- * business-area grant escalation: I own a map over folders in a business area
- * you were never granted, I share it with you, you read the data.
+ * It does NOT answer "may this user read the data the map touches". Every
+ * path below returns before any business-area check, so map sharing could
+ * otherwise become business-area grant escalation: I own a map over folders
+ * in a business area you were never granted, I share it with you, you read
+ * the data.
  *
  * The data question is `assertDataEntitlement` in business-area.service.ts,
  * which runs unconditionally on every execute and export path.
  *
- * A map with no business area (the column is advisory and nullable since
- * D-013) has no grant to check, so it falls through to false — fail-closed on
- * the object gate; the data gate decides the rest.
+ * A business-area grant does NOT show a map. It is a data entitlement only.
+ * Discoverer drew the same line: seeing someone else's saved workbook needed
+ * an explicit workbook grant (`ACCESS_PRIVS.AP_TYPE = 'GD'`), which migrates
+ * into `map_shares`.
  *
  * Rules (first match wins):
  *  - admins may do anything
  *  - the map owner may do anything
  *  - a public map is viewable/exportable by any authenticated user
+ *  - a MANAGER may view, export and schedule every map (MANAGER_ALLOWS)
  *  - an explicit share grants its permission level (EDIT ⊇ EXPORT ⊇ VIEW)
- *  - a business-area grant of the corresponding level applies
- *  - DELETE is owner/admin only (beyond BA DELETE grant)
+ *  - nothing else — DELETE is owner/admin only
  */
 export async function canAccessMap(
   user: { sub: string; role: string },
@@ -1252,6 +1255,7 @@ export async function canAccessMap(
   if (map.createdBy === user.sub) return true;
 
   if (map.isPublic && (action === 'VIEW' || action === 'EXPORT')) return true;
+  if (user.role === 'MANAGER' && MANAGER_ALLOWS.includes(action)) return true;
 
   const [share] = await db
     .select()
@@ -1260,23 +1264,7 @@ export async function canAccessMap(
       and(eq(mapShares.mapId, map.id), eq(mapShares.sharedWithUserId, user.sub)),
     )
     .limit(1);
-  if (share && SHARE_ALLOWS[share.permissionLevel]?.includes(action)) {
-    return true;
-  }
-
-  if (!map.businessAreaId) return false;
-
-  const { hasPermission, heldLevel } = await userHasPermission(
-    user.sub,
-    map.businessAreaId,
-    action,
-  );
-  // `heldLevel` must be an authoring grant — see AUTHORING_GRANT_LEVELS.
-  return (
-    hasPermission &&
-    heldLevel !== null &&
-    (AUTHORING_GRANT_LEVELS as readonly string[]).includes(heldLevel)
-  );
+  return !!share && !!SHARE_ALLOWS[share.permissionLevel]?.includes(action);
 }
 
 /**
@@ -1309,18 +1297,17 @@ export async function canManageShares(
 /**
  * May this user copy a map they can already see?
  *
- * A copy is a new map, so beyond reading the original it needs the right to
- * create one in its business area. Owners and admins always may. No business
- * area means no grant to find — fail closed.
+ * Copying is how a MANAGER or USER builds their own map from someone else's:
+ * anyone who can see a map may copy it, except a read-only VIEWER. The copy is
+ * theirs, but running it still passes the data gate (`assertDataEntitlement`),
+ * so a copy never reads more than the user's business-area grants allow.
  */
 export async function canDuplicate(
   user: { sub: string; role: string },
   map: Map,
 ): Promise<boolean> {
-  if (user.role === 'ADMIN' || map.createdBy === user.sub) return true;
-  if (!map.businessAreaId) return false;
-  const { hasPermission } = await userHasPermission(user.sub, map.businessAreaId, 'CREATE');
-  return hasPermission;
+  if (user.role === 'VIEWER') return false;
+  return canAccessMap(user, map, 'VIEW');
 }
 
 // ---------------------------------------------------------------------------
@@ -1409,4 +1396,30 @@ export async function revokeShare(
     )
     .returning({ id: mapShares.id });
   return deleted.length > 0;
+}
+
+/**
+ * Hand a map to a new owner (ADMIN or MANAGER only — the route checks).
+ * A share the new owner held on it is dropped: an owner needs no share.
+ * Returns false when the map or the user does not exist.
+ */
+export async function transferOwnership(mapId: string, newOwnerId: string): Promise<boolean> {
+  const [owner] = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.id, newOwnerId))
+    .limit(1);
+  if (!owner) return false;
+  return db.transaction(async (tx) => {
+    const [row] = await tx
+      .update(maps)
+      .set({ createdBy: newOwnerId, updatedAt: new Date() })
+      .where(and(eq(maps.id, mapId), eq(maps.isActive, true)))
+      .returning({ id: maps.id });
+    if (!row) return false;
+    await tx
+      .delete(mapShares)
+      .where(and(eq(mapShares.mapId, mapId), eq(mapShares.sharedWithUserId, newOwnerId)));
+    return true;
+  });
 }

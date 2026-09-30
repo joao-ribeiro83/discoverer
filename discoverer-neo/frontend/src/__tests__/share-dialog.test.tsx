@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { ShareDialog } from '@/components/map-builder/ShareDialog'
@@ -50,6 +50,9 @@ function renderWithProviders(ui: ReactNode) {
   return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>)
 }
 
+const toastMock = vi.fn()
+vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: toastMock }) }))
+
 const writeTextMock = vi.fn().mockResolvedValue(undefined)
 
 beforeEach(() => {
@@ -60,99 +63,123 @@ beforeEach(() => {
 })
 
 describe('ShareDialog', () => {
-  it('lists existing shares', async () => {
+  const fiona = () => makeUser({ id: 'u2' })
+  const existing = () => makeUser({ id: 'u1', name: 'Existing User', email: 'existing@example.com' })
+
+  function rowOf(name: string) {
+    return within(screen.getByText(name).closest('li') as HTMLElement)
+  }
+
+  it('lists every user, with holders first and their level pressed', async () => {
     mockedApi.maps.listShares.mockResolvedValue(envelope([makeShare()]) as never)
-    renderWithProviders(
-      <ShareDialog open onOpenChange={() => {}} mapId="map1" isPublic={false} />,
-    )
-    expect(await screen.findByText('Existing User')).toBeInTheDocument()
-    expect(screen.getByText('existing@example.com')).toBeInTheDocument()
-  })
+    mockedApi.users.search.mockResolvedValue(envelope([fiona(), existing()]) as never)
+    renderWithProviders(<ShareDialog open onOpenChange={() => {}} mapId="map1" isPublic={false} />)
 
-  it('shows an empty state when nobody has access', async () => {
-    renderWithProviders(
-      <ShareDialog open onOpenChange={() => {}} mapId="map1" isPublic={false} />,
-    )
-    expect(await screen.findByText('Not shared with anyone yet.')).toBeInTheDocument()
-  })
-
-  it('searches users, excludes existing collaborators, and shares with the selected user', async () => {
-    mockedApi.maps.listShares.mockResolvedValue(envelope([makeShare({ sharedWithUserId: 'u1' })]) as never)
-    mockedApi.users.search.mockResolvedValue(
-      envelope([makeUser({ id: 'u1', name: 'Existing User' }), makeUser({ id: 'u2' })]) as never,
-    )
-    mockedApi.maps.share.mockResolvedValue(envelope(makeShare({ id: 's2', sharedWithUserId: 'u2' })) as never)
-
-    renderWithProviders(
-      <ShareDialog open onOpenChange={() => {}} mapId="map1" isPublic={false} />,
-    )
     await screen.findByText('Existing User')
+    expect(mockedApi.users.search).toHaveBeenCalledWith('')
+    const names = screen.getAllByRole('listitem').map((li) => li.querySelector('p')?.textContent)
+    expect(names).toEqual(['Existing User', 'Findable Fiona'])
+    expect(rowOf('Existing User').getByRole('button', { name: 'Can view' })).toHaveAttribute('aria-pressed', 'true')
+    expect(rowOf('Findable Fiona').getByRole('button', { name: 'Can view' })).toHaveAttribute('aria-pressed', 'false')
+  })
 
-    fireEvent.change(screen.getByPlaceholderText('Search by name or email…'), {
-      target: { value: 'fiona' },
-    })
+  it('filters the list locally', async () => {
+    mockedApi.users.search.mockResolvedValue(envelope([fiona(), existing()]) as never)
+    renderWithProviders(<ShareDialog open onOpenChange={() => {}} mapId="map1" isPublic={false} />)
+    await screen.findByText('Findable Fiona')
 
-    await waitFor(() => expect(mockedApi.users.search).toHaveBeenCalledWith('fiona'))
+    fireEvent.change(screen.getByLabelText('Search users to share with'), { target: { value: 'fiona' } })
+    expect(screen.queryByText('Existing User')).not.toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText('Search users to share with'), { target: { value: 'zzz' } })
+    expect(screen.getByText('No matching users')).toBeInTheDocument()
+  })
 
-    // The already-shared user (u1) must not appear in results, only u2.
-    const result = await screen.findByText('Findable Fiona')
-    fireEvent.click(result)
+  it('shares with a new user when a level is clicked', async () => {
+    mockedApi.users.search.mockResolvedValue(envelope([fiona()]) as never)
+    mockedApi.maps.share.mockResolvedValue(envelope(makeShare({ sharedWithUserId: 'u2' })) as never)
+    renderWithProviders(<ShareDialog open onOpenChange={() => {}} mapId="map1" isPublic={false} />)
+    await screen.findByText('Findable Fiona')
 
-    fireEvent.click(screen.getByRole('button', { name: 'Share' }))
+    fireEvent.click(rowOf('Findable Fiona').getByRole('button', { name: 'Can export' }))
 
     await waitFor(() =>
-      expect(mockedApi.maps.share).toHaveBeenCalledWith('map1', {
-        userId: 'u2',
-        permissionLevel: 'VIEW',
-      }),
+      expect(mockedApi.maps.share).toHaveBeenCalledWith('map1', { userId: 'u2', permissionLevel: 'EXPORT' }),
     )
+    expect(mockedApi.maps.updateShare).not.toHaveBeenCalled()
+    await waitFor(() => expect(toastMock).toHaveBeenCalledWith(expect.objectContaining({ title: 'Map shared' })))
   })
 
-  it('updates a share permission level', async () => {
+  it('updates the level of a user who already holds a share', async () => {
     mockedApi.maps.listShares.mockResolvedValue(envelope([makeShare()]) as never)
+    mockedApi.users.search.mockResolvedValue(envelope([existing()]) as never)
     mockedApi.maps.updateShare.mockResolvedValue(envelope(makeShare({ permissionLevel: 'EDIT' })) as never)
-
-    renderWithProviders(
-      <ShareDialog open onOpenChange={() => {}} mapId="map1" isPublic={false} />,
-    )
+    renderWithProviders(<ShareDialog open onOpenChange={() => {}} mapId="map1" isPublic={false} />)
     await screen.findByText('Existing User')
-
-    fireEvent.click(screen.getByLabelText('Permission for Existing User'))
-    fireEvent.click(await screen.findByText('Can edit'))
-
     await waitFor(() =>
-      expect(mockedApi.maps.updateShare).toHaveBeenCalledWith('map1', 'u1', 'EDIT'),
+      expect(rowOf('Existing User').getByRole('button', { name: 'Can view' })).toHaveAttribute('aria-pressed', 'true'),
+    )
+
+    fireEvent.click(rowOf('Existing User').getByRole('button', { name: 'Can edit' }))
+
+    await waitFor(() => expect(mockedApi.maps.updateShare).toHaveBeenCalledWith('map1', 'u1', 'EDIT'))
+    expect(mockedApi.maps.share).not.toHaveBeenCalled()
+    await waitFor(() =>
+      expect(toastMock).toHaveBeenCalledWith(expect.objectContaining({ title: 'Permission updated' })),
     )
   })
 
-  it('revokes a share', async () => {
+  it('does nothing when the held level is clicked again', async () => {
     mockedApi.maps.listShares.mockResolvedValue(envelope([makeShare()]) as never)
-    mockedApi.maps.revokeShare.mockResolvedValue(envelope({ revoked: true }) as never)
-
-    renderWithProviders(
-      <ShareDialog open onOpenChange={() => {}} mapId="map1" isPublic={false} />,
+    mockedApi.users.search.mockResolvedValue(envelope([existing()]) as never)
+    renderWithProviders(<ShareDialog open onOpenChange={() => {}} mapId="map1" isPublic={false} />)
+    await screen.findByText('Existing User')
+    await waitFor(() =>
+      expect(rowOf('Existing User').getByRole('button', { name: 'Can view' })).toHaveAttribute('aria-pressed', 'true'),
     )
+    fireEvent.click(rowOf('Existing User').getByRole('button', { name: 'Can view' }))
+    expect(mockedApi.maps.updateShare).not.toHaveBeenCalled()
+    expect(mockedApi.maps.share).not.toHaveBeenCalled()
+  })
+
+  it('revokes a share, and only enables the remove button for holders', async () => {
+    mockedApi.maps.listShares.mockResolvedValue(envelope([makeShare()]) as never)
+    mockedApi.users.search.mockResolvedValue(envelope([existing(), fiona()]) as never)
+    mockedApi.maps.revokeShare.mockResolvedValue(envelope({ revoked: true }) as never)
+    renderWithProviders(<ShareDialog open onOpenChange={() => {}} mapId="map1" isPublic={false} />)
     await screen.findByText('Existing User')
 
+    expect(screen.getByLabelText('Revoke access for Findable Fiona')).toBeDisabled()
+    await waitFor(() => expect(screen.getByLabelText('Revoke access for Existing User')).toBeEnabled())
     fireEvent.click(screen.getByLabelText('Revoke access for Existing User'))
 
     await waitFor(() => expect(mockedApi.maps.revokeShare).toHaveBeenCalledWith('map1', 'u1'))
+    await waitFor(() => expect(toastMock).toHaveBeenCalledWith(expect.objectContaining({ title: 'Access revoked' })))
+  })
+
+  it('shows an error toast when sharing fails', async () => {
+    mockedApi.users.search.mockResolvedValue(envelope([fiona()]) as never)
+    mockedApi.maps.share.mockRejectedValue(new Error('network down'))
+    renderWithProviders(<ShareDialog open onOpenChange={() => {}} mapId="map1" isPublic={false} />)
+    await screen.findByText('Findable Fiona')
+
+    fireEvent.click(rowOf('Findable Fiona').getByRole('button', { name: 'Can view' }))
+
+    await waitFor(() =>
+      expect(toastMock).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Could not share map', description: 'network down', variant: 'destructive' }),
+      ),
+    )
   })
 
   it('hides the copy-link action for a non-public map', async () => {
-    renderWithProviders(
-      <ShareDialog open onOpenChange={() => {}} mapId="map1" isPublic={false} />,
-    )
-    await screen.findByText('Not shared with anyone yet.')
+    renderWithProviders(<ShareDialog open onOpenChange={() => {}} mapId="map1" isPublic={false} />)
+    await screen.findByText('No matching users')
     expect(screen.queryByText('Copy link')).not.toBeInTheDocument()
   })
 
   it('copies the view link for a public map', async () => {
-    renderWithProviders(
-      <ShareDialog open onOpenChange={() => {}} mapId="map1" isPublic />,
-    )
-    const copyButton = await screen.findByText('Copy link')
-    fireEvent.click(copyButton)
+    renderWithProviders(<ShareDialog open onOpenChange={() => {}} mapId="map1" isPublic />)
+    fireEvent.click(await screen.findByRole('button', { name: /Copy link/ }))
     expect(writeTextMock).toHaveBeenCalledWith(expect.stringContaining('/maps/map1/view'))
   })
 })

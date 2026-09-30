@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   type ColumnDef,
@@ -8,12 +9,14 @@ import {
 } from '@tanstack/react-table'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
+import { useFitPageSize } from '@/hooks/useFitPageSize'
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
   isLoading?: boolean
   emptyMessage?: string
+  /** Fixed rows per page. Omit it and the table fits as many rows as the window holds. */
   pageSize?: number
 }
 
@@ -22,17 +25,26 @@ export function DataTable<TData, TValue>({
   data,
   isLoading,
   emptyMessage,
-  pageSize = 10,
+  pageSize,
 }: DataTableProps<TData, TValue>) {
   const { t } = useTranslation(['admin', 'common'])
   const resolvedEmptyMessage = emptyMessage ?? t('admin:shared.defaultEmptyMessage')
+  const bodyRef = useRef<HTMLTableSectionElement>(null)
+  const fitted = useFitPageSize(bodyRef, !isLoading && data.length > 0)
+  const effectivePageSize = pageSize ?? fitted
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    initialState: { pagination: { pageSize } },
+    initialState: { pagination: { pageSize: effectivePageSize } },
   })
+
+  useEffect(() => {
+    if (table.getState().pagination.pageSize !== effectivePageSize) {
+      table.setPageSize(effectivePageSize)
+    }
+  }, [table, effectivePageSize])
 
   return (
     <div className="space-y-3">
@@ -51,7 +63,7 @@ export function DataTable<TData, TValue>({
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
+          <TableBody ref={bodyRef}>
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
@@ -78,31 +90,45 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      {table.getPageCount() > 1 && (
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">
-            {t('common:pagination.pageOf', { page: table.getState().pagination.pageIndex + 1, total: table.getPageCount() })}
-          </span>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              {t('common:actions.previous')}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              {t('common:actions.next')}
-            </Button>
-          </div>
-        </div>
-      )}
+      <Pager
+        page={table.getState().pagination.pageIndex}
+        pageCount={table.getPageCount()}
+        onPage={(p) => table.setPageIndex(p)}
+      />
+    </div>
+  )
+}
+
+/** "Page x of y" with Previous / Next. Renders nothing for a single page. */
+export function Pager({
+  page,
+  pageCount,
+  onPage,
+}: {
+  page: number
+  pageCount: number
+  onPage: (page: number) => void
+}) {
+  const { t } = useTranslation('common')
+  if (pageCount <= 1) return null
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-sm text-muted-foreground">
+        {t('common:pagination.pageOf', { page: page + 1, total: pageCount })}
+      </span>
+      <div className="flex gap-2">
+        <Button variant="outline" size="sm" onClick={() => onPage(page - 1)} disabled={page <= 0}>
+          {t('common:actions.previous')}
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onPage(page + 1)}
+          disabled={page >= pageCount - 1}
+        >
+          {t('common:actions.next')}
+        </Button>
+      </div>
     </div>
   )
 }

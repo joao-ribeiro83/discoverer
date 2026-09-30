@@ -4,7 +4,8 @@
     "description": "Todos os pedidos que alteram dados — alterações de dados, exportações, migrações e eventos de autenticação — captados automaticamente."
   },
   "actions": {
-    "exportCsv": "Exportar CSV (esta página)"
+    "exportCsv": "Exportar CSV (esta página)",
+    "exportCsvTooltip": "Exportar a página atual de entradas de auditoria como CSV"
   },
   "actorUnknown": "Sistema / não autenticado",
   "csv": {
@@ -47,7 +48,8 @@
     "actionLabel": "Ação",
     "actionPlaceholder": "p. ex. POST /api/maps",
     "fromLabel": "De",
-    "toLabel": "Até"
+    "toLabel": "Até",
+    "clearTooltip": "Limpar todos os filtros e voltar ao início"
   },
   "pagination": {
     "noResults": "Sem resultados"

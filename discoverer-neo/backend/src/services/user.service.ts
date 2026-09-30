@@ -71,20 +71,20 @@ export async function search(
   limit = 20,
 ): Promise<UserSearchResult[]> {
   const term = query.trim();
-  if (!term) return [];
-
   const pattern = `%${term}%`;
+  // An empty term lists everyone, so the share dialog can show a picker
+  // before anything is typed.
   const rows = await db
     .select({ id: users.id, name: users.name, email: users.email })
     .from(users)
     .where(
       and(
         ne(users.id, excludeUserId),
-        or(ilike(users.name, pattern), ilike(users.email, pattern)),
+        term ? or(ilike(users.name, pattern), ilike(users.email, pattern)) : undefined,
       ),
     )
     .orderBy(users.name)
-    .limit(limit);
+    .limit(term ? limit : 1000);
 
   return rows;
 }

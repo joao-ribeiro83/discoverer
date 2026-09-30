@@ -75,5 +75,6 @@
     "count_other": "{{count}} filas",
     "selected_one": "{{count}} fila seleccionada",
     "selected_other": "{{count}} filas seleccionadas"
-  }
+  },
+  "backTooltip": "Volver a la página de la que viene"
 }

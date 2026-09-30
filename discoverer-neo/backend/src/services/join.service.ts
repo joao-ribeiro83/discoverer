@@ -38,19 +38,34 @@ export const FLAGS_FOR_JOIN_TYPE: Record<
   RIGHT: { allowMasterNoDetail: false, allowDetailNoMaster: true },
 };
 
+export type JoinOperator = '=' | '<' | '>' | '<=' | '>=' | '<>';
+
+/** One column pair of a join. Pairs are ANDed, in array order. */
+export interface JoinPredicateInput {
+  leftItemId: string | null;
+  rightItemId: string | null;
+  operator?: JoinOperator;
+}
+
+export interface JoinPredicateDetail {
+  leftItemId: string | null;
+  rightItemId: string | null;
+  leftItemName: string | null;
+  rightItemName: string | null;
+  operator: string;
+}
+
 export interface CreateJoinInput {
   name: string;
   /** MASTER folder (D-040). */
   leftFolderId: string;
   /** DETAIL folder (D-040). */
   rightFolderId: string;
-  /**
-   * The single column pair a join authored here uses. Stored as one
-   * `join_predicates` row with operator `=`. Multi-column predicates come from
-   * the EUL migration; the admin UI does not build them yet.
-   */
+  /** A single `=` column pair — the older API shape. Ignored when `predicates` is given. */
   leftItemId?: string | null;
   rightItemId?: string | null;
+  /** Every column pair, ANDed. Replaces `leftItemId`/`rightItemId`. */
+  predicates?: JoinPredicateInput[];
   joinType: JoinType;
   /** Fan-trap detection only — never affects the emitted SQL. */
   oneToOne?: boolean;
@@ -64,6 +79,8 @@ export interface UpdateJoinInput {
   rightFolderId?: string;
   leftItemId?: string | null;
   rightItemId?: string | null;
+  /** Replaces every column pair when given. */
+  predicates?: JoinPredicateInput[];
   joinType?: JoinType;
   oneToOne?: boolean;
   mandatory?: boolean;
@@ -81,6 +98,8 @@ export interface JoinWithDetails extends Join {
   rightItemName: string | null;
   /** How many column pairs the predicate has. 0 means the join cannot run. */
   predicateCount: number;
+  /** Every column pair, in `seq` order. */
+  predicates: JoinPredicateDetail[];
   businessAreaId: string;
 }
 
@@ -177,17 +196,10 @@ export async function create(data: CreateJoinInput): Promise<JoinWithDetails> {
     throw new Error(`Right folder "${data.rightFolderId}" does not exist or is inactive`);
   }
 
-  // Validate items
-  const validation = await validateJoin(
-    data.leftItemId ?? null,
-    data.rightItemId ?? null,
-    data.leftFolderId,
-    data.rightFolderId,
-  );
-
-  if (!validation.valid) {
-    throw new Error(validation.error);
-  }
+  const predicates = data.predicates ?? [
+    { leftItemId: data.leftItemId ?? null, rightItemId: data.rightItemId ?? null },
+  ];
+  await validatePredicates(predicates, data.leftFolderId, data.rightFolderId);
 
   const [row] = await db
     .insert(joins)
@@ -202,35 +214,45 @@ export async function create(data: CreateJoinInput): Promise<JoinWithDetails> {
     .returning();
 
   const join = row as Join;
-  await writePredicate(join.id, data.leftItemId ?? null, data.rightItemId ?? null);
+  await writePredicates(join.id, predicates);
   // Read back rather than returning the inserted row: `joinType` and the
   // predicate items are DERIVED, so the stored row alone is not the API shape.
   return (await getById(join.id))!;
 }
 
+/** Check every pair's items exist and sit in the right folders. */
+async function validatePredicates(
+  predicates: JoinPredicateInput[],
+  leftFolderId: string,
+  rightFolderId: string,
+): Promise<void> {
+  for (const p of predicates) {
+    const validation = await validateJoin(p.leftItemId, p.rightItemId, leftFolderId, rightFolderId);
+    if (!validation.valid) throw new Error(validation.error);
+  }
+}
+
 /**
- * Replace a join's predicate with the single `=` pair the admin API carries.
+ * Replace a join's predicate with the given column pairs, ANDed in order —
+ * the same n-ary `AND` shape the EUL migration writes.
  *
- * A join authored in Neo has one column pair; the multi-column shape comes
- * from the EUL, whose predicate is an n-ary `AND` token tree. Passing two
- * nulls clears the predicate, which leaves the join present but unrunnable —
- * and `buildFromClause` then refuses by name (D-039) rather than silently
+ * A pair with both items empty is skipped. No pairs at all clears the
+ * predicate, which leaves the join present but unrunnable — and
+ * `buildFromClause` then refuses by name (D-039) rather than silently
  * dropping it.
  */
-async function writePredicate(
-  joinId: string,
-  leftItemId: string | null,
-  rightItemId: string | null,
-): Promise<void> {
+async function writePredicates(joinId: string, predicates: JoinPredicateInput[]): Promise<void> {
   await db.delete(joinPredicates).where(eq(joinPredicates.joinId, joinId));
-  if (!leftItemId && !rightItemId) return;
-  await db.insert(joinPredicates).values({
-    joinId,
-    seq: 0,
-    leftItemId,
-    rightItemId,
-    operator: '=',
-  });
+  const rows = predicates
+    .filter((p) => p.leftItemId || p.rightItemId)
+    .map((p, seq) => ({
+      joinId,
+      seq,
+      leftItemId: p.leftItemId,
+      rightItemId: p.rightItemId,
+      operator: p.operator ?? '=',
+    }));
+  if (rows.length > 0) await db.insert(joinPredicates).values(rows);
 }
 
 /**
@@ -247,6 +269,7 @@ async function readPredicateSummary(joinId: string): Promise<{
   leftItemName: string | null;
   rightItemName: string | null;
   predicateCount: number;
+  predicates: JoinPredicateDetail[];
 }> {
   const rows = await db
     .select()
@@ -254,23 +277,34 @@ async function readPredicateSummary(joinId: string): Promise<{
     .where(eq(joinPredicates.joinId, joinId))
     .orderBy(joinPredicates.seq);
 
-  const first = rows[0];
-  const nameOf = async (itemId: string | null | undefined) => {
-    if (!itemId) return null;
-    const [row] = await db
-      .select({ name: items.name })
-      .from(items)
-      .where(eq(items.id, itemId))
-      .limit(1);
-    return row?.name ?? null;
-  };
+  const itemIds = rows
+    .flatMap((r) => [r.leftItemId, r.rightItemId])
+    .filter((id): id is string => !!id);
+  const nameRows = itemIds.length
+    ? await db
+        .select({ id: items.id, name: items.name })
+        .from(items)
+        .where(inArray(items.id, itemIds))
+    : [];
+  const names = new Map(nameRows.map((r) => [r.id, r.name]));
+  const nameOf = (itemId: string | null) => (itemId ? (names.get(itemId) ?? null) : null);
+
+  const predicates = rows.map((r) => ({
+    leftItemId: r.leftItemId,
+    rightItemId: r.rightItemId,
+    leftItemName: nameOf(r.leftItemId),
+    rightItemName: nameOf(r.rightItemId),
+    operator: r.operator,
+  }));
+  const first = predicates[0];
 
   return {
     leftItemId: first?.leftItemId ?? null,
     rightItemId: first?.rightItemId ?? null,
-    leftItemName: await nameOf(first?.leftItemId),
-    rightItemName: await nameOf(first?.rightItemId),
+    leftItemName: first?.leftItemName ?? null,
+    rightItemName: first?.rightItemName ?? null,
     predicateCount: rows.length,
+    predicates,
   };
 }
 
@@ -303,11 +337,12 @@ export async function update(
   const leftFolderId = data.leftFolderId ?? current.leftFolderId;
   const rightFolderId = data.rightFolderId ?? current.rightFolderId;
 
-  // The predicate is only touched when the caller names an item, so an update
-  // that only renames the join leaves a migrated multi-column predicate alone.
-  const touchesPredicate =
-    data.leftItemId !== undefined || data.rightItemId !== undefined;
-  if (touchesPredicate) {
+  // The predicate is only touched when the caller names pairs or an item, so
+  // an update that only renames the join leaves a multi-column predicate alone.
+  if (data.predicates !== undefined) {
+    await validatePredicates(data.predicates, leftFolderId, rightFolderId);
+    await writePredicates(id, data.predicates);
+  } else if (data.leftItemId !== undefined || data.rightItemId !== undefined) {
     const existing = await readPredicateSummary(id);
     const leftItemId =
       data.leftItemId !== undefined ? data.leftItemId : existing.leftItemId;
@@ -323,7 +358,8 @@ export async function update(
     if (!validation.valid) {
       throw new Error(validation.error);
     }
-    await writePredicate(id, leftItemId, rightItemId);
+    // The older single-pair shape replaces the whole predicate.
+    await writePredicates(id, [{ leftItemId, rightItemId }]);
   }
 
   if (Object.keys(values).length > 0) {

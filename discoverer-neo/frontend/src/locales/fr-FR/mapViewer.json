@@ -14,7 +14,10 @@
     "statusRunning": "En cours…",
     "statusResult": "Résultat de {{time}}, valide jusqu'à {{until}}.",
     "statusResultReused": "Affichage d'un résultat en cache de {{time}}, valide jusqu'à {{until}}.",
-    "runAgain": "Exécuter à nouveau"
+    "runAgain": "Exécuter à nouveau",
+    "runTitle": "Exécuter la carte et afficher les résultats",
+    "scheduleManagementTitle": "Afficher et gérer les planifications de la carte",
+    "runAgainTitle": "Exécuter à nouveau la carte avec les mêmes paramètres"
   },
   "mapsList": {
     "title": "Cartes",
@@ -41,16 +44,27 @@
       "noMatch": "Aucun classeur ne correspond à cette recherche."
     },
     "columns": {
-      "businessArea": "Domaine Métier"
+      "businessArea": "Domaine Métier",
+      "workbook": "Classeur",
+      "owner": "Propriétaire"
     },
     "actions": {
       "open": "Ouvrir",
       "share": "Partager",
-      "schedule": "Planifier"
+      "schedule": "Planifier",
+      "viewTooltip": "Ouvrir la carte et l'exécuter pour voir ses lignes",
+      "editTooltip": "Modifier les colonnes, les conditions et la mise en page de la carte",
+      "copyTooltip": "Créer votre propre copie de cette carte, que vous pourrez ensuite modifier",
+      "shareTooltip": "Choisir qui d'autre peut ouvrir cette carte et ce qu'il peut en faire",
+      "scheduleTooltip": "Exécuter cette carte selon un calendrier et conserver les résultats",
+      "exportTooltip": "Ouvrir la carte pour exporter son résultat vers Excel, CSV ou PDF",
+      "deleteTooltip": "Supprimer cette carte"
     },
     "toast": {
       "deleted": "Carte supprimée",
-      "deleteFailed": "Échec de la suppression de la carte"
+      "deleteFailed": "Échec de la suppression de la carte",
+      "copied": "Carte copiée. Vous modifiez maintenant votre copie.",
+      "copyFailed": "Impossible de copier la carte"
     },
     "emptyNoneAtAll": "Aucune carte pour le moment. Créez-en une pour commencer.",
     "emptyNoMatches": "Aucune carte ne correspond à votre recherche ou à vos filtres.",
@@ -132,7 +146,13 @@
     },
     "explain": "Plan",
     "explainFailed": "Impossible de lire le plan d'exécution",
-    "nothingToExplain": "Exécutez d'abord la carte"
+    "nothingToExplain": "Exécutez d'abord la carte",
+    "toggleSqlTooltip": "Afficher ou masquer l'instruction SQL",
+    "explainTooltip": "Afficher le plan d'exécution de la base de données pour cette requête",
+    "exportExcelTooltip": "Exporter les résultats sous forme de feuille de calcul Excel",
+    "exportCsvTooltip": "Exporter les résultats sous forme de fichier CSV",
+    "exportPdfTooltip": "Exporter les résultats sous forme de document PDF",
+    "loadMoreTooltip": "Charger plus de lignes du résultat"
   },
   "parameters": {
     "title": "Paramètres d'exécution",
@@ -165,7 +185,8 @@
         "A4": "A4",
         "A3": "A3",
         "LETTER": "Lettre"
-      }
+      },
+      "selectToggleTooltip": "Basculer toutes les colonnes"
     }
   },
   "exportHistory": {
@@ -237,15 +258,12 @@
   "workbookShare": {
     "title": "Partager « {{name}} »",
     "description": "Donner à quelqu’un toutes les feuilles de ce classeur — {{count}} au total.",
-    "pickUser": "Choisissez d’abord une personne",
     "shareButton": "Partager le classeur",
-    "revokeButton": "Retirer l’accès",
     "shared": "{{count}} feuille(s) partagée(s)",
     "refused": "Non partagé : {{names}}",
     "shareFailed": "Impossible de partager le classeur",
     "revoked": "Accès retiré",
     "revokeFailed": "Impossible de retirer l’accès",
-    "none": "Personne ne détient encore ce classeur.",
     "sheetsHeld": "{{held}} feuilles sur {{total}}"
   },
   "workbookDuplicate": {
@@ -256,7 +274,8 @@
     "defaultName": "{{name}} (copie)",
     "submit": "Copier",
     "done": "« {{name}} » créé",
-    "failed": "Impossible de copier le classeur"
+    "failed": "Impossible de copier le classeur",
+    "tooltip": "Créer votre propre copie de tout le classeur, que vous pourrez ensuite modifier"
   },
   "workbookDelete": {
     "button": "Supprimer le classeur",

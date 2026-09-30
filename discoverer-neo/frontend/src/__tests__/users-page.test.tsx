@@ -8,7 +8,10 @@ import { useAuthStore } from '@/store/auth'
 import type { AppUser } from '@/lib/types'
 
 vi.mock('@/lib/api', () => ({
-  apiClient: { users: { list: vi.fn(), update: vi.fn(), create: vi.fn(), delete: vi.fn(), maps: vi.fn() } },
+  apiClient: {
+    users: { list: vi.fn(), update: vi.fn(), create: vi.fn(), delete: vi.fn(), maps: vi.fn() },
+    maps: { updateShare: vi.fn(), revokeShare: vi.fn(), transferOwner: vi.fn() },
+  },
   getErrorMessage: (e: unknown) => String(e),
 }))
 
@@ -135,7 +138,7 @@ describe('UsersPage create/edit dialog', () => {
     renderPage()
     await waitFor(() => expect(screen.getByText('Bob User')).toBeInTheDocument())
 
-    fireEvent.click(within(rowOf('Bob User')).getByRole('button', { name: 'Edit' }))
+    fireEvent.click(within(rowOf('Bob User')).getByRole('button', { name: "Change this user's name, email, password or role" }))
     const dialog = await screen.findByRole('dialog')
     expect(within(dialog).getByDisplayValue('bob@example.com')).toBeInTheDocument()
     fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }))
@@ -166,8 +169,8 @@ describe('UsersPage maps list', () => {
     mockedApi.users.maps.mockResolvedValue({
       data: {
         data: [
-          { id: 'm1', name: 'Shared Sales', via: 'SHARE', sharePermission: 'EXPORT' },
-          { id: 'm2', name: 'Own Costs', via: 'OWNER', sharePermission: null },
+          { id: 'm1', name: 'Shared Sales', via: 'SHARE', sharePermission: 'EXPORT', ownerId: 'u-ada', ownerName: 'Ada Admin' },
+          { id: 'm2', name: 'Own Costs', via: 'OWNER', sharePermission: null, ownerId: 'u-bob', ownerName: 'Bob User' },
         ],
       },
     } as never)
@@ -177,8 +180,12 @@ describe('UsersPage maps list', () => {
     fireEvent.click(within(rowOf('Bob User')).getByRole('button', { name: 'Maps this user can open' }))
     const dialog = await screen.findByRole('dialog')
     expect(await within(dialog).findByText('Shared Sales')).toBeInTheDocument()
-    expect(within(dialog).getByText('Shared · EXPORT')).toBeInTheDocument()
+    expect(within(dialog).getByRole('combobox', { name: 'What this user may do with the shared map' })).toHaveTextContent('Can export')
+    expect(within(dialog).getByText('Owner: Ada Admin')).toBeInTheDocument()
+    expect(within(dialog).getByText('Owner: Bob User')).toBeInTheDocument()
     expect(within(dialog).getByText('Owner')).toBeInTheDocument()
+    // Only the shared row can have its share removed.
+    expect(within(dialog).getAllByRole('button', { name: /Remove this map from the user/ })).toHaveLength(1)
     expect(within(dialog).getByRole('link', { name: 'Shared Sales' })).toHaveAttribute('href', '/maps/m1/view')
     expect(mockedApi.users.maps).toHaveBeenCalledWith('u-bob')
   })
@@ -190,5 +197,53 @@ describe('UsersPage maps list', () => {
 
     fireEvent.click(within(rowOf('Bob User')).getByRole('button', { name: 'Maps this user can open' }))
     expect(await screen.findByText(/This user cannot open any map/)).toBeInTheDocument()
+  })
+})
+
+describe('UsersPage maps dialog actions', () => {
+  const sharedRow = { id: 'm1', name: 'Shared Sales', via: 'SHARE', sharePermission: 'EXPORT', ownerId: 'u-ada', ownerName: 'Ada Admin' }
+
+  async function openMaps() {
+    mockedApi.users.maps.mockResolvedValue({ data: { data: [sharedRow] } } as never)
+    renderPage()
+    await waitFor(() => expect(screen.getByText('Bob User')).toBeInTheDocument())
+    fireEvent.click(within(rowOf('Bob User')).getByRole('button', { name: 'Maps this user can open' }))
+    const dialog = await screen.findByRole('dialog')
+    await within(dialog).findByText('Shared Sales')
+    return dialog
+  }
+
+  it('removes a share', async () => {
+    mockedApi.maps.revokeShare.mockResolvedValue({ data: { data: {} } } as never)
+    const dialog = await openMaps()
+    fireEvent.click(within(dialog).getByRole('button', { name: /Remove this map from the user/ }))
+    await waitFor(() => expect(mockedApi.maps.revokeShare).toHaveBeenCalledWith('m1', 'u-bob'))
+  })
+
+  it('transfers ownership through the change-owner control', async () => {
+    mockedApi.maps.transferOwner.mockResolvedValue({ data: { data: {} } } as never)
+    const dialog = await openMaps()
+    fireEvent.click(within(dialog).getByRole('button', { name: /Give this map to another user/ }))
+    fireEvent.click(within(dialog).getByRole('combobox', { name: 'New owner' }))
+    fireEvent.click(await screen.findByRole('option', { name: /Carol Gone|Bob User/ }))
+    await waitFor(() => expect(mockedApi.maps.transferOwner).toHaveBeenCalledWith('m1', expect.any(String)))
+  })
+})
+
+describe('UsersPage as MANAGER', () => {
+  it('lists users read-only, with no create, edit, deactivate or delete', async () => {
+    useAuthStore.setState({
+      user: { id: 'u-mgr', email: 'm@example.com', name: 'Mia Manager', role: 'MANAGER' },
+      token: 't',
+      isAuthenticated: true,
+    })
+    renderPage()
+    await waitFor(() => expect(screen.getByText('Bob User')).toBeInTheDocument())
+    const row = within(rowOf('Bob User'))
+    expect(row.getByRole('button', { name: 'Maps this user can open' })).toBeInTheDocument()
+    expect(row.queryByRole('button', { name: "Change this user's name, email, password or role" })).not.toBeInTheDocument()
+    expect(row.queryByRole('button', { name: 'Delete this user account for good' })).not.toBeInTheDocument()
+    expect(row.queryByRole('button', { name: 'Deactivate' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'New User' })).not.toBeInTheDocument()
   })
 })

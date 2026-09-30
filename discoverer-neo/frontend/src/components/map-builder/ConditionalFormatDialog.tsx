@@ -194,6 +194,7 @@ export function ConditionalFormatDialog({ open, onOpenChange, mapId }: Condition
             size="sm"
             disabled={columns.length === 0}
             onClick={() => setDraft({ ...BLANK_DRAFT, mapItemId: columns[0]?.id ?? '' })}
+            title={t('mapBuilder:conditionalFormat.addRuleTooltip')}
           >
             <Plus className="h-4 w-4" /> {t('mapBuilder:conditionalFormat.addRule')}
           </Button>
@@ -285,6 +286,7 @@ export function ConditionalFormatDialog({ open, onOpenChange, mapId }: Condition
                     variant="ghost"
                     size="sm"
                     onClick={() => setDraft({ ...draft, backgroundColor: '' })}
+                    title={t('mapBuilder:conditionalFormat.clearBackgroundColorTooltip')}
                   >
                     {t('mapBuilder:conditionalFormat.clearColor')}
                   </Button>
@@ -300,7 +302,7 @@ export function ConditionalFormatDialog({ open, onOpenChange, mapId }: Condition
                     onChange={(e) => setDraft({ ...draft, textColor: e.target.value })}
                     aria-label={t('mapBuilder:conditionalFormat.textColor')}
                   />
-                  <Button variant="ghost" size="sm" onClick={() => setDraft({ ...draft, textColor: '' })}>
+                  <Button variant="ghost" size="sm" onClick={() => setDraft({ ...draft, textColor: '' })} title={t('mapBuilder:conditionalFormat.clearTextColorTooltip')}>
                     {t('mapBuilder:conditionalFormat.clearColor')}
                   </Button>
                 </div>

@@ -33,7 +33,7 @@ export function ParametersPanel() {
     <div className="space-y-4 p-4">
       <div className="flex items-center justify-between gap-2">
         <h4 className="text-sm font-semibold">{t('mapBuilder:panels.parameters.title')}</h4>
-        <Button size="sm" onClick={addParameter}>
+        <Button size="sm" onClick={addParameter} title={t('mapBuilder:panels.parameters.addButtonTooltip')}>
           <Plus className="h-3.5 w-3.5" /> {t('mapBuilder:panels.parameters.addButton')}
         </Button>
       </div>
@@ -116,6 +116,7 @@ function ParameterRow({
           size="icon"
           className="h-8 w-8 shrink-0"
           onClick={onRemove}
+          title={t('mapBuilder:panels.parameters.removeButtonTooltip')}
           aria-label={t('mapBuilder:panels.parameters.deleteAria', { name: parameter.name || '' })}
         >
           <X className="h-4 w-4" />

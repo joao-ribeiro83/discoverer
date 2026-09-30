@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 
@@ -60,7 +60,16 @@ function renderDialog(over: Partial<React.ComponentProps<typeof WorkbookShareDia
 beforeEach(() => {
   vi.clearAllMocks()
   mockedApi.workbooks.listShares.mockResolvedValue(envelope(shares()) as never)
+  mockedApi.users.search.mockResolvedValue(envelope([]) as never)
 })
+
+function heldShare(over: Record<string, unknown> = {}) {
+  return { userId: 'u2', email: 'bob@example.com', name: 'Bob', permissionLevel: 'EXPORT', sheets: 2, ...over }
+}
+
+function rowOf(name: string) {
+  return within(screen.getByText(name).closest('li') as HTMLElement)
+}
 
 describe('WorkbookShareDialog', () => {
   it('shows the title with the workbook name and the worksheet count', async () => {
@@ -69,51 +78,35 @@ describe('WorkbookShareDialog', () => {
     expect(await screen.findByText('Give someone every worksheet in this workbook — 3 in total.')).toBeInTheDocument()
   })
 
-  it('shows the empty state when nobody holds the workbook', async () => {
+  it('lists every user and asks for all of them', async () => {
+    mockedApi.users.search.mockResolvedValue(envelope([user(), user({ id: 'u3', name: 'Carol', email: 'c@example.com' })]) as never)
     renderDialog()
-    expect(await screen.findByText('Nobody holds this workbook yet.')).toBeInTheDocument()
+    expect(await screen.findByText('Bob')).toBeInTheDocument()
+    expect(screen.getByText('Carol')).toBeInTheDocument()
+    expect(mockedApi.users.search).toHaveBeenCalledWith('')
   })
 
-  it('lists current holders with their sheet count and revokes on click', async () => {
-    mockedApi.workbooks.listShares.mockResolvedValue(
-      envelope(
-        shares({
-          shares: [{ userId: 'u2', email: 'bob@example.com', name: 'Bob', permissionLevel: 'EXPORT', sheets: 2 }],
-        }),
-      ) as never,
-    )
+  it('shows how many worksheets a holder has, and revokes on the remove button', async () => {
+    mockedApi.workbooks.listShares.mockResolvedValue(envelope(shares({ shares: [heldShare()] })) as never)
+    mockedApi.users.search.mockResolvedValue(envelope([user()]) as never)
     mockedApi.workbooks.revokeShare.mockResolvedValue(envelope({ revoked: 2 }) as never)
     renderDialog()
 
-    expect(await screen.findByText('Bob')).toBeInTheDocument()
-    expect(screen.getByText('Can export · 2 of 3 worksheets')).toBeInTheDocument()
+    expect(await screen.findByText(/2 of 3 worksheets/)).toBeInTheDocument()
+    expect(rowOf('Bob').getByRole('button', { name: 'Can export' })).toHaveAttribute('aria-pressed', 'true')
 
-    fireEvent.click(screen.getByTitle('Remove access'))
+    fireEvent.click(screen.getByLabelText('Revoke access for Bob'))
     await waitFor(() => expect(mockedApi.workbooks.revokeShare).toHaveBeenCalledWith('wb-1', 'u2'))
     await waitFor(() => expect(toastMock).toHaveBeenCalledWith(expect.objectContaining({ title: 'Access removed' })))
   })
 
-  it('disables the Share button until a user is picked from search results', async () => {
-    mockedApi.users.search.mockResolvedValue(envelope([user()]) as never)
-    renderDialog()
-
-    const shareButton = await screen.findByRole('button', { name: 'Share workbook' })
-    expect(shareButton).toBeDisabled()
-
-    fireEvent.change(screen.getByPlaceholderText('Search by name or email…'), { target: { value: 'bob' } })
-    fireEvent.click(await screen.findByText('Bob'))
-
-    expect(shareButton).toBeEnabled()
-  })
-
-  it('shares the workbook with the picked user and permission, and shows the result toast', async () => {
+  it('shares the workbook at the clicked level and shows the result toast', async () => {
     mockedApi.users.search.mockResolvedValue(envelope([user()]) as never)
     mockedApi.workbooks.share.mockResolvedValue(envelope({ shared: 2, refused: [] }) as never)
     renderDialog()
 
-    fireEvent.change(screen.getByPlaceholderText('Search by name or email…'), { target: { value: 'bob' } })
-    fireEvent.click(await screen.findByText('Bob'))
-    fireEvent.click(screen.getByRole('button', { name: 'Share workbook' }))
+    await screen.findByText('Bob')
+    fireEvent.click(rowOf('Bob').getByRole('button', { name: 'Can export' }))
 
     await waitFor(() => expect(mockedApi.workbooks.share).toHaveBeenCalledWith('wb-1', 'u2', 'EXPORT'))
     await waitFor(() =>
@@ -121,21 +114,27 @@ describe('WorkbookShareDialog', () => {
     )
   })
 
-  it('names any refused worksheet in the toast description', async () => {
+  it('changes the level for someone who already holds it', async () => {
+    mockedApi.workbooks.listShares.mockResolvedValue(envelope(shares({ shares: [heldShare()] })) as never)
     mockedApi.users.search.mockResolvedValue(envelope([user()]) as never)
-    mockedApi.workbooks.share.mockResolvedValue(
-      envelope({ shared: 1, refused: ['Sheet Two'] }) as never,
-    )
+    mockedApi.workbooks.share.mockResolvedValue(envelope({ shared: 3, refused: [] }) as never)
     renderDialog()
 
-    fireEvent.change(screen.getByPlaceholderText('Search by name or email…'), { target: { value: 'bob' } })
-    fireEvent.click(await screen.findByText('Bob'))
-    fireEvent.click(screen.getByRole('button', { name: 'Share workbook' }))
+    await screen.findByText(/2 of 3 worksheets/)
+    fireEvent.click(rowOf('Bob').getByRole('button', { name: 'Can edit' }))
+    await waitFor(() => expect(mockedApi.workbooks.share).toHaveBeenCalledWith('wb-1', 'u2', 'EDIT'))
+  })
+
+  it('names any refused worksheet in the toast description', async () => {
+    mockedApi.users.search.mockResolvedValue(envelope([user()]) as never)
+    mockedApi.workbooks.share.mockResolvedValue(envelope({ shared: 1, refused: ['Sheet Two'] }) as never)
+    renderDialog()
+
+    await screen.findByText('Bob')
+    fireEvent.click(rowOf('Bob').getByRole('button', { name: 'Can view' }))
 
     await waitFor(() =>
-      expect(toastMock).toHaveBeenCalledWith(
-        expect.objectContaining({ description: 'Not shared: Sheet Two' }),
-      ),
+      expect(toastMock).toHaveBeenCalledWith(expect.objectContaining({ description: 'Not shared: Sheet Two' })),
     )
   })
 
@@ -144,9 +143,8 @@ describe('WorkbookShareDialog', () => {
     mockedApi.workbooks.share.mockRejectedValue(new Error('network down'))
     renderDialog()
 
-    fireEvent.change(screen.getByPlaceholderText('Search by name or email…'), { target: { value: 'bob' } })
-    fireEvent.click(await screen.findByText('Bob'))
-    fireEvent.click(screen.getByRole('button', { name: 'Share workbook' }))
+    await screen.findByText('Bob')
+    fireEvent.click(rowOf('Bob').getByRole('button', { name: 'Can view' }))
 
     await waitFor(() =>
       expect(toastMock).toHaveBeenCalledWith(
@@ -155,43 +153,24 @@ describe('WorkbookShareDialog', () => {
     )
   })
 
-  it('does not search until at least one character is typed', async () => {
-    renderDialog()
-    await screen.findByText('Nobody holds this workbook yet.')
-    expect(mockedApi.users.search).not.toHaveBeenCalled()
-  })
-
-  it('falls back to email when a holder has no name', async () => {
+  it('lists holders first', async () => {
     mockedApi.workbooks.listShares.mockResolvedValue(
-      envelope(
-        shares({ shares: [{ userId: 'u3', email: 'noname@example.com', name: null, permissionLevel: 'VIEW', sheets: 1 }] }),
-      ) as never,
+      envelope(shares({ shares: [heldShare({ userId: 'u3', name: 'Zed', email: 'z@example.com' })] })) as never,
+    )
+    mockedApi.users.search.mockResolvedValue(
+      envelope([user(), user({ id: 'u3', name: 'Zed', email: 'z@example.com' })]) as never,
     )
     renderDialog()
-    expect(await screen.findByText('noname@example.com')).toBeInTheDocument()
+    await screen.findByText(/2 of 3 worksheets/)
+    const names = screen.getAllByRole('listitem').map((li) => li.querySelector('p')?.textContent)
+    expect(names).toEqual(['Zed', 'Bob'])
   })
 
-  it('shows the empty state when the shares query itself fails', async () => {
+  it('still lists users when the shares query itself fails', async () => {
     mockedApi.workbooks.listShares.mockRejectedValue(new Error('down'))
-    renderDialog()
-    expect(await screen.findByText('Nobody holds this workbook yet.')).toBeInTheDocument()
-  })
-
-  it('shows a spinner on the Share button while the share mutation is pending', async () => {
     mockedApi.users.search.mockResolvedValue(envelope([user()]) as never)
-    let resolveShare!: (v: unknown) => void
-    mockedApi.workbooks.share.mockImplementation(
-      () => new Promise((res) => { resolveShare = res }) as never,
-    )
     renderDialog()
-
-    fireEvent.change(screen.getByPlaceholderText('Search by name or email…'), { target: { value: 'bob' } })
-    fireEvent.click(await screen.findByText('Bob'))
-    const shareButton = screen.getByRole('button', { name: 'Share workbook' })
-    fireEvent.click(shareButton)
-
-    await waitFor(() => expect(shareButton.querySelector('svg.animate-spin')).toBeInTheDocument())
-    resolveShare({ data: { data: { shared: 1, refused: [] } } })
-    await waitFor(() => expect(toastMock).toHaveBeenCalledWith(expect.objectContaining({ title: 'Shared 1 worksheet(s)' })))
+    expect(await screen.findByText('Bob')).toBeInTheDocument()
+    expect(screen.getByLabelText('Revoke access for Bob')).toBeDisabled()
   })
 })

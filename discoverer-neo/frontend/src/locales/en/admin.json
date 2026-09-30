@@ -22,6 +22,7 @@
     "title": "Business Areas",
     "description": "Manage business areas for your data models.",
     "createButton": "New Business Area",
+    "createButtonTooltip": "Create a new business area",
     "emptyMessage": "No business areas yet.",
     "manageGrantsTitle": "Manage grants",
     "entityLabel": "business area",
@@ -38,15 +39,27 @@
       "dialogTitle": "Grants — {{name}}",
       "dialogDescription": "Control which users can access this business area and what they can do.",
       "userLabel": "User",
-      "selectUserPlaceholder": "Select a user",
       "permissionLabel": "Permission",
       "addButton": "Add",
+      "addTooltip": "Give every ticked user the chosen permission on this business area",
+      "filterUsersPlaceholder": "Filter users by name or email",
+      "selectedCount": "{{count}} selected",
+      "levelHelp": {
+        "VIEW": "Read the data in this area's folders. Run maps that are shared with the user. See the area's folders, items, joins and hierarchies.",
+        "EXPORT": "Same as VIEW. Export and schedule rights on a map come from how that map is shared.",
+        "SCHEDULE": "Same as VIEW. Export and schedule rights on a map come from how that map is shared.",
+        "CREATE": "Everything in VIEW, plus create new maps, folders, items, joins and hierarchies in this area.",
+        "EDIT": "Everything in CREATE, plus change this area and its folders, items, joins and hierarchies.",
+        "DELETE": "Everything in EDIT, plus delete folders, items, joins and hierarchies in this area."
+      },
       "revokeTitle": "Revoke",
       "loadingGrants": "Loading grants...",
       "noGrantsYet": "No grants yet.",
       "closeButton": "Close",
       "toast": {
         "accessGranted": "Access granted",
+        "accessGrantedCount_one": "Access granted to {{count}} user",
+        "accessGrantedCount_other": "Access granted to {{count}} users",
         "grantFailed": "Grant failed",
         "accessRevoked": "Access revoked"
       }
@@ -56,6 +69,7 @@
     "title": "Folders",
     "description": "Manage folders (tables, views, and derived data) within a business area.",
     "createButton": "New Folder",
+    "createButtonTooltip": "Create a new folder",
     "emptyMessage": "No folders in this business area yet.",
     "selectBusinessAreaPrompt": "Select a business area to view its folders.",
     "entityLabel": "folder",
@@ -126,6 +140,7 @@
     "title": "Items",
     "description": "Manage items exposed from folders — columns, calculations, and aggregations.",
     "createButton": "New Item",
+    "createButtonTooltip": "Create a new item",
     "emptyMessage": "No items in this folder yet.",
     "selectBusinessAreaPrompt": "Select a business area and folder to view its items.",
     "entityLabel": "item",
@@ -170,12 +185,14 @@
     "title": "Joins",
     "description": "Define relationships between folders within a business area.",
     "createButton": "New Join",
+    "createButtonTooltip": "Create a new join",
     "emptyMessage": "No joins in this business area yet.",
     "selectBusinessAreaPrompt": "Select a business area to view its joins.",
     "entityLabel": "join",
     "columns": {
       "leftFolder": "Left Folder",
-      "rightFolder": "Right Folder"
+      "rightFolder": "Right Folder",
+      "columns": "Columns"
     },
     "dialog": {
       "editTitle": "Edit Join",
@@ -189,7 +206,12 @@
       "leftItemLabel": "Left Item",
       "rightItemLabel": "Right Item",
       "selectItemPlaceholder": "Select item",
-      "joinTypeLabel": "Join Type"
+      "joinTypeLabel": "Join Type",
+      "operatorLabel": "Operator",
+      "operatorTooltip": "How the two columns must compare. Almost always \"=\".",
+      "addPairButton": "Add column pair",
+      "addPairTooltip": "Match the two folders on one more column. Every pair must match (AND).",
+      "removePairTooltip": "Remove this column pair from the join"
     },
     "validation": {
       "leftFolderRequired": "Left folder is required",
@@ -207,6 +229,7 @@
     "title": "Hierarchies",
     "description": "Define drill-down hierarchies by ordering items into levels.",
     "createButton": "New Hierarchy",
+    "createButtonTooltip": "Create a new hierarchy",
     "emptyMessage": "No hierarchies in this business area yet.",
     "selectBusinessAreaPrompt": "Select a business area to view its hierarchies.",
     "entityLabel": "hierarchy",
@@ -224,7 +247,8 @@
       "noLevelsYet": "No levels yet — add at least one.",
       "levelNamePlaceholder": "Level name",
       "itemPlaceholder": "Item",
-      "reorderAria": "Reorder level"
+      "reorderAria": "Reorder level",
+      "removeLevelButtonTooltip": "Remove this level"
     },
     "toast": {
       "updated": "Hierarchy updated",
@@ -236,6 +260,7 @@
     "title": "Custom Functions",
     "description": "Register custom SQL, PL/SQL, and package functions available to calculated items.",
     "createButton": "New Function",
+    "createButtonTooltip": "Create a new custom function",
     "emptyMessage": "No custom functions yet.",
     "entityLabel": "custom function",
     "columns": {
@@ -281,6 +306,7 @@
       "searchLabel": "Find a function",
       "searchPlaceholder": "Function or package name",
       "button": "Search",
+      "buttonTooltip": "Search for database functions and packages",
       "noResults": "No functions found.",
       "notCallable": "Cannot be called from SQL: {{reason}}",
       "truncated": "More functions match. Type more of the name to narrow the search."
@@ -302,6 +328,7 @@
     "title": "Data Sources",
     "description": "Manage database connections used to introspect and import schema.",
     "createButton": "New Data Source",
+    "createButtonTooltip": "Create a new data source connection",
     "emptyMessage": "No data sources yet.",
     "entityLabel": "data source",
     "columns": {
@@ -343,6 +370,7 @@
       "dialogTitle": "Import Tables — {{name}}",
       "dialogDescription": "Discover tables and import selected tables as folders.",
       "tableOwnerLabel": "Table Owner / Schema",
+      "discoverTablesButtonTooltip": "Re-read the tables in this schema",
       "tableOwnerPlaceholder": "e.g. SCOTT",
       "selectDestinationPlaceholder": "Select destination business area",
       "discoveringTables": "Discovering tables...",
@@ -420,8 +448,27 @@
         "OWNER": "Owner",
         "SHARE": "Shared",
         "PUBLIC": "Public",
-        "GRANT": "Business area"
+        "ROLE": "Manager role"
+      },
+      "owner": "Owner: {{name}}",
+      "newOwner": "New owner",
+      "changeOwnerTooltip": "Give this map to another user. The new owner can change, share and delete it.",
+      "removeShareTooltip": "Remove this map from the user. They can no longer open it.",
+      "shareLevelTooltip": "What this user may do with the shared map",
+      "toast": {
+        "shareChanged": "Share changed",
+        "shareRemoved": "Share removed",
+        "ownerChanged": "Owner changed"
       }
+    },
+    "createTooltip": "Add a new user account",
+    "editTooltip": "Change this user's name, email, password or role",
+    "deleteTooltip": "Delete this user account for good",
+    "roleHelp": {
+      "ADMIN": "Can do everything: users, business areas, data sources, security and audit. Can open, change, share and delete every map.",
+      "MANAGER": "Models the data (business areas, folders, items, joins). Can open, run and share every map, and change who owns a map. Changes only their own maps; copies a map to build a new one.",
+      "USER": "Sees only their own maps and the maps shared with them. Builds new maps by copying one of those. Runs, exports and schedules as each share allows.",
+      "VIEWER": "Read-only. Opens and runs the maps shared with them. Cannot create, copy or change maps."
     }
   }
 }

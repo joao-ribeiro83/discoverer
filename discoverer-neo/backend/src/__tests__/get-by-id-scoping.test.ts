@@ -31,6 +31,7 @@ const GATES = [
   'authorizeAdmin',
   'authorize(',
   'adminPreHandler',
+  'adminManagerPreHandler',
   'loadMapWithAccess(',
   'canAccessMap(',
   'loadOwnJob(',

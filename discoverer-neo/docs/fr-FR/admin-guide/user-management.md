@@ -8,10 +8,20 @@ Discoverer Neo comporte quatre rôles utilisateur aux capacités différentes :
 
 | Rôle | Capacités |
 |------|-------------|
-| **ADMIN** | Accès système complet — utilisateurs, domaines d'activité, sources de données, journaux d'audit |
-| **MANAGER** | Créer et gérer des domaines d'activité, accorder des autorisations à d'autres utilisateurs |
-| **USER** | Créer des cartes, exécuter des requêtes, partager des cartes avec des collègues |
-| **VIEWER** | Accès en lecture seule aux cartes et tableaux de bord partagés |
+| **ADMIN** | Accès système complet — utilisateurs, domaines d'activité, sources de données, journaux d'audit. Ouvre, modifie, partage et supprime toutes les cartes. |
+| **MANAGER** | Modélise les données (domaines d'activité, dossiers, éléments, jointures). Ouvre, exécute, exporte, planifie et partage **toutes** les cartes, et peut changer le propriétaire d'une carte. Ne modifie que ses propres cartes. |
+| **USER** | Ne voit que ses propres cartes et celles partagées avec lui. Crée une nouvelle carte en copiant l'une d'elles. |
+| **VIEWER** | Lecture seule. Ouvre et exécute les cartes partagées avec lui. Ne peut ni créer, ni copier, ni modifier de cartes. |
+
+La page Utilisateurs affiche ces règles sous le champ **Rôle** lorsque vous
+modifiez un utilisateur. Un MANAGER peut ouvrir la page Utilisateurs pour voir
+les cartes de chaque utilisateur et, à cet endroit, changer le niveau d'un
+partage, retirer un partage ou attribuer une carte à un nouveau propriétaire.
+Seul un ADMIN peut créer, modifier ou supprimer des utilisateurs.
+
+Toute personne autre qu'un VIEWER peut copier une carte qu'elle voit. La copie
+lui appartient. Son exécution exige toujours une autorisation sur son domaine
+d'activité (voir « deux portes » ci-dessous).
 
 ## Créer des utilisateurs
 
@@ -62,30 +72,28 @@ Une fois les utilisateurs créés, accordez-leur l'accès à des domaines d'acti
 
 1. Panneau d'administration → **Domaines d'activité**
 2. Sélectionnez le domaine d'activité → **Gérer les accès**
-3. Cliquez sur **+ Accorder une autorisation**
-4. Sélectionnez :
-   - **Utilisateur** — Dans la liste déroulante
-   - **Niveau d'autorisation** — CREATE, EDIT, DELETE, EXPORT, SCHEDULE ou VIEW
-5. Cliquez sur **Accorder**
+3. Cochez un ou plusieurs utilisateurs dans la liste. Saisissez du texte dans la zone de filtre pour les trouver.
+4. Choisissez le niveau d'**Autorisation**. La zone en dessous indique ce que ce niveau permet.
+5. Cliquez sur **Ajouter**. Chaque utilisateur coché reçoit ce niveau.
 
 ### Niveaux d'autorisation
 
-Les niveaux forment une hiérarchie. Chaque niveau inclut tous les niveaux supérieurs du tableau.
+Les niveaux forment une hiérarchie. Chaque niveau inclut tous les niveaux supérieurs du tableau. Aucun niveau n'affiche les cartes des autres personnes — seul un partage (ou le rôle MANAGER) le fait.
 
 | Niveau | Ce qu'il ajoute |
 |-------|--------------|
 | **VIEW** | Lire les données des dossiers de la domaine. Voir les dossiers, éléments, jointures et hiérarchies de la domaine. Exécuter des cartes dont vous êtes propriétaire, des cartes partagées avec vous et des cartes publiques. |
 | **EXPORT** | Identique à VIEW actuellement (voir la note 2). |
 | **SCHEDULE** | Identique à VIEW actuellement (voir la note 2). |
-| **CREATE** | Créer des cartes, dossiers, éléments, jointures et hiérarchies. Voir, exécuter, exporter, planifier et copier **toutes** les cartes de la domaine. |
-| **EDIT** | Modifier la domaine, ses dossiers, éléments, jointures, hiérarchies et toutes les cartes qu'elle contient. |
-| **DELETE** | Supprimer des dossiers, éléments, jointures, hiérarchies et toutes les cartes de la domaine. |
+| **CREATE** | Créer de nouvelles cartes, des dossiers, éléments, jointures et hiérarchies dans le domaine. |
+| **EDIT** | Modifier le domaine et ses dossiers, éléments, jointures et hiérarchies. |
+| **DELETE** | Supprimer des dossiers, éléments, jointures et hiérarchies du domaine. |
 
 Les utilisateurs ADMIN contournent tous ces contrôles.
 
 **Note 1 — deux portes.** Pour exécuter une carte, un utilisateur doit passer deux contrôles :
 
-1. **Puis-je voir cette carte ?** Oui si vous en êtes propriétaire, elle est publique, elle est partagée avec vous ou vous déteniez CREATE ou plus dans sa domaine.
+1. **Puis-je voir cette carte ?** Oui si vous êtes ADMIN ou MANAGER, si vous en êtes propriétaire, si elle est publique ou si elle est partagée avec vous.
 2. **Puis-je lire ses données ?** Oui si vous détenez **une** autorisation dans la domaine d'activité de chaque dossier utilisé par la carte.
 
 Ainsi, une carte partagée avec un utilisateur échoue si l'utilisateur n'a pas d'autorisation sur la domaine d'où proviennent les données.
@@ -98,9 +106,9 @@ Accordez **une** autorisation par utilisateur et par domaine d'activité — le 
 
 | L'utilisateur doit… | Accordez |
 |----------------|-------|
-| Exécuter des cartes que d'autres partagent avec lui | VIEW |
-| Créer ses propres cartes | CREATE |
-| Gérer les dossiers, éléments et cartes de la domaine | EDIT |
+| Exécuter des cartes que d'autres partagent avec lui, ou les copier | VIEW |
+| Créer de nouvelles cartes de zéro | CREATE |
+| Gérer les dossiers, éléments et jointures du domaine | EDIT |
 | Les supprimer également | DELETE |
 
 ### Révoquer une autorisation
