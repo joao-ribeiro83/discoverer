@@ -14,7 +14,7 @@
     "build": "npm run build --workspaces",
     "lint": "npm run lint --workspaces",
     "typecheck": "npm run typecheck --workspaces",
-    "package": "sh scripts/package-app.sh"
+    "package": "node scripts/package-app.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.0",
