@@ -192,6 +192,7 @@ export function useMapRun(mapId: string | undefined): UseMapRunResult {
           conditionalFormats: run.decoration?.conditionalFormats,
           warnings: run.decoration?.warnings,
           heading: run.decoration?.heading,
+          sql: run.sql ?? undefined,
         }
       : null
 
