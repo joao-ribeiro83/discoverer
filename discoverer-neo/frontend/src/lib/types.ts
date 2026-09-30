@@ -767,6 +767,8 @@ export interface MapRun {
   startedAt: string | null
   completedAt: string | null
   expiresAt: string
+  /** The compiled statement — the backend sends it to administrators only. */
+  sql?: string | null
 }
 
 export interface ExecutionHistoryEntry {

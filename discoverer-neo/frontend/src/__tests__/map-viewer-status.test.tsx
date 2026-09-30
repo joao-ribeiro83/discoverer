@@ -148,6 +148,30 @@ describe('MapViewerPage status line', () => {
     expect(await screen.findByText(/^Showing a cached result from /)).toBeInTheDocument()
   })
 
+  // The backend sends `sql` to admins only; useMapRun used to drop it, so the
+  // SQL and Plan buttons never showed for anyone.
+  it('shows the SQL button when the run carries its statement', async () => {
+    mockedApi.maps.get.mockResolvedValue(envelope(makeMap()) as never)
+    mockedApi.maps.requestRun.mockResolvedValue({ data: makeRun({ sql: 'SELECT 1 FROM dual' }), reused: false })
+
+    renderViewer()
+    fireEvent.click(await screen.findByRole('button', { name: /^run$/i }))
+
+    fireEvent.click(await screen.findByRole('button', { name: 'SQL' }))
+    expect(await screen.findByText('SELECT 1 FROM dual')).toBeInTheDocument()
+  })
+
+  it('hides the SQL button when the run has no statement (non-admin)', async () => {
+    mockedApi.maps.get.mockResolvedValue(envelope(makeMap()) as never)
+    mockedApi.maps.requestRun.mockResolvedValue({ data: makeRun(), reused: false })
+
+    renderViewer()
+    fireEvent.click(await screen.findByRole('button', { name: /^run$/i }))
+
+    expect(await screen.findByText(/^Result from /)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'SQL' })).not.toBeInTheDocument()
+  })
+
   it('overrides the map description with the run heading once a result lands', async () => {
     mockedApi.maps.get.mockResolvedValue(envelope(makeMap()) as never)
     mockedApi.maps.requestRun.mockResolvedValue({
