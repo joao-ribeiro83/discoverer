@@ -409,6 +409,7 @@
       "title": "¿Desactivar usuario?",
       "description": "{{name}} cierra sesión en su próxima solicitud y no puede iniciar sesión hasta que vuelva a activar la cuenta."
     },
+    "deleteConfirmDescription": "Esto elimina permanentemente a {{name}}, con sus programaciones, ejecuciones y exportaciones. Esta acción no se puede deshacer. Para impedir que inicie sesión y conservarlo todo, desactive la cuenta en su lugar.",
     "dialog": {
       "editTitle": "Editar usuario",
       "createTitle": "Nuevo usuario"

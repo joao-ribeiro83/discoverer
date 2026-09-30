@@ -495,9 +495,11 @@ export default function authRoutes(fastify: FastifyInstance) {
       // Re-verify the current password even though the caller holds a valid
       // token: it stops a borrowed or stolen session from silently taking
       // ownership of the account by rotating the credential.
+      // 400, not 401: the session is fine, the form input is wrong. A 401 makes
+      // the client's interceptor treat it as an expired session and log out.
       const ok = await verifyPassword(currentPassword, user.passwordHash);
       if (!ok) {
-        return reply.code(401).send({ error: 'Current password is incorrect' });
+        return reply.code(400).send({ error: 'Current password is incorrect' });
       }
 
       if (newPassword === currentPassword) {

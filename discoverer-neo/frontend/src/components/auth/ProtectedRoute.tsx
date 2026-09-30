@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
+import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import { useAuthStore } from '@/store/auth'
 
@@ -29,4 +29,14 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
   }
 
   return <>{children}</>
+}
+
+/**
+ * Mirrors the sidebar's role gates on the routes themselves, so a typed
+ * `/admin/...` URL lands on the dashboard instead of a page of 403s. The
+ * server still decides; this only saves the wasted trip.
+ */
+export function RequireRole({ roles }: { roles: readonly string[] }) {
+  const role = useAuthStore((s) => s.user?.role)
+  return role && roles.includes(role) ? <Outlet /> : <Navigate to="/dashboard" replace />
 }

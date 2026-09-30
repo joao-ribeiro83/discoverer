@@ -392,3 +392,26 @@ describe('POST /api/auth/logout', () => {
     expect(response.statusCode).toBe(401);
   });
 });
+
+describe('POST /api/auth/change-password', () => {
+  // A 401 here would make the client treat a typo as an expired session.
+  it('returns 400, not 401, for a wrong current password', async () => {
+    await createTestUser(TEST_EMAIL, TEST_PASSWORD);
+    const loginRes = await app.inject({
+      method: 'POST',
+      url: '/api/auth/login',
+      payload: { email: TEST_EMAIL, password: TEST_PASSWORD },
+    });
+    const { token } = loginRes.json().data;
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/auth/change-password',
+      headers: { authorization: `Bearer ${token}` },
+      payload: { currentPassword: 'wrong-password', newPassword: 'AnotherSecure123!' },
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json()).toEqual({ error: 'Current password is incorrect' });
+  });
+});

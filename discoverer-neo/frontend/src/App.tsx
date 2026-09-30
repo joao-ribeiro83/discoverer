@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { Layout, RouteFallback } from '@/components/layout/Layout'
-import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import { ProtectedRoute, RequireRole } from '@/components/auth/ProtectedRoute'
 import { AuthLayout } from '@/components/auth/AuthLayout'
 import { LoginPage } from '@/pages/LoginPage'
 import { DashboardPage } from '@/pages/DashboardPage'
@@ -82,7 +82,7 @@ export function App() {
       >
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
-        <Route path="admin">
+        <Route path="admin" element={<RequireRole roles={['ADMIN', 'MANAGER']} />}>
           <Route path="business-areas" element={<BusinessAreasPage />} />
           <Route path="folders" element={<FoldersPage />} />
           <Route path="items" element={<ItemsPage />} />
@@ -91,9 +91,11 @@ export function App() {
           <Route path="custom-functions" element={<CustomFunctionsPage />} />
           <Route path="data-sources" element={<DataSourcesPage />} />
           <Route path="users" element={<UsersPage />} />
-          <Route path="security" element={<SecurityPage />} />
-          <Route path="migration" element={<MigrationPage />} />
-          <Route path="audit" element={<AuditLogPage />} />
+          <Route element={<RequireRole roles={['ADMIN']} />}>
+            <Route path="security" element={<SecurityPage />} />
+            <Route path="migration" element={<MigrationPage />} />
+            <Route path="audit" element={<AuditLogPage />} />
+          </Route>
         </Route>
         <Route path="maps">
           <Route index element={<MapsListPage />} />
