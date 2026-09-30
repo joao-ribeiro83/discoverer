@@ -1,0 +1,189 @@
+# A sua função numa página
+
+É um **Manager**. Vê, executa, exporta, agenda e partilha todos os mapas. A modelação de dados está limitada às áreas de negócio em que um administrador lhe concedeu uma permissão.
+
+| Pode | Não pode |
+|---|---|
+| Ver, executar, exportar e agendar todos os mapas | Alterar ou eliminar um mapa de que não é proprietário (exceto se for partilhado consigo como **Pode editar**) |
+| Partilhar qualquer mapa e alterar qualquer partilha | Ver o SQL ou o plano da base de dados |
+| Copiar qualquer mapa para criar o seu | Criar utilizadores, origens de dados ou áreas de negócio, nem dar permissões |
+| Atribuir um mapa a um novo proprietário | Ver as execuções, exportações ou agendamentos de outras pessoas |
+| Gerir funções personalizadas | Usar Segurança, Registo de Auditoria ou Migração |
+| Ler, testar e introspetar origens de dados | Importar tabelas de uma origem de dados |
+
+> **Nota:** **Segurança**, **Registo de Auditoria** e **Migração** são só para administradores. Não aparecem na sua barra lateral.
+
+Ver um mapa não lhe dá os respetivos dados. Uma execução precisa de uma permissão de área de negócio em cada pasta que o mapa usa. Sem ela, aparece **Sem autorização para executar**.
+
+Inicie sessão com o seu **Email** e **Palavra-passe** e clique em **Iniciar sessão**. Termine a sessão no menu do seu nome com **Terminar sessão**.
+
+---
+
+# Mapas
+
+A página **Mapas** lista todos os mapas. Um mapa é um relatório (uma folha de cálculo no Oracle Discoverer).
+
+![A lista de Mapas, separador Todos, com os ícones Copiar, Partilhar, Agendar e Exportar em cada linha.](shots/pt-PT/manager/02-maps-all.png)
+
+1. Escolha um separador: **Meus**, **Partilhado comigo** ou **Todos**.
+2. Reduza a lista com **Procurar mapas por nome…** ou com o filtro **Área de Negócio**.
+3. Clique no ícone do olho para abrir um mapa e executá-lo.
+4. Clique no ícone Copiar para fazer a sua própria cópia. Fica privada, só para si.
+5. Clique no ícone Partilhar para dar acesso a alguém.
+
+| Ícone | O que faz |
+|---|---|
+| Lápis | Altera o mapa. Só nos seus próprios mapas ou em partilhas **Pode editar**. |
+| Lixo | Elimina. Só os seus próprios mapas. Um administrador tem de o restaurar. |
+| Calendário | Agenda este mapa. |
+
+---
+
+# Partilhar um mapa
+
+A partilha decide o que outra pessoa pode fazer com um mapa.
+
+![A caixa de diálogo Partilhar mapa com uma caixa de pesquisa e os botões Pode ver, Pode exportar e Pode editar.](shots/pt-PT/manager/03-share-dialog.png)
+
+1. Clique no ícone Partilhar do mapa.
+2. Procure uma pessoa pelo nome ou e-mail.
+3. Clique num nível junto ao nome dessa pessoa. O botão escuro é o nível atual.
+4. Clique no X junto a um nome para remover o acesso.
+
+| Nível | O que significa |
+|---|---|
+| **Pode ver** | Só abrir e executar. |
+| **Pode exportar** | Também exportar e agendar. |
+| **Pode editar** | Também alterar o mapa. |
+
+---
+
+# Ver, executar e exportar
+
+O visualizador executa um mapa e mostra as respetivas linhas. Nunca altera o mapa.
+
+![Uma execução concluída com os botões Excel, CSV e PDF por cima da grelha de resultados.](shots/pt-PT/viewer/06-viewer-results.png)
+
+1. Abra o mapa com o ícone do olho.
+2. Clique em **Executar**. Responda às perguntas dos **Parâmetros de execução**, se aparecerem.
+3. Leia as linhas. Clique num cabeçalho para ordenar. Faça duplo clique numa linha para ver as linhas de origem.
+4. Clique em **Excel**, **CSV** ou **PDF** para exportar.
+5. Encontre o ficheiro mais tarde em **Exportações**. Os ficheiros são mantidos durante 7 dias.
+
+Um resultado mantém-se válido durante 24 horas. **Executar novamente** força uma nova execução.
+
+---
+
+# Construtor de mapas
+
+Use o construtor para criar ou alterar um mapa. Só pode guardar um mapa novo com uma permissão CREATE na respetiva área de negócio. Só pode guardar um mapa existente se for o proprietário ou tiver **Pode editar**. Para alterar o mapa de outra pessoa, copie-o primeiro.
+
+![O construtor de mapas com a árvore Áreas de Negócio, a área de Colunas e o painel Propriedades.](shots/pt-PT/user/05-builder-overview.png)
+
+1. Clique em **Criar Mapa**, ou no ícone do lápis num mapa seu.
+2. Arraste itens da árvore **Áreas de Negócio** para **Colunas**. Todas as colunas têm de vir de uma só área de negócio.
+3. Clique numa coluna para definir a **Agregação**, a **Direção de ordenação** ou a **Máscara de Formato**.
+4. Use os separadores **Condições**, **Ordenação**, **Parâmetros** e **Campos Calculados** se for preciso.
+5. Clique em **Guardar** e depois em **Executar**. Nada é guardado automaticamente.
+
+---
+
+# Agendamentos
+
+Um agendamento executa um mapa num horário definido e guarda o resultado. Só vê os seus próprios agendamentos.
+
+![A página Agendamentos com um agendamento em pausa e os respetivos ícones de ação.](shots/pt-PT/user/38-schedules-list.png)
+
+1. Em **Mapas**, clique no ícone do calendário do mapa. Para agendar o mapa de outra pessoa, use este ícone.
+2. Escreva um **Nome**.
+3. Escolha a **Frequência**, o **Fuso horário** e o **Formato de Saída**.
+4. Clique em **Guardar**.
+5. Clique em **Executar agora** para testar. Abra **Histórico** para ver os resultados.
+
+| Escolha | Significado |
+|---|---|
+| **Diariamente (meia-noite)**, **Semanalmente (domingo, meia-noite)**, **Mensalmente (dia 1, meia-noite)** | Horários prontos a usar. |
+| **Personalizado** | A sua própria expressão cron de cinco campos. |
+| **Excel (.xlsx)**, **CSV** | Formato do resultado guardado. |
+
+O agendamento é executado como si, por isso as suas permissões decidem que dados lê.
+
+---
+
+# Execuções e Exportações
+
+**Execuções** lista as suas próprias execuções. **Exportações** lista os seus próprios ficheiros exportados. Não vê os de outras pessoas.
+
+![A página Execuções com os filtros Mapa, Estado e Tipo e a lista de execuções.](shots/pt-PT/manager/11-runs.png)
+
+1. Clique em **Execuções** para ver as execuções em espera, em curso e concluídas.
+2. Clique no ícone **Abrir** para ver um resultado guardado. Use **Executar novamente** para o repetir.
+3. Clique em **Cancelar** numa execução em fila para a parar.
+4. Clique em **Exportações** e depois no ícone **Transferir** numa linha **Concluída**.
+
+---
+
+# Utilizadores
+
+A página **Utilizadores** é só de leitura para si. Pode listar contas e corrigir o acesso aos mapas.
+
+![A caixa de diálogo Mapas de um utilizador, com listas de nível de partilha e ícones de proprietário e remover.](shots/pt-PT/manager/12-users-maps-dialog.png)
+
+1. Clique no ícone da linha **Mapas que este utilizador pode abrir**.
+2. Para alterar um mapa partilhado, use a lista de níveis junto a ele.
+3. Para retirar um mapa partilhado, clique no X.
+4. Para entregar um mapa, clique no ícone de proprietário e escolha o **Novo proprietário**.
+
+> **Atenção:** O novo proprietário pode alterar, partilhar e eliminar o mapa.
+
+Criar, editar e eliminar utilizadores é da responsabilidade dos administradores.
+
+---
+
+# Modelação de dados
+
+As páginas **Áreas de Negócio**, **Pastas**, **Itens**, **Junções** e **Hierarquias** listam apenas as áreas de negócio em que tem uma permissão. O nível da permissão define o que pode fazer.
+
+![A página Pastas com uma área de negócio escolhida e as respetivas pastas listadas.](shots/pt-PT/admin/11-folders.png)
+
+| Permissão | O que pode fazer |
+|---|---|
+| VIEW, EXPORT, SCHEDULE | Ler pastas, itens, junções e hierarquias. |
+| CREATE | Também adicionar pastas, itens, junções e hierarquias. |
+| EDIT | Também alterá-los e atualizar pastas a partir da base de dados. |
+| DELETE | Também eliminá-los. |
+
+1. Escolha uma **Área de Negócio**. Se a lista estiver vazia, peça uma permissão a um administrador.
+2. Para adicionar uma pasta: clique em **Nova Pasta**, escolha uma **Origem de Dados**, clique em **Descobrir Tabelas**, escolha uma tabela e clique em **Guardar**.
+3. Para ligar duas pastas: em **Junções**, clique em **Nova Junção**, clique em **Sugerir Junções** e depois em **Guardar**.
+
+**Nova Área de Negócio**, **Eliminar** numa área de negócio e as alterações de permissões são só para administradores, apesar de o ecrã as mostrar. O sistema recusa-as.
+
+---
+
+# Funções Personalizadas e Origens de Dados
+
+As **Funções Personalizadas** são funções da base de dados que os itens calculados podem chamar. Tem todos os direitos sobre elas. As **Origens de Dados** são ligações guardadas a bases de dados. Só pode consultá-las e testá-las.
+
+![A página Funções Personalizadas com a lista, Atualizar tudo e Nova Função.](shots/pt-PT/manager/09-custom-functions.png)
+
+1. Em **Funções Personalizadas**, clique em **Nova Função**.
+2. Escolha uma **Origem de dados**, escreva parte de um nome em **Procurar uma função** e clique em **Procurar**.
+3. Clique num resultado para preencher a caixa de diálogo e depois clique em **Guardar**.
+4. Use **Atualizar tudo** para voltar a ler todas as funções do Oracle.
+5. Em **Origens de Dados**, clique em **Testar ligação** para verificar uma ligação.
+
+**Nova Origem de Dados**, **Editar**, **Eliminar** e **Importar** numa origem de dados são só para administradores. O sistema recusa-os.
+
+---
+
+# Definições
+
+Abra **Definições** na barra lateral ou no menu do seu nome.
+
+![A página Definições com os cartões Idioma de exibição, Aparência e Paleta.](shots/pt-PT/common/04-settings.png)
+
+1. Escolha o **Idioma de exibição**, a **Aparência** e a **Paleta**.
+2. Clique em **Guardar**. Sem isso, a escolha não o acompanha noutros computadores.
+
+Para alterar a palavra-passe, abra `/change-password`. Precisa de pelo menos 12 caracteres. Não existe ligação de recuperação. Peça a um administrador se se esquecer dela.

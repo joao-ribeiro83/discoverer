@@ -1,0 +1,794 @@
+# Votre rôle en un coup d'œil
+
+Vous êtes **Manager**. Vous voyez toutes les cartes de Discoverer Neo, vous les exécutez, les exportez, les planifiez et les partagez. Vous veillez à qui peut ouvrir quoi. Vous aidez aussi à modéliser les données, mais seulement dans les domaines d'activité auxquels vous avez accès.
+
+Une **carte** est un rapport (dans Oracle Discoverer, c'était une feuille de calcul). Un **classeur** est un groupe de cartes. Un **domaine d'activité** est un groupe de données liées. Un **dossier** est une table ou une vue d'un domaine d'activité, et un **élément** est une colonne d'un dossier.
+
+## Ce que vous pouvez / ne pouvez pas faire
+
+| Vous pouvez | Vous ne pouvez pas |
+|---|---|
+| Voir toutes les cartes, y compris les cartes privées | Modifier une carte qui ne vous appartient pas, sauf si elle est partagée avec vous en **Peut modifier** |
+| Exécuter, exporter et planifier toutes les cartes (les règles de données ci-dessous s'appliquent toujours) | Supprimer une carte qui ne vous appartient pas |
+| Partager n'importe quelle carte, et modifier ou retirer n'importe quel partage | Voir le texte SQL ou le plan de base de données d'une exécution |
+| Copier n'importe quelle carte pour créer votre propre version | Créer, supprimer ou modifier les accès sur les domaines d'activité |
+| Transmettre une carte à un autre propriétaire | Créer, modifier ou supprimer des utilisateurs |
+| Ouvrir la page Utilisateurs et voir quelles cartes chaque personne peut ouvrir | Créer, modifier ou supprimer des sources de données, ni en importer des tables |
+| Créer, modifier et supprimer des fonctions personnalisées | Voir les exécutions, exportations ou planifications des autres |
+| Tester et lire les sources de données | Utiliser Sécurité, Journal d'audit ou Migration (administrateurs uniquement) |
+| Modéliser les données dans les domaines d'activité où vous avez un accès, jusqu'au niveau de cet accès | Modéliser les données dans un domaine d'activité où vous n'avez aucun accès |
+
+> **Remarque :** **Sécurité**, **Journal d'audit** et **Migration** sont réservés aux administrateurs. Ils ne figurent pas dans votre barre latérale.
+
+## D'où viennent vos accès
+
+Trois éléments décident de ce que vous pouvez faire.
+
+- **Votre rôle.** En tant que Manager, vous pouvez voir, exécuter, exporter, planifier et partager toutes les cartes. Cela ne dépend pas des partages.
+- **Les partages.** Vous ne pouvez modifier une carte que si elle vous appartient ou si quelqu'un l'a partagée avec vous en **Peut modifier**. Être Manager n'ajoute pas ce droit.
+- **Les accès aux domaines d'activité.** Un administrateur vous donne un accès sur un domaine d'activité. Un accès a un niveau. Chaque niveau inclut les précédents.
+
+| Niveau d'accès | Ce qu'il vous permet de faire dans ce domaine d'activité |
+|---|---|
+| VIEW | Lire ses données. Voir ses dossiers, éléments, jointures et hiérarchies. |
+| EXPORT | Identique à VIEW. Les droits d'exportation et de planification d'une carte dépendent de la façon dont la carte est partagée. |
+| SCHEDULE | Identique à VIEW. Les droits d'exportation et de planification d'une carte dépendent de la façon dont la carte est partagée. |
+| CREATE | Tout ce qui est dans VIEW, plus la création de nouvelles cartes, de nouveaux dossiers, éléments, jointures et hiérarchies. |
+| EDIT | Tout ce qui est dans CREATE, plus la modification du domaine et de ses dossiers, éléments, jointures et hiérarchies. |
+| DELETE | Tout ce qui est dans EDIT, plus la suppression des dossiers, éléments, jointures et hiérarchies. |
+
+Contrairement à un administrateur, vous n'avez aucun contournement. Deux règles en découlent.
+
+- Vous pouvez voir et exécuter toutes les cartes, mais les données passent en second. Une exécution ou une exportation exige un accès à chaque dossier utilisé par la carte. Sans lui, l'exécution échoue avec **Exécution non autorisée**. Demandez l'accès à un administrateur.
+- Un accès ne fait pas apparaître de cartes. Vous voyez déjà toutes les cartes parce que vous êtes Manager.
+
+## Se connecter, changer de mot de passe et se déconnecter
+
+1. Ouvrez l'adresse de Discoverer Neo dans votre navigateur.
+2. Saisissez votre **E-mail** et votre **Mot de passe**.
+3. Laissez **Rester connecté** coché pour rester connecté après la fermeture du navigateur. Décochez-le sur un ordinateur partagé. Vous serez alors déconnecté à la fermeture du navigateur.
+4. Cliquez sur **Se connecter**. Vous arrivez sur le **Tableau de bord**.
+
+![La page de connexion avec E-mail, Mot de passe, Rester connecté et le bouton Se connecter.](shots/fr-FR/common/01-login.png)
+
+Si vous saisissez cinq fois un mot de passe erroné, le compte est verrouillé pendant 15 minutes. Patientez, puis réessayez. Il n'y a pas de lien « mot de passe oublié ». Demandez à un administrateur de le réinitialiser.
+
+Si votre compte a un mot de passe temporaire, Discoverer Neo vous envoie vers **Modifier votre mot de passe** et rien d'autre ne fonctionne tant que vous n'avez pas terminé.
+
+Pour changer votre mot de passe à tout moment, ouvrez l'adresse `/change-password` dans la même fenêtre de navigateur. Saisissez votre mot de passe actuel, puis le nouveau deux fois. Le nouveau doit comporter au moins 12 caractères et être différent de l'ancien.
+
+Pour vous déconnecter, cliquez sur votre nom en haut à droite et choisissez **Se déconnecter**. Cela met fin à votre session. Pour utiliser de nouveau Discoverer Neo, reconnectez-vous.
+
+![Le menu du compte ouvert, avec Paramètres et Se déconnecter.](shots/fr-FR/common/03-user-menu.png)
+
+---
+
+# Tableau de bord
+
+Le **Tableau de bord** est la première page que vous voyez. Il ne donne que des chiffres. Rien n'y modifie les données.
+
+![Le tableau de bord du Manager avec la barre latérale complète et les cartes de synthèse.](shots/fr-FR/manager/01-dashboard-sidebar.png)
+
+| Carte | Ce qu'elle montre pour vous |
+|---|---|
+| **Nombre total de cartes** | Toutes les cartes actives du système. La ligne du dessous les répartit entre « à vous » et « partagées avec vous ». Pour vous, « partagées avec vous » désigne les cartes de tous les autres, y compris les cartes privées. |
+| **Nombre total d'exécutions** | Toutes les exécutions enregistrées, par n'importe qui, des cartes que vous pouvez voir. |
+| **Cartes planifiées** | Les cartes qui ont au moins une planification active créée par vous. |
+| **Résultats planifiés** | Les résultats stockés créés par vos propres planifications. |
+| **Cartes récentes** | Les cinq dernières cartes que vous avez créées. Cliquez sur l'une d'elles pour l'ouvrir dans le créateur. |
+
+Le lien **Voir les planifications** sur deux cartes ouvre la page **Planifications**.
+
+---
+
+# Domaines d'activité
+
+Utilisez cette page pour voir les domaines d'activité sur lesquels vous avez un accès, et pour lire qui d'autre y a un accès.
+
+![La page Domaines d'activité listant uniquement les domaines accordés au Manager.](shots/fr-FR/manager/07-business-areas.png)
+
+La liste n'affiche que les domaines où vous avez un accès. Si vous n'en avez aucun, la liste est vide et chaque page de modélisation (Domaines d'activité, Dossiers, Éléments, Jointures, Hiérarchies) n'a rien sur quoi travailler. Demandez à un administrateur.
+
+| Bouton ou contrôle | Ce qu'il fait |
+|---|---|
+| Icône de ligne **Gérer les accès** | Ouvre la liste des accès de ce domaine. Vous pouvez la lire. |
+| Icône de ligne **Modifier** | Change le nom et la description. Ne fonctionne qu'avec un accès EDIT ou supérieur sur ce domaine. |
+| **Nouveau domaine d'activité** | Réservé aux administrateurs. |
+| Icône de ligne **Supprimer** | Réservé aux administrateurs. |
+| **Ajouter** et **Révoquer** dans la liste des accès | Réservés aux administrateurs. |
+
+> **Remarque :** l'écran affiche **Nouveau domaine d'activité**, **Supprimer**, **Ajouter** et **Révoquer**. Le système les refuse pour vous et affiche une erreur. Seuls les administrateurs créent ou suppriment des domaines d'activité et donnent ou retirent des accès.
+
+Chaque accès de la liste indique une personne et un niveau. Pointez le niveau pour lire ce qu'il permet.
+
+## Exemple : vérifier qui peut créer des cartes dans un domaine
+
+1. Cliquez sur **Domaines d'activité** dans la barre latérale.
+2. Cliquez sur l'icône de ligne **Gérer les accès** du domaine.
+3. Repérez les personnes avec CREATE, EDIT ou DELETE. Elles peuvent créer des cartes dans ce domaine.
+4. Cliquez sur **Fermer**.
+
+---
+
+# Dossiers
+
+Un dossier est une table, une vue ou une requête d'un domaine d'activité. Utilisez cette page pour les lister et, là où votre accès le permet, pour les ajouter, les modifier ou les actualiser.
+
+![La page Dossiers avec un domaine d'activité choisi et ses dossiers listés.](shots/fr-FR/admin/11-folders.png)
+
+Choisissez d'abord un **Domaine d'activité**. Les boutons restent désactivés tant que vous ne l'avez pas fait.
+
+| Bouton ou contrôle | Ce qu'il fait | Accès requis |
+|---|---|---|
+| **Domaine d'activité** | Choisit le domaine dont vous voyez les dossiers. | Tout |
+| **Tout actualiser** | Relit chaque table et chaque vue du domaine depuis sa base de données. Les nouvelles colonnes deviennent des éléments. Les colonnes manquantes sont seulement listées. | EDIT |
+| **Nouveau dossier** | Ouvre l'assistant de dossier. | CREATE |
+| Icône de ligne **Actualiser depuis la source de données** | Idem, pour un seul dossier. Affichée uniquement pour les dossiers de type table et vue qui ne sont pas partagés depuis un autre domaine. | EDIT |
+| Icône de ligne **Gérer les domaines d'activité** | Ouvre la boîte de dialogue de partage. Vous pouvez la consulter. Les changements exigent EDIT. | Tout pour consulter |
+| Icône de ligne **Modifier** | Ouvre l'assistant pour modifier le dossier. | EDIT |
+| Icône de ligne **Supprimer** | Désactive le dossier après confirmation. | DELETE |
+| **Fermer** sous **Résultat de l’actualisation** | Masque la liste des résultats d'une actualisation. | Aucun |
+
+Un dossier affiche un badge **Partagé** quand il appartient à un autre domaine d'activité et a été partagé dans celui-ci. Actualisez-le depuis le domaine qui le possède.
+
+L'actualisation ne supprime jamais d'éléments. Les colonnes disparues de la base de données sont seulement listées, afin que vous puissiez les supprimer vous-même si aucune carte ne les utilise.
+
+## L'assistant de dossier
+
+| Champ | Signification |
+|---|---|
+| **Nom** | Le nom du dossier. Rempli pour vous quand vous choisissez une table. |
+| **Description** | Texte libre. Rempli à partir du commentaire de la base de données quand vous choisissez une table. |
+| **Type de dossier** | Voir le tableau ci-dessous. |
+| **SQL personnalisé** | Affiché pour les dossiers DERIVED et COMPLEX. La requête qui définit le dossier. Un dossier COMPLEX en a besoin. |
+| **Source de données** | La connexion à la base de données. Non affichée pour DERIVED et COMPLEX. |
+| **Découvrir les tables** | Lit les tables de la source de données choisie pour que vous puissiez en choisir une. Vous pouvez l'utiliser. |
+| **Nom de la table** et **Propriétaire de la table** | La table vers laquelle pointe le dossier. Remplis quand vous choisissez dans la liste. |
+| **Éléments à créer** | Les colonnes de la table choisie. Chaque colonne cochée devient un élément. Utilisez **Tout sélectionner** ou **Effacer**. Modifiez les descriptions avant d'enregistrer. |
+
+| Option (**Type de dossier**) | Signification / quand la choisir |
+|---|---|
+| TABLE | Une table de base de données. Le choix habituel. |
+| VIEW | Une vue de base de données. |
+| DERIVED | Un dossier défini par votre propre requête. |
+| COMPLEX | Un dossier défini par une requête plus longue. Le SQL personnalisé est obligatoire. |
+| JOIN | Un dossier construit à partir d'une jointure. |
+| SUMMARY | Un dossier de synthèse. |
+
+## Exemple : ajouter un dossier à partir d'une table
+
+1. Cliquez sur **Dossiers**, puis choisissez le **Domaine d'activité**. Vous avez besoin d'un accès CREATE dessus.
+2. Cliquez sur **Nouveau dossier**.
+3. Choisissez une **Source de données**, puis cliquez sur **Découvrir les tables**.
+4. Saisissez dans **Filtrer par nom ou commentaire…** pour réduire la liste, puis cliquez sur la table.
+5. Décochez les colonnes que vous ne voulez pas. Ajustez les descriptions.
+6. Cliquez sur **Enregistrer**. Le dossier est créé d'abord, puis ses éléments.
+
+> **Attention :** si **Enregistrer** affiche « Échec de l'enregistrement », il vous manque très probablement l'accès CREATE sur ce domaine.
+
+---
+
+# Éléments
+
+Un élément est une colonne d'un dossier. Utilisez cette page pour lister les éléments et modifier leur comportement.
+
+![La page Éléments pour un dossier choisi, listant ses éléments.](shots/fr-FR/admin/17-items.png)
+
+Choisissez un **Domaine d'activité**, puis un **Dossier**. La liste des dossiers reste vide tant que vous n'avez pas choisi un domaine.
+
+| Bouton ou contrôle | Ce qu'il fait | Accès requis |
+|---|---|---|
+| **Nouvel élément** | Ouvre la boîte de dialogue d'élément. | CREATE |
+| Icône de ligne **Modifier** | Modifie l'élément. Vous ne pouvez pas le déplacer vers un autre dossier. | EDIT |
+| Icône de ligne **Supprimer** | Désactive l'élément après confirmation. | DELETE |
+
+| Champ | Signification |
+|---|---|
+| **Nom** | Le nom de l'élément que les gens voient dans le créateur de cartes. |
+| **Description** | Texte d'aide facultatif. |
+| **Type d'élément** | Le genre d'élément. Voir ci-dessous. |
+| **Nom de la colonne** | Pour un élément de base de données : la colonne de la base. |
+| **Formule** | Pour tous les types sauf un élément de base de données : le calcul. Une formule erronée est refusée. |
+| **Type de données** | Texte libre, par exemple NUMBER. |
+| **Masque de format** | La façon dont la valeur est affichée, par exemple 999,999.00. |
+| **Agrégation** | Le total par défaut de l'élément. |
+
+| Option (**Type d'élément**) | Signification |
+|---|---|
+| Élément de base de données (CO) | Une colonne lue directement dans la table. |
+| Élément créé (CI) | Un élément que vous calculez avec une formule. |
+| Élément calculé (CU) | Un élément calculé. |
+| Élément de jointure (JI) | Un élément qui provient d'une jointure. |
+| Élément de hiérarchie (HI) | Un élément utilisé dans une hiérarchie. |
+| Agrégation (AG) | Un élément qui est un total. |
+| Fonction (FU) | Un élément qui appelle une fonction. |
+
+| Option (**Agrégation**) | Signification |
+|---|---|
+| NONE | Pas de total par défaut. C'est une dimension. |
+| SUM | Additionne les valeurs. |
+| COUNT | Compte les lignes. |
+| AVG | Fait la moyenne des valeurs. |
+| MIN | Plus petite valeur. |
+| MAX | Plus grande valeur. |
+
+---
+
+# Jointures
+
+Une jointure indique à Discoverer Neo comment deux dossiers sont reliés. Sans elle, les cartes qui utilisent les deux dossiers sont refusées.
+
+![La boîte de dialogue Nouvelle jointure avec deux listes de dossiers et une paire de colonnes.](shots/fr-FR/admin/21-joins-new-dialog.png)
+
+| Bouton ou contrôle | Ce qu'il fait | Accès requis |
+|---|---|---|
+| **Domaine d'activité** | Choisit le domaine. | Tout |
+| **Nouvelle jointure** | Ouvre la boîte de dialogue de jointure. | CREATE |
+| Icône de ligne **Modifier** | Modifie la jointure. | EDIT |
+| Icône de ligne **Supprimer** | Désactive la jointure après confirmation. | DELETE |
+| **Suggérer des jointures** | Propose des colonnes correspondantes pour le dossier de gauche. Cliquez sur une suggestion pour l'utiliser. | VIEW |
+| **Ajouter une paire de colonnes** | Ajoute une paire d'éléments supplémentaire. Toutes les paires doivent correspondre ensemble. | CREATE ou EDIT |
+| X à côté d'une paire | Retire cette paire. Une paire doit rester. | CREATE ou EDIT |
+
+| Champ | Signification |
+|---|---|
+| **Nom** | Le nom de la jointure. Rempli à partir d'une suggestion s'il est laissé vide. |
+| **Dossier de gauche** et **Dossier de droite** | Les deux dossiers à relier. Tous deux appartiennent au domaine choisi. |
+| **Élément de gauche**, **Opérateur**, **Élément de droite** | Une paire : quelles colonnes sont comparées et comment. |
+| **Type de jointure** | Voir ci-dessous. |
+
+| Option (**Opérateur**) | Signification |
+|---|---|
+| = | Égal. Presque toujours le bon choix. |
+| <> | Différent. |
+| < et <= | Inférieur, inférieur ou égal. |
+| > et >= | Supérieur, supérieur ou égal. |
+
+| Option (**Type de jointure**) | Signification / quand la choisir |
+|---|---|
+| INNER | Uniquement les lignes qui correspondent des deux côtés. |
+| LEFT | Toutes les lignes du dossier de gauche, même sans correspondance. |
+| RIGHT | Toutes les lignes du dossier de droite, même sans correspondance. |
+
+## Exemple : relier deux dossiers
+
+1. Cliquez sur **Jointures** et choisissez le **Domaine d'activité**. Vous avez besoin d'un accès CREATE.
+2. Cliquez sur **Nouvelle jointure**.
+3. Choisissez le **Dossier de gauche** et le **Dossier de droite**.
+4. Cliquez sur **Suggérer des jointures**, puis cliquez sur la meilleure suggestion. Ou choisissez vous-même l'**Élément de gauche**, l'**Opérateur** et l'**Élément de droite**.
+5. Laissez **Type de jointure** sur INNER, sauf si vous avez besoin des lignes sans correspondance.
+6. Cliquez sur **Enregistrer**.
+
+---
+
+# Hiérarchies
+
+Une hiérarchie est une liste ordonnée d'éléments pour l'exploration par niveaux, par exemple Année, Trimestre, Mois.
+
+![Une boîte de dialogue de hiérarchie avec une ligne de niveau affichant le nom et les listes Dossier et Élément.](shots/fr-FR/admin/26-hierarchies-level-added.png)
+
+| Bouton ou contrôle | Ce qu'il fait | Accès requis |
+|---|---|---|
+| **Domaine d'activité** | Choisit le domaine. | Tout |
+| **Nouvelle hiérarchie** | Ouvre une boîte de dialogue vide. | CREATE |
+| Icône de ligne **Modifier** | Ouvre la hiérarchie. Vous pouvez l'ouvrir avec VIEW, mais l'enregistrement exige EDIT. | EDIT pour enregistrer |
+| Icône de ligne **Supprimer** | Désactive la hiérarchie après confirmation. | DELETE |
+| **Ajouter un niveau** | Ajoute un niveau en bas. | CREATE ou EDIT |
+| Poignée de déplacement | Faites glisser un niveau vers le haut ou le bas. L'ordre est l'ordre d'exploration. | CREATE ou EDIT |
+| X sur un niveau | Retire le niveau. | CREATE ou EDIT |
+
+Chaque niveau exige un **Nom du niveau**, un **Dossier** et un **Élément**. **Enregistrer** reste désactivé tant que le nom, au moins un niveau et chaque niveau ne sont pas complets. Choisissez des éléments de dossiers que le domaine d'activité possède. Un dossier partagé depuis un autre domaine est listé, mais l'enregistrement échoue.
+
+---
+
+# Fonctions personnalisées
+
+Une fonction personnalisée est une fonction stockée dans la base de données Oracle que les éléments calculés peuvent appeler. Vous avez tous les droits ici. Aucun accès à un domaine d'activité n'est nécessaire.
+
+![La page Fonctions personnalisées avec la liste, Tout actualiser et Nouvelle fonction.](shots/fr-FR/manager/09-custom-functions.png)
+
+| Bouton ou contrôle | Ce qu'il fait |
+|---|---|
+| **Filtrer par nom ou fonction de la base…** | Réduit la liste pendant la saisie. |
+| **Tout actualiser** | Relit chaque fonction depuis Oracle. Les signatures modifiées sont enregistrées et les champs calculés sont recompilés. Les fonctions disparues d'Oracle sont conservées et listées. |
+| **Nouvelle fonction** | Ouvre la boîte de dialogue de fonction. |
+| Icône de ligne **Actualiser depuis la base de données** | Actualise une seule fonction. |
+| Icône de ligne **Modifier** | Modifie la fonction. |
+| Icône de ligne **Supprimer** | Désactive la fonction après confirmation. |
+| **Fermer** sous **Résultat de l’actualisation** | Masque la liste des résultats. |
+
+| Champ | Signification |
+|---|---|
+| **Source de données** | La base de données où se trouve la fonction. |
+| **Propriétaire**, **Rechercher une fonction**, **Rechercher** | Recherche des fonctions et des packages dans Oracle. Sources de données Oracle uniquement. |
+| **Propriétaire**, **Package**, **Nom de la fonction**, **Lien de base de données** | Les parties du nom complet. Lettres, chiffres, _, $ ou # uniquement, en commençant par une lettre. |
+| **Nom** et **Description** | Le nom d'affichage et une note. |
+| **Type de fonction** | Voir ci-dessous. |
+| **Type de retour** | Par exemple NUMBER. |
+| **Paramètres (JSON)** | La liste des entrées. Chacune exige un nom et un type. |
+
+| Option (**Type de fonction**) | Signification |
+|---|---|
+| SQL | Une fonction SQL simple. |
+| PLSQL | Une fonction PL/SQL stockée. La valeur par défaut. |
+| PACKAGE | Une fonction dans un package Oracle. |
+
+## Exemple : enregistrer une fonction de package
+
+1. Cliquez sur **Fonctions personnalisées**, puis sur **Nouvelle fonction**.
+2. Choisissez la **Source de données**.
+3. Saisissez une partie du nom dans **Rechercher une fonction**, puis cliquez sur **Rechercher**.
+4. Cliquez sur le bon résultat. Le type, le propriétaire, le package, le type de retour et les paramètres sont remplis. Les résultats qu'Oracle ne peut pas appeler depuis SQL sont grisés.
+5. Vérifiez le **Nom**, puis cliquez sur **Enregistrer**.
+
+---
+
+# Sources de données
+
+Une source de données est une connexion enregistrée à une base de données. Vous pouvez les consulter et les tester. Vous ne pouvez pas les modifier.
+
+![La page Sources de données avec la liste des connexions et les icônes de ligne.](shots/fr-FR/manager/08-data-sources.png)
+
+| Bouton ou contrôle | Ce qu'il fait |
+|---|---|
+| Icône de ligne **Tester la connexion** | Essaie l'identifiant enregistré. Un message indique **Connexion réussie** ou **Échec de la connexion**. |
+| Icône de ligne **Introspecter le schéma** | Lit le schéma Oracle pour trouver ses tables. Indique combien de tables ont été trouvées. Oracle uniquement. |
+| **Nouvelle source de données** | Réservé aux administrateurs. |
+| Icône de ligne **Modifier** | Réservé aux administrateurs. |
+| Icône de ligne **Supprimer** | Réservé aux administrateurs. |
+| Icône de ligne **Importer des tables** | Vous pouvez ouvrir la boîte de dialogue et **Découvrir les tables**. **Importer** est réservé aux administrateurs. |
+
+> **Remarque :** l'écran propose **Nouvelle source de données**, **Modifier**, **Supprimer** et l'étape d'importation. Le système les refuse pour vous. Pour créer des dossiers à partir de tables, utilisez plutôt **Dossiers** et **Découvrir les tables**.
+
+---
+
+# Utilisateurs
+
+La page **Utilisateurs** est en lecture seule pour vous. Utilisez-la pour voir les comptes, savoir quelles cartes une personne peut ouvrir, et corriger qui possède ou partage une carte.
+
+![La liste Utilisateurs en lecture seule, sans les boutons Nouvel utilisateur ni Fichier d'identifiants.](shots/fr-FR/manager/06-users.png)
+
+La liste affiche **Nom**, **E-mail**, **Rôle** et **Statut** (**Actif** ou **Inactif**). Vous ne pouvez pas créer, modifier, désactiver, activer ni supprimer d'utilisateurs. Vous ne pouvez pas émettre de fichier d'identifiants. Demandez à un administrateur.
+
+## Cartes d'une personne
+
+Cliquez sur l'icône de ligne **Cartes que cet utilisateur peut ouvrir**. La boîte de dialogue **Cartes de {name}** liste chaque carte que cette personne voit.
+
+![La boîte de dialogue Cartes d'un utilisateur, avec les listes de niveau de partage et les icônes de propriétaire et de retrait.](shots/fr-FR/manager/12-users-maps-dialog.png)
+
+| Bouton ou contrôle | Ce qu'il fait |
+|---|---|
+| Nom de la carte | Ouvre la carte dans la visionneuse. |
+| **Propriétaire: {name}** | Indique qui possède la carte. |
+| Badge | Indique pourquoi la personne voit la carte. |
+| Liste du niveau de partage | Change ce que la personne peut faire avec une carte partagée. |
+| Icône de propriétaire | Ouvre la liste **Nouveau propriétaire**. |
+| **Nouveau propriétaire** | Choisissez une personne à qui donner la carte. |
+| Icône de retrait (X) | Retire la carte à cette personne. Sans confirmation. |
+
+| Option (badge) | Signification |
+|---|---|
+| Administrateur | La personne est administratrice et voit toutes les cartes. |
+| Propriétaire | La personne possède la carte. |
+| Partagée | Quelqu'un a partagé la carte avec la personne. Vous pouvez le modifier ou le retirer. |
+| Publique | La carte est publique. |
+| Rôle de gestionnaire | La personne est manager et voit toutes les cartes. |
+
+| Option (niveau de partage) | Signification / quand la choisir |
+|---|---|
+| Peut consulter | Peut ouvrir et exécuter la carte. Ne peut pas l'exporter, la planifier ni la modifier. |
+| Peut exporter | Peut ouvrir et exécuter la carte, exporter son résultat et la mettre en planification. |
+| Peut modifier | Peut faire tout ce qui précède, et aussi modifier la carte. |
+
+## Exemple : donner une carte à un collègue qui prend le relais
+
+1. Cliquez sur **Utilisateurs**, puis sur l'icône de ligne **Cartes que cet utilisateur peut ouvrir** du propriétaire actuel.
+2. Trouvez la carte. Cliquez sur l'icône de propriétaire.
+3. Dans **Nouveau propriétaire**, choisissez le collègue.
+4. Attendez le message **Propriétaire modifié**.
+
+> **Attention :** le nouveau propriétaire peut modifier, partager et supprimer la carte. Votre propre partage antérieur est supprimé. Vous ne devenez pas éditeur de la carte en la transmettant.
+
+---
+
+# Cartes
+
+La page **Cartes** liste toutes les cartes du système. Vous voyez tout, y compris les cartes privées. Voir une carte ne signifie pas que vous pouvez lire ses données. Les règles de données du premier chapitre s'appliquent toujours.
+
+![La liste Cartes, onglet Tous, avec les icônes Copier, Partager, Planifier et Exporter sur chaque ligne.](shots/fr-FR/manager/02-maps-all.png)
+
+## Trouver une carte
+
+| Contrôle | Ce qu'il fait |
+|---|---|
+| Onglet **Mes cartes** | Les cartes que vous avez créées. |
+| Onglet **Partagées avec moi** | Les cartes que quelqu'un a partagées avec vous, à n'importe quel niveau. |
+| Onglet **Tous** | Toutes les cartes du système. |
+| **Rechercher des cartes par nom…** | Filtre par nom. |
+| Filtre **Domaine Métier** | Affiche un seul domaine d'activité. Choisissez **Tous les domaines métier** pour réinitialiser. |
+| **Trier par** | **Récemment modifiés** ou **Nom (A–Z)**. |
+| **Effacer** | Réinitialise la recherche et le filtre. |
+
+La section **Classeurs** en haut regroupe les cartes par classeur. Cliquez sur un classeur pour voir ses cartes. Cliquez sur une carte pour l'ouvrir.
+
+## Ce que fait chaque icône
+
+| Icône | Ce qu'elle fait |
+|---|---|
+| Œil | Ouvre la visionneuse pour que vous puissiez exécuter la carte. |
+| Crayon | Ouvre le créateur. Affiché uniquement pour les cartes qui vous appartiennent, ou qui sont partagées avec vous en **Peut modifier**. |
+| Copier | Crée votre propre copie, que vous pouvez ensuite modifier. Fonctionne pour toute carte. |
+| Partager | Ouvre **Partager la carte**. Fonctionne pour toute carte. |
+| Calendrier | Ouvre **Planifications** avec cette carte choisie. |
+| Télécharger | Ouvre la visionneuse, où vous exportez. |
+| Corbeille | Supprime la carte. Affichée uniquement pour vos propres cartes. |
+
+La ligne d'un classeur a ses propres icônes. Copier crée une copie privée de chaque carte du classeur. Partager donne à quelqu'un chaque carte du classeur. La corbeille ne supprime un classeur que si vous possédez toutes ses cartes.
+
+> **Attention :** une carte supprimée ne peut être récupérée que par un administrateur.
+
+## Copier une carte pour créer la vôtre
+
+1. Trouvez la carte et cliquez sur l'icône Copier.
+2. Pour un classeur, saisissez un nom dans **Nom du nouveau classeur** et cliquez sur **Copier**.
+3. La copie s'ouvre dans le créateur. Elle est privée pour vous.
+
+Exemple : copiez **GD_M.M10_V01.DIS**, puis ajoutez une colonne à votre copie. L'original ne change pas.
+
+## Partager une carte
+
+1. Cliquez sur l'icône Partager de la carte.
+2. Recherchez une personne par nom ou e-mail.
+3. Cliquez sur un niveau à côté de son nom : **Peut consulter**, **Peut exporter** ou **Peut modifier**. Le bouton foncé est ce qu'elle détient actuellement.
+4. Pour retirer l'accès, cliquez sur le X à côté de son nom.
+
+![La boîte de dialogue Partager la carte avec une zone de recherche et les boutons Peut consulter, Peut exporter et Peut modifier.](shots/fr-FR/manager/03-share-dialog.png)
+
+La boîte de dialogue affiche aussi un avis quand la carte est publique, avec **Copier le lien**. Toute personne disposant du lien peut la consulter. Cette boîte de dialogue ne fait pas passer une carte de publique à privée. Ce basculement se trouve dans l'onglet **Propriétés** de la carte, et seule une personne qui peut modifier la carte peut l'enregistrer.
+
+Pour un classeur, la même boîte de dialogue répartit un partage sur toutes les cartes du classeur que vous pouvez voir. Elle vous indique quelles cartes n'ont pas pu être partagées.
+
+---
+
+# Créateur de cartes
+
+Utilisez le créateur pour créer une carte ou en modifier une. Vous y accédez avec **Créer une carte**, l'icône Crayon, ou en copiant une carte.
+
+![Le créateur de cartes avec l'arborescence Domaines d'activité, la zone Colonnes et le panneau Propriétés.](shots/fr-FR/user/05-builder-overview.png)
+
+## Ce que vous pouvez enregistrer
+
+| Situation | Pouvez-vous enregistrer ? |
+|---|---|
+| Une nouvelle carte | Oui, si vous avez un accès CREATE ou supérieur sur le domaine d'activité. |
+| Une carte qui vous appartient | Oui. |
+| Une carte partagée avec vous en **Peut modifier** | Oui. |
+| Toute autre carte | Non. L'enregistrement échoue avec « Forbidden ». Copiez d'abord la carte, puis modifiez votre copie. |
+
+Le créateur s'ouvre pour toutes les cartes, même une carte que vous ne pouvez pas enregistrer. Vous ne le découvrez qu'en cliquant sur **Enregistrer**.
+
+## La barre d'outils
+
+| Bouton ou contrôle | Ce qu'il fait |
+|---|---|
+| **Retour** | Revient à la page d'où vous venez. Les modifications non enregistrées sont perdues sans avertissement. |
+| Zone du nom de la carte | Définit le nom de la carte. |
+| Liste du type de carte | **Tableau**, **Tableau croisé**, **Page-Détail** ou **Graphique**. Seul **Tableau croisé** change l'aspect du résultat. Les autres s'affichent comme un tableau simple. |
+| **● Non enregistré** | Vous rappelle que des modifications ne sont pas enregistrées. |
+| **Exécuter** | Enregistre la carte si elle est nouvelle ou modifiée, puis l'exécute. |
+| **Enregistrer** | Enregistre vos modifications. Rien ne s'enregistre automatiquement. |
+| **Exporter** > **Définition de la carte (.xml)** | Télécharge la définition de la carte. Elle ne contient aucune ligne de données. Exige une carte enregistrée. |
+| **Planifier** | Ouvre **Planifications** avec cette carte choisie. Exige une carte enregistrée. |
+| **Mise en forme** | Ouvre la mise en forme conditionnelle. Exige une carte enregistrée. |
+| **Partager** | Ouvre **Partager la carte**. Exige une carte enregistrée. |
+
+## Créer une carte
+
+1. Dans l'arborescence **Domaines d'activité** à gauche, ouvrez un domaine d'activité et un dossier. Seuls les domaines où vous avez un accès sont listés.
+2. Faites glisser des éléments vers la zone **Colonnes**, ou cliquez sur le bouton plus à côté d'un élément. Les mesures ont une icône sigma, les dimensions une icône d'étiquette.
+3. Chaque colonne d'une carte doit provenir d'un seul domaine d'activité. La première colonne que vous ajoutez décide lequel.
+4. Cliquez sur une colonne pour ouvrir **Configurer la colonne**. Modifiez ce dont vous avez besoin, puis cliquez sur **Enregistrer** dans cette boîte de dialogue.
+5. Ajoutez des conditions, un tri et des paramètres dans les onglets de droite.
+6. Cliquez sur **Enregistrer** dans la barre d'outils. Puis cliquez sur **Exécuter**.
+
+Utilisez **Filtrer les éléments…** au-dessus de l'arborescence pour trouver un élément par son nom.
+
+## Configurer la colonne
+
+| Champ | Ce qu'il fait |
+|---|---|
+| **Nom d'affichage** | Titre de la colonne. Vide, il reprend le nom de l'élément. |
+| **Agrégation** | Total de cette colonne. |
+| **Sens du tri** | **Aucun**, **Croissant** ou **Décroissant**. |
+| **Masque de format** | L'aspect des nombres et des dates. **Préréglages** le remplit pour vous. |
+| **Ordre de tri** | Position de cette colonne quand vous triez selon plusieurs. |
+| **Largeur de colonne (px)** | Largeur en pixels. |
+| **Placement** | Voir ci-dessous. |
+| **Bord du tableau croisé** | L'emplacement d'une colonne d'axe dans un tableau croisé. |
+| **Grouper et rompre** | Masque les valeurs répétées et démarre un sous-total quand la valeur change. |
+| **Requête seulement, ne pas afficher** | La requête utilise la colonne, mais le résultat la masque. |
+
+| Option (**Placement**) | Signification |
+|---|---|
+| Aucun | Aucun rôle particulier. |
+| Grouper par (axe) | La colonne regroupe les lignes. |
+| Mesure | La colonne contient une valeur qui est totalisée. |
+| Élément de page | La colonne devient un filtre de page. |
+
+| Option (**Bord du tableau croisé**) | Signification |
+|---|---|
+| Aucun | Non utilisé dans un tableau croisé. |
+| Sur le côté | Les valeurs descendent sur le côté gauche. |
+| En haut | Les valeurs s'étendent en haut. |
+
+| Option (**Préréglages**) | Ce qu'elle remplit |
+|---|---|
+| Nombre (1 234) | 999,999,999 |
+| Décimal (1 234,00) | 999,999,999.00 |
+| Devise (1 234,00 €) | $999,999,999.00 |
+| Pourcentage (12,3 %) | 990.0% |
+| Date (DD-MON-YYYY) | DD-MON-YYYY |
+| Date (YYYY-MM-DD) | YYYY-MM-DD |
+
+## Les cinq onglets de paramètres
+
+| Onglet | À quoi il sert |
+|---|---|
+| **Propriétés** | La **Description** imprimée au-dessus des résultats et sur chaque exportation, la case **Public (visible par tous dans le domaine d'activité)**, et des compteurs. **Insérer une variable** ajoute des valeurs comme la date d'exécution. |
+| **Conditions** | Filtres. |
+| **Tri** | Niveaux de tri. |
+| **Paramètres** | Questions posées quand la carte s'exécute. |
+| **Champs calculés** | Nouvelles colonnes à partir d'une formule. |
+
+> **Attention :** **Public** rend la carte consultable et exportable par toute personne connectée, pas seulement par les personnes du domaine d'activité. Leurs droits sur les données s'appliquent toujours.
+
+**Conditions.** Cliquez sur **Ajouter une condition**. Choisissez l'**Élément**, un **Opérateur** et une valeur. Choisissez **Valeur statique** pour une valeur fixe, ou **Demander à l'exécution** pour poser la question à chaque fois. Pour une invite, donnez au paramètre un nom que vous avez défini dans l'onglet **Paramètres**. Sélectionnez deux conditions ou plus et cliquez sur **Grouper** pour les relier par OR. Utilisez **Dégrouper** pour annuler.
+
+| Option (**Opérateur**) | Signification |
+|---|---|
+| = | Égal à. |
+| <> | Différent de. |
+| < et > | Inférieur à, supérieur à. |
+| <= et >= | Inférieur ou égal, supérieur ou égal. |
+| LIKE | Correspond à un motif avec % et _. |
+| IN | Correspond à l'un des éléments d'une liste, séparés par des virgules. |
+| BETWEEN | Entre deux valeurs, la plus basse puis la plus haute. |
+| IS NULL | La valeur est vide. |
+
+**Tri.** Choisissez une colonne, cliquez sur **Ajouter un tri**, puis choisissez **Croissant** ou **Décroissant**. Faites glisser un niveau pour changer sa priorité.
+
+**Paramètres.** Cliquez sur **Ajouter un paramètre**. Donnez-lui un nom unique, un type et, si vous le souhaitez, une valeur par défaut. Cochez **Obligatoire** pour refuser une réponse vide. Si chaque paramètre a une valeur par défaut, **Exécuter** saute la question.
+
+| Option (type de paramètre) | Signification |
+|---|---|
+| STRING | Du texte. |
+| NUMBER | Un nombre. |
+| DATE | Une date. |
+| LIST | Plusieurs valeurs séparées par des virgules. |
+
+**Champs calculés.** Cliquez sur **Ajouter un champ calculé**, nommez-le, puis cliquez sur le bouton de formule. Dans l'**Éditeur de formules**, saisissez une formule ou cliquez sur les boutons de fonctions et de colonnes pour les insérer. **Tester la formule** l'exécute sur les cinq premières lignes d'une carte enregistrée. Elle exige un accès aux données.
+
+## Mise en forme conditionnelle
+
+Cliquez sur **Mise en forme** pour colorer des cellules ou des lignes entières selon une règle, par exemple en rouge quand une valeur est inférieure à zéro. Les règles sont enregistrées immédiatement et ne font pas partie de **Enregistrer**. Vous devez posséder la carte ou avoir **Peut modifier** dessus pour ajouter ou supprimer des règles. Sinon, le système refuse avec « Forbidden ».
+
+| Champ | Signification |
+|---|---|
+| **Colonne** | La colonne à tester. |
+| **Appliquer à** | **Cellule** ou **Ligne**. |
+| **Opérateur** | **Égal à**, **Différent de**, **Supérieur à**, **Inférieur à**, **Supérieur ou égal à**, **Inférieur ou égal à**, **Contient (jokers % et _)**, **Dans la liste**, **Entre** ou **Est vide**. |
+| **Valeur** | Ce à quoi comparer. Masquée pour **Est vide**. |
+| **Couleur de fond**, **Couleur du texte** | Couleurs. **Effacer** en supprime une. |
+| **Gras**, **Italique**, **Souligné** | Style du texte. |
+
+## Cartes refusées
+
+Certaines formes de cartes sont refusées avant l'exécution, par exemple des dossiers sans jointure, ou des totaux qui seraient comptés deux fois. Une zone orange explique pourquoi et ce qu'il faut changer. Ajoutez une jointure, retirez des colonnes, ou scindez la carte en deux.
+
+---
+
+# Visionneuse de cartes
+
+La visionneuse exécute une carte et affiche ses lignes. Elle ne modifie jamais la carte. Vous y accédez avec l'icône en forme d'œil, ou depuis **Exécutions** et **Exportations**.
+
+![Une exécution terminée avec les boutons Excel, CSV et PDF au-dessus de la grille de résultats.](shots/fr-FR/viewer/06-viewer-results.png)
+
+| Bouton ou contrôle | Ce qu'il fait |
+|---|---|
+| **Exécuter** | Exécute la carte. Si un paramètre n'a pas de valeur par défaut, **Paramètres d'exécution** s'ouvre d'abord. |
+| **Exécuter à nouveau** | Après une exécution terminée, demande une nouvelle exécution avec les mêmes valeurs. |
+| **Annuler** | Annule une exécution qui attend encore dans la file d'attente. Une exécution déjà en cours ne peut pas être annulée ici. |
+| **Gestion des planifications** | Ouvre **Planifications**. |
+| **Excel**, **CSV**, **PDF** | Exportent le résultat terminé. |
+| **Charger plus** | Charge les 500 lignes suivantes. |
+| Clic sur un en-tête | Trie selon cette colonne. |
+| **Filtrer…** sous un en-tête | Filtre les lignes déjà chargées. |
+| Double-clic sur une ligne | Ouvre **Explorer le détail**, les lignes brutes derrière cette ligne. |
+
+La ligne d'état sous **Exécuter** indique si le résultat est récent ou a été réutilisé. Un résultat reste valable 24 heures. Si vous exécutez de nouveau la même carte avec les mêmes valeurs pendant ce délai, vous obtenez le résultat stocké. Utilisez **Exécuter à nouveau** pour en forcer un nouveau.
+
+**Exécuter** et **Exporter** exigent un accès à chaque dossier de la carte. Sans lui, une zone rouge **Exécution non autorisée** apparaît. Demandez l'accès à un administrateur.
+
+Vous ne voyez pas les boutons **SQL** et **Plan**. Ils sont réservés aux administrateurs.
+
+La boîte de dialogue **Paramètres d'exécution** pose une question par paramètre. Une étoile rouge marque un paramètre obligatoire. Quand le paramètre alimente un filtre sur un élément, un sélecteur suggère les valeurs réelles. Il exige un accès à ce domaine.
+
+## Exporter en PDF
+
+Cliquez sur **PDF** pour ouvrir **Exporter en PDF**.
+
+| Champ | Signification |
+|---|---|
+| **Format du papier** | **A4**, **A3** ou **Lettre**. |
+| **Orientation** | **Portrait** ou **Paysage**. |
+| **Colonnes** | Cochez les colonnes à imprimer. **Tout sélectionner** et **Effacer** les basculent toutes. |
+
+Cliquez sur **Exporter**. La description de la carte est imprimée en haut de la première page.
+
+## Exemple : exécuter et exporter GD_M.M10_V01.DIS
+
+1. Ouvrez **Cartes**, trouvez **GD_M.M10_V01.DIS** et cliquez sur l'icône en forme d'œil.
+2. Cliquez sur **Exécuter**. Répondez aux questions s'il y en a.
+3. Quand les lignes apparaissent, cliquez sur **Excel**.
+4. Ouvrez **Exportations** pour télécharger le fichier.
+
+---
+
+# Planifications
+
+Une planification exécute une carte automatiquement selon un calendrier et stocke le résultat. Vous ne voyez que vos propres planifications, même si vous pouvez planifier n'importe quelle carte.
+
+![La page Planifications avec une planification en pause et ses icônes d'action.](shots/fr-FR/user/38-schedules-list.png)
+
+Pour planifier une carte qui ne vous appartient pas, utilisez l'icône Calendrier de la page **Cartes**. La liste des cartes de la boîte de dialogue **Nouvelle planification** ne contient que vos propres cartes et les cartes partagées avec vous.
+
+Une planification s'exécute sous votre identité. Vos accès aux domaines d'activité décident si elle peut lire les données.
+
+| Bouton ou contrôle | Ce qu'il fait |
+|---|---|
+| **Nouvelle planification** | Ouvre la boîte de dialogue. |
+| Icône de ligne **Exécuter maintenant** | L'exécute immédiatement. Indisponible en pause. |
+| Icône de ligne **Suspendre** ou **Activer** | Désactive ou active la planification. |
+| Icône de ligne **Historique** | Ouvre **Historique d'exécution**. |
+| Icône de ligne **Modifier** | Modifie la planification. Vous ne pouvez pas changer sa carte. |
+| Icône de ligne **Supprimer** | Supprime la planification et son historique après confirmation. Irréversible. |
+
+La colonne **Statut** affiche **Actif** ou **En pause**. La colonne **Planificateur** est remplie par la migration. Vous ne pouvez pas la modifier.
+
+| Champ de la boîte de dialogue | Signification |
+|---|---|
+| **Carte** | La carte à exécuter. |
+| **Nom** | Le nom de la planification. |
+| **Fréquence** | Voir ci-dessous. |
+| **Fuseau horaire** | L'horloge utilisée par les heures. UTC par défaut. |
+| **Expression cron** | Affichée pour **Personnalisé**. Cinq champs : minute, heure, jour du mois, mois, jour de la semaine. |
+| **Valide à partir de** et **Valide jusqu'au** | Dates facultatives. La planification ne s'exécute qu'entre les deux. |
+| **Format de sortie** | Voir ci-dessous. |
+| **Préréglages de paramètres** | La valeur utilisée à chaque fois pour chaque paramètre de la carte. |
+| **Activé** | Désactivé, elle ne s'exécute jamais toute seule. |
+
+| Option (**Fréquence**) | Signification |
+|---|---|
+| Tous les jours (minuit) | Tous les jours à 00:00. |
+| Toutes les semaines (dimanche, minuit) | Tous les dimanches à 00:00. |
+| Tous les mois (le 1er, minuit) | Le premier de chaque mois à 00:00. |
+| Personnalisé | Vous écrivez l'expression cron. Exemple : `0 9 * * 1-5` correspond à 09:00 les jours ouvrés. |
+
+| Option (**Format de sortie**) | Signification |
+|---|---|
+| Excel (.xlsx) | Une feuille de calcul. |
+| CSV | Un tableau en texte brut. La valeur par défaut. |
+
+**Historique d'exécution** liste les 50 derniers résultats avec **Exécuté**, **Statut**, **Lignes** et **Durée**. Chacun a des boutons **XLSX**, **CSV** et **PDF** et une icône **Ouvrir**. Les résultats sont conservés 30 jours. Ensuite, les boutons d'exportation disparaissent.
+
+## Exemple : planifier une exécution hebdomadaire
+
+1. Dans **Cartes**, cliquez sur l'icône Calendrier de la carte.
+2. Saisissez un **Nom**. Réglez **Fréquence** sur **Toutes les semaines (dimanche, minuit)**.
+3. Choisissez votre **Fuseau horaire** et votre **Format de sortie**.
+4. Cliquez sur **Enregistrer**.
+5. Cliquez sur l'icône **Exécuter maintenant** pour vérifier que cela fonctionne. Puis ouvrez **Historique**.
+
+---
+
+# Exécutions
+
+**Exécutions** liste chaque exécution que vous avez demandée, qu'elle soit en attente, en cours ou terminée. Elle n'affiche que vos propres exécutions, pas celles des autres.
+
+![La page Exécutions avec les filtres Carte, Statut et Type et la liste des exécutions.](shots/fr-FR/manager/11-runs.png)
+
+| Bouton ou contrôle | Ce qu'il fait |
+|---|---|
+| Filtres **Carte**, **Statut**, **Type** | Réduisent la liste. **Type** est **En direct** ou **Programmée**. |
+| Nom de la carte | Ouvre la visionneuse. |
+| Icône **Ouvrir** | Ouvre le résultat stocké de cette exécution. |
+| Icône **Exécuter à nouveau** | Demande de nouveau la même exécution. |
+| **XLSX**, **CSV**, **PDF** | Exportent une exécution terminée qui n'a pas expiré. |
+| Icône **Annuler** | Annule une exécution encore en file d'attente. |
+| Icône **Supprimer** | Supprime une exécution terminée et ses lignes stockées. Irréversible. |
+
+La colonne **Expire dans** indique combien de temps le résultat est conservé. La case **Afficher les exécutions de tous les utilisateurs** est réservée aux administrateurs, vous ne la voyez donc pas. Une exécution d'une carte que vous ne pouvez plus ouvrir disparaît de votre liste.
+
+---
+
+# Exportations
+
+**Exportations** liste les fichiers que vous avez demandés. Vous ne voyez que les vôtres.
+
+![La page Exportations listant les exportations avec un bouton Télécharger sur celles qui sont terminées.](shots/fr-FR/user/44-exports.png)
+
+| Bouton ou contrôle | Ce qu'il fait |
+|---|---|
+| Icône **Télécharger** | Télécharge un fichier terminé. |
+
+L'**État** affiche **En file d'attente**, **En cours**, **Terminée** ou **Échouée**. Pointez un état d'échec pour lire la raison. Les fichiers sont conservés 7 jours. Ensuite, le téléchargement échoue. Exportez de nouveau à partir d'une nouvelle exécution.
+
+---
+
+# Paramètres
+
+Ouvrez **Paramètres** depuis la barre latérale ou depuis le menu de votre nom. Les choix sont conservés pour votre compte sur tous les ordinateurs, mais seulement après un clic sur **Enregistrer**.
+
+![La page Paramètres avec les cartes Langue, Thème et Palette de couleurs.](shots/fr-FR/common/04-settings.png)
+
+| Contrôle | Ce qu'il fait |
+|---|---|
+| **Langue d'affichage** | **English**, **Português (Portugal)**, **Français (France)** ou **Español (España)**. |
+| **Apparence** | **Clair**, **Sombre** ou **Contraste élevé**. |
+| **Palette** | **Classique**, **Bleu marine**, **Forêt**, **Vin**, **Océan** ou **Ocre**. Désactivée quand **Contraste élevé** est actif. |
+| **Enregistrer** | Conserve vos choix. |
+
+Si vous partez sans enregistrer, ce navigateur affiche le nouveau choix, mais votre compte conserve l'ancien.
+
+---
+
+# Questions fréquentes
+
+**Pourquoi vois-je une carte alors que l'exécution indique « Exécution non autorisée » ?**
+Vous voyez toutes les cartes en tant que Manager. Ses données exigent un accès de domaine d'activité sur chaque dossier qu'elle utilise. Demandez à un administrateur.
+
+**Pourquoi n'y a-t-il pas d'icône Crayon sur une carte ?**
+Vous ne pouvez modifier que vos propres cartes et les cartes partagées avec vous en **Peut modifier**. Cliquez sur l'icône Copier, puis modifiez votre copie. Ou demandez au propriétaire de la partager avec vous en **Peut modifier**.
+
+**Les listes Domaines d'activité, Dossiers, Éléments, Jointures et Hiérarchies sont vides.**
+Ces pages n'affichent que les domaines d'activité où vous avez un accès. Demandez-en un à un administrateur. CREATE vous permet d'ajouter, EDIT de modifier, DELETE de supprimer.
+
+**J'ai cliqué sur quelque chose et j'ai obtenu « Forbidden » ou « Échec de l'enregistrement ».**
+L'écran le proposait, mais votre rôle ou votre accès ne le permet pas. Les cas les plus courants sont **Nouveau domaine d'activité**, **Nouvelle source de données**, **Importer** et l'enregistrement d'une carte qui ne vous appartient pas.
+
+**Je ne vois pas les exécutions, exportations ou planifications d'une autre personne.**
+Les exécutions, exportations et planifications appartiennent à la personne qui les a créées. Personne d'autre qu'elle ne les voit dans la liste, et il en va de même pour vous.
+
+**Un collègue est parti. Comment conserver ses cartes ?**
+Ouvrez **Utilisateurs**, cliquez sur **Cartes que cet utilisateur peut ouvrir**, puis utilisez l'icône de propriétaire de chaque carte pour la donner à quelqu'un d'autre.
+
+**Une planification que j'ai créée ne s'exécute pas.**
+Vérifiez que son **Statut** est **Actif**, que les dates de **Valide à partir de** et **Valide jusqu'au** couvrent aujourd'hui, et que vous avez toujours un accès aux données. Une planification s'exécute sous votre identité.
+
+**Le téléchargement de mon exportation indique un échec.**
+Les fichiers sont conservés 7 jours. Exécutez de nouveau la carte et exportez le nouveau résultat.
+
+**Je ne peux pas changer mon mot de passe si je l'oublie.**
+Il n'y a pas de lien de réinitialisation. Demandez à un administrateur.
+
+---
+
+# Glossaire
+
+| Terme | Signification |
+|---|---|
+| Carte | Un rapport. Dans Oracle Discoverer, c'était une feuille de calcul. |
+| Classeur | Un groupe de cartes. |
+| Domaine d'activité | Un groupe de données liées. |
+| Dossier | Une table, une vue ou une requête d'un domaine d'activité. |
+| Élément | Une colonne d'un dossier. Une dimension regroupe les lignes. Une mesure contient des valeurs qui sont totalisées. |
+| Jointure | La règle qui relie deux dossiers. |
+| Hiérarchie | Une liste ordonnée d'éléments pour l'exploration par niveaux. |
+| Accès | L'accès à un domaine d'activité donné par un administrateur, à un niveau. |
+| Partage | L'accès à une carte donné à une personne, à un niveau : **Peut consulter**, **Peut exporter** ou **Peut modifier**. |
+| Carte publique | Une carte que toute personne connectée peut consulter et exporter. Ses droits sur les données s'appliquent toujours. |
+| Exécution | Un lancement d'une carte. Ses lignes sont stockées 24 heures. |
+| Exportation | Un fichier (Excel, CSV ou PDF) créé à partir d'une exécution terminée. |
+| Planification | Un calendrier qui exécute une carte automatiquement et stocke le résultat. |
+| Source de données | Une connexion enregistrée à une base de données. |
+| Fonction personnalisée | Une fonction de base de données que les éléments calculés peuvent appeler. |
