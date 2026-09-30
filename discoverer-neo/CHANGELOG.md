@@ -30,7 +30,16 @@ npm version 1.2.0 --workspaces --include-workspace-root --no-git-tag-version
 the git history. Each one groups a finished phase of the build plan, and ends
 at the commit named in its heading. The code carried `0.1.0` until 1.1.0.
 
-## [Unreleased]
+## [2.0.0] — 2026-09-30 — map access by role
+
+**Why MAJOR:** users can lose maps they saw before (see "Who sees which map"
+below), and two API answers changed: `GET /api/users/:id/maps` reports `ROLE`
+where it said `GRANT`, and `GET /api/users/search` with an empty `q` now lists
+every user instead of none.
+
+**Before you upgrade:** find the users who saw maps only through a CREATE,
+EDIT or DELETE grant on a business area. Share those maps with them, or make
+them MANAGER. The Users page → map icon shows what each user can open.
 
 ### Added
 - Business area grants: tick several users and grant them one level in one
@@ -60,6 +69,15 @@ at the commit named in its heading. The code carried `0.1.0` until 1.1.0.
 - Admin tables, Executions and Exports fit as many rows per page as the window
   holds.
 - `GET /api/users/search` with an empty `q` lists every user.
+- `GET /api/users/:id/maps`: the reason `GRANT` is now `ROLE` (a MANAGER sees
+  every map by role), and each row carries `ownerId` and `ownerName`.
+
+### Fixed
+- A business-area permission check now uses the highest level a user holds.
+  A user with two grant rows on one area could be refused at random.
+- The sidebar version label had too little contrast (1.96:1).
+- Maps page accessibility: the tabs now have a panel, and the two filter
+  drop-downs have names. This had broken the E2E accessibility scan.
 
 ## [1.1.0] — 2026-09-25
 
@@ -299,6 +317,7 @@ at the commit named in its heading. The code carried `0.1.0` until 1.1.0.
 - Audit logging, metadata caching, documentation, an OpenAPI spec, and a
   production Docker setup with health checks, backups, metrics and CI/CD.
 
+[2.0.0]: https://github.com/joao-ribeiro83/discoverer/compare/v1.1.0...v2.0.0
 [1.1.0]: https://github.com/joao-ribeiro83/discoverer/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/joao-ribeiro83/discoverer/compare/v0.10.0...v1.0.0
 [0.10.0]: https://github.com/joao-ribeiro83/discoverer/compare/v0.9.0...v0.10.0
