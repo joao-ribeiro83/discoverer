@@ -30,6 +30,28 @@ npm version 1.2.0 --workspaces --include-workspace-root --no-git-tag-version
 the git history. Each one groups a finished phase of the build plan, and ends
 at the commit named in its heading. The code carried `0.1.0` until 1.1.0.
 
+## [2.0.1] — 2026-09-30
+
+### Fixed
+- The sidebar shows Security, Audit Log and Migration to ADMIN only; their
+  APIs refuse everyone else. `/admin/*` pages now have route guards: a USER or
+  VIEWER who types one lands on the dashboard, and so does a MANAGER on
+  Security, Audit Log or Migration.
+- **Log out** now ends the session on the server (the access token is revoked
+  and the refresh session deleted), not only in the browser.
+- The Users page delete dialog says the delete is permanent and takes the
+  user's schedules, runs and exports with it. It used to say "deactivate".
+- A wrong current password on **Change password** no longer logs you out.
+  `POST /api/auth/change-password` answers 400 for it, not 401.
+- The Schedules map list no longer offers maps shared with you at
+  **Can view**, which could never be scheduled.
+- Administrators see the **SQL** and **Plan** buttons in the results panel
+  again.
+
+### Documentation
+- Role manuals for ADMIN, MANAGER, USER and VIEWER, full and quick, in en,
+  pt-PT, es-ES and fr-FR, with screenshots (`docs/user-guide/manual/`).
+
 ## [2.0.0] — 2026-09-30 — map access by role
 
 **Why MAJOR:** users can lose maps they saw before (see "Who sees which map"
@@ -317,6 +339,7 @@ them MANAGER. The Users page → map icon shows what each user can open.
 - Audit logging, metadata caching, documentation, an OpenAPI spec, and a
   production Docker setup with health checks, backups, metrics and CI/CD.
 
+[2.0.1]: https://github.com/joao-ribeiro83/discoverer/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/joao-ribeiro83/discoverer/compare/v1.1.0...v2.0.0
 [1.1.0]: https://github.com/joao-ribeiro83/discoverer/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/joao-ribeiro83/discoverer/compare/v0.10.0...v1.0.0
