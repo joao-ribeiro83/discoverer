@@ -9,7 +9,7 @@ O Discoverer Neo tem quatro funções de utilizador com capacidades diferentes:
 | Função | Capacidades |
 |------|-------------|
 | **ADMIN** | Acesso total ao sistema — utilizadores, áreas de negócio, origens de dados, registos de auditoria. Abre, altera, partilha e elimina todos os mapas. |
-| **MANAGER** | Modela os dados (áreas de negócio, pastas, itens, junções). Abre, executa, exporta, agenda e partilha **todos** os mapas, e pode alterar o proprietário de um mapa. Altera apenas os seus próprios mapas. |
+| **MANAGER** | Abre, executa, exporta, agenda e partilha **todos** os mapas, e pode alterar o proprietário de um mapa. Altera apenas os seus próprios mapas. Gere funções personalizadas; vê e testa origens de dados. Não pode alterar o modelo de dados (áreas de negócio, pastas, itens, junções, hierarquias), mesmo com uma permissão. |
 | **USER** | Vê apenas os seus próprios mapas e os mapas partilhados consigo. Cria um novo mapa copiando um destes. |
 | **VIEWER** | Só de leitura. Abre e executa os mapas partilhados consigo. Não pode criar, copiar nem alterar mapas. |
 
@@ -282,18 +282,16 @@ Para impedir o início de sessão:
 
 ## Delegação
 
-Os gestores podem delegar a criação de utilizadores e a gestão de permissões:
+Atribua a função **MANAGER** a quem cuida dos mapas de outras pessoas.
+Um MANAGER pode:
+- Ver, executar, exportar, agendar e partilhar todos os mapas
+- Dar um mapa a um novo proprietário, alterar ou remover as suas partilhas (Utilizadores → ícone de mapa)
+- Gerir funções personalizadas, e ver e testar origens de dados
 
-1. Promova os utilizadores à função **MANAGER**
-2. Os gestores podem então:
-   - Criar utilizadores
-   - Conceder permissões nas suas áreas de negócio
-   - Gerir o acesso de outros utilizadores
-
-Os gestores não podem:
-- Criar outros gestores ou administradores
-- Aceder às definições do sistema ou aos registos de auditoria
-- Gerir origens de dados
+Um MANAGER não pode:
+- Criar, alterar ou eliminar utilizadores, nem conceder acesso a áreas de negócio
+- Alterar o modelo de dados: áreas de negócio, pastas, itens, junções, hierarquias
+- Abrir Segurança, Registo de Auditoria ou Migração
 
 ## Trilho de Auditoria
 
@@ -323,7 +321,7 @@ Atribua a função mínima necessária:
 
 - A maioria dos utilizadores → função **USER** (não MANAGER nem ADMIN)
 - Criadores de relatórios → função **USER**
-- Líderes de equipa → função **MANAGER** (se gerirem áreas de negócio)
+- Líderes de equipa → função **MANAGER** (se cuidarem dos mapas da equipa)
 - Apenas 1–2 → função **ADMIN**
 
 ### Auditorias Regulares

@@ -1,6 +1,6 @@
 # A sua função numa página
 
-É um **Manager**. Vê, executa, exporta, agenda e partilha todos os mapas. A modelação de dados está limitada às áreas de negócio em que um administrador lhe concedeu uma permissão.
+É um **Manager**. Vê, executa, exporta, agenda e partilha todos os mapas. Não altera o modelo de dados. Isso é trabalho de um administrador.
 
 | Pode | Não pode |
 |---|---|
@@ -10,8 +10,9 @@
 | Atribuir um mapa a um novo proprietário | Ver as execuções, exportações ou agendamentos de outras pessoas |
 | Gerir funções personalizadas | Usar Segurança, Registo de Auditoria ou Migração |
 | Ler, testar e introspetar origens de dados | Importar tabelas de uma origem de dados |
+| Criar mapas nas áreas de negócio em que tem uma permissão | Alterar áreas de negócio, pastas, itens, junções ou hierarquias |
 
-> **Nota:** **Segurança**, **Registo de Auditoria** e **Migração** são só para administradores. Não aparecem na sua barra lateral.
+> **Nota:** **Áreas de Negócio**, **Pastas**, **Itens**, **Junções**, **Hierarquias**, **Segurança**, **Registo de Auditoria** e **Migração** são só para administradores. Não aparecem na sua barra lateral.
 
 Ver um mapa não lhe dá os respetivos dados. Uma execução precisa de uma permissão de área de negócio em cada pasta que o mapa usa. Sem ela, aparece **Sem autorização para executar**.
 
@@ -114,7 +115,7 @@ O agendamento é executado como si, por isso as suas permissões decidem que dad
 
 **Execuções** lista as suas próprias execuções. **Exportações** lista os seus próprios ficheiros exportados. Não vê os de outras pessoas.
 
-![A página Execuções com os filtros Mapa, Estado e Tipo e a lista de execuções.](shots/pt-PT/manager/11-runs.png)
+![A página Execuções com os filtros Mapa, Estado e Tipo e a lista de execuções.](shots/pt-PT/manager/10-runs.png)
 
 1. Clique em **Execuções** para ver as execuções em espera, em curso e concluídas.
 2. Clique no ícone **Abrir** para ver um resultado guardado. Use **Executar novamente** para o repetir.
@@ -127,7 +128,7 @@ O agendamento é executado como si, por isso as suas permissões decidem que dad
 
 A página **Utilizadores** é só de leitura para si. Pode listar contas e corrigir o acesso aos mapas.
 
-![A caixa de diálogo Mapas de um utilizador, com listas de nível de partilha e ícones de proprietário e remover.](shots/pt-PT/manager/12-users-maps-dialog.png)
+![A caixa de diálogo Mapas de um utilizador, com listas de nível de partilha e ícones de proprietário e remover.](shots/pt-PT/manager/11-users-maps-dialog.png)
 
 1. Clique no ícone da linha **Mapas que este utilizador pode abrir**.
 2. Para alterar um mapa partilhado, use a lista de níveis junto a ele.
@@ -140,32 +141,11 @@ Criar, editar e eliminar utilizadores é da responsabilidade dos administradores
 
 ---
 
-# Modelação de dados
-
-As páginas **Áreas de Negócio**, **Pastas**, **Itens**, **Junções** e **Hierarquias** listam apenas as áreas de negócio em que tem uma permissão. O nível da permissão define o que pode fazer.
-
-![A página Pastas com uma área de negócio escolhida e as respetivas pastas listadas.](shots/pt-PT/admin/11-folders.png)
-
-| Permissão | O que pode fazer |
-|---|---|
-| VIEW, EXPORT, SCHEDULE | Ler pastas, itens, junções e hierarquias. |
-| CREATE | Também adicionar pastas, itens, junções e hierarquias. |
-| EDIT | Também alterá-los e atualizar pastas a partir da base de dados. |
-| DELETE | Também eliminá-los. |
-
-1. Escolha uma **Área de Negócio**. Se a lista estiver vazia, peça uma permissão a um administrador.
-2. Para adicionar uma pasta: clique em **Nova Pasta**, escolha uma **Origem de Dados**, clique em **Descobrir Tabelas**, escolha uma tabela e clique em **Guardar**.
-3. Para ligar duas pastas: em **Junções**, clique em **Nova Junção**, clique em **Sugerir Junções** e depois em **Guardar**.
-
-**Nova Área de Negócio**, **Eliminar** numa área de negócio e as alterações de permissões são só para administradores, apesar de o ecrã as mostrar. O sistema recusa-as.
-
----
-
 # Funções Personalizadas e Origens de Dados
 
 As **Funções Personalizadas** são funções da base de dados que os itens calculados podem chamar. Tem todos os direitos sobre elas. As **Origens de Dados** são ligações guardadas a bases de dados. Só pode consultá-las e testá-las.
 
-![A página Funções Personalizadas com a lista, Atualizar tudo e Nova Função.](shots/pt-PT/manager/09-custom-functions.png)
+![A página Funções Personalizadas com a lista, Atualizar tudo e Nova Função.](shots/pt-PT/manager/08-custom-functions.png)
 
 1. Em **Funções Personalizadas**, clique em **Nova Função**.
 2. Escolha uma **Origem de dados**, escreva parte de um nome em **Procurar uma função** e clique em **Procurar**.

@@ -1,6 +1,6 @@
 # A sua função num relance
 
-É um **Manager**. Vê todos os mapas do Discoverer Neo, executa-os, exporta-os, agenda-os e partilha-os. Cuida de quem pode abrir o quê. Também ajuda a modelar os dados, mas só nas áreas de negócio a que lhe foi dado acesso.
+É um **Manager**. Vê todos os mapas do Discoverer Neo, executa-os, exporta-os, agenda-os e partilha-os. Cuida de quem pode abrir o quê. Não altera o modelo de dados. Isso é trabalho de um administrador.
 
 Um **mapa** é um relatório (no Oracle Discoverer, era uma folha de cálculo). Um **livro** é um grupo de mapas. Uma **área de negócio** é um grupo de dados relacionados. Uma **pasta** é uma tabela ou vista dentro de uma área de negócio, e um **item** é uma coluna de uma pasta.
 
@@ -16,9 +16,9 @@ Um **mapa** é um relatório (no Oracle Discoverer, era uma folha de cálculo). 
 | Abrir a página Utilizadores e ver que mapas cada pessoa pode abrir | Criar, editar ou eliminar origens de dados, nem importar tabelas de uma |
 | Criar, editar e eliminar funções personalizadas | Ver as execuções, exportações ou agendamentos de outras pessoas |
 | Testar e ler origens de dados | Usar Segurança, Registo de Auditoria ou Migração (só administradores) |
-| Modelar dados em áreas de negócio onde tem uma permissão, até ao nível dessa permissão | Modelar dados numa área de negócio onde não tem permissão |
+| Criar mapas nas áreas de negócio em que tem uma permissão | Alterar áreas de negócio, pastas, itens, junções ou hierarquias, qualquer que seja a permissão que tenha |
 
-> **Nota:** **Segurança**, **Registo de Auditoria** e **Migração** são só para administradores. Não aparecem na sua barra lateral.
+> **Nota:** **Áreas de Negócio**, **Pastas**, **Itens**, **Junções**, **Hierarquias**, **Segurança**, **Registo de Auditoria** e **Migração** são só para administradores. Não aparecem na sua barra lateral.
 
 ## De onde vem o seu acesso
 
@@ -30,12 +30,12 @@ Três coisas decidem o que pode fazer.
 
 | Nível de permissão | O que lhe permite fazer nessa área de negócio |
 |---|---|
-| VIEW | Ler os seus dados. Ver as suas pastas, itens, junções e hierarquias. |
+| VIEW | Ler os seus dados. Usar as suas pastas e itens no construtor de mapas. |
 | EXPORT | Igual a VIEW. Os direitos de exportar e agendar num mapa vêm da forma como o mapa é partilhado. |
 | SCHEDULE | Igual a VIEW. Os direitos de exportar e agendar num mapa vêm da forma como o mapa é partilhado. |
-| CREATE | Tudo o que está em VIEW, mais criar mapas, pastas, itens, junções e hierarquias novos. |
-| EDIT | Tudo o que está em CREATE, mais alterar a área e as suas pastas, itens, junções e hierarquias. |
-| DELETE | Tudo o que está em EDIT, mais eliminar pastas, itens, junções e hierarquias. |
+| CREATE | Tudo o que está em VIEW, mais criar mapas novos. |
+| EDIT | Igual a CREATE para si. Os direitos de modelo adicionais deste nível são só para administradores. |
+| DELETE | Igual a CREATE para si. Os direitos de modelo adicionais deste nível são só para administradores. |
 
 Ao contrário de um administrador, não tem nenhuma exceção. Daqui resultam duas regras.
 
@@ -67,7 +67,7 @@ Para terminar a sessão, clique no seu nome no canto superior direito e escolha 
 
 O **Painel** é a primeira página que vê. Só lhe dá números. Nada nele altera dados.
 
-![O painel do Manager com a barra lateral completa e os cartões de resumo.](shots/pt-PT/manager/01-dashboard-sidebar.png)
+![O painel do Manager com a barra lateral e os cartões de resumo.](shots/pt-PT/manager/01-dashboard-sidebar.png)
 
 | Cartão | O que mostra para si |
 |---|---|
@@ -81,211 +81,11 @@ A ligação **Ver agendamentos** em dois cartões abre a página **Agendamentos*
 
 ---
 
-# Áreas de Negócio
-
-Use esta página para ver as áreas de negócio em que tem uma permissão e para ler quem mais tem permissão nelas.
-
-![A página Áreas de Negócio com apenas as áreas concedidas ao Manager.](shots/pt-PT/manager/07-business-areas.png)
-
-A lista mostra apenas as áreas em que tem uma permissão. Se não tiver nenhuma, a lista fica vazia e todas as páginas de modelação (Áreas de Negócio, Pastas, Itens, Junções, Hierarquias) não têm nada em que trabalhar. Fale com um administrador.
-
-| Botão ou controlo | O que faz |
-|---|---|
-| Ícone da linha **Gerir concessões** | Abre a lista de permissões dessa área. Pode lê-la. |
-| Ícone da linha **Editar** | Altera o nome e a descrição. Só funciona com uma permissão EDIT ou superior nessa área. |
-| **Nova Área de Negócio** | Reservado aos administradores. |
-| Ícone da linha **Eliminar** | Reservado aos administradores. |
-| **Adicionar** e **Revogar** na lista de permissões | Reservado aos administradores. |
-
-> **Nota:** O ecrã mostra **Nova Área de Negócio**, **Eliminar**, **Adicionar** e **Revogar**. O sistema recusa-os para si e mostra um erro. Só os administradores criam ou eliminam áreas de negócio e dão ou retiram permissões.
-
-Cada permissão na lista mostra uma pessoa e um nível. Aponte para o nível para ler o que ele permite.
-
-## Exemplo: verificar quem pode criar mapas numa área
-
-1. Clique em **Áreas de Negócio** na barra lateral.
-2. Clique no ícone da linha **Gerir concessões** na área.
-3. Procure pessoas com CREATE, EDIT ou DELETE. Essas pessoas podem criar mapas nesta área.
-4. Clique em **Fechar**.
-
----
-
-# Pastas
-
-Uma pasta é uma tabela, vista ou consulta dentro de uma área de negócio. Use esta página para as listar e, onde a sua permissão o permitir, para as adicionar, alterar ou atualizar.
-
-![A página Pastas com uma área de negócio escolhida e as respetivas pastas listadas.](shots/pt-PT/admin/11-folders.png)
-
-Escolha primeiro uma **Área de Negócio**. Os botões ficam desativados até o fazer.
-
-| Botão ou controlo | O que faz | Permissão necessária |
-|---|---|---|
-| **Área de Negócio** | Escolhe a área cujas pastas vê. | Qualquer |
-| **Atualizar tudo** | Volta a ler todas as tabelas e vistas da área a partir da respetiva base de dados. As colunas novas tornam-se itens. As colunas em falta são apenas listadas. | EDIT |
-| **Nova Pasta** | Abre o assistente de pastas. | CREATE |
-| Ícone da linha **Atualizar a partir da origem de dados** | O mesmo, para uma pasta. Só aparece em pastas de tabela e vista que não foram partilhadas a partir de outra área. | EDIT |
-| Ícone da linha **Gerir áreas de negócio** | Abre a caixa de diálogo de partilha. Pode consultá-la. As alterações precisam de EDIT. | Qualquer, para consultar |
-| Ícone da linha **Editar** | Abre o assistente para alterar a pasta. | EDIT |
-| Ícone da linha **Eliminar** | Desativa a pasta depois de confirmar. | DELETE |
-| **Fechar** por baixo de **Resultado da atualização** | Esconde a lista de resultados de uma atualização. | Nenhuma |
-
-Uma pasta mostra uma etiqueta **Partilhada** quando pertence a outra área de negócio e foi partilhada com esta. Atualize-a a partir da área a que pertence.
-
-A atualização nunca elimina itens. As colunas que desapareceram da base de dados são apenas listadas, para as poder eliminar você se nenhum mapa as usar.
-
-## O assistente de pastas
-
-| Campo | O que significa |
-|---|---|
-| **Nome** | O nome da pasta. Preenchido por si quando escolhe uma tabela. |
-| **Descrição** | Texto livre. Preenchido a partir do comentário da base de dados quando escolhe uma tabela. |
-| **Tipo de Pasta** | Veja a tabela abaixo. |
-| **SQL Personalizado** | Mostrado para pastas DERIVED e COMPLEX. A consulta que define a pasta. Uma pasta COMPLEX precisa dele. |
-| **Origem de Dados** | A ligação à base de dados. Não é mostrada para DERIVED e COMPLEX. |
-| **Descobrir Tabelas** | Lê as tabelas da origem de dados escolhida para poder escolher uma. Pode usá-lo. |
-| **Nome da Tabela** e **Proprietário da Tabela** | A que tabela a pasta aponta. Preenchidos quando escolhe na lista. |
-| **Itens a criar** | As colunas da tabela escolhida. Cada coluna assinalada torna-se um item. Use **Selecionar todas** ou **Limpar**. Edite as descrições antes de guardar. |
-
-| Opção (**Tipo de Pasta**) | O que significa / quando escolher |
-|---|---|
-| TABLE | Uma tabela da base de dados. A escolha habitual. |
-| VIEW | Uma vista da base de dados. |
-| DERIVED | Uma pasta definida pela sua própria consulta. |
-| COMPLEX | Uma pasta definida por uma consulta mais longa. O SQL personalizado é obrigatório. |
-| JOIN | Uma pasta construída a partir de uma junção. |
-| SUMMARY | Uma pasta de resumo. |
-
-## Exemplo: adicionar uma pasta a partir de uma tabela
-
-1. Clique em **Pastas** e escolha a **Área de Negócio**. Precisa de uma permissão CREATE nela.
-2. Clique em **Nova Pasta**.
-3. Escolha uma **Origem de Dados** e clique em **Descobrir Tabelas**.
-4. Escreva em **Filtrar por nome ou comentário** para reduzir a lista e clique na tabela.
-5. Desmarque as colunas que não quer. Ajuste as descrições.
-6. Clique em **Guardar**. A pasta é criada primeiro, depois os seus itens.
-
-> **Atenção:** Se **Guardar** mostrar "Falha ao guardar", o mais provável é não ter a permissão CREATE nessa área.
-
----
-
-# Itens
-
-Um item é uma coluna de uma pasta. Use esta página para listar itens e alterar o seu comportamento.
-
-![A página Itens para uma pasta escolhida, com a lista dos respetivos itens.](shots/pt-PT/admin/17-items.png)
-
-Escolha uma **Área de Negócio** e depois uma **Pasta**. A lista de pastas fica vazia até escolher uma área.
-
-| Botão ou controlo | O que faz | Permissão necessária |
-|---|---|---|
-| **Novo Item** | Abre a caixa de diálogo do item. | CREATE |
-| Ícone da linha **Editar** | Altera o item. Não o pode mover para outra pasta. | EDIT |
-| Ícone da linha **Eliminar** | Desativa o item depois de confirmar. | DELETE |
-
-| Campo | O que significa |
-|---|---|
-| **Nome** | O nome do item que as pessoas veem no construtor de mapas. |
-| **Descrição** | Texto de ajuda opcional. |
-| **Tipo de Item** | O tipo de item. Veja abaixo. |
-| **Nome da Coluna** | Para um item de base de dados: a coluna da base de dados. |
-| **Fórmula** | Para todos os tipos exceto um item de base de dados: o cálculo. Uma fórmula errada é recusada. |
-| **Tipo de Dados** | Texto livre, por exemplo NUMBER. |
-| **Máscara de Formato** | Como o valor é mostrado, por exemplo 999,999.00. |
-| **Agregação** | O total predefinido do item. |
-
-| Opção (**Tipo de Item**) | O que significa |
-|---|---|
-| Item de Base de Dados (CO) | Uma coluna lida diretamente da tabela. |
-| Item Criado (CI) | Um item que calcula com uma fórmula. |
-| Item Calculado (CU) | Um item calculado. |
-| Item de Junção (JI) | Um item que vem através de uma junção. |
-| Item de Hierarquia (HI) | Um item usado numa hierarquia. |
-| Agregação (AG) | Um item que é um total. |
-| Função (FU) | Um item que chama uma função. |
-
-| Opção (**Agregação**) | O que significa |
-|---|---|
-| NONE | Sem total predefinido. É uma dimensão. |
-| SUM | Soma os valores. |
-| COUNT | Conta as linhas. |
-| AVG | Calcula a média dos valores. |
-| MIN | O menor valor. |
-| MAX | O maior valor. |
-
----
-
-# Junções
-
-Uma junção diz ao Discoverer Neo como duas pastas se ligam. Sem uma, os mapas que usam ambas as pastas são recusados.
-
-![A caixa de diálogo Nova Junção com duas listas de pastas e um par de colunas.](shots/pt-PT/admin/21-joins-new-dialog.png)
-
-| Botão ou controlo | O que faz | Permissão necessária |
-|---|---|---|
-| **Área de Negócio** | Escolhe a área. | Qualquer |
-| **Nova Junção** | Abre a caixa de diálogo da junção. | CREATE |
-| Ícone da linha **Editar** | Altera a junção. | EDIT |
-| Ícone da linha **Eliminar** | Desativa a junção depois de confirmar. | DELETE |
-| **Sugerir Junções** | Propõe colunas correspondentes para a pasta esquerda. Clique numa sugestão para a usar. | VIEW |
-| **Adicionar par de colunas** | Acrescenta mais um par de itens. Todos os pares têm de corresponder em conjunto. | CREATE ou EDIT |
-| X junto a um par | Remove esse par. Tem de ficar um par. | CREATE ou EDIT |
-
-| Campo | O que significa |
-|---|---|
-| **Nome** | O nome da junção. Preenchido a partir de uma sugestão se ficar vazio. |
-| **Pasta Esquerda** e **Pasta Direita** | As duas pastas a ligar. Ambas pertencem à área escolhida. |
-| **Item Esquerdo**, **Operador**, **Item Direito** | Um par: que colunas são comparadas e como. |
-| **Tipo de Junção** | Veja abaixo. |
-
-| Opção (**Operador**) | O que significa |
-|---|---|
-| = | Igual. Quase sempre a escolha certa. |
-| <> | Diferente. |
-| < e <= | Menor que, menor ou igual. |
-| > e >= | Maior que, maior ou igual. |
-
-| Opção (**Tipo de Junção**) | O que significa / quando escolher |
-|---|---|
-| INNER | Só as linhas que correspondem em ambos os lados. |
-| LEFT | Todas as linhas da pasta esquerda, mesmo sem correspondência. |
-| RIGHT | Todas as linhas da pasta direita, mesmo sem correspondência. |
-
-## Exemplo: juntar duas pastas
-
-1. Clique em **Junções** e escolha a **Área de Negócio**. Precisa de uma permissão CREATE.
-2. Clique em **Nova Junção**.
-3. Escolha a **Pasta Esquerda** e a **Pasta Direita**.
-4. Clique em **Sugerir Junções** e clique na melhor sugestão. Ou escolha você o **Item Esquerdo**, o **Operador** e o **Item Direito**.
-5. Mantenha o **Tipo de Junção** em INNER, a não ser que precise de linhas sem correspondência.
-6. Clique em **Guardar**.
-
----
-
-# Hierarquias
-
-Uma hierarquia é uma lista ordenada de itens para aprofundamento, por exemplo Ano, Trimestre, Mês.
-
-![Uma caixa de diálogo de hierarquia com uma linha de nível a mostrar o nome e as listas de pasta e item.](shots/pt-PT/admin/26-hierarchies-level-added.png)
-
-| Botão ou controlo | O que faz | Permissão necessária |
-|---|---|---|
-| **Área de Negócio** | Escolhe a área. | Qualquer |
-| **Nova Hierarquia** | Abre uma caixa de diálogo vazia. | CREATE |
-| Ícone da linha **Editar** | Abre a hierarquia. Pode abri-la com VIEW, mas guardar precisa de EDIT. | EDIT para guardar |
-| Ícone da linha **Eliminar** | Desativa a hierarquia depois de confirmar. | DELETE |
-| **Adicionar Nível** | Acrescenta um nível no fim. | CREATE ou EDIT |
-| Pega de arrastar | Arraste um nível para cima ou para baixo. A ordem é a ordem de aprofundamento. | CREATE ou EDIT |
-| X num nível | Remove o nível. | CREATE ou EDIT |
-
-Cada nível precisa de um **Nome do nível**, uma **Pasta** e um **Item**. **Guardar** fica desativado até o nome, pelo menos um nível e todos os níveis estarem completos. Escolha itens de pastas que pertencem à área de negócio. Uma pasta partilhada a partir de outra área é listada, mas guardar falha.
-
----
-
 # Funções Personalizadas
 
 Uma função personalizada é uma função guardada na base de dados Oracle que os itens calculados podem chamar. Tem todos os direitos aqui. Não é preciso nenhuma permissão de área de negócio.
 
-![A página Funções Personalizadas com a lista, Atualizar tudo e Nova Função.](shots/pt-PT/manager/09-custom-functions.png)
+![A página Funções Personalizadas com a lista, Atualizar tudo e Nova Função.](shots/pt-PT/manager/08-custom-functions.png)
 
 | Botão ou controlo | O que faz |
 |---|---|
@@ -327,7 +127,7 @@ Uma função personalizada é uma função guardada na base de dados Oracle que 
 
 Uma origem de dados é uma ligação guardada a uma base de dados. Pode consultá-las e testá-las. Não as pode alterar.
 
-![A página Origens de Dados com a lista de ligações e os ícones de linha.](shots/pt-PT/manager/08-data-sources.png)
+![A página Origens de Dados com a lista de ligações e os ícones de linha.](shots/pt-PT/manager/07-data-sources.png)
 
 | Botão ou controlo | O que faz |
 |---|---|
@@ -354,7 +154,7 @@ A lista mostra **Nome**, **Email**, **Função** e **Estado** (**Ativo** ou **In
 
 Clique no ícone da linha **Mapas que este utilizador pode abrir**. A caixa de diálogo **Mapas de {name}** lista todos os mapas que essa pessoa vê.
 
-![A caixa de diálogo Mapas de um utilizador, com listas de nível de partilha e ícones de proprietário e remover.](shots/pt-PT/manager/12-users-maps-dialog.png)
+![A caixa de diálogo Mapas de um utilizador, com listas de nível de partilha e ícones de proprietário e remover.](shots/pt-PT/manager/11-users-maps-dialog.png)
 
 | Botão ou controlo | O que faz |
 |---|---|
@@ -695,7 +495,7 @@ O **Histórico de Execuções** lista os últimos 50 resultados com **Executado*
 
 **Execuções** lista todas as execuções que pediu, quer estejam em espera, em curso ou terminadas. Mostra apenas as suas próprias execuções, não as de outras pessoas.
 
-![A página Execuções com os filtros Mapa, Estado e Tipo e a lista de execuções.](shots/pt-PT/manager/11-runs.png)
+![A página Execuções com os filtros Mapa, Estado e Tipo e a lista de execuções.](shots/pt-PT/manager/10-runs.png)
 
 | Botão ou controlo | O que faz |
 |---|---|
@@ -750,11 +550,11 @@ Como Manager, vê todos os mapas. Os dados dele precisam de uma permissão de á
 **Porque não há um ícone de lápis num mapa?**
 Só pode editar os seus próprios mapas e os mapas partilhados consigo como **Pode editar**. Clique no ícone Copiar e altere a sua cópia. Ou peça ao proprietário que o partilhe consigo como **Pode editar**.
 
-**As listas de Áreas de Negócio, Pastas, Itens, Junções e Hierarquias estão vazias.**
-Estas páginas só mostram áreas de negócio em que tem uma permissão. Peça uma a um administrador. CREATE permite-lhe adicionar, EDIT permite-lhe alterar, DELETE permite-lhe eliminar.
+**Onde estão Áreas de Negócio, Pastas, Itens, Junções e Hierarquias?**
+Alterar o modelo de dados é só para administradores, por isso estas páginas não aparecem na sua barra lateral. Se uma pasta ou um item estiver errado ou em falta, peça a um administrador.
 
 **Cliquei em algo e apareceu "Forbidden" ou "Falha ao guardar".**
-O ecrã ofereceu essa opção, mas a sua função ou permissão não a permite. Os casos mais comuns são **Nova Área de Negócio**, **Nova Origem de Dados**, **Importar** e guardar um mapa de que não é proprietário.
+O ecrã ofereceu essa opção, mas a sua função ou permissão não a permite. O caso mais comum é guardar um mapa de que não é proprietário.
 
 **Não consigo ver as execuções, exportações ou agendamentos de outra pessoa.**
 As execuções, exportações e agendamentos pertencem a quem os fez. Ninguém além dessa pessoa os vê na lista, e o mesmo vale para si.

@@ -100,6 +100,8 @@ Un área de negocio agrupa carpetas. Una **concesión** da a una persona acceso 
 | EDIT | Además, cambiar el área y sus objetos. |
 | DELETE | Además, eliminar esos objetos. |
 
+Un Manager nunca cambia el modelo. Para un Manager, CREATE y superiores solo le permiten crear mapas.
+
 ---
 
 # Carpetas, Elementos, Combinaciones, Jerarquías
@@ -156,7 +158,7 @@ Agregue personas, establezca roles, desactive cuentas y traspase mapas a otros.
 | Opción | Significado |
 |---|---|
 | ADMIN | Todo. |
-| MANAGER | Ve, ejecuta, exporta, programa y comparte todos los mapas. Modela datos solo donde tiene concesión. |
+| MANAGER | Ve, ejecuta, exporta, programa y comparte todos los mapas. Nunca cambia el modelo de datos. |
 | USER | Mapas propios, públicos y compartidos. |
 | VIEWER | Igual que USER, pero no puede copiar mapas. |
 | **Desactivar** | Conserva la cuenta. Es reversible. |

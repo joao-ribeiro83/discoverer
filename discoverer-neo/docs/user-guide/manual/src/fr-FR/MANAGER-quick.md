@@ -1,6 +1,6 @@
 # Votre rôle en une page
 
-Vous êtes **Manager**. Vous voyez, exécutez, exportez, planifiez et partagez toutes les cartes. La modélisation des données est limitée aux domaines d'activité pour lesquels un administrateur vous a donné un accès.
+Vous êtes **Manager**. Vous voyez, exécutez, exportez, planifiez et partagez toutes les cartes. Vous ne modifiez pas le modèle de données. C'est le travail d'un administrateur.
 
 | Vous pouvez | Vous ne pouvez pas |
 |---|---|
@@ -10,8 +10,9 @@ Vous êtes **Manager**. Vous voyez, exécutez, exportez, planifiez et partagez t
 | Donner une carte à un nouveau propriétaire | Voir les exécutions, exportations ou planifications des autres |
 | Gérer les fonctions personnalisées | Utiliser Sécurité, Journal d'audit ou Migration |
 | Lire, tester et introspecter les sources de données | Importer des tables depuis une source de données |
+| Créer des cartes sur les domaines d'activité où vous avez un accès | Modifier les domaines d'activité, dossiers, éléments, jointures ou hiérarchies |
 
-> **Remarque :** **Sécurité**, **Journal d'audit** et **Migration** sont réservés aux administrateurs. Ils ne figurent pas dans votre barre latérale.
+> **Remarque :** **Domaines d'activité**, **Dossiers**, **Éléments**, **Jointures**, **Hiérarchies**, **Sécurité**, **Journal d'audit** et **Migration** sont réservés aux administrateurs. Ils ne figurent pas dans votre barre latérale.
 
 Voir une carte ne donne pas accès à ses données. Une exécution exige un accès au domaine d'activité pour chaque dossier utilisé par la carte. Sans cet accès, vous obtenez **Exécution non autorisée**.
 
@@ -114,7 +115,7 @@ La planification s'exécute sous votre identité : vos accès décident donc des
 
 **Exécutions** liste vos propres exécutions. **Exportations** liste vos propres fichiers d'exportation. Vous ne voyez pas ceux des autres.
 
-![La page Exécutions avec les filtres Carte, Statut et Type et la liste des exécutions.](shots/fr-FR/manager/11-runs.png)
+![La page Exécutions avec les filtres Carte, Statut et Type et la liste des exécutions.](shots/fr-FR/manager/10-runs.png)
 
 1. Cliquez sur **Exécutions** pour voir les exécutions en attente, en cours et terminées.
 2. Cliquez sur l'icône **Ouvrir** pour voir un résultat stocké. Utilisez **Exécuter à nouveau** pour le refaire.
@@ -127,7 +128,7 @@ La planification s'exécute sous votre identité : vos accès décident donc des
 
 La page **Utilisateurs** est en lecture seule pour vous. Vous pouvez lister les comptes et corriger l'accès aux cartes.
 
-![La boîte de dialogue Cartes d'un utilisateur, avec les listes de niveau de partage et les icônes de propriétaire et de retrait.](shots/fr-FR/manager/12-users-maps-dialog.png)
+![La boîte de dialogue Cartes d'un utilisateur, avec les listes de niveau de partage et les icônes de propriétaire et de retrait.](shots/fr-FR/manager/11-users-maps-dialog.png)
 
 1. Cliquez sur l'icône de ligne **Cartes que cet utilisateur peut ouvrir**.
 2. Pour modifier une carte partagée, utilisez la liste de niveaux à côté d'elle.
@@ -140,32 +141,11 @@ Créer, modifier et supprimer des utilisateurs est réservé aux administrateurs
 
 ---
 
-# Modélisation des données
-
-Les pages **Domaines d'activité**, **Dossiers**, **Éléments**, **Jointures** et **Hiérarchies** ne listent que les domaines d'activité pour lesquels vous avez un accès. Votre niveau d'accès détermine ce que vous pouvez faire.
-
-![La page Dossiers avec un domaine d'activité choisi et ses dossiers listés.](shots/fr-FR/admin/11-folders.png)
-
-| Accès | Ce que vous pouvez faire |
-|---|---|
-| VIEW, EXPORT, SCHEDULE | Lire les dossiers, éléments, jointures et hiérarchies. |
-| CREATE | Ajouter aussi des dossiers, éléments, jointures et hiérarchies. |
-| EDIT | Les modifier aussi, et actualiser les dossiers depuis la base de données. |
-| DELETE | Les supprimer aussi. |
-
-1. Choisissez un **Domaine d'activité**. Si la liste est vide, demandez un accès à un administrateur.
-2. Pour ajouter un dossier : cliquez sur **Nouveau dossier**, choisissez une **Source de données**, cliquez sur **Découvrir les tables**, choisissez une table, cliquez sur **Enregistrer**.
-3. Pour relier deux dossiers : dans **Jointures**, cliquez sur **Nouvelle jointure**, cliquez sur **Suggérer des jointures**, puis sur **Enregistrer**.
-
-**Nouveau domaine d'activité**, **Supprimer** sur un domaine d'activité et les changements d'accès sont réservés aux administrateurs, même si l'écran les affiche. Le système les refuse.
-
----
-
 # Fonctions personnalisées et sources de données
 
 Les **Fonctions personnalisées** sont des fonctions de base de données que les éléments calculés peuvent appeler. Vous avez tous les droits dessus. Les **Sources de données** sont des connexions enregistrées à une base de données. Vous pouvez seulement les consulter et les tester.
 
-![La page Fonctions personnalisées avec la liste, Tout actualiser et Nouvelle fonction.](shots/fr-FR/manager/09-custom-functions.png)
+![La page Fonctions personnalisées avec la liste, Tout actualiser et Nouvelle fonction.](shots/fr-FR/manager/08-custom-functions.png)
 
 1. Dans **Fonctions personnalisées**, cliquez sur **Nouvelle fonction**.
 2. Choisissez une **Source de données**, saisissez une partie d'un nom dans **Rechercher une fonction**, cliquez sur **Rechercher**.

@@ -1,6 +1,6 @@
 # Your role in one page
 
-You are a **Manager**. You see, run, export, schedule and share every map. Data modeling is limited to business areas where an administrator gave you a grant.
+You are a **Manager**. You see, run, export, schedule and share every map. You do not change the data model. That is an administrator's job.
 
 | You can | You cannot |
 |---|---|
@@ -10,8 +10,9 @@ You are a **Manager**. You see, run, export, schedule and share every map. Data 
 | Give a map to a new owner | See other people's runs, exports or schedules |
 | Manage custom functions | Use Security, Audit Log or Migration |
 | Read, test and introspect data sources | Import tables from a data source |
+| Build maps on the business areas you hold a grant on | Change business areas, folders, items, joins or hierarchies |
 
-> **Note:** **Security**, **Audit Log** and **Migration** are for administrators only. They are not in your sidebar.
+> **Note:** **Business Areas**, **Folders**, **Items**, **Joins**, **Hierarchies**, **Security**, **Audit Log** and **Migration** are for administrators only. They are not in your sidebar.
 
 Seeing a map does not give you its data. A run needs a business-area grant on every folder the map uses. Without one you get **Not entitled to run**.
 
@@ -114,7 +115,7 @@ The schedule runs as you, so your grants decide what data it reads.
 
 **Runs** lists your own runs. **Exports** lists your own export files. You do not see other people's.
 
-![The Runs page with map, status and kind filters and the list of runs.](shots/en/manager/11-runs.png)
+![The Runs page with map, status and kind filters and the list of runs.](shots/en/manager/10-runs.png)
 
 1. Click **Runs** to see waiting, running and finished runs.
 2. Click the **Open** icon to see a stored result. Use **Run again** to repeat it.
@@ -127,7 +128,7 @@ The schedule runs as you, so your grants decide what data it reads.
 
 The **Users** page is read-only for you. You can list accounts and fix map access.
 
-![The Maps dialog for a user, with share-level selects and owner and remove icons.](shots/en/manager/12-users-maps-dialog.png)
+![The Maps dialog for a user, with share-level selects and owner and remove icons.](shots/en/manager/11-users-maps-dialog.png)
 
 1. Click the row icon **Maps this user can open**.
 2. To change a shared map, use the level list next to it.
@@ -140,32 +141,11 @@ Creating, editing and deleting users is for administrators.
 
 ---
 
-# Data modeling
-
-The pages **Business Areas**, **Folders**, **Items**, **Joins** and **Hierarchies** list only business areas where you hold a grant. Your grant level sets what you may do.
-
-![The Folders page with a business area chosen and its folders listed.](shots/en/admin/11-folders.png)
-
-| Grant | What you may do |
-|---|---|
-| VIEW, EXPORT, SCHEDULE | Read folders, items, joins and hierarchies. |
-| CREATE | Also add folders, items, joins and hierarchies. |
-| EDIT | Also change them, and refresh folders from the database. |
-| DELETE | Also delete them. |
-
-1. Choose a **Business Area**. If the list is empty, ask an administrator for a grant.
-2. To add a folder: click **New Folder**, choose a **Data Source**, click **Discover Tables**, pick a table, click **Save**.
-3. To connect two folders: on **Joins**, click **New Join**, click **Suggest Joins**, then **Save**.
-
-**New Business Area**, **Delete** on a business area and grant changes are for administrators, even though the screen shows them. The system refuses them.
-
----
-
 # Custom Functions and Data Sources
 
 **Custom Functions** are database functions that calculated items can call. You have full rights. **Data Sources** are saved database connections. You can only look and test.
 
-![The Custom Functions page with the list, Refresh all and New Function.](shots/en/manager/09-custom-functions.png)
+![The Custom Functions page with the list, Refresh all and New Function.](shots/en/manager/08-custom-functions.png)
 
 1. On **Custom Functions**, click **New Function**.
 2. Choose a **Data source**, type part of a name in **Find a function**, click **Search**.

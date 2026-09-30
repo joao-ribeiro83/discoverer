@@ -9,7 +9,7 @@ Discoverer Neo tiene cuatro roles de usuario con capacidades diferentes:
 | Rol | Capacidades |
 |------|-------------|
 | **ADMIN** | Acceso completo al sistema: usuarios, áreas de negocio, orígenes de datos, registros de auditoría. Abre, cambia, comparte y elimina todos los mapas. |
-| **MANAGER** | Modela los datos (áreas de negocio, carpetas, elementos, combinaciones). Abre, ejecuta, exporta, programa y comparte **todos** los mapas, y puede cambiar el propietario de un mapa. Solo cambia sus propios mapas. |
+| **MANAGER** | Abre, ejecuta, exporta, programa y comparte **todos** los mapas, y puede cambiar el propietario de un mapa. Solo cambia sus propios mapas. Gestiona funciones personalizadas; ve y prueba orígenes de datos. No puede cambiar el modelo de datos (áreas de negocio, carpetas, elementos, combinaciones, jerarquías), ni siquiera con una concesión. |
 | **USER** | Solo ve sus propios mapas y los que se han compartido con él. Crea un mapa nuevo copiando uno de ellos. |
 | **VIEWER** | Solo lectura. Abre y ejecuta los mapas compartidos con él. No puede crear, copiar ni cambiar mapas. |
 
@@ -280,18 +280,16 @@ Para impedir el inicio de sesión:
 
 ## Delegación
 
-Los responsables (MANAGER) pueden delegar la creación de usuarios y la gestión de permisos:
+Dé el rol **MANAGER** a quien se ocupe de los mapas de otras personas.
+Un MANAGER puede:
+- Ver, ejecutar, exportar, programar y compartir todos los mapas
+- Entregar un mapa a un nuevo propietario, y cambiar o quitar sus recursos compartidos (Usuarios → icono de mapa)
+- Gestionar funciones personalizadas, y ver y probar orígenes de datos
 
-1. Promueva a los usuarios al rol **MANAGER**
-2. Los responsables podrán entonces:
-   - Crear usuarios
-   - Conceder permisos en sus áreas de negocio
-   - Gestionar el acceso de otros usuarios
-
-Los responsables no pueden:
-- Crear otros responsables o administradores
-- Acceder a la configuración del sistema ni a los registros de auditoría
-- Gestionar orígenes de datos
+Un MANAGER no puede:
+- Crear, cambiar o eliminar usuarios, ni dar acceso a áreas de negocio
+- Cambiar el modelo de datos: áreas de negocio, carpetas, elementos, combinaciones, jerarquías
+- Abrir Seguridad, Registro de auditoría ni Migración
 
 ## Traza de auditoría
 
@@ -321,7 +319,7 @@ Asigne el rol mínimo necesario:
 
 - La mayoría de los usuarios → rol **USER** (no MANAGER ni ADMIN)
 - Creadores de informes → rol **USER**
-- Jefes de equipo → rol **MANAGER** (si gestionan áreas de negocio)
+- Jefes de equipo → rol **MANAGER** (si se ocupan de los mapas del equipo)
 - Solo 1 o 2 → rol **ADMIN**
 
 ### Auditorías periódicas

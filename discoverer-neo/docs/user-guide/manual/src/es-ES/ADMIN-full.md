@@ -686,6 +686,8 @@ Los seis niveles forman una escalera. Cada nivel incluye los anteriores. Si una 
 
 > **Nota:** EXPORT y SCHEDULE no añaden nada por sí solos. Que alguien pueda exportar o programar un mapa depende de cómo se comparte el mapa. Una persona necesita al menos CREATE para guardar un mapa nuevo.
 
+> **Nota:** Un Manager nunca cambia carpetas, elementos, combinaciones, jerarquías ni el área, sea cual sea su concesión. Para un Manager, CREATE, EDIT y DELETE solo le permiten crear mapas.
+
 Ejemplo: dé a un compañero el derecho de crear mapas en el área de negocio **DC**.
 
 1. Haga clic en el icono **Administrar concesiones** del área.
@@ -1013,7 +1015,7 @@ No puede desactivar ni eliminar su propia cuenta. Esos iconos aparecen en gris e
 | Opción (**Rol**) | Qué significa / cuándo elegirla |
 |---|---|
 | ADMIN | Lo hace todo: usuarios, áreas de negocio, orígenes de datos, seguridad y auditoría. Abre, cambia, comparte y elimina todos los mapas. Désela a muy pocas personas. |
-| MANAGER | Abre, ejecuta, exporta, programa y comparte todos los mapas, y cambia quién es propietario de un mapa. Solo cambia sus propios mapas y los mapas compartidos con **Puede editar**. Trabaja en áreas de negocio, carpetas, elementos, combinaciones y jerarquías solo donde tiene una concesión. No puede usar **Seguridad**, **Registro de auditoría** ni **Migración**. |
+| MANAGER | Abre, ejecuta, exporta, programa y comparte todos los mapas, y cambia quién es propietario de un mapa. Solo cambia sus propios mapas y los mapas compartidos con **Puede editar**. No puede cambiar áreas de negocio, carpetas, elementos, combinaciones ni jerarquías, sea cual sea su concesión. No puede usar **Seguridad**, **Registro de auditoría** ni **Migración**. |
 | USER | Ve sus propios mapas, los mapas públicos y los mapas compartidos con él. Ejecuta, exporta y programa según lo que permita cada recurso compartido. Copia mapas y crea mapas nuevos donde tiene una concesión CREATE. El valor predeterminado. |
 | VIEWER | Como USER, pero no puede copiar mapas ni libros. Para una persona que solo debe leer, comparta mapas con **Puede ver** y no le dé ninguna concesión CREATE. |
 

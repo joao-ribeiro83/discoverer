@@ -32,6 +32,15 @@ npm run generate-spec --workspace @discoverer-neo/backend
 the git history. Each one groups a finished phase of the build plan, and ends
 at the commit named in its heading. The code carried `0.1.0` until 1.1.0.
 
+## [Unreleased]
+
+### Changed
+- A MANAGER can no longer change the data model. Every route that writes a
+  business area, folder, item, join or hierarchy refuses a MANAGER with 403,
+  whatever business-area grant they hold, and those five pages are ADMIN-only
+  in the sidebar and router. A MANAGER keeps every map right, custom
+  functions, data-source view and test, and the read-only Users page.
+
 ## [2.0.1] — 2026-09-30
 
 ### Fixed

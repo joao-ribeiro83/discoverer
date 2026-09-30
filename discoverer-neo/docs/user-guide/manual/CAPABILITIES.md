@@ -1,6 +1,6 @@
 # Discoverer Neo — Capability Matrix (ground truth for the four role manuals)
 
-> **Status 2026-09-30:** written from the code at 2.0.0 (806922a). Since then, commits 08af919 and c15da50 fixed these section 4 items: admin-only sidebar links and route guards (MANAGER no longer sees Security, Audit Log, Migration; USER/VIEWER cannot open /admin by URL), server-side log out, the Users delete wording, the wrong-current-password log-out, VIEW-only shares in the Schedules map list, and the missing SQL/Plan buttons for admins. The role manuals follow the fixed behaviour.
+> **Status 2026-09-30:** written from the code at 2.0.0 (806922a). Since then, commits 08af919 and c15da50 fixed these section 4 items: admin-only sidebar links and route guards (MANAGER no longer sees Security, Audit Log, Migration; USER/VIEWER cannot open /admin by URL), server-side log out, the Users delete wording, the wrong-current-password log-out, VIEW-only shares in the Schedules map list, and the missing SQL/Plan buttons for admins. Commit ded6ac8 then took data modelling away from MANAGER: every route that writes a business area, folder, item, join or hierarchy refuses a MANAGER whatever grants they hold (`forbidManagerModelling`, BE/middleware/business-area-auth.ts), and those five pages are ADMIN-only in the sidebar and router. MANAGER cells in sections 1-3 that say otherwise are superseded. The role manuals follow the fixed behaviour.
 
 Version 2.0.0 (CHANGELOG [2.0.0], map access by role). Every claim is cited as `file:line`; `FE/` = `frontend/src/`, `BE/` = `backend/src/`. Built by reading code only; nothing was run. Cells: **Y** yes, **N** no, **UI:Y/API:403** = the button/page is shown but the server refuses. Role columns are ADMIN | MANAGER | USER | VIEWER. **UNVERIFIED** = could not be confirmed in code.
 
@@ -8,18 +8,18 @@ Version 2.0.0 (CHANGELOG [2.0.0], map access by role). Every claim is cited as `
 
 ## 1. Role x page visibility
 
-"Sidebar" = link shown. "URL" = what happens if the role types the address. Data modeling pages (business areas, folders, items, joins, hierarchies) additionally depend on **business-area grants** (levels VIEW < EXPORT < SCHEDULE < CREATE < EDIT < DELETE, BE/services/business-area.service.ts:19-58); only ADMIN bypasses them (BE/middleware/business-area-auth.ts:53), a MANAGER does not.
+"Sidebar" = link shown. "URL" = what happens if the role types the address. Data modeling pages (business areas, folders, items, joins, hierarchies) additionally depend on **business-area grants** (levels VIEW < EXPORT < SCHEDULE < CREATE < EDIT < DELETE, BE/services/business-area.service.ts:19-58); only ADMIN bypasses them (BE/middleware/business-area-auth.ts:53). A MANAGER cannot change the model at all, whatever grants they hold (since ded6ac8).
 
 | Page | Route | i18n title key | English label (sidebar / title) | ADMIN | MANAGER | USER | VIEWER |
 |---|---|---|---|---|---|---|---|
 | Login | /login | auth:login.appName | Discoverer Neo / "Sign in to your account" | public | public | public | public |
 | Change password | /change-password | auth:changePassword.title | Change your password | by URL / forced redirect; no menu link | same | same | same |
 | Dashboard | /dashboard | mapViewer:dashboard.* | Dashboard (sidebar) / "Welcome, {name}" | Sidebar | Sidebar | Sidebar | Sidebar |
-| Business Areas | /admin/business-areas | admin:businessAreas.title | Business Areas | Sidebar, full | Sidebar; only granted areas; New/Delete/Grants refused by API | URL only; empty list unless granted | URL only; same as USER |
-| Folders | /admin/folders | admin:folders.title | Folders | Sidebar, full | Sidebar; needs grants; Discover Tables allowed, Import from data source ADMIN only | URL only | URL only |
-| Items | /admin/items | admin:items.title | Items | Sidebar, full | Sidebar; needs grants | URL only | URL only |
-| Joins | /admin/joins | admin:joins.title | Joins | Sidebar, full | Sidebar; needs grants | URL only | URL only |
-| Hierarchies | /admin/hierarchies | admin:hierarchies.title | Hierarchies | Sidebar, full | Sidebar; needs grants | URL only | URL only |
+| Business Areas | /admin/business-areas | admin:businessAreas.title | Business Areas | Sidebar, full | no link; URL sends to dashboard; writes 403 | URL only; empty list unless granted | URL only; same as USER |
+| Folders | /admin/folders | admin:folders.title | Folders | Sidebar, full | no link; URL sends to dashboard; writes 403 | URL only | URL only |
+| Items | /admin/items | admin:items.title | Items | Sidebar, full | no link; URL sends to dashboard; writes 403 | URL only | URL only |
+| Joins | /admin/joins | admin:joins.title | Joins | Sidebar, full | no link; URL sends to dashboard; writes 403 | URL only | URL only |
+| Hierarchies | /admin/hierarchies | admin:hierarchies.title | Hierarchies | Sidebar, full | no link; URL sends to dashboard; writes 403 | URL only | URL only |
 | Custom Functions | /admin/custom-functions | admin:customFunctions.title | Custom Functions | Sidebar, full | Sidebar, full (read, write, refresh) | URL only; list readable, writes 403 | same as USER |
 | Data Sources | /admin/data-sources | admin:dataSources.title | Data Sources | Sidebar, full | Sidebar; read, test, introspect; create/edit/delete 403 | URL only; list 403 | URL only; list 403 |
 | Users | /admin/users | admin:users.title | Users | Sidebar, full | Sidebar; read-only list, per-user map list, share change, owner change | URL only; list 403 | URL only; list 403 |
@@ -95,11 +95,11 @@ Visibility rule: `canModel = role==='ADMIN' || role==='MANAGER'` (Sidebar.tsx:10
 | Section (`nav:sections.*`) | Link label (`nav:items.*`) | Route | ADMIN | MANAGER | USER | VIEWER | Backend truth for direct URL/API | Citation |
 |---|---|---|---|---|---|---|---|---|
 | Overview (`overview`) | Dashboard (`dashboard`) | `/dashboard` | Y | Y | Y | Y | authenticate only | Sidebar.tsx:29,110 |
-| Data Modeling (`dataModeling`) — whole section shown only if canModel | Business Areas (`businessAreas`) | `/admin/business-areas` | Y | Y | N (hidden) | N (hidden) | UNVERIFIED here (other fragments) | Sidebar.tsx:33,113-118 |
-| Data Modeling | Folders (`folders`) | `/admin/folders` | Y | Y | N | N | UNVERIFIED here | Sidebar.tsx:34 |
-| Data Modeling | Items (`items`) | `/admin/items` | Y | Y | N | N | UNVERIFIED here | Sidebar.tsx:35 |
-| Data Modeling | Joins (`joins`) | `/admin/joins` | Y | Y | N | N | UNVERIFIED here | Sidebar.tsx:36 |
-| Data Modeling | Hierarchies (`hierarchies`) | `/admin/hierarchies` | Y | Y | N | N | UNVERIFIED here | Sidebar.tsx:37 |
+| Data Modeling (`dataModeling`) — whole section shown only if canModel | Business Areas (`businessAreas`) | `/admin/business-areas` | Y | N (since ded6ac8) | N (hidden) | N (hidden) | UNVERIFIED here (other fragments) | Sidebar.tsx:33,113-118 |
+| Data Modeling | Folders (`folders`) | `/admin/folders` | Y | N (since ded6ac8) | N | N | UNVERIFIED here | Sidebar.tsx:34 |
+| Data Modeling | Items (`items`) | `/admin/items` | Y | N (since ded6ac8) | N | N | UNVERIFIED here | Sidebar.tsx:35 |
+| Data Modeling | Joins (`joins`) | `/admin/joins` | Y | N (since ded6ac8) | N | N | UNVERIFIED here | Sidebar.tsx:36 |
+| Data Modeling | Hierarchies (`hierarchies`) | `/admin/hierarchies` | Y | N (since ded6ac8) | N | N | UNVERIFIED here | Sidebar.tsx:37 |
 | Data Modeling | Custom Functions (`customFunctions`) | `/admin/custom-functions` | Y | Y | N | N | UNVERIFIED here | Sidebar.tsx:38 |
 | Data Modeling | Data Sources (`dataSources`) | `/admin/data-sources` | Y | Y | N | N | UNVERIFIED here | Sidebar.tsx:39 |
 | Data Modeling | Users (`users`) | `/admin/users` | Y | Y | N | N | UNVERIFIED here | Sidebar.tsx:40 |

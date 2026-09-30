@@ -1,6 +1,6 @@
 # Su rol en una página
 
-Usted es **Manager**. Ve, ejecuta, exporta, programa y comparte todos los mapas. El modelado de datos se limita a las áreas de negocio en las que un administrador le ha dado una concesión.
+Usted es **Manager**. Ve, ejecuta, exporta, programa y comparte todos los mapas. No cambia el modelo de datos: eso es cosa de los administradores.
 
 | Puede | No puede |
 |---|---|
@@ -10,8 +10,9 @@ Usted es **Manager**. Ve, ejecuta, exporta, programa y comparte todos los mapas.
 | Entregar un mapa a un nuevo propietario | Ver las ejecuciones, exportaciones o programaciones de otras personas |
 | Gestionar funciones personalizadas | Usar Seguridad, Registro de auditoría o Migración |
 | Leer, probar e inspeccionar orígenes de datos | Importar tablas desde un origen de datos |
+| Crear mapas en las áreas de negocio en las que tiene una concesión | Cambiar áreas de negocio, carpetas, elementos, combinaciones o jerarquías |
 
-> **Nota:** **Seguridad**, **Registro de auditoría** y **Migración** son solo para administradores. No aparecen en su barra lateral.
+> **Nota:** **Áreas de negocio**, **Carpetas**, **Elementos**, **Combinaciones**, **Jerarquías**, **Seguridad**, **Registro de auditoría** y **Migración** son solo para administradores. No aparecen en su barra lateral.
 
 Ver un mapa no le da sus datos. Una ejecución necesita una concesión de área de negocio en cada carpeta que use el mapa. Sin ella verá **Sin autorización para ejecutar**.
 
@@ -114,7 +115,7 @@ La programación se ejecuta como usted, así que sus concesiones deciden qué da
 
 **Ejecuciones** muestra sus propias ejecuciones. **Exportaciones** muestra sus propios archivos de exportación. No ve los de otras personas.
 
-![La página Ejecuciones con los filtros Mapa, Estado y Tipo y la lista de ejecuciones.](shots/es-ES/manager/11-runs.png)
+![La página Ejecuciones con los filtros Mapa, Estado y Tipo y la lista de ejecuciones.](shots/es-ES/manager/10-runs.png)
 
 1. Haga clic en **Ejecuciones** para ver las ejecuciones en espera, en curso y terminadas.
 2. Haga clic en el icono **Abrir** para ver un resultado guardado. Use **Ejecutar de nuevo** para repetirlo.
@@ -127,7 +128,7 @@ La programación se ejecuta como usted, así que sus concesiones deciden qué da
 
 La página **Usuarios** es de solo lectura para usted. Puede ver la lista de cuentas y corregir el acceso a los mapas.
 
-![El cuadro Mapas de un usuario, con selectores de nivel de acceso compartido e iconos de propietario y de quitar.](shots/es-ES/manager/12-users-maps-dialog.png)
+![El cuadro Mapas de un usuario, con selectores de nivel de acceso compartido e iconos de propietario y de quitar.](shots/es-ES/manager/11-users-maps-dialog.png)
 
 1. Haga clic en el icono de fila **Mapas que este usuario puede abrir**.
 2. Para cambiar un mapa compartido, use la lista de niveles que hay junto a él.
@@ -140,32 +141,11 @@ Crear, editar y eliminar usuarios es cosa de los administradores.
 
 ---
 
-# Modelado de datos
-
-Las páginas **Áreas de negocio**, **Carpetas**, **Elementos**, **Combinaciones** y **Jerarquías** solo muestran las áreas de negocio en las que tiene una concesión. Su nivel de concesión establece lo que puede hacer.
-
-![La página Carpetas con un área de negocio elegida y sus carpetas.](shots/es-ES/admin/11-folders.png)
-
-| Concesión | Lo que puede hacer |
-|---|---|
-| VIEW, EXPORT, SCHEDULE | Leer carpetas, elementos, combinaciones y jerarquías. |
-| CREATE | Además, agregar carpetas, elementos, combinaciones y jerarquías. |
-| EDIT | Además, cambiarlos y actualizar las carpetas desde la base de datos. |
-| DELETE | Además, eliminarlos. |
-
-1. Elija un **Área de negocio**. Si la lista está vacía, pida una concesión a un administrador.
-2. Para agregar una carpeta: haga clic en **Nueva carpeta**, elija un **Origen de datos**, haga clic en **Descubrir tablas**, escoja una tabla y haga clic en **Guardar**.
-3. Para conectar dos carpetas: en **Combinaciones**, haga clic en **Nueva combinación**, haga clic en **Sugerir combinaciones** y después en **Guardar**.
-
-**Nueva área de negocio**, **Eliminar** en un área de negocio y los cambios de concesiones son cosa de los administradores, aunque la pantalla los muestre. El sistema los rechaza.
-
----
-
 # Funciones personalizadas y Orígenes de datos
 
 Las **Funciones personalizadas** son funciones de la base de datos que pueden llamar los elementos calculados. Tiene todos los derechos sobre ellas. Los **Orígenes de datos** son conexiones guardadas a bases de datos. Solo puede consultarlos y probarlos.
 
-![La página Funciones personalizadas con la lista, Actualizar todo y Nueva función.](shots/es-ES/manager/09-custom-functions.png)
+![La página Funciones personalizadas con la lista, Actualizar todo y Nueva función.](shots/es-ES/manager/08-custom-functions.png)
 
 1. En **Funciones personalizadas**, haga clic en **Nueva función**.
 2. Elija un **Origen de datos**, escriba parte de un nombre en **Buscar una función** y haga clic en **Buscar**.

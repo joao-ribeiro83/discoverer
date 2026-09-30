@@ -69,18 +69,17 @@ Screens of 1280x800 unless noted; Maps list captures are taken at 1500x900 becau
 | viewer/07-runs.png | viewer | Runs page for a Viewer: the Viewer's own runs only. |
 | viewer/08-exports.png | viewer | Exports page for a Viewer (own exports; possibly empty: "No exports yet."). |
 | viewer/09-schedules.png | viewer | Schedules page for a Viewer: empty list "No schedules yet." with the New Schedule button. |
-| manager/01-dashboard-sidebar.png | manager | Dashboard for the Manager role with the full sidebar: Overview, Data Modeling (Business Areas, Folders, Items, Joins, Hierarchies, Custom Functions, Data Sources, Users, Security, Audit Log), Maps, Other (Schedules, Runs, Exports, Migration) and Settings. The Security, Audit Log and Migration links are visible but refuse a Manager. |
+| manager/01-dashboard-sidebar.png | manager | Dashboard for the Manager role with its sidebar: Overview, Data Modeling (Custom Functions, Data Sources, Users only), Maps, Other (Schedules, Runs, Exports) and Settings. No Business Areas, Folders, Items, Joins, Hierarchies, Security, Audit Log or Migration. |
 | manager/02-maps-all.png | manager | Maps list for a Manager, tab "All": every map with the Owner column (blurred where it is another person), Copy, Share, Schedule and Export icons on every row, Edit and Delete only on the Manager's own map. |
 | manager/03-share-dialog.png | manager | Share map dialog opened by a Manager on a map they do not own: search box, hint line and the user list with Can view / Can export / Can edit buttons (names other than the test accounts blurred). |
 | manager/04-workbook-share-dialog.png | manager | Share workbook dialog for a Manager: description "Give someone every worksheet in this workbook", user list and the "n of m worksheets" detail per person. |
 | manager/05-workbooks-icons.png | manager | Top of the Maps page for a Manager: Workbooks card with Share workbook, Copy workbook and Delete workbook icons on each workbook row. |
 | manager/06-users.png | manager | Users page for a Manager: read-only list (no "Credentials file" or "New User" buttons); the only row icon is "Maps this user can open". Real users blurred. |
-| manager/07-business-areas.png | manager | Business Areas page for a Manager: only the areas the Manager was granted (DC, DFR, DSR, DGR, DIT). |
-| manager/08-data-sources.png | manager | Data Sources page for a Manager: the list and the read-only row icons; creating, editing and deleting are refused by the server. |
-| manager/09-custom-functions.png | manager | Custom Functions page for a Manager: full page with the list, Refresh all and New Function. |
-| manager/10-schedules.png | manager | Schedules page for a Manager: own schedules only. |
-| manager/11-runs.png | manager | Runs page for a Manager: own runs only, without the "Show every user's runs" checkbox. |
-| manager/12-users-maps-dialog.png | manager | Maps for a user dialog (Manager): the list of maps that user can open with badges, share-level select and owner/remove icons (user name blurred). |
+| manager/07-data-sources.png | manager | Data Sources page for a Manager: the list and the read-only row icons; creating, editing and deleting are refused by the server. |
+| manager/08-custom-functions.png | manager | Custom Functions page for a Manager: full page with the list, Refresh all and New Function. |
+| manager/09-schedules.png | manager | Schedules page for a Manager: own schedules only. |
+| manager/10-runs.png | manager | Runs page for a Manager: own runs only, without the "Show every user's runs" checkbox. |
+| manager/11-users-maps-dialog.png | manager | Maps for a user dialog (Manager): the list of maps that user can open with badges, share-level select and owner/remove icons (user name blurred). |
 | admin/01-dashboard-sidebar.png | admin | Dashboard for the Administrator with the full sidebar: Overview, Data Modeling (Business Areas, Folders, Items, Joins, Hierarchies, Custom Functions, Data Sources, Users, Security, Audit Log), Maps, Other (Schedules, Runs, Exports, Migration) and Settings; KPI cards and Recent Maps. |
 | admin/02-maps-all.png | admin | Maps list for an Administrator, tab "All": every map, with Edit, Copy, Share, Schedule, Export and Delete icons on every row and the Workbooks card (Share, Copy, Delete workbook icons) above. |
 | admin/03-viewer-results.png | admin | Map viewer for an Administrator after a run: identical to a User's except the results header also shows the SQL and Plan buttons next to Excel / CSV / PDF. |

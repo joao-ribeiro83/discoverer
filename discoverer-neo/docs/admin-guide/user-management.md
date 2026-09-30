@@ -9,7 +9,7 @@ Discoverer Neo has four user roles with different capabilities:
 | Role | Capabilities |
 |------|-------------|
 | **ADMIN** | Full system access — users, business areas, data sources, audit logs. Opens, changes, shares and deletes every map. |
-| **MANAGER** | Models the data (business areas, folders, items, joins). Opens, runs, exports, schedules and shares **every** map, and can change a map's owner. Changes only their own maps. |
+| **MANAGER** | Opens, runs, exports, schedules and shares **every** map, and can change a map's owner. Changes only their own maps. Manages custom functions; views and tests data sources. Cannot change the data model (business areas, folders, items, joins, hierarchies), even with a grant. |
 | **USER** | Sees only their own maps and the maps shared with them. Builds a new map by copying one of those. |
 | **VIEWER** | Read-only. Opens and runs the maps shared with them. Cannot create, copy or change maps. |
 
@@ -289,18 +289,16 @@ To prevent login:
 
 ## Delegation
 
-Managers can delegate user creation and permission management:
+Give the **MANAGER** role to someone who looks after other people's maps.
+A MANAGER can:
+- See, run, export, schedule and share every map
+- Give a map to a new owner, change or remove its shares (Users → map icon)
+- Manage custom functions, and view and test data sources
 
-1. Promote users to **MANAGER** role
-2. Managers can then:
-   - Create users
-   - Grant permissions in their business areas
-   - Manage other users' access
-
-Managers cannot:
-- Create other managers or admins
-- Access system settings or audit logs
-- Manage data sources
+A MANAGER cannot:
+- Create, change or delete users, or grant business-area access
+- Change the data model: business areas, folders, items, joins, hierarchies
+- Open Security, Audit Log or Migration
 
 ## Audit Trail
 
@@ -330,7 +328,7 @@ Assign the minimum necessary role:
 
 - Most users → **USER** role (not MANAGER or ADMIN)
 - Report builders → **USER** role
-- Team leads → **MANAGER** role (if managing business areas)
+- Team leads → **MANAGER** role (if looking after the team's maps)
 - Only 1–2 → **ADMIN** role
 
 ### Regular Audits

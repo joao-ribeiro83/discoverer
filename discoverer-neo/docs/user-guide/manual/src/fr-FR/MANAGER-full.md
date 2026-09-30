@@ -1,6 +1,6 @@
 # Votre rôle en un coup d'œil
 
-Vous êtes **Manager**. Vous voyez toutes les cartes de Discoverer Neo, vous les exécutez, les exportez, les planifiez et les partagez. Vous veillez à qui peut ouvrir quoi. Vous aidez aussi à modéliser les données, mais seulement dans les domaines d'activité auxquels vous avez accès.
+Vous êtes **Manager**. Vous voyez toutes les cartes de Discoverer Neo, vous les exécutez, les exportez, les planifiez et les partagez. Vous veillez à qui peut ouvrir quoi. Vous ne modifiez pas le modèle de données. C'est le travail d'un administrateur.
 
 Une **carte** est un rapport (dans Oracle Discoverer, c'était une feuille de calcul). Un **classeur** est un groupe de cartes. Un **domaine d'activité** est un groupe de données liées. Un **dossier** est une table ou une vue d'un domaine d'activité, et un **élément** est une colonne d'un dossier.
 
@@ -16,9 +16,9 @@ Une **carte** est un rapport (dans Oracle Discoverer, c'était une feuille de ca
 | Ouvrir la page Utilisateurs et voir quelles cartes chaque personne peut ouvrir | Créer, modifier ou supprimer des sources de données, ni en importer des tables |
 | Créer, modifier et supprimer des fonctions personnalisées | Voir les exécutions, exportations ou planifications des autres |
 | Tester et lire les sources de données | Utiliser Sécurité, Journal d'audit ou Migration (administrateurs uniquement) |
-| Modéliser les données dans les domaines d'activité où vous avez un accès, jusqu'au niveau de cet accès | Modéliser les données dans un domaine d'activité où vous n'avez aucun accès |
+| Créer des cartes sur les domaines d'activité où vous avez un accès | Modifier les domaines d'activité, dossiers, éléments, jointures ou hiérarchies, quel que soit votre accès |
 
-> **Remarque :** **Sécurité**, **Journal d'audit** et **Migration** sont réservés aux administrateurs. Ils ne figurent pas dans votre barre latérale.
+> **Remarque :** **Domaines d'activité**, **Dossiers**, **Éléments**, **Jointures**, **Hiérarchies**, **Sécurité**, **Journal d'audit** et **Migration** sont réservés aux administrateurs. Ils ne figurent pas dans votre barre latérale.
 
 ## D'où viennent vos accès
 
@@ -30,12 +30,12 @@ Trois éléments décident de ce que vous pouvez faire.
 
 | Niveau d'accès | Ce qu'il vous permet de faire dans ce domaine d'activité |
 |---|---|
-| VIEW | Lire ses données. Voir ses dossiers, éléments, jointures et hiérarchies. |
+| VIEW | Lire ses données. Utiliser ses dossiers et éléments dans le créateur de cartes. |
 | EXPORT | Identique à VIEW. Les droits d'exportation et de planification d'une carte dépendent de la façon dont la carte est partagée. |
 | SCHEDULE | Identique à VIEW. Les droits d'exportation et de planification d'une carte dépendent de la façon dont la carte est partagée. |
-| CREATE | Tout ce qui est dans VIEW, plus la création de nouvelles cartes, de nouveaux dossiers, éléments, jointures et hiérarchies. |
-| EDIT | Tout ce qui est dans CREATE, plus la modification du domaine et de ses dossiers, éléments, jointures et hiérarchies. |
-| DELETE | Tout ce qui est dans EDIT, plus la suppression des dossiers, éléments, jointures et hiérarchies. |
+| CREATE | Tout ce qui est dans VIEW, plus la création de nouvelles cartes. |
+| EDIT | Identique à CREATE pour vous. Les droits supplémentaires sur le modèle de ce niveau sont réservés aux administrateurs. |
+| DELETE | Identique à CREATE pour vous. Les droits supplémentaires sur le modèle de ce niveau sont réservés aux administrateurs. |
 
 Contrairement à un administrateur, vous n'avez aucun contournement. Deux règles en découlent.
 
@@ -67,7 +67,7 @@ Pour vous déconnecter, cliquez sur votre nom en haut à droite et choisissez **
 
 Le **Tableau de bord** est la première page que vous voyez. Il ne donne que des chiffres. Rien n'y modifie les données.
 
-![Le tableau de bord du Manager avec la barre latérale complète et les cartes de synthèse.](shots/fr-FR/manager/01-dashboard-sidebar.png)
+![Le tableau de bord du Manager avec la barre latérale et les cartes de synthèse.](shots/fr-FR/manager/01-dashboard-sidebar.png)
 
 | Carte | Ce qu'elle montre pour vous |
 |---|---|
@@ -81,211 +81,11 @@ Le lien **Voir les planifications** sur deux cartes ouvre la page **Planificatio
 
 ---
 
-# Domaines d'activité
-
-Utilisez cette page pour voir les domaines d'activité sur lesquels vous avez un accès, et pour lire qui d'autre y a un accès.
-
-![La page Domaines d'activité listant uniquement les domaines accordés au Manager.](shots/fr-FR/manager/07-business-areas.png)
-
-La liste n'affiche que les domaines où vous avez un accès. Si vous n'en avez aucun, la liste est vide et chaque page de modélisation (Domaines d'activité, Dossiers, Éléments, Jointures, Hiérarchies) n'a rien sur quoi travailler. Demandez à un administrateur.
-
-| Bouton ou contrôle | Ce qu'il fait |
-|---|---|
-| Icône de ligne **Gérer les accès** | Ouvre la liste des accès de ce domaine. Vous pouvez la lire. |
-| Icône de ligne **Modifier** | Change le nom et la description. Ne fonctionne qu'avec un accès EDIT ou supérieur sur ce domaine. |
-| **Nouveau domaine d'activité** | Réservé aux administrateurs. |
-| Icône de ligne **Supprimer** | Réservé aux administrateurs. |
-| **Ajouter** et **Révoquer** dans la liste des accès | Réservés aux administrateurs. |
-
-> **Remarque :** l'écran affiche **Nouveau domaine d'activité**, **Supprimer**, **Ajouter** et **Révoquer**. Le système les refuse pour vous et affiche une erreur. Seuls les administrateurs créent ou suppriment des domaines d'activité et donnent ou retirent des accès.
-
-Chaque accès de la liste indique une personne et un niveau. Pointez le niveau pour lire ce qu'il permet.
-
-## Exemple : vérifier qui peut créer des cartes dans un domaine
-
-1. Cliquez sur **Domaines d'activité** dans la barre latérale.
-2. Cliquez sur l'icône de ligne **Gérer les accès** du domaine.
-3. Repérez les personnes avec CREATE, EDIT ou DELETE. Elles peuvent créer des cartes dans ce domaine.
-4. Cliquez sur **Fermer**.
-
----
-
-# Dossiers
-
-Un dossier est une table, une vue ou une requête d'un domaine d'activité. Utilisez cette page pour les lister et, là où votre accès le permet, pour les ajouter, les modifier ou les actualiser.
-
-![La page Dossiers avec un domaine d'activité choisi et ses dossiers listés.](shots/fr-FR/admin/11-folders.png)
-
-Choisissez d'abord un **Domaine d'activité**. Les boutons restent désactivés tant que vous ne l'avez pas fait.
-
-| Bouton ou contrôle | Ce qu'il fait | Accès requis |
-|---|---|---|
-| **Domaine d'activité** | Choisit le domaine dont vous voyez les dossiers. | Tout |
-| **Tout actualiser** | Relit chaque table et chaque vue du domaine depuis sa base de données. Les nouvelles colonnes deviennent des éléments. Les colonnes manquantes sont seulement listées. | EDIT |
-| **Nouveau dossier** | Ouvre l'assistant de dossier. | CREATE |
-| Icône de ligne **Actualiser depuis la source de données** | Idem, pour un seul dossier. Affichée uniquement pour les dossiers de type table et vue qui ne sont pas partagés depuis un autre domaine. | EDIT |
-| Icône de ligne **Gérer les domaines d'activité** | Ouvre la boîte de dialogue de partage. Vous pouvez la consulter. Les changements exigent EDIT. | Tout pour consulter |
-| Icône de ligne **Modifier** | Ouvre l'assistant pour modifier le dossier. | EDIT |
-| Icône de ligne **Supprimer** | Désactive le dossier après confirmation. | DELETE |
-| **Fermer** sous **Résultat de l’actualisation** | Masque la liste des résultats d'une actualisation. | Aucun |
-
-Un dossier affiche un badge **Partagé** quand il appartient à un autre domaine d'activité et a été partagé dans celui-ci. Actualisez-le depuis le domaine qui le possède.
-
-L'actualisation ne supprime jamais d'éléments. Les colonnes disparues de la base de données sont seulement listées, afin que vous puissiez les supprimer vous-même si aucune carte ne les utilise.
-
-## L'assistant de dossier
-
-| Champ | Signification |
-|---|---|
-| **Nom** | Le nom du dossier. Rempli pour vous quand vous choisissez une table. |
-| **Description** | Texte libre. Rempli à partir du commentaire de la base de données quand vous choisissez une table. |
-| **Type de dossier** | Voir le tableau ci-dessous. |
-| **SQL personnalisé** | Affiché pour les dossiers DERIVED et COMPLEX. La requête qui définit le dossier. Un dossier COMPLEX en a besoin. |
-| **Source de données** | La connexion à la base de données. Non affichée pour DERIVED et COMPLEX. |
-| **Découvrir les tables** | Lit les tables de la source de données choisie pour que vous puissiez en choisir une. Vous pouvez l'utiliser. |
-| **Nom de la table** et **Propriétaire de la table** | La table vers laquelle pointe le dossier. Remplis quand vous choisissez dans la liste. |
-| **Éléments à créer** | Les colonnes de la table choisie. Chaque colonne cochée devient un élément. Utilisez **Tout sélectionner** ou **Effacer**. Modifiez les descriptions avant d'enregistrer. |
-
-| Option (**Type de dossier**) | Signification / quand la choisir |
-|---|---|
-| TABLE | Une table de base de données. Le choix habituel. |
-| VIEW | Une vue de base de données. |
-| DERIVED | Un dossier défini par votre propre requête. |
-| COMPLEX | Un dossier défini par une requête plus longue. Le SQL personnalisé est obligatoire. |
-| JOIN | Un dossier construit à partir d'une jointure. |
-| SUMMARY | Un dossier de synthèse. |
-
-## Exemple : ajouter un dossier à partir d'une table
-
-1. Cliquez sur **Dossiers**, puis choisissez le **Domaine d'activité**. Vous avez besoin d'un accès CREATE dessus.
-2. Cliquez sur **Nouveau dossier**.
-3. Choisissez une **Source de données**, puis cliquez sur **Découvrir les tables**.
-4. Saisissez dans **Filtrer par nom ou commentaire…** pour réduire la liste, puis cliquez sur la table.
-5. Décochez les colonnes que vous ne voulez pas. Ajustez les descriptions.
-6. Cliquez sur **Enregistrer**. Le dossier est créé d'abord, puis ses éléments.
-
-> **Attention :** si **Enregistrer** affiche « Échec de l'enregistrement », il vous manque très probablement l'accès CREATE sur ce domaine.
-
----
-
-# Éléments
-
-Un élément est une colonne d'un dossier. Utilisez cette page pour lister les éléments et modifier leur comportement.
-
-![La page Éléments pour un dossier choisi, listant ses éléments.](shots/fr-FR/admin/17-items.png)
-
-Choisissez un **Domaine d'activité**, puis un **Dossier**. La liste des dossiers reste vide tant que vous n'avez pas choisi un domaine.
-
-| Bouton ou contrôle | Ce qu'il fait | Accès requis |
-|---|---|---|
-| **Nouvel élément** | Ouvre la boîte de dialogue d'élément. | CREATE |
-| Icône de ligne **Modifier** | Modifie l'élément. Vous ne pouvez pas le déplacer vers un autre dossier. | EDIT |
-| Icône de ligne **Supprimer** | Désactive l'élément après confirmation. | DELETE |
-
-| Champ | Signification |
-|---|---|
-| **Nom** | Le nom de l'élément que les gens voient dans le créateur de cartes. |
-| **Description** | Texte d'aide facultatif. |
-| **Type d'élément** | Le genre d'élément. Voir ci-dessous. |
-| **Nom de la colonne** | Pour un élément de base de données : la colonne de la base. |
-| **Formule** | Pour tous les types sauf un élément de base de données : le calcul. Une formule erronée est refusée. |
-| **Type de données** | Texte libre, par exemple NUMBER. |
-| **Masque de format** | La façon dont la valeur est affichée, par exemple 999,999.00. |
-| **Agrégation** | Le total par défaut de l'élément. |
-
-| Option (**Type d'élément**) | Signification |
-|---|---|
-| Élément de base de données (CO) | Une colonne lue directement dans la table. |
-| Élément créé (CI) | Un élément que vous calculez avec une formule. |
-| Élément calculé (CU) | Un élément calculé. |
-| Élément de jointure (JI) | Un élément qui provient d'une jointure. |
-| Élément de hiérarchie (HI) | Un élément utilisé dans une hiérarchie. |
-| Agrégation (AG) | Un élément qui est un total. |
-| Fonction (FU) | Un élément qui appelle une fonction. |
-
-| Option (**Agrégation**) | Signification |
-|---|---|
-| NONE | Pas de total par défaut. C'est une dimension. |
-| SUM | Additionne les valeurs. |
-| COUNT | Compte les lignes. |
-| AVG | Fait la moyenne des valeurs. |
-| MIN | Plus petite valeur. |
-| MAX | Plus grande valeur. |
-
----
-
-# Jointures
-
-Une jointure indique à Discoverer Neo comment deux dossiers sont reliés. Sans elle, les cartes qui utilisent les deux dossiers sont refusées.
-
-![La boîte de dialogue Nouvelle jointure avec deux listes de dossiers et une paire de colonnes.](shots/fr-FR/admin/21-joins-new-dialog.png)
-
-| Bouton ou contrôle | Ce qu'il fait | Accès requis |
-|---|---|---|
-| **Domaine d'activité** | Choisit le domaine. | Tout |
-| **Nouvelle jointure** | Ouvre la boîte de dialogue de jointure. | CREATE |
-| Icône de ligne **Modifier** | Modifie la jointure. | EDIT |
-| Icône de ligne **Supprimer** | Désactive la jointure après confirmation. | DELETE |
-| **Suggérer des jointures** | Propose des colonnes correspondantes pour le dossier de gauche. Cliquez sur une suggestion pour l'utiliser. | VIEW |
-| **Ajouter une paire de colonnes** | Ajoute une paire d'éléments supplémentaire. Toutes les paires doivent correspondre ensemble. | CREATE ou EDIT |
-| X à côté d'une paire | Retire cette paire. Une paire doit rester. | CREATE ou EDIT |
-
-| Champ | Signification |
-|---|---|
-| **Nom** | Le nom de la jointure. Rempli à partir d'une suggestion s'il est laissé vide. |
-| **Dossier de gauche** et **Dossier de droite** | Les deux dossiers à relier. Tous deux appartiennent au domaine choisi. |
-| **Élément de gauche**, **Opérateur**, **Élément de droite** | Une paire : quelles colonnes sont comparées et comment. |
-| **Type de jointure** | Voir ci-dessous. |
-
-| Option (**Opérateur**) | Signification |
-|---|---|
-| = | Égal. Presque toujours le bon choix. |
-| <> | Différent. |
-| < et <= | Inférieur, inférieur ou égal. |
-| > et >= | Supérieur, supérieur ou égal. |
-
-| Option (**Type de jointure**) | Signification / quand la choisir |
-|---|---|
-| INNER | Uniquement les lignes qui correspondent des deux côtés. |
-| LEFT | Toutes les lignes du dossier de gauche, même sans correspondance. |
-| RIGHT | Toutes les lignes du dossier de droite, même sans correspondance. |
-
-## Exemple : relier deux dossiers
-
-1. Cliquez sur **Jointures** et choisissez le **Domaine d'activité**. Vous avez besoin d'un accès CREATE.
-2. Cliquez sur **Nouvelle jointure**.
-3. Choisissez le **Dossier de gauche** et le **Dossier de droite**.
-4. Cliquez sur **Suggérer des jointures**, puis cliquez sur la meilleure suggestion. Ou choisissez vous-même l'**Élément de gauche**, l'**Opérateur** et l'**Élément de droite**.
-5. Laissez **Type de jointure** sur INNER, sauf si vous avez besoin des lignes sans correspondance.
-6. Cliquez sur **Enregistrer**.
-
----
-
-# Hiérarchies
-
-Une hiérarchie est une liste ordonnée d'éléments pour l'exploration par niveaux, par exemple Année, Trimestre, Mois.
-
-![Une boîte de dialogue de hiérarchie avec une ligne de niveau affichant le nom et les listes Dossier et Élément.](shots/fr-FR/admin/26-hierarchies-level-added.png)
-
-| Bouton ou contrôle | Ce qu'il fait | Accès requis |
-|---|---|---|
-| **Domaine d'activité** | Choisit le domaine. | Tout |
-| **Nouvelle hiérarchie** | Ouvre une boîte de dialogue vide. | CREATE |
-| Icône de ligne **Modifier** | Ouvre la hiérarchie. Vous pouvez l'ouvrir avec VIEW, mais l'enregistrement exige EDIT. | EDIT pour enregistrer |
-| Icône de ligne **Supprimer** | Désactive la hiérarchie après confirmation. | DELETE |
-| **Ajouter un niveau** | Ajoute un niveau en bas. | CREATE ou EDIT |
-| Poignée de déplacement | Faites glisser un niveau vers le haut ou le bas. L'ordre est l'ordre d'exploration. | CREATE ou EDIT |
-| X sur un niveau | Retire le niveau. | CREATE ou EDIT |
-
-Chaque niveau exige un **Nom du niveau**, un **Dossier** et un **Élément**. **Enregistrer** reste désactivé tant que le nom, au moins un niveau et chaque niveau ne sont pas complets. Choisissez des éléments de dossiers que le domaine d'activité possède. Un dossier partagé depuis un autre domaine est listé, mais l'enregistrement échoue.
-
----
-
 # Fonctions personnalisées
 
 Une fonction personnalisée est une fonction stockée dans la base de données Oracle que les éléments calculés peuvent appeler. Vous avez tous les droits ici. Aucun accès à un domaine d'activité n'est nécessaire.
 
-![La page Fonctions personnalisées avec la liste, Tout actualiser et Nouvelle fonction.](shots/fr-FR/manager/09-custom-functions.png)
+![La page Fonctions personnalisées avec la liste, Tout actualiser et Nouvelle fonction.](shots/fr-FR/manager/08-custom-functions.png)
 
 | Bouton ou contrôle | Ce qu'il fait |
 |---|---|
@@ -327,7 +127,7 @@ Une fonction personnalisée est une fonction stockée dans la base de données O
 
 Une source de données est une connexion enregistrée à une base de données. Vous pouvez les consulter et les tester. Vous ne pouvez pas les modifier.
 
-![La page Sources de données avec la liste des connexions et les icônes de ligne.](shots/fr-FR/manager/08-data-sources.png)
+![La page Sources de données avec la liste des connexions et les icônes de ligne.](shots/fr-FR/manager/07-data-sources.png)
 
 | Bouton ou contrôle | Ce qu'il fait |
 |---|---|
@@ -354,7 +154,7 @@ La liste affiche **Nom**, **E-mail**, **Rôle** et **Statut** (**Actif** ou **In
 
 Cliquez sur l'icône de ligne **Cartes que cet utilisateur peut ouvrir**. La boîte de dialogue **Cartes de {name}** liste chaque carte que cette personne voit.
 
-![La boîte de dialogue Cartes d'un utilisateur, avec les listes de niveau de partage et les icônes de propriétaire et de retrait.](shots/fr-FR/manager/12-users-maps-dialog.png)
+![La boîte de dialogue Cartes d'un utilisateur, avec les listes de niveau de partage et les icônes de propriétaire et de retrait.](shots/fr-FR/manager/11-users-maps-dialog.png)
 
 | Bouton ou contrôle | Ce qu'il fait |
 |---|---|
@@ -695,7 +495,7 @@ La colonne **Statut** affiche **Actif** ou **En pause**. La colonne **Planificat
 
 **Exécutions** liste chaque exécution que vous avez demandée, qu'elle soit en attente, en cours ou terminée. Elle n'affiche que vos propres exécutions, pas celles des autres.
 
-![La page Exécutions avec les filtres Carte, Statut et Type et la liste des exécutions.](shots/fr-FR/manager/11-runs.png)
+![La page Exécutions avec les filtres Carte, Statut et Type et la liste des exécutions.](shots/fr-FR/manager/10-runs.png)
 
 | Bouton ou contrôle | Ce qu'il fait |
 |---|---|
@@ -750,11 +550,11 @@ Vous voyez toutes les cartes en tant que Manager. Ses données exigent un accès
 **Pourquoi n'y a-t-il pas d'icône Crayon sur une carte ?**
 Vous ne pouvez modifier que vos propres cartes et les cartes partagées avec vous en **Peut modifier**. Cliquez sur l'icône Copier, puis modifiez votre copie. Ou demandez au propriétaire de la partager avec vous en **Peut modifier**.
 
-**Les listes Domaines d'activité, Dossiers, Éléments, Jointures et Hiérarchies sont vides.**
-Ces pages n'affichent que les domaines d'activité où vous avez un accès. Demandez-en un à un administrateur. CREATE vous permet d'ajouter, EDIT de modifier, DELETE de supprimer.
+**Où sont Domaines d'activité, Dossiers, Éléments, Jointures et Hiérarchies ?**
+Modifier le modèle de données est réservé aux administrateurs, donc ces pages ne figurent pas dans votre barre latérale. Si un dossier ou un élément est faux ou manquant, demandez à un administrateur.
 
 **J'ai cliqué sur quelque chose et j'ai obtenu « Forbidden » ou « Échec de l'enregistrement ».**
-L'écran le proposait, mais votre rôle ou votre accès ne le permet pas. Les cas les plus courants sont **Nouveau domaine d'activité**, **Nouvelle source de données**, **Importer** et l'enregistrement d'une carte qui ne vous appartient pas.
+L'écran le proposait, mais votre rôle ou votre accès ne le permet pas. Le cas le plus courant est l'enregistrement d'une carte qui ne vous appartient pas.
 
 **Je ne vois pas les exécutions, exportations ou planifications d'une autre personne.**
 Les exécutions, exportations et planifications appartiennent à la personne qui les a créées. Personne d'autre qu'elle ne les voit dans la liste, et il en va de même pour vous.

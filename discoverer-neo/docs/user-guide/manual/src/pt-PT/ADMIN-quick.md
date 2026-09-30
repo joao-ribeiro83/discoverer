@@ -100,6 +100,8 @@ Uma área de negócio agrupa pastas. Uma **permissão** dá a uma pessoa acesso 
 | EDIT | Também alterar a área e os respetivos objetos. |
 | DELETE | Também eliminar esses objetos. |
 
+Um Manager nunca altera o modelo. Para um Manager, CREATE e acima só lhe permitem criar mapas.
+
 ---
 
 # Pastas, Itens, Junções, Hierarquias
@@ -156,7 +158,7 @@ Adicione pessoas, defina funções, desligue contas, entregue mapas a outras pes
 | Escolha | Significado |
 |---|---|
 | ADMIN | Tudo. |
-| MANAGER | Vê, executa, exporta, agenda e partilha todos os mapas. Só modela dados onde tem permissão. |
+| MANAGER | Vê, executa, exporta, agenda e partilha todos os mapas. Nunca altera o modelo de dados. |
 | USER | Mapas próprios, públicos e partilhados. |
 | VIEWER | Como USER, mas não pode copiar mapas. |
 | **Desativar** | Mantém a conta. Reversível. |

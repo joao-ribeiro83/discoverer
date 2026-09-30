@@ -686,6 +686,8 @@ Os seis níveis são uma escada. Cada nível inclui os anteriores. Se uma pessoa
 
 > **Nota:** EXPORT e SCHEDULE não acrescentam nada por si. Se alguém pode exportar ou agendar um mapa depende da forma como o mapa é partilhado. Uma pessoa precisa de pelo menos CREATE para guardar um mapa novo.
 
+> **Nota:** Um Manager nunca altera pastas, itens, junções, hierarquias nem a área, qualquer que seja a permissão que tenha. Para um Manager, CREATE, EDIT e DELETE só lhe permitem criar mapas.
+
 Exemplo: dar a um colega o direito de construir mapas na área de negócio **DC**.
 
 1. Clique no ícone **Gerir concessões** na área.
@@ -1013,7 +1015,7 @@ Não pode desativar nem eliminar a sua própria conta. Esses ícones aparecem a 
 | Opção (**Função**) | O que significa / quando escolher |
 |---|---|
 | ADMIN | Faz tudo: utilizadores, áreas de negócio, origens de dados, segurança e auditoria. Abre, altera, partilha e elimina todos os mapas. Dê-a a muito poucas pessoas. |
-| MANAGER | Abre, executa, exporta, agenda e partilha todos os mapas, e altera quem é o proprietário de um mapa. Só altera os seus próprios mapas e os mapas partilhados como **Pode editar**. Trabalha em áreas de negócio, pastas, itens, junções e hierarquias apenas onde tem uma permissão. Não pode usar **Segurança**, **Registo de Auditoria** nem **Migração**. |
+| MANAGER | Abre, executa, exporta, agenda e partilha todos os mapas, e altera quem é o proprietário de um mapa. Só altera os seus próprios mapas e os mapas partilhados como **Pode editar**. Não pode alterar áreas de negócio, pastas, itens, junções nem hierarquias, qualquer que seja a permissão que tenha. Não pode usar **Segurança**, **Registo de Auditoria** nem **Migração**. |
 | USER | Vê os seus próprios mapas, os mapas públicos e os mapas partilhados consigo. Executa, exporta e agenda conforme cada partilha o permite. Copia mapas e cria mapas novos onde tem uma permissão CREATE. A predefinida. |
 | VIEWER | Como USER, mas não pode copiar mapas nem livros. Para uma pessoa que só deve ler, partilhe mapas como **Pode ver** e não dê nenhuma permissão CREATE. |
 

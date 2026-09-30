@@ -527,7 +527,7 @@ steps.manager = async (c) => {
   const email = creds.users.MANAGER
   await c.goto('/dashboard')
   await page.setViewportSize({ width: 1280, height: 1150 })
-  await c.shot('dashboard-sidebar', 'Dashboard for the Manager role with the full sidebar: Overview, Data Modeling (Business Areas, Folders, Items, Joins, Hierarchies, Custom Functions, Data Sources, Users, Security, Audit Log), Maps, Other (Schedules, Runs, Exports, Migration) and Settings. The Security, Audit Log and Migration links are visible but refuse a Manager.')
+  await c.shot('dashboard-sidebar', 'Dashboard for the Manager role with its sidebar: Overview, Data Modeling (Custom Functions, Data Sources, Users only), Maps, Other (Schedules, Runs, Exports) and Settings. No Business Areas, Folders, Items, Joins, Hierarchies, Security, Audit Log or Migration.')
   await page.setViewportSize({ width: 1280, height: 800 })
   await ensureCopy(c, email)
   await c.goto('/maps')
@@ -554,7 +554,6 @@ steps.manager = async (c) => {
   await page.setViewportSize({ width: 1280, height: 800 })
   for (const [p, slug, d] of [
     ['/admin/users', 'users', 'Users page for a Manager: read-only list (no "Credentials file" or "New User" buttons); the only row icon is "Maps this user can open". Real users blurred.'],
-    ['/admin/business-areas', 'business-areas', 'Business Areas page for a Manager: only the areas the Manager was granted (DC, DFR, DSR, DGR, DIT).'],
     ['/admin/data-sources', 'data-sources', 'Data Sources page for a Manager: the list and the read-only row icons; creating, editing and deleting are refused by the server.'],
     ['/admin/custom-functions', 'custom-functions', 'Custom Functions page for a Manager: full page with the list, Refresh all and New Function.'],
     ['/schedules', 'schedules', 'Schedules page for a Manager: own schedules only.'],

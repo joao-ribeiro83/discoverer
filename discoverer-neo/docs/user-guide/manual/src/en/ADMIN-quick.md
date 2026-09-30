@@ -100,6 +100,8 @@ A business area groups folders. A **grant** gives a person access to its data. A
 | EDIT | Also change the area and its objects. |
 | DELETE | Also delete those objects. |
 
+A Manager never changes the model. For a Manager, CREATE and above only let them create maps.
+
 ---
 
 # Folders, Items, Joins, Hierarchies
@@ -156,7 +158,7 @@ Add people, set roles, switch accounts off, hand maps to others.
 | Choice | Meaning |
 |---|---|
 | ADMIN | Everything. |
-| MANAGER | Sees, runs, exports, schedules and shares every map. Models data only where granted. |
+| MANAGER | Sees, runs, exports, schedules and shares every map. Never changes the data model. |
 | USER | Own, public and shared maps. |
 | VIEWER | Like USER, but cannot copy maps. |
 | **Deactivate** | Keeps the account. Reversible. |

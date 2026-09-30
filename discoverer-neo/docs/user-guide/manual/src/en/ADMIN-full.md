@@ -686,6 +686,8 @@ The six levels are a ladder. Each level includes the ones before it. If a person
 
 > **Note:** EXPORT and SCHEDULE add nothing on their own. Whether someone can export or schedule a map depends on how the map is shared. A person needs at least CREATE to save a new map.
 
+> **Note:** A Manager never changes folders, items, joins, hierarchies or the area, whatever grant they hold. For a Manager, CREATE, EDIT and DELETE only let them create maps.
+
 Example: give a colleague the right to build maps in the business area **DC**.
 
 1. Click the **Manage grants** icon on the area.
@@ -1013,7 +1015,7 @@ You cannot deactivate or delete your own account. Those icons are greyed out on 
 | Option (**Role**) | What it means / when to pick it |
 |---|---|
 | ADMIN | Does everything: users, business areas, data sources, security and audit. Opens, changes, shares and deletes every map. Give it to very few people. |
-| MANAGER | Opens, runs, exports, schedules and shares every map, and changes who owns a map. Changes only their own maps and maps shared with **Can edit**. Works on business areas, folders, items, joins and hierarchies only where they hold a grant. Cannot use **Security**, **Audit Log** or **Migration**. |
+| MANAGER | Opens, runs, exports, schedules and shares every map, and changes who owns a map. Changes only their own maps and maps shared with **Can edit**. Cannot change business areas, folders, items, joins or hierarchies, whatever grant they hold. Cannot use **Security**, **Audit Log** or **Migration**. |
 | USER | Sees their own maps, public maps and maps shared with them. Runs, exports and schedules as each share allows. Copies maps, and creates new maps where they hold a CREATE grant. The default. |
 | VIEWER | Like USER, but cannot copy maps or workbooks. For a person who must only read, share maps with **Can view** and give no CREATE grant. |
 

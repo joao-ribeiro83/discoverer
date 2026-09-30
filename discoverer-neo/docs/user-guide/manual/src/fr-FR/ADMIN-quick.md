@@ -100,6 +100,8 @@ Un domaine d'activité regroupe des dossiers. Un **accès** donne à une personn
 | EDIT | Modifier aussi le domaine et ses objets. |
 | DELETE | Supprimer aussi ces objets. |
 
+Un Manager ne modifie jamais le modèle. Pour un Manager, CREATE et au-dessus lui permettent seulement de créer des cartes.
+
 ---
 
 # Dossiers, éléments, jointures, hiérarchies
@@ -156,7 +158,7 @@ Ajoutez des personnes, définissez des rôles, désactivez des comptes, confiez 
 | Choix | Signification |
 |---|---|
 | ADMIN | Tous les droits. |
-| MANAGER | Voit, exécute, exporte, planifie et partage toutes les cartes. Ne modélise les données que là où un accès est accordé. |
+| MANAGER | Voit, exécute, exporte, planifie et partage toutes les cartes. Ne modifie jamais le modèle de données. |
 | USER | Ses cartes, les cartes publiques et les cartes partagées. |
 | VIEWER | Comme USER, mais ne peut pas copier de cartes. |
 | **Désactiver** | Conserve le compte. Réversible. |

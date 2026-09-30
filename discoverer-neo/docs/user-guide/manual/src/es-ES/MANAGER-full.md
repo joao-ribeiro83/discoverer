@@ -1,6 +1,6 @@
 # Su rol de un vistazo
 
-Usted es **Manager**. Ve todos los mapas de Discoverer Neo, los ejecuta, los exporta, los programa y los comparte. Se ocupa de quién puede abrir qué. También ayuda a modelar los datos, pero solo en las áreas de negocio a las que se le ha dado acceso.
+Usted es **Manager**. Ve todos los mapas de Discoverer Neo, los ejecuta, los exporta, los programa y los comparte. Se ocupa de quién puede abrir qué. No cambia el modelo de datos: eso es cosa de los administradores.
 
 Un **mapa** es un informe (en Oracle Discoverer era una hoja de trabajo). Un **libro** es un grupo de mapas. Un **área de negocio** es un grupo de datos relacionados. Una **carpeta** es una tabla o una vista dentro de un área de negocio, y un **elemento** es una columna de una carpeta.
 
@@ -16,9 +16,9 @@ Un **mapa** es un informe (en Oracle Discoverer era una hoja de trabajo). Un **l
 | Abrir la página Usuarios y ver qué mapas puede abrir cada persona | Crear, editar o eliminar orígenes de datos, ni importar tablas desde uno |
 | Crear, editar y eliminar funciones personalizadas | Ver las ejecuciones, exportaciones o programaciones de otras personas |
 | Probar y leer orígenes de datos | Usar Seguridad, Registro de auditoría o Migración (solo administradores) |
-| Modelar datos en áreas de negocio donde tiene una concesión, hasta el nivel de esa concesión | Modelar datos en un área de negocio donde no tiene concesión |
+| Crear mapas en las áreas de negocio en las que tiene una concesión | Cambiar áreas de negocio, carpetas, elementos, combinaciones o jerarquías, sea cual sea su concesión |
 
-> **Nota:** **Seguridad**, **Registro de auditoría** y **Migración** son solo para administradores. No aparecen en su barra lateral.
+> **Nota:** **Áreas de negocio**, **Carpetas**, **Elementos**, **Combinaciones**, **Jerarquías**, **Seguridad**, **Registro de auditoría** y **Migración** son solo para administradores. No aparecen en su barra lateral.
 
 ## De dónde procede su acceso
 
@@ -30,12 +30,12 @@ Tres cosas deciden lo que puede hacer.
 
 | Nivel de concesión | Qué le permite hacer en esa área de negocio |
 |---|---|
-| VIEW | Leer sus datos. Ver sus carpetas, elementos, combinaciones y jerarquías. |
+| VIEW | Leer sus datos. Usar sus carpetas y elementos en el generador de mapas. |
 | EXPORT | Igual que VIEW. Los derechos de exportar y programar de un mapa proceden de cómo se comparte el mapa. |
 | SCHEDULE | Igual que VIEW. Los derechos de exportar y programar de un mapa proceden de cómo se comparte el mapa. |
-| CREATE | Todo lo de VIEW, más crear mapas, carpetas, elementos, combinaciones y jerarquías nuevos. |
-| EDIT | Todo lo de CREATE, más cambiar el área y sus carpetas, elementos, combinaciones y jerarquías. |
-| DELETE | Todo lo de EDIT, más eliminar carpetas, elementos, combinaciones y jerarquías. |
+| CREATE | Todo lo de VIEW, más crear mapas nuevos. |
+| EDIT | Igual que CREATE para usted. Los derechos de modelo adicionales de este nivel son solo para administradores. |
+| DELETE | Igual que CREATE para usted. Los derechos de modelo adicionales de este nivel son solo para administradores. |
 
 A diferencia de un administrador, usted no tiene ninguna excepción. De ello se derivan dos reglas.
 
@@ -67,7 +67,7 @@ Para cerrar sesión, haga clic en su nombre en la parte superior derecha y elija
 
 El **Panel** es la primera página que ve. Solo le da cifras. Nada de lo que hay en él cambia datos.
 
-![El panel de Manager con la barra lateral completa y las tarjetas de resumen.](shots/es-ES/manager/01-dashboard-sidebar.png)
+![El panel de Manager con la barra lateral y las tarjetas de resumen.](shots/es-ES/manager/01-dashboard-sidebar.png)
 
 | Tarjeta | Qué muestra para usted |
 |---|---|
@@ -81,211 +81,11 @@ El enlace **Ver programaciones** de dos tarjetas abre la página **Programacione
 
 ---
 
-# Áreas de negocio
-
-Use esta página para ver las áreas de negocio en las que tiene una concesión y para leer quién más tiene una concesión en ellas.
-
-![La página Áreas de negocio con solo las áreas concedidas al Manager.](shots/es-ES/manager/07-business-areas.png)
-
-La lista muestra solo las áreas en las que tiene una concesión. Si no tiene ninguna, la lista está vacía y todas las páginas de modelado (Áreas de negocio, Carpetas, Elementos, Combinaciones, Jerarquías) no tienen nada con lo que trabajar. Pregunte a un administrador.
-
-| Botón o control | Qué hace |
-|---|---|
-| Icono de fila **Administrar concesiones** | Abre la lista de concesiones de esa área. Puede leerla. |
-| Icono de fila **Editar** | Cambia el nombre y la descripción. Solo funciona con una concesión EDIT o superior en esa área. |
-| **Nueva área de negocio** | Reservado a los administradores. |
-| Icono de fila **Eliminar** | Reservado a los administradores. |
-| **Agregar** y **Revocar** en la lista de concesiones | Reservado a los administradores. |
-
-> **Nota:** La pantalla muestra **Nueva área de negocio**, **Eliminar**, **Agregar** y **Revocar**. El sistema los rechaza en su caso y muestra un error. Solo los administradores crean o eliminan áreas de negocio y dan o quitan concesiones.
-
-Cada concesión de la lista muestra a una persona y un nivel. Apunte al nivel para leer lo que permite.
-
-## Ejemplo: comprobar quién puede crear mapas en un área
-
-1. Haga clic en **Áreas de negocio** en la barra lateral.
-2. Haga clic en el icono de fila **Administrar concesiones** del área.
-3. Busque personas con CREATE, EDIT o DELETE. Pueden crear mapas en esta área.
-4. Haga clic en **Cerrar**.
-
----
-
-# Carpetas
-
-Una carpeta es una tabla, una vista o una consulta dentro de un área de negocio. Use esta página para listarlas y, donde su concesión lo permita, para agregarlas, cambiarlas o actualizarlas.
-
-![La página Carpetas con un área de negocio elegida y sus carpetas.](shots/es-ES/admin/11-folders.png)
-
-Elija primero un **Área de negocio**. Los botones permanecen desactivados hasta que lo haga.
-
-| Botón o control | Qué hace | Concesión necesaria |
-|---|---|---|
-| **Área de negocio** | Elige el área cuyas carpetas ve. | Cualquiera |
-| **Actualizar todo** | Vuelve a leer todas las tablas y vistas del área desde su base de datos. Las columnas nuevas pasan a ser elementos. Las columnas que faltan solo se enumeran. | EDIT |
-| **Nueva carpeta** | Abre el asistente de carpetas. | CREATE |
-| Icono de fila **Actualizar desde el origen de datos** | Lo mismo, para una carpeta. Solo se muestra en carpetas de tabla y de vista que no se comparten desde otra área. | EDIT |
-| Icono de fila **Gestionar áreas de negocio** | Abre el cuadro de compartición. Puede mirar. Los cambios necesitan EDIT. | Cualquiera para mirar |
-| Icono de fila **Editar** | Abre el asistente para cambiar la carpeta. | EDIT |
-| Icono de fila **Eliminar** | Desactiva la carpeta después de confirmar. | DELETE |
-| **Cerrar** bajo **Resultado de la actualización** | Oculta la lista de resultados de una actualización. | Ninguna |
-
-Una carpeta muestra una insignia **Compartida** cuando pertenece a otra área de negocio y se compartió en esta. Actualícela desde el área a la que pertenece.
-
-La actualización nunca elimina elementos. Las columnas que han desaparecido de la base de datos solo se enumeran, para que pueda eliminarlas usted mismo si ningún mapa las usa.
-
-## El asistente de carpetas
-
-| Campo | Qué significa |
-|---|---|
-| **Nombre** | El nombre de la carpeta. Se rellena solo cuando elige una tabla. |
-| **Descripción** | Texto libre. Se rellena con el comentario de la base de datos cuando elige una tabla. |
-| **Tipo de carpeta** | Vea la tabla siguiente. |
-| **SQL personalizado** | Se muestra para las carpetas DERIVED y COMPLEX. La consulta que define la carpeta. Una carpeta COMPLEX lo necesita. |
-| **Origen de datos** | La conexión a la base de datos. No se muestra para DERIVED y COMPLEX. |
-| **Descubrir tablas** | Lee las tablas del origen de datos elegido para que pueda escoger una. Puede usarlo. |
-| **Nombre de la tabla** y **Propietario de la tabla** | A qué tabla apunta la carpeta. Se rellenan cuando elige de la lista. |
-| **Elementos a crear** | Las columnas de la tabla elegida. Cada columna marcada pasa a ser un elemento. Use **Seleccionar todas** o **Limpiar**. Edite las descripciones antes de guardar. |
-
-| Opción (**Tipo de carpeta**) | Qué significa / cuándo elegirla |
-|---|---|
-| TABLE | Una tabla de la base de datos. La opción habitual. |
-| VIEW | Una vista de la base de datos. |
-| DERIVED | Una carpeta definida por su propia consulta. |
-| COMPLEX | Una carpeta definida por una consulta más larga. El SQL personalizado es obligatorio. |
-| JOIN | Una carpeta creada a partir de una combinación. |
-| SUMMARY | Una carpeta de resumen. |
-
-## Ejemplo: agregar una carpeta a partir de una tabla
-
-1. Haga clic en **Carpetas** y después elija el **Área de negocio**. Necesita una concesión CREATE en ella.
-2. Haga clic en **Nueva carpeta**.
-3. Elija un **Origen de datos** y después haga clic en **Descubrir tablas**.
-4. Escriba en **Filtrar por nombre o comentario…** para acotar la lista y después haga clic en la tabla.
-5. Desmarque las columnas que no quiera. Ajuste las descripciones.
-6. Haga clic en **Guardar**. Primero se crea la carpeta y después sus elementos.
-
-> **Advertencia:** Si **Guardar** muestra "Error al guardar", lo más probable es que le falte la concesión CREATE en esa área.
-
----
-
-# Elementos
-
-Un elemento es una columna de una carpeta. Use esta página para listar elementos y cambiar cómo se comportan.
-
-![La página Elementos de una carpeta elegida, con la lista de sus elementos.](shots/es-ES/admin/17-items.png)
-
-Elija un **Área de negocio** y después una **Carpeta**. La lista de carpetas permanece vacía hasta que elija un área.
-
-| Botón o control | Qué hace | Concesión necesaria |
-|---|---|---|
-| **Nuevo elemento** | Abre el cuadro del elemento. | CREATE |
-| Icono de fila **Editar** | Cambia el elemento. No puede moverlo a otra carpeta. | EDIT |
-| Icono de fila **Eliminar** | Desactiva el elemento después de confirmar. | DELETE |
-
-| Campo | Qué significa |
-|---|---|
-| **Nombre** | El nombre del elemento que ve la gente en el generador de mapas. |
-| **Descripción** | Texto de ayuda opcional. |
-| **Tipo de elemento** | El tipo de elemento. Vea más abajo. |
-| **Nombre de la columna** | Para un elemento de base de datos: la columna de la base de datos. |
-| **Fórmula** | Para todos los tipos salvo un elemento de base de datos: el cálculo. Una fórmula incorrecta se rechaza. |
-| **Tipo de datos** | Texto libre, por ejemplo NUMBER. |
-| **Máscara de formato** | Cómo se muestra el valor, por ejemplo 999,999.00. |
-| **Agregación** | El total predeterminado del elemento. |
-
-| Opción (**Tipo de elemento**) | Qué significa |
-|---|---|
-| Elemento de base de datos (CO) | Una columna leída directamente de la tabla. |
-| Elemento creado (CI) | Un elemento que usted calcula con una fórmula. |
-| Elemento calculado (CU) | Un elemento calculado. |
-| Elemento de combinación (JI) | Un elemento que llega a través de una combinación. |
-| Elemento de jerarquía (HI) | Un elemento usado en una jerarquía. |
-| Agregación (AG) | Un elemento que es un total. |
-| Función (FU) | Un elemento que llama a una función. |
-
-| Opción (**Agregación**) | Qué significa |
-|---|---|
-| NONE | Sin total predeterminado. Es una dimensión. |
-| SUM | Suma los valores. |
-| COUNT | Cuenta las filas. |
-| AVG | Calcula la media de los valores. |
-| MIN | El valor más pequeño. |
-| MAX | El valor más grande. |
-
----
-
-# Combinaciones
-
-Una combinación le dice a Discoverer Neo cómo se conectan dos carpetas. Sin una, los mapas que usan ambas carpetas se rechazan.
-
-![El cuadro Nueva combinación con dos selectores de carpeta y un par de columnas.](shots/es-ES/admin/21-joins-new-dialog.png)
-
-| Botón o control | Qué hace | Concesión necesaria |
-|---|---|---|
-| **Área de negocio** | Elige el área. | Cualquiera |
-| **Nueva combinación** | Abre el cuadro de la combinación. | CREATE |
-| Icono de fila **Editar** | Cambia la combinación. | EDIT |
-| Icono de fila **Eliminar** | Desactiva la combinación después de confirmar. | DELETE |
-| **Sugerir combinaciones** | Propone columnas que coinciden para la carpeta izquierda. Haga clic en una sugerencia para usarla. | VIEW |
-| **Añadir par de columnas** | Agrega un par más de elementos. Todos los pares deben coincidir a la vez. | CREATE o EDIT |
-| X junto a un par | Quita ese par. Debe quedar un par. | CREATE o EDIT |
-
-| Campo | Qué significa |
-|---|---|
-| **Nombre** | El nombre de la combinación. Se rellena a partir de una sugerencia si se deja vacío. |
-| **Carpeta izquierda** y **Carpeta derecha** | Las dos carpetas que se conectan. Ambas pertenecen al área elegida. |
-| **Elemento izquierdo**, **Operador**, **Elemento derecho** | Un par: qué columnas se comparan y cómo. |
-| **Tipo de combinación** | Vea más abajo. |
-
-| Opción (**Operador**) | Qué significa |
-|---|---|
-| = | Igual. Casi siempre es la opción correcta. |
-| <> | Distinto. |
-| < y <= | Menor que, menor o igual que. |
-| > y >= | Mayor que, mayor o igual que. |
-
-| Opción (**Tipo de combinación**) | Qué significa / cuándo elegirla |
-|---|---|
-| INNER | Solo las filas que coinciden en ambos lados. |
-| LEFT | Todas las filas de la carpeta izquierda, aunque no coincidan. |
-| RIGHT | Todas las filas de la carpeta derecha, aunque no coincidan. |
-
-## Ejemplo: combinar dos carpetas
-
-1. Haga clic en **Combinaciones** y elija el **Área de negocio**. Necesita una concesión CREATE.
-2. Haga clic en **Nueva combinación**.
-3. Elija la **Carpeta izquierda** y la **Carpeta derecha**.
-4. Haga clic en **Sugerir combinaciones** y después en la mejor sugerencia. O elija usted mismo el **Elemento izquierdo**, el **Operador** y el **Elemento derecho**.
-5. Deje el **Tipo de combinación** en INNER salvo que necesite filas sin coincidencia.
-6. Haga clic en **Guardar**.
-
----
-
-# Jerarquías
-
-Una jerarquía es una lista ordenada de elementos para el desglose, por ejemplo Año, Trimestre, Mes.
-
-![Un cuadro de jerarquía con una fila de nivel que muestra el nombre y los selectores de carpeta y elemento.](shots/es-ES/admin/26-hierarchies-level-added.png)
-
-| Botón o control | Qué hace | Concesión necesaria |
-|---|---|---|
-| **Área de negocio** | Elige el área. | Cualquiera |
-| **Nueva jerarquía** | Abre un cuadro vacío. | CREATE |
-| Icono de fila **Editar** | Abre la jerarquía. Puede abrirla con VIEW, pero guardar necesita EDIT. | EDIT para guardar |
-| Icono de fila **Eliminar** | Desactiva la jerarquía después de confirmar. | DELETE |
-| **Agregar nivel** | Agrega un nivel al final. | CREATE o EDIT |
-| Asa de arrastre | Arrastre un nivel hacia arriba o hacia abajo. El orden es el orden de desglose. | CREATE o EDIT |
-| X en un nivel | Quita el nivel. | CREATE o EDIT |
-
-Cada nivel necesita un **Nombre del nivel**, una **Carpeta** y un **Elemento**. **Guardar** permanece desactivado hasta que estén completos el nombre, al menos un nivel y todos los niveles. Elija elementos de carpetas que pertenezcan al área de negocio. Una carpeta compartida desde otra área aparece en la lista, pero el guardado falla.
-
----
-
 # Funciones personalizadas
 
 Una función personalizada es una función almacenada en la base de datos de Oracle que pueden llamar los elementos calculados. Aquí tiene todos los derechos. No se necesita concesión de área de negocio.
 
-![La página Funciones personalizadas con la lista, Actualizar todo y Nueva función.](shots/es-ES/manager/09-custom-functions.png)
+![La página Funciones personalizadas con la lista, Actualizar todo y Nueva función.](shots/es-ES/manager/08-custom-functions.png)
 
 | Botón o control | Qué hace |
 |---|---|
@@ -327,7 +127,7 @@ Una función personalizada es una función almacenada en la base de datos de Ora
 
 Un origen de datos es una conexión guardada a una base de datos. Puede consultarlos y probarlos. No puede cambiarlos.
 
-![La página Orígenes de datos con la lista de conexiones y los iconos de fila.](shots/es-ES/manager/08-data-sources.png)
+![La página Orígenes de datos con la lista de conexiones y los iconos de fila.](shots/es-ES/manager/07-data-sources.png)
 
 | Botón o control | Qué hace |
 |---|---|
@@ -354,7 +154,7 @@ La lista muestra **Nombre**, **Correo electrónico**, **Rol** y **Estado** (**Ac
 
 Haga clic en el icono de fila **Mapas que este usuario puede abrir**. El cuadro **Mapas de {name}** muestra todos los mapas que esa persona ve.
 
-![El cuadro Mapas de un usuario, con selectores de nivel de acceso compartido e iconos de propietario y de quitar.](shots/es-ES/manager/12-users-maps-dialog.png)
+![El cuadro Mapas de un usuario, con selectores de nivel de acceso compartido e iconos de propietario y de quitar.](shots/es-ES/manager/11-users-maps-dialog.png)
 
 | Botón o control | Qué hace |
 |---|---|
@@ -695,7 +495,7 @@ La columna **Estado** muestra **Activa** o **En pausa**. La columna **Planificad
 
 **Ejecuciones** muestra todas las ejecuciones que ha pedido, estén en espera, en curso o terminadas. Muestra solo sus propias ejecuciones, no las de otras personas.
 
-![La página Ejecuciones con los filtros Mapa, Estado y Tipo y la lista de ejecuciones.](shots/es-ES/manager/11-runs.png)
+![La página Ejecuciones con los filtros Mapa, Estado y Tipo y la lista de ejecuciones.](shots/es-ES/manager/10-runs.png)
 
 | Botón o control | Qué hace |
 |---|---|
@@ -750,11 +550,11 @@ Como Manager, usted ve todos los mapas. Sus datos necesitan una concesión de á
 **¿Por qué no hay icono de lápiz en un mapa?**
 Solo puede editar sus propios mapas y los mapas compartidos con usted como **Puede editar**. Haga clic en el icono Copiar y después cambie su copia. O pida al propietario que lo comparta con usted como **Puede editar**.
 
-**Las listas de Áreas de negocio, Carpetas, Elementos, Combinaciones y Jerarquías están vacías.**
-Estas páginas muestran solo las áreas de negocio en las que tiene una concesión. Pida una a un administrador. CREATE le permite agregar, EDIT le permite cambiar y DELETE le permite eliminar.
+**¿Dónde están Áreas de negocio, Carpetas, Elementos, Combinaciones y Jerarquías?**
+Cambiar el modelo de datos es cosa de los administradores, así que estas páginas no aparecen en su barra lateral. Si una carpeta o un elemento es incorrecto o falta, pídalo a un administrador.
 
 **Hice clic en algo y salió "Forbidden" o "Error al guardar".**
-La pantalla lo ofrecía, pero su rol o su concesión no lo permiten. Los casos más habituales son **Nueva área de negocio**, **Nuevo origen de datos**, **Importar** y guardar un mapa que no es suyo.
+La pantalla lo ofrecía, pero su rol o su concesión no lo permiten. El caso más habitual es guardar un mapa que no es suyo.
 
 **No puedo ver las ejecuciones, exportaciones o programaciones de otra persona.**
 Las ejecuciones, exportaciones y programaciones pertenecen a quien las creó. Nadie más que esa persona las ve en la lista, y lo mismo vale para usted.

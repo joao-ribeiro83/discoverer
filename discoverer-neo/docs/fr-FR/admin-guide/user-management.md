@@ -9,7 +9,7 @@ Discoverer Neo comporte quatre rôles utilisateur aux capacités différentes :
 | Rôle | Capacités |
 |------|-------------|
 | **ADMIN** | Accès système complet — utilisateurs, domaines d'activité, sources de données, journaux d'audit. Ouvre, modifie, partage et supprime toutes les cartes. |
-| **MANAGER** | Modélise les données (domaines d'activité, dossiers, éléments, jointures). Ouvre, exécute, exporte, planifie et partage **toutes** les cartes, et peut changer le propriétaire d'une carte. Ne modifie que ses propres cartes. |
+| **MANAGER** | Ouvre, exécute, exporte, planifie et partage **toutes** les cartes, et peut changer le propriétaire d'une carte. Ne modifie que ses propres cartes. Gère les fonctions personnalisées ; consulte et teste les sources de données. Ne peut pas modifier le modèle de données (domaines d'activité, dossiers, éléments, jointures, hiérarchies), même avec un accès. |
 | **USER** | Ne voit que ses propres cartes et celles partagées avec lui. Crée une nouvelle carte en copiant l'une d'elles. |
 | **VIEWER** | Lecture seule. Ouvre et exécute les cartes partagées avec lui. Ne peut ni créer, ni copier, ni modifier de cartes. |
 
@@ -285,18 +285,16 @@ Pour empêcher la connexion :
 
 ## Délégation
 
-Les responsables (MANAGER) peuvent déléguer la création d'utilisateurs et la gestion des autorisations :
+Donnez le rôle **MANAGER** à une personne qui s'occupe des cartes des autres.
+Un MANAGER peut :
+- Voir, exécuter, exporter, planifier et partager toutes les cartes
+- Donner une carte à un nouveau propriétaire, modifier ou retirer ses partages (Utilisateurs → icône de carte)
+- Gérer les fonctions personnalisées, et consulter et tester les sources de données
 
-1. Promouvez des utilisateurs au rôle **MANAGER**
-2. Les responsables peuvent alors :
-   - Créer des utilisateurs
-   - Accorder des autorisations dans leurs domaines d'activité
-   - Gérer l'accès d'autres utilisateurs
-
-Les responsables ne peuvent pas :
-- Créer d'autres responsables ou administrateurs
-- Accéder aux paramètres système ou aux journaux d'audit
-- Gérer les sources de données
+Un MANAGER ne peut pas :
+- Créer, modifier ou supprimer des utilisateurs, ni donner un accès à un domaine d'activité
+- Modifier le modèle de données : domaines d'activité, dossiers, éléments, jointures, hiérarchies
+- Ouvrir Sécurité, Journal d'audit ou Migration
 
 ## Piste d'audit
 
@@ -326,7 +324,7 @@ Attribuez le rôle minimal nécessaire :
 
 - La plupart des utilisateurs → rôle **USER** (pas MANAGER ni ADMIN)
 - Créateurs de rapports → rôle **USER**
-- Chefs d'équipe → rôle **MANAGER** (s'ils gèrent des domaines d'activité)
+- Chefs d'équipe → rôle **MANAGER** (s'ils s'occupent des cartes de l'équipe)
 - Seulement 1 à 2 → rôle **ADMIN**
 
 ### Audits réguliers

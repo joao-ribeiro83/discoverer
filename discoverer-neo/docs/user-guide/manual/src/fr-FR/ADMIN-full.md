@@ -686,6 +686,8 @@ Les six niveaux forment une échelle. Chaque niveau inclut les précédents. Si 
 
 > **Remarque :** EXPORT et SCHEDULE n'ajoutent rien par eux-mêmes. La possibilité d'exporter ou de planifier une carte dépend de la façon dont la carte est partagée. Une personne a besoin d'au moins CREATE pour enregistrer une nouvelle carte.
 
+> **Remarque :** Un Manager ne modifie jamais les dossiers, éléments, jointures, hiérarchies ni le domaine, quel que soit son accès. Pour un Manager, CREATE, EDIT et DELETE lui permettent seulement de créer des cartes.
+
 Exemple : donner à un collègue le droit de créer des cartes dans le domaine d'activité **DC**.
 
 1. Cliquez sur l'icône **Gérer les accès** du domaine.
@@ -1013,7 +1015,7 @@ Vous ne pouvez pas désactiver ni supprimer votre propre compte. Ces icônes son
 | Option (**Rôle**) | Signification / quand la choisir |
 |---|---|
 | ADMIN | Peut tout faire : utilisateurs, domaines d'activité, sources de données, sécurité et audit. Ouvre, modifie, partage et supprime toutes les cartes. À donner à très peu de personnes. |
-| MANAGER | Ouvre, exécute, exporte, planifie et partage toutes les cartes, et change le propriétaire d'une carte. Ne modifie que ses propres cartes et les cartes partagées avec **Peut modifier**. Travaille sur les domaines d'activité, dossiers, éléments, jointures et hiérarchies uniquement là où il a un accès. Ne peut pas utiliser **Sécurité**, **Journal d'audit** ni **Migration**. |
+| MANAGER | Ouvre, exécute, exporte, planifie et partage toutes les cartes, et change le propriétaire d'une carte. Ne modifie que ses propres cartes et les cartes partagées avec **Peut modifier**. Ne peut pas modifier les domaines d'activité, dossiers, éléments, jointures ni hiérarchies, quel que soit son accès. Ne peut pas utiliser **Sécurité**, **Journal d'audit** ni **Migration**. |
 | USER | Voit ses propres cartes, les cartes publiques et les cartes partagées avec lui. Exécute, exporte et planifie selon ce que permet chaque partage. Copie des cartes et crée de nouvelles cartes là où il a un accès CREATE. La valeur par défaut. |
 | VIEWER | Comme USER, mais ne peut pas copier de cartes ni de classeurs. Pour une personne qui doit seulement lire : partagez les cartes avec **Peut consulter** et ne donnez aucun accès CREATE. |
 

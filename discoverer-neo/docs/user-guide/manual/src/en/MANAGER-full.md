@@ -1,6 +1,6 @@
 # Your role at a glance
 
-You are a **Manager**. You see every map in Discoverer Neo, run it, export it, schedule it and share it. You look after who can open what. You also help model the data, but only in the business areas you have been given access to.
+You are a **Manager**. You see every map in Discoverer Neo, run it, export it, schedule it and share it. You look after who can open what. You do not change the data model. That is an administrator's job.
 
 A **map** is a report (in Oracle Discoverer this was a worksheet). A **workbook** is a group of maps. A **business area** is a group of related data. A **folder** is one table or view inside a business area, and an **item** is one column of a folder.
 
@@ -16,9 +16,9 @@ A **map** is a report (in Oracle Discoverer this was a worksheet). A **workbook*
 | Open the Users page and see which maps each person can open | Create, edit or delete data sources, or import tables from one |
 | Create, edit and delete custom functions | See other people's runs, exports or schedules |
 | Test and read data sources | Use Security, Audit Log or Migration (administrators only) |
-| Model data in business areas where you hold a grant, up to the level of that grant | Model data in a business area where you hold no grant |
+| Build maps on the business areas you hold a grant on | Change business areas, folders, items, joins or hierarchies, whatever grant you hold |
 
-> **Note:** **Security**, **Audit Log** and **Migration** are for administrators only. They are not in your sidebar.
+> **Note:** **Business Areas**, **Folders**, **Items**, **Joins**, **Hierarchies**, **Security**, **Audit Log** and **Migration** are for administrators only. They are not in your sidebar.
 
 ## Where your access comes from
 
@@ -30,12 +30,12 @@ Three things decide what you can do.
 
 | Grant level | What it lets you do in that business area |
 |---|---|
-| VIEW | Read its data. See its folders, items, joins and hierarchies. |
+| VIEW | Read its data. Use its folders and items in the map builder. |
 | EXPORT | Same as VIEW. Export and schedule rights on a map come from how the map is shared. |
 | SCHEDULE | Same as VIEW. Export and schedule rights on a map come from how the map is shared. |
-| CREATE | Everything in VIEW, plus create new maps, folders, items, joins and hierarchies. |
-| EDIT | Everything in CREATE, plus change the area and its folders, items, joins and hierarchies. |
-| DELETE | Everything in EDIT, plus delete folders, items, joins and hierarchies. |
+| CREATE | Everything in VIEW, plus create new maps. |
+| EDIT | Same as CREATE for you. The extra model rights of this level are for administrators only. |
+| DELETE | Same as CREATE for you. The extra model rights of this level are for administrators only. |
 
 Unlike an administrator, you get no bypass. Two rules follow.
 
@@ -67,7 +67,7 @@ To sign out, click your name at the top right and choose **Log out**. This ends 
 
 The **Dashboard** is the first page you see. It gives you numbers only. Nothing on it changes data.
 
-![The Manager dashboard with the full sidebar and summary cards.](shots/en/manager/01-dashboard-sidebar.png)
+![The Manager dashboard with the sidebar and summary cards.](shots/en/manager/01-dashboard-sidebar.png)
 
 | Card | What it shows for you |
 |---|---|
@@ -81,211 +81,11 @@ The **View schedules** link on two cards opens the **Schedules** page.
 
 ---
 
-# Business Areas
-
-Use this page to see the business areas you have a grant on, and to read who else has a grant on them.
-
-![The Business Areas page listing only the areas granted to the Manager.](shots/en/manager/07-business-areas.png)
-
-The list shows only the areas where you hold a grant. If you hold none, the list is empty and every modeling page (Business Areas, Folders, Items, Joins, Hierarchies) has nothing to work on. Ask an administrator.
-
-| Button or control | What it does |
-|---|---|
-| Row icon **Manage grants** | Opens the grants list of that area. You can read it. |
-| Row icon **Edit** | Changes the name and description. Works only with an EDIT grant or higher on that area. |
-| **New Business Area** | Reserved for administrators. |
-| Row icon **Delete** | Reserved for administrators. |
-| **Add** and **Revoke** in the grants list | Reserved for administrators. |
-
-> **Note:** The screen shows **New Business Area**, **Delete**, **Add** and **Revoke**. The system refuses them for you and shows an error. Only administrators create or delete business areas and give or take away grants.
-
-Each grant in the list shows a person and a level. Point at the level to read what it allows.
-
-## Example: check who can create maps in an area
-
-1. Click **Business Areas** in the sidebar.
-2. Click the row icon **Manage grants** on the area.
-3. Look for people with CREATE, EDIT or DELETE. They can create maps in this area.
-4. Click **Close**.
-
----
-
-# Folders
-
-A folder is a table, view or query inside a business area. Use this page to list them and, where your grant allows, to add, change or refresh them.
-
-![The Folders page with a business area chosen and its folders listed.](shots/en/admin/11-folders.png)
-
-Choose a **Business Area** first. The buttons stay off until you do.
-
-| Button or control | What it does | Grant needed |
-|---|---|---|
-| **Business Area** | Chooses the area whose folders you see. | Any |
-| **Refresh all** | Reads every table and view of the area again from its database. New columns become items. Missing columns are only listed. | EDIT |
-| **New Folder** | Opens the folder wizard. | CREATE |
-| Row icon **Refresh from data source** | Same, for one folder. Shown only for table and view folders that are not shared in from another area. | EDIT |
-| Row icon **Manage business areas** | Opens the sharing dialog. You can look. Changes need EDIT. | Any to look |
-| Row icon **Edit** | Opens the wizard to change the folder. | EDIT |
-| Row icon **Delete** | Deactivates the folder after you confirm. | DELETE |
-| **Close** under **Refresh results** | Hides the result list of a refresh. | None |
-
-A folder shows a **Shared** badge when it belongs to another business area and was shared into this one. Refresh it from its owning area.
-
-Refresh never deletes items. Columns that vanished from the database are only listed, so you can delete them yourself if no map uses them.
-
-## The folder wizard
-
-| Field | What it means |
-|---|---|
-| **Name** | The folder name. Filled in for you when you pick a table. |
-| **Description** | Free text. Filled from the database comment when you pick a table. |
-| **Folder Type** | See the table below. |
-| **Custom SQL** | Shown for DERIVED and COMPLEX folders. The query that defines the folder. A COMPLEX folder needs it. |
-| **Data Source** | The database connection. Not shown for DERIVED and COMPLEX. |
-| **Discover Tables** | Reads the tables of the chosen data source so you can pick one. You may use it. |
-| **Table Name** and **Table Owner** | Which table the folder points to. Filled when you pick from the list. |
-| **Items to create** | The columns of the picked table. Each ticked column becomes an item. Use **Select all** or **Clear**. Edit the descriptions before you save. |
-
-| Option (**Folder Type**) | What it means / when to pick it |
-|---|---|
-| TABLE | One database table. The usual choice. |
-| VIEW | One database view. |
-| DERIVED | A folder defined by your own query. |
-| COMPLEX | A folder defined by a longer query. Custom SQL is required. |
-| JOIN | A folder built from a join. |
-| SUMMARY | A summary folder. |
-
-## Example: add a folder from a table
-
-1. Click **Folders**, then choose the **Business Area**. You need a CREATE grant on it.
-2. Click **New Folder**.
-3. Choose a **Data Source**, then click **Discover Tables**.
-4. Type in **Filter by name or comment** to narrow the list, then click the table.
-5. Untick any column you do not want. Adjust the descriptions.
-6. Click **Save**. The folder is made first, then its items.
-
-> **Warning:** If **Save** shows "Save failed", you most likely lack the CREATE grant on that area.
-
----
-
-# Items
-
-An item is one column of a folder. Use this page to list items and change how they behave.
-
-![The Items page for a chosen folder, listing its items.](shots/en/admin/17-items.png)
-
-Choose a **Business Area**, then a **Folder**. The folder list stays empty until you pick an area.
-
-| Button or control | What it does | Grant needed |
-|---|---|---|
-| **New Item** | Opens the item dialog. | CREATE |
-| Row icon **Edit** | Changes the item. You cannot move it to another folder. | EDIT |
-| Row icon **Delete** | Deactivates the item after you confirm. | DELETE |
-
-| Field | What it means |
-|---|---|
-| **Name** | The item name people see in the map builder. |
-| **Description** | Optional help text. |
-| **Item Type** | The kind of item. See below. |
-| **Column Name** | For a database item: the database column. |
-| **Formula** | For every type except a database item: the calculation. A wrong formula is refused. |
-| **Data Type** | Free text, for example NUMBER. |
-| **Format Mask** | How the value is shown, for example 999,999.00. |
-| **Aggregation** | The default total for the item. |
-
-| Option (**Item Type**) | What it means |
-|---|---|
-| Database Item (CO) | A column read straight from the table. |
-| Created Item (CI) | An item you calculate with a formula. |
-| Calculated Item (CU) | A calculated item. |
-| Join Item (JI) | An item that comes through a join. |
-| Hierarchy Item (HI) | An item used in a hierarchy. |
-| Aggregation (AG) | An item that is a total. |
-| Function (FU) | An item that calls a function. |
-
-| Option (**Aggregation**) | What it means |
-|---|---|
-| NONE | No default total. It is a dimension. |
-| SUM | Adds the values. |
-| COUNT | Counts the rows. |
-| AVG | Averages the values. |
-| MIN | Smallest value. |
-| MAX | Largest value. |
-
----
-
-# Joins
-
-A join tells Discoverer Neo how two folders connect. Without one, maps that use both folders are refused.
-
-![The New Join dialog with two folder selects and a column pair.](shots/en/admin/21-joins-new-dialog.png)
-
-| Button or control | What it does | Grant needed |
-|---|---|---|
-| **Business Area** | Chooses the area. | Any |
-| **New Join** | Opens the join dialog. | CREATE |
-| Row icon **Edit** | Changes the join. | EDIT |
-| Row icon **Delete** | Deactivates the join after you confirm. | DELETE |
-| **Suggest Joins** | Proposes matching columns for the left folder. Click a suggestion to use it. | VIEW |
-| **Add column pair** | Adds one more pair of items. All pairs must match together. | CREATE or EDIT |
-| X next to a pair | Removes that pair. One pair must stay. | CREATE or EDIT |
-
-| Field | What it means |
-|---|---|
-| **Name** | The join name. Filled from a suggestion if left empty. |
-| **Left Folder** and **Right Folder** | The two folders to connect. Both belong to the chosen area. |
-| **Left Item**, **Operator**, **Right Item** | One pair: which columns are compared and how. |
-| **Join Type** | See below. |
-
-| Option (**Operator**) | What it means |
-|---|---|
-| = | Equal. Almost always the right choice. |
-| <> | Not equal. |
-| < and <= | Less than, less than or equal. |
-| > and >= | Greater than, greater than or equal. |
-
-| Option (**Join Type**) | What it means / when to pick it |
-|---|---|
-| INNER | Only rows that match on both sides. |
-| LEFT | All rows of the left folder, even with no match. |
-| RIGHT | All rows of the right folder, even with no match. |
-
-## Example: join two folders
-
-1. Click **Joins** and choose the **Business Area**. You need a CREATE grant.
-2. Click **New Join**.
-3. Choose the **Left Folder** and **Right Folder**.
-4. Click **Suggest Joins**, then click the best suggestion. Or choose the **Left Item**, **Operator** and **Right Item** yourself.
-5. Keep **Join Type** on INNER unless you need unmatched rows.
-6. Click **Save**.
-
----
-
-# Hierarchies
-
-A hierarchy is an ordered list of items for drill-down, for example Year, Quarter, Month.
-
-![A hierarchy dialog with a level row showing name, folder and item selects.](shots/en/admin/26-hierarchies-level-added.png)
-
-| Button or control | What it does | Grant needed |
-|---|---|---|
-| **Business Area** | Chooses the area. | Any |
-| **New Hierarchy** | Opens an empty dialog. | CREATE |
-| Row icon **Edit** | Opens the hierarchy. You can open it with VIEW, but saving needs EDIT. | EDIT to save |
-| Row icon **Delete** | Deactivates the hierarchy after you confirm. | DELETE |
-| **Add Level** | Adds a level at the bottom. | CREATE or EDIT |
-| Drag handle | Drag a level up or down. The order is the drill order. | CREATE or EDIT |
-| X on a level | Removes the level. | CREATE or EDIT |
-
-Each level needs a **Level name**, a **Folder** and an **Item**. **Save** stays off until the name, at least one level, and every level are complete. Choose items from folders that the business area owns. A folder shared in from another area is listed, but saving fails.
-
----
-
 # Custom Functions
 
 A custom function is a function stored in the Oracle database that calculated items can call. You have full rights here. No business-area grant is needed.
 
-![The Custom Functions page with the list, Refresh all and New Function.](shots/en/manager/09-custom-functions.png)
+![The Custom Functions page with the list, Refresh all and New Function.](shots/en/manager/08-custom-functions.png)
 
 | Button or control | What it does |
 |---|---|
@@ -327,7 +127,7 @@ A custom function is a function stored in the Oracle database that calculated it
 
 A data source is a saved connection to a database. You can look at them and test them. You cannot change them.
 
-![The Data Sources page with the list of connections and row icons.](shots/en/manager/08-data-sources.png)
+![The Data Sources page with the list of connections and row icons.](shots/en/manager/07-data-sources.png)
 
 | Button or control | What it does |
 |---|---|
@@ -354,7 +154,7 @@ The list shows **Name**, **Email**, **Role** and **Status** (**Active** or **Ina
 
 Click the row icon **Maps this user can open**. The dialog **Maps for {name}** lists every map that person sees.
 
-![The Maps dialog for a user, with share-level selects and owner and remove icons.](shots/en/manager/12-users-maps-dialog.png)
+![The Maps dialog for a user, with share-level selects and owner and remove icons.](shots/en/manager/11-users-maps-dialog.png)
 
 | Button or control | What it does |
 |---|---|
@@ -695,7 +495,7 @@ The **Status** column shows **Active** or **Paused**. The **Planner** column is 
 
 **Runs** lists every run you requested, whether it is waiting, running or finished. It shows only your own runs, not other people's.
 
-![The Runs page with map, status and kind filters and the list of runs.](shots/en/manager/11-runs.png)
+![The Runs page with map, status and kind filters and the list of runs.](shots/en/manager/10-runs.png)
 
 | Button or control | What it does |
 |---|---|
@@ -750,11 +550,11 @@ You see every map as a Manager. Its data needs a business-area grant on each fol
 **Why is there no Pencil icon on a map?**
 You may edit only your own maps and maps shared with you at **Can edit**. Click the Copy icon, then change your copy. Or ask the owner to share it with you at **Can edit**.
 
-**The Business Areas, Folders, Items, Joins and Hierarchies lists are empty.**
-These pages show only business areas where you hold a grant. Ask an administrator for one. CREATE lets you add, EDIT lets you change, DELETE lets you delete.
+**Where are Business Areas, Folders, Items, Joins and Hierarchies?**
+Changing the data model is for administrators only, so these pages are not in your sidebar. If a folder or item is wrong or missing, ask an administrator.
 
 **I clicked something and got "Forbidden" or "Save failed".**
-The screen offered it, but your role or grant does not allow it. The most common cases are **New Business Area**, **New Data Source**, **Import** and saving a map you do not own.
+The screen offered it, but your role or grant does not allow it. The most common case is saving a map you do not own.
 
 **I cannot see another person's runs, exports or schedules.**
 Runs, exports and schedules belong to the person who made them. Nobody but that person sees them in the list, and the same is true for you.
