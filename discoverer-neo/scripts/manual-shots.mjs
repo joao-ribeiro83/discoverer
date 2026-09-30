@@ -227,6 +227,8 @@ async function ensureCopy(c, email) {
   await tab(c, 'all').click()
   await page.waitForTimeout(800)
   await page.setViewportSize(WIDE)
+  // The original sits past the first page of 900+ maps; search puts it on screen.
+  await c.page.getByPlaceholder(t('mapViewer', 'mapsList.searchPlaceholder')).fill('GD_M.M10_V01.DIS'); await c.page.waitForTimeout(800)
   await rowIcon(page, 'GD_M.M10_V01.DIS', 'copyTooltip').first().click()
   await page.waitForURL(/\/maps\/[0-9a-f-]{36}$/, { timeout: 20000 })
   await page.setViewportSize({ width: 1280, height: 800 })
@@ -535,6 +537,7 @@ steps.manager = async (c) => {
   await c.shot('maps-all', 'Maps list for a Manager, tab "All": every map with the Owner column (blurred where it is another person), Copy, Share, Schedule and Export icons on every row, Edit and Delete only on the Manager\'s own map.', { vp: WIDE })
   await c.tryStep('share', async () => {
     await page.setViewportSize(WIDE)
+    await c.page.getByPlaceholder(t('mapViewer', 'mapsList.searchPlaceholder')).fill('GD_M.M10_V01.DIS'); await c.page.waitForTimeout(800)
     await rowIcon(page, 'GD_M.M10_V01.DIS', 'shareTooltip').first().click()
     await c.dialog()
     await c.shot('share-dialog', 'Share map dialog opened by a Manager on a map they do not own: search box, hint line and the user list with Can view / Can export / Can edit buttons (names other than the test accounts blurred).', { el: '[role=dialog]' })
