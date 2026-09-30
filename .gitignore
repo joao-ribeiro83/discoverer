@@ -48,3 +48,6 @@ discoverer-neo/*.sql
 
 # Release archive built by discoverer-neo/scripts/package-app.sh
 /discoverer-neo.zip
+
+# Local database backups (maps dumps, postgres, redis). Never commit.
+discoverer-neo/backups/
