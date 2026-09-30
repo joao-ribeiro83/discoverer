@@ -467,7 +467,7 @@
     "deleteTooltip": "Eliminar definitivamente esta conta de utilizador",
     "roleHelp": {
       "ADMIN": "Pode fazer tudo: utilizadores, áreas de negócio, origens de dados, segurança e auditoria. Pode abrir, alterar, partilhar e eliminar todos os mapas.",
-      "MANAGER": "Modela os dados (áreas de negócio, pastas, itens, junções). Pode abrir, executar e partilhar todos os mapas e alterar quem é o proprietário de um mapa. Só altera os seus próprios mapas; copia um mapa para criar um novo.",
+      "MANAGER": "Pode abrir, executar e partilhar todos os mapas e alterar quem é o proprietário de um mapa. Só altera os seus próprios mapas; copia um mapa para criar um novo. Edita contas MANAGER, USER e VIEWER. Não altera o modelo de dados.",
       "USER": "Vê apenas os seus próprios mapas e os mapas partilhados com ele. Cria novos mapas copiando um desses mapas. Executa, exporta e agenda conforme cada partilha permitir.",
       "VIEWER": "Só de leitura. Abre e executa os mapas partilhados com ele. Não pode criar, copiar nem alterar mapas."
     }

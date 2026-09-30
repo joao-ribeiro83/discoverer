@@ -79,9 +79,12 @@ const errorResponse = {
 export default function userRoutes(fastify: FastifyInstance) {
   // All user-management endpoints are admin-only.
   const adminPreHandler = [fastify.authenticate, fastify.authorizeAdmin];
-  // Read-only user routes a MANAGER needs: the Users page's list and its
-  // per-user map list, where a manager tidies shares and ownership.
+  // User routes a MANAGER shares: the Users page's list, its per-user map
+  // list, and editing an account. A MANAGER sees and edits only MANAGER, USER
+  // and VIEWER accounts; to them an ADMIN account answers 404, as if absent.
   const adminManagerPreHandler = [fastify.authenticate, fastify.authorize('ADMIN', 'MANAGER')];
+  const hiddenFrom = (viewer: { role: string }, target: { role: string }) =>
+    viewer.role === 'MANAGER' && target.role === 'ADMIN';
 
   // GET /api/users/search?q= — any authenticated user may search for a
   // teammate to share a map with. Deliberately NOT admin-gated (unlike every
@@ -143,9 +146,9 @@ export default function userRoutes(fastify: FastifyInstance) {
         },
       },
     },
-    async (_request, reply) => {
+    async (request, reply) => {
       const rows = await list();
-      return reply.code(200).send({ data: rows });
+      return reply.code(200).send({ data: rows.filter((u) => !hiddenFrom(request.user, u)) });
     },
   );
 
@@ -298,7 +301,7 @@ export default function userRoutes(fastify: FastifyInstance) {
         return reply.code(400).send({ error: 'Invalid user ID format' });
       }
       const user = await getById(parsed.data.id);
-      if (!user) {
+      if (!user || hiddenFrom(request.user, user)) {
         return reply.code(404).send({ error: 'User not found' });
       }
 
@@ -378,7 +381,7 @@ export default function userRoutes(fastify: FastifyInstance) {
   fastify.put(
     '/api/users/:id',
     {
-      preHandler: adminPreHandler,
+      preHandler: adminManagerPreHandler,
       schema: {
         tags: ['Users'],
         security: [{ bearerAuth: [] }],
@@ -419,6 +422,14 @@ export default function userRoutes(fastify: FastifyInstance) {
           error: 'Validation failed',
           details: bodyParsed.error.flatten(),
         });
+      }
+
+      const target = await getById(paramParsed.data.id);
+      if (!target || hiddenFrom(request.user, target)) {
+        return reply.code(404).send({ error: 'User not found' });
+      }
+      if (request.user.role === 'MANAGER' && bodyParsed.data.role === 'ADMIN') {
+        return reply.code(403).send({ error: 'A MANAGER cannot give the ADMIN role' });
       }
 
       if (bodyParsed.data.isActive === false && request.user.sub === paramParsed.data.id) {

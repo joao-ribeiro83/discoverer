@@ -245,7 +245,7 @@ describe('UsersPage maps dialog actions', () => {
 })
 
 describe('UsersPage as MANAGER', () => {
-  it('lists users read-only, with no create, edit, deactivate or delete', async () => {
+  it('edits and deactivates users, but cannot create, delete or give the ADMIN role', async () => {
     useAuthStore.setState({
       user: { id: 'u-mgr', email: 'm@example.com', name: 'Mia Manager', role: 'MANAGER' },
       token: 't',
@@ -255,9 +255,13 @@ describe('UsersPage as MANAGER', () => {
     await waitFor(() => expect(screen.getByText('Bob User')).toBeInTheDocument())
     const row = within(rowOf('Bob User'))
     expect(row.getByRole('button', { name: 'Maps this user can open' })).toBeInTheDocument()
-    expect(row.queryByRole('button', { name: "Change this user's name, email, password or role" })).not.toBeInTheDocument()
+    expect(row.getByRole('button', { name: 'Deactivate' })).toBeInTheDocument()
     expect(row.queryByRole('button', { name: 'Delete this user account for good' })).not.toBeInTheDocument()
-    expect(row.queryByRole('button', { name: 'Deactivate' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'New User' })).not.toBeInTheDocument()
+
+    fireEvent.click(row.getByRole('button', { name: "Change this user's name, email, password or role" }))
+    const help = await screen.findByTestId('role-help')
+    expect(within(help).queryByText('ADMIN')).not.toBeInTheDocument()
+    expect(within(help).getByText('MANAGER')).toBeInTheDocument()
   })
 })

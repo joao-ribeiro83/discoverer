@@ -112,8 +112,8 @@ const errorResponse = {
 // ---------------------------------------------------------------------------
 
 export default function customFunctionRoutes(fastify: FastifyInstance) {
-  // All custom-function endpoints require authentication and ADMIN/MANAGER role.
-  const adminManagerPreHandler = [fastify.authenticate, fastify.authorize('ADMIN', 'MANAGER')];
+  // Writing custom functions is ADMIN-only; any signed-in user may read them.
+  const adminPreHandler = [fastify.authenticate, fastify.authorizeAdmin];
 
   // GET /api/custom-functions — list all
   fastify.get(
@@ -183,7 +183,7 @@ export default function customFunctionRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/api/custom-functions',
     {
-      preHandler: adminManagerPreHandler,
+      preHandler: adminPreHandler,
       schema: {
         tags: ['Custom Functions'],
         security: [{ bearerAuth: [] }],
@@ -249,7 +249,7 @@ export default function customFunctionRoutes(fastify: FastifyInstance) {
   fastify.put(
     '/api/custom-functions/:id',
     {
-      preHandler: adminManagerPreHandler,
+      preHandler: adminPreHandler,
       schema: {
         tags: ['Custom Functions'],
         security: [{ bearerAuth: [] }],
@@ -330,9 +330,9 @@ export default function customFunctionRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/api/data-sources/:dsId/functions',
     {
-      // Spelled out rather than reusing `adminManagerPreHandler`: SEC-03's scan
+      // Spelled out rather than reusing `adminPreHandler`: SEC-03's scan
       // reads the registration block and only sees a gate it can name there.
-      preHandler: [fastify.authenticate, fastify.authorize('ADMIN', 'MANAGER')],
+      preHandler: [fastify.authenticate, fastify.authorizeAdmin],
       schema: {
         tags: ['Custom Functions'],
         security: [{ bearerAuth: [] }],
@@ -466,13 +466,13 @@ export default function customFunctionRoutes(fastify: FastifyInstance) {
 
   fastify.post(
     '/api/custom-functions/refresh',
-    { preHandler: adminManagerPreHandler, schema: refreshSchema },
+    { preHandler: adminPreHandler, schema: refreshSchema },
     async (_request, reply) => reply.code(200).send({ data: await refreshAndCompile(null) }),
   );
 
   fastify.post(
     '/api/custom-functions/:id/refresh',
-    { preHandler: adminManagerPreHandler, schema: refreshSchema },
+    { preHandler: adminPreHandler, schema: refreshSchema },
     async (request, reply) => {
       const parsed = IdParamSchema.safeParse(request.params);
       if (!parsed.success) return reply.code(400).send({ error: 'Invalid function ID format' });
@@ -484,7 +484,7 @@ export default function customFunctionRoutes(fastify: FastifyInstance) {
   fastify.delete(
     '/api/custom-functions/:id',
     {
-      preHandler: adminManagerPreHandler,
+      preHandler: adminPreHandler,
       schema: {
         tags: ['Custom Functions'],
         security: [{ bearerAuth: [] }],

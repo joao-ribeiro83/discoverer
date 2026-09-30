@@ -467,7 +467,7 @@
     "deleteTooltip": "Delete this user account for good",
     "roleHelp": {
       "ADMIN": "Can do everything: users, business areas, data sources, security and audit. Can open, change, share and delete every map.",
-      "MANAGER": "Models the data (business areas, folders, items, joins). Can open, run and share every map, and change who owns a map. Changes only their own maps; copies a map to build a new one.",
+      "MANAGER": "Can open, run and share every map, and change who owns a map. Changes only their own maps; copies a map to build a new one. Edits MANAGER, USER and VIEWER accounts. Does not change the data model.",
       "USER": "Sees only their own maps and the maps shared with them. Builds new maps by copying one of those. Runs, exports and schedules as each share allows.",
       "VIEWER": "Read-only. Opens and runs the maps shared with them. Cannot create, copy or change maps."
     }

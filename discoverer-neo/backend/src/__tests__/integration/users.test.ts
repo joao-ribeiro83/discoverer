@@ -22,6 +22,7 @@ const ADMIN_EMAIL = 'users-admin@example.com';
 // Users created by the admin-CRUD tests, cleaned up alongside the fixtures.
 const CREATED_EMAIL = 'users-created@example.com';
 const CREATED_EMAIL_2 = 'users-created-2@example.com';
+const MANAGER_EMAIL = 'users-manager@example.com';
 
 let searcherToken: string;
 let adminToken: string;
@@ -58,6 +59,7 @@ async function cleanupTestData() {
     ADMIN_EMAIL,
     CREATED_EMAIL,
     CREATED_EMAIL_2,
+    MANAGER_EMAIL,
   ]) {
     await db.delete(users).where(eq(users.email, email));
   }
@@ -445,5 +447,47 @@ describe('DELETE /api/users/:id (admin delete)', () => {
     });
     expect(res.statusCode).toBe(200);
     expect(res.json().data.message).toBe('User deleted');
+  });
+});
+
+describe('MANAGER on the Users routes', () => {
+  let managerToken: string;
+
+  beforeAll(async () => {
+    await createTestUser(MANAGER_EMAIL, 'Manager Max', 'MANAGER');
+    managerToken = await login(MANAGER_EMAIL);
+  });
+
+  const asManager = (method: 'GET' | 'PUT' | 'POST' | 'DELETE', url: string, payload?: object) =>
+    app.inject({ method, url, payload, headers: { authorization: `Bearer ${managerToken}` } });
+
+  it('lists every account except the ADMIN ones', async () => {
+    const res = await asManager('GET', '/api/users');
+    expect(res.statusCode).toBe(200);
+    const listed = res.json().data as Array<{ id: string; role: string }>;
+    expect(listed.some((u) => u.id === matchUserId)).toBe(true);
+    expect(listed.some((u) => u.role === 'ADMIN')).toBe(false);
+  });
+
+  it('edits a USER, but cannot make them an ADMIN', async () => {
+    const ok = await asManager('PUT', `/api/users/${matchUserId}`, { name: 'Fiona Renamed', role: 'VIEWER' });
+    expect(ok.statusCode).toBe(200);
+    expect(ok.json().data).toMatchObject({ name: 'Fiona Renamed', role: 'VIEWER' });
+
+    const promote = await asManager('PUT', `/api/users/${matchUserId}`, { role: 'ADMIN' });
+    expect(promote.statusCode).toBe(403);
+  });
+
+  it('cannot see or edit an ADMIN account: 404, as if it did not exist', async () => {
+    expect((await asManager('PUT', `/api/users/${adminUserId}`, { name: 'Hijacked' })).statusCode).toBe(404);
+    expect((await asManager('GET', `/api/users/${adminUserId}/maps`)).statusCode).toBe(404);
+  });
+
+  it('still cannot create or delete users', async () => {
+    const create = await asManager('POST', '/api/users', {
+      email: 'users-by-manager@example.com', password: TEST_PASSWORD, name: 'Nope',
+    });
+    expect(create.statusCode).toBe(403);
+    expect((await asManager('DELETE', `/api/users/${matchUserId}`)).statusCode).toBe(403);
   });
 });

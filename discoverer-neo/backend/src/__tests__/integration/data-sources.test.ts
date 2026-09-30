@@ -239,7 +239,7 @@ describe('GET /api/data-sources', () => {
     }
   });
 
-  it('returns data sources for manager role too', async () => {
+  it('refuses the data source list to a manager', async () => {
     await createTestUser('ds-admin@example.com', TEST_PASSWORD, 'ADMIN');
     const adminToken = await loginAndReturnToken('ds-admin@example.com', TEST_PASSWORD);
 
@@ -259,11 +259,7 @@ describe('GET /api/data-sources', () => {
       headers: { authorization: `Bearer ${managerToken}` },
     });
 
-    expect(response.statusCode).toBe(200);
-    const managerCreated = (
-      response.json().data as Array<{ name: string }>
-    ).filter((ds) => ds.name === 'Test Oracle DS');
-    expect(managerCreated.length).toBe(1);
+    expect(response.statusCode).toBe(403);
   });
 
   it('returns 403 for viewer role', async () => {
@@ -546,7 +542,7 @@ describe('POST /api/data-sources/:id/test', () => {
     expect(body.data.message).toMatch(/Oracle connection failed/);
   }, 30_000);
 
-  it('is accessible by manager role', async () => {
+  it('is refused to a manager', async () => {
     await createTestUser('ds-admin@example.com', TEST_PASSWORD, 'ADMIN');
     const adminToken = await loginAndReturnToken('ds-admin@example.com', TEST_PASSWORD);
 
@@ -568,7 +564,7 @@ describe('POST /api/data-sources/:id/test', () => {
       headers: { authorization: `Bearer ${managerToken}` },
     });
 
-    expect(response.statusCode).toBe(200);
+    expect(response.statusCode).toBe(403);
   });
 });
 

@@ -63,8 +63,11 @@ export function UsersPage() {
   const { toast } = useToast()
   const currentUser = useAuthStore((s) => s.user)
   const isAdmin = currentUser?.role === 'ADMIN'
-  // A MANAGER may read the list and tidy each user's maps; changing users stays admin-only.
+  // A MANAGER gets only MANAGER, USER and VIEWER accounts from the API, and may
+  // edit, activate and deactivate them and tidy their maps. Creating and
+  // deleting users, credentials and the ADMIN role stay admin-only.
   const canView = isAdmin || currentUser?.role === 'MANAGER'
+  const roleOptions = isAdmin ? ROLES : ROLES.filter((r) => r !== 'ADMIN')
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<AppUser | null>(null)
@@ -207,8 +210,6 @@ export function UsersPage() {
           >
             <MapIcon className="h-4 w-4" />
           </Button>
-          {isAdmin && (
-          <>
           <Button variant="ghost" size="icon" onClick={() => openEdit(user)} title={t('admin:users.editTooltip')}>
             <Pencil className="h-4 w-4" />
           </Button>
@@ -235,6 +236,7 @@ export function UsersPage() {
               <UserCheck className="h-4 w-4" />
             </Button>
           )}
+          {isAdmin && (
           <Button
             variant="ghost"
             size="icon"
@@ -244,7 +246,6 @@ export function UsersPage() {
           >
             <Trash2 className="h-4 w-4" />
           </Button>
-          </>
           )}
         </div>
         )
@@ -316,7 +317,7 @@ export function UsersPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {ROLES.map((r) => (
+                {roleOptions.map((r) => (
                   <SelectItem key={r} value={r}>
                     {r}
                   </SelectItem>
@@ -325,7 +326,7 @@ export function UsersPage() {
             </Select>
             {/* What each role may do; the chosen one is highlighted. */}
             <ul className="space-y-1 rounded-md bg-muted/50 p-2 text-xs" data-testid="role-help">
-              {ROLES.map((r) => (
+              {roleOptions.map((r) => (
                 <li
                   key={r}
                   className={r === form.watch('role') ? 'text-foreground' : 'text-muted-foreground'}

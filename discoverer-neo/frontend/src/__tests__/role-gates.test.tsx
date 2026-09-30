@@ -43,6 +43,7 @@ describe('Sidebar role gates', () => {
     expect(screen.getByRole('link', { name: 'Users' })).toBeInTheDocument()
     for (const name of [
       'Business Areas', 'Folders', 'Items', 'Joins', 'Hierarchies',
+      'Custom Functions', 'Data Sources',
       'Security', 'Audit Log', 'Migration',
     ]) {
       expect(!!screen.queryByRole('link', { name })).toBe(visible)

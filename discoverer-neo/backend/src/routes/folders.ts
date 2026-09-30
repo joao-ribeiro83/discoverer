@@ -657,7 +657,7 @@ export default function folderRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/api/data-sources/:dsId/introspect',
     {
-      preHandler: [fastify.authenticate, fastify.authorize('ADMIN', 'MANAGER')],
+      preHandler: [fastify.authenticate, fastify.authorizeAdmin],
       schema: {
         tags: ['Folders'],
         security: [{ bearerAuth: [] }],
@@ -736,7 +736,7 @@ export default function folderRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/api/data-sources/:dsId/tables',
     {
-      preHandler: [fastify.authenticate, fastify.authorize('ADMIN', 'MANAGER')],
+      preHandler: [fastify.authenticate, fastify.authorizeAdmin],
       schema: {
         tags: ['Folders'],
         security: [{ bearerAuth: [] }],

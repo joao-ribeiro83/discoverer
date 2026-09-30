@@ -167,12 +167,12 @@ describe('VIEWER role', () => {
 // ---------------------------------------------------------------------------
 
 describe('MANAGER role', () => {
-  it('can list data sources', async () => {
+  it('cannot list data sources', async () => {
     await createTestUser(MANAGER_EMAIL, PASSWORD, 'MANAGER');
     const token = await loginAndGetToken(app, MANAGER_EMAIL, PASSWORD);
 
     const res = await authenticatedRequest(app, 'GET', '/api/data-sources', token);
-    expect(res.statusCode).toBe(200);
+    expect(res.statusCode).toBe(403);
   });
 
   it('cannot create business areas (admin only)', async () => {
@@ -201,7 +201,7 @@ describe('MANAGER role', () => {
     expect(res.statusCode).toBe(403);
   });
 
-  it('can create custom functions', async () => {
+  it('cannot create custom functions', async () => {
     await createTestUser(MANAGER_EMAIL, PASSWORD, 'MANAGER');
     const token = await loginAndGetToken(app, MANAGER_EMAIL, PASSWORD);
 
@@ -209,7 +209,7 @@ describe('MANAGER role', () => {
       name: 'Manager Fn',
       functionType: 'SQL',
     });
-    expect(res.statusCode).toBe(201);
+    expect(res.statusCode).toBe(403);
   });
 });
 

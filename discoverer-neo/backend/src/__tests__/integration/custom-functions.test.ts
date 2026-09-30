@@ -427,14 +427,14 @@ describe('Custom function permission enforcement', () => {
     expect(response.statusCode).toBe(403);
   });
 
-  it('allows MANAGER to create', async () => {
+  it('forbids MANAGER from creating', async () => {
     const response = await app.inject({
       method: 'POST',
       url: '/api/custom-functions',
       headers: { authorization: `Bearer ${managerToken}` },
       payload: { name: 'Manager Fn', functionType: 'SQL' },
     });
-    expect(response.statusCode).toBe(201);
+    expect(response.statusCode).toBe(403);
   });
 
   it('allows ADMIN to delete', async () => {

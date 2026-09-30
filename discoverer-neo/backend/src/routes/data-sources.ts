@@ -76,7 +76,7 @@ export default function dataSourcesRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/api/data-sources',
     {
-      preHandler: [fastify.authenticate, fastify.authorize('ADMIN', 'MANAGER')],
+      preHandler: [fastify.authenticate, fastify.authorizeAdmin],
       schema: {
         tags: ['Data Sources'],
         security: [{ bearerAuth: [] }],
@@ -102,7 +102,7 @@ export default function dataSourcesRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/api/data-sources/:id',
     {
-      preHandler: [fastify.authenticate, fastify.authorize('ADMIN', 'MANAGER')],
+      preHandler: [fastify.authenticate, fastify.authorizeAdmin],
       schema: {
         tags: ['Data Sources'],
         security: [{ bearerAuth: [] }],
@@ -314,7 +314,7 @@ export default function dataSourcesRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/api/data-sources/:id/test',
     {
-      preHandler: [fastify.authenticate, fastify.authorize('ADMIN', 'MANAGER')],
+      preHandler: [fastify.authenticate, fastify.authorizeAdmin],
       schema: {
         tags: ['Data Sources'],
         security: [{ bearerAuth: [] }],

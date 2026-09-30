@@ -29,18 +29,21 @@ const mainNavItems = [
   { to: '/dashboard', labelKey: 'items.dashboard', icon: LayoutDashboard },
 ]
 
-/** Changing the data model is ADMIN-only — the backend's `forbidManagerModelling`. */
+/**
+ * ADMIN-only: the data model (the backend's `forbidManagerModelling`), custom
+ * functions and data sources.
+ */
 const modelNavItems = [
   { to: '/admin/business-areas', labelKey: 'items.businessAreas', icon: FolderTree },
   { to: '/admin/folders', labelKey: 'items.folders', icon: FolderOpen },
   { to: '/admin/items', labelKey: 'items.items', icon: Table2 },
   { to: '/admin/joins', labelKey: 'items.joins', icon: GitMerge },
   { to: '/admin/hierarchies', labelKey: 'items.hierarchies', icon: Layers },
+  { to: '/admin/custom-functions', labelKey: 'items.customFunctions', icon: FunctionSquare },
+  { to: '/admin/data-sources', labelKey: 'items.dataSources', icon: Database },
 ]
 
 const adminNavItems = [
-  { to: '/admin/custom-functions', labelKey: 'items.customFunctions', icon: FunctionSquare },
-  { to: '/admin/data-sources', labelKey: 'items.dataSources', icon: Database },
   { to: '/admin/users', labelKey: 'items.users', icon: Users },
 ]
 
@@ -104,10 +107,9 @@ function NavSection({
 export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const { t } = useTranslation('nav')
   const role = useAuthStore((s) => s.user?.role)
-  // MANAGER shares custom functions, data sources and users with ADMIN (see
-  // the backend's `authorize('ADMIN', 'MANAGER')` gates) but not the model
-  // itself; everyone else gets nothing there, so the section is noise at best
-  // and a wall of 403s at worst.
+  // MANAGER shares only the Users page with ADMIN (see the backend's
+  // `authorize('ADMIN', 'MANAGER')` gates); everyone else gets nothing there,
+  // so the section is noise at best and a wall of 403s at worst.
   const isAdmin = role === 'ADMIN'
   const canModel = isAdmin || role === 'MANAGER'
   return (
