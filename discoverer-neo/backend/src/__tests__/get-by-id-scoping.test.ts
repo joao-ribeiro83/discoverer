@@ -31,6 +31,7 @@ const GATES = [
   'authorizeAdmin',
   'authorize(',
   'adminPreHandler',
+  'adminManagerPreHandler',
   'loadMapWithAccess(',
   'canAccessMap(',
   'loadOwnJob(',
@@ -46,6 +47,8 @@ const UNSCOPED: Record<string, string> = {
   // Same catalogue, role-gated (admin/manager only via adminManagerPreHandler)
   // rather than object-scoped, for the same reason the GET above is unscoped.
   'DELETE /api/custom-functions/:id': 'global catalogue, not business-area data',
+  // deleteWorkbook checks canAccessMap(actor, sheet, 'DELETE') for every sheet.
+  'DELETE /api/workbooks/:id': 'each sheet gated in workbook.service deleteWorkbook',
 };
 
 function getRoutesWithParams(): Array<{ route: string; block: string }> {

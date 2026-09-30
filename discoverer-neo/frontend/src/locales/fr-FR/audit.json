@@ -4,7 +4,8 @@
     "description": "Chaque requête de modification — modifications de données, exportations, migrations et événements d'authentification — capturée automatiquement."
   },
   "actions": {
-    "exportCsv": "Exporter le CSV (cette page)"
+    "exportCsv": "Exporter le CSV (cette page)",
+    "exportCsvTooltip": "Exporter la page actuelle des entrées d'audit en CSV"
   },
   "actorUnknown": "Système / non authentifié",
   "csv": {
@@ -47,7 +48,8 @@
     "actionLabel": "Action",
     "actionPlaceholder": "p. ex. POST /api/maps",
     "fromLabel": "De",
-    "toLabel": "À"
+    "toLabel": "À",
+    "clearTooltip": "Effacer tous les filtres et revenir au début"
   },
   "pagination": {
     "noResults": "Aucun résultat"

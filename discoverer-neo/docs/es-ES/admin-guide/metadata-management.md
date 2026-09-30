@@ -262,7 +262,7 @@ Una **combinación** define una relación entre dos carpetas.
 
 Cada combinación tiene una o varias condiciones que vinculan columnas:
 
-1. Haga clic en **+ Agregar condición**
+1. Haga clic en **Añadir par de columnas**
 2. Seleccione:
    - **Elemento 1** — Columna de la carpeta 1
    - **Operador** — = (igual a)

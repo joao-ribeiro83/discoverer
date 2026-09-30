@@ -16,10 +16,11 @@ import {
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import { PanelRightClose, PanelRightOpen, Loader2 } from 'lucide-react'
 import { apiClient, getErrorKind, getErrorMessage } from '@/lib/api'
-import type { MapWithDetails, ExecuteResult } from '@/lib/types'
+import type { MapWithDetails } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import { useToast } from '@/hooks/use-toast'
 import { useMapExport } from '@/hooks/useMapExport'
+import { useMapRun } from '@/hooks/useMapRun'
 const SIZE_KEYS = {
   left: 'discoverer-neo-builder-left',
   right: 'discoverer-neo-builder-right',
@@ -59,7 +60,8 @@ export function MapBuilderPage() {
 
   const [hydrating, setHydrating] = useState(!isNew)
   const [configKey, setConfigKey] = useState<string | null>(null)
-  const [result, setResult] = useState<ExecuteResult | null>(null)
+  // The results panel is open from a Run click until the user closes it.
+  const [showResults, setShowResults] = useState(false)
   const [lastParameters, setLastParameters] = useState<Record<string, unknown>>({})
   const [paramPromptOpen, setParamPromptOpen] = useState(false)
   const [rightOpen, setRightOpen] = useState(true)
@@ -110,14 +112,14 @@ export function MapBuilderPage() {
       if (isNew) {
         useMapBuilderStore.getState().clearMap()
         loadedRef.current = 'new'
-        setResult(null)
+        setShowResults(false)
         setHydrating(false)
         return
       }
       if (loadedRef.current === id) return
 
       setHydrating(true)
-      setResult(null)
+      setShowResults(false)
       try {
         const map = (await apiClient.maps.get(id)).data.data
         // The map's items carry only ids; fetch each source item so chips can
@@ -208,8 +210,12 @@ export function MapBuilderPage() {
       }),
   })
 
+  // A Run goes through the same run queue as the viewer (`map_runs`), so it
+  // shows on the Executions page, keeps its rows, and can be exported.
+  const mapRun = useMapRun(mapId ?? undefined)
+
   const runMutation = useMutation({
-    mutationFn: async (parameters: Record<string, unknown>): Promise<ExecuteResult> => {
+    mutationFn: async (parameters: Record<string, unknown>): Promise<void> => {
       let state = useMapBuilderStore.getState()
       if (state.selectedItems.length === 0) {
         throw new Error(t('mapBuilder:page.runErrorNoColumns'))
@@ -220,16 +226,13 @@ export function MapBuilderPage() {
         maybeNavigate(map)
         state = useMapBuilderStore.getState()
       }
-      return (await apiClient.maps.execute(state.mapId!, { parameters })).data.data
-    },
-    onSuccess: (res, parameters) => {
-      setResult(res)
+      setShowResults(true)
       setLastParameters(parameters)
+      await mapRun.request({ parameters }, state.mapId!)
+    },
+    onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['maps'] })
-      toast({
-        title: t('mapBuilder:page.executedTitle'),
-        description: t('mapBuilder:page.executedDescription', { count: res.rowCount }),
-      })
+      void queryClient.invalidateQueries({ queryKey: ['runs'] })
     },
     onError: (err) => {
       // Same rule as the viewer: a refusal is explained by the panel, so the
@@ -244,6 +247,40 @@ export function MapBuilderPage() {
       })
     },
   })
+
+  // The run finishes after the request returns: say so once per run, when it
+  // lands — the row count only exists then.
+  const announcedRunRef = useRef<string | null>(null)
+  const finishedRun = mapRun.run
+  useEffect(() => {
+    if (!finishedRun || announcedRunRef.current === finishedRun.id) return
+    if (finishedRun.status === 'COMPLETED') {
+      announcedRunRef.current = finishedRun.id
+      toast({
+        title: t('mapBuilder:page.executedTitle'),
+        description: t('mapBuilder:page.executedDescription', { count: finishedRun.rowCount ?? 0 }),
+      })
+    } else if (finishedRun.status === 'FAILED') {
+      announcedRunRef.current = finishedRun.id
+      const refused = finishedRun.decoration?.error?.kind === 'REFUSED'
+      toast({
+        title: refused ? t('mapBuilder:page.runRefusedTitle') : t('mapBuilder:page.runFailedTitle'),
+        description: refused
+          ? t('mapBuilder:page.runRefusedDescription')
+          : (finishedRun.errorMessage ?? undefined),
+        variant: refused ? 'default' : 'destructive',
+      })
+    }
+  }, [finishedRun, toast, t])
+
+  // A request the server turned down before any run existed.
+  useEffect(() => {
+    if (mapRun.error && !mapRun.run) {
+      toast({ title: t('mapBuilder:page.runFailedTitle'), description: mapRun.error, variant: 'destructive' })
+    }
+  }, [mapRun.error, mapRun.run, toast, t])
+
+  const runInFlight = runMutation.isPending || mapRun.isQueued || mapRun.isRunning
 
   /** Only prompt when at least one declared parameter lacks a usable default. */
   const triggerRun = useCallback(() => {
@@ -372,7 +409,7 @@ export function MapBuilderPage() {
         onRun={triggerRun}
         onSave={() => saveMutation.mutate()}
         onExport={(f) => void handleExport(f)}
-        isRunning={runMutation.isPending}
+        isRunning={runInFlight}
         isSaving={saveMutation.isPending}
         isExporting={exportCtl.isExporting}
       />
@@ -401,7 +438,7 @@ export function MapBuilderPage() {
             <div className="min-h-0 flex-1">
               <MapCanvas onConfigure={setConfigKey} />
             </div>
-            {(result || runMutation.isPending || runMutation.isError) && (
+            {(showResults || runMutation.isError) && (
               <>
                 <ResizeHandle
                   direction="row"
@@ -416,12 +453,23 @@ export function MapBuilderPage() {
                   mapId={mapId}
                   mapName={mapName}
                   mapType={mapType}
-                  result={result}
+                  result={mapRun.result}
+                  run={mapRun.run ?? undefined}
                   parameters={lastParameters}
-                  isRunning={runMutation.isPending}
-                  runError={runMutation.error}
-                  onResultChange={setResult}
-                  onClose={() => setResult(null)}
+                  isRunning={runInFlight}
+                  runError={runMutation.error ?? mapRun.error}
+                  // Rows come from the stored run, 500 at a time — never a live re-run.
+                  onResultChange={() => {}}
+                  onLoadMore={() => void mapRun.loadMore()}
+                  hasMore={
+                    mapRun.run?.status === 'COMPLETED' &&
+                    mapRun.run.rowCount != null &&
+                    mapRun.rows.length < mapRun.run.rowCount
+                  }
+                  onClose={() => {
+                    setShowResults(false)
+                    runMutation.reset()
+                  }}
                 />
                 </div>
               </>

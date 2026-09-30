@@ -107,7 +107,7 @@ describe('AuditLogPage', () => {
     renderWithProviders(<AuditLogPage />)
     await waitFor(() => expect(screen.getByText('Ada Admin')).toBeInTheDocument())
 
-    fireEvent.click(screen.getByTitle('View details'))
+    fireEvent.click(screen.getByRole('button', { name: 'View details' }))
 
     await waitFor(() => expect(screen.getByText('Audit entry details')).toBeInTheDocument())
     const dialog = screen.getByRole('dialog')
@@ -200,7 +200,7 @@ describe('AuditLogPage', () => {
     renderWithProviders(<AuditLogPage />)
     await waitFor(() => expect(screen.getByText('Ada Admin')).toBeInTheDocument())
 
-    fireEvent.click(screen.getByTitle('View details'))
+    fireEvent.click(screen.getByRole('button', { name: 'View details' }))
     await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument())
 
     fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' })

@@ -10,7 +10,13 @@
     "runMigration": "Executar migração",
     "reimportMaps": "Reimportar mapas",
     "reimportAll": "Reimportar tudo",
-    "compile": "Compilar campos calculados"
+    "compile": "Compilar campos calculados",
+    "detectVersionTitle": "Detetar a versão do EUL da origem de dados selecionada",
+    "analyzeTitle": "Analisar o EUL quanto à preparação e à complexidade da migração",
+    "runTitle": "Iniciar o trabalho de migração",
+    "reimportMapsTitle": "Reimportar os mapas do EUL, substituindo os mapas existentes",
+    "reimportAllTitle": "Reimportar todos os objetos do EUL com a versão atual do migrador",
+    "compileTitle": "Compilar todos os campos calculados e gerar o respetivo SQL"
   },
   "source": {
     "title": "Origem",

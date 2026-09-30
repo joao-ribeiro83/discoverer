@@ -8,10 +8,18 @@ Discoverer Neo has four user roles with different capabilities:
 
 | Role | Capabilities |
 |------|-------------|
-| **ADMIN** | Full system access — users, business areas, data sources, audit logs |
-| **MANAGER** | Create and manage business areas, grant permissions to other users |
-| **USER** | Create maps, execute queries, share maps with colleagues |
-| **VIEWER** | Read-only access to shared maps and dashboards |
+| **ADMIN** | Full system access — users, business areas, data sources, audit logs. Opens, changes, shares and deletes every map. |
+| **MANAGER** | Models the data (business areas, folders, items, joins). Opens, runs, exports, schedules and shares **every** map, and can change a map's owner. Changes only their own maps. |
+| **USER** | Sees only their own maps and the maps shared with them. Builds a new map by copying one of those. |
+| **VIEWER** | Read-only. Opens and runs the maps shared with them. Cannot create, copy or change maps. |
+
+The Users page shows these rules under the **Role** field when you edit a
+user. A MANAGER can open the Users page to see each user's maps, and there
+change a share's level, remove a share, or give a map to a new owner. Only an
+ADMIN can create, change or delete users.
+
+Anyone except a VIEWER can copy a map they can see. The copy belongs to them.
+Running it still needs a grant on its business area (see "two gates" below).
 
 ## Creating Users
 
@@ -62,32 +70,32 @@ After users exist, grant them access to specific business areas.
 
 1. Admin Panel → **Business Areas**
 2. Select business area → **Manage Access**
-3. Click **+ Grant Permission**
-4. Select:
-   - **User** — From dropdown
-   - **Permission Level** — CREATE, EDIT, DELETE, EXPORT, SCHEDULE, or VIEW
-5. Click **Grant**
+3. Tick one or more users in the list. Type in the filter box to find them.
+4. Choose the **Permission** level. The box under it says what that level
+   allows.
+5. Click **Add**. Every ticked user gets that level.
 
 ### Permission Levels
 
 The levels form a ladder. Each level includes every level above it in the
-table.
+table. No level shows other people's maps — only a share (or the MANAGER
+role) does that.
 
 | Level | What it adds |
 |-------|--------------|
 | **VIEW** | Read the data in the area's folders. See the area's folders, items, joins and hierarchies. Run maps you own, maps shared with you, and public maps. |
 | **EXPORT** | Same as VIEW today (see note 2). |
 | **SCHEDULE** | Same as VIEW today (see note 2). |
-| **CREATE** | Create maps, folders, items, joins and hierarchies. See, run, export, schedule and copy **every** map in the area. |
-| **EDIT** | Change the area, its folders, items, joins, hierarchies, and every map in it. |
-| **DELETE** | Delete folders, items, joins, hierarchies, and every map in the area. |
+| **CREATE** | Create new maps, folders, items, joins and hierarchies in the area. |
+| **EDIT** | Change the area and its folders, items, joins and hierarchies. |
+| **DELETE** | Delete folders, items, joins and hierarchies in the area. |
 
 ADMIN users skip all of these checks.
 
 **Note 1 — two gates.** To run a map, a user must pass two checks:
 
-1. **May I see this map?** Yes if you own it, it is public, it is shared with
-   you, or you hold CREATE or higher in its area.
+1. **May I see this map?** Yes if you are an ADMIN or a MANAGER, you own it,
+   it is public, or it is shared with you.
 2. **May I read its data?** Yes if you hold **any** level in the business area
    of every folder the map uses.
 
@@ -107,9 +115,9 @@ It already includes the levels below it. Do not add lower levels on top.
 
 | The user must… | Grant |
 |----------------|-------|
-| Run maps that others share with them | VIEW |
-| Build their own maps | CREATE |
-| Maintain the area's folders, items and maps | EDIT |
+| Run maps that others share with them, or copy them | VIEW |
+| Build new maps from scratch | CREATE |
+| Maintain the area's folders, items and joins | EDIT |
 | Also remove them | DELETE |
 
 ### Revoke Permission

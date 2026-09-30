@@ -8,10 +8,20 @@ Discoverer Neo tiene cuatro roles de usuario con capacidades diferentes:
 
 | Rol | Capacidades |
 |------|-------------|
-| **ADMIN** | Acceso completo al sistema: usuarios, áreas de negocio, orígenes de datos, registros de auditoría |
-| **MANAGER** | Crear y gestionar áreas de negocio, conceder permisos a otros usuarios |
-| **USER** | Crear mapas, ejecutar consultas, compartir mapas con colegas |
-| **VIEWER** | Acceso de solo lectura a mapas y paneles compartidos |
+| **ADMIN** | Acceso completo al sistema: usuarios, áreas de negocio, orígenes de datos, registros de auditoría. Abre, cambia, comparte y elimina todos los mapas. |
+| **MANAGER** | Modela los datos (áreas de negocio, carpetas, elementos, combinaciones). Abre, ejecuta, exporta, programa y comparte **todos** los mapas, y puede cambiar el propietario de un mapa. Solo cambia sus propios mapas. |
+| **USER** | Solo ve sus propios mapas y los que se han compartido con él. Crea un mapa nuevo copiando uno de ellos. |
+| **VIEWER** | Solo lectura. Abre y ejecuta los mapas compartidos con él. No puede crear, copiar ni cambiar mapas. |
+
+La página Usuarios muestra estas reglas bajo el campo **Rol** cuando edita un
+usuario. Un MANAGER puede abrir la página Usuarios para ver los mapas de cada
+usuario y, allí, cambiar el nivel de un uso compartido, quitarlo o asignar un
+mapa a un nuevo propietario. Solo un ADMIN puede crear, cambiar o eliminar
+usuarios.
+
+Cualquier persona, salvo un VIEWER, puede copiar un mapa que pueda ver. La copia
+le pertenece. Ejecutarla sigue exigiendo un permiso sobre su área de negocio
+(véase «dos comprobaciones» más abajo).
 
 ## Creación de usuarios
 
@@ -62,30 +72,28 @@ Una vez que existan los usuarios, concédales acceso a áreas de negocio especí
 
 1. Panel de administración → **Áreas de negocio**
 2. Seleccione un área de negocio → **Gestionar acceso**
-3. Haga clic en **+ Conceder permiso**
-4. Seleccione:
-   - **Usuario** — Del menú desplegable
-   - **Nivel de permiso** — CREATE, EDIT, DELETE, EXPORT, SCHEDULE o VIEW
-5. Haga clic en **Conceder**
+3. Marque uno o varios usuarios de la lista. Escriba en el cuadro de filtro para encontrarlos.
+4. Elija el nivel de **Permiso**. El cuadro de debajo indica lo que permite ese nivel.
+5. Haga clic en **Añadir**. Todos los usuarios marcados reciben ese nivel.
 
 ### Niveles de permiso
 
-Los niveles forman una jerarquía. Cada nivel incluye todos los niveles anteriores de la tabla.
+Los niveles forman una jerarquía. Cada nivel incluye todos los niveles anteriores de la tabla. Ningún nivel muestra los mapas de otras personas: solo lo hace un uso compartido (o el rol MANAGER).
 
 | Nivel | Lo que añade |
 |-------|--------------|
 | **VIEW** | Leer los datos en las carpetas del área. Ver las carpetas, elementos, combinaciones y jerarquías del área. Ejecutar mapas que usted posee, mapas compartidos con usted y mapas públicos. |
 | **EXPORT** | Igual que VIEW actualmente (ver nota 2). |
 | **SCHEDULE** | Igual que VIEW actualmente (ver nota 2). |
-| **CREATE** | Crear mapas, carpetas, elementos, combinaciones y jerarquías. Ver, ejecutar, exportar, programar y copiar **todos** los mapas del área. |
-| **EDIT** | Cambiar el área, sus carpetas, elementos, combinaciones, jerarquías y todos los mapas en él. |
-| **DELETE** | Eliminar carpetas, elementos, combinaciones, jerarquías y todos los mapas del área. |
+| **CREATE** | Crear mapas nuevos, carpetas, elementos, combinaciones y jerarquías en el área. |
+| **EDIT** | Cambiar el área y sus carpetas, elementos, combinaciones y jerarquías. |
+| **DELETE** | Eliminar carpetas, elementos, combinaciones y jerarquías del área. |
 
 Los usuarios ADMIN omiten todas estas comprobaciones.
 
 **Nota 1 — dos comprobaciones.** Para ejecutar un mapa, un usuario debe pasar dos comprobaciones:
 
-1. **¿Puedo ver este mapa?** Sí si es propietario, es público, está compartido con usted o tiene CREATE o superior en su área.
+1. **¿Puedo ver este mapa?** Sí si es ADMIN o MANAGER, es propietario, el mapa es público o está compartido con usted.
 2. **¿Puedo leer sus datos?** Sí si tiene **cualquier** permiso en el área de negocio de cada carpeta que utiliza el mapa.
 
 Por lo tanto, un mapa compartido con un usuario falla si el usuario no tiene permiso en el área de la que provienen los datos.
@@ -98,9 +106,9 @@ Conceda **un** permiso por usuario y por área de negocio — el nivel más alto
 
 | El usuario debe… | Conceda |
 |----------------|-------|
-| Ejecutar mapas que otros comparten con usted | VIEW |
-| Crear sus propios mapas | CREATE |
-| Mantener las carpetas, elementos y mapas del área | EDIT |
+| Ejecutar mapas que otros comparten con usted, o copiarlos | VIEW |
+| Crear mapas nuevos desde cero | CREATE |
+| Mantener las carpetas, elementos y combinaciones del área | EDIT |
 | También eliminarlos | DELETE |
 
 ### Revocar un permiso

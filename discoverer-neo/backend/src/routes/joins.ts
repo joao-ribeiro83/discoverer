@@ -23,12 +23,50 @@ import {
 // would mean a full outer join is a refusal (D-038).
 const JoinTypeEnum = z.enum(['INNER', 'LEFT', 'RIGHT']);
 
+const JOIN_OPERATORS = ['=', '<', '>', '<=', '>=', '<>'] as const;
+
+/** One column pair of a multi-column join; pairs are ANDed in order. */
+const PredicateSchema = z.object({
+  leftItemId: z.string().uuid().nullable(),
+  rightItemId: z.string().uuid().nullable(),
+  operator: z.enum(JOIN_OPERATORS).optional(),
+});
+
+const predicatesBodySchema = {
+  type: 'array',
+  maxItems: 20,
+  items: {
+    type: 'object',
+    required: ['leftItemId', 'rightItemId'],
+    properties: {
+      leftItemId: { type: ['string', 'null'], format: 'uuid' },
+      rightItemId: { type: ['string', 'null'], format: 'uuid' },
+      operator: { type: 'string', enum: [...JOIN_OPERATORS] },
+    },
+  },
+} as const;
+
+const predicatesResponseSchema = {
+  type: 'array',
+  items: {
+    type: 'object',
+    properties: {
+      leftItemId: { type: ['string', 'null'] },
+      rightItemId: { type: ['string', 'null'] },
+      leftItemName: { type: ['string', 'null'] },
+      rightItemName: { type: ['string', 'null'] },
+      operator: { type: 'string' },
+    },
+  },
+} as const;
+
 const CreateBodySchema = z.object({
   name: z.string().min(1).max(255),
   leftFolderId: z.string().uuid(),
   rightFolderId: z.string().uuid(),
   leftItemId: z.string().uuid().nullable().optional(),
   rightItemId: z.string().uuid().nullable().optional(),
+  predicates: z.array(PredicateSchema).max(20).optional(),
   joinType: JoinTypeEnum,
 });
 
@@ -38,6 +76,7 @@ const UpdateBodySchema = z.object({
   rightFolderId: z.string().uuid().optional(),
   leftItemId: z.string().uuid().nullable().optional(),
   rightItemId: z.string().uuid().nullable().optional(),
+  predicates: z.array(PredicateSchema).max(20).optional(),
   joinType: JoinTypeEnum.optional(),
 });
 
@@ -67,6 +106,8 @@ const joinSchema = {
     leftItemId: { type: ['string', 'null'] },
     rightItemId: { type: ['string', 'null'] },
     joinType: { type: 'string', enum: ['INNER', 'LEFT', 'RIGHT'] },
+    predicateCount: { type: 'number' },
+    predicates: predicatesResponseSchema,
     isActive: { type: 'boolean' },
     createdAt: { type: 'string' },
   },
@@ -88,6 +129,8 @@ const joinWithDetailsSchema = {
     rightFolderName: { type: 'string' },
     leftItemName: { type: ['string', 'null'] },
     rightItemName: { type: ['string', 'null'] },
+    predicateCount: { type: 'number' },
+    predicates: predicatesResponseSchema,
     businessAreaId: { type: 'string' },
   },
 } as const;
@@ -211,6 +254,7 @@ export default function joinRoutes(fastify: FastifyInstance) {
             rightFolderId: { type: 'string', format: 'uuid' },
             leftItemId: { type: ['string', 'null'], format: 'uuid' },
             rightItemId: { type: ['string', 'null'], format: 'uuid' },
+            predicates: predicatesBodySchema,
             joinType: { type: 'string', enum: ['INNER', 'LEFT', 'RIGHT'] },
           },
         },
@@ -252,6 +296,7 @@ export default function joinRoutes(fastify: FastifyInstance) {
           rightFolderId: bodyParsed.data.rightFolderId,
           leftItemId: bodyParsed.data.leftItemId,
           rightItemId: bodyParsed.data.rightItemId,
+          predicates: bodyParsed.data.predicates,
           joinType: bodyParsed.data.joinType,
         });
 
@@ -290,6 +335,7 @@ export default function joinRoutes(fastify: FastifyInstance) {
             rightFolderId: { type: 'string', format: 'uuid' },
             leftItemId: { type: ['string', 'null'], format: 'uuid' },
             rightItemId: { type: ['string', 'null'], format: 'uuid' },
+            predicates: predicatesBodySchema,
             joinType: { type: 'string', enum: ['INNER', 'LEFT', 'RIGHT'] },
           },
         },

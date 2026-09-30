@@ -38,7 +38,6 @@
       "dialogTitle": "Concesiones — {{name}}",
       "dialogDescription": "Controle qué usuarios pueden acceder a esta área de negocio y qué pueden hacer.",
       "userLabel": "Usuario",
-      "selectUserPlaceholder": "Seleccione un usuario",
       "permissionLabel": "Permiso",
       "addButton": "Agregar",
       "revokeTitle": "Revocar",
@@ -48,9 +47,23 @@
       "toast": {
         "accessGranted": "Acceso concedido",
         "grantFailed": "Error al conceder el acceso",
-        "accessRevoked": "Acceso revocado"
+        "accessRevoked": "Acceso revocado",
+        "accessGrantedCount_one": "Acceso otorgado a {{count}} usuario",
+        "accessGrantedCount_other": "Acceso otorgado a {{count}} usuarios"
+      },
+      "addTooltip": "Otorgar a cada usuario marcado el permiso elegido en esta área de negocio",
+      "filterUsersPlaceholder": "Filtrar usuarios por nombre o correo electrónico",
+      "selectedCount": "{{count}} seleccionado",
+      "levelHelp": {
+        "VIEW": "Leer los datos en las carpetas de esta área. Ejecutar mapas compartidos con el usuario. Ver las carpetas, elementos, combinaciones y jerarquías del área.",
+        "EXPORT": "Igual que VIEW. Los derechos de exportación y de programación de un mapa dependen de cómo se comparte ese mapa.",
+        "SCHEDULE": "Igual que VIEW. Los derechos de exportación y de programación de un mapa dependen de cómo se comparte ese mapa.",
+        "CREATE": "Todo lo que hay en VIEW, más crear nuevos mapas, carpetas, elementos, combinaciones y jerarquías en esta área.",
+        "EDIT": "Todo lo que hay en CREATE, más cambiar esta área y sus carpetas, elementos, combinaciones y jerarquías.",
+        "DELETE": "Todo lo que hay en EDIT, más eliminar carpetas, elementos, combinaciones y jerarquías en esta área."
       }
-    }
+    },
+    "createButtonTooltip": "Crear una nueva área de negocio"
   },
   "folders": {
     "title": "Carpetas",
@@ -120,7 +133,8 @@
       "added": "Elementos nuevos: {{names}}",
       "updated": "Actualizados: {{names}}",
       "missing": "La columna ya no existe en el origen (elemento conservado — bórrelo si ningún mapa lo usa): {{names}}"
-    }
+    },
+    "createButtonTooltip": "Crear una nueva carpeta"
   },
   "items": {
     "title": "Elementos",
@@ -164,7 +178,8 @@
       "updated": "Elemento actualizado",
       "created": "Elemento creado",
       "deactivated": "Elemento desactivado"
-    }
+    },
+    "createButtonTooltip": "Crear un nuevo elemento"
   },
   "joins": {
     "title": "Combinaciones",
@@ -175,7 +190,8 @@
     "entityLabel": "combinación",
     "columns": {
       "leftFolder": "Carpeta izquierda",
-      "rightFolder": "Carpeta derecha"
+      "rightFolder": "Carpeta derecha",
+      "columns": "Columnas"
     },
     "dialog": {
       "editTitle": "Editar combinación",
@@ -189,7 +205,12 @@
       "leftItemLabel": "Elemento izquierdo",
       "rightItemLabel": "Elemento derecho",
       "selectItemPlaceholder": "Seleccione un elemento",
-      "joinTypeLabel": "Tipo de combinación"
+      "joinTypeLabel": "Tipo de combinación",
+      "operatorLabel": "Operador",
+      "operatorTooltip": "Cómo deben compararse las dos columnas. Casi siempre \"=\".",
+      "addPairButton": "Añadir par de columnas",
+      "addPairTooltip": "Hacer coincidir las dos carpetas por una columna más. Todos los pares deben coincidir (AND).",
+      "removePairTooltip": "Quitar este par de columnas de la combinación"
     },
     "validation": {
       "leftFolderRequired": "La carpeta izquierda es obligatoria",
@@ -201,7 +222,8 @@
       "updated": "Combinación actualizada",
       "created": "Combinación creada",
       "deactivated": "Combinación desactivada"
-    }
+    },
+    "createButtonTooltip": "Crear una nueva combinación"
   },
   "hierarchies": {
     "title": "Jerarquías",
@@ -224,13 +246,15 @@
       "noLevelsYet": "Aún no hay niveles: agregue al menos uno.",
       "levelNamePlaceholder": "Nombre del nivel",
       "itemPlaceholder": "Elemento",
-      "reorderAria": "Reordenar nivel"
+      "reorderAria": "Reordenar nivel",
+      "removeLevelButtonTooltip": "Quitar este nivel"
     },
     "toast": {
       "updated": "Jerarquía actualizada",
       "created": "Jerarquía creada",
       "deactivated": "Jerarquía desactivada"
-    }
+    },
+    "createButtonTooltip": "Crear una nueva jerarquía"
   },
   "customFunctions": {
     "title": "Funciones personalizadas",
@@ -283,7 +307,8 @@
       "button": "Buscar",
       "noResults": "No se encontraron funciones.",
       "notCallable": "No se puede llamar desde SQL: {{reason}}",
-      "truncated": "Hay más funciones. Escriba más del nombre para acotar la búsqueda."
+      "truncated": "Hay más funciones. Escriba más del nombre para acotar la búsqueda.",
+      "buttonTooltip": "Buscar funciones y paquetes de la base de datos"
     },
     "refresh": {
       "one": "Actualizar desde la base de datos",
@@ -296,7 +321,8 @@
       "compile": "Campos calculados recompilados: {{message}}",
       "changed": "actualizado: {{what}}",
       "missing": "ya no existe en Oracle — se conserva, porque los campos calculados aún pueden llamarla"
-    }
+    },
+    "createButtonTooltip": "Crear una nueva función personalizada"
   },
   "dataSources": {
     "title": "Orígenes de datos",
@@ -354,8 +380,10 @@
         "importComplete": "Importación completada",
         "importCompleteDescription": "Se crearon {{created}} carpeta(s); se omitieron {{skipped}}.",
         "importFailed": "Error en la importación"
-      }
-    }
+      },
+      "discoverTablesButtonTooltip": "Volver a leer las tablas de este esquema"
+    },
+    "createButtonTooltip": "Crear una nueva conexión de origen de datos"
   },
   "users": {
     "title": "Usuarios",
@@ -420,8 +448,27 @@
         "OWNER": "Propietario",
         "SHARE": "Compartido",
         "PUBLIC": "Público",
-        "GRANT": "Área de negocio"
+        "ROLE": "Rol de gestor"
+      },
+      "owner": "Propietario: {{name}}",
+      "newOwner": "Nuevo propietario",
+      "changeOwnerTooltip": "Dar este mapa a otro usuario. El nuevo propietario puede cambiarlo, compartirlo y eliminarlo.",
+      "removeShareTooltip": "Quitar este mapa al usuario. Ya no podrá abrirlo.",
+      "shareLevelTooltip": "Lo que este usuario puede hacer con el mapa compartido",
+      "toast": {
+        "shareChanged": "Compartición cambiada",
+        "shareRemoved": "Compartición quitada",
+        "ownerChanged": "Propietario cambiado"
       }
+    },
+    "createTooltip": "Añadir una nueva cuenta de usuario",
+    "editTooltip": "Cambiar el nombre, el correo electrónico, la contraseña o el rol de este usuario",
+    "deleteTooltip": "Eliminar definitivamente esta cuenta de usuario",
+    "roleHelp": {
+      "ADMIN": "Puede hacerlo todo: usuarios, áreas de negocio, orígenes de datos, seguridad y auditoría. Puede abrir, cambiar, compartir y eliminar todos los mapas.",
+      "MANAGER": "Modela los datos (áreas de negocio, carpetas, elementos, combinaciones). Puede abrir, ejecutar y compartir todos los mapas, y cambiar quién es el propietario de un mapa. Solo cambia sus propios mapas; copia un mapa para crear uno nuevo.",
+      "USER": "Solo ve sus propios mapas y los mapas compartidos con él. Crea mapas nuevos copiando uno de ellos. Ejecuta, exporta y programa según lo que permita cada compartición.",
+      "VIEWER": "Solo lectura. Abre y ejecuta los mapas compartidos con él. No puede crear, copiar ni cambiar mapas."
     }
   }
 }

@@ -138,14 +138,16 @@ describe('GET /api/users/search', () => {
     expect(Object.keys(hit).sort()).toEqual(['email', 'id', 'name']);
   });
 
-  it('returns an empty array for a blank query', async () => {
+  it('lists everyone but the caller for a blank query', async () => {
     const res = await app.inject({
       method: 'GET',
       url: '/api/users/search',
       headers: { authorization: `Bearer ${searcherToken}` },
     });
     expect(res.statusCode).toBe(200);
-    expect(res.json().data).toEqual([]);
+    const data = res.json().data as { id: string; email: string }[];
+    expect(data.length).toBeGreaterThan(0);
+    expect(data.some((u) => u.email === SEARCHER_EMAIL)).toBe(false);
   });
 });
 
@@ -243,7 +245,8 @@ describe('GET /api/users/:id/maps (admin)', () => {
     });
     expect(res.statusCode).toBe(200);
     const hit = res.json().data.find((m: { id: string }) => m.id === sharedMapId);
-    expect(hit).toEqual({ id: sharedMapId, name: 'Users-test shared map', via: 'SHARE', sharePermission: 'VIEW' });
+    expect(hit).toMatchObject({ id: sharedMapId, name: 'Users-test shared map', via: 'SHARE', sharePermission: 'VIEW' });
+    expect(hit.ownerName).toBeTruthy();
   });
 
   it('does not list it for a user it was not shared with', async () => {

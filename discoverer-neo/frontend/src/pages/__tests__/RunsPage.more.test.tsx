@@ -175,7 +175,7 @@ describe('RunsPage delete', () => {
     renderPage()
     const row = (await screen.findByText('Sales by Region')).closest('tr')!
 
-    fireEvent.click(within(row).getByTitle('Delete'))
+    fireEvent.click(within(row).getByRole('button', { name: 'Delete' }))
     const dialog = await screen.findByRole('dialog')
 
     fireEvent.click(within(dialog).getByRole('button', { name: /^delete$/i }))
@@ -189,7 +189,7 @@ describe('RunsPage delete', () => {
     mockedApi.runs.list.mockResolvedValue(envelope([makeRun({ status: 'RUNNING' })]) as never)
     renderPage()
     const row = (await screen.findByText('Sales by Region')).closest('tr')!
-    expect(within(row).queryByTitle('Delete')).not.toBeInTheDocument()
+    expect(within(row).queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument()
   })
 })
 
@@ -201,7 +201,7 @@ describe('RunsPage "Run again" toast', () => {
     renderPage()
     const row = (await screen.findByText('Sales by Region')).closest('tr')!
 
-    fireEvent.click(within(row).getByTitle('Run again'))
+    fireEvent.click(within(row).getByRole('button', { name: 'Run again' }))
 
     await waitFor(() =>
       expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Result reused' })),
@@ -215,7 +215,7 @@ describe('RunsPage "Run again" toast', () => {
     renderPage()
     const row = (await screen.findByText('Sales by Region')).closest('tr')!
 
-    fireEvent.click(within(row).getByTitle('Run again'))
+    fireEvent.click(within(row).getByRole('button', { name: 'Run again' }))
 
     await waitFor(() => expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Queued' })))
   })

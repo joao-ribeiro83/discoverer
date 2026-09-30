@@ -240,6 +240,7 @@ export function ExecutionPanel({
                 size="sm"
                 className="h-7 gap-1 text-xs"
                 onClick={() => setSqlOpen((v) => !v)}
+                title={t('mapViewer:execution.toggleSqlTooltip')}
               >
                 {sqlOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
                 {t('mapViewer:execution.sql')}
@@ -252,6 +253,7 @@ export function ExecutionPanel({
                 className="h-7 gap-1 text-xs"
                 disabled={explainMutation.isPending}
                 onClick={() => explainMutation.mutate()}
+                title={t('mapViewer:execution.explainTooltip')}
               >
                 <Network className="h-3.5 w-3.5" />
                 {t('mapViewer:execution.explain')}
@@ -269,6 +271,7 @@ export function ExecutionPanel({
                 className="h-7 gap-1 text-xs"
                 disabled={exportCtl.isExporting || !mapId}
                 onClick={() => exportCtl.exportFormat('XLSX')}
+                title={t('mapViewer:execution.exportExcelTooltip')}
               >
                 {exportCtl.isExporting && exportCtl.format === 'XLSX' ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -283,6 +286,7 @@ export function ExecutionPanel({
                 className="h-7 gap-1 text-xs"
                 disabled={exportCtl.isExporting || !mapId}
                 onClick={() => exportCtl.exportFormat('CSV')}
+                title={t('mapViewer:execution.exportCsvTooltip')}
               >
                 {exportCtl.isExporting && exportCtl.format === 'CSV' ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -297,6 +301,7 @@ export function ExecutionPanel({
                 className="h-7 gap-1 text-xs"
                 disabled={exportCtl.isExporting || !mapId}
                 onClick={() => setPdfOpen(true)}
+                title={t('mapViewer:execution.exportPdfTooltip')}
               >
                 {exportCtl.isExporting && exportCtl.format === 'PDF' ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -430,6 +435,7 @@ export function ExecutionPanel({
             className="h-7 gap-1 text-xs"
             disabled={onLoadMore ? false : loadMoreMutation.isPending || !mapId}
             onClick={() => (onLoadMore ? onLoadMore() : loadMoreMutation.mutate())}
+            title={t('mapViewer:execution.loadMoreTooltip')}
           >
             {!onLoadMore && loadMoreMutation.isPending && (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />

@@ -278,6 +278,7 @@ export function FormulaEditorDialog({
                 size="sm"
                 onClick={() => void handleTest()}
                 disabled={!mapId || !field || testState.status === 'loading'}
+                title={t('mapBuilder:panels.formula.testFormulaTooltip')}
               >
                 {testState.status === 'loading' && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                 {t('mapBuilder:panels.formula.testFormula')}

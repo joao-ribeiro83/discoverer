@@ -20,7 +20,7 @@ vi.mock('@tanstack/react-virtual', () => ({
 
 vi.mock('@/lib/api', () => ({
   apiClient: {
-    maps: { listMine: vi.fn(), listAll: vi.fn(), delete: vi.fn(), listShares: vi.fn() },
+    maps: { listMine: vi.fn(), listAll: vi.fn(), delete: vi.fn(), listShares: vi.fn(), duplicate: vi.fn() },
     businessAreas: { list: vi.fn() },
     users: { search: vi.fn() },
     workbooks: { listBrowse: vi.fn(), delete: vi.fn() },
@@ -227,7 +227,7 @@ describe('MapsListPage', () => {
     renderPage()
 
     await screen.findByText('Sales by Region')
-    fireEvent.click(screen.getByTitle('Delete'))
+    fireEvent.click(screen.getByRole('button', { name: 'Delete this map' }))
 
     const dialog = await screen.findByRole('dialog')
     expect(within(dialog).getByText(/This will deactivate/)).toBeInTheDocument()
@@ -247,7 +247,7 @@ describe('MapsListPage', () => {
     renderPage()
 
     await screen.findByText('Sales by Region')
-    fireEvent.click(screen.getByTitle('Delete'))
+    fireEvent.click(screen.getByRole('button', { name: 'Delete this map' }))
     const dialog = await screen.findByRole('dialog')
 
     fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }))
@@ -321,7 +321,7 @@ describe('MapsListPage', () => {
   it('falls back to an em dash for an unrecognized business area', async () => {
     mockedApi.maps.listMine.mockResolvedValue(envelope({ mine: [], shared: [] }) as never)
     mockedApi.maps.listAll.mockResolvedValue(
-      envelope({ all: [mapSummary({ id: 'm1', name: 'Orphaned Map', businessAreaId: 'ba-unknown' })] }) as never,
+      envelope({ all: [{ ...mapSummary({ id: 'm1', name: 'Orphaned Map', businessAreaId: 'ba-unknown' }), workbookName: 'WB One', ownerName: 'Bob' }] }) as never,
     )
     renderPage()
     clickTab(await screen.findByRole('tab', { name: 'All' }))
@@ -346,9 +346,9 @@ describe('MapsListPage', () => {
     clickTab(await screen.findByRole('tab', { name: 'All' }))
     await screen.findByText('Read Only Map')
 
-    expect(screen.getByTitle('View')).toBeInTheDocument()
-    expect(screen.queryByTitle('Delete')).not.toBeInTheDocument()
-    expect(screen.queryByTitle('Share')).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Open the map and run it to see its rows' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Delete this map' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Choose who else can open this map and what they may do with it' })).not.toBeInTheDocument()
   })
 
   it('shows manage actions for the row owner even without the admin role', async () => {
@@ -366,7 +366,7 @@ describe('MapsListPage', () => {
     )
     renderPage()
     await screen.findByText('My Own Map')
-    expect(screen.getByTitle('Delete')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Delete this map' })).toBeInTheDocument()
   })
 
   it('browse view lists workbooks and drills to a worksheet', async () => {
@@ -465,11 +465,45 @@ describe('MapsListPage', () => {
     renderPage()
     await screen.findByText('Sales by Region')
 
-    fireEvent.click(screen.getByTitle('Share'))
+    fireEvent.click(screen.getByRole('button', { name: 'Choose who else can open this map and what they may do with it' }))
     const dialog = await screen.findByRole('dialog')
     expect(dialog).toBeInTheDocument()
 
     fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' })
     await vi.waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+  })
+})
+
+describe('MapsListPage copy and columns', () => {
+  const copyName = 'Make your own copy of this map, which you can then change'
+
+  it('shows workbook and owner names and copies a map for a non-viewer', async () => {
+    mockedApi.maps.listMine.mockResolvedValue(envelope({ mine: [], shared: [] }) as never)
+    mockedApi.maps.listAll.mockResolvedValue(
+      envelope({ all: [{ ...mapSummary(), workbookName: 'WB One', ownerName: 'Bob' }] }) as never,
+    )
+    mockedApi.maps.duplicate.mockResolvedValue(envelope(mapSummary({ id: 'copy1' })) as never)
+    renderPage()
+    clickTab(await screen.findByRole('tab', { name: 'All' }))
+    expect(await screen.findByText('WB One')).toBeInTheDocument()
+    expect(screen.getByText('Bob')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: copyName }))
+    await waitFor(() => expect(mockedApi.maps.duplicate).toHaveBeenCalledWith('m1'))
+  })
+
+  it('hides copy for a VIEWER', async () => {
+    useAuthStore.setState({
+      user: { id: 'u2', email: 'v@example.com', name: 'V', role: 'VIEWER' },
+      token: 't',
+      isAuthenticated: true,
+      hasHydrated: true,
+    })
+    mockedApi.maps.listMine.mockResolvedValue(envelope({ mine: [], shared: [] }) as never)
+    mockedApi.maps.listAll.mockResolvedValue(envelope({ all: [mapSummary()] }) as never)
+    renderPage()
+    clickTab(await screen.findByRole('tab', { name: 'All' }))
+    await screen.findByText('Sales by Region')
+    expect(screen.queryByRole('button', { name: copyName })).not.toBeInTheDocument()
   })
 })

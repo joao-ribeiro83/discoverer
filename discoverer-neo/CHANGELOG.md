@@ -30,6 +30,37 @@ npm version 1.2.0 --workspaces --include-workspace-root --no-git-tag-version
 the git history. Each one groups a finished phase of the build plan, and ends
 at the commit named in its heading. The code carried `0.1.0` until 1.1.0.
 
+## [Unreleased]
+
+### Added
+- Business area grants: tick several users and grant them one level in one
+  click. A note under the level says what it allows.
+- Users page: the role field explains all four roles. The per-user map list
+  shows each map's owner, and lets an ADMIN or MANAGER change or remove a
+  share, or give the map to a new owner (`PUT /api/maps/:id/owner`).
+- Share windows (map and workbook) list every user, each with **Can view /
+  Can export / Can edit** buttons and ✕ to remove.
+- Maps list: Workbook and Owner columns, and a Copy button.
+- Joins: a join can match on several column pairs (ANDed), each with its own
+  operator. The API takes `predicates: [...]` and returns them.
+- A Back button on the map editor, the map viewer, and Schedules opened from
+  a map.
+- Helper balloons on most buttons.
+
+### Changed
+- **Who sees which map.** A business-area grant no longer shows maps; it only
+  lets you read the area's data. A USER sees their own maps and the maps
+  shared with them. A MANAGER sees, runs, exports, schedules and shares every
+  map, but changes only their own. Anyone but a VIEWER may copy a map they can
+  see. Users who relied on a CREATE/EDIT/DELETE grant to see an area's maps
+  need a share now.
+- A MANAGER can open the Users page (read-only) and each user's map list.
+- Running a map from the editor now goes through the run queue: it shows on
+  the Executions page, keeps its rows, and can be exported.
+- Admin tables, Executions and Exports fit as many rows per page as the window
+  holds.
+- `GET /api/users/search` with an empty `q` lists every user.
+
 ## [1.1.0] — 2026-09-25
 
 ### Added

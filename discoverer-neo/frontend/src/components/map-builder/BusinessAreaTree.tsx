@@ -457,12 +457,15 @@ function TreeRow({
   label: string
   trailing?: React.ReactNode
 }) {
+  const { t } = useTranslation(['mapBuilder'])
+
   return (
     <button
       type="button"
       onClick={onToggle}
       style={{ paddingLeft: depth * INDENT + 4 }}
       className="flex w-full items-center gap-1.5 rounded-md py-1.5 pr-2 text-left text-sm hover:bg-accent"
+      title={expandable ? t('mapBuilder:tree.toggleButtonTooltip') : undefined}
     >
       {expandable ? (
         <ChevronRight

@@ -80,5 +80,13 @@
     "assignFailed": "Falha ao atribuir",
     "assignmentRemoved": "Atribuição removida",
     "removeFailed": "Falha ao remover"
+  },
+  "actions": {
+    "validatePredicate": "Validar este predicado SQL",
+    "testPolicy": "Testar esta política com uma consulta de exemplo",
+    "newPolicy": "Criar uma nova política de segurança",
+    "addRule": "Adicionar outra regra a esta política",
+    "assignPolicy": "Atribuir esta política a utilizadores ou funções",
+    "runPolicyTest": "Executar o teste da política nesta consulta de exemplo"
   }
 }

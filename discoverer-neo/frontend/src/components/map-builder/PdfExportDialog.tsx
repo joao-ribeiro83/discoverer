@@ -110,6 +110,7 @@ export function PdfExportDialog({ open, onOpenChange, columns, onConfirm }: PdfE
               onClick={() =>
                 setSelected(allSelected ? new Set() : new Set(columns.map((c) => c.name)))
               }
+              title={t('mapViewer:export.pdfDialog.selectToggleTooltip')}
             >
               {allSelected
                 ? t('mapViewer:export.pdfDialog.selectNone')

@@ -27,6 +27,8 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Pager } from '@/components/admin/DataTable'
+import { usePagedRows } from '@/hooks/useFitPageSize'
 
 /** Statuses a row keeps refreshing under — same idea as ExportsPage's ACTIVE. */
 const ACTIVE: MapRun['status'][] = ['QUEUED', 'RUNNING']
@@ -92,6 +94,7 @@ function RunExportButtons({ run }: { run: MapRun }) {
           className="h-7 gap-1 text-xs"
           disabled={exportCtl.isExporting}
           onClick={() => exportCtl.exportFormat(format)}
+          title={t(`runs:actions.export${format}Title`)}
         >
           {exportCtl.isExporting && exportCtl.format === format ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -150,6 +153,7 @@ export function RunsPage() {
         (kindFilter === 'all' || r.kind === kindFilter),
     )
   }, [runs, mapFilter, statusFilter, kindFilter])
+  const paged = usePagedRows(filtered, isLoading)
 
   const runAgainMutation = useMutation({
     mutationFn: (run: MapRun) =>
@@ -255,7 +259,7 @@ export function RunsPage() {
               <TableHead>{t('runs:columns.actions')}</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
+          <TableBody ref={paged.bodyRef}>
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
@@ -269,7 +273,7 @@ export function RunsPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              filtered.map((run) => {
+              paged.pageRows.map((run) => {
                 const summary = parametersSummary(run.parameters, t('runs:noParameters'))
                 return (
                   <TableRow key={run.id}>
@@ -336,6 +340,7 @@ export function RunsPage() {
           </TableBody>
         </Table>
       </div>
+      <Pager page={paged.page} pageCount={paged.pageCount} onPage={paged.setPage} />
 
       <DeleteConfirmDialog
         open={!!deleting}

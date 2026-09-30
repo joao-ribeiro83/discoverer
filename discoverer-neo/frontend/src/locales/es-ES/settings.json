@@ -14,6 +14,11 @@
       "light": "Claro",
       "dark": "Oscuro",
       "high-contrast": "Alto contraste"
+    },
+    "tooltip": {
+      "light": "Usar el tema claro",
+      "dark": "Usar el tema oscuro",
+      "high-contrast": "Usar el tema de alto contraste para una mejor accesibilidad"
     }
   },
   "palette": {
@@ -28,6 +33,14 @@
       "wine": "Vino",
       "ocean": "Océano",
       "ochre": "Ocre"
+    },
+    "tooltip": {
+      "default": "Usar la paleta clásica",
+      "navy": "Usar la paleta azul marino",
+      "forest": "Usar la paleta bosque",
+      "wine": "Usar la paleta vino",
+      "ocean": "Usar la paleta océano",
+      "ochre": "Usar la paleta ocre"
     }
   },
   "saved": "Preferencias guardadas"

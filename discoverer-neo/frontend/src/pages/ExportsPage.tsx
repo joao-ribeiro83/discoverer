@@ -8,6 +8,8 @@ import { useLocale } from '@/hooks/useLocale'
 import { formatDateTime } from '@/lib/format'
 import { downloadBlob, safeFilename } from '@/components/map-builder/export-utils'
 import { AdminPageWrapper } from '@/components/admin/AdminPageWrapper'
+import { Pager } from '@/components/admin/DataTable'
+import { usePagedRows } from '@/hooks/useFitPageSize'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -71,6 +73,7 @@ export function ExportsPage() {
     refetchInterval: (query) =>
       (query.state.data ?? []).some((j) => ACTIVE.includes(j.status)) ? POLL_MS : IDLE_POLL_MS,
   })
+  const paged = usePagedRows(jobs ?? [], isLoading)
 
   async function download(job: ExportJob) {
     try {
@@ -104,7 +107,7 @@ export function ExportsPage() {
               <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
-          <TableBody>
+          <TableBody ref={paged.bodyRef}>
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
@@ -118,7 +121,7 @@ export function ExportsPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              (jobs ?? []).map((job) => (
+              paged.pageRows.map((job) => (
                 <TableRow key={job.jobId}>
                   <TableCell className="font-medium" title={job.mapId}>
                     {job.mapName ?? job.mapId.slice(0, 8)}
@@ -147,6 +150,7 @@ export function ExportsPage() {
           </TableBody>
         </Table>
       </div>
+      <Pager page={paged.page} pageCount={paged.pageCount} onPage={paged.setPage} />
     </AdminPageWrapper>
   )
 }

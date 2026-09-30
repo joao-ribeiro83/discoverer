@@ -38,7 +38,6 @@
       "dialogTitle": "Concessões — {{name}}",
       "dialogDescription": "Controle quais os utilizadores que podem aceder a esta área de negócio e o que podem fazer.",
       "userLabel": "Utilizador",
-      "selectUserPlaceholder": "Selecione um utilizador",
       "permissionLabel": "Permissão",
       "addButton": "Adicionar",
       "revokeTitle": "Revogar",
@@ -48,9 +47,23 @@
       "toast": {
         "accessGranted": "Acesso concedido",
         "grantFailed": "Falha ao conceder acesso",
-        "accessRevoked": "Acesso revogado"
+        "accessRevoked": "Acesso revogado",
+        "accessGrantedCount_one": "Acesso concedido a {{count}} utilizador",
+        "accessGrantedCount_other": "Acesso concedido a {{count}} utilizadores"
+      },
+      "addTooltip": "Conceder a cada utilizador selecionado a permissão escolhida nesta área de negócio",
+      "filterUsersPlaceholder": "Filtrar utilizadores por nome ou e-mail",
+      "selectedCount": "{{count}} selecionado",
+      "levelHelp": {
+        "VIEW": "Ler os dados nas pastas desta área. Executar mapas partilhados com o utilizador. Ver as pastas, itens, junções e hierarquias da área.",
+        "EXPORT": "O mesmo que VIEW. Os direitos de exportação e de agendamento de um mapa dependem da forma como esse mapa é partilhado.",
+        "SCHEDULE": "O mesmo que VIEW. Os direitos de exportação e de agendamento de um mapa dependem da forma como esse mapa é partilhado.",
+        "CREATE": "Tudo o que está em VIEW, mais criar novos mapas, pastas, itens, junções e hierarquias nesta área.",
+        "EDIT": "Tudo o que está em CREATE, mais alterar esta área e as suas pastas, itens, junções e hierarquias.",
+        "DELETE": "Tudo o que está em EDIT, mais eliminar pastas, itens, junções e hierarquias nesta área."
       }
-    }
+    },
+    "createButtonTooltip": "Criar uma nova área de negócio"
   },
   "folders": {
     "title": "Pastas",
@@ -120,7 +133,8 @@
       "added": "Itens novos: {{names}}",
       "updated": "Atualizados: {{names}}",
       "missing": "Coluna já não existe na origem (item mantido — apague-o se nenhum mapa o usar): {{names}}"
-    }
+    },
+    "createButtonTooltip": "Criar uma nova pasta"
   },
   "items": {
     "title": "Itens",
@@ -164,7 +178,8 @@
       "updated": "Item atualizado",
       "created": "Item criado",
       "deactivated": "Item desativado"
-    }
+    },
+    "createButtonTooltip": "Criar um novo item"
   },
   "joins": {
     "title": "Junções",
@@ -175,7 +190,8 @@
     "entityLabel": "junção",
     "columns": {
       "leftFolder": "Pasta Esquerda",
-      "rightFolder": "Pasta Direita"
+      "rightFolder": "Pasta Direita",
+      "columns": "Colunas"
     },
     "dialog": {
       "editTitle": "Editar Junção",
@@ -189,7 +205,12 @@
       "leftItemLabel": "Item Esquerdo",
       "rightItemLabel": "Item Direito",
       "selectItemPlaceholder": "Selecione um item",
-      "joinTypeLabel": "Tipo de Junção"
+      "joinTypeLabel": "Tipo de Junção",
+      "operatorLabel": "Operador",
+      "operatorTooltip": "Como as duas colunas devem ser comparadas. Quase sempre \"=\".",
+      "addPairButton": "Adicionar par de colunas",
+      "addPairTooltip": "Fazer corresponder as duas pastas por mais uma coluna. Todos os pares têm de coincidir (AND).",
+      "removePairTooltip": "Remover este par de colunas da junção"
     },
     "validation": {
       "leftFolderRequired": "A pasta esquerda é obrigatória",
@@ -201,7 +222,8 @@
       "updated": "Junção atualizada",
       "created": "Junção criada",
       "deactivated": "Junção desativada"
-    }
+    },
+    "createButtonTooltip": "Criar uma nova junção"
   },
   "hierarchies": {
     "title": "Hierarquias",
@@ -224,13 +246,15 @@
       "noLevelsYet": "Ainda não existem níveis — adicione pelo menos um.",
       "levelNamePlaceholder": "Nome do nível",
       "itemPlaceholder": "Item",
-      "reorderAria": "Reordenar nível"
+      "reorderAria": "Reordenar nível",
+      "removeLevelButtonTooltip": "Remover este nível"
     },
     "toast": {
       "updated": "Hierarquia atualizada",
       "created": "Hierarquia criada",
       "deactivated": "Hierarquia desativada"
-    }
+    },
+    "createButtonTooltip": "Criar uma nova hierarquia"
   },
   "customFunctions": {
     "title": "Funções Personalizadas",
@@ -283,7 +307,8 @@
       "button": "Procurar",
       "noResults": "Nenhuma função encontrada.",
       "notCallable": "Não pode ser chamada em SQL: {{reason}}",
-      "truncated": "Há mais funções. Escreva mais do nome para restringir a pesquisa."
+      "truncated": "Há mais funções. Escreva mais do nome para restringir a pesquisa.",
+      "buttonTooltip": "Procurar funções e pacotes da base de dados"
     },
     "refresh": {
       "one": "Atualizar a partir da base de dados",
@@ -296,7 +321,8 @@
       "compile": "Campos calculados recompilados: {{message}}",
       "changed": "atualizado: {{what}}",
       "missing": "já não existe no Oracle — mantida, porque campos calculados ainda a podem chamar"
-    }
+    },
+    "createButtonTooltip": "Criar uma nova função personalizada"
   },
   "dataSources": {
     "title": "Origens de Dados",
@@ -354,8 +380,10 @@
         "importComplete": "Importação concluída",
         "importCompleteDescription": "Foram criadas {{created}} pasta(s), {{skipped}} ignorada(s).",
         "importFailed": "Falha na importação"
-      }
-    }
+      },
+      "discoverTablesButtonTooltip": "Reler as tabelas deste esquema"
+    },
+    "createButtonTooltip": "Criar uma nova ligação de origem de dados"
   },
   "users": {
     "title": "Utilizadores",
@@ -420,8 +448,27 @@
         "OWNER": "Proprietário",
         "SHARE": "Partilhado",
         "PUBLIC": "Público",
-        "GRANT": "Área de negócio"
+        "ROLE": "Função de gestor"
+      },
+      "owner": "Proprietário: {{name}}",
+      "newOwner": "Novo proprietário",
+      "changeOwnerTooltip": "Atribuir este mapa a outro utilizador. O novo proprietário pode alterá-lo, partilhá-lo e eliminá-lo.",
+      "removeShareTooltip": "Remover este mapa do utilizador. Deixa de o poder abrir.",
+      "shareLevelTooltip": "O que este utilizador pode fazer com o mapa partilhado",
+      "toast": {
+        "shareChanged": "Partilha alterada",
+        "shareRemoved": "Partilha removida",
+        "ownerChanged": "Proprietário alterado"
       }
+    },
+    "createTooltip": "Adicionar uma nova conta de utilizador",
+    "editTooltip": "Alterar o nome, o e-mail, a palavra-passe ou a função deste utilizador",
+    "deleteTooltip": "Eliminar definitivamente esta conta de utilizador",
+    "roleHelp": {
+      "ADMIN": "Pode fazer tudo: utilizadores, áreas de negócio, origens de dados, segurança e auditoria. Pode abrir, alterar, partilhar e eliminar todos os mapas.",
+      "MANAGER": "Modela os dados (áreas de negócio, pastas, itens, junções). Pode abrir, executar e partilhar todos os mapas e alterar quem é o proprietário de um mapa. Só altera os seus próprios mapas; copia um mapa para criar um novo.",
+      "USER": "Vê apenas os seus próprios mapas e os mapas partilhados com ele. Cria novos mapas copiando um desses mapas. Executa, exporta e agenda conforme cada partilha permitir.",
+      "VIEWER": "Só de leitura. Abre e executa os mapas partilhados com ele. Não pode criar, copiar nem alterar mapas."
     }
   }
 }

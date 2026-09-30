@@ -200,6 +200,7 @@ function RuleEditor({
             size="sm"
             disabled={!rule.sqlPredicate.trim() || validateMutation.isPending}
             onClick={() => validateMutation.mutate(rule.sqlPredicate)}
+            title={t('security:actions.validatePredicate')}
           >
             {validateMutation.isPending ? t('security:rule.validating') : t('common:actions.validate')}
           </Button>
@@ -422,10 +423,10 @@ export function SecurityPage() {
       description={t('security:page.description')}
       action={
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setTestOpen(true)}>
+          <Button variant="outline" onClick={() => setTestOpen(true)} title={t('security:actions.testPolicy')}>
             <FlaskConical className="h-4 w-4" /> {t('common:actions.test')}
           </Button>
-          <Button onClick={openCreate}>
+          <Button onClick={openCreate} title={t('security:actions.newPolicy')}>
             <Plus className="h-4 w-4" /> {t('security:page.newPolicy')}
           </Button>
         </div>
@@ -482,6 +483,7 @@ export function SecurityPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setRules((prev) => [...prev, emptyRule()])}
+                title={t('security:actions.addRule')}
               >
                 <Plus className="h-3.5 w-3.5" /> {t('security:dialog.addRule')}
               </Button>
@@ -670,6 +672,7 @@ function AssignmentsDialog({
             type="button"
             disabled={!canAssign || assignMutation.isPending}
             onClick={() => assignMutation.mutate()}
+            title={t('security:actions.assignPolicy')}
           >
             <UserPlus className="h-4 w-4" /> {t('security:assignments.assign')}
           </Button>
@@ -782,6 +785,7 @@ function TestPolicyDialog({
             type="button"
             disabled={!policyId || !sql.trim() || testMutation.isPending}
             onClick={() => testMutation.mutate()}
+            title={t('security:actions.runPolicyTest')}
           >
             <FlaskConical className="h-4 w-4" />
             {testMutation.isPending ? t('security:test.testing') : t('security:test.runTest')}

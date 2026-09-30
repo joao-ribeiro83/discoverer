@@ -61,7 +61,7 @@ export function DescriptionEditor() {
         <Label htmlFor="map-description">{t('common:labels.description')}</Label>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button type="button" variant="outline" size="sm" className="h-7 gap-1 px-2 text-xs">
+            <Button type="button" variant="outline" size="sm" className="h-7 gap-1 px-2 text-xs" title={t('mapBuilder:panels.descriptionEditor.insertButtonTooltip')}>
               <Braces className="h-3.5 w-3.5" />
               {t('mapBuilder:panels.properties.insertVariable')}
             </Button>

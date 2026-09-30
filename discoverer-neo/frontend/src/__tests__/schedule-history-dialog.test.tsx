@@ -104,7 +104,7 @@ describe('ScheduleHistoryDialog', () => {
 
     await screen.findByText(/10/) // rows column, waits for the row to render
     expect(screen.queryByText('XLSX')).not.toBeInTheDocument()
-    expect(screen.getByTitle('Download')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Download' })).toBeInTheDocument()
   })
 
   it('shows no export buttons for an expired run (Open link still works)', async () => {

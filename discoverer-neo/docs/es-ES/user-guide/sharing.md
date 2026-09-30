@@ -12,21 +12,31 @@ Comparta mapas para:
 
 ## Compartir un mapa
 
-### Paso 1: abrir el mapa
+### Quién puede compartir
 
-1. Haga clic en **Mapas** → seleccione su mapa
-2. Haga clic en **Compartir** o **Gestionar uso compartido**
+- El **propietario** del mapa
+- Un **MANAGER**: cualquier mapa
+- Un **ADMIN**: cualquier mapa
 
-### Paso 2: agregar un usuario
+Un usuario que ha recibido un mapa, incluso con EDIT, no puede pasarlo a otros.
 
-En el panel de uso compartido:
+### Paso 1: abrir la ventana de uso compartido
 
-1. Haga clic en **+ Agregar usuario** o **+ Conceder acceso**
-2. Seleccione un usuario de la lista
-3. Elija el nivel de permiso (véase a continuación)
-4. Haga clic en **Conceder**
+1. Haga clic en **Mapas**
+2. Haga clic en el icono de compartir en la fila del mapa, o en un libro para
+   compartir todas las hojas que contiene
 
-El usuario ya puede acceder al mapa con el nivel de permiso seleccionado.
+### Paso 2: elegir personas y niveles
+
+La ventana muestra todos los usuarios. Las personas que ya tienen el mapa
+aparecen primero.
+
+1. Escriba en el cuadro de filtro para encontrar a alguien (opcional)
+2. Haga clic en un nivel junto a su nombre: **Puede ver**, **Puede exportar** o
+   **Puede editar**. Pase el cursor sobre un nivel para ver lo que permite.
+
+El botón oscuro es el nivel que la persona tiene ahora. Haga clic en otro nivel
+para cambiarlo. Haga clic en **✕** para quitarle el mapa.
 
 ## Niveles de permiso
 
@@ -37,8 +47,8 @@ El usuario ya puede acceder al mapa con el nivel de permiso seleccionado.
 | **EXPORT** | ✓ | ✗ | ✗ | ✓ | ✓ | ✗ |
 
 - **VIEW** — Puede ver la definición del mapa y ejecutarlo (solo lectura)
-- **EDIT** — Puede modificar el mapa y compartirlo con otros
-- **EXPORT** — Puede ejecutar el mapa y exportar los resultados
+- **EDIT** — Puede ejecutar, exportar, programar y cambiar el mapa (no puede compartirlo)
+- **EXPORT** — Puede ejecutar el mapa, exportar los resultados y programarlo
 - **Propietario** — Usted (siempre puede modificarlo, compartirlo y eliminarlo)
 
 ## Público frente a privado
@@ -48,24 +58,22 @@ Utilice el conmutador **Público** para que todos los usuarios puedan detectar u
 - **Privado** (predeterminado) — Solo se comparte con usuarios específicos
 - **Público** — Todos los usuarios autenticados pueden verlo y ejecutarlo
 
-## Cambio de permisos
+## Cambiar o revocar el acceso
 
-Para cambiar el nivel de acceso de un usuario:
+En la ventana de uso compartido, haga clic en otro nivel para cambiarlo, o en
+**✕** para quitarlo. El cambio surte efecto de inmediato.
 
-1. Busque al usuario en la lista de uso compartido
-2. Haga clic en el menú desplegable de permisos
-3. Seleccione el nuevo nivel
-4. Los cambios surten efecto de inmediato
+Un ADMIN o un MANAGER también puede hacerlo desde **Usuarios** → el icono de mapa
+en la fila de un usuario. Esa lista muestra todos los mapas que el usuario puede
+abrir, con su propietario. Allí puede cambiar el nivel de un uso compartido,
+quitarlo o asignar el mapa a un nuevo propietario.
 
-## Revocación del acceso
+## Copiar un mapa
 
-Para quitar el acceso de un usuario:
-
-1. Busque al usuario en la lista de uso compartido
-2. Haga clic en **Quitar** o en el icono de la papelera
-3. Confirme la eliminación
-
-El usuario pierde el acceso de inmediato.
+Cualquier persona, salvo un VIEWER, puede copiar un mapa que pueda ver: haga
+clic en el icono de copia en su fila de **Mapas**. La copia es suya, así que
+puede cambiarla. Ejecutarla sigue exigiendo un permiso sobre el área de negocio
+del mapa.
 
 ## Compartidos conmigo
 

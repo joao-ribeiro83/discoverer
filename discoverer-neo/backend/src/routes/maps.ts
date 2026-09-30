@@ -4,8 +4,8 @@ import {
   create,
   update,
   getById,
-  listByBusinessArea,
   listAll,
+  withListNames,
   listByUser,
   listSharedWithUser,
   softDelete,
@@ -198,7 +198,9 @@ export default function mapRoutes(fastify: FastifyInstance) {
     },
     async (request) => {
       const { baId } = BaIdParamSchema.parse(request.params);
-      const data = await listByBusinessArea(baId);
+      // Same visibility as GET /api/maps: a business-area grant alone shows no maps.
+      const user = request.user as { sub: string; role: string };
+      const data = (await listAll(user)).filter((m) => m.businessAreaId === baId);
       return { data };
     },
   );
@@ -234,7 +236,7 @@ export default function mapRoutes(fastify: FastifyInstance) {
       const effective = scope ?? (user.role === 'ADMIN' ? 'all' : 'owned');
 
       if (effective === 'all') {
-        const all = await listAll(user);
+        const all = await withListNames(await listAll(user));
         return { data: { all }, scope: 'all' };
       }
 
@@ -242,7 +244,10 @@ export default function mapRoutes(fastify: FastifyInstance) {
         listByUser(user.sub),
         listSharedWithUser(user.sub),
       ]);
-      return { data: { mine, shared }, scope: 'owned' };
+      return {
+        data: { mine: await withListNames(mine), shared: await withListNames(shared) },
+        scope: 'owned',
+      };
     },
   );
 
@@ -407,7 +412,7 @@ export default function mapRoutes(fastify: FastifyInstance) {
       if (!(await canDuplicate(user, map))) {
         return reply.code(403).send({
           error: 'Forbidden',
-          details: 'Duplicating requires "CREATE" permission in the business area',
+          details: 'A read-only VIEWER cannot copy maps',
         });
       }
 

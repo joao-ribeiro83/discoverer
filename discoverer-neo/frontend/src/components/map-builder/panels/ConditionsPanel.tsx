@@ -93,7 +93,7 @@ export function ConditionsPanel() {
     <div className="space-y-3 p-4">
       <div className="flex items-center justify-between gap-2">
         <h4 className="text-sm font-semibold">{t('mapBuilder:panels.conditions.title')}</h4>
-        <Button size="sm" onClick={addCondition} disabled={selectedItems.length === 0}>
+        <Button size="sm" onClick={addCondition} disabled={selectedItems.length === 0} title={t('mapBuilder:panels.conditions.addTooltip')}>
           <Plus className="h-3.5 w-3.5" /> {t('mapBuilder:panels.conditions.addButton')}
         </Button>
       </div>
@@ -105,7 +105,7 @@ export function ConditionsPanel() {
       )}
 
       {selectedKeys.size >= 2 && (
-        <Button size="sm" variant="secondary" onClick={handleGroup} className="w-full">
+        <Button size="sm" variant="secondary" onClick={handleGroup} className="w-full" title={t('mapBuilder:panels.conditions.groupTooltip')}>
           {t('mapBuilder:panels.conditions.groupSelected', { count: selectedKeys.size })}
         </Button>
       )}
@@ -142,6 +142,7 @@ export function ConditionsPanel() {
                       variant="ghost"
                       className="h-6 px-2 text-xs"
                       onClick={() => ungroupConditions(chunk[0].groupId!)}
+                      title={t('mapBuilder:panels.conditions.ungroupTooltip')}
                     >
                       {t('mapBuilder:panels.conditions.ungroup')}
                     </Button>
@@ -267,6 +268,7 @@ function ConditionRow({
                 variant={condition.conditionType === 'STATIC' ? 'default' : 'outline'}
                 className="h-7 flex-1 text-xs"
                 onClick={() => onUpdate({ conditionType: 'STATIC', paramName: null })}
+                title={t('mapBuilder:panels.conditions.staticValueTooltip')}
               >
                 {t('mapBuilder:panels.conditions.staticValue')}
               </Button>
@@ -282,6 +284,7 @@ function ConditionRow({
                     paramName: condition.paramName ?? '',
                   })
                 }
+                title={t('mapBuilder:panels.conditions.promptAtRuntimeTooltip')}
               >
                 {t('mapBuilder:panels.conditions.promptAtRuntime')}
               </Button>

@@ -1,9 +1,9 @@
 import { useMemo, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useTranslation } from 'react-i18next'
-import { Plus, Search, Eye, Pencil, Share2, CalendarClock, Download, Trash2, X } from 'lucide-react'
+import { Plus, Search, Eye, Pencil, Share2, CalendarClock, Copy, Download, Trash2, X } from 'lucide-react'
 import { apiClient, getErrorMessage } from '@/lib/api'
 import type { MapSummary, SharePermissionLevel } from '@/lib/types'
 import { useAuthStore } from '@/store/auth'
@@ -24,7 +24,7 @@ type MapsTab = 'mine' | 'shared' | 'all'
 type SortKey = 'recency' | 'name'
 
 const ROW_HEIGHT = 56
-const GRID_COLS = '1fr 200px 130px 150px 220px'
+const GRID_COLS = 'minmax(160px,1fr) 150px 140px 150px 110px 110px 250px'
 
 export function MapsListPage() {
   const { t } = useTranslation(['mapViewer', 'common'])
@@ -32,6 +32,7 @@ export function MapsListPage() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const currentUser = useAuthStore((s) => s.user)
+  const navigate = useNavigate()
 
   const [pickedTab, setTab] = useState<MapsTab | null>(null)
   const [search, setSearch] = useState('')
@@ -111,11 +112,37 @@ export function MapsListPage() {
     },
   })
 
-  // ponytail: "all" scope doesn't carry per-row permission, so admin/owner/explicit
-  // share level is all the client can see; the server re-checks on every action.
-  function canManage(row: MapRow): boolean {
-    return currentUser?.role === 'ADMIN' || row.createdBy === currentUser?.id || row.sharePermission === 'EDIT'
-  }
+  const copyMutation = useMutation({
+    mutationFn: async (id: string) => (await apiClient.maps.duplicate(id)).data.data,
+    onSuccess: (copy) => {
+      void queryClient.invalidateQueries({ queryKey: ['maps'] })
+      toast({ title: t('mapViewer:mapsList.toast.copied') })
+      // The copy is the caller's own map — open it for editing.
+      void navigate(`/maps/${copy.id}`)
+    },
+    onError: (err) => {
+      toast({
+        title: t('mapViewer:mapsList.toast.copyFailed'),
+        description: getErrorMessage(err),
+        variant: 'destructive',
+      })
+    },
+  })
+
+  // Client-side hints of the server's rules (canAccessMap / canManageShares);
+  // the server re-checks every action. ADMIN edits and shares everything; a
+  // MANAGER sees and shares everything but edits only their own; everyone but
+  // a VIEWER copies a map to build their own. "All" rows carry no share level,
+  // so an EDIT share only shows up on the "Shared" tab.
+  const role = currentUser?.role
+  const isAdmin = role === 'ADMIN'
+  const owns = (row: MapRow) => row.createdBy === currentUser?.id
+  const canEdit = (row: MapRow) => isAdmin || owns(row) || row.sharePermission === 'EDIT'
+  const canShare = (row: MapRow) => isAdmin || owns(row) || role === 'MANAGER'
+  const canDelete = (row: MapRow) => isAdmin || owns(row)
+  const canSchedule = (row: MapRow) =>
+    canShare(row) || row.sharePermission === 'EXPORT' || row.sharePermission === 'EDIT'
+  const canCopy = role !== 'VIEWER'
 
   function emptyMessage(): string | null {
     if (isLoading || loadError) return null
@@ -219,6 +246,8 @@ export function MapsListPage() {
             style={{ gridTemplateColumns: GRID_COLS }}
           >
             <span>{t('common:labels.name')}</span>
+            <span>{t('mapViewer:mapsList.columns.workbook')}</span>
+            <span>{t('mapViewer:mapsList.columns.owner')}</span>
             <span>{t('mapViewer:mapsList.columns.businessArea')}</span>
             <span>{t('common:labels.type')}</span>
             <span>{t('common:labels.updatedAt')}</span>
@@ -228,7 +257,7 @@ export function MapsListPage() {
             <div style={{ height: rowVirtualizer.getTotalSize(), position: 'relative' }}>
               {rowVirtualizer.getVirtualItems().map((vi) => {
                 const row = filtered[vi.index]
-                const manage = canManage(row)
+                const editable = canEdit(row)
                 return (
                   <div
                     key={row.id}
@@ -243,9 +272,18 @@ export function MapsListPage() {
                       transform: `translateY(${vi.start}px)`,
                     }}
                   >
-                    <Link to={`/maps/${row.id}`} className="truncate font-medium hover:underline">
+                    <Link
+                      to={editable ? `/maps/${row.id}` : `/maps/${row.id}/view`}
+                      className="truncate font-medium hover:underline"
+                    >
                       {row.name}
                     </Link>
+                    <span className="truncate text-muted-foreground" title={row.workbookName ?? undefined}>
+                      {row.workbookName ?? '—'}
+                    </span>
+                    <span className="truncate text-muted-foreground" title={row.ownerName ?? undefined}>
+                      {row.ownerName ?? '—'}
+                    </span>
                     <span className="truncate text-muted-foreground">
                       {baNameById.get(row.businessAreaId) ?? '—'}
                     </span>
@@ -254,45 +292,63 @@ export function MapsListPage() {
                     </Badge>
                     <span className="text-muted-foreground">{formatDate(row.updatedAt, locale)}</span>
                     <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" asChild title={t('common:actions.view')}>
+                      <Button variant="ghost" size="icon" asChild title={t('mapViewer:mapsList.actions.viewTooltip')}>
                         <Link to={`/maps/${row.id}/view`}>
                           <Eye className="h-4 w-4" />
                         </Link>
                       </Button>
-                      {manage && (
-                        <>
-                          <Button variant="ghost" size="icon" asChild title={t('mapViewer:mapsList.actions.open')}>
-                            <Link to={`/maps/${row.id}`}>
-                              <Pencil className="h-4 w-4" />
-                            </Link>
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            title={t('mapViewer:mapsList.actions.share')}
-                            onClick={() => setSharingMap(row)}
-                          >
-                            <Share2 className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" asChild title={t('mapViewer:mapsList.actions.schedule')}>
-                            <Link to={`/schedules?mapId=${row.id}`}>
-                              <CalendarClock className="h-4 w-4" />
-                            </Link>
-                          </Button>
-                          <Button variant="ghost" size="icon" asChild title={t('common:actions.export')}>
-                            <Link to={`/maps/${row.id}`}>
-                              <Download className="h-4 w-4" />
-                            </Link>
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            title={t('common:actions.delete')}
-                            onClick={() => setDeleting(row)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </>
+                      {editable && (
+                        <Button variant="ghost" size="icon" asChild title={t('mapViewer:mapsList.actions.editTooltip')}>
+                          <Link to={`/maps/${row.id}`}>
+                            <Pencil className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                      )}
+                      {canCopy && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title={t('mapViewer:mapsList.actions.copyTooltip')}
+                          disabled={copyMutation.isPending}
+                          onClick={() => copyMutation.mutate(row.id)}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {canShare(row) && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title={t('mapViewer:mapsList.actions.shareTooltip')}
+                          onClick={() => setSharingMap(row)}
+                        >
+                          <Share2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {canSchedule(row) && (
+                        <Button variant="ghost" size="icon" asChild title={t('mapViewer:mapsList.actions.scheduleTooltip')}>
+                          <Link to={`/schedules?mapId=${row.id}`}>
+                            <CalendarClock className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                      )}
+                      {canSchedule(row) && (
+                        <Button variant="ghost" size="icon" asChild title={t('mapViewer:mapsList.actions.exportTooltip')}>
+                          {/* Exports come from a run's result, which the viewer shows. */}
+                          <Link to={`/maps/${row.id}/view`}>
+                            <Download className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                      )}
+                      {canDelete(row) && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title={t('mapViewer:mapsList.actions.deleteTooltip')}
+                          onClick={() => setDeleting(row)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       )}
                     </div>
                   </div>

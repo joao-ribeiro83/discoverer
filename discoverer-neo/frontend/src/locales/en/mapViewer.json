@@ -6,7 +6,9 @@
     "executedTitle": "Map executed",
     "rowsReturned": "{{count}} row(s) returned.",
     "runFailedTitle": "Run failed",
+    "runTitle": "Execute the map and display results",
     "scheduleManagement": "Schedule management",
+    "scheduleManagementTitle": "View and manage map schedules",
     "runRefusedTitle": "Worksheet not run",
     "runRefusedDescription": "The query planner declined this request. The results panel explains why.",
     "cannotRunNoColumns": "This worksheet has no output columns, so there is nothing to run. Open it in the builder and add at least one column.",
@@ -14,7 +16,8 @@
     "statusRunning": "Running…",
     "statusResult": "Result from {{time}}, valid until {{until}}.",
     "statusResultReused": "Showing a cached result from {{time}}, valid until {{until}}.",
-    "runAgain": "Run again"
+    "runAgain": "Run again",
+    "runAgainTitle": "Run the map again with the same parameters"
   },
   "mapsList": {
     "title": "Maps",
@@ -40,16 +43,27 @@
       "noMatch": "No workbook matches this search."
     },
     "columns": {
-      "businessArea": "Business Area"
+      "businessArea": "Business Area",
+      "workbook": "Workbook",
+      "owner": "Owner"
     },
     "actions": {
       "open": "Open",
       "share": "Share",
-      "schedule": "Schedule"
+      "schedule": "Schedule",
+      "viewTooltip": "Open the map and run it to see its rows",
+      "editTooltip": "Change the map's columns, conditions and layout",
+      "copyTooltip": "Make your own copy of this map, which you can then change",
+      "shareTooltip": "Choose who else can open this map and what they may do with it",
+      "scheduleTooltip": "Run this map on a timetable and keep the results",
+      "exportTooltip": "Open the map to export its result to Excel, CSV or PDF",
+      "deleteTooltip": "Delete this map"
     },
     "toast": {
       "deleted": "Map deleted",
-      "deleteFailed": "Failed to delete map"
+      "deleteFailed": "Failed to delete map",
+      "copied": "Map copied. You are now editing your copy.",
+      "copyFailed": "Could not copy the map"
     },
     "emptyNoneAtAll": "No maps exist yet. Create one to get started.",
     "emptyNoMatches": "No maps match your search or filters.",
@@ -131,7 +145,13 @@
     },
     "explain": "Plan",
     "explainFailed": "Could not read the execution plan",
-    "nothingToExplain": "Run the map first"
+    "nothingToExplain": "Run the map first",
+    "toggleSqlTooltip": "Show or hide the SQL statement",
+    "explainTooltip": "Show the database execution plan for this query",
+    "exportExcelTooltip": "Export results as Excel spreadsheet",
+    "exportCsvTooltip": "Export results as CSV file",
+    "exportPdfTooltip": "Export results as PDF document",
+    "loadMoreTooltip": "Load more rows from the result"
   },
   "parameters": {
     "title": "Run parameters",
@@ -160,6 +180,7 @@
       "selectAll": "Select all",
       "selectNone": "Clear",
       "confirm": "Export",
+      "selectToggleTooltip": "Toggle all columns",
       "sizes": {
         "A4": "A4",
         "A3": "A3",
@@ -236,15 +257,12 @@
   "workbookShare": {
     "title": "Share \"{{name}}\"",
     "description": "Give someone every worksheet in this workbook — {{count}} in total.",
-    "pickUser": "Choose a person first",
     "shareButton": "Share workbook",
-    "revokeButton": "Remove access",
     "shared": "Shared {{count}} worksheet(s)",
     "refused": "Not shared: {{names}}",
     "shareFailed": "Could not share the workbook",
     "revoked": "Access removed",
     "revokeFailed": "Could not remove access",
-    "none": "Nobody holds this workbook yet.",
     "sheetsHeld": "{{held}} of {{total}} worksheets"
   },
   "workbookDuplicate": {
@@ -255,7 +273,8 @@
     "defaultName": "{{name}} (copy)",
     "submit": "Copy",
     "done": "Created \"{{name}}\"",
-    "failed": "Could not copy the workbook"
+    "failed": "Could not copy the workbook",
+    "tooltip": "Make your own copy of the whole workbook, which you can then change"
   },
   "workbookDelete": {
     "button": "Delete workbook",

@@ -72,6 +72,11 @@
     "open": "Open",
     "expiresIn": "Expires {{value}}"
   },
+  "export": {
+    "xlsx": "Download as Excel",
+    "csv": "Download as CSV",
+    "pdf": "Download as PDF"
+  },
   "toasts": {
     "scheduleUpdated": "Schedule updated",
     "scheduleCreated": "Schedule created",

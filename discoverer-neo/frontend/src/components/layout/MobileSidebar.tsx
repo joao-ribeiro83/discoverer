@@ -12,9 +12,9 @@ export function MobileSidebar() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="md:hidden">
+        <Button variant="ghost" size="icon" className="md:hidden" title={t('nav:mobile.toggleMenuTitle')}>
           <Menu className="h-5 w-5" />
-          <span className="sr-only">{t('mobile.toggleMenu')}</span>
+          <span className="sr-only">{t('nav:mobile.toggleMenu')}</span>
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="flex w-64 flex-col p-0">

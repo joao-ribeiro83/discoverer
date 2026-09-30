@@ -12,21 +12,31 @@ Partagez des cartes pour :
 
 ## Partager une carte
 
-### Étape 1 : Ouvrir la carte
+### Qui peut partager
 
-1. Cliquez sur **Cartes** → sélectionnez votre carte
-2. Cliquez sur **Partager** ou **Gérer le partage**
+- Le **propriétaire** de la carte
+- Un **MANAGER** — n'importe quelle carte
+- Un **ADMIN** — n'importe quelle carte
 
-### Étape 2 : Ajouter un utilisateur
+Un utilisateur qui a reçu une carte, même avec EDIT, ne peut pas la transmettre.
 
-Dans le panneau de partage :
+### Étape 1 : Ouvrir la fenêtre de partage
 
-1. Cliquez sur **+ Ajouter un utilisateur** ou **+ Accorder l'accès**
-2. Sélectionnez un utilisateur dans la liste
-3. Choisissez le niveau d'autorisation (voir ci-dessous)
-4. Cliquez sur **Accorder**
+1. Cliquez sur **Cartes**
+2. Cliquez sur l'icône de partage sur la ligne de la carte, ou sur un classeur
+   pour partager toutes les feuilles qu'il contient
 
-L'utilisateur peut désormais accéder à la carte avec le niveau d'autorisation sélectionné.
+### Étape 2 : Choisir les personnes et les niveaux
+
+La fenêtre liste tous les utilisateurs. Les personnes qui ont déjà la carte
+apparaissent en premier.
+
+1. Saisissez du texte dans la zone de filtre pour trouver quelqu'un (facultatif)
+2. Cliquez sur un niveau à côté de son nom : **Peut consulter**, **Peut
+   exporter** ou **Peut modifier**. Survolez un niveau pour voir ce qu'il permet.
+
+Le bouton foncé est le niveau actuel de la personne. Cliquez sur un autre niveau
+pour le changer. Cliquez sur **✕** pour lui retirer la carte.
 
 ## Niveaux d'autorisation
 
@@ -37,8 +47,8 @@ L'utilisateur peut désormais accéder à la carte avec le niveau d'autorisation
 | **EXPORT** | ✓ | ✗ | ✗ | ✓ | ✓ | ✗ |
 
 - **VIEW** — Peut consulter la définition de la carte et l'exécuter (lecture seule)
-- **EDIT** — Peut modifier la carte et la partager avec d'autres
-- **EXPORT** — Peut exécuter la carte et exporter les résultats
+- **EDIT** — Peut exécuter, exporter, planifier et modifier la carte (sans pouvoir la partager)
+- **EXPORT** — Peut exécuter la carte, exporter les résultats et la planifier
 - **Propriétaire** — Vous (pouvez toujours modifier, partager, supprimer)
 
 ## Public ou privé
@@ -48,24 +58,22 @@ Basculez sur **Public** pour rendre une carte visible par tous les utilisateurs 
 - **Privé** (par défaut) — Partagé uniquement avec des utilisateurs spécifiques
 - **Public** — Tous les utilisateurs authentifiés peuvent la consulter et l'exécuter
 
-## Modifier les autorisations
+## Modifier ou révoquer l'accès
 
-Pour modifier le niveau d'accès d'un utilisateur :
+Dans la fenêtre de partage, cliquez sur un autre niveau pour le changer, ou sur
+**✕** pour le retirer. La modification prend effet immédiatement.
 
-1. Recherchez l'utilisateur dans la liste de partage
-2. Cliquez sur la liste déroulante des autorisations
-3. Sélectionnez le nouveau niveau
-4. Les modifications prennent effet immédiatement
+Un ADMIN ou un MANAGER peut aussi le faire depuis **Utilisateurs** → l'icône de
+carte sur la ligne d'un utilisateur. Cette liste affiche toutes les cartes que
+l'utilisateur peut ouvrir, avec leur propriétaire. Vous pouvez y changer le
+niveau d'un partage, le retirer ou attribuer la carte à un nouveau propriétaire.
 
-## Révoquer l'accès
+## Copier une carte
 
-Pour retirer l'accès d'un utilisateur :
-
-1. Recherchez l'utilisateur dans la liste de partage
-2. Cliquez sur **Retirer** ou sur l'icône de corbeille
-3. Confirmez le retrait
-
-L'utilisateur perd son accès immédiatement.
+Toute personne autre qu'un VIEWER peut copier une carte qu'elle voit : cliquez
+sur l'icône de copie sur sa ligne dans **Cartes**. La copie est à vous, vous
+pouvez donc la modifier. Son exécution exige toujours une autorisation sur le
+domaine d'activité de la carte.
 
 ## Partagées avec moi
 

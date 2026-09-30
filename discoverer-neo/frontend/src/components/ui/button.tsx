@@ -1,7 +1,9 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
+import * as TooltipPrimitive from "@radix-ui/react-tooltip"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
+import { TooltipContent } from "@/components/ui/tooltip"
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
@@ -35,11 +37,31 @@ export interface ButtonProps
   asChild?: boolean
 }
 
+/**
+ * A `title` becomes a helper balloon (a Radix tooltip) instead of the slow
+ * native one. An icon-only button also gets it as its accessible name, since
+ * it has no text of its own.
+ */
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, title, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
+    const button = (
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        aria-label={props["aria-label"] ?? (title && size === "icon" ? title : undefined)}
+        {...props}
+      />
+    )
+    if (!title) return button
     return (
-      <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
+      // Own provider, so a Button works anywhere — tests and portals included.
+      <TooltipPrimitive.Provider delayDuration={300}>
+        <TooltipPrimitive.Root>
+          <TooltipPrimitive.Trigger asChild>{button}</TooltipPrimitive.Trigger>
+          <TooltipContent className="max-w-xs whitespace-normal">{title}</TooltipContent>
+        </TooltipPrimitive.Root>
+      </TooltipPrimitive.Provider>
     )
   }
 )

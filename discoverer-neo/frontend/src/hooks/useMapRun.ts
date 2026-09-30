@@ -21,7 +21,7 @@ export interface UseMapRunResult {
     parameters?: Record<string, unknown>
     calculatedFields?: MapCalculatedFieldInput[]
     force?: boolean
-  }) => Promise<void>
+  }, mapIdOverride?: string) => Promise<void>
   /** Load an existing run (from the Runs page or `?run=`). */
   open: (runId: string) => Promise<void>
   cancel: () => Promise<void>
@@ -116,11 +116,16 @@ export function useMapRun(mapId: string | undefined): UseMapRunResult {
   }, [queryClient])
 
   const request = useCallback(
-    async (body: { parameters?: Record<string, unknown>; calculatedFields?: MapCalculatedFieldInput[]; force?: boolean }) => {
-      if (!mapId) return
+    async (
+      body: { parameters?: Record<string, unknown>; calculatedFields?: MapCalculatedFieldInput[]; force?: boolean },
+      // The builder saves a new map first, so its id exists only after this hook last rendered.
+      mapIdOverride?: string,
+    ) => {
+      const target = mapIdOverride ?? mapId
+      if (!target) return
       setError(null)
       try {
-        const { data: newRun, reused: wasReused } = await apiClient.maps.requestRun(mapId, body)
+        const { data: newRun, reused: wasReused } = await apiClient.maps.requestRun(target, body)
         resetForNewRun(newRun, wasReused)
       } catch (err) {
         setError(getErrorMessage(err))

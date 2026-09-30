@@ -263,7 +263,7 @@ Une **jointure** définit une relation entre deux dossiers.
 
 Chaque jointure comporte une ou plusieurs conditions reliant des colonnes :
 
-1. Cliquez sur **+ Ajouter une condition**
+1. Cliquez sur **Ajouter une paire de colonnes**
 2. Sélectionnez :
    - **Élément 1** — Colonne du dossier 1
    - **Opérateur** — = (égal à)

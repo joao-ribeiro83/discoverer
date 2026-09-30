@@ -90,5 +90,10 @@
     "selectMap": "Selecione um mapa",
     "nameRequired": "O nome é obrigatório",
     "cronExpressionRequired": "A expressão cron é obrigatória"
+  },
+  "export": {
+    "xlsx": "Descarregar como Excel",
+    "csv": "Descarregar como CSV",
+    "pdf": "Descarregar como PDF"
   }
 }

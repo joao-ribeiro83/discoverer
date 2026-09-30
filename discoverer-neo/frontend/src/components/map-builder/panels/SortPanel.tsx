@@ -144,7 +144,7 @@ export function SortPanel() {
                 ))}
               </SelectContent>
             </Select>
-            <Button size="sm" onClick={handleAddSort} disabled={pickKey === UNSORTED_PLACEHOLDER}>
+            <Button size="sm" onClick={handleAddSort} disabled={pickKey === UNSORTED_PLACEHOLDER} title={t('mapBuilder:panels.sort.addButtonTooltip')}>
               {t('mapBuilder:panels.sort.addSortButton')}
             </Button>
           </div>
@@ -214,6 +214,7 @@ function SortRow({
         size="icon"
         className="h-7 w-7 shrink-0"
         onClick={onRemove}
+        title={t('mapBuilder:panels.sort.removeButtonTooltip')}
         aria-label={t('mapBuilder:panels.sort.removeAria', { label })}
       >
         <X className="h-4 w-4" />

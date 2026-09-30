@@ -262,7 +262,7 @@ Uma **Junção** define uma relação entre duas pastas.
 
 Cada junção tem uma ou mais condições que ligam colunas:
 
-1. Clique em **+ Adicionar Condição**
+1. Clique em **Adicionar par de colunas**
 2. Selecione:
    - **Item 1** — Coluna na Pasta 1
    - **Operador** — = (igual a)

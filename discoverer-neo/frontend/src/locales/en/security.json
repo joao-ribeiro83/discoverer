@@ -69,6 +69,14 @@
   "deleteConfirm": {
     "itemLabel": "policy"
   },
+  "actions": {
+    "validatePredicate": "Validate this SQL predicate",
+    "testPolicy": "Test this policy with a sample query",
+    "newPolicy": "Create a new security policy",
+    "addRule": "Add another rule to this policy",
+    "assignPolicy": "Assign this policy to users or roles",
+    "runPolicyTest": "Run the policy test on this sample query"
+  },
   "toasts": {
     "loadPolicyFailed": "Failed to load policy",
     "policyUpdated": "Policy updated",

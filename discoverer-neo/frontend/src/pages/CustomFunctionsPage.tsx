@@ -312,7 +312,7 @@ export function CustomFunctionsPage() {
             <RefreshCw className={`h-4 w-4 ${refreshMutation.isPending ? 'animate-spin' : ''}`} />{' '}
             {t('admin:customFunctions.refresh.all')}
           </Button>
-          <Button onClick={openCreate}>
+          <Button onClick={openCreate} title={t('admin:customFunctions.createButtonTooltip')}>
             <Plus className="h-4 w-4" /> {t('admin:customFunctions.createButton')}
           </Button>
         </div>
@@ -514,7 +514,7 @@ function DatabaseFunctionSearch({
             placeholder={t('admin:customFunctions.search.searchPlaceholder')}
           />
         </div>
-        <Button type="button" onClick={runSearch} disabled={results.isFetching}>
+        <Button type="button" onClick={runSearch} disabled={results.isFetching} title={t('admin:customFunctions.search.buttonTooltip')}>
           <Search className="h-4 w-4" /> {t('admin:customFunctions.search.button')}
         </Button>
       </div>

@@ -207,7 +207,7 @@ export function HierarchiesPage() {
       title={t('admin:hierarchies.title')}
       description={t('admin:hierarchies.description')}
       action={
-        <Button onClick={openCreate} disabled={!businessAreaId}>
+        <Button onClick={openCreate} disabled={!businessAreaId} title={t('admin:hierarchies.createButtonTooltip')}>
           <Plus className="h-4 w-4" /> {t('admin:hierarchies.createButton')}
         </Button>
       }
@@ -368,7 +368,7 @@ function LevelRow({
           ))}
         </SelectContent>
       </Select>
-      <Button type="button" variant="ghost" size="icon" onClick={onRemove}>
+      <Button type="button" variant="ghost" size="icon" onClick={onRemove} title={t('admin:hierarchies.form.removeLevelButtonTooltip')}>
         <X className="h-4 w-4" />
       </Button>
     </div>

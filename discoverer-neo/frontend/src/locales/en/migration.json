@@ -5,12 +5,18 @@
   },
   "actions": {
     "detectVersion": "Detect version",
+    "detectVersionTitle": "Detect the EUL version of the selected data source",
     "analyze": "Analyze",
+    "analyzeTitle": "Analyze the EUL for migration readiness and complexity",
     "runDryRun": "Run dry run",
     "runMigration": "Run migration",
+    "runTitle": "Start the migration job",
     "reimportMaps": "Re-import maps",
+    "reimportMapsTitle": "Re-import maps from the EUL, replacing existing maps",
     "reimportAll": "Re-import everything",
-    "compile": "Compile calculated fields"
+    "reimportAllTitle": "Re-import all objects from the EUL with current migrator version",
+    "compile": "Compile calculated fields",
+    "compileTitle": "Compile all calculated fields and generate their SQL"
   },
   "source": {
     "title": "Source",

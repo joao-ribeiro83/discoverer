@@ -328,6 +328,100 @@ couvert ; `apiPass` ne l'est pas. Ajouter un nom qui ne correspond pas revient
 
 `backend/src/__tests__/audit-redaction.test.ts` fixe la règle.
 
+## Ce qui a changé pour les autorisations sur les domaines d'activité
+
+Trois changements dans la façon dont une autorisation est lue. Tous restreignent
+l'accès ; aucun ne l'élargit.
+
+### 1. Une autorisation sur le domaine d'activité de la carte ne suffit plus
+
+L'exécution d'une carte exige désormais une autorisation sur **chaque dossier
+que la requête touche**, et non sur le domaine d'activité enregistré pour la
+carte. Un dossier est couvert par une autorisation sur *n'importe quel* domaine
+d'activité auquel il appartient — celui qui le possède, ou tout domaine dans
+lequel il a été partagé.
+
+Cela ferme une escalade : auparavant, être propriétaire d'une carte ou l'avoir
+reçue en partage permettait de lire des dossiers d'un domaine d'activité sur
+lequel vous n'aviez jamais reçu d'autorisation, car les contrôles de
+propriétaire, de carte publique et de partage se terminaient avant le contrôle
+de l'autorisation.
+
+**Ce que vous pouvez constater :** un utilisateur qui pouvait ouvrir auparavant
+un rapport partagé ou public reçoit désormais *« Vous n'avez pas accès aux
+données du dossier X »*. La solution est une autorisation sur un domaine
+d'activité auquel ce dossier appartient — pas une modification de la carte.
+
+Les administrateurs contournent toujours ce contrôle. Le contournement est
+désormais consigné dans le journal d'audit sous `DATA_ENTITLEMENT_ADMIN_BYPASS`,
+et seulement si l'administrateur n'a réellement aucune autorisation, de sorte
+que le journal montre les vrais contournements et non chaque requête
+d'administrateur.
+
+### 2. Une politique de domaine d'activité suit désormais les dossiers, pas la carte
+
+Une règle de portée `BUSINESS_AREA` s'applique lorsque **n'importe quel dossier
+lu par la requête** appartient à ce domaine d'activité — en propre ou par
+partage. Auparavant, elle était comparée à une seule colonne de la ligne de la
+carte.
+
+**Ce que vous pouvez constater :** une politique qui touche un rapport que vous
+n'attendiez pas, parce que ce rapport lit un dossier de votre domaine
+d'activité alors que le rapport lui-même est classé ailleurs. C'est le
+comportement voulu : la politique protège les données, pas le rapport.
+
+### 3. Un dossier sans politique pour vous est refusé
+
+L'exécution d'une requête exige une politique de sécurité au niveau des lignes
+qui couvre **chaque dossier qu'elle lit**. Un utilisateur qui n'en a pas est
+refusé, avec le nom du dossier, au lieu de recevoir toutes les lignes — voir la
+section sur la sécurité au niveau des lignes qui échoue en mode fermé.
+
+**Ce que vous pouvez constater :** *« Refusing to run unfiltered: no row-level
+security policy resolves for you on folder(s) X »*. La solution est d'attribuer
+à cet utilisateur (ou à son rôle) une politique couvrant le dossier. S'il doit
+tout voir, attribuez-lui une politique permissive (`1 = 1`) plutôt que de le
+laisser sans politique — l'absence de politique n'est jamais lue comme une
+permission.
+
+Cela s'applique **aussi aux administrateurs**. Les administrateurs contournent
+les autorisations ; ils ne contournent pas les politiques au niveau des lignes.
+
+Cela a débuté en phase 1.1 comme une règle plus étroite — refuser seulement un
+dossier ciblé par une politique active — et est devenu le mode fermé complet en
+phase 6.3. `ROW_LEVEL_FAIL_MODE=OPEN` rétablit la règle plus étroite ; il ne
+laisse jamais s'exécuter sans filtre un dossier ciblé par une politique.
+
+### 4. Une autorisation de domaine d'activité n'affiche plus les cartes des autres
+
+Une autorisation de domaine d'activité, à n'importe quel niveau, est un droit
+sur les **données**. Elle vous permet de créer et d'exécuter vos propres cartes
+sur ce domaine d'activité ; elle ne place pas dans votre liste toutes les cartes
+qu'une autre personne y a enregistrées.
+
+Pour voir la carte d'une autre personne, il faut l'une de ces conditions : vous
+êtes ADMIN ou MANAGER, vous en êtes propriétaire, elle est publique, ou elle a
+été partagée avec vous (`map_shares`). Un MANAGER peut voir, exécuter, exporter,
+planifier et partager toutes les cartes, mais ne modifier que les siennes.
+(Jusqu'à la version suivant la 1.1.0, une autorisation d'auteur — `CREATE`,
+`EDIT` ou `DELETE` — affichait aussi les cartes d'un domaine. Ce n'est plus le
+cas.)
+
+Cela correspond à Discoverer, où une autorisation de domaine d'activité
+permettait d'écrire des feuilles sur ces données, alors qu'ouvrir le classeur
+enregistré d'une autre personne exigeait une autorisation explicite sur le
+classeur (`ACCESS_PRIVS.AP_TYPE = 'GD'`). Ces autorisations de classeur migrent
+désormais dans `map_shares`, un partage par feuille, au niveau `EXPORT` — ce qui
+permet au bénéficiaire d'exécuter la carte, d'exporter le résultat et de la
+planifier, mais pas de la modifier.
+
+**Ce que vous pouvez constater :** un utilisateur migré dont la liste de cartes
+devient soudain courte. Toute autorisation écrite par une migration est
+inférieure à `CREATE` ; avant ce changement, une seule autorisation `VIEW`
+affichait donc toutes les cartes du domaine d'activité. La solution est de
+partager les cartes que cette personne doit avoir, ou d'en faire un MANAGER si
+elle doit voir toutes les cartes.
+
 ## Accès au niveau de l'objet
 
 Lire un dossier, un élément, une jointure ou une hiérarchie par son id exige la

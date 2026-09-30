@@ -100,21 +100,23 @@ export function WorkbookBrowseSection() {
                     <span className="truncate font-medium">{wb.name}</span>
                     <span className="ml-2 flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
                       {t('mapViewer:mapsList.workbooks.worksheetCount', { count: wb.maps.length })}
-                      {/* Anyone may try: the server applies the per-worksheet copy rule. */}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        title={t('mapViewer:workbookDuplicate.button')}
-                        aria-label={t('mapViewer:workbookDuplicate.button')}
-                        onClick={(e) => {
-                          e.preventDefault()
-                          e.stopPropagation()
-                          setCopying({ id: wb.id, name: wb.name })
-                        }}
-                      >
-                        <Copy className="h-3.5 w-3.5" />
-                      </Button>
+                      {/* Anyone but a read-only VIEWER may copy what they can see; the server re-checks. */}
+                      {role !== 'VIEWER' && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          title={t('mapViewer:workbookDuplicate.tooltip')}
+                          aria-label={t('mapViewer:workbookDuplicate.button')}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            setCopying({ id: wb.id, name: wb.name })
+                          }}
+                        >
+                          <Copy className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
                       {canShare && (
                         <Button
                           variant="ghost"

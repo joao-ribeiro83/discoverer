@@ -377,7 +377,7 @@ export function MigrationPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <Button variant="outline" onClick={() => detectMutation.mutate()} disabled={!canAct}>
+            <Button variant="outline" onClick={() => detectMutation.mutate()} disabled={!canAct} title={t('migration:actions.detectVersionTitle')}>
               {detectMutation.isPending ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
@@ -385,7 +385,7 @@ export function MigrationPage() {
               )}
               {t('migration:actions.detectVersion')}
             </Button>
-            <Button variant="outline" onClick={() => analyzeMutation.mutate()} disabled={!canAct}>
+            <Button variant="outline" onClick={() => analyzeMutation.mutate()} disabled={!canAct} title={t('migration:actions.analyzeTitle')}>
               {analyzeMutation.isPending ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
@@ -405,7 +405,7 @@ export function MigrationPage() {
               </Label>
             </div>
 
-            <Button onClick={() => runMutation.mutate()} disabled={!canAct}>
+            <Button onClick={() => runMutation.mutate()} disabled={!canAct} title={t('migration:actions.runTitle')}>
               {runMutation.isPending || isRunning ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
@@ -418,6 +418,7 @@ export function MigrationPage() {
               variant="outline"
               onClick={() => reimportMapsMutation.mutate()}
               disabled={!canAct}
+              title={t('migration:actions.reimportMapsTitle')}
             >
               {reimportMapsMutation.isPending ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -431,6 +432,7 @@ export function MigrationPage() {
               variant="outline"
               onClick={() => reimportAllMutation.mutate()}
               disabled={!canAct}
+              title={t('migration:actions.reimportAllTitle')}
             >
               {reimportAllMutation.isPending ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -444,6 +446,7 @@ export function MigrationPage() {
               variant="outline"
               onClick={() => compileMutation.mutate()}
               disabled={busy || isRunning || compileMutation.isPending}
+              title={t('migration:actions.compileTitle')}
             >
               {compileMutation.isPending ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

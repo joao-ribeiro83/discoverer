@@ -538,12 +538,23 @@ describe('Map management', () => {
     const res = await app.inject({
       method: 'GET',
       url: `/api/business-areas/${baId}/maps`,
-      headers: { authorization: `Bearer ${viewerToken}` },
+      headers: { authorization: `Bearer ${ownerToken}` },
     });
     expect(res.statusCode).toBe(200);
     expect(res.json().data.some((m: { id: string }) => m.id === mapId)).toBe(
       true,
     );
+  });
+
+  it('does not list a business area map to a grant holder it was never shared with', async () => {
+    // A business-area grant is a data entitlement, not map visibility.
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/business-areas/${baId}/maps`,
+      headers: { authorization: `Bearer ${viewerToken}` },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().data.some((m: { id: string }) => m.id === mapId)).toBe(false);
   });
 
   it('updates map metadata and replaces child collections', async () => {
@@ -1307,16 +1318,45 @@ describe('a manager distributes maps it can see', () => {
     await db.delete(mapShares).where(eq(mapShares.mapId, sheetId));
   });
 
-  it('refuses to share a map the manager cannot see', async () => {
+  it('shares any map, since a manager sees every map', async () => {
     const res = await app.inject({
       method: 'POST',
       url: `/api/maps/${sheetId}/shares`,
       headers: { authorization: `Bearer ${managerToken}` },
       payload: { userId: viewerId, permissionLevel: 'VIEW' },
     });
-    // 403 from the object gate, not the share gate: a manager holding neither
-    // a share nor an authoring grant does not see the map at all.
+    expect(res.statusCode).toBe(201);
+  });
+
+  it('cannot edit a map it does not own', async () => {
+    const res = await app.inject({
+      method: 'PUT',
+      url: `/api/maps/${sheetId}`,
+      headers: { authorization: `Bearer ${managerToken}` },
+      payload: { name: 'Renamed by manager' },
+    });
     expect(res.statusCode).toBe(403);
+  });
+
+  it('hands the map to a new owner, which an ordinary user cannot', async () => {
+    const asUser = await app.inject({
+      method: 'PUT',
+      url: `/api/maps/${sheetId}/owner`,
+      headers: { authorization: `Bearer ${viewerToken}` },
+      payload: { userId: viewerId },
+    });
+    expect(asUser.statusCode).toBe(403);
+
+    const res = await app.inject({
+      method: 'PUT',
+      url: `/api/maps/${sheetId}/owner`,
+      headers: { authorization: `Bearer ${managerToken}` },
+      payload: { userId: viewerId },
+    });
+    expect(res.statusCode).toBe(200);
+    const [row] = await db.select().from(maps).where(eq(maps.id, sheetId));
+    expect(row!.createdBy).toBe(viewerId);
+    await db.update(maps).set({ createdBy: ownerId }).where(eq(maps.id, sheetId));
   });
 
   it('shares a map it holds but does not own, which an ordinary user cannot', async () => {
@@ -1497,7 +1537,7 @@ describe('duplicating a workbook', () => {
     expect(res.json().data.name).toBe('Copy source (copy)');
   });
 
-  it('refuses a reader without CREATE rights, naming the sheets', async () => {
+  it('lets a user copy a workbook shared with them, as their own', async () => {
     await db.insert(mapShares).values({
       mapId: sheet1Id,
       sharedWithUserId: viewerId,
@@ -1509,8 +1549,7 @@ describe('duplicating a workbook', () => {
       url: `/api/workbooks/${wbId}/duplicate`,
       headers: { authorization: `Bearer ${viewerToken}` },
     });
-    expect(res.statusCode).toBe(403);
-    expect(res.json().details).toContain('Copy source — Sheet 1');
+    expect(res.statusCode).toBe(201);
   });
 
   it('answers 404 for a workbook the caller cannot see', async () => {

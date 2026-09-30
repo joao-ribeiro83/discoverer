@@ -45,8 +45,11 @@
     "cancel": "Cancel",
     "delete": "Delete",
     "xlsx": "XLSX",
+    "exportXLSXTitle": "Download this run's results as an Excel spreadsheet",
     "csv": "CSV",
-    "pdf": "PDF"
+    "exportCSVTitle": "Download this run's results as a CSV file",
+    "pdf": "PDF",
+    "exportPDFTitle": "Download this run's results as a PDF document"
   },
   "toasts": {
     "reusedTitle": "Result reused",

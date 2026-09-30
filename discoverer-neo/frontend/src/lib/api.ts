@@ -370,15 +370,17 @@ export const apiClient = {
     create: (data: unknown) => api.post<Envelope<AppUser>>('/users', data),
     update: (id: string, data: unknown) => api.put<Envelope<AppUser>>(`/users/${id}`, data),
     delete: (id: string) => api.delete<Envelope<{ message: string }>>(`/users/${id}`),
-    /** Every map this user can open, and why (admin-only). */
+    /** Every map this user can open, and why (admin or manager). */
     maps: (id: string) =>
       api.get<
         Envelope<
           {
             id: string
             name: string
-            via: 'ADMIN' | 'OWNER' | 'SHARE' | 'PUBLIC' | 'GRANT'
+            via: 'ADMIN' | 'OWNER' | 'SHARE' | 'PUBLIC' | 'ROLE'
             sharePermission: string | null
+            ownerId: string
+            ownerName: string | null
           }[]
         >
       >(`/users/${id}/maps`),
@@ -471,6 +473,9 @@ export const apiClient = {
       api.put<Envelope<MapShare>>(`/maps/${id}/shares/${userId}`, { permissionLevel }),
     revokeShare: (id: string, userId: string) =>
       api.delete<Envelope<{ revoked: boolean }>>(`/maps/${id}/shares/${userId}`),
+    /** Give the map to another user (admin or manager only). */
+    transferOwner: (id: string, userId: string) =>
+      api.put<Envelope<{ mapId: string; ownerId: string }>>(`/maps/${id}/owner`, { userId }),
     sharedWithMe: () => api.get<Envelope<MapSummary[]>>('/maps/shared-with-me'),
     // Conditional formats — kept off the general map update (a save replaces
     // every map item, which anchors these); own lifecycle, own routes.

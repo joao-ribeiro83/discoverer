@@ -90,5 +90,10 @@
     "selectMap": "Sélectionnez une carte",
     "nameRequired": "Le nom est obligatoire",
     "cronExpressionRequired": "L'expression cron est obligatoire"
+  },
+  "export": {
+    "xlsx": "Télécharger en Excel",
+    "csv": "Télécharger en CSV",
+    "pdf": "Télécharger en PDF"
   }
 }

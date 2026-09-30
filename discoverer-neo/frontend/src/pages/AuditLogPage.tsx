@@ -186,6 +186,7 @@ export function AuditLogPage() {
       action={
         <Button
           variant="outline"
+          title={t('audit:actions.exportCsvTooltip')}
           onClick={() =>
             downloadCsv(
               rows,
@@ -364,6 +365,7 @@ export function AuditLogPage() {
               <Button
                 variant="ghost"
                 size="sm"
+                title={t('audit:filters.clearTooltip')}
                 onClick={() => {
                   setFilters(EMPTY_FILTERS)
                   setOffset(0)

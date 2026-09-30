@@ -46,7 +46,10 @@
     "delete": "Eliminar",
     "xlsx": "XLSX",
     "csv": "CSV",
-    "pdf": "PDF"
+    "pdf": "PDF",
+    "exportXLSXTitle": "Descargar los resultados de esta ejecución como hoja de cálculo de Excel",
+    "exportCSVTitle": "Descargar los resultados de esta ejecución como archivo CSV",
+    "exportPDFTitle": "Descargar los resultados de esta ejecución como documento PDF"
   },
   "toasts": {
     "reusedTitle": "Resultado reutilizado",

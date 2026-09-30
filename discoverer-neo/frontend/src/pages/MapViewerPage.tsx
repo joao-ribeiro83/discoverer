@@ -11,6 +11,7 @@ import { formatDateTime } from '@/lib/format'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ExecutionPanel } from '@/components/map-builder/ExecutionPanel'
+import { BackButton } from '@/components/layout/BackButton'
 import {
   ParameterPromptDialog,
   itemIdForParameter,
@@ -171,6 +172,7 @@ export function MapViewerPage() {
     <div className="flex h-full flex-col space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
+          <BackButton fallback="/maps" className="-ml-3 mb-1" />
           <h2 className="text-3xl font-bold tracking-tight">{map.name}</h2>
           {/* After a run the heading shows the parameters that were entered
               (`&Date`, `&Time`, `&<ParamName>`); before one it shows the
@@ -203,7 +205,7 @@ export function MapViewerPage() {
             <Button
               onClick={handleRun}
               disabled={running || !!disabledReason}
-              title={disabledReason ?? undefined}
+              title={disabledReason ?? t('mapViewer:viewer.runTitle')}
               aria-describedby={disabledReason ? 'run-disabled-reason' : undefined}
             >
               {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
@@ -216,7 +218,7 @@ export function MapViewerPage() {
             )}
             {status && <p className="text-xs text-muted-foreground">{status}</p>}
             {run?.status === 'COMPLETED' && (
-              <Button variant="ghost" size="sm" onClick={handleRunAgain} disabled={running}>
+              <Button variant="ghost" size="sm" onClick={handleRunAgain} disabled={running} title={t('mapViewer:viewer.runAgainTitle')}>
                 {t('mapViewer:viewer.runAgain')}
               </Button>
             )}
@@ -226,7 +228,7 @@ export function MapViewerPage() {
               </Button>
             )}
           </div>
-          <Button variant="outline" asChild>
+          <Button variant="outline" asChild title={t('mapViewer:viewer.scheduleManagementTitle')}>
             <Link to="/schedules">
               <CalendarClock className="h-4 w-4" /> {t('mapViewer:viewer.scheduleManagement')}
             </Link>

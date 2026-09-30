@@ -12,21 +12,30 @@ Partilhe mapas para:
 
 ## Partilhar um Mapa
 
-### Passo 1: Abrir o Mapa
+### Quem pode partilhar
 
-1. Clique em **Mapas** → selecione o seu mapa
-2. Clique em **Partilhar** ou **Gerir Partilha**
+- O **proprietário** do mapa
+- Um **MANAGER** — qualquer mapa
+- Um **ADMIN** — qualquer mapa
 
-### Passo 2: Adicionar Utilizador
+Um utilizador que recebeu um mapa, mesmo com EDIT, não pode passá-lo a outros.
 
-No painel de partilha:
+### Passo 1: Abrir a janela de partilha
 
-1. Clique em **+ Adicionar Utilizador** ou **+ Conceder Acesso**
-2. Selecione um utilizador na lista
-3. Escolha o nível de permissão (ver abaixo)
-4. Clique em **Conceder**
+1. Clique em **Mapas**
+2. Clique no ícone de partilha na linha do mapa, ou num livro para partilhar
+   todas as folhas que contém
 
-O utilizador pode agora aceder ao mapa com o nível de permissão selecionado.
+### Passo 2: Escolher pessoas e níveis
+
+A janela lista todos os utilizadores. As pessoas que já têm o mapa aparecem primeiro.
+
+1. Escreva na caixa de filtro para encontrar alguém (opcional)
+2. Clique num nível junto ao nome: **Pode ver**, **Pode exportar** ou
+   **Pode editar**. Pause o cursor sobre um nível para ver o que permite.
+
+O botão escuro é o nível que a pessoa tem agora. Clique noutro nível para o
+alterar. Clique em **✕** para lhe retirar o mapa.
 
 ## Níveis de Permissão
 
@@ -37,8 +46,8 @@ O utilizador pode agora aceder ao mapa com o nível de permissão selecionado.
 | **Exportar** | ✓ | ✗ | ✗ | ✓ | ✓ | ✗ |
 
 - **Ver** — Pode ver a definição do mapa e executá-lo (só de leitura)
-- **Editar** — Pode modificar o mapa e partilhá-lo com outros
-- **Exportar** — Pode executar o mapa e exportar os resultados
+- **Editar** — Pode executar, exportar, agendar e alterar o mapa (não o pode partilhar)
+- **Exportar** — Pode executar o mapa, exportar os resultados e agendá-lo
 - **Proprietário** — O utilizador (pode sempre modificar, partilhar e eliminar)
 
 ## Público vs. Privado
@@ -48,24 +57,21 @@ Alterne **Público** para tornar um mapa detetável por todos os utilizadores:
 - **Privado** (predefinição) — Partilhado apenas com utilizadores específicos
 - **Público** — Todos os utilizadores autenticados podem vê-lo e executá-lo
 
-## Alterar Permissões
+## Alterar ou Revogar Acesso
 
-Para alterar o nível de acesso de um utilizador:
+Na janela de partilha, clique noutro nível para o alterar, ou em **✕** para o
+remover. A alteração produz efeito de imediato.
 
-1. Encontre o utilizador na lista de partilha
-2. Clique na lista pendente de permissões
-3. Selecione o novo nível
-4. As alterações produzem efeito de imediato
+Um ADMIN ou MANAGER também o pode fazer em **Utilizadores** → ícone de mapa na
+linha de um utilizador. Essa lista mostra todos os mapas que o utilizador pode
+abrir, com o respetivo proprietário. Aí pode alterar o nível de uma partilha,
+removê-la ou atribuir o mapa a um novo proprietário.
 
-## Revogar Acesso
+## Copiar um Mapa
 
-Para remover o acesso de um utilizador:
-
-1. Encontre o utilizador na lista de partilha
-2. Clique em **Remover** ou no ícone de lixo
-3. Confirme a remoção
-
-O utilizador perde o acesso de imediato.
+Qualquer pessoa, exceto um VIEWER, pode copiar um mapa que consiga ver: clique
+no ícone de cópia na linha do mapa em **Mapas**. A cópia é sua, por isso pode
+alterá-la. Executá-la continua a exigir uma permissão na área de negócio do mapa.
 
 ## Partilhado Comigo
 

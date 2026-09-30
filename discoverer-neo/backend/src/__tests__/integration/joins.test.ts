@@ -200,6 +200,39 @@ describe('Join CRUD', () => {
     expect(body.data.rightItemId).toBe(testRightItemId);
   });
 
+  it('creates and replaces a join with several column pairs, in order', async () => {
+    const created = await app.inject({
+      method: 'POST',
+      url: `/api/business-areas/${testBusinessAreaId}/joins`,
+      headers: { authorization: `Bearer ${adminToken}` },
+      payload: {
+        name: 'Two-pair Join',
+        leftFolderId: testLeftFolderId,
+        rightFolderId: testRightFolderId,
+        predicates: [
+          { leftItemId: testLeftItemId, rightItemId: testRightItemId },
+          { leftItemId: testLeftItemId, rightItemId: testRightItemId, operator: '<=' },
+        ],
+        joinType: 'INNER',
+      },
+    });
+    expect(created.statusCode).toBe(201);
+    const join = created.json().data;
+    expect(join.predicateCount).toBe(2);
+    expect(join.predicates.map((p: { operator: string }) => p.operator)).toEqual(['=', '<=']);
+
+    // An update with `predicates` replaces every pair.
+    const updated = await app.inject({
+      method: 'PUT',
+      url: `/api/joins/${join.id}`,
+      headers: { authorization: `Bearer ${adminToken}` },
+      payload: { predicates: [{ leftItemId: testLeftItemId, rightItemId: testRightItemId, operator: '<>' }] },
+    });
+    expect(updated.statusCode).toBe(200);
+    expect(updated.json().data.predicates).toHaveLength(1);
+    expect(updated.json().data.predicates[0].operator).toBe('<>');
+  });
+
   it('creates a join with all join types', async () => {
     // No `FULL`: the flag pair that would mean it is a refusal (D-038), so the
     // API no longer accepts it — see the rejection test below.

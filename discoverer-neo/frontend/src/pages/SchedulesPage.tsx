@@ -13,6 +13,7 @@ import { useMapExport } from '@/hooks/useMapExport'
 import { useToast } from '@/hooks/use-toast'
 import { useLocale } from '@/hooks/useLocale'
 import { formatDateTime, formatNumber, formatExpiresIn, isExpiryValid } from '@/lib/format'
+import { BackButton } from '@/components/layout/BackButton'
 import { AdminPageWrapper } from '@/components/admin/AdminPageWrapper'
 import { DataTable } from '@/components/admin/DataTable'
 import { CreateEditDialog } from '@/components/admin/CreateEditDialog'
@@ -446,6 +447,8 @@ export function SchedulesPage() {
         </Button>
       }
     >
+      {/* Arrived from a map (its Schedule button): offer the way back to it. */}
+      {searchParams.get('mapId') && <BackButton fallback="/maps" className="-ml-3" />}
       <DataTable
         columns={columns}
         data={schedules ?? []}
@@ -701,6 +704,7 @@ function ScheduleResultExportButtons({
             className="h-7 gap-1 text-xs"
             disabled={exportCtl.isExporting}
             onClick={() => exportCtl.exportFormat(format)}
+            title={t(`schedules:export.${format.toLowerCase()}`)}
           >
             {exportCtl.isExporting && exportCtl.format === format ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />

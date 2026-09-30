@@ -8,10 +8,20 @@ O Discoverer Neo tem quatro funções de utilizador com capacidades diferentes:
 
 | Função | Capacidades |
 |------|-------------|
-| **ADMIN** | Acesso total ao sistema — utilizadores, áreas de negócio, origens de dados, registos de auditoria |
-| **MANAGER** | Criar e gerir áreas de negócio, conceder permissões a outros utilizadores |
-| **USER** | Criar mapas, executar consultas, partilhar mapas com colegas |
-| **VIEWER** | Acesso só de leitura a mapas e painéis partilhados |
+| **ADMIN** | Acesso total ao sistema — utilizadores, áreas de negócio, origens de dados, registos de auditoria. Abre, altera, partilha e elimina todos os mapas. |
+| **MANAGER** | Modela os dados (áreas de negócio, pastas, itens, junções). Abre, executa, exporta, agenda e partilha **todos** os mapas, e pode alterar o proprietário de um mapa. Altera apenas os seus próprios mapas. |
+| **USER** | Vê apenas os seus próprios mapas e os mapas partilhados consigo. Cria um novo mapa copiando um destes. |
+| **VIEWER** | Só de leitura. Abre e executa os mapas partilhados consigo. Não pode criar, copiar nem alterar mapas. |
+
+A página Utilizadores mostra estas regras no campo **Função** quando edita um
+utilizador. Um MANAGER pode abrir a página Utilizadores para ver os mapas de
+cada utilizador e, aí, alterar o nível de uma partilha, remover uma partilha ou
+atribuir um mapa a um novo proprietário. Apenas um ADMIN pode criar, alterar ou
+eliminar utilizadores.
+
+Qualquer pessoa, exceto um VIEWER, pode copiar um mapa que consiga ver. A cópia
+pertence-lhe. Executá-la continua a exigir uma permissão na sua área de negócio
+(ver "duas verificações" abaixo).
 
 ## Criar Utilizadores
 
@@ -62,30 +72,28 @@ Depois de os utilizadores existirem, conceda-lhes acesso a áreas de negócio es
 
 1. Painel de Administração → **Áreas de Negócio**
 2. Selecione a área de negócio → **Gerir Acesso**
-3. Clique em **+ Conceder Permissão**
-4. Selecione:
-   - **Utilizador** — A partir da lista pendente
-   - **Nível de Permissão** — CREATE, EDIT, DELETE, EXPORT, SCHEDULE ou VIEW
-5. Clique em **Conceder**
+3. Assinale um ou mais utilizadores na lista. Escreva na caixa de filtro para os encontrar.
+4. Escolha o nível de **Permissão**. A caixa por baixo indica o que esse nível permite.
+5. Clique em **Adicionar**. Todos os utilizadores assinalados recebem esse nível.
 
 ### Níveis de Permissão
 
-Os níveis formam uma escada. Cada nível inclui todos os níveis acima dele na tabela.
+Os níveis formam uma escada. Cada nível inclui todos os níveis acima dele na tabela. Nenhum nível mostra os mapas de outras pessoas — só uma partilha (ou a função MANAGER) o faz.
 
 | Nível | O que adiciona |
 |-------|--------------|
 | **VIEW** | Ler os dados nas pastas da área. Ver as pastas, itens, junções e hierarquias da área. Executar mapas que o utilizador possui, mapas partilhados com o utilizador e mapas públicos. |
 | **EXPORT** | Igual a VIEW atualmente (ver nota 2). |
 | **SCHEDULE** | Igual a VIEW atualmente (ver nota 2). |
-| **CREATE** | Criar mapas, pastas, itens, junções e hierarquias. Ver, executar, exportar, agendar e copiar **todos** os mapas da área. |
-| **EDIT** | Alterar a área, as suas pastas, itens, junções, hierarquias e todos os mapas nela. |
-| **DELETE** | Eliminar pastas, itens, junções, hierarquias e todos os mapas da área. |
+| **CREATE** | Criar novos mapas, pastas, itens, junções e hierarquias na área. |
+| **EDIT** | Alterar a área e as suas pastas, itens, junções e hierarquias. |
+| **DELETE** | Eliminar pastas, itens, junções e hierarquias da área. |
 
 Os utilizadores ADMIN ignoram todas estas verificações.
 
 **Nota 1 — duas verificações.** Para executar um mapa, um utilizador tem de passar por duas verificações:
 
-1. **Posso ver este mapa?** Sim se o utilizador é o proprietário, é público, está partilhado com o utilizador ou detém CREATE ou superior na área.
+1. **Posso ver este mapa?** Sim se o utilizador é ADMIN ou MANAGER, é o proprietário, o mapa é público ou está partilhado com o utilizador.
 2. **Posso ler os seus dados?** Sim se o utilizador detém **qualquer** nível na área de negócio de todas as pastas que o mapa utiliza.
 
 Portanto, um mapa partilhado com um utilizador falha se o utilizador não tiver concessão na área de onde os dados vêm.
@@ -98,9 +106,9 @@ Conceda **um** nível por utilizador por área de negócio — o nível mais ele
 
 | O utilizador tem de… | Conceda |
 |----------------|-------|
-| Executar mapas que outros partilham com o utilizador | VIEW |
-| Criar os seus próprios mapas | CREATE |
-| Manter as pastas, itens e mapas da área | EDIT |
+| Executar mapas que outros partilham com o utilizador, ou copiá-los | VIEW |
+| Criar novos mapas de raiz | CREATE |
+| Manter as pastas, itens e junções da área | EDIT |
 | Também removê-los | DELETE |
 
 ### Revogar Permissão

@@ -870,7 +870,7 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 
 | Status | Body |
 | --- | --- |
-| 200 | { data?: { id?: string name?: string leftFolderId?: string rightFolderId?: string leftItemId?: null,string rightItemId?: null,string joinType?: "INNER" \| "LEFT" \| "RIGHT" isActive?: boolean createdAt?: string leftFolderName?: string rightFolderName?: string leftItemName?: null,string rightItemName?: null,string businessAreaId?: string }[] } |
+| 200 | { data?: { id?: string name?: string leftFolderId?: string rightFolderId?: string leftItemId?: null,string rightItemId?: null,string joinType?: "INNER" \| "LEFT" \| "RIGHT" isActive?: boolean createdAt?: string leftFolderName?: string rightFolderName?: string leftItemName?: null,string rightItemName?: null,string predicateCount?: number predicates?: { leftItemId?: null,string rightItemId?: null,string leftItemName?: null,string rightItemName?: null,string operator?: string }[] businessAreaId?: string }[] } |
 | 400 | { error?: string } |
 | 401 | { error?: string } |
 | 403 | { error?: string } |
@@ -891,6 +891,11 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
   rightFolderId: string (uuid)
   leftItemId?: string,null
   rightItemId?: string,null
+  predicates?: {
+    leftItemId: string,null
+    rightItemId: string,null
+    operator?: "=" | "<" | ">" | "<=" | ">=" | "<>"
+  }[]
   joinType: "INNER" | "LEFT" | "RIGHT"
 }
 ```
@@ -899,7 +904,7 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 
 | Status | Body |
 | --- | --- |
-| 201 | { data?: { id?: string name?: string leftFolderId?: string rightFolderId?: string leftItemId?: null,string rightItemId?: null,string joinType?: "INNER" \| "LEFT" \| "RIGHT" isActive?: boolean createdAt?: string } } |
+| 201 | { data?: { id?: string name?: string leftFolderId?: string rightFolderId?: string leftItemId?: null,string rightItemId?: null,string joinType?: "INNER" \| "LEFT" \| "RIGHT" predicateCount?: number predicates?: { leftItemId?: null,string rightItemId?: null,string leftItemName?: null,string rightItemName?: null,string operator?: string }[] isActive?: boolean createdAt?: string } } |
 | 400 | { error?: string details?: any } |
 | 401 | { error?: string } |
 | 403 | { error?: string } |
@@ -916,7 +921,7 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 
 | Status | Body |
 | --- | --- |
-| 200 | { data?: { id?: string name?: string leftFolderId?: string rightFolderId?: string leftItemId?: null,string rightItemId?: null,string joinType?: "INNER" \| "LEFT" \| "RIGHT" isActive?: boolean createdAt?: string leftFolderName?: string rightFolderName?: string leftItemName?: null,string rightItemName?: null,string businessAreaId?: string } } |
+| 200 | { data?: { id?: string name?: string leftFolderId?: string rightFolderId?: string leftItemId?: null,string rightItemId?: null,string joinType?: "INNER" \| "LEFT" \| "RIGHT" isActive?: boolean createdAt?: string leftFolderName?: string rightFolderName?: string leftItemName?: null,string rightItemName?: null,string predicateCount?: number predicates?: { leftItemId?: null,string rightItemId?: null,string leftItemName?: null,string rightItemName?: null,string operator?: string }[] businessAreaId?: string } } |
 | 400 | { error?: string } |
 | 401 | { error?: string } |
 | 404 | { error?: string } |
@@ -937,6 +942,11 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
   rightFolderId?: string (uuid)
   leftItemId?: string,null
   rightItemId?: string,null
+  predicates?: {
+    leftItemId: string,null
+    rightItemId: string,null
+    operator?: "=" | "<" | ">" | "<=" | ">=" | "<>"
+  }[]
   joinType?: "INNER" | "LEFT" | "RIGHT"
 }
 ```
@@ -945,7 +955,7 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 
 | Status | Body |
 | --- | --- |
-| 200 | { data?: { id?: string name?: string leftFolderId?: string rightFolderId?: string leftItemId?: null,string rightItemId?: null,string joinType?: "INNER" \| "LEFT" \| "RIGHT" isActive?: boolean createdAt?: string } } |
+| 200 | { data?: { id?: string name?: string leftFolderId?: string rightFolderId?: string leftItemId?: null,string rightItemId?: null,string joinType?: "INNER" \| "LEFT" \| "RIGHT" predicateCount?: number predicates?: { leftItemId?: null,string rightItemId?: null,string leftItemName?: null,string rightItemName?: null,string operator?: string }[] isActive?: boolean createdAt?: string } } |
 | 400 | { error?: string details?: any } |
 | 401 | { error?: string } |
 | 403 | { error?: string } |
@@ -1435,7 +1445,7 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 
 | Status | Body |
 | --- | --- |
-| 200 | { data?: { id?: string name?: string via?: "ADMIN" \| "OWNER" \| "SHARE" \| "PUBLIC" \| "GRANT" sharePermission?: string }[] } |
+| 200 | { data?: { id?: string name?: string via?: "ADMIN" \| "OWNER" \| "SHARE" \| "PUBLIC" \| "ROLE" sharePermission?: string ownerId?: string ownerName?: string }[] } |
 | 400 | { error?: string details?: any } |
 | 401 | { error?: string details?: any } |
 | 403 | { error?: string details?: any } |
@@ -1861,6 +1871,20 @@ The backend serves this same spec as interactive Swagger UI at `/api/docs` while
 | --- | --- | --- | --- |
 | `id` | path | yes | string (uuid) |
 | `userId` | path | yes | string (uuid) |
+
+**Responses:**
+
+| Status | Body |
+| --- | --- |
+| 200 | — |
+
+#### PUT /api/maps/{id}/owner
+
+**Parameters:**
+
+| Name | In | Required | Type |
+| --- | --- | --- | --- |
+| `id` | path | yes | string (uuid) |
 
 **Responses:**
 

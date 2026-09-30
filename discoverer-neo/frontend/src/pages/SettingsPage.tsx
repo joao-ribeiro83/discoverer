@@ -125,6 +125,7 @@ export function SettingsPage() {
                 data-testid={`theme-swatch-${option}`}
                 aria-pressed={theme === option}
                 onClick={() => void setTheme(option, { persist: false })}
+                title={t(`settings:theme.tooltip.${option}`)}
                 className={cn(
                   'flex flex-col overflow-hidden rounded-lg border-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   theme === option ? 'border-primary' : 'border-transparent hover:border-muted-foreground/30'
@@ -177,6 +178,7 @@ export function SettingsPage() {
                 aria-pressed={palette === option}
                 disabled={theme === 'high-contrast'}
                 onClick={() => void setPalette(option, { persist: false })}
+                title={t(`settings:palette.tooltip.${option}`)}
                 className={cn(
                   'flex flex-col overflow-hidden rounded-lg border-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   palette === option ? 'border-primary' : 'border-transparent hover:border-muted-foreground/30'
