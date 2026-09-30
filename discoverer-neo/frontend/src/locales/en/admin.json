@@ -409,6 +409,7 @@
       "title": "Deactivate user?",
       "description": "{{name}} is signed out on their next request and cannot sign in until you activate the account again."
     },
+    "deleteConfirmDescription": "This permanently deletes {{name}}, with their schedules, runs and exports. This cannot be undone. To stop them signing in and keep everything, deactivate the account instead.",
     "dialog": {
       "editTitle": "Edit User",
       "createTitle": "New User"

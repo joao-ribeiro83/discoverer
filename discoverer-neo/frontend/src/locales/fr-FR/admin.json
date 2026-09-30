@@ -409,6 +409,7 @@
       "title": "Désactiver l'utilisateur ?",
       "description": "{{name}} est déconnecté à sa prochaine requête et ne peut plus se connecter tant que vous n'avez pas réactivé le compte."
     },
+    "deleteConfirmDescription": "Ceci supprime définitivement {{name}}, avec ses planifications, exécutions et exports. Cette action est irréversible. Pour l'empêcher de se connecter tout en conservant tout, désactivez plutôt le compte.",
     "dialog": {
       "editTitle": "Modifier l'utilisateur",
       "createTitle": "Nouvel utilisateur"

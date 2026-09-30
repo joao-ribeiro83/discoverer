@@ -11,11 +11,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useAuthStore } from '@/store/auth'
+import { signOut } from '@/hooks/useAuth'
 import { MobileSidebar } from './MobileSidebar'
 
 export function Header() {
   const { t } = useTranslation(['nav', 'auth'])
-  const { user, logout } = useAuthStore()
+  const user = useAuthStore((s) => s.user)
   const navigate = useNavigate()
 
   return (
@@ -42,7 +43,7 @@ export function Header() {
               {t('nav:items.settings')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={logout} className="text-destructive">
+            <DropdownMenuItem onClick={() => void signOut()} className="text-destructive">
               <LogOut className="mr-2 h-4 w-4" />
               {t('auth:account.logout')}
             </DropdownMenuItem>

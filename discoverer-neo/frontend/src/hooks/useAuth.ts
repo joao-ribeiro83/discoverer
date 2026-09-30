@@ -8,6 +8,21 @@ import i18n, { isSupportedLocale } from '@/i18n'
 const REFRESH_CHECK_INTERVAL_MS = 60 * 1000
 const REFRESH_THRESHOLD_MS = 5 * 60 * 1000
 
+/**
+ * Ends the session on the server (revokes the access token and the refresh
+ * session), then clears local state. The store's own `logout` is local only —
+ * it is for sessions that are already dead.
+ */
+export async function signOut() {
+  try {
+    await apiClient.auth.logout()
+  } catch {
+    // best-effort — clear local state regardless of the server response
+  } finally {
+    useAuthStore.getState().logout()
+  }
+}
+
 export function useAuth() {
   const user = useAuthStore((s) => s.user)
   const token = useAuthStore((s) => s.token)
@@ -32,15 +47,7 @@ export function useAuth() {
     }
   }, [])
 
-  const logout = useCallback(async () => {
-    try {
-      await apiClient.auth.logout()
-    } catch {
-      // best-effort — clear local state regardless of the server response
-    } finally {
-      useAuthStore.getState().logout()
-    }
-  }, [])
+  const logout = signOut
 
   // Shared with the 401 interceptor, so the two never spend the same refresh token.
   const refresh = useCallback(() => refreshSession(), [])

@@ -409,6 +409,7 @@
       "title": "Desativar utilizador?",
       "description": "{{name}} termina a sessão no próximo pedido e não pode iniciar sessão até ativar novamente a conta."
     },
+    "deleteConfirmDescription": "Isto elimina permanentemente {{name}}, com os seus agendamentos, execuções e exportações. Esta ação não pode ser anulada. Para impedir o início de sessão e manter tudo, desative antes a conta.",
     "dialog": {
       "editTitle": "Editar Utilizador",
       "createTitle": "Novo Utilizador"

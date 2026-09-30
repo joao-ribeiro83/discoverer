@@ -407,7 +407,12 @@ export const apiClient = {
   // (POST /business-areas/:baId/maps), while get/update/delete are flat.
   maps: {
     listMine: () =>
-      api.get<Envelope<{ mine: MapSummary[]; shared: MapSummary[] }>>('/maps', {
+      api.get<
+        Envelope<{
+          mine: MapSummary[]
+          shared: (MapSummary & { sharePermission: SharePermissionLevel })[]
+        }>
+      >('/maps', {
         params: { scope: 'owned' },
       }),
     // Every map the caller may see (Phase 2.1's "all" tab) — explicit `scope=all`

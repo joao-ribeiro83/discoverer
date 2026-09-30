@@ -38,6 +38,10 @@ const adminNavItems = [
   { to: '/admin/custom-functions', labelKey: 'items.customFunctions', icon: FunctionSquare },
   { to: '/admin/data-sources', labelKey: 'items.dataSources', icon: Database },
   { to: '/admin/users', labelKey: 'items.users', icon: Users },
+]
+
+/** Their APIs are `authorize('ADMIN')` only — a MANAGER would get 403s there. */
+const adminOnlyModelNavItems = [
   { to: '/admin/security', labelKey: 'items.security', icon: ShieldCheck },
   { to: '/admin/audit', labelKey: 'items.auditLog', icon: ScrollText },
 ]
@@ -99,7 +103,8 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   // MANAGER shares the data-modelling routes with ADMIN (see the backend's
   // `authorize('ADMIN', 'MANAGER')` gates); everyone else gets nothing there,
   // so the section is noise at best and a wall of 403s at worst.
-  const canModel = role === 'ADMIN' || role === 'MANAGER'
+  const isAdmin = role === 'ADMIN'
+  const canModel = isAdmin || role === 'MANAGER'
   return (
     <>
       <div className="flex h-14 items-center gap-2 border-b px-4">
@@ -113,7 +118,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
             <Separator className="my-2" />
             <NavSection
               title={t('sections.dataModeling')}
-              items={adminNavItems}
+              items={isAdmin ? [...adminNavItems, ...adminOnlyModelNavItems] : adminNavItems}
               onNavigate={onNavigate}
             />
           </>
@@ -123,7 +128,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
         <Separator className="my-2" />
         <NavSection
           title={t('sections.other')}
-          items={canModel ? [...otherNavItems, ...adminOnlyOtherNavItems] : otherNavItems}
+          items={isAdmin ? [...otherNavItems, ...adminOnlyOtherNavItems] : otherNavItems}
           onNavigate={onNavigate}
         />
       </nav>

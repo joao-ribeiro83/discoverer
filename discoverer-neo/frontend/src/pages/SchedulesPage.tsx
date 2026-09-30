@@ -10,6 +10,7 @@ import { Plus, Pencil, Trash2, Play, History, Download, Pause, ExternalLink, Loa
 import { apiClient, getErrorMessage } from '@/lib/api'
 import type { Schedule, ScheduleParameterValue, MapParameter, ScheduledResult } from '@/lib/types'
 import { useMapExport } from '@/hooks/useMapExport'
+import { useAuthStore } from '@/store/auth'
 import { useToast } from '@/hooks/use-toast'
 import { useLocale } from '@/hooks/useLocale'
 import { formatDateTime, formatNumber, formatExpiresIn, isExpiryValid } from '@/lib/format'
@@ -126,6 +127,7 @@ type FormValues = z.infer<ReturnType<typeof buildFormSchema>>
 
 export function SchedulesPage() {
   const { t } = useTranslation(['schedules', 'common'])
+  const role = useAuthStore((s) => s.user?.role)
   const { locale } = useLocale()
   const queryClient = useQueryClient()
   const { toast } = useToast()
@@ -425,9 +427,15 @@ export function SchedulesPage() {
     },
   ]
 
+  // Only maps the server lets this user schedule (SHARE_ALLOWS): a VIEW share
+  // does not include SCHEDULE, so offering it just ends in a 403 on save.
+  // ADMIN and MANAGER may schedule any map they can see.
+  const schedulesAnyMap = role === 'ADMIN' || role === 'MANAGER'
   const allMapOptions = [
     ...(mapOptions?.mine ?? []).map((m) => ({ ...m, owned: true })),
-    ...(mapOptions?.shared ?? []).map((m) => ({ ...m, owned: false })),
+    ...(mapOptions?.shared ?? [])
+      .filter((m) => schedulesAnyMap || m.sharePermission === 'EXPORT' || m.sharePermission === 'EDIT')
+      .map((m) => ({ ...m, owned: false })),
   ]
   // The Maps list's "Schedule" row action can preselect a map the caller can see
   // but neither owns nor was explicitly shared (e.g. via a business-area grant),

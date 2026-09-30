@@ -100,6 +100,20 @@ describe('UsersPage active toggle', () => {
   })
 })
 
+describe('UsersPage delete dialog', () => {
+  // DELETE /api/users/:id is a hard delete; the generic "deactivate" wording lied.
+  it('says the user is deleted permanently, not deactivated', async () => {
+    renderPage()
+    await waitFor(() => expect(screen.getByText('Bob User')).toBeInTheDocument())
+
+    fireEvent.click(within(rowOf('Bob User')).getByRole('button', { name: 'Delete this user account for good' }))
+
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByText(/This permanently deletes Bob User/)).toBeInTheDocument()
+    expect(within(dialog).queryByText(/This will deactivate/)).not.toBeInTheDocument()
+  })
+})
+
 describe('UsersPage create/edit dialog', () => {
   it('creates a user from the New User form', async () => {
     mockedApi.users.create = vi.fn().mockResolvedValue({ data: { data: bob } })

@@ -352,6 +352,8 @@ export function UsersPage() {
           onOpenChange={(open) => !open && setDeleting(null)}
           itemName={deleting.name}
           itemLabel={t('admin:users.entityLabel')}
+          // DELETE /api/users/:id is a hard delete, not the default soft-delete wording.
+          description={t('admin:users.deleteConfirmDescription', { name: deleting.name })}
           onConfirm={() => deleteMutation.mutate(deleting.id)}
           isPending={deleteMutation.isPending}
         />
