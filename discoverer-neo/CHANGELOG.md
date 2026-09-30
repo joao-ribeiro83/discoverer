@@ -32,14 +32,42 @@ npm run generate-spec --workspace @discoverer-neo/backend
 the git history. Each one groups a finished phase of the build plan, and ends
 at the commit named in its heading. The code carried `0.1.0` until 1.1.0.
 
-## [Unreleased]
+## [2.1.0] — 2026-09-30 — the MANAGER role, corrected
+
+**Why MINOR, not MAJOR:** the MANAGER loses rights below, but they were
+granted by a misreading of what the role is for, not a feature anyone relied
+on. This release corrects the role to what was intended.
 
 ### Changed
 - A MANAGER can no longer change the data model. Every route that writes a
   business area, folder, item, join or hierarchy refuses a MANAGER with 403,
   whatever business-area grant they hold, and those five pages are ADMIN-only
-  in the sidebar and router. A MANAGER keeps every map right, custom
-  functions, data-source view and test, and the read-only Users page.
+  in the sidebar and router.
+- Custom Functions and Data Sources are ADMIN-only: custom-function writes and
+  database search, every data-source route, and the data-source table and
+  introspect routes. Reading the custom-function list stays open to anyone
+  signed in.
+- On the Users page a MANAGER sees only MANAGER, USER and VIEWER accounts, and
+  may now edit, activate and deactivate them, but not give the ADMIN role. An
+  ADMIN account answers 404 to a MANAGER. Creating and deleting users and the
+  credentials file stay ADMIN-only.
+- A MANAGER keeps every map right: see, run, export, schedule, share, copy and
+  change the owner of any map.
+
+### Fixed
+- Swagger and `docs/api/openapi.yaml` show the real app version, not a
+  hardcoded 0.1.0.
+
+### Build
+- `npm run package` packs `discoverer-neo/` into `discoverer-neo.zip`, and
+  local git hooks rebuild it on each version bump. The script runs under Node,
+  so it works on Windows.
+- `discoverer-neo/backups/` database dumps are no longer tracked.
+
+### Documentation
+- The MANAGER manuals lose their modelling, Custom Functions and Data Sources
+  chapters and describe the new Users page, with new screenshots in all four
+  locales. The admin guides and role tables match.
 
 ## [2.0.1] — 2026-09-30
 
