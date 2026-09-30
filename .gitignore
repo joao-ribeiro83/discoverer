@@ -45,3 +45,6 @@ discoverer-neo/backups/
 # in git for weeks holding data_sources credentials and audit_log passwords
 # in the clear. Use scripts/backup.sh; it writes outside the tree entirely.
 discoverer-neo/*.sql
+
+# Release archive built by discoverer-neo/scripts/package-app.sh
+/discoverer-neo.zip

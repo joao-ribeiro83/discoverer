@@ -1,0 +1,5 @@
+# Kept out of discoverer-neo.zip (scripts/package-app.sh): database dumps,
+# the dev knowledge-graph cache and local Claude settings.
+backups/ export-ignore
+graphify-out/ export-ignore
+.claude/ export-ignore
