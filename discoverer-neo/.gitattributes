@@ -3,3 +3,6 @@
 backups/ export-ignore
 graphify-out/ export-ignore
 .claude/ export-ignore
+
+# Shell scripts run under sh; CRLF breaks them.
+*.sh text eol=lf
