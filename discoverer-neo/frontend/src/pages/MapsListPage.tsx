@@ -51,8 +51,11 @@ export function MapsListPage() {
   })
   // A user who owns nothing (every migrated account but the owner's) would
   // land on an empty "Mine" tab and think they have no maps. Open "All"
-  // for them until they pick a tab themselves.
-  const tab: MapsTab = pickedTab ?? (ownedQuery.data?.mine.length === 0 ? 'all' : 'mine')
+  // for them until they pick a tab themselves. An ADMIN or MANAGER sees every
+  // map, so "All" is their answer even when they own a few.
+  const seesAll = currentUser?.role === 'ADMIN' || currentUser?.role === 'MANAGER'
+  const tab: MapsTab =
+    pickedTab ?? (seesAll || ownedQuery.data?.mine.length === 0 ? 'all' : 'mine')
   const businessAreasQuery = useQuery({
     queryKey: ['business-areas'],
     queryFn: async () => (await apiClient.businessAreas.list()).data.data,

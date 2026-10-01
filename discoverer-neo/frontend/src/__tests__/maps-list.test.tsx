@@ -140,6 +140,10 @@ describe('MapsListPage', () => {
     )
     renderPage()
 
+    // An ADMIN opens on "All", even when they own maps.
+    expect(await screen.findByText('Third Map')).toBeInTheDocument()
+
+    clickTab(screen.getByRole('tab', { name: 'Mine' }))
     expect(await screen.findByText('Mine Map')).toBeInTheDocument()
     expect(screen.queryByText('Shared Map')).not.toBeInTheDocument()
 
@@ -450,7 +454,7 @@ describe('MapsListPage', () => {
     renderPage()
 
     await waitFor(() => expect(screen.getByRole('tab', { name: 'All' })).toHaveAttribute('aria-selected', 'true'))
-    expect(screen.queryByText('Workbooks')).not.toBeInTheDocument()
+    await waitFor(() => expect(screen.queryByText('Workbooks')).not.toBeInTheDocument())
   })
 
   it('opens and closes the share dialog for a manageable row', async () => {
