@@ -32,6 +32,15 @@ npm run generate-spec --workspace @discoverer-neo/backend
 the git history. Each one groups a finished phase of the build plan, and ends
 at the commit named in its heading. The code carried `0.1.0` until 1.1.0.
 
+## [2.1.1] — 2026-10-01 — the Maps page opens on All for admins
+
+### Fixed
+
+- An ADMIN or MANAGER who owned a few maps landed on the Maps page's "Mine"
+  tab and saw only those, so the rest of the estate looked missing. Both roles
+  see every map, so the page now opens on "All" for them. USER and VIEWER
+  still open on "Mine" when they own maps.
+
 ## [2.1.0] — 2026-09-30 — the MANAGER role, corrected
 
 **Why MINOR, not MAJOR:** the MANAGER loses rights below, but they were
