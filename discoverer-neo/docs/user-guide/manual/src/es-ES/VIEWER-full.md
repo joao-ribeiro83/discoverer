@@ -190,7 +190,7 @@ Si tiene el nivel adecuado:
 
 1. Haga clic en **Nueva programación**, o en el icono del calendario en **Mapas**.
 2. Elija el **Mapa** y escriba un **Nombre**.
-3. Elija la **Frecuencia** (**Diaria (medianoche)**, **Semanal (domingo, medianoche)**, **Mensual (día 1, medianoche)** o **Personalizada**), la **Zona horaria** y el **Formato de salida** (**Excel (.xlsx)** o **CSV**).
+3. Elija la **Frecuencia** (**Diario**, **Semanal**, **Quincenal**, **Mensual**, cada 2, 3, 4 o 6 meses, **Anual** o **Personalizado (cron)**), su **Hora** y su día, la **Zona horaria** y el **Formato de salida** (**Excel (.xlsx)** o **CSV**). Un parámetro puede tener un **Valor fijo** o ser **Relativo a la fecha de ejecución**, por ejemplo -1 **meses**, **último día de ese mes**.
 4. Haga clic en **Guardar**.
 
 Use los iconos de cada fila para **Ejecutar ahora**, **Pausar** o **Habilitar**, ver el **Historial**, **Editar** o **Eliminar**. Los resultados se quedan en el servidor. No se envía nada por correo electrónico.

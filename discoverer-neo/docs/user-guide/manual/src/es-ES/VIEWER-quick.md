@@ -86,7 +86,7 @@ Las programaciones ejecutan un mapa por sí solas. Solo puede crear una para un 
 
 | Opción | Línea |
 |---|---|
-| **Frecuencia** | **Diaria (medianoche)**, **Semanal (domingo, medianoche)**, **Mensual (día 1, medianoche)**, **Personalizada** |
+| **Frecuencia** | **Diario**, **Semanal**, **Quincenal**, **Mensual**, cada 2, 3, 4 o 6 meses, **Anual** o **Personalizado (cron)** |
 | **Formato de salida** | **Excel (.xlsx)** o **CSV** |
 
 ---

@@ -47,12 +47,12 @@ Screens of 1280x800 unless noted; Maps list captures are taken at 1500x900 becau
 | user/30-share-dialog-shared.png | user | Share map dialog after granting Vasco Viewer "Can view": the dark level button shows the current level and an X appears to remove access. |
 | user/31-map-delete-dialog.png | user | Delete map confirmation dialog for the user's own copy (Cancel pressed; nothing deleted). |
 | user/32-schedule-new-dialog.png | user | New Schedule dialog opened from the Maps list Calendar icon: map preselected, Name, Frequency, Timezone, Output Format, Enabled switch, Save/Cancel. |
-| user/33-schedule-frequency-open.png | user | New Schedule dialog with the Frequency dropdown open: Daily (midnight), Weekly (Sunday, midnight), Monthly (1st, midnight), Custom. |
+| user/33-schedule-frequency-open.png | user | New Schedule dialog with the Frequency dropdown open: Daily, Weekly, Fortnightly, Monthly, every 2 months, Quarterly, every 4 months, every 6 months, Yearly, Custom (cron). |
 | user/34-schedule-custom-cron.png | user | New Schedule dialog with Frequency = Custom: a Cron expression field and its help line appear. |
-| user/35-schedule-format-open.png | user | New Schedule dialog with the Output Format dropdown open: Excel (.xlsx) and CSV. |
+| user/35-schedule-relative-date.png | user | Parameter presets in the New Schedule dialog: "produto" keeps a fixed value; "Ano" is set relative to the run date (-1 months, its year), with the help line under the list. |
 | user/36-schedule-timezone-open.png | user | New Schedule dialog with the Timezone dropdown open (list of time zones). |
-| user/37-schedule-filled.png | user | New Schedule dialog filled in: name, Monthly (1st, midnight) frequency and the Enabled box unticked so the schedule starts paused. |
-| user/38-schedules-list.png | user | Schedules page with the user's schedule (Paused): name, map, schedule (cron), next run, format, status, planner column and the row action icons (Run now, Pause/Enable, History, Edit, Delete). |
+| user/37-schedule-filled.png | user | New Schedule dialog filled in: name, Monthly frequency on day 1 at 08:00, and the Enabled box unticked so the schedule starts paused. |
+| user/38-schedules-list.png | user | Schedules page with the user's schedule (Paused): name, map, schedule (frequency name), next run, format, status, planner column and the row action icons (Run now, Pause/Enable, History, Edit, Delete). |
 | user/39-schedule-history-dialog.png | user | Execution History dialog for the schedule (no runs yet: "No runs yet."). |
 | user/40-schedule-delete-dialog.png | user | Delete schedule confirmation dialog (Cancel pressed; nothing deleted). |
 | user/41-runs.png | user | Runs page for a User: filters (map, status, kind) and the table of the user's runs with status, rows, duration, expiry and the Excel/CSV/PDF buttons of completed runs. No "Show every user's runs" checkbox. |

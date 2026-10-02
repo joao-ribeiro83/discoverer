@@ -75,7 +75,8 @@ Une **exécution** est un lancement d'une carte (conservée 24 heures). Une **ex
 
 | Choix | Signification |
 |---|---|
-| **Fréquence** | **Tous les jours (minuit)**, **Toutes les semaines (dimanche, minuit)**, **Tous les mois (le 1er, minuit)**, **Personnalisé** (cron). |
+| **Fréquence** | **Quotidien**, **Hebdomadaire**, **Bimensuel (le 1er et le 16)**, **Mensuel**, tous les 2, 3, 4 ou 6 mois, **Annuel**, **Personnalisé (cron)**. Puis une **Heure** et un jour. |
+| **Préréglages de paramètres** | **Valeur fixe**, ou **Relatif à la date d’exécution** (par exemple -1 **mois**, **dernier jour de ce mois**). |
 | **Format de sortie** | **Excel (.xlsx)** ou **CSV**. |
 | **Exécuter maintenant** | Lance une planification immédiatement. |
 

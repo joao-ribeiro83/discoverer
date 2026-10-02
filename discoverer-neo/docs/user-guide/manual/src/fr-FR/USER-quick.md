@@ -134,7 +134,8 @@ Exécute une carte automatiquement et stocke le résultat sur le serveur. Rien n
 
 | Choix | Ligne |
 |---|---|
-| **Fréquence** | **Tous les jours (minuit)**, **Toutes les semaines (dimanche, minuit)**, **Tous les mois (le 1er, minuit)**, **Personnalisé** (cron, par ex. `0 9 * * 1-5`) |
+| **Fréquence** | **Quotidien**, **Hebdomadaire**, **Bimensuel (le 1er et le 16)**, **Mensuel**, tous les 2, 3, 4 ou 6 mois, **Annuel**, avec une **Heure** et un jour ; ou **Personnalisé (cron)** |
+| **Préréglages de paramètres** | **Valeur fixe**, ou **Relatif à la date d’exécution** : -1 **mois**, **dernier jour de ce mois** donne la fin du mois dernier |
 | **Format de sortie** | **Excel (.xlsx)** ou **CSV** |
 | Carte publique | Ne peut pas être planifiée |
 

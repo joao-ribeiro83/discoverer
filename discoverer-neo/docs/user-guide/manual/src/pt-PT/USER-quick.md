@@ -134,7 +134,8 @@ Executa um mapa automaticamente e guarda o resultado no servidor. Nada é enviad
 
 | Escolha | Linha |
 |---|---|
-| **Frequência** | **Diariamente (meia-noite)**, **Semanalmente (domingo, meia-noite)**, **Mensalmente (dia 1, meia-noite)**, **Personalizado** (cron, por exemplo `0 9 * * 1-5`) |
+| **Frequência** | **Diário**, **Semanal**, **Quinzenal**, **Mensal**, a cada 2, 3, 4 ou 6 meses, **Anual**, com uma **Hora** e um dia; ou **Personalizado (cron)** |
+| **Predefinições de parâmetros** | **Valor fixo**, ou **Relativo à data de execução**: -1 **meses**, **último dia desse mês** é o fim do mês passado |
 | **Formato de Saída** | **Excel (.xlsx)** ou **CSV** |
 | Mapa público | Não pode ser agendado |
 

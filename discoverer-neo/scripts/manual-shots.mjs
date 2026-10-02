@@ -13,7 +13,8 @@ const { chromium } = require('playwright')
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const OUT = path.join(ROOT, 'docs/user-guide/manual/shots')
-const CREDS = 'C:/Users/BUGSBU~1/AppData/Local/Temp/claude/E--claude-discoverer/14c82a35-ed5f-428d-bcdd-f5f9b270d7aa/scratchpad/creds.json'
+// {password, users: {ROLE: email}} — kept outside the repo; see the role-manuals notes.
+const CREDS = process.env.MANUAL_CREDS ?? 'C:/Users/BUGSBU~1/AppData/Local/Temp/claude/E--claude-discoverer/14c82a35-ed5f-428d-bcdd-f5f9b270d7aa/scratchpad/creds.json'
 const BASE = 'http://localhost:5173'
 
 const arg = (n, d) => { const i = process.argv.indexOf('--' + n); return i > 0 ? process.argv[i + 1] : d }
@@ -439,24 +440,31 @@ steps.user = async (c) => {
     await c.shot('schedule-new-dialog', 'New Schedule dialog opened from the Maps list Calendar icon: map preselected, Name, Frequency, Timezone, Output Format, Enabled switch, Save/Cancel.', { el: '[role=dialog]' })
     const cb = dlg.getByRole('combobox')
     await openSelect(page, cb.nth(1))
-    await c.shot('schedule-frequency-open', 'New Schedule dialog with the Frequency dropdown open: Daily (midnight), Weekly (Sunday, midnight), Monthly (1st, midnight), Custom.')
-    await page.getByRole('option').filter({ hasText: t('schedules', 'cronPresets.custom') }).click()
+    await c.shot('schedule-frequency-open', 'New Schedule dialog with the Frequency dropdown open: Daily, Weekly, Fortnightly, Monthly, every 2 months, Quarterly, every 4 months, every 6 months, Yearly, Custom (cron).')
+    // exact: "Bimensuel" contains "mensuel", and hasText matches substrings.
+    await page.getByRole('option', { name: t('schedules', 'frequencies.custom'), exact: true }).click()
     await page.waitForTimeout(400)
     await c.shot('schedule-custom-cron', 'New Schedule dialog with Frequency = Custom: a Cron expression field and its help line appear.', { el: '[role=dialog]' })
     await openSelect(page, cb.nth(1))
-    await page.getByRole('option').filter({ hasText: t('schedules', 'cronPresets.monthly') }).click()
+    await page.getByRole('option', { name: t('schedules', 'frequencies.monthly'), exact: true }).click()
     await page.waitForTimeout(300)
-    const ci = await dlg.getByRole('combobox').count()
-    await openSelect(page, dlg.getByRole('combobox').nth(ci - 1))
-    await c.shot('schedule-format-open', 'New Schedule dialog with the Output Format dropdown open: Excel (.xlsx) and CSV.')
-    await c.esc()
+    // A parameter set relative to the run date: "Ano" = the year of last month.
+    await openSelect(page, dlg.getByRole('combobox', { name: t('schedules', 'dialog.paramModeLabel').replace('{{name}}', 'Ano') }))
+    await page.getByRole('option', { name: t('schedules', 'dialog.paramModeRule'), exact: true }).click()
+    await page.waitForTimeout(300)
+    await openSelect(page, dlg.getByRole('combobox', { name: t('schedules', 'dialog.ruleTakeAria') }))
+    await page.getByRole('option', { name: t('schedules', 'ruleTakes.YEAR'), exact: true }).click()
+    await page.waitForTimeout(300)
+    const presets = dlg.locator('div.border-t').filter({ hasText: t('schedules', 'dialog.parameterPresetsLabel') })
+    await presets.scrollIntoViewIfNeeded()
+    await c.shot('schedule-relative-date', 'Parameter presets in the New Schedule dialog: "produto" keeps a fixed value; "Ano" is set relative to the run date (-1 months, its year), with the help line under the list.', { el: presets })
     await openSelect(page, dlg.getByRole('combobox').nth(2))
     await c.shot('schedule-timezone-open', 'New Schedule dialog with the Timezone dropdown open (list of time zones).')
     await c.esc()
-    await dlg.getByLabel(t('schedules', 'dialog.nameLabel')).fill('Monthly billing (manual)')
+    await dlg.getByLabel(t('schedules', 'dialog.nameLabel'), { exact: true }).fill('Monthly billing (manual)')
     const en = dlg.getByRole('checkbox', { name: t('schedules', 'dialog.enabledLabel') })
     if ((await en.getAttribute('aria-checked')) === 'true') await en.click()
-    await c.shot('schedule-filled', 'New Schedule dialog filled in: name, Monthly (1st, midnight) frequency and the Enabled box unticked so the schedule starts paused.', { el: '[role=dialog]' })
+    await c.shot('schedule-filled', 'New Schedule dialog filled in: name, Monthly frequency on day 1 at 08:00, and the Enabled box unticked so the schedule starts paused.', { el: '[role=dialog]' })
     if (!has) { await dlg.getByRole('button', { name: t('common', 'actions.save') }).click(); await page.waitForTimeout(2000) } else await c.esc()
   })
   await c.goto('/schedules')
@@ -464,7 +472,7 @@ steps.user = async (c) => {
     const pb = page.getByRole('button', { name: t('schedules', 'table.pause') })
     while (await pb.count()) { await pb.first().click(); await page.waitForTimeout(1500) }
   })
-  await c.shot('schedules-list', 'Schedules page with the user\'s schedule (Paused): name, map, schedule (cron), next run, format, status, planner column and the row action icons (Run now, Pause/Enable, History, Edit, Delete).')
+  await c.shot('schedules-list', 'Schedules page with the user\'s schedule (Paused): name, map, schedule (frequency name), next run, format, status, planner column and the row action icons (Run now, Pause/Enable, History, Edit, Delete).')
   await c.tryStep('schedule-history', async () => {
     await page.getByRole('button', { name: t('schedules', 'table.history') }).first().click()
     await c.dialog()

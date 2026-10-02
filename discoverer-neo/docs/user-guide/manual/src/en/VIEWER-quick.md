@@ -86,7 +86,7 @@ Schedules run a map by themselves. You can create one only for a map you own or 
 
 | Choice | Line |
 |---|---|
-| **Frequency** | **Daily (midnight)**, **Weekly (Sunday, midnight)**, **Monthly (1st, midnight)**, **Custom** |
+| **Frequency** | **Daily**, **Weekly**, **Fortnightly**, **Monthly**, every 2, 3, 4 or 6 months, **Yearly**, or **Custom (cron)** |
 | **Output Format** | **Excel (.xlsx)** or **CSV** |
 
 ---

@@ -221,7 +221,7 @@ Le créateur s'ouvre pour toutes les cartes, même une carte que vous ne pouvez 
 | Liste du type de carte | **Tableau**, **Tableau croisé**, **Page-Détail** ou **Graphique**. Seul **Tableau croisé** change l'aspect du résultat. Les autres s'affichent comme un tableau simple. |
 | **● Non enregistré** | Vous rappelle que des modifications ne sont pas enregistrées. |
 | **Exécuter** | Enregistre la carte si elle est nouvelle ou modifiée, puis l'exécute. |
-| **Enregistrer** | Enregistre vos modifications. Rien ne s'enregistre automatiquement. |
+| **Enregistrer** | Enregistre vos modifications. Rien ne s'enregistre automatiquement. Si rien n'a changé, le message **Aucune modification à enregistrer** s'affiche. |
 | **Exporter** > **Définition de la carte (.xml)** | Télécharge la définition de la carte. Elle ne contient aucune ligne de données. Exige une carte enregistrée. |
 | **Planifier** | Ouvre **Planifications** avec cette carte choisie. Exige une carte enregistrée. |
 | **Mise en forme** | Ouvre la mise en forme conditionnelle. Exige une carte enregistrée. |
@@ -405,19 +405,29 @@ La colonne **Statut** affiche **Actif** ou **En pause**. La colonne **Planificat
 | **Carte** | La carte à exécuter. |
 | **Nom** | Le nom de la planification. |
 | **Fréquence** | Voir ci-dessous. |
-| **Fuseau horaire** | L'horloge utilisée par les heures. UTC par défaut. |
-| **Expression cron** | Affichée pour **Personnalisé**. Cinq champs : minute, heure, jour du mois, mois, jour de la semaine. |
+| **Fuseau horaire** | L'horloge utilisée par les heures. Par défaut : le fuseau horaire de votre ordinateur. |
+| **Heure** | L'heure et la minute de l'exécution. Affiché pour toutes les fréquences sauf **Personnalisé (cron)**. |
+| **Jour de la semaine** | Affiché pour **Hebdomadaire**. |
+| **Jour du mois** | De 1 à 28, ou **Dernier jour**. Les jours 29 à 31 ne sont pas proposés, ainsi aucun mois court n'est sauté. Affiché pour **Mensuel**, les fréquences plus longues et **Annuel**. |
+| **Mois** | Affiché pour **Annuel**. |
+| **Expression cron** | Affichée pour **Personnalisé (cron)**. Cinq champs : minute, heure, jour du mois, mois, jour de la semaine. |
 | **Valide à partir de** et **Valide jusqu'au** | Dates facultatives. La planification ne s'exécute qu'entre les deux. |
 | **Format de sortie** | Voir ci-dessous. |
-| **Préréglages de paramètres** | La valeur utilisée à chaque fois pour chaque paramètre de la carte. |
+| **Préréglages de paramètres** | La valeur de chaque paramètre de la carte : une **Valeur fixe**, ou **Relatif à la date d’exécution** (voir ci-dessous). |
 | **Activé** | Désactivé, elle ne s'exécute jamais toute seule. |
 
 | Option (**Fréquence**) | Signification |
 |---|---|
-| Tous les jours (minuit) | Tous les jours à 00:00. |
-| Toutes les semaines (dimanche, minuit) | Tous les dimanches à 00:00. |
-| Tous les mois (le 1er, minuit) | Le premier de chaque mois à 00:00. |
-| Personnalisé | Vous écrivez l'expression cron. Exemple : `0 9 * * 1-5` correspond à 09:00 les jours ouvrés. |
+| **Quotidien** | Tous les jours, à l'**Heure** que vous choisissez. |
+| **Hebdomadaire** | Une fois par semaine, le **Jour de la semaine** que vous choisissez. |
+| **Bimensuel (le 1er et le 16)** | Le 1er et le 16 de chaque mois. |
+| **Mensuel** | Une fois par mois, le **Jour du mois** que vous choisissez. |
+| **Tous les 2 mois** | En janvier, mars, mai, juillet, septembre et novembre. |
+| **Trimestriel** | En janvier, avril, juillet et octobre. |
+| **Quadrimestriel** | En janvier, mai et septembre. |
+| **Semestriel** | En janvier et juillet. |
+| **Annuel** | Une fois par an, le **Mois** et le **Jour du mois** que vous choisissez. |
+| **Personnalisé (cron)** | Vous écrivez une **Expression cron** : cinq champs, minute, heure, jour du mois, mois, jour de la semaine. Exemple : `0 9 * * 1-5` correspond à 09:00 les jours ouvrés. |
 
 | Option (**Format de sortie**) | Signification |
 |---|---|
@@ -426,10 +436,38 @@ La colonne **Statut** affiche **Actif** ou **En pause**. La colonne **Planificat
 
 **Historique d'exécution** liste les 50 derniers résultats avec **Exécuté**, **Statut**, **Lignes** et **Durée**. Chacun a des boutons **XLSX**, **CSV** et **PDF** et une icône **Ouvrir**. Les résultats sont conservés 30 jours. Ensuite, les boutons d'exportation disparaissent.
 
+## Paramètres qui suivent la date d'exécution
+
+Chaque paramètre de **Préréglages de paramètres** propose un choix : **Valeur fixe** ou **Relatif à la date d’exécution**. Une valeur fixe est la même à chaque exécution. Une valeur relative change avec la date d'exécution de la planification, ainsi un rapport mensuel couvre toujours le bon mois.
+
+Une valeur relative comporte trois parties :
+
+1. **Décaler la date d’exécution de** un nombre. Utilisez -1 pour la période précédente, 0 pour la période en cours.
+2. La période : **jours**, **semaines**, **quinzaines**, **mois**, **trimestres**, **semestres** ou **années**.
+3. **puis utiliser le** : **cette date**, le premier ou le dernier jour de la semaine, de la quinzaine, du mois, du trimestre, du semestre ou de l'année, **l’année (nombre)** ou **le mois (nombre 1-12)**.
+
+![Préréglages de paramètres avec une valeur fixe et une valeur relative à la date d'exécution.](shots/fr-FR/user/35-schedule-relative-date.png)
+
+| Vous voulez | Date de début | Date de fin |
+|---|---|---|
+| Le mois dernier | -1 **mois**, **premier jour de ce mois** | -1 **mois**, **dernier jour de ce mois** |
+| L'année en cours, jusqu'au mois dernier | -1 **mois**, **premier jour de cette année** | -1 **mois**, **dernier jour de ce mois** |
+| Un début fixe, une fin mobile | **Valeur fixe**, par exemple 2026-01-01 | -1 **mois**, **dernier jour de ce mois** |
+| Le trimestre dernier | -1 **trimestres**, **premier jour de ce trimestre** | -1 **trimestres**, **dernier jour de ce trimestre** |
+| Hier | -1 **jours**, **cette date** | -1 **jours**, **cette date** |
+
+Pour un paramètre qui demande une année ou un mois sous forme de nombre, utilisez **l’année (nombre)** ou **le mois (nombre 1-12)**. Une semaine commence le lundi. Une quinzaine va du 1er au 15, ou du 16 à la fin du mois.
+
+> **Astuce :** -1 **mois**, **premier jour de cette année** donne toujours toute l'année précédente quand la planification s'exécute en janvier. Une **Valeur fixe** ne bouge pas : une date fixe 2026-01-01 commence toujours en 2026 quand la planification s'exécute en 2027.
+
+La colonne **Prochaine exécution** affiche la date de la prochaine exécution et, en dessous, les valeurs que cette exécution utilisera. Vérifiez-la après l'enregistrement.
+
+Vous pouvez donner plusieurs planifications à une même carte, chacune avec sa propre fréquence et ses propres valeurs. Exemple : une planification mensuelle pour le mois dernier, et une planification annuelle pour l'année dernière.
+
 ## Exemple : planifier une exécution hebdomadaire
 
 1. Dans **Cartes**, cliquez sur l'icône Calendrier de la carte.
-2. Saisissez un **Nom**. Réglez **Fréquence** sur **Toutes les semaines (dimanche, minuit)**.
+2. Saisissez un **Nom**. Réglez **Fréquence** sur **Hebdomadaire**, **Jour de la semaine** sur lundi et **Heure** sur 07:00.
 3. Choisissez votre **Fuseau horaire** et votre **Format de sortie**.
 4. Cliquez sur **Enregistrer**.
 5. Cliquez sur l'icône **Exécuter maintenant** pour vérifier que cela fonctionne. Puis ouvrez **Historique**.
@@ -506,6 +544,9 @@ Les exécutions, exportations et planifications appartiennent à la personne qui
 
 **Un collègue est parti. Comment conserver ses cartes ?**
 Ouvrez **Utilisateurs**, cliquez sur **Cartes que cet utilisateur peut ouvrir**, puis utilisez l'icône de propriétaire de chaque carte pour la donner à quelqu'un d'autre.
+
+**Ma planification mensuelle affiche toujours les mêmes dates.**
+Ses paramètres de date ont une **Valeur fixe**. Modifiez la planification et réglez-les sur **Relatif à la date d’exécution**.
 
 **Une planification que j'ai créée ne s'exécute pas.**
 Vérifiez que son **Statut** est **Actif**, que les dates de **Valide à partir de** et **Valide jusqu'au** couvrent aujourd'hui, et que vous avez toujours un accès aux données. Une planification s'exécute sous votre identité.

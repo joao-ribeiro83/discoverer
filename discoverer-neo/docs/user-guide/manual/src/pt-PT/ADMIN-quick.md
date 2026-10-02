@@ -75,7 +75,8 @@ Uma **execução** é uma execução de um mapa (mantida 24 horas). Uma **export
 
 | Escolha | Significado |
 |---|---|
-| **Frequência** | **Diariamente (meia-noite)**, **Semanalmente (domingo, meia-noite)**, **Mensalmente (dia 1, meia-noite)**, **Personalizado** (cron). |
+| **Frequência** | **Diário**, **Semanal**, **Quinzenal**, **Mensal**, a cada 2, 3, 4 ou 6 meses, **Anual**, **Personalizado (cron)**. Depois uma **Hora** e um dia. |
+| **Predefinições de parâmetros** | **Valor fixo**, ou **Relativo à data de execução** (por exemplo -1 **meses**, **último dia desse mês**). |
 | **Formato de Saída** | **Excel (.xlsx)** ou **CSV**. |
 | **Executar agora** | Executa um agendamento de imediato. |
 

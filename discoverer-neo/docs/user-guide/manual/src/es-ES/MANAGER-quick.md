@@ -102,8 +102,9 @@ Una programación ejecuta un mapa según un horario y guarda el resultado. Solo 
 
 | Opción | Significado |
 |---|---|
-| **Diaria (medianoche)**, **Semanal (domingo, medianoche)**, **Mensual (día 1, medianoche)** | Horarios ya preparados. |
-| **Personalizada** | Su propia expresión cron de cinco campos. |
+| **Diario**, **Semanal**, **Quincenal**, **Mensual**, cada 2, 3, 4 o 6 meses, **Anual** | Horarios ya preparados, con una **Hora** y un día. |
+| **Personalizado (cron)** | Su propia expresión cron de cinco campos. |
+| **Relativo a la fecha de ejecución** | Un valor de parámetro que sigue la ejecución, por ejemplo -1 **meses**, **último día de ese mes**. |
 | **Excel (.xlsx)**, **CSV** | Formato del resultado guardado. |
 
 La programación se ejecuta como usted, así que sus concesiones deciden qué datos lee.

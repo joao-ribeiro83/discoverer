@@ -221,7 +221,7 @@ El generador se abre para todos los mapas, incluso uno que no puede guardar. Sol
 | Lista de tipo de mapa | **Tabla**, **Tabla cruzada**, **Página-Detalle** o **Gráfico**. Solo **Tabla cruzada** cambia el aspecto del resultado. Los demás se muestran como una tabla simple. |
 | **● Sin guardar** | Le recuerda que hay cambios que no ha guardado. |
 | **Ejecutar** | Guarda el mapa si es nuevo o ha cambiado y después lo ejecuta. |
-| **Guardar** | Guarda sus cambios. Nada se guarda solo. |
+| **Guardar** | Guarda sus cambios. Nada se guarda solo. Si nada ha cambiado, muestra **No hay cambios que guardar**. |
 | **Exportar** > **Definición del mapa (.xml)** | Descarga la definición del mapa. No contiene filas de datos. Necesita un mapa guardado. |
 | **Programar** | Abre **Programaciones** con este mapa elegido. Necesita un mapa guardado. |
 | **Formato** | Abre el formato condicional. Necesita un mapa guardado. |
@@ -405,19 +405,29 @@ La columna **Estado** muestra **Activa** o **En pausa**. La columna **Planificad
 | **Mapa** | El mapa que se ejecuta. |
 | **Nombre** | El nombre de la programación. |
 | **Frecuencia** | Vea más abajo. |
-| **Zona horaria** | El reloj que usan las horas. Por defecto UTC. |
-| **Expresión cron** | Se muestra para **Personalizada**. Cinco campos: minuto, hora, día del mes, mes, día de la semana. |
+| **Zona horaria** | El reloj que usan las horas. Por defecto, la zona horaria de su ordenador. |
+| **Hora** | La hora y el minuto de la ejecución. Se muestra para todas las frecuencias excepto **Personalizado (cron)**. |
+| **Día de la semana** | Se muestra para **Semanal**. |
+| **Día del mes** | Del 1 al 28, o **Último día**. Los días 29 a 31 no se ofrecen, así que no se salta ningún mes corto. Se muestra para **Mensual**, las frecuencias más largas y **Anual**. |
+| **Mes** | Se muestra para **Anual**. |
+| **Expresión cron** | Se muestra para **Personalizado (cron)**. Cinco campos: minuto, hora, día del mes, mes, día de la semana. |
 | **Válida desde** y **Válida hasta** | Fechas opcionales. La programación se ejecuta solo entre ellas. |
 | **Formato de salida** | Vea más abajo. |
-| **Valores predefinidos de parámetros** | El valor que se usa cada vez para cada parámetro del mapa. |
+| **Valores predefinidos de parámetros** | El valor de cada parámetro del mapa: un **Valor fijo**, o **Relativo a la fecha de ejecución** (vea más abajo). |
 | **Habilitada** | Desactivada significa que nunca se ejecuta por sí sola. |
 
 | Opción (**Frecuencia**) | Qué significa |
 |---|---|
-| Diaria (medianoche) | Cada día a las 00:00. |
-| Semanal (domingo, medianoche) | Cada domingo a las 00:00. |
-| Mensual (día 1, medianoche) | El día 1 de cada mes a las 00:00. |
-| Personalizada | Usted escribe la expresión cron. Ejemplo: `0 9 * * 1-5` es las 09:00 los días laborables. |
+| **Diario** | Cada día a la **Hora** que elija. |
+| **Semanal** | Una vez a la semana, el **Día de la semana** que elija. |
+| **Quincenal (día 1 y día 16)** | Los días 1 y 16 de cada mes. |
+| **Mensual** | Una vez al mes, el **Día del mes** que elija. |
+| **Bimestral** | En enero, marzo, mayo, julio, septiembre y noviembre. |
+| **Trimestral** | En enero, abril, julio y octubre. |
+| **Cuatrimestral** | En enero, mayo y septiembre. |
+| **Semestral** | En enero y julio. |
+| **Anual** | Una vez al año, en el **Mes** y el **Día del mes** que elija. |
+| **Personalizado (cron)** | Usted escribe una **Expresión cron**: cinco campos, minuto, hora, día del mes, mes, día de la semana. Ejemplo: `0 9 * * 1-5` es a las 09:00 en días laborables. |
 
 | Opción (**Formato de salida**) | Qué significa |
 |---|---|
@@ -426,10 +436,38 @@ La columna **Estado** muestra **Activa** o **En pausa**. La columna **Planificad
 
 **Historial de ejecución** muestra los últimos 50 resultados con **Ejecutado**, **Estado**, **Filas** y **Duración**. Cada uno tiene los botones **XLSX**, **CSV** y **PDF** y un icono **Abrir**. Los resultados se conservan 30 días. Después desaparecen los botones de exportación.
 
+## Parámetros que siguen la fecha de ejecución
+
+Cada parámetro de **Valores predefinidos de parámetros** tiene una opción: **Valor fijo** o **Relativo a la fecha de ejecución**. Un valor fijo es el mismo en cada ejecución. Un valor relativo cambia con la fecha en que se ejecuta la programación, así que un informe mensual siempre cubre el mes correcto.
+
+Un valor relativo tiene tres partes:
+
+1. **Mover la fecha de ejecución** un número. Use -1 para el periodo anterior y 0 para el actual.
+2. El periodo: **días**, **semanas**, **quincenas**, **meses**, **trimestres**, **semestres** o **años**.
+3. **y usar**: **esa fecha**, el primer o el último día de esa semana, quincena, mes, trimestre, semestre o año, **el año (número)** o **el mes (número 1-12)**.
+
+![Valores predefinidos de parámetros con un valor fijo y un valor relativo a la fecha de ejecución.](shots/es-ES/user/35-schedule-relative-date.png)
+
+| Lo que quiere | Fecha de inicio | Fecha de fin |
+|---|---|---|
+| El mes pasado | -1 **meses**, **primer día de ese mes** | -1 **meses**, **último día de ese mes** |
+| El año hasta el mes pasado | -1 **meses**, **primer día de ese año** | -1 **meses**, **último día de ese mes** |
+| Un inicio fijo y un fin que avanza | **Valor fijo**, por ejemplo 2026-01-01 | -1 **meses**, **último día de ese mes** |
+| El trimestre pasado | -1 **trimestres**, **primer día de ese trimestre** | -1 **trimestres**, **último día de ese trimestre** |
+| Ayer | -1 **días**, **esa fecha** | -1 **días**, **esa fecha** |
+
+Para un parámetro que pide un año o un mes como número, use **el año (número)** o **el mes (número 1-12)**. Una semana empieza el lunes. Una quincena va del día 1 al 15, o del 16 al final del mes.
+
+> **Consejo:** -1 **meses**, **primer día de ese año** sigue dando todo el año pasado cuando la programación se ejecuta en enero. Un **Valor fijo** no cambia: un valor fijo 2026-01-01 sigue empezando en 2026 cuando la programación se ejecuta en 2027.
+
+La columna **Próxima ejecución** muestra la fecha de la próxima ejecución y, debajo, los valores que usará esa ejecución. Compruébela después de guardar.
+
+Puede dar a un mapa más de una programación, cada una con su propia frecuencia y sus propios valores. Ejemplo: una programación mensual para el mes pasado y otra anual para el año pasado.
+
 ## Ejemplo: programar una ejecución semanal
 
 1. En **Mapas**, haga clic en el icono del calendario del mapa.
-2. Escriba un **Nombre**. Establezca la **Frecuencia** en **Semanal (domingo, medianoche)**.
+2. Escriba un **Nombre**. Establezca la **Frecuencia** en **Semanal**, el **Día de la semana** en lunes y la **Hora** en 07:00.
 3. Elija su **Zona horaria** y el **Formato de salida**.
 4. Haga clic en **Guardar**.
 5. Haga clic en el icono **Ejecutar ahora** para comprobar que funciona. Después abra **Historial**.
@@ -506,6 +544,9 @@ Las ejecuciones, exportaciones y programaciones pertenecen a quien las creó. Na
 
 **Un compañero se ha ido. ¿Cómo conservo sus mapas?**
 Abra **Usuarios**, haga clic en **Mapas que este usuario puede abrir** y use el icono de propietario de cada mapa para entregarlo a otra persona.
+
+**Mi programación mensual siempre muestra las mismas fechas.**
+Sus parámetros de fecha tienen un **Valor fijo**. Edite la programación y páselos a **Relativo a la fecha de ejecución**.
 
 **Una programación que creé no se ejecuta.**
 Compruebe que su **Estado** es **Activa**, que las fechas de **Válida desde** y **Válida hasta** cubren hoy y que sigue teniendo una concesión sobre los datos. Una programación se ejecuta como usted.

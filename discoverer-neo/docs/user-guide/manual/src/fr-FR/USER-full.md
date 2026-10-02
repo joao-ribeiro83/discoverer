@@ -251,7 +251,7 @@ Le créateur comporte une barre d'outils en haut, une arborescence **Domaines d'
 | Liste du type de carte | **Tableau**, **Tableau croisé**, **Page-Détail** ou **Graphique**. Seul **Tableau croisé** change l'aspect des résultats. Les trois autres affichent un tableau simple |
 | **● Non enregistré** | Indique que vous avez des modifications non enregistrées |
 | **Exécuter** | Enregistre la carte si elle est nouvelle ou modifiée, puis l'exécute |
-| **Enregistrer** | Enregistre la carte. Exige au moins une colonne |
+| **Enregistrer** | Enregistre la carte. Exige au moins une colonne. Si rien n'a changé, le message **Aucune modification à enregistrer** s'affiche |
 | **Exporter** | Menu avec **Définition de la carte (.xml)**, qui télécharge la conception de la carte, pas les données. L'exportation des données se trouve sous les résultats |
 | **Planifier** | Ouvre **Planifications** avec cette carte choisie. Exige une carte enregistrée |
 | **Mise en forme** | Ouvre **Mise en forme conditionnelle**. Exige une carte enregistrée |
@@ -403,23 +403,65 @@ La colonne **Planificateur** est renseignée pour les planifications migrées de
 1. Cliquez sur **Nouvelle planification**. Vous pouvez aussi cliquer sur l'icône Calendrier dans **Cartes** : la carte est alors déjà choisie.
 2. Choisissez la **Carte**. La liste affiche vos cartes et les cartes partagées avec vous, marquées « (partagée) ». Une carte partagée avec vous en **Peut consulter** ne figure pas dans la liste, car ce niveau ne permet pas de planification.
 3. Saisissez un **Nom**.
-4. Choisissez une **Fréquence**, un **Fuseau horaire** et un **Format de sortie**.
-5. Remplissez les **Préréglages de paramètres** si la carte a des paramètres.
+4. Choisissez une **Fréquence**, son **Heure** et son jour, un **Fuseau horaire** et un **Format de sortie**.
+5. Remplissez les **Préréglages de paramètres** si la carte a des paramètres : une **Valeur fixe**, ou **Relatif à la date d’exécution**.
 6. Laissez **Activé** coché et cliquez sur **Enregistrer**.
 
 ![La boîte de dialogue Nouvelle planification remplie, avec une fréquence mensuelle et Activé décoché.](shots/fr-FR/user/37-schedule-filled.png)
 
 | Champ | Signification / quand le choisir |
 |---|---|
-| **Fréquence** : **Tous les jours (minuit)** | Tous les jours à 00:00 dans le fuseau horaire choisi |
-| **Fréquence** : **Toutes les semaines (dimanche, minuit)** | Tous les dimanches à 00:00 |
-| **Fréquence** : **Tous les mois (le 1er, minuit)** | Le 1er de chaque mois à 00:00 |
-| **Fréquence** : **Personnalisé** | Vous saisissez une **Expression cron**, cinq champs : minute, heure, jour du mois, mois, jour de la semaine. Par exemple `0 9 * * 1-5` correspond à 09:00 les jours ouvrés |
-| **Fuseau horaire** | L'horloge utilisée par la planification. UTC est la valeur par défaut |
+| **Fréquence** | La fréquence d'exécution. Voir le tableau suivant |
+| **Heure** | L'heure et la minute de l'exécution. Affiché pour toutes les fréquences sauf **Personnalisé (cron)**. |
+| **Jour de la semaine** | Affiché pour **Hebdomadaire**. |
+| **Jour du mois** | De 1 à 28, ou **Dernier jour**. Les jours 29 à 31 ne sont pas proposés, ainsi aucun mois court n'est sauté. Affiché pour **Mensuel**, les fréquences plus longues et **Annuel**. |
+| **Mois** | Affiché pour **Annuel**. |
+| **Fuseau horaire** | L'horloge utilisée par la planification. Le fuseau horaire de votre ordinateur est la valeur par défaut |
 | **Valide à partir de (facultatif)**, **Valide jusqu'au (facultatif)** | La planification ne s'exécute pas avant ou après ces dates |
 | **Format de sortie** : **Excel (.xlsx)** ou **CSV** | Le type de fichier du résultat stocké. CSV est la valeur par défaut |
-| **Préréglages de paramètres** | Les valeurs utilisées pour chaque exécution. Les valeurs obligatoires sont marquées * |
+| **Préréglages de paramètres** | Les valeurs utilisées pour chaque exécution, fixes ou relatives à la date d'exécution. Les valeurs obligatoires sont marquées * |
 | **Activé** | Si décoché, la planification attend que vous l'activiez |
+
+| Option (**Fréquence**) | Signification |
+|---|---|
+| **Quotidien** | Tous les jours, à l'**Heure** que vous choisissez. |
+| **Hebdomadaire** | Une fois par semaine, le **Jour de la semaine** que vous choisissez. |
+| **Bimensuel (le 1er et le 16)** | Le 1er et le 16 de chaque mois. |
+| **Mensuel** | Une fois par mois, le **Jour du mois** que vous choisissez. |
+| **Tous les 2 mois** | En janvier, mars, mai, juillet, septembre et novembre. |
+| **Trimestriel** | En janvier, avril, juillet et octobre. |
+| **Quadrimestriel** | En janvier, mai et septembre. |
+| **Semestriel** | En janvier et juillet. |
+| **Annuel** | Une fois par an, le **Mois** et le **Jour du mois** que vous choisissez. |
+| **Personnalisé (cron)** | Vous écrivez une **Expression cron** : cinq champs, minute, heure, jour du mois, mois, jour de la semaine. Exemple : `0 9 * * 1-5` correspond à 09:00 les jours ouvrés. |
+
+## Paramètres qui suivent la date d'exécution
+
+Chaque paramètre de **Préréglages de paramètres** propose un choix : **Valeur fixe** ou **Relatif à la date d’exécution**. Une valeur fixe est la même à chaque exécution. Une valeur relative change avec la date d'exécution de la planification, ainsi un rapport mensuel couvre toujours le bon mois.
+
+Une valeur relative comporte trois parties :
+
+1. **Décaler la date d’exécution de** un nombre. Utilisez -1 pour la période précédente, 0 pour la période en cours.
+2. La période : **jours**, **semaines**, **quinzaines**, **mois**, **trimestres**, **semestres** ou **années**.
+3. **puis utiliser le** : **cette date**, le premier ou le dernier jour de la semaine, de la quinzaine, du mois, du trimestre, du semestre ou de l'année, **l’année (nombre)** ou **le mois (nombre 1-12)**.
+
+![Préréglages de paramètres avec une valeur fixe et une valeur relative à la date d'exécution.](shots/fr-FR/user/35-schedule-relative-date.png)
+
+| Vous voulez | Date de début | Date de fin |
+|---|---|---|
+| Le mois dernier | -1 **mois**, **premier jour de ce mois** | -1 **mois**, **dernier jour de ce mois** |
+| L'année en cours, jusqu'au mois dernier | -1 **mois**, **premier jour de cette année** | -1 **mois**, **dernier jour de ce mois** |
+| Un début fixe, une fin mobile | **Valeur fixe**, par exemple 2026-01-01 | -1 **mois**, **dernier jour de ce mois** |
+| Le trimestre dernier | -1 **trimestres**, **premier jour de ce trimestre** | -1 **trimestres**, **dernier jour de ce trimestre** |
+| Hier | -1 **jours**, **cette date** | -1 **jours**, **cette date** |
+
+Pour un paramètre qui demande une année ou un mois sous forme de nombre, utilisez **l’année (nombre)** ou **le mois (nombre 1-12)**. Une semaine commence le lundi. Une quinzaine va du 1er au 15, ou du 16 à la fin du mois.
+
+> **Astuce :** -1 **mois**, **premier jour de cette année** donne toujours toute l'année précédente quand la planification s'exécute en janvier. Une **Valeur fixe** ne bouge pas : une date fixe 2026-01-01 commence toujours en 2026 quand la planification s'exécute en 2027.
+
+La colonne **Prochaine exécution** affiche la date de la prochaine exécution et, en dessous, les valeurs que cette exécution utilisera. Vérifiez-la après l'enregistrement.
+
+Vous pouvez donner plusieurs planifications à une même carte, chacune avec sa propre fréquence et ses propres valeurs. Exemple : une planification mensuelle pour le mois dernier, et une planification annuelle pour l'année dernière.
 
 ## Historique
 
@@ -457,6 +499,8 @@ Vos choix s'affichent immédiatement. Ils ne sont conservés sur tous les appare
 **Je ne peux pas enregistrer ma nouvelle carte.** L'enregistrement exige le droit de création dans le domaine d'activité de la carte. Demandez à votre administrateur.
 
 **L'icône Modifier est absente.** Vous ne pouvez modifier que vos propres cartes et les cartes partagées en **Peut modifier**. Copiez la carte, puis modifiez votre copie.
+
+**Ma planification mensuelle affiche toujours les mêmes dates.** Ses paramètres de date ont une **Valeur fixe**. Modifiez la planification et réglez-les sur **Relatif à la date d’exécution**.
 
 **Je ne peux pas planifier une carte.** Vous devez en être le propriétaire, ou avoir **Peut exporter** ou **Peut modifier**. Les cartes publiques ne peuvent pas être planifiées.
 

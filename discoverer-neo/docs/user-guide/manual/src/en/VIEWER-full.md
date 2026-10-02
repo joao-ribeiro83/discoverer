@@ -190,7 +190,7 @@ If you do have the right level:
 
 1. Click **New Schedule**, or the calendar icon on **Maps**.
 2. Choose the **Map** and type a **Name**.
-3. Choose **Frequency** (**Daily (midnight)**, **Weekly (Sunday, midnight)**, **Monthly (1st, midnight)** or **Custom**), **Timezone** and **Output Format** (**Excel (.xlsx)** or **CSV**).
+3. Choose **Frequency** (**Daily**, **Weekly**, **Fortnightly**, **Monthly**, every 2, 3, 4 or 6 months, **Yearly**, or **Custom (cron)**), its **Time** and day, **Timezone** and **Output Format** (**Excel (.xlsx)** or **CSV**). A parameter can have a **Fixed value**, or be **Relative to the run date**, for example -1 **months**, **last day of that month**.
 4. Click **Save**.
 
 Use the icons on each row to **Run now**, **Pause** or **Enable**, see **History**, **Edit** or **Delete**. Results stay on the server. Nothing is sent by email.

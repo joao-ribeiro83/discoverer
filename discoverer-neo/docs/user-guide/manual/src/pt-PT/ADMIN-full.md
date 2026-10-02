@@ -226,7 +226,7 @@ Pode arrastar as barras entre as zonas para mudar a largura. **Colapsar painel**
 | Lista do tipo de mapa | **Tabela**, **Tabela Cruzada**, **Página-Detalhe** ou **Gráfico**. Só **Tabela Cruzada** muda o aspeto do resultado (veja abaixo). |
 | **● Não guardado** | Mostra que o mapa tem alterações que não guardou. |
 | **Executar** | Guarda o mapa se for novo ou tiver sido alterado e depois executa-o. |
-| **Guardar** | Guarda o mapa. Não existe guardar automático. |
+| **Guardar** | Guarda o mapa. Não existe guardar automático. Se nada mudou, mostra **Sem alterações para guardar**. |
 | **Exportar** > **Definição do mapa (.xml)** | Transfere a definição do mapa como um ficheiro XML. Não contém linhas de dados. Só funciona depois de o mapa ser guardado. |
 | **Agendar** | Abre **Agendamentos** com este mapa escolhido. Funciona depois de o mapa ser guardado. |
 | **Formatação** | Abre a caixa de diálogo de formatação condicional. Funciona depois de o mapa ser guardado. |
@@ -583,30 +583,68 @@ Um agendamento é executado como o seu criador. Aplicam-se as permissões de ár
 | **Nome** | O nome do agendamento. |
 | **Frequência** | Com que frequência é executado. |
 | **Fuso horário** | O relógio que o horário segue. |
-| **Expressão cron** | O horário em cinco campos. Mostrado apenas para **Personalizado**. |
+| **Hora** | A hora e o minuto da execução. Mostrada para todas as frequências exceto **Personalizado (cron)**. |
+| **Dia da semana** | Mostrado para **Semanal**. |
+| **Dia do mês** | De 1 a 28, ou **Último dia**. Os dias 29 a 31 não são oferecidos, para que nenhum mês curto seja saltado. Mostrado para **Mensal**, as frequências mais longas e **Anual**. |
+| **Mês** | Mostrado para **Anual**. |
+| **Expressão cron** | O horário em cinco campos. Mostrado apenas para **Personalizado (cron)**. |
 | **Válido a partir de (opcional)** | O horário começa nesta data e hora. |
 | **Válido até (opcional)** | O horário pára depois desta data e hora. |
 | **Formato de Saída** | O tipo de ficheiro do resultado guardado. |
-| **Predefinições de parâmetros** | Um valor fixo para cada parâmetro do mapa. Mostrado apenas se o mapa tiver parâmetros. |
+| **Predefinições de parâmetros** | O valor de cada parâmetro do mapa: fixo, ou relativo à data de execução (veja abaixo). Mostrado apenas se o mapa tiver parâmetros. |
 | **Ativado** | Se o horário está ligado. |
 
 | Opção (**Frequência**) | O que significa / quando escolher |
 |---|---|
-| **Diariamente (meia-noite)** | Todos os dias às 00:00. |
-| **Semanalmente (domingo, meia-noite)** | Todos os domingos às 00:00. |
-| **Mensalmente (dia 1, meia-noite)** | No dia 1 de cada mês às 00:00. |
-| **Personalizado** | Escreva a sua própria **Expressão cron**, por exemplo `0 9 * * 1-5` (dias úteis às 09:00). Os cinco campos são minuto, hora, dia do mês, mês, dia da semana. |
+| **Diário** | Todos os dias, à **Hora** que escolher. |
+| **Semanal** | Uma vez por semana, no **Dia da semana** que escolher. |
+| **Quinzenal (dia 1 e dia 16)** | No dia 1 e no dia 16 de cada mês. |
+| **Mensal** | Uma vez por mês, no **Dia do mês** que escolher. |
+| **Bimestral** | Em janeiro, março, maio, julho, setembro e novembro. |
+| **Trimestral** | Em janeiro, abril, julho e outubro. |
+| **Quadrimestral** | Em janeiro, maio e setembro. |
+| **Semestral** | Em janeiro e julho. |
+| **Anual** | Uma vez por ano, no **Mês** e no **Dia do mês** que escolher. |
+| **Personalizado (cron)** | Escreve uma **Expressão cron**: cinco campos, minuto, hora, dia do mês, mês, dia da semana. Exemplo: `0 9 * * 1-5` é às 09:00 nos dias úteis. |
 
 | Opção (**Formato de Saída**) | O que significa / quando escolher |
 |---|---|
 | **Excel (.xlsx)** | Uma folha de cálculo. |
 | **CSV** | Texto simples com vírgulas. O predefinido. |
 
-O **Fuso horário** oferece UTC, America/New_York, America/Chicago, America/Denver, America/Los_Angeles, America/Sao_Paulo, Europe/London, Europe/Berlin, Europe/Paris, Europe/Moscow, Asia/Kolkata, Asia/Shanghai, Asia/Tokyo, Asia/Dubai e Australia/Sydney. UTC é o predefinido.
+O **Fuso horário** oferece primeiro o fuso horário do seu computador, depois UTC, Europe/Lisbon, Atlantic/Madeira, Atlantic/Azores, Europe/Madrid e outros fusos comuns. O fuso horário do seu computador é o predefinido.
 
 Os resultados são mantidos durante 30 dias.
 
 ![A caixa de diálogo Novo Agendamento com uma frequência personalizada e o campo Expressão cron.](shots/pt-PT/user/34-schedule-custom-cron.png)
+
+## Parâmetros que acompanham a data de execução
+
+Cada parâmetro em **Predefinições de parâmetros** tem uma escolha: **Valor fixo** ou **Relativo à data de execução**. Um valor fixo é o mesmo em todas as execuções. Um valor relativo muda com a data em que o agendamento é executado, por isso um relatório mensal cobre sempre o mês certo.
+
+Um valor relativo tem três partes:
+
+1. **Mover a data de execução** um número. Use -1 para o período anterior e 0 para o atual.
+2. O período: **dias**, **semanas**, **quinzenas**, **meses**, **trimestres**, **semestres** ou **anos**.
+3. **e usar**: **essa data**, o primeiro ou o último dia dessa semana, quinzena, mês, trimestre, semestre ou ano, **o ano (número)** ou **o mês (número 1-12)**.
+
+![Predefinições de parâmetros com um valor fixo e um valor relativo à data de execução.](shots/pt-PT/user/35-schedule-relative-date.png)
+
+| Pretende | Data de início | Data de fim |
+|---|---|---|
+| O mês passado | -1 **meses**, **primeiro dia desse mês** | -1 **meses**, **último dia desse mês** |
+| O ano até agora, até ao mês passado | -1 **meses**, **primeiro dia desse ano** | -1 **meses**, **último dia desse mês** |
+| Um início fixo, um fim que avança | **Valor fixo**, por exemplo 2026-01-01 | -1 **meses**, **último dia desse mês** |
+| O trimestre passado | -1 **trimestres**, **primeiro dia desse trimestre** | -1 **trimestres**, **último dia desse trimestre** |
+| Ontem | -1 **dias**, **essa data** | -1 **dias**, **essa data** |
+
+Para um parâmetro que pede um ano ou um mês como número, use **o ano (número)** ou **o mês (número 1-12)**. Uma semana começa à segunda-feira. Uma quinzena vai do dia 1 ao dia 15, ou do dia 16 ao fim do mês.
+
+> **Dica:** -1 **meses**, **primeiro dia desse ano** continua a dar todo o ano passado quando o agendamento é executado em janeiro. Um **Valor fixo** não se move: um 2026-01-01 fixo continua a começar em 2026 quando o agendamento é executado em 2027.
+
+A coluna **Próxima Execução** mostra a data da próxima execução e, por baixo, os valores que essa execução vai usar. Verifique-a depois de guardar.
+
+Pode dar a um mapa mais de um agendamento, cada um com a sua frequência e os seus valores. Exemplo: um agendamento mensal para o mês passado e um agendamento anual para o ano passado.
 
 ## Histórico de Execuções
 
@@ -625,7 +663,7 @@ Exemplo: executar **GD_M.M10_V01.DIS** todas as segundas-feiras às 07:00.
 
 1. Em **Mapas**, clique no ícone do calendário no mapa.
 2. Em **Novo Agendamento**, escreva um **Nome**.
-3. Defina a **Frequência** como **Personalizado** e escreva `0 7 * * 1`.
+3. Defina a **Frequência** como **Semanal**, o **Dia da semana** como segunda-feira e a **Hora** como 07:00.
 4. Escolha o seu **Fuso horário**.
 5. Deixe **Ativado** assinalado e clique em **Guardar**.
 6. Mais tarde, clique no ícone **Histórico** para abrir ou exportar o resultado.
@@ -1241,6 +1279,12 @@ As exportações são privadas, mesmo para administradores. Peça à pessoa que 
 
 **Um agendamento que fiz para o mapa de outra pessoa não está na lista.**
 A página **Agendamentos** lista apenas os agendamentos que criou. A lista **Mapa** no formulário mostra os seus mapas e os mapas partilhados consigo. Para agendar o mapa de outra pessoa, use o ícone do calendário em **Mapas**.
+
+**O meu agendamento mensal mostra sempre as mesmas datas.**
+Os parâmetros de data têm um **Valor fixo**. Edite o agendamento e defina-os como **Relativo à data de execução**, por exemplo -1 **meses**, **primeiro dia desse mês** e **último dia desse mês**.
+
+**Cliquei em Guardar e vi "Sem alterações para guardar".**
+Nada mudou desde a última gravação, por isso nada foi enviado. O mapa já está guardado.
 
 **Um campo calculado diz que "não foi compilado".**
 Clique em **Compilar campos calculados** em **Migração**.

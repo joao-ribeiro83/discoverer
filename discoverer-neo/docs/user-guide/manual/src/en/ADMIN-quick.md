@@ -75,7 +75,8 @@ A **run** is one execution of a map (kept 24 hours). An **export** is a file mad
 
 | Choice | Meaning |
 |---|---|
-| **Frequency** | **Daily (midnight)**, **Weekly (Sunday, midnight)**, **Monthly (1st, midnight)**, **Custom** (cron). |
+| **Frequency** | **Daily**, **Weekly**, **Fortnightly**, **Monthly**, every 2, 3, 4 or 6 months, **Yearly**, **Custom (cron)**. Then a **Time** and a day. |
+| **Parameter presets** | **Fixed value**, or **Relative to the run date** (for example -1 **months**, **last day of that month**). |
 | **Output Format** | **Excel (.xlsx)** or **CSV**. |
 | **Run now** | Runs a schedule at once. |
 

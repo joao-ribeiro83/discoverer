@@ -86,7 +86,7 @@ Os agendamentos executam um mapa automaticamente. Só pode criar um para um mapa
 
 | Escolha | Linha |
 |---|---|
-| **Frequência** | **Diariamente (meia-noite)**, **Semanalmente (domingo, meia-noite)**, **Mensalmente (dia 1, meia-noite)**, **Personalizado** |
+| **Frequência** | **Diário**, **Semanal**, **Quinzenal**, **Mensal**, a cada 2, 3, 4 ou 6 meses, **Anual**, ou **Personalizado (cron)** |
 | **Formato de Saída** | **Excel (.xlsx)** ou **CSV** |
 
 ---

@@ -190,7 +190,7 @@ Se tiver mesmo o nível certo:
 
 1. Clique em **Novo Agendamento**, ou no ícone do calendário em **Mapas**.
 2. Escolha o **Mapa** e escreva um **Nome**.
-3. Escolha a **Frequência** (**Diariamente (meia-noite)**, **Semanalmente (domingo, meia-noite)**, **Mensalmente (dia 1, meia-noite)** ou **Personalizado**), o **Fuso horário** e o **Formato de Saída** (**Excel (.xlsx)** ou **CSV**).
+3. Escolha a **Frequência** (**Diário**, **Semanal**, **Quinzenal**, **Mensal**, a cada 2, 3, 4 ou 6 meses, **Anual**, ou **Personalizado (cron)**), a respetiva **Hora** e dia, o **Fuso horário** e o **Formato de Saída** (**Excel (.xlsx)** ou **CSV**). Um parâmetro pode ter um **Valor fixo**, ou ser **Relativo à data de execução**, por exemplo -1 **meses**, **último dia desse mês**.
 4. Clique em **Guardar**.
 
 Use os ícones de cada linha para **Executar agora**, **Pausar** ou **Ativar**, ver o **Histórico**, **Editar** ou **Eliminar**. Os resultados ficam no servidor. Nada é enviado por e-mail.

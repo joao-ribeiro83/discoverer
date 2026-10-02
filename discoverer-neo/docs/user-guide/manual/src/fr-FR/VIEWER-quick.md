@@ -86,7 +86,7 @@ Les planifications exécutent une carte automatiquement. Vous ne pouvez en crée
 
 | Choix | Ligne |
 |---|---|
-| **Fréquence** | **Tous les jours (minuit)**, **Toutes les semaines (dimanche, minuit)**, **Tous les mois (le 1er, minuit)**, **Personnalisé** |
+| **Fréquence** | **Quotidien**, **Hebdomadaire**, **Bimensuel (le 1er et le 16)**, **Mensuel**, tous les 2, 3, 4 ou 6 mois, **Annuel**, ou **Personnalisé (cron)** |
 | **Format de sortie** | **Excel (.xlsx)** ou **CSV** |
 
 ---

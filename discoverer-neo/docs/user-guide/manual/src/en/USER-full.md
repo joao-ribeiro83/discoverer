@@ -251,7 +251,7 @@ The builder has a toolbar on top, a **Business Areas** tree on the left, the **C
 | Map type list | **Table**, **Crosstab**, **Page-Detail** or **Chart**. Only **Crosstab** changes how results look. The other three show a plain table |
 | **● Unsaved** | Shows that you have changes that are not saved |
 | **Run** | Saves the map if it is new or changed, then runs it |
-| **Save** | Saves the map. Needs at least one column |
+| **Save** | Saves the map. Needs at least one column. If nothing changed, it shows **No changes to save** |
 | **Export** | Menu with **Map definition (.xml)**, which downloads the map design, not the data. Data export is under the results |
 | **Schedule** | Opens **Schedules** with this map chosen. Needs a saved map |
 | **Formatting** | Opens **Conditional formatting**. Needs a saved map |
@@ -403,23 +403,65 @@ The **Planner** column is filled in for schedules migrated from Oracle Discovere
 1. Click **New Schedule**. You can also click the calendar icon on **Maps**, and the map is already chosen.
 2. Choose the **Map**. The list shows your maps and maps shared with you, marked "(shared)". A map shared with you at **Can view** is not in the list, because that level does not allow a schedule.
 3. Type a **Name**.
-4. Choose a **Frequency**, a **Timezone** and an **Output Format**.
-5. Fill in the **Parameter presets** if the map has parameters.
+4. Choose a **Frequency**, its **Time** and day, a **Timezone** and an **Output Format**.
+5. Fill in the **Parameter presets** if the map has parameters: a **Fixed value**, or **Relative to the run date**.
 6. Keep **Enabled** ticked and click **Save**.
 
 ![The New Schedule dialog filled in, with a monthly frequency and Enabled unticked.](shots/en/user/37-schedule-filled.png)
 
 | Field | What it means / when to pick it |
 |---|---|
-| **Frequency**: **Daily (midnight)** | Every day at 00:00 in the chosen timezone |
-| **Frequency**: **Weekly (Sunday, midnight)** | Every Sunday at 00:00 |
-| **Frequency**: **Monthly (1st, midnight)** | On the 1st of each month at 00:00 |
-| **Frequency**: **Custom** | You type a **Cron expression**, five fields: minute, hour, day of month, month, day of week. For example `0 9 * * 1-5` is 09:00 on weekdays |
-| **Timezone** | The clock used by the schedule. UTC is the default |
+| **Frequency** | How often it runs. See the next table |
+| **Time** | The hour and minute of the run. Shown for every frequency except **Custom (cron)**. |
+| **Day of the week** | Shown for **Weekly**. |
+| **Day of the month** | 1 to 28, or **Last day**. Days 29 to 31 are not offered, so no short month is skipped. Shown for **Monthly**, the longer frequencies and **Yearly**. |
+| **Month** | Shown for **Yearly**. |
+| **Timezone** | The clock used by the schedule. Your computer's timezone is the default |
 | **Valid from (optional)**, **Valid until (optional)** | The schedule does not run before or after these times |
 | **Output Format**: **Excel (.xlsx)** or **CSV** | The file type of the stored result. CSV is the default |
-| **Parameter presets** | The values used for every run. Required ones are marked * |
+| **Parameter presets** | The values used for every run, fixed or relative to the run date. Required ones are marked * |
 | **Enabled** | If unticked, the schedule waits until you enable it |
+
+| Option (**Frequency**) | What it means |
+|---|---|
+| **Daily** | Every day at the **Time** you choose. |
+| **Weekly** | Once a week, on the **Day of the week** you choose. |
+| **Fortnightly (1st and 16th)** | On the 1st and the 16th of each month. |
+| **Monthly** | Once a month, on the **Day of the month** you choose. |
+| **Every 2 months** | In January, March, May, July, September and November. |
+| **Quarterly** | In January, April, July and October. |
+| **Every 4 months** | In January, May and September. |
+| **Every 6 months (semester)** | In January and July. |
+| **Yearly** | Once a year, on the **Month** and **Day of the month** you choose. |
+| **Custom (cron)** | You write a **Cron expression**: five fields, minute, hour, day of month, month, day of week. Example: `0 9 * * 1-5` is 09:00 on weekdays. |
+
+## Parameters that follow the run date
+
+Each parameter in **Parameter presets** has a choice: **Fixed value** or **Relative to the run date**. A fixed value is the same on every run. A relative value changes with the date the schedule runs, so a monthly report always covers the right month.
+
+A relative value has three parts:
+
+1. **Move the run date by** a number. Use -1 for the period before, 0 for the current one.
+2. The period: **days**, **weeks**, **fortnights**, **months**, **quarters**, **semesters** or **years**.
+3. **then use the**: **that date**, the first or last day of that week, fortnight, month, quarter, semester or year, **its year (number)** or **its month (number 1-12)**.
+
+![Parameter presets with one fixed value and one value relative to the run date.](shots/en/user/35-schedule-relative-date.png)
+
+| You want | Start date | End date |
+|---|---|---|
+| Last month | -1 **months**, **first day of that month** | -1 **months**, **last day of that month** |
+| The year so far, up to last month | -1 **months**, **first day of that year** | -1 **months**, **last day of that month** |
+| A fixed start, a moving end | **Fixed value**, for example 2026-01-01 | -1 **months**, **last day of that month** |
+| Last quarter | -1 **quarters**, **first day of that quarter** | -1 **quarters**, **last day of that quarter** |
+| Yesterday | -1 **days**, **that date** | -1 **days**, **that date** |
+
+For a parameter that asks for a year or a month as a number, use **its year (number)** or **its month (number 1-12)**. A week starts on Monday. A fortnight is the 1st to the 15th, or the 16th to the end of the month.
+
+> **Tip:** -1 **months**, **first day of that year** still gives the whole of last year when the schedule runs in January. A **Fixed value** does not move: a fixed 2026-01-01 still starts in 2026 when the schedule runs in 2027.
+
+The **Next Run** column shows the date of the next run and, under it, the values that run will use. Check it after you save.
+
+You can give one map more than one schedule, each with its own frequency and values. Example: one monthly schedule for last month, and one yearly schedule for last year.
 
 ## History
 
@@ -457,6 +499,8 @@ Your choices show at once. They are only kept on every device after you click **
 **I cannot save my new map.** Saving needs the create right in the map's business area. Ask your administrator.
 
 **The Edit icon is missing.** You may change only your own maps and maps shared at **Can edit**. Copy the map, then edit your copy.
+
+**My monthly schedule always shows the same dates.** Its date parameters have a **Fixed value**. Edit the schedule and set them to **Relative to the run date**.
 
 **I cannot schedule a map.** You need to own it, or hold **Can export** or **Can edit**. Public maps cannot be scheduled.
 

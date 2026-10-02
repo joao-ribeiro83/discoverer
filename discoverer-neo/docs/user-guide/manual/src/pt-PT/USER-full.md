@@ -251,7 +251,7 @@ O construtor tem uma barra de ferramentas no topo, uma árvore **Áreas de Negó
 | Lista do tipo de mapa | **Tabela**, **Tabela Cruzada**, **Página-Detalhe** ou **Gráfico**. Só **Tabela Cruzada** muda o aspeto dos resultados. Os outros três mostram uma tabela simples |
 | **● Não guardado** | Indica que tem alterações que não estão guardadas |
 | **Executar** | Guarda o mapa se for novo ou se tiver sido alterado e depois executa-o |
-| **Guardar** | Guarda o mapa. Precisa de pelo menos uma coluna |
+| **Guardar** | Guarda o mapa. Precisa de pelo menos uma coluna. Se nada mudou, mostra **Sem alterações para guardar** |
 | **Exportar** | Menu com **Definição do mapa (.xml)**, que transfere o desenho do mapa, não os dados. A exportação de dados está por baixo dos resultados |
 | **Agendar** | Abre **Agendamentos** com este mapa escolhido. Precisa de um mapa guardado |
 | **Formatação** | Abre **Formatação condicional**. Precisa de um mapa guardado |
@@ -403,23 +403,65 @@ A coluna **Planeador** é preenchida nos agendamentos migrados do Oracle Discove
 1. Clique em **Novo Agendamento**. Também pode clicar no ícone do calendário em **Mapas**, e o mapa já vem escolhido.
 2. Escolha o **Mapa**. A lista mostra os seus mapas e os mapas partilhados consigo, marcados com "(partilhado)". Um mapa partilhado consigo como **Pode ver** não está na lista, porque esse nível não permite um agendamento.
 3. Escreva um **Nome**.
-4. Escolha uma **Frequência**, um **Fuso horário** e um **Formato de Saída**.
-5. Preencha as **Predefinições de parâmetros** se o mapa tiver parâmetros.
+4. Escolha uma **Frequência**, a respetiva **Hora** e dia, um **Fuso horário** e um **Formato de Saída**.
+5. Preencha as **Predefinições de parâmetros** se o mapa tiver parâmetros: um **Valor fixo**, ou **Relativo à data de execução**.
 6. Deixe **Ativado** assinalado e clique em **Guardar**.
 
 ![A caixa de diálogo Novo Agendamento preenchida, com frequência mensal e Ativado desmarcado.](shots/pt-PT/user/37-schedule-filled.png)
 
 | Campo | O que significa / quando escolher |
 |---|---|
-| **Frequência**: **Diariamente (meia-noite)** | Todos os dias às 00:00 no fuso horário escolhido |
-| **Frequência**: **Semanalmente (domingo, meia-noite)** | Todos os domingos às 00:00 |
-| **Frequência**: **Mensalmente (dia 1, meia-noite)** | No dia 1 de cada mês às 00:00 |
-| **Frequência**: **Personalizado** | Escreve uma **Expressão cron**, com cinco campos: minuto, hora, dia do mês, mês, dia da semana. Por exemplo, `0 9 * * 1-5` é às 09:00 nos dias úteis |
-| **Fuso horário** | O relógio usado pelo agendamento. UTC é o predefinido |
+| **Frequência** | Com que frequência é executado. Veja a tabela seguinte |
+| **Hora** | A hora e o minuto da execução. Mostrada para todas as frequências exceto **Personalizado (cron)**. |
+| **Dia da semana** | Mostrado para **Semanal**. |
+| **Dia do mês** | De 1 a 28, ou **Último dia**. Os dias 29 a 31 não são oferecidos, para que nenhum mês curto seja saltado. Mostrado para **Mensal**, as frequências mais longas e **Anual**. |
+| **Mês** | Mostrado para **Anual**. |
+| **Fuso horário** | O relógio usado pelo agendamento. O fuso horário do seu computador é o predefinido |
 | **Válido a partir de (opcional)**, **Válido até (opcional)** | O agendamento não é executado antes nem depois destas datas |
 | **Formato de Saída**: **Excel (.xlsx)** ou **CSV** | O tipo de ficheiro do resultado guardado. CSV é o predefinido |
-| **Predefinições de parâmetros** | Os valores usados em cada execução. Os obrigatórios estão marcados com * |
+| **Predefinições de parâmetros** | Os valores usados em cada execução, fixos ou relativos à data de execução. Os obrigatórios estão marcados com * |
 | **Ativado** | Se estiver desmarcado, o agendamento espera até o ativar |
+
+| Opção (**Frequência**) | O que significa |
+|---|---|
+| **Diário** | Todos os dias, à **Hora** que escolher. |
+| **Semanal** | Uma vez por semana, no **Dia da semana** que escolher. |
+| **Quinzenal (dia 1 e dia 16)** | No dia 1 e no dia 16 de cada mês. |
+| **Mensal** | Uma vez por mês, no **Dia do mês** que escolher. |
+| **Bimestral** | Em janeiro, março, maio, julho, setembro e novembro. |
+| **Trimestral** | Em janeiro, abril, julho e outubro. |
+| **Quadrimestral** | Em janeiro, maio e setembro. |
+| **Semestral** | Em janeiro e julho. |
+| **Anual** | Uma vez por ano, no **Mês** e no **Dia do mês** que escolher. |
+| **Personalizado (cron)** | Escreve uma **Expressão cron**: cinco campos, minuto, hora, dia do mês, mês, dia da semana. Exemplo: `0 9 * * 1-5` é às 09:00 nos dias úteis. |
+
+## Parâmetros que acompanham a data de execução
+
+Cada parâmetro em **Predefinições de parâmetros** tem uma escolha: **Valor fixo** ou **Relativo à data de execução**. Um valor fixo é o mesmo em todas as execuções. Um valor relativo muda com a data em que o agendamento é executado, por isso um relatório mensal cobre sempre o mês certo.
+
+Um valor relativo tem três partes:
+
+1. **Mover a data de execução** um número. Use -1 para o período anterior e 0 para o atual.
+2. O período: **dias**, **semanas**, **quinzenas**, **meses**, **trimestres**, **semestres** ou **anos**.
+3. **e usar**: **essa data**, o primeiro ou o último dia dessa semana, quinzena, mês, trimestre, semestre ou ano, **o ano (número)** ou **o mês (número 1-12)**.
+
+![Predefinições de parâmetros com um valor fixo e um valor relativo à data de execução.](shots/pt-PT/user/35-schedule-relative-date.png)
+
+| Pretende | Data de início | Data de fim |
+|---|---|---|
+| O mês passado | -1 **meses**, **primeiro dia desse mês** | -1 **meses**, **último dia desse mês** |
+| O ano até agora, até ao mês passado | -1 **meses**, **primeiro dia desse ano** | -1 **meses**, **último dia desse mês** |
+| Um início fixo, um fim que avança | **Valor fixo**, por exemplo 2026-01-01 | -1 **meses**, **último dia desse mês** |
+| O trimestre passado | -1 **trimestres**, **primeiro dia desse trimestre** | -1 **trimestres**, **último dia desse trimestre** |
+| Ontem | -1 **dias**, **essa data** | -1 **dias**, **essa data** |
+
+Para um parâmetro que pede um ano ou um mês como número, use **o ano (número)** ou **o mês (número 1-12)**. Uma semana começa à segunda-feira. Uma quinzena vai do dia 1 ao dia 15, ou do dia 16 ao fim do mês.
+
+> **Dica:** -1 **meses**, **primeiro dia desse ano** continua a dar todo o ano passado quando o agendamento é executado em janeiro. Um **Valor fixo** não se move: um 2026-01-01 fixo continua a começar em 2026 quando o agendamento é executado em 2027.
+
+A coluna **Próxima Execução** mostra a data da próxima execução e, por baixo, os valores que essa execução vai usar. Verifique-a depois de guardar.
+
+Pode dar a um mapa mais de um agendamento, cada um com a sua frequência e os seus valores. Exemplo: um agendamento mensal para o mês passado e um agendamento anual para o ano passado.
 
 ## Histórico
 
@@ -457,6 +499,8 @@ As suas escolhas aparecem de imediato. Só ficam guardadas em todos os dispositi
 **Não consigo guardar o meu mapa novo.** Guardar exige o direito de criar na área de negócio do mapa. Fale com o seu administrador.
 
 **O ícone Editar não aparece.** Só pode alterar os seus próprios mapas e os mapas partilhados como **Pode editar**. Copie o mapa e edite a sua cópia.
+
+**O meu agendamento mensal mostra sempre as mesmas datas.** Os parâmetros de data têm um **Valor fixo**. Edite o agendamento e defina-os como **Relativo à data de execução**.
 
 **Não consigo agendar um mapa.** Tem de ser o proprietário, ou ter **Pode exportar** ou **Pode editar**. Os mapas públicos não podem ser agendados.
 

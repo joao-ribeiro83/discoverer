@@ -134,7 +134,8 @@ Runs a map by itself and stores the result on the server. Nothing is emailed.
 
 | Choice | Line |
 |---|---|
-| **Frequency** | **Daily (midnight)**, **Weekly (Sunday, midnight)**, **Monthly (1st, midnight)**, **Custom** (cron, e.g. `0 9 * * 1-5`) |
+| **Frequency** | **Daily**, **Weekly**, **Fortnightly**, **Monthly**, every 2, 3, 4 or 6 months, **Yearly**, with a **Time** and a day; or **Custom (cron)** |
+| **Parameter presets** | **Fixed value**, or **Relative to the run date**: -1 **months**, **last day of that month** is the end of last month |
 | **Output Format** | **Excel (.xlsx)** or **CSV** |
 | Public map | Cannot be scheduled |
 

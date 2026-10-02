@@ -102,8 +102,9 @@ Um agendamento executa um mapa num horário definido e guarda o resultado. Só v
 
 | Escolha | Significado |
 |---|---|
-| **Diariamente (meia-noite)**, **Semanalmente (domingo, meia-noite)**, **Mensalmente (dia 1, meia-noite)** | Horários prontos a usar. |
-| **Personalizado** | A sua própria expressão cron de cinco campos. |
+| **Diário**, **Semanal**, **Quinzenal**, **Mensal**, a cada 2, 3, 4 ou 6 meses, **Anual** | Horários prontos a usar, com uma **Hora** e um dia. |
+| **Personalizado (cron)** | A sua própria expressão cron de cinco campos. |
+| **Relativo à data de execução** | Um valor de parâmetro que acompanha a execução, por exemplo -1 **meses**, **último dia desse mês**. |
 | **Excel (.xlsx)**, **CSV** | Formato do resultado guardado. |
 
 O agendamento é executado como si, por isso as suas permissões decidem que dados lê.

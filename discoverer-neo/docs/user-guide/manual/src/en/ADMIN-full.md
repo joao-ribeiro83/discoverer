@@ -226,7 +226,7 @@ You can drag the bars between the zones to change their width. **Collapse panel*
 | Map type list | **Table**, **Crosstab**, **Page-Detail** or **Chart**. Only **Crosstab** changes how the result looks (see below). |
 | **● Unsaved** | Shows that the map has changes you have not saved. |
 | **Run** | Saves the map if it is new or changed, then runs it. |
-| **Save** | Saves the map. There is no automatic save. |
+| **Save** | Saves the map. There is no automatic save. If nothing changed, it shows **No changes to save**. |
 | **Export** > **Map definition (.xml)** | Downloads the definition of the map as an XML file. This holds no data rows. It works only after the map is saved. |
 | **Schedule** | Opens **Schedules** with this map chosen. Works after the map is saved. |
 | **Formatting** | Opens the conditional formatting dialog. Works after the map is saved. |
@@ -583,30 +583,68 @@ A schedule runs as its creator. The creator's business-area grants and row-level
 | **Name** | The name of the schedule. |
 | **Frequency** | How often it runs. |
 | **Timezone** | The clock the timetable follows. |
-| **Cron expression** | The timetable in five fields. Shown only for **Custom**. |
+| **Time** | The hour and minute of the run. Shown for every frequency except **Custom (cron)**. |
+| **Day of the week** | Shown for **Weekly**. |
+| **Day of the month** | 1 to 28, or **Last day**. Days 29 to 31 are not offered, so no short month is skipped. Shown for **Monthly**, the longer frequencies and **Yearly**. |
+| **Month** | Shown for **Yearly**. |
+| **Cron expression** | The timetable in five fields. Shown only for **Custom (cron)**. |
 | **Valid from (optional)** | The timetable starts on this date and time. |
 | **Valid until (optional)** | The timetable stops after this date and time. |
 | **Output Format** | The file kind for the stored result. |
-| **Parameter presets** | A fixed value for each map parameter. Shown only if the map has parameters. |
+| **Parameter presets** | The value of each map parameter: fixed, or relative to the run date (see below). Shown only if the map has parameters. |
 | **Enabled** | Whether the timetable is on. |
 
 | Option (**Frequency**) | What it means / when to pick it |
 |---|---|
-| **Daily (midnight)** | Every day at 00:00. |
-| **Weekly (Sunday, midnight)** | Every Sunday at 00:00. |
-| **Monthly (1st, midnight)** | On the 1st of each month at 00:00. |
-| **Custom** | Write your own **Cron expression**, for example `0 9 * * 1-5` (weekdays at 09:00). The five fields are minute, hour, day of month, month, day of week. |
+| **Daily** | Every day at the **Time** you choose. |
+| **Weekly** | Once a week, on the **Day of the week** you choose. |
+| **Fortnightly (1st and 16th)** | On the 1st and the 16th of each month. |
+| **Monthly** | Once a month, on the **Day of the month** you choose. |
+| **Every 2 months** | In January, March, May, July, September and November. |
+| **Quarterly** | In January, April, July and October. |
+| **Every 4 months** | In January, May and September. |
+| **Every 6 months (semester)** | In January and July. |
+| **Yearly** | Once a year, on the **Month** and **Day of the month** you choose. |
+| **Custom (cron)** | You write a **Cron expression**: five fields, minute, hour, day of month, month, day of week. Example: `0 9 * * 1-5` is 09:00 on weekdays. |
 
 | Option (**Output Format**) | What it means / when to pick it |
 |---|---|
 | **Excel (.xlsx)** | A spreadsheet. |
 | **CSV** | Plain text with commas. The default. |
 
-**Timezone** offers UTC, America/New_York, America/Chicago, America/Denver, America/Los_Angeles, America/Sao_Paulo, Europe/London, Europe/Berlin, Europe/Paris, Europe/Moscow, Asia/Kolkata, Asia/Shanghai, Asia/Tokyo, Asia/Dubai and Australia/Sydney. UTC is the default.
+**Timezone** offers your computer's own timezone first, then UTC, Europe/Lisbon, Atlantic/Madeira, Atlantic/Azores, Europe/Madrid and other common zones. Your computer's timezone is the default.
 
 Results are kept for 30 days.
 
 ![The New Schedule dialog with a custom frequency and the cron expression field.](shots/en/user/34-schedule-custom-cron.png)
+
+## Parameters that follow the run date
+
+Each parameter in **Parameter presets** has a choice: **Fixed value** or **Relative to the run date**. A fixed value is the same on every run. A relative value changes with the date the schedule runs, so a monthly report always covers the right month.
+
+A relative value has three parts:
+
+1. **Move the run date by** a number. Use -1 for the period before, 0 for the current one.
+2. The period: **days**, **weeks**, **fortnights**, **months**, **quarters**, **semesters** or **years**.
+3. **then use the**: **that date**, the first or last day of that week, fortnight, month, quarter, semester or year, **its year (number)** or **its month (number 1-12)**.
+
+![Parameter presets with one fixed value and one value relative to the run date.](shots/en/user/35-schedule-relative-date.png)
+
+| You want | Start date | End date |
+|---|---|---|
+| Last month | -1 **months**, **first day of that month** | -1 **months**, **last day of that month** |
+| The year so far, up to last month | -1 **months**, **first day of that year** | -1 **months**, **last day of that month** |
+| A fixed start, a moving end | **Fixed value**, for example 2026-01-01 | -1 **months**, **last day of that month** |
+| Last quarter | -1 **quarters**, **first day of that quarter** | -1 **quarters**, **last day of that quarter** |
+| Yesterday | -1 **days**, **that date** | -1 **days**, **that date** |
+
+For a parameter that asks for a year or a month as a number, use **its year (number)** or **its month (number 1-12)**. A week starts on Monday. A fortnight is the 1st to the 15th, or the 16th to the end of the month.
+
+> **Tip:** -1 **months**, **first day of that year** still gives the whole of last year when the schedule runs in January. A **Fixed value** does not move: a fixed 2026-01-01 still starts in 2026 when the schedule runs in 2027.
+
+The **Next Run** column shows the date of the next run and, under it, the values that run will use. Check it after you save.
+
+You can give one map more than one schedule, each with its own frequency and values. Example: one monthly schedule for last month, and one yearly schedule for last year.
 
 ## Execution History
 
@@ -625,7 +663,7 @@ Example: run **GD_M.M10_V01.DIS** every Monday at 07:00.
 
 1. In **Maps**, click the Calendar icon on the map.
 2. In **New Schedule**, type a **Name**.
-3. Set **Frequency** to **Custom** and type `0 7 * * 1`.
+3. Set **Frequency** to **Weekly**, **Day of the week** to Monday and **Time** to 07:00.
 4. Choose your **Timezone**.
 5. Leave **Enabled** ticked, then click **Save**.
 6. Later, click the **History** icon to open or export the result.
@@ -1241,6 +1279,12 @@ Exports are private, even from administrators. Ask the person to export again.
 
 **A schedule I made for another person's map is not in the list.**
 The **Schedules** page lists only the schedules you created. The **Map** list in the form shows your own maps and maps shared with you. To schedule someone else's map, use the Calendar icon in **Maps**.
+
+**My monthly schedule always shows the same dates.**
+Its date parameters have a **Fixed value**. Edit the schedule and set them to **Relative to the run date**, for example -1 **months**, **first day of that month** and **last day of that month**.
+
+**I pressed Save and saw "No changes to save".**
+Nothing changed since the last save, so nothing was sent. The map is already saved.
 
 **A calculated field says it "has not compiled".**
 Click **Compile calculated fields** in **Migration**.

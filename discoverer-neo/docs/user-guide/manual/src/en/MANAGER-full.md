@@ -221,7 +221,7 @@ The builder opens for every map, even one you cannot save. You only find out whe
 | Map type list | **Table**, **Crosstab**, **Page-Detail** or **Chart**. Only **Crosstab** changes how the result looks. The others show as a plain table. |
 | **● Unsaved** | Reminds you there are changes you have not saved. |
 | **Run** | Saves the map if it is new or changed, then runs it. |
-| **Save** | Saves your changes. Nothing saves by itself. |
+| **Save** | Saves your changes. Nothing saves by itself. If nothing changed, it shows **No changes to save**. |
 | **Export** > **Map definition (.xml)** | Downloads the map definition. It holds no data rows. Needs a saved map. |
 | **Schedule** | Opens **Schedules** with this map chosen. Needs a saved map. |
 | **Formatting** | Opens conditional formatting. Needs a saved map. |
@@ -405,19 +405,29 @@ The **Status** column shows **Active** or **Paused**. The **Planner** column is 
 | **Map** | The map to run. |
 | **Name** | The schedule name. |
 | **Frequency** | See below. |
-| **Timezone** | The clock the times use. Default UTC. |
-| **Cron expression** | Shown for **Custom**. Five fields: minute, hour, day of month, month, day of week. |
+| **Timezone** | The clock the times use. Default: your computer's timezone. |
+| **Time** | The hour and minute of the run. Shown for every frequency except **Custom (cron)**. |
+| **Day of the week** | Shown for **Weekly**. |
+| **Day of the month** | 1 to 28, or **Last day**. Days 29 to 31 are not offered, so no short month is skipped. Shown for **Monthly**, the longer frequencies and **Yearly**. |
+| **Month** | Shown for **Yearly**. |
+| **Cron expression** | Shown for **Custom (cron)**. Five fields: minute, hour, day of month, month, day of week. |
 | **Valid from** and **Valid until** | Optional dates. The schedule runs only in between. |
 | **Output Format** | See below. |
-| **Parameter presets** | The value used each time for every map parameter. |
+| **Parameter presets** | The value of every map parameter: a **Fixed value**, or **Relative to the run date** (see below). |
 | **Enabled** | Off means it never runs by itself. |
 
 | Option (**Frequency**) | What it means |
 |---|---|
-| Daily (midnight) | Every day at 00:00. |
-| Weekly (Sunday, midnight) | Every Sunday at 00:00. |
-| Monthly (1st, midnight) | The first of each month at 00:00. |
-| Custom | You write the cron expression. Example: `0 9 * * 1-5` is 09:00 on weekdays. |
+| **Daily** | Every day at the **Time** you choose. |
+| **Weekly** | Once a week, on the **Day of the week** you choose. |
+| **Fortnightly (1st and 16th)** | On the 1st and the 16th of each month. |
+| **Monthly** | Once a month, on the **Day of the month** you choose. |
+| **Every 2 months** | In January, March, May, July, September and November. |
+| **Quarterly** | In January, April, July and October. |
+| **Every 4 months** | In January, May and September. |
+| **Every 6 months (semester)** | In January and July. |
+| **Yearly** | Once a year, on the **Month** and **Day of the month** you choose. |
+| **Custom (cron)** | You write a **Cron expression**: five fields, minute, hour, day of month, month, day of week. Example: `0 9 * * 1-5` is 09:00 on weekdays. |
 
 | Option (**Output Format**) | What it means |
 |---|---|
@@ -426,10 +436,38 @@ The **Status** column shows **Active** or **Paused**. The **Planner** column is 
 
 **Execution History** lists the last 50 results with **Executed**, **Status**, **Rows** and **Duration**. Each has **XLSX**, **CSV** and **PDF** buttons and an **Open** icon. Results are kept for 30 days. Then the export buttons disappear.
 
+## Parameters that follow the run date
+
+Each parameter in **Parameter presets** has a choice: **Fixed value** or **Relative to the run date**. A fixed value is the same on every run. A relative value changes with the date the schedule runs, so a monthly report always covers the right month.
+
+A relative value has three parts:
+
+1. **Move the run date by** a number. Use -1 for the period before, 0 for the current one.
+2. The period: **days**, **weeks**, **fortnights**, **months**, **quarters**, **semesters** or **years**.
+3. **then use the**: **that date**, the first or last day of that week, fortnight, month, quarter, semester or year, **its year (number)** or **its month (number 1-12)**.
+
+![Parameter presets with one fixed value and one value relative to the run date.](shots/en/user/35-schedule-relative-date.png)
+
+| You want | Start date | End date |
+|---|---|---|
+| Last month | -1 **months**, **first day of that month** | -1 **months**, **last day of that month** |
+| The year so far, up to last month | -1 **months**, **first day of that year** | -1 **months**, **last day of that month** |
+| A fixed start, a moving end | **Fixed value**, for example 2026-01-01 | -1 **months**, **last day of that month** |
+| Last quarter | -1 **quarters**, **first day of that quarter** | -1 **quarters**, **last day of that quarter** |
+| Yesterday | -1 **days**, **that date** | -1 **days**, **that date** |
+
+For a parameter that asks for a year or a month as a number, use **its year (number)** or **its month (number 1-12)**. A week starts on Monday. A fortnight is the 1st to the 15th, or the 16th to the end of the month.
+
+> **Tip:** -1 **months**, **first day of that year** still gives the whole of last year when the schedule runs in January. A **Fixed value** does not move: a fixed 2026-01-01 still starts in 2026 when the schedule runs in 2027.
+
+The **Next Run** column shows the date of the next run and, under it, the values that run will use. Check it after you save.
+
+You can give one map more than one schedule, each with its own frequency and values. Example: one monthly schedule for last month, and one yearly schedule for last year.
+
 ## Example: schedule a weekly run
 
 1. On **Maps**, click the Calendar icon of the map.
-2. Type a **Name**. Set **Frequency** to **Weekly (Sunday, midnight)**.
+2. Type a **Name**. Set **Frequency** to **Weekly**, **Day of the week** to Monday and **Time** to 07:00.
 3. Choose your **Timezone** and **Output Format**.
 4. Click **Save**.
 5. Click the **Run now** icon to check it works. Then open **History**.
@@ -506,6 +544,9 @@ Runs, exports and schedules belong to the person who made them. Nobody but that 
 
 **A colleague left. How do I keep their maps?**
 Open **Users**, click **Maps this user can open**, then use the owner icon on each map to give it to someone else.
+
+**My monthly schedule always shows the same dates.**
+Its date parameters have a **Fixed value**. Edit the schedule and set them to **Relative to the run date**.
 
 **A schedule I made does not run.**
 Check that its **Status** is **Active**, that the dates in **Valid from** and **Valid until** cover today, and that you still hold a grant on the data. A schedule runs as you.

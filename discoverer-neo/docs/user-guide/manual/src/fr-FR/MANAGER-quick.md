@@ -102,8 +102,9 @@ Une planification exécute une carte selon un calendrier et stocke le résultat.
 
 | Choix | Signification |
 |---|---|
-| **Tous les jours (minuit)**, **Toutes les semaines (dimanche, minuit)**, **Tous les mois (le 1er, minuit)** | Calendriers prêts à l'emploi. |
-| **Personnalisé** | Votre propre expression cron à cinq champs. |
+| **Quotidien**, **Hebdomadaire**, **Bimensuel (le 1er et le 16)**, **Mensuel**, tous les 2, 3, 4 ou 6 mois, **Annuel** | Calendriers prêts à l'emploi, avec une **Heure** et un jour. |
+| **Personnalisé (cron)** | Votre propre expression cron à cinq champs. |
+| **Relatif à la date d’exécution** | Une valeur de paramètre qui suit l'exécution, par exemple -1 **mois**, **dernier jour de ce mois**. |
 | **Excel (.xlsx)**, **CSV** | Format du résultat stocké. |
 
 La planification s'exécute sous votre identité : vos accès décident donc des données qu'elle lit.

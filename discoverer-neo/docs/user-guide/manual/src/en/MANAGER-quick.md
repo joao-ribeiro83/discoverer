@@ -102,8 +102,9 @@ A schedule runs a map on a timetable and stores the result. You see only your ow
 
 | Choice | Meaning |
 |---|---|
-| **Daily (midnight)**, **Weekly (Sunday, midnight)**, **Monthly (1st, midnight)** | Ready-made timetables. |
-| **Custom** | Your own five-field cron expression. |
+| **Daily**, **Weekly**, **Fortnightly**, **Monthly**, every 2, 3, 4 or 6 months, **Yearly** | Ready-made timetables, with a **Time** and a day. |
+| **Custom (cron)** | Your own five-field cron expression. |
+| **Relative to the run date** | A parameter value that follows the run, for example -1 **months**, **last day of that month**. |
 | **Excel (.xlsx)**, **CSV** | Format of the stored result. |
 
 The schedule runs as you, so your grants decide what data it reads.

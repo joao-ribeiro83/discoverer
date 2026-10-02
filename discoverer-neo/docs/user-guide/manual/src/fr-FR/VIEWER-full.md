@@ -190,7 +190,7 @@ Si vous avez le bon niveau :
 
 1. Cliquez sur **Nouvelle planification**, ou sur l'icône Calendrier dans **Cartes**.
 2. Choisissez la **Carte** et saisissez un **Nom**.
-3. Choisissez la **Fréquence** (**Tous les jours (minuit)**, **Toutes les semaines (dimanche, minuit)**, **Tous les mois (le 1er, minuit)** ou **Personnalisé**), le **Fuseau horaire** et le **Format de sortie** (**Excel (.xlsx)** ou **CSV**).
+3. Choisissez la **Fréquence** (**Quotidien**, **Hebdomadaire**, **Bimensuel (le 1er et le 16)**, **Mensuel**, tous les 2, 3, 4 ou 6 mois, **Annuel**, ou **Personnalisé (cron)**), son **Heure** et son jour, le **Fuseau horaire** et le **Format de sortie** (**Excel (.xlsx)** ou **CSV**). Un paramètre peut avoir une **Valeur fixe**, ou être **Relatif à la date d’exécution**, par exemple -1 **mois**, **dernier jour de ce mois**.
 4. Cliquez sur **Enregistrer**.
 
 Utilisez les icônes de chaque ligne pour **Exécuter maintenant**, **Suspendre** ou **Activer**, voir l'**Historique**, **Modifier** ou **Supprimer**. Les résultats restent sur le serveur. Rien n'est envoyé par e-mail.
