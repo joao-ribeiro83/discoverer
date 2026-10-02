@@ -32,6 +32,41 @@ npm run generate-spec --workspace @discoverer-neo/backend
 the git history. Each one groups a finished phase of the build plan, and ends
 at the commit named in its heading. The code carried `0.1.0` until 1.1.0.
 
+## [2.2.0] — 2026-10-02 — migrated maps save again, and richer schedules
+
+### Added
+
+- Schedules offer named frequencies: daily, weekly, fortnightly (the 1st and
+  the 16th), monthly, every 2 months, quarterly, every 4 months, every 6
+  months and yearly. Each takes a time, and where it applies a weekday, a day
+  of the month (1-28 or the last day) or a month. Multi-month frequencies
+  count from January. A raw cron expression is still available as "Custom".
+- A schedule's parameter can be relative to the run date instead of fixed:
+  move the run date by n days, weeks, fortnights, months, quarters, semesters
+  or years, then use that date, the first or last day of its period, or its
+  year or month as a number. "−1 months, first day of that year" to "−1
+  months, last day of that month" is a year to date that still covers
+  December when it runs in January. The schedules table shows the values the
+  next run will use.
+- The default schedule timezone is the browser's; Lisbon, Madeira and Azores
+  are in the list.
+
+### Fixed
+
+- Saving a migrated map from the builder failed with "Invalid request body"
+  on almost every map: a column width of 0, a filter on a calculated field,
+  and columns from more than one business area were each refused. All three
+  now save. A map keeps the columns it already has; only a newly added column
+  must come from the map's own business area.
+- A builder save no longer drops what the builder does not edit: a filter's
+  NOT and case sensitivity, its calculated-field references, and the
+  migrated column formats.
+- Duplicating a map wrote the copy's totals onto the original, so every copy
+  doubled the original's totals. The copy now gets them, and keeps the
+  migrated column formats too.
+- Save on an unchanged map says "No changes to save", and a refused request
+  now names the field that was wrong.
+
 ## [2.1.1] — 2026-10-01 — the Maps page opens on All for admins
 
 ### Fixed
