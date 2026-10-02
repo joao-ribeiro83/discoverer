@@ -9,6 +9,22 @@ import type { ColumnDef } from '@tanstack/react-table'
 import { Plus, Pencil, Trash2, Play, History, Download, Pause, ExternalLink, Loader2 } from 'lucide-react'
 import { apiClient, getErrorMessage } from '@/lib/api'
 import type { Schedule, ScheduleParameterValue, MapParameter, ScheduledResult } from '@/lib/types'
+import {
+  FREQUENCIES,
+  DEFAULT_SPEC,
+  buildCron,
+  parseCron,
+  type Frequency,
+  type FrequencySpec,
+} from '@/lib/schedule-frequency'
+import {
+  RULE_UNITS,
+  DATE_TAKES,
+  NUMBER_TAKES,
+  parseDateRule,
+  formatDateRule,
+  type DateRule,
+} from '@/lib/schedule-date-rule'
 import { useMapExport } from '@/hooks/useMapExport'
 import { useAuthStore } from '@/store/auth'
 import { useToast } from '@/hooks/use-toast'
@@ -40,27 +56,15 @@ import {
 } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
-// ---------------------------------------------------------------------------
-// Cron presets — a raw expression input covers everything else ("Custom").
-// Labels are translated at render time (see `useCronPresets` below); this
-// module-level list only carries the value/expression pairing.
-// ---------------------------------------------------------------------------
-
-const CRON_PRESETS = [
-  { value: 'daily', expr: '0 0 * * *' },
-  { value: 'weekly', expr: '0 0 * * 0' },
-  { value: 'monthly', expr: '0 0 1 * *' },
-  { value: 'custom', expr: null as string | null },
-] as const
-
-function presetForExpression(expr: string): (typeof CRON_PRESETS)[number]['value'] {
-  return CRON_PRESETS.find((p) => p.expr === expr)?.value ?? 'custom'
-}
-
 // A short, curated list rather than every IANA zone — covers the common
-// cases; "Custom" lets anyone type an exact zone name.
+// cases. The browser's own zone is the default and is added when missing.
+const BROWSER_TIMEZONE = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
 const COMMON_TIMEZONES = [
   'UTC',
+  'Europe/Lisbon',
+  'Atlantic/Madeira',
+  'Atlantic/Azores',
+  'Europe/Madrid',
   'America/New_York',
   'America/Chicago',
   'America/Denver',
@@ -76,6 +80,9 @@ const COMMON_TIMEZONES = [
   'Asia/Dubai',
   'Australia/Sydney',
 ]
+if (!COMMON_TIMEZONES.includes(BROWSER_TIMEZONE)) COMMON_TIMEZONES.unshift(BROWSER_TIMEZONE)
+
+const DAYS_OF_MONTH = [...Array.from({ length: 28 }, (_, i) => String(i + 1)), 'L']
 
 function paramInputType(paramType: MapParameter['paramType']): 'text' | 'number' | 'date' {
   if (paramType === 'NUMBER') return 'number'
@@ -114,7 +121,11 @@ function buildFormSchema(t: (key: string) => string) {
   return z.object({
     mapId: z.string().uuid(t('schedules:validation.selectMap')),
     name: z.string().min(1, t('schedules:validation.nameRequired')).max(255),
-    cronPreset: z.enum(['daily', 'weekly', 'monthly', 'custom']),
+    frequency: z.enum(FREQUENCIES),
+    time: z.string().regex(/^\d{2}:\d{2}$/),
+    weekday: z.number(),
+    day: z.string(),
+    month: z.number(),
     cronExpression: z.string().min(1, t('schedules:validation.cronExpressionRequired')),
     timezone: z.string().min(1),
     validFrom: z.string().optional(),
@@ -139,11 +150,16 @@ export function SchedulesPage() {
   const [historyFor, setHistoryFor] = useState<Schedule | null>(null)
   const [parameters, setParameters] = useState<ScheduleParameterValue[]>([])
 
-  const cronPresets = useMemo(
-    () =>
-      CRON_PRESETS.map((p) => ({ ...p, label: t(`schedules:cronPresets.${p.value}`) })),
-    [t],
-  )
+  // Weekday and month names come from the locale itself, not translation files.
+  const weekdayNames = useMemo(() => {
+    const fmt = new Intl.DateTimeFormat(locale, { weekday: 'long', timeZone: 'UTC' })
+    // 2023-01-01 was a Sunday, cron's day 0.
+    return Array.from({ length: 7 }, (_, i) => fmt.format(new Date(Date.UTC(2023, 0, 1 + i))))
+  }, [locale])
+  const monthNames = useMemo(() => {
+    const fmt = new Intl.DateTimeFormat(locale, { month: 'long', timeZone: 'UTC' })
+    return Array.from({ length: 12 }, (_, i) => fmt.format(new Date(Date.UTC(2023, i, 1))))
+  }, [locale])
 
   const { data: schedules, isLoading } = useQuery({
     queryKey: ['schedules'],
@@ -168,15 +184,16 @@ export function SchedulesPage() {
     defaultValues: {
       mapId: '',
       name: '',
-      cronPreset: 'daily',
-      cronExpression: CRON_PRESETS[0].expr,
-      timezone: 'UTC',
+      ...DEFAULT_SPEC,
+      cronExpression: buildCron(DEFAULT_SPEC)!,
+      timezone: BROWSER_TIMEZONE,
       outputFormat: 'CSV',
       isActive: true,
     },
   })
 
   const selectedMapId = form.watch('mapId')
+  const frequency = form.watch('frequency')
 
   // Declared parameters of the selected map, so preset values line up with
   // what the map actually accepts (name + type-appropriate input).
@@ -192,9 +209,9 @@ export function SchedulesPage() {
     form.reset({
       mapId: '',
       name: '',
-      cronPreset: 'daily',
-      cronExpression: CRON_PRESETS[0].expr,
-      timezone: 'UTC',
+      ...DEFAULT_SPEC,
+      cronExpression: buildCron(DEFAULT_SPEC)!,
+      timezone: BROWSER_TIMEZONE,
       validFrom: '',
       validUntil: '',
       outputFormat: 'CSV',
@@ -220,7 +237,7 @@ export function SchedulesPage() {
     form.reset({
       mapId: schedule.mapId,
       name: schedule.name,
-      cronPreset: presetForExpression(schedule.cronExpression),
+      ...parseCron(schedule.cronExpression),
       cronExpression: schedule.cronExpression,
       timezone: schedule.timezone,
       validFrom: toDatetimeLocal(schedule.validFrom),
@@ -235,7 +252,7 @@ export function SchedulesPage() {
     mutationFn: async (values: FormValues) => {
       const payload = {
         name: values.name,
-        cronExpression: values.cronExpression,
+        cronExpression: buildCron(values) ?? values.cronExpression,
         timezone: values.timezone,
         validFrom: fromDatetimeLocal(values.validFrom ?? ''),
         validUntil: fromDatetimeLocal(values.validUntil ?? ''),
@@ -329,6 +346,28 @@ export function SchedulesPage() {
     return parameters.find((p) => p.paramName === paramName)?.paramValue ?? ''
   }
 
+  /** Which takes a rule may end in, by what the parameter accepts. */
+  function takesFor(paramType: MapParameter['paramType']): readonly string[] {
+    if (paramType === 'DATE') return DATE_TAKES
+    if (paramType === 'NUMBER') return NUMBER_TAKES
+    return [...DATE_TAKES, ...NUMBER_TAKES]
+  }
+
+  function updateRule(p: MapParameter, patch: Partial<DateRule>) {
+    const current = parseDateRule(parameterValue(p.name)) ?? {
+      unit: 'MONTH',
+      offset: -1,
+      take: p.paramType === 'NUMBER' ? 'YEAR' : 'START_OF_MONTH',
+    }
+    updateParameter(p.name, formatDateRule({ ...current, ...patch }))
+  }
+
+  function setFrequency<K extends keyof FrequencySpec>(key: K, value: FrequencySpec[K]) {
+    form.setValue(key, value as never)
+    const cron = buildCron({ ...form.getValues(), [key]: value })
+    if (cron) form.setValue('cronExpression', cron)
+  }
+
   const columns: ColumnDef<Schedule>[] = [
     { accessorKey: 'name', header: t('schedules:table.name') },
     {
@@ -336,11 +375,32 @@ export function SchedulesPage() {
       header: t('schedules:table.map'),
       cell: ({ row }) => mapNameById.get(row.original.mapId) ?? row.original.mapId.slice(0, 8),
     },
-    { accessorKey: 'cronExpression', header: t('schedules:table.schedule') },
+    {
+      accessorKey: 'cronExpression',
+      header: t('schedules:table.schedule'),
+      cell: ({ row }) => {
+        const { frequency } = parseCron(row.original.cronExpression)
+        return frequency === 'custom'
+          ? row.original.cronExpression
+          : t(`schedules:frequencies.${frequency}`)
+      },
+    },
     {
       id: 'nextRun',
       header: t('schedules:table.nextRun'),
-      cell: ({ row }) => formatScheduleDateTime(row.original.nextRunAt, locale),
+      cell: ({ row }) => {
+        const values = Object.entries(row.original.nextRunParameters ?? {})
+        return (
+          <div>
+            {formatScheduleDateTime(row.original.nextRunAt, locale)}
+            {values.length > 0 && (
+              <div className="text-xs text-muted-foreground">
+                {values.map(([k, v]) => `${k} = ${v}`).join('; ')}
+              </div>
+            )}
+          </div>
+        )
+      },
     },
     {
       accessorKey: 'outputFormat',
@@ -512,20 +572,16 @@ export function SchedulesPage() {
             <div className="space-y-2">
               <Label>{t('schedules:dialog.frequencyLabel')}</Label>
               <Select
-                value={form.watch('cronPreset')}
-                onValueChange={(v) => {
-                  const preset = CRON_PRESETS.find((p) => p.value === v)!
-                  form.setValue('cronPreset', preset.value)
-                  if (preset.expr) form.setValue('cronExpression', preset.expr)
-                }}
+                value={frequency}
+                onValueChange={(v) => setFrequency('frequency', v as Frequency)}
               >
-                <SelectTrigger>
+                <SelectTrigger aria-label={t('schedules:dialog.frequencyLabel')}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {cronPresets.map((p) => (
-                    <SelectItem key={p.value} value={p.value}>
-                      {p.label}
+                  {FREQUENCIES.map((f) => (
+                    <SelectItem key={f} value={f}>
+                      {t(`schedules:frequencies.${f}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -548,7 +604,81 @@ export function SchedulesPage() {
             </div>
           </div>
 
-          {form.watch('cronPreset') === 'custom' && (
+          {frequency !== 'custom' && (
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="time">{t('schedules:dialog.timeLabel')}</Label>
+                <Input
+                  id="time"
+                  type="time"
+                  value={form.watch('time')}
+                  onChange={(e) => e.target.value && setFrequency('time', e.target.value)}
+                />
+              </div>
+              {frequency === 'weekly' && (
+                <div className="col-span-2 space-y-2">
+                  <Label>{t('schedules:dialog.weekdayLabel')}</Label>
+                  <Select
+                    value={String(form.watch('weekday'))}
+                    onValueChange={(v) => setFrequency('weekday', Number(v))}
+                  >
+                    <SelectTrigger aria-label={t('schedules:dialog.weekdayLabel')}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {weekdayNames.map((name, i) => (
+                        <SelectItem key={i} value={String(i)}>
+                          {name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              {frequency === 'annual' && (
+                <div className="space-y-2">
+                  <Label>{t('schedules:dialog.monthLabel')}</Label>
+                  <Select
+                    value={String(form.watch('month'))}
+                    onValueChange={(v) => setFrequency('month', Number(v))}
+                  >
+                    <SelectTrigger aria-label={t('schedules:dialog.monthLabel')}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {monthNames.map((name, i) => (
+                        <SelectItem key={i} value={String(i + 1)}>
+                          {name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              {!['daily', 'weekly', 'fortnightly'].includes(frequency) && (
+                <div className="space-y-2">
+                  <Label>{t('schedules:dialog.dayLabel')}</Label>
+                  <Select value={form.watch('day')} onValueChange={(v) => setFrequency('day', v)}>
+                    <SelectTrigger aria-label={t('schedules:dialog.dayLabel')}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {DAYS_OF_MONTH.map((d) => (
+                        <SelectItem key={d} value={d}>
+                          {d === 'L' ? t('schedules:dialog.lastDay') : d}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              <p className="col-span-3 text-xs text-muted-foreground">
+                {t(`schedules:frequencyHelp.${frequency}`)}
+              </p>
+            </div>
+          )}
+
+          {frequency === 'custom' && (
             <div className="space-y-2">
               <Label htmlFor="cronExpression">{t('schedules:dialog.cronExpressionLabel')}</Label>
               <Input
@@ -598,21 +728,94 @@ export function SchedulesPage() {
                 {t('schedules:dialog.parameterPresetsLabel')}
               </Label>
               <div className="space-y-2 rounded-md border bg-muted/30 p-3">
-                {selectedMap.parameters.map((p) => (
-                  <div key={p.id} className="space-y-1">
-                    <Label className="text-xs">
-                      {p.name}
-                      {p.isRequired && <span className="text-destructive"> *</span>}
-                    </Label>
-                    <Input
-                      className="h-8"
-                      type={paramInputType(p.paramType)}
-                      value={parameterValue(p.name)}
-                      placeholder={p.defaultValue ?? t('schedules:dialog.parameterValuePlaceholder')}
-                      onChange={(e) => updateParameter(p.name, e.target.value)}
-                    />
-                  </div>
-                ))}
+                {selectedMap.parameters.map((p) => {
+                  const rule = parseDateRule(parameterValue(p.name))
+                  return (
+                    <div key={p.id} className="space-y-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <Label className="text-xs">
+                          {p.name}
+                          {p.isRequired && <span className="text-destructive"> *</span>}
+                        </Label>
+                        {p.paramType !== 'LIST' && (
+                          <Select
+                            value={rule ? 'rule' : 'fixed'}
+                            onValueChange={(v) =>
+                              v === 'rule' ? updateRule(p, {}) : updateParameter(p.name, '')
+                            }
+                          >
+                            <SelectTrigger
+                              className="h-7 w-auto text-xs"
+                              aria-label={t('schedules:dialog.paramModeLabel', { name: p.name })}
+                            >
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="fixed">{t('schedules:dialog.paramModeFixed')}</SelectItem>
+                              <SelectItem value="rule">{t('schedules:dialog.paramModeRule')}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </div>
+                      {rule ? (
+                        <div className="flex flex-wrap items-center gap-2 text-xs">
+                          <span>{t('schedules:dialog.ruleShift')}</span>
+                          <Input
+                            className="h-8 w-16"
+                            type="number"
+                            value={rule.offset}
+                            aria-label={t('schedules:dialog.ruleOffsetAria')}
+                            onChange={(e) => updateRule(p, { offset: Math.trunc(Number(e.target.value) || 0) })}
+                          />
+                          <Select value={rule.unit} onValueChange={(v) => updateRule(p, { unit: v as DateRule['unit'] })}>
+                            <SelectTrigger className="h-8 w-32" aria-label={t('schedules:dialog.ruleUnitAria')}>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {RULE_UNITS.map((u) => (
+                                <SelectItem key={u} value={u}>
+                                  {t(`schedules:ruleUnits.${u}`)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <span>{t('schedules:dialog.ruleTake')}</span>
+                          <Select value={rule.take} onValueChange={(v) => updateRule(p, { take: v })}>
+                            <SelectTrigger className="h-8 min-w-48 flex-1" aria-label={t('schedules:dialog.ruleTakeAria')}>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {takesFor(p.paramType).map((k) => (
+                                <SelectItem key={k} value={k}>
+                                  {t(`schedules:ruleTakes.${k}`)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      ) : (
+                        <Input
+                          className="h-8"
+                          type={paramInputType(p.paramType)}
+                          value={parameterValue(p.name)}
+                          placeholder={p.defaultValue ?? t('schedules:dialog.parameterValuePlaceholder')}
+                          onChange={(e) => updateParameter(p.name, e.target.value)}
+                        />
+                      )}
+                    </div>
+                  )
+                })}
+                <p className="text-xs text-muted-foreground">{t('schedules:dialog.ruleHelp')}</p>
+                {editing?.nextRunParameters && Object.keys(editing.nextRunParameters).length > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {t('schedules:dialog.nextRunValues', {
+                      when: formatScheduleDateTime(editing.nextRunAt, locale),
+                      values: Object.entries(editing.nextRunParameters)
+                        .map(([k, v]) => `${k} = ${v}`)
+                        .join('; '),
+                    })}
+                  </p>
+                )}
               </div>
             </div>
           )}

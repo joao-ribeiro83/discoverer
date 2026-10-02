@@ -4,6 +4,11 @@ import cronParserPkg from 'cron-parser';
 import { db } from '../db/index.js';
 import { schedules, scheduleParameters, scheduledResults, mapRuns } from '../db/schema.js';
 import { errorMessage } from './map-execution.service.js';
+import {
+  isValidDateRule,
+  looksLikeDateRule,
+  resolveParameterValue,
+} from '../lib/schedule-date-rule.js';
 import { requestRun, type RequestRunInput, type RequestRunResult } from './map-run.service.js';
 import {
   upsertScheduleJob,
@@ -184,7 +189,15 @@ function validateScheduleInput(input: {
   timezone: string;
   validFrom?: Date | null;
   validUntil?: Date | null;
+  parameters?: ScheduleParameterValue[];
 }): void {
+  for (const p of input.parameters ?? []) {
+    if (looksLikeDateRule(p.paramValue) && !isValidDateRule(p.paramValue!)) {
+      throw new ScheduleValidationError(
+        `Parameter "${p.paramName}" has an invalid date rule: "${p.paramValue}"`,
+      );
+    }
+  }
   const cron = validateCronExpression(input.cronExpression);
   if (!cron.valid) {
     throw new ScheduleValidationError(`Invalid cron expression: ${cron.error}`);
@@ -505,6 +518,7 @@ export async function createSchedule(
     timezone: input.timezone ?? 'UTC',
     validFrom: input.validFrom,
     validUntil: input.validUntil,
+    parameters: input.parameters,
   });
 
   const schedule = await deps.insertSchedule({ ...input, createdBy });
@@ -534,6 +548,7 @@ export async function updateSchedule(
     timezone: input.timezone ?? existing.timezone,
     validFrom: input.validFrom !== undefined ? input.validFrom : existing.validFrom,
     validUntil: input.validUntil !== undefined ? input.validUntil : existing.validUntil,
+    parameters: input.parameters,
   });
 
   const updated = await deps.updateScheduleRow(id, input);
@@ -652,6 +667,23 @@ function isWithinWindow(schedule: ScheduleRecord, now: Date): boolean {
 }
 
 /**
+ * The values a run fired at `at` binds: literals as stored, date rules
+ * (`lib/schedule-date-rule.ts`) resolved in the schedule's timezone.
+ */
+export function resolveScheduleParameters(
+  schedule: Pick<ScheduleRecord, 'parameters' | 'timezone'>,
+  at: Date,
+): Record<string, string> {
+  const values: Record<string, string> = {};
+  for (const p of schedule.parameters) {
+    if (p.paramValue != null) {
+      values[p.paramName] = resolveParameterValue(p.paramValue, at, schedule.timezone);
+    }
+  }
+  return values;
+}
+
+/**
  * Fire one schedule: resolve its preset parameters and hand the run to the
  * map-run queue (Task 2.3) — the same queue live runs go through, one-at-a-
  * time per user. The actual Oracle work and result persistence happen later,
@@ -682,10 +714,7 @@ export async function processScheduleRun(
     return { skipped: true, reason: 'Outside the schedule’s validity window' };
   }
 
-  const parameterValues: Record<string, unknown> = {};
-  for (const p of schedule.parameters) {
-    if (p.paramValue != null) parameterValues[p.paramName] = p.paramValue;
-  }
+  const parameterValues = resolveScheduleParameters(schedule, new Date());
 
   const { run, reused } = await deps.requestRun({
     mapId: schedule.mapId,

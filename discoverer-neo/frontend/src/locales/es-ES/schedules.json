@@ -23,11 +23,55 @@
     "edit": "Editar",
     "delete": "Eliminar"
   },
-  "cronPresets": {
-    "daily": "Diaria (medianoche)",
-    "weekly": "Semanal (domingo, medianoche)",
-    "monthly": "Mensual (día 1, medianoche)",
-    "custom": "Personalizada"
+  "frequencies": {
+    "daily": "Diario",
+    "weekly": "Semanal",
+    "fortnightly": "Quincenal (día 1 y día 16)",
+    "monthly": "Mensual",
+    "bimonthly": "Bimestral",
+    "quarterly": "Trimestral",
+    "fourMonthly": "Cuatrimestral",
+    "semiannual": "Semestral",
+    "annual": "Anual",
+    "custom": "Personalizado (cron)"
+  },
+  "frequencyHelp": {
+    "daily": "Se ejecuta todos los días a esta hora.",
+    "weekly": "Se ejecuta una vez por semana, este día.",
+    "fortnightly": "Se ejecuta el día 1 y el día 16 de cada mes.",
+    "monthly": "Se ejecuta una vez al mes, este día.",
+    "bimonthly": "Se ejecuta en enero, marzo, mayo, julio, septiembre y noviembre.",
+    "quarterly": "Se ejecuta en enero, abril, julio y octubre.",
+    "fourMonthly": "Se ejecuta en enero, mayo y septiembre.",
+    "semiannual": "Se ejecuta en enero y julio.",
+    "annual": "Se ejecuta una vez al año, este día.",
+    "custom": "Escriba la expresión cron abajo."
+  },
+  "ruleUnits": {
+    "DAY": "días",
+    "WEEK": "semanas",
+    "FORTNIGHT": "quincenas",
+    "MONTH": "meses",
+    "QUARTER": "trimestres",
+    "HALF": "semestres",
+    "YEAR": "años"
+  },
+  "ruleTakes": {
+    "DATE": "esa fecha",
+    "START_OF_WEEK": "primer día de esa semana",
+    "END_OF_WEEK": "último día de esa semana",
+    "START_OF_FORTNIGHT": "primer día de esa quincena",
+    "END_OF_FORTNIGHT": "último día de esa quincena",
+    "START_OF_MONTH": "primer día de ese mes",
+    "END_OF_MONTH": "último día de ese mes",
+    "START_OF_QUARTER": "primer día de ese trimestre",
+    "END_OF_QUARTER": "último día de ese trimestre",
+    "START_OF_HALF": "primer día de ese semestre",
+    "END_OF_HALF": "último día de ese semestre",
+    "START_OF_YEAR": "primer día de ese año",
+    "END_OF_YEAR": "último día de ese año",
+    "YEAR": "el año (número)",
+    "MONTH": "el mes (número 1-12)"
   },
   "dialog": {
     "editTitle": "Editar programación",
@@ -48,7 +92,22 @@
     "parameterPresetsLabel": "Valores predefinidos de parámetros",
     "parameterValuePlaceholder": "Valor utilizado en cada ejecución programada",
     "enabledLabel": "Habilitada",
-    "saving": "Guardando..."
+    "saving": "Guardando...",
+    "timeLabel": "Hora",
+    "weekdayLabel": "Día de la semana",
+    "dayLabel": "Día del mes",
+    "monthLabel": "Mes",
+    "lastDay": "Último día",
+    "paramModeLabel": "Cómo se define {{name}}",
+    "paramModeFixed": "Valor fijo",
+    "paramModeRule": "Relativo a la fecha de ejecución",
+    "ruleShift": "Mover la fecha de ejecución",
+    "ruleTake": "y usar",
+    "ruleOffsetAria": "Cuántos periodos mover",
+    "ruleUnitAria": "Periodo",
+    "ruleTakeAria": "Valor a usar",
+    "ruleHelp": "Un valor fijo es igual en cada ejecución. Un valor relativo sigue la fecha de ejecución: -1 meses, primer día de ese año, da el 1 de enero del año del mes anterior, así un mapa acumulado del año sigue cubriendo diciembre cuando se ejecuta en enero.",
+    "nextRunValues": "La próxima ejecución ({{when}}) usa: {{values}}"
   },
   "deleteDialog": {
     "title": "¿Eliminar la programación?",

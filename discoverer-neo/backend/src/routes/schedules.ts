@@ -13,6 +13,7 @@ import {
   getNextRunTime,
   getExecutionHistory,
   getScheduledResult,
+  resolveScheduleParameters,
   ScheduleValidationError,
   type ScheduleRecord,
 } from '../services/scheduler.service.js';
@@ -125,6 +126,8 @@ function toResponse(schedule: ScheduleRecord, nextRunAt: Date | null) {
     plannerDecision: schedule.plannerDecision,
     plannerRefusalDetail: schedule.plannerRefusalDetail,
     nextRunAt,
+    /** What the next run will bind, date rules resolved — so a rule can be checked before it fires. */
+    nextRunParameters: nextRunAt ? resolveScheduleParameters(schedule, nextRunAt) : null,
   };
 }
 

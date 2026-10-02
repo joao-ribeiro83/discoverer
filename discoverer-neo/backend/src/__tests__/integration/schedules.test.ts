@@ -276,6 +276,29 @@ describe('map-scoped schedule routes', () => {
     expect(res.json().error).toMatch(/cron/i);
   });
 
+  it('400s on a malformed date rule, and accepts a good one', async () => {
+    const post = (paramValue: string) =>
+      app.inject({
+        method: 'POST',
+        url: `/api/maps/${mapId}/schedules`,
+        headers: { authorization: `Bearer ${ownerToken}` },
+        payload: {
+          name: 'Rule',
+          cronExpression: '0 8 1 * *',
+          outputFormat: 'CSV',
+          parameters: [{ paramName: 'Dt Fim', paramValue }],
+        },
+      });
+    const bad = await post('@MONTH-1:END_OF_DAY');
+    expect(bad.statusCode).toBe(400);
+    expect(bad.json().error).toMatch(/date rule/i);
+
+    const good = await post('@MONTH-1:END_OF_MONTH');
+    expect(good.statusCode).toBe(201);
+    // The next run's value is resolved, not the rule text.
+    expect(good.json().data.nextRunParameters['Dt Fim']).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
   it('admin can create a schedule on any map', async () => {
     const id = await createScheduleViaApi(adminToken, { name: 'Admin Sched' });
     expect(id).toBeTruthy();

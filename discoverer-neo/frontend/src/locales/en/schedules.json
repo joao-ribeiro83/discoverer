@@ -23,11 +23,55 @@
     "edit": "Edit",
     "delete": "Delete"
   },
-  "cronPresets": {
-    "daily": "Daily (midnight)",
-    "weekly": "Weekly (Sunday, midnight)",
-    "monthly": "Monthly (1st, midnight)",
-    "custom": "Custom"
+  "frequencies": {
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "fortnightly": "Fortnightly (1st and 16th)",
+    "monthly": "Monthly",
+    "bimonthly": "Every 2 months",
+    "quarterly": "Quarterly",
+    "fourMonthly": "Every 4 months",
+    "semiannual": "Every 6 months (semester)",
+    "annual": "Yearly",
+    "custom": "Custom (cron)"
+  },
+  "frequencyHelp": {
+    "daily": "Runs every day at this time.",
+    "weekly": "Runs once a week, on this day.",
+    "fortnightly": "Runs on the 1st and the 16th of every month.",
+    "monthly": "Runs once a month, on this day.",
+    "bimonthly": "Runs in January, March, May, July, September and November.",
+    "quarterly": "Runs in January, April, July and October.",
+    "fourMonthly": "Runs in January, May and September.",
+    "semiannual": "Runs in January and July.",
+    "annual": "Runs once a year, on this day.",
+    "custom": "Write the cron expression below."
+  },
+  "ruleUnits": {
+    "DAY": "days",
+    "WEEK": "weeks",
+    "FORTNIGHT": "fortnights",
+    "MONTH": "months",
+    "QUARTER": "quarters",
+    "HALF": "semesters",
+    "YEAR": "years"
+  },
+  "ruleTakes": {
+    "DATE": "that date",
+    "START_OF_WEEK": "first day of that week",
+    "END_OF_WEEK": "last day of that week",
+    "START_OF_FORTNIGHT": "first day of that fortnight",
+    "END_OF_FORTNIGHT": "last day of that fortnight",
+    "START_OF_MONTH": "first day of that month",
+    "END_OF_MONTH": "last day of that month",
+    "START_OF_QUARTER": "first day of that quarter",
+    "END_OF_QUARTER": "last day of that quarter",
+    "START_OF_HALF": "first day of that semester",
+    "END_OF_HALF": "last day of that semester",
+    "START_OF_YEAR": "first day of that year",
+    "END_OF_YEAR": "last day of that year",
+    "YEAR": "its year (number)",
+    "MONTH": "its month (number 1-12)"
   },
   "dialog": {
     "editTitle": "Edit Schedule",
@@ -48,7 +92,22 @@
     "parameterPresetsLabel": "Parameter presets",
     "parameterValuePlaceholder": "Value used for every scheduled run",
     "enabledLabel": "Enabled",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "timeLabel": "Time",
+    "weekdayLabel": "Day of the week",
+    "dayLabel": "Day of the month",
+    "monthLabel": "Month",
+    "lastDay": "Last day",
+    "paramModeLabel": "How {{name}} is set",
+    "paramModeFixed": "Fixed value",
+    "paramModeRule": "Relative to the run date",
+    "ruleShift": "Move the run date by",
+    "ruleTake": "then use the",
+    "ruleOffsetAria": "How many periods to move",
+    "ruleUnitAria": "Period",
+    "ruleTakeAria": "Value to use",
+    "ruleHelp": "A fixed value is the same on every run. A relative value follows the run date: -1 months, first day of that year, gives 1 January of last month's year, so a year-to-date map still covers December when it runs in January.",
+    "nextRunValues": "Next run ({{when}}) uses: {{values}}"
   },
   "deleteDialog": {
     "title": "Delete schedule?",

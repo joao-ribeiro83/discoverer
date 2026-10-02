@@ -23,11 +23,55 @@
     "edit": "Modifier",
     "delete": "Supprimer"
   },
-  "cronPresets": {
-    "daily": "Tous les jours (minuit)",
-    "weekly": "Toutes les semaines (dimanche, minuit)",
-    "monthly": "Tous les mois (le 1er, minuit)",
-    "custom": "Personnalisé"
+  "frequencies": {
+    "daily": "Quotidien",
+    "weekly": "Hebdomadaire",
+    "fortnightly": "Bimensuel (le 1er et le 16)",
+    "monthly": "Mensuel",
+    "bimonthly": "Tous les 2 mois",
+    "quarterly": "Trimestriel",
+    "fourMonthly": "Quadrimestriel",
+    "semiannual": "Semestriel",
+    "annual": "Annuel",
+    "custom": "Personnalisé (cron)"
+  },
+  "frequencyHelp": {
+    "daily": "S’exécute chaque jour à cette heure.",
+    "weekly": "S’exécute une fois par semaine, ce jour-là.",
+    "fortnightly": "S’exécute le 1er et le 16 de chaque mois.",
+    "monthly": "S’exécute une fois par mois, ce jour-là.",
+    "bimonthly": "S’exécute en janvier, mars, mai, juillet, septembre et novembre.",
+    "quarterly": "S’exécute en janvier, avril, juillet et octobre.",
+    "fourMonthly": "S’exécute en janvier, mai et septembre.",
+    "semiannual": "S’exécute en janvier et juillet.",
+    "annual": "S’exécute une fois par an, ce jour-là.",
+    "custom": "Saisissez l’expression cron ci-dessous."
+  },
+  "ruleUnits": {
+    "DAY": "jours",
+    "WEEK": "semaines",
+    "FORTNIGHT": "quinzaines",
+    "MONTH": "mois",
+    "QUARTER": "trimestres",
+    "HALF": "semestres",
+    "YEAR": "années"
+  },
+  "ruleTakes": {
+    "DATE": "cette date",
+    "START_OF_WEEK": "premier jour de cette semaine",
+    "END_OF_WEEK": "dernier jour de cette semaine",
+    "START_OF_FORTNIGHT": "premier jour de cette quinzaine",
+    "END_OF_FORTNIGHT": "dernier jour de cette quinzaine",
+    "START_OF_MONTH": "premier jour de ce mois",
+    "END_OF_MONTH": "dernier jour de ce mois",
+    "START_OF_QUARTER": "premier jour de ce trimestre",
+    "END_OF_QUARTER": "dernier jour de ce trimestre",
+    "START_OF_HALF": "premier jour de ce semestre",
+    "END_OF_HALF": "dernier jour de ce semestre",
+    "START_OF_YEAR": "premier jour de cette année",
+    "END_OF_YEAR": "dernier jour de cette année",
+    "YEAR": "l’année (nombre)",
+    "MONTH": "le mois (nombre 1-12)"
   },
   "dialog": {
     "editTitle": "Modifier la planification",
@@ -48,7 +92,22 @@
     "parameterPresetsLabel": "Préréglages de paramètres",
     "parameterValuePlaceholder": "Valeur utilisée pour chaque exécution planifiée",
     "enabledLabel": "Activé",
-    "saving": "Enregistrement..."
+    "saving": "Enregistrement...",
+    "timeLabel": "Heure",
+    "weekdayLabel": "Jour de la semaine",
+    "dayLabel": "Jour du mois",
+    "monthLabel": "Mois",
+    "lastDay": "Dernier jour",
+    "paramModeLabel": "Comment {{name}} est défini",
+    "paramModeFixed": "Valeur fixe",
+    "paramModeRule": "Relatif à la date d’exécution",
+    "ruleShift": "Décaler la date d’exécution de",
+    "ruleTake": "puis utiliser le",
+    "ruleOffsetAria": "Nombre de périodes",
+    "ruleUnitAria": "Période",
+    "ruleTakeAria": "Valeur à utiliser",
+    "ruleHelp": "Une valeur fixe est la même à chaque exécution. Une valeur relative suit la date d’exécution : -1 mois, premier jour de cette année, donne le 1er janvier de l’année du mois précédent ; un cumul annuel couvre donc encore décembre quand il s’exécute en janvier.",
+    "nextRunValues": "La prochaine exécution ({{when}}) utilise : {{values}}"
   },
   "deleteDialog": {
     "title": "Supprimer la planification ?",
