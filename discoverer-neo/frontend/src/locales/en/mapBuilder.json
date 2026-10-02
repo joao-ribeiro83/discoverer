@@ -36,6 +36,7 @@
     "saveErrorNoColumns": "Add at least one column before saving.",
     "saveErrorNoBusinessArea": "No business area selected.",
     "savedTitle": "Map saved",
+    "noChangesTitle": "No changes to save",
     "saveFailedTitle": "Save failed",
     "runErrorNoColumns": "Add at least one column before running.",
     "executedTitle": "Map executed",

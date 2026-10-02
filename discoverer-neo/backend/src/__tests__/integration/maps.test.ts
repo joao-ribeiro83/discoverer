@@ -1197,6 +1197,129 @@ describe('Map management', () => {
       }
     });
 
+    it('a builder round trip of a migrated map saves and keeps its migrated detail', async () => {
+      // What the migration writes and the builder has no field for.
+      await db
+        .update(mapItems)
+        .set({ columnWidth: 0, dataType: 'NUMBER', sourceElementId: 7, axisOrder: 3 })
+        .where(and(eq(mapItems.mapId, subjectId), eq(mapItems.itemId, itemId2)));
+      await db
+        .update(mapConditions)
+        .set({ negated: true, caseSensitive: false })
+        .where(eq(mapConditions.mapId, subjectId));
+      const [calc] = await db
+        .select()
+        .from(mapCalculatedFields)
+        .where(eq(mapCalculatedFields.mapId, subjectId));
+      await db.insert(mapConditions).values({
+        mapId: subjectId,
+        calculatedFieldId: calc!.id,
+        operator: '>',
+        value: '10',
+        conditionType: 'STATIC',
+        displayOrder: 1,
+      });
+
+      const original = (
+        await app.inject({
+          method: 'GET',
+          url: `/api/maps/${subjectId}`,
+          headers: { authorization: `Bearer ${ownerToken}` },
+        })
+      ).json().data;
+      const calcName = new Map<string, string>(
+        original.calculatedFields.map((f: { id: string; name: string }) => [f.id, f.name]),
+      );
+
+      // The shape `toInput` sends: no dataType / sourceElementId / axisOrder.
+      const res = await app.inject({
+        method: 'PUT',
+        url: `/api/maps/${subjectId}`,
+        headers: { authorization: `Bearer ${ownerToken}` },
+        payload: {
+          items: original.items.map((i: { itemId: string; columnWidth: number | null }) => ({
+            itemId: i.itemId,
+            columnWidth: i.columnWidth,
+          })),
+          conditions: original.conditions.map(
+            (c: Record<string, string | boolean | null>) => ({
+              itemId: c.calculatedFieldId ? null : c.itemId,
+              calculatedFieldName: c.calculatedFieldId
+                ? calcName.get(c.calculatedFieldId as string)
+                : null,
+              operator: c.operator,
+              value: c.value,
+              conditionType: c.conditionType,
+              paramName: c.conditionType === 'PARAMETER' ? 'p_region' : null,
+              negated: c.negated,
+              caseSensitive: c.caseSensitive,
+            }),
+          ),
+          parameters: [{ name: 'p_region', paramType: 'STRING', isRequired: true }],
+          calculatedFields: original.calculatedFields.map(
+            (f: { name: string; formula: string }) => ({ name: f.name, formula: f.formula }),
+          ),
+        },
+      });
+      expect(res.statusCode).toBe(200);
+
+      const saved = res.json().data;
+      const amount = saved.items.find((i: { itemId: string }) => i.itemId === itemId2);
+      expect(amount).toMatchObject({
+        columnWidth: 0,
+        dataType: 'NUMBER',
+        sourceElementId: 7,
+        axisOrder: 3,
+      });
+      const onItem = saved.conditions.find((c: { itemId: string | null }) => c.itemId === itemId1);
+      expect(onItem).toMatchObject({ negated: true, caseSensitive: false });
+      const onCalc = saved.conditions.find((c: { itemId: string | null }) => c.itemId === null);
+      expect(onCalc.calculatedFieldId).toBe(saved.calculatedFields[0].id);
+    });
+
+    it('duplicating gives the copy its own totals and item detail, and leaves the source alone', async () => {
+      await db
+        .update(mapItems)
+        .set({ dataType: 'NUMBER', sourceElementId: 7 })
+        .where(and(eq(mapItems.mapId, subjectId), eq(mapItems.itemId, itemId2)));
+      const res = await app.inject({
+        method: 'POST',
+        url: `/api/maps/${subjectId}/duplicate`,
+        headers: { authorization: `Bearer ${ownerToken}` },
+        payload: {},
+      });
+      expect(res.statusCode).toBe(201);
+      const copy = res.json().data;
+      try {
+        const copyItemIds = new Set(copy.items.map((i: { id: string }) => i.id));
+        expect(copy.totals).toHaveLength(2);
+        for (const t of copy.totals) expect(copyItemIds.has(t.mapItemId)).toBe(true);
+        expect(copy.items.find((i: { itemId: string }) => i.itemId === itemId2)).toMatchObject({
+          dataType: 'NUMBER',
+          sourceElementId: 7,
+        });
+        const sourceTotals = await db.select().from(mapTotals).where(eq(mapTotals.mapId, subjectId));
+        expect(sourceTotals).toHaveLength(2);
+      } finally {
+        await db.delete(maps).where(eq(maps.id, copy.id));
+      }
+    });
+
+    it('keeps an item from another business area already on the map, refuses a new one', async () => {
+      const put = () =>
+        app.inject({
+          method: 'PUT',
+          url: `/api/maps/${subjectId}`,
+          headers: { authorization: `Bearer ${ownerToken}` },
+          payload: { items: [{ itemId: itemId1 }, { itemId: foreignItemId }] },
+        });
+      expect((await put()).statusCode).toBe(400);
+
+      // What a migration writes: a worksheet drawing on another area's folder.
+      await db.insert(mapItems).values({ mapId: subjectId, itemId: foreignItemId, displayOrder: 9 });
+      expect((await put()).statusCode).toBe(200);
+    });
+
     it('BE-02: drops only the totals whose column left the map', async () => {
       const res = await app.inject({
         method: 'PUT',

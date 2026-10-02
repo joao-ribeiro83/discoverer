@@ -407,7 +407,12 @@ export function MapBuilderPage() {
     <div className="flex h-full flex-col overflow-hidden rounded-lg border bg-background">
       <MapToolbar
         onRun={triggerRun}
-        onSave={() => saveMutation.mutate()}
+        onSave={() => {
+          const { mapId: savedId, isDirty } = useMapBuilderStore.getState()
+          // Nothing changed since the last save: say so instead of re-sending it.
+          if (savedId && !isDirty) toast({ title: t('mapBuilder:page.noChangesTitle') })
+          else saveMutation.mutate()
+        }}
         onExport={(f) => void handleExport(f)}
         isRunning={runInFlight}
         isSaving={saveMutation.isPending}

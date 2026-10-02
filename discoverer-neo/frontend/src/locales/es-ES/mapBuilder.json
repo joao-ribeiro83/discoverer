@@ -36,6 +36,7 @@
     "saveErrorNoColumns": "Agregue al menos una columna antes de guardar.",
     "saveErrorNoBusinessArea": "No se ha seleccionado ningún área de negocio.",
     "savedTitle": "Mapa guardado",
+    "noChangesTitle": "No hay cambios que guardar",
     "saveFailedTitle": "Error al guardar",
     "runErrorNoColumns": "Agregue al menos una columna antes de ejecutar.",
     "executedTitle": "Mapa ejecutado",

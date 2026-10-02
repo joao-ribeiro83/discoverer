@@ -82,14 +82,16 @@ export interface MapItemInput {
 
 export interface MapConditionInput {
   /** Exactly one of `itemId` / `calculatedFieldName` must be set. */
-  itemId?: string;
+  itemId?: string | null;
   /**
    * Names a calculated field in the SAME request rather than an id, because
    * `calculatedFields` is fully replaced on every save (BE-02) and gets fresh
    * ids each time — the same reason `paramName` names a parameter by prompt
    * rather than by bind name.
    */
-  calculatedFieldName?: string;
+  calculatedFieldName?: string | null;
+  /** The right-hand side is this calculated field, named the same way. */
+  valueCalculatedFieldName?: string | null;
   operator: ConditionOperator;
   value?: string | null;
   paramName?: string | null;
@@ -181,6 +183,14 @@ export class MapValidationError extends Error {
 export async function validateMapItems(
   businessAreaId: string | null,
   itemIds: string[],
+  /**
+   * Items the map already references. A migrated worksheet routinely draws on
+   * folders of several business areas (925 of 926 in the live estate), so
+   * holding those to the map's own area made almost every one unsaveable.
+   * What is already on the map may stay; only a newly added item must come
+   * from the map's area.
+   */
+  alreadyOnMap: ReadonlySet<string> = new Set(),
 ): Promise<void> {
   if (itemIds.length === 0) return;
 
@@ -208,7 +218,7 @@ export async function validateMapItems(
     // authoring when it is actually set. A map with no business area is scoped
     // by the folders its items live in, which is what the generator, the
     // entitlement gate and row-level security all derive from.
-    if (businessAreaId !== null && ba !== businessAreaId) {
+    if (businessAreaId !== null && ba !== businessAreaId && !alreadyOnMap.has(itemId)) {
       throw new MapValidationError(
         `Item "${itemId}" does not belong to the map's business area`,
       );
@@ -304,10 +314,12 @@ function validateCalculatedFieldReferences(
 ): void {
   const names = new Set(calculatedFields.map((f) => f.name));
   for (const c of conditions) {
-    if (c.calculatedFieldName && !names.has(c.calculatedFieldName)) {
-      throw new MapValidationError(
-        `Condition references undefined calculated field "${c.calculatedFieldName}"`,
-      );
+    for (const name of [c.calculatedFieldName, c.valueCalculatedFieldName]) {
+      if (name && !names.has(name)) {
+        throw new MapValidationError(
+          `Condition references undefined calculated field "${name}"`,
+        );
+      }
     }
   }
 }
@@ -394,6 +406,9 @@ async function insertChildren(
             calculatedFieldId: c.calculatedFieldName
               ? (calcFieldIdByName.get(c.calculatedFieldName) ?? null)
               : null,
+            valueCalculatedFieldId: c.valueCalculatedFieldName
+              ? (calcFieldIdByName.get(c.valueCalculatedFieldName) ?? null)
+              : null,
             operator: c.operator,
             value: c.value ?? null,
             // Stored as the parameter's bind name. `validateParameterInputs`
@@ -457,7 +472,25 @@ interface AnchoredChildren {
     breakItemKey: string | null;
   }>;
   formats: Array<Omit<MapConditionalFormat, 'id' | 'mapItemId'> & { itemKey: string | null }>;
+  /**
+   * Migrated column detail the save payload has no field for. Without this a
+   * builder save wrote these columns back as null on every item. Keyed by the
+   * underlying item, in display order, so the k-th copy of an item gets the
+   * k-th copy's detail back.
+   */
+  itemDetail: Array<Pick<MapItem, (typeof ITEM_DETAIL_KEYS)[number] | 'itemId'>>;
 }
+
+const ITEM_DETAIL_KEYS = [
+  'axisOrder',
+  'dataType',
+  'headingFormatMask',
+  'alignment',
+  'wordWrap',
+  'sortRank',
+  'sourceElementId',
+  'sourceAttrs',
+] as const;
 
 async function snapshotAnchoredChildren(
   tx: Tx,
@@ -492,11 +525,47 @@ async function snapshotAnchoredChildren(
       ...rest,
       itemKey: key(itemKeyById, mapItemId),
     })),
+    itemDetail: [...itemRows]
+      .sort((a, b) => a.displayOrder - b.displayOrder)
+      .map((r) => ({
+        itemId: r.itemId,
+        ...Object.fromEntries(ITEM_DETAIL_KEYS.map((k) => [k, r[k]])),
+      })) as AnchoredChildren['itemDetail'],
   };
+}
+
+/**
+ * Put each item's migrated detail back. `axisOrder` is the one detail the
+ * payload can carry, so it is only restored where the payload left it out.
+ */
+async function restoreItemDetail(
+  tx: Tx,
+  snapshot: AnchoredChildren,
+  newItems: MapItem[],
+  inputItems: MapItemInput[],
+): Promise<void> {
+  const pending = new globalThis.Map<string, AnchoredChildren['itemDetail']>();
+  for (const d of snapshot.itemDetail) {
+    pending.set(d.itemId, [...(pending.get(d.itemId) ?? []), d]);
+  }
+  for (const [idx, row] of newItems.entries()) {
+    const detail = pending.get(row.itemId)?.shift();
+    if (!detail) continue;
+    const { itemId: _itemId, axisOrder, ...rest } = detail;
+    const set: Partial<MapItem> = { ...rest };
+    if (inputItems[idx]?.axisOrder === undefined) set.axisOrder = axisOrder;
+    await tx.update(mapItems).set(set).where(eq(mapItems.id, row.id));
+  }
 }
 
 async function restoreAnchoredChildren(
   tx: Tx,
+  /**
+   * Where the rows go. Not the snapshot's own `mapId`: on a duplicate that is
+   * the SOURCE map, and writing there gave the original a second set of
+   * totals pointing at the copy's columns on every copy.
+   */
+  mapId: string,
   snapshot: AnchoredChildren,
   newItems: MapItem[],
   newCalculatedFields: MapCalculatedField[],
@@ -525,7 +594,7 @@ async function restoreAnchoredChildren(
     if (mapItemId === undefined || mapCalculatedFieldId === undefined || breakMapItemId === undefined) {
       continue;
     }
-    totalValues.push({ ...rest, mapItemId, mapCalculatedFieldId, breakMapItemId });
+    totalValues.push({ ...rest, mapId, mapItemId, mapCalculatedFieldId, breakMapItemId });
   }
   if (totalValues.length) await tx.insert(mapTotals).values(totalValues);
 
@@ -533,7 +602,7 @@ async function restoreAnchoredChildren(
   for (const { itemKey, ...rest } of snapshot.formats) {
     const mapItemId = resolve(itemIdByKey, itemKey);
     if (mapItemId === undefined) continue;
-    formatValues.push({ ...rest, mapItemId });
+    formatValues.push({ ...rest, mapId, mapItemId });
   }
   if (formatValues.length) await tx.insert(mapConditionalFormats).values(formatValues);
 }
@@ -633,7 +702,7 @@ export async function create(
     ...data.items.map((i) => i.itemId),
     ...(data.conditions ?? [])
       .map((c) => c.itemId)
-      .filter((id): id is string => id !== undefined),
+      .filter((id): id is string => typeof id === 'string'),
   ];
   await validateMapItems(data.businessAreaId, referencedItemIds);
   validateConditionInputs(data.conditions ?? []);
@@ -696,9 +765,17 @@ export async function update(
       ...data.items.map((i) => i.itemId),
       ...(data.conditions ?? [])
         .map((c) => c.itemId)
-        .filter((id): id is string => id !== undefined),
+        .filter((id): id is string => typeof id === 'string'),
     ];
-    await validateMapItems(existing.businessAreaId, referencedItemIds);
+    const [onMapItems, onMapConditions] = await Promise.all([
+      db.select({ id: mapItems.itemId }).from(mapItems).where(eq(mapItems.mapId, id)),
+      db.select({ id: mapConditions.itemId }).from(mapConditions).where(eq(mapConditions.mapId, id)),
+    ]);
+    await validateMapItems(
+      existing.businessAreaId,
+      referencedItemIds,
+      new Set([...onMapItems, ...onMapConditions].map((r) => r.id).filter((v) => v !== null)),
+    );
     validateConditionInputs(data.conditions ?? []);
     validateParameterInputs(data.parameters ?? [], data.conditions ?? []);
     validateCalculatedFieldReferences(
@@ -733,10 +810,12 @@ export async function update(
       });
       await restoreAnchoredChildren(
         tx,
+        id,
         anchored,
         inserted.items,
         inserted.calculatedFields,
       );
+      await restoreItemDetail(tx, anchored, inserted.items, data.items!);
       return { ...map!, ...(await loadChildren(id, tx)) };
     }
 
@@ -1057,6 +1136,9 @@ export async function duplicate(
         calculatedFieldName: c.calculatedFieldId
           ? calcFieldNameById.get(c.calculatedFieldId)
           : undefined,
+        valueCalculatedFieldName: c.valueCalculatedFieldId
+          ? calcFieldNameById.get(c.valueCalculatedFieldId)
+          : undefined,
         operator: c.operator,
         value: c.value,
         paramName:
@@ -1085,10 +1167,12 @@ export async function duplicate(
 
     await restoreAnchoredChildren(
       tx,
+      copy!.id,
       anchored,
       children.items,
       children.calculatedFields,
     );
+    await restoreItemDetail(tx, anchored, children.items, source.items);
 
     for (const layout of source.layouts) {
       const { id: _id, mapId: _mapId, createdAt: _createdAt, ...rest } = layout;

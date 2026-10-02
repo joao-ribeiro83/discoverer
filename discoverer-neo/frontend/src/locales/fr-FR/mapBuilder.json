@@ -36,6 +36,7 @@
     "saveErrorNoColumns": "Ajoutez au moins une colonne avant d'enregistrer.",
     "saveErrorNoBusinessArea": "Aucun domaine d'activité sélectionné.",
     "savedTitle": "Carte enregistrée",
+    "noChangesTitle": "Aucune modification à enregistrer",
     "saveFailedTitle": "Échec de l'enregistrement",
     "runErrorNoColumns": "Ajoutez au moins une colonne avant d'exécuter.",
     "executedTitle": "Carte exécutée",

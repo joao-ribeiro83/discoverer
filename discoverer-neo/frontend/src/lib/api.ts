@@ -79,12 +79,21 @@ const ORACLE_ERROR_TEXT = /\bORA-\d{3,5}\b/
  * still pass a more specific translated string.
  */
 export function getErrorMessage(err: unknown, fallback = i18n.t('errors:generic')): string {
-  if (!isAxiosError<{ error?: string }>(err)) return fallback
+  if (!isAxiosError<{ error?: string; details?: unknown }>(err)) return fallback
   // No response at all: the request never reached the server.
   if (!err.response) return i18n.t('errors:network')
 
   const message = err.response.data?.error
   if (!message) return fallback
+
+  // A 400 from a request schema carries zod issues. "Invalid request body"
+  // alone gives nobody anything to act on; name the field that failed.
+  const details = err.response.data?.details
+  if (Array.isArray(details) && details.length > 0) {
+    const issue = details[0] as { path?: unknown[]; message?: string }
+    const field = Array.isArray(issue.path) ? issue.path.join('.') : ''
+    if (issue.message) return `${message} — ${field ? `${field}: ` : ''}${issue.message}`
+  }
 
   // SEC-07: an ORA- string names the schema and the failing construct. Report
   // the kind instead and keep the detail in the console for support.

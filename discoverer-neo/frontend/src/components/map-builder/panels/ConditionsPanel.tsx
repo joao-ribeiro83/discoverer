@@ -20,6 +20,9 @@ import {
 } from '@/store/mapBuilder'
 import type { ConditionOperator } from '@/lib/types'
 
+/** Select value for a condition on a calculated field, kept apart from item ids. */
+const CALC_PREFIX = 'calc:'
+
 const OPERATORS: { value: ConditionOperator; label: string }[] = [
   { value: '=', label: '=' },
   { value: '<>', label: '<>' },
@@ -224,7 +227,16 @@ function ConditionRow({
 
         <div className="flex-1 space-y-2">
           <div className="flex gap-2">
-            <Select value={condition.itemId} onValueChange={(v) => onUpdate({ itemId: v })}>
+            <Select
+              value={
+                condition.calculatedFieldName
+                  ? CALC_PREFIX + condition.calculatedFieldName
+                  : (condition.itemId ?? undefined)
+              }
+              onValueChange={(v) => {
+                if (!v.startsWith(CALC_PREFIX)) onUpdate({ itemId: v, calculatedFieldName: null })
+              }}
+            >
               <SelectTrigger
                 className="h-8 flex-1"
                 aria-label={t('mapBuilder:panels.conditions.conditionItemAria')}
@@ -232,6 +244,11 @@ function ConditionRow({
                 <SelectValue placeholder={t('mapBuilder:panels.conditions.itemPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
+                {condition.calculatedFieldName && (
+                  <SelectItem value={CALC_PREFIX + condition.calculatedFieldName}>
+                    {condition.calculatedFieldName}
+                  </SelectItem>
+                )}
                 {selectedItems.map((i) => (
                   <SelectItem key={i.itemId} value={i.itemId}>
                     {columnLabel(i)}

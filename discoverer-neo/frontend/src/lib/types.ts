@@ -293,7 +293,13 @@ export interface MapItem {
 export interface MapCondition {
   id: string
   mapId: string
-  itemId: string
+  /** Null when the condition filters a calculated field instead. */
+  itemId: string | null
+  calculatedFieldId: string | null
+  /** The right-hand side is this calculated field rather than `value`. */
+  valueCalculatedFieldId: string | null
+  negated: boolean
+  caseSensitive: boolean
   operator: ConditionOperator
   value: string | null
   /** The referenced parameter's `bindName` — see `MapParameter`. */
@@ -459,7 +465,13 @@ export interface MapItemInput {
 }
 
 export interface MapConditionInput {
-  itemId: string
+  /** Exactly one of `itemId` / `calculatedFieldName`. */
+  itemId: string | null
+  /** Calculated fields are named, not id'd: a save gives them fresh ids. */
+  calculatedFieldName?: string | null
+  valueCalculatedFieldName?: string | null
+  negated?: boolean
+  caseSensitive?: boolean
   operator: ConditionOperator
   value?: string | null
   /**
@@ -858,6 +870,8 @@ export interface Schedule {
   parameters: ScheduleParameterValue[]
   /** Computed server-side; null once the schedule has no further occurrence. */
   nextRunAt: string | null
+  /** What the next run binds, date rules already resolved by the server. */
+  nextRunParameters?: Record<string, string> | null
   /** The fan-trap planner's last decision for this schedule's map, e.g.
    *  `FLAT(NO_MEASURES)` or `REFUSE(R3)`. Null if never planned. */
   plannerDecision: string | null

@@ -44,7 +44,10 @@ const MapItemInputSchema = z.object({
   aggFunction: z.string().max(64).nullable().optional(),
   sortDirection: z.enum(['ASC', 'DESC']).nullable().optional(),
   sortOrder: z.number().int().nullable().optional(),
-  columnWidth: z.number().int().positive().nullable().optional(),
+  // 0 is what the migration writes for "no width set" (879 of 928 migrated
+  // maps carry one), and every reader already treats it as "auto". Refusing
+  // it made almost every migrated map unsaveable from the builder.
+  columnWidth: z.number().int().nonnegative().nullable().optional(),
   /**
    * Worksheet placement. These were accepted by `map.service.ts` but not by
    * this schema, so a migrated map that was opened in the builder and saved
@@ -60,7 +63,13 @@ const MapItemInputSchema = z.object({
 });
 
 const MapConditionInputSchema = z.object({
-  itemId: z.string().uuid(),
+  // Exactly one of itemId / calculatedFieldName — the service enforces it.
+  itemId: z.string().uuid().nullish(),
+  calculatedFieldName: z.string().max(255).nullish(),
+  /** The right-hand side is a calculated field rather than a value. */
+  valueCalculatedFieldName: z.string().max(255).nullish(),
+  negated: z.boolean().optional(),
+  caseSensitive: z.boolean().optional(),
   operator: OperatorEnum,
   value: z.string().nullable().optional(),
   paramName: z.string().max(255).nullable().optional(),

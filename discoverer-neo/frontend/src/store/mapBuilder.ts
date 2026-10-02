@@ -103,7 +103,15 @@ export interface MapBuilderItem {
  */
 export interface MapBuilderCondition {
   key: string
-  itemId: string
+  itemId: string | null
+  /**
+   * Migrated detail the builder has no editor for yet, carried through so a
+   * save does not silently drop it — a lost `negated` flips the filter.
+   */
+  calculatedFieldName?: string | null
+  valueCalculatedFieldName?: string | null
+  negated?: boolean
+  caseSensitive?: boolean
   operator: ConditionOperator
   value: string | null
   paramName: string | null
@@ -297,10 +305,17 @@ function fallbackSource(row: MapItem): MapBuilderItemSource {
 function mapConditionToBuilder(
   row: MapCondition,
   promptByBindName: Map<string, string>,
+  calcNameById: Map<string, string>,
 ): MapBuilderCondition {
   return {
     key: nextConditionKey(),
     itemId: row.itemId,
+    calculatedFieldName: row.calculatedFieldId ? calcNameById.get(row.calculatedFieldId) : null,
+    valueCalculatedFieldName: row.valueCalculatedFieldId
+      ? calcNameById.get(row.valueCalculatedFieldId)
+      : null,
+    negated: row.negated,
+    caseSensitive: row.caseSensitive,
     operator: row.operator,
     value: row.value,
     paramName:
@@ -508,10 +523,20 @@ export const useMapBuilderStore = create<MapBuilderState>((set, get) => ({
   },
 
   updateCalculatedField: (key, patch) => {
+    const state = get()
+    const oldName = state.calculatedFields.find((f) => f.key === key)?.name
+    // Conditions name their calculated field, so a rename has to follow.
+    const rename = (n: string | null | undefined) =>
+      patch.name !== undefined && n === oldName ? patch.name : n
     set({
-      calculatedFields: get().calculatedFields.map((f) =>
+      calculatedFields: state.calculatedFields.map((f) =>
         f.key === key ? { ...f, ...patch } : f,
       ),
+      conditions: state.conditions.map((c) => ({
+        ...c,
+        calculatedFieldName: rename(c.calculatedFieldName),
+        valueCalculatedFieldName: rename(c.valueCalculatedFieldName),
+      })),
       isDirty: true,
     })
   },
@@ -542,6 +567,7 @@ export const useMapBuilderStore = create<MapBuilderState>((set, get) => ({
     const promptByBindName = new Map(
       map.parameters.map((p) => [p.bindName, p.name]),
     )
+    const calcNameById = new Map(map.calculatedFields.map((f) => [f.id, f.name]))
 
     set({
       mapId: map.id,
@@ -556,7 +582,9 @@ export const useMapBuilderStore = create<MapBuilderState>((set, get) => ({
       // Reclustered so any non-adjacent groupId membership from the server
       // still renders as one legible box (see `clusterConditions`).
       conditions: reclusterConditions(
-        orderedConditions.map((row) => mapConditionToBuilder(row, promptByBindName)),
+        orderedConditions.map((row) =>
+          mapConditionToBuilder(row, promptByBindName, calcNameById),
+        ),
       ),
       parameters: map.parameters.map(mapParameterToBuilder),
       calculatedFields: orderedCalcFields.map(mapCalculatedFieldToBuilder),
@@ -588,7 +616,11 @@ export const useMapBuilderStore = create<MapBuilderState>((set, get) => ({
     }))
 
     const conditions: MapConditionInput[] = state.conditions.map((c, index) => ({
-      itemId: c.itemId,
+      itemId: c.calculatedFieldName ? null : c.itemId,
+      calculatedFieldName: c.calculatedFieldName ?? null,
+      valueCalculatedFieldName: c.valueCalculatedFieldName ?? null,
+      negated: c.negated,
+      caseSensitive: c.caseSensitive,
       operator: c.operator,
       value: c.conditionType === 'STATIC' ? c.value : null,
       paramName: c.conditionType === 'PARAMETER' ? c.paramName : null,
